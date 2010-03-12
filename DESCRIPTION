@@ -12,5 +12,11 @@ Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.59)
 Imports: methods, IRanges
-Suggests: RUnit
+Suggests: RUnit, GenomicFeatures, Rsamtools, BSgenome
 License: Artistic-2.0
+Collate: seqnames.R
+	strand.R
+	GRanges-class.R
+	GRangesList-class.R
+	setops-methods.R
+	findOverlaps-methods.R

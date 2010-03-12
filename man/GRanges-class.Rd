@@ -1,0 +1,379 @@
+\name{GRanges-class}
+\docType{class}
+
+% Class
+\alias{class:GRanges}
+\alias{GRanges-class}
+\alias{GRanges}
+
+% Constructor-like function:
+\alias{GRanges}
+
+% Coercion methods:
+\alias{coerce,RangedData,GRanges-method}
+\alias{as.data.frame,GRanges-method}
+
+% Accessor methods:
+\alias{seqnames,GRanges-method}
+\alias{seqnames<-,GRanges-method}
+\alias{ranges,GRanges-method}
+\alias{ranges<-,GRanges-method}
+\alias{strand,GRanges-method}
+\alias{strand<-,GRanges-method}
+\alias{values,GRanges-method}
+\alias{values<-,GRanges-method}
+\alias{names,GRanges-method}
+\alias{names<-,GRanges-method}
+
+% Ranges methods:
+\alias{start,GRanges-method}
+\alias{start<-,GRanges-method}
+\alias{end,GRanges-method}
+\alias{end<-,GRanges-method}
+\alias{width,GRanges-method}
+\alias{width<-,GRanges-method}
+\alias{shift,GRanges-method}
+\alias{coverage,GRanges-method}
+
+% DataTable methods:
+\alias{[,GRanges-method}
+\alias{[<-,GRanges-method}
+\alias{ncol,GRanges-method}
+\alias{colnames,GRanges-method}
+\alias{colnames<-,GRanges-method}
+
+% Sequence methods:
+\alias{[,GRanges-method}
+\alias{c,GRanges-method}
+\alias{length,GRanges-method}
+\alias{rev,GRanges-method}
+\alias{seqselect,GRanges-method}
+\alias{seqselect<-,GRanges-method}
+\alias{split,GRanges-method}
+\alias{window,GRanges-method}
+
+% show method:
+\alias{show,GRanges-method}
+
+
+\title{GRanges objects}
+
+\description{
+  The GRanges class is a container for the genomic locations and
+  their associated annotations for a single feature.
+}
+
+\details{
+  The GRanges class stores the sequences of genomic locations and
+  associated annotations for a single feature. Each element in the sequence
+  is comprised of a sequence name, an interval, a \link{strand}, and optional
+  data values (e.g. score, GC content, etc.). This information is stored in
+  four slots:
+  \describe{
+    \item{\code{seqnames}}{a 'character' \link[IRanges]{Rle} object
+      containing the sequence names.}
+    \item{\code{ranges}}{an \link[IRanges]{IRanges} object containing
+      the ranges.}
+    \item{\code{strand}}{a 'factor' \link[IRanges]{Rle} object containing
+      the \link{strand} information.}
+    \item{\code{values}}{a \link[IRanges]{DataFrame} object containing
+      the annotation columns. Columns cannot be named \code{"seqnames"},
+      \code{"ranges"}, \code{"strand"}, \code{"start"}, \code{"end"},
+      \code{"width"}, or \code{"feature"}.}
+  }
+}
+
+\section{Constructor}{
+  \describe{
+    \item{}{
+      \code{GRanges(seqnames = Rle(), ranges = IRanges(),
+                    strand = Rle("*", length(seqnames)), ...)}:
+      Creates a GRanges object.
+      \describe{
+        \item{\code{seqnames}}{Rle object or character vector containing the
+          sequence names.}
+        \item{\code{ranges}}{IRanges object containing the ranges.}
+        \item{\code{strand}}{Rle object, character vector, or factor
+          containing the strand information.}
+        \item{\code{\ldots}}{Optional annotation columns for the \code{values}
+          slot. These columns cannot be named \code{"start"}, \code{"end"},
+          \code{"width"}, or \code{"feature"}.}
+      }
+    }
+  }
+}
+
+\section{Coercion}{
+  In the code snippets below, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{as(from, "GRanges")}:
+      Creates a GRanges object from a RangedData object.
+    }
+    \item{}{
+      \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
+      Creates a data.frame with columns \code{seqnames} (character), 
+      \code{start} (integer), \code{end} (integer), \code{width} (integer),
+      \code{strand} (factor), as well as the additional columns stored in
+      \code{values(x)}.
+    }
+  }
+}
+
+\section{Accessors}{
+  In the following code snippets, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+      Gets or sets the sequence names. \code{value} can be an Rle object or
+      character vector.
+    }
+    \item{}{
+      \code{ranges(x)}, \code{ranges(x) <- value}:
+      Gets or sets the ranges. \code{value} can be a Ranges object.
+    }
+    \item{}{
+      \code{strand(x)}, \code{strand(x) <- value}:
+      Gets or sets the strand. \code{value} can be an Rle object, character
+      vector, or factor.
+    }
+    \item{}{
+      \code{values(x)}, \code{values(x) <- value}:
+      Gets or sets the optional data columns. \code{value} can be a DataFrame,
+      data.frame object, or NULL.
+    }
+    \item{}{
+      \code{names(x)}, \code{names(x) <- value}:
+      Gets or sets the names of the elements.
+    }
+    \item{}{
+      \code{length(x)}:
+      Gets the number of elements.
+    }
+  }
+}
+
+\section{Ranges methods}{
+  In the following code snippets, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{start(x)}, \code{start(x) <- value}:
+      Gets or sets \code{start(ranges(x))}.
+    }
+    \item{}{
+      \code{end(x)}, \code{end(x) <- value}:
+      Gets or sets \code{end(ranges(x))}.
+    }
+    \item{}{
+      \code{width(x)}, \code{width(x) <- value}:
+      Gets or sets \code{width(ranges(x))}.
+    }
+    \item{}{
+      \code{shift(x, shift, use.names=TRUE)}:
+      Returns a new GRanges object containing intervals with start and
+      end values that have been shifted by integer vector \code{shift}.
+      The \code{use.names} argument determines whether or not to
+      keep the names on the ranges.
+    }
+    \item{}{
+      \code{coverage(x, shift = list(0L), width = list(NULL), weight = list(1L))}:
+      Returns a named \link[IRanges]{RleList} object with one element
+      ('integer' Rle) per unique sequence name representing how many
+      times each position in the sequence is covered by the intervals in
+      \code{x}. The \code{shift}, \code{width}, and \code{weight} arguments
+      take list arguments, possibly named by the unique sequence names in
+      \code{x}, whose elements are passed into the \code{coverage} method for
+      \link{IRanges} object. See \code{?\link[IRanges]{coverage}} for more
+      information on these optional arguments.
+    }
+  }
+}
+
+\section{DataTable methods}{
+  In the following code snippets, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{ncol(x)}:
+      Gets the number of column in \code{values(x)}.
+    }
+    \item{}{
+      \code{colnames(x, do.NULL = TRUE, prefix = "col")},
+      \code{colnames(x) <- value}:
+      Gets or sets the column names of \code{values(x)}.
+    }
+  }
+}
+
+\section{Splitting and Combining}{
+  In the code snippets below, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{append(x, values, after = length(x))}:
+      Inserts the \code{values} into \code{x} at the position given by
+      \code{after}, where \code{x} and \code{values} are of the same
+      class.
+    }
+    \item{}{
+      \code{c(x, ...)}:
+      Combines \code{x} and the GRanges objects in \code{...} together.
+      Any object in \code{...} must belong to the same class as \code{x},
+      or to one of its subclasses, or must be \code{NULL}.
+      The result is an object of the same class as \code{x}.
+    }
+    \item{}{
+      \code{split(x, f = seq_len(length(x)), drop = FALSE)}:
+      Splits \code{x} into a \link{GRangesList}, according to \code{f},
+      dropping elements corresponding to unrepresented levels if \code{drop}
+      is \code{TRUE}. Split factor \code{f} defaults to splitting each
+      element of \code{x} into a separate element in the resulting
+      \link{GRangesList} object.
+    }
+  }
+}
+
+\section{Subsetting}{
+  In the code snippets below, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{x[i, j]}, \code{x[i, j] <- value}:
+      Gets or sets elements \code{i} with optional values columns
+      \code{values(x)[,j]}, where \code{i} can be missing; an NA-free
+      logical, numeric, or character vector; or a 'logical' Rle object.
+    }
+    \item{}{
+      \code{x[i,j] <- value}:
+      Replaces elements \code{i} and optional values columns \code{j} with
+      \code{values}.
+    }
+    \item{}{
+      \code{head(x, n = 6L)}:
+      If \code{n} is non-negative, returns the first n elements of the
+      GRanges object.
+      If \code{n} is negative, returns all but the last \code{abs(n)} elements
+      of the GRanges object.
+    }
+    \item{}{
+      \code{rep(x, times, length.out, each)}:
+      Repeats the values in \code{x} through one of the following conventions:
+      \describe{
+        \item{\code{times}}{Vector giving the number of times to repeat each
+          element if of length \code{length(x)}, or to repeat the whole vector
+          if of length 1.}
+        \item{\code{length.out}}{Non-negative integer. The desired length of
+          the output vector.}
+        \item{\code{each}}{Non-negative integer.  Each element of \code{x} is
+          repeated \code{each} times.}
+      }
+    }
+    \item{}{
+      \code{rev(x)}:
+      Returns a new object of the same class as \code{x} made of the original
+      elements in the reverse order.
+    }
+    \item{}{
+      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
+      Similar to \code{window}, except that multiple consecutive subsequences
+      can be requested for concatenation. As such two of the three \code{start},
+      \code{end}, and \code{width} arguments can be used to specify the
+      consecutive subsequences. Alternatively, \code{start} can take a Ranges
+      object or something that can be converted to a Ranges object like an
+      integer vector, logical vector or logical Rle. If the concatenation of
+      the consecutive subsequences is undesirable, consider using
+      \code{\link{Views}}.
+    }
+    \item{}{
+      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
+      Similar to \code{window<-}, except that multiple consecutive subsequences
+      can be replaced by a \code{value} whose length is a divisor of the number
+      of elements it is replacing. As such two of the three \code{start},
+      \code{end}, and \code{width} arguments can be used to specify the
+      consecutive subsequences. Alternatively, \code{start} can take a Ranges
+      object or something that can be converted to a Ranges object like an
+      integer vector, logical vector or logical Rle.
+    }
+    \item{}{
+      \code{subset(x, subset)}:
+      Returns a new object of the same class as \code{x} made of the subset
+      using logical vector \code{subset}, where missing values are taken as
+      \code{FALSE}.
+    }
+    \item{}{
+      \code{tail(x, n = 6L)}:
+      If \code{n} is non-negative, returns the last n elements of the
+      GRanges object.
+      If \code{n} is negative, returns all but the first \code{abs(n)} elements
+      of the GRanges object.
+    }
+    \item{}{
+      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
+      Extracts the subsequence window from the GRanges object using:
+      \describe{
+        \item{\code{start}, \code{end}, \code{width}}{The start, end, or width
+          of the window. Two of the three are required.}
+        \item{\code{frequency}, \code{delta}}{Optional arguments that specify
+          the sampling frequency and increment within the window.}
+      }
+      In general, this is more efficient than using \code{"["} operator.
+    }
+    \item{}{
+      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
+      Replaces the subsequence window specified on the left (i.e. the subsequence
+      in \code{x} specified by \code{start}, \code{end} and \code{width})
+      by \code{value}.
+      \code{value} must either be of class \code{class(x)}, belong to a subclass
+      of \code{class(x)}, be coercible to \code{class(x)}, or be \code{NULL}.
+      If \code{keepLength} is \code{TRUE}, the elements of \code{value} are
+      repeated to create a GRanges object with the same number of elements
+      as the width of the subsequence window it is replacing.
+      If \code{keepLength} is \code{FALSE}, this replacement method can modify
+      the length of \code{x}, depending on how the length of the left
+      subsequence window compares to the length of \code{value}.
+    }
+  }
+}
+
+\author{P. Aboyoun}
+
+\seealso{
+  \link{GRangesList},
+  \link[IRanges]{Sequence},
+  \link[IRanges]{Ranges},
+  \link[IRanges]{Rle},
+  \link[IRanges]{DataFrame}
+}
+
+\examples{
+  gr <-
+    GRanges(seqnames =
+            Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+            ranges =
+            IRanges(1:10, width = 10:1, names = head(letters,10)),
+            strand =
+            Rle(strand(c("-", "+", "*", "+", "-")),
+                c(1, 2, 2, 3, 2)),
+            score = 1:10,
+            GC = seq(1, 0, length=10))
+  gr
+
+  # Extracting basic information
+  length(gr)
+  ncol(gr)
+  colnames(gr)
+
+  # Summarizing elements
+  table(seqnames(gr))
+  sum(width(gr))
+  summary(values(gr)[,"score"])
+  coverage(gr)
+
+  # Changing sequence name
+  unique(seqnames(gr))
+  seqnames(gr) <- sub("chr", "Chrom", seqnames(gr))
+  gr
+}

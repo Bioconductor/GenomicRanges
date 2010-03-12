@@ -1,3 +1,27 @@
 import(methods)
 import(IRanges)
 
+exportClasses(GRanges, GRangesList)
+
+export(
+    seqnames, "seqnames<-",
+    strand, "strand<-",
+    GRanges,
+    GRangesList
+)
+
+exportMethods(
+    "coerce", "as.data.frame",
+    "seqnames", "ranges", "strand", "values",
+    "seqnames<-", "ranges<-", "strand<-", "values<-",
+    "names", "names<-",
+    "start", "end", "width", "start<-", "end<-", "width<-",
+    "shift", "coverage",
+    "ncol", "colnames", "colnames<-",
+    "[", "[<-", "c", "length", "rev", "seqselect", "seqselect<-",
+    "split", "window",
+    "show",
+    "pintersect",
+    "findOverlaps", "countOverlaps", "match", "%in%"
+)
+
