@@ -1,0 +1,16 @@
+Package: GenomicRanges
+Title: Representation and manipulation of genomic intervals
+Description: The ability to efficiently store genomic annotations and
+	alignments is playing a central role when it comes to analyze
+	high-throughput sequencing data (a.k.a. NGS data). The package
+	defines general purpose containers for storing genomic intervals
+	as well as more specialized containers for storing alignments
+	against a reference genome.
+Version: 0.0.0
+Author: P. Aboyoun, H. Pages and M. Lawrence
+Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
+biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
+Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.59)
+Imports: methods, IRanges
+Suggests: RUnit
+License: Artistic-2.0
