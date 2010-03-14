@@ -70,7 +70,7 @@
   data values (e.g. score, GC content, etc.). This information is stored in
   four slots:
   \describe{
-    \item{\code{seqnames}}{a 'character' \link[IRanges]{Rle} object
+    \item{\code{seqnames}}{a 'factor' \link[IRanges]{Rle} object
       containing the sequence names.}
     \item{\code{ranges}}{an \link[IRanges]{IRanges} object containing
       the ranges.}
@@ -90,8 +90,8 @@
                     strand = Rle("*", length(seqnames)), ...)}:
       Creates a GRanges object.
       \describe{
-        \item{\code{seqnames}}{Rle object or character vector containing the
-          sequence names.}
+        \item{\code{seqnames}}{Rle object,character vector, or factor
+          containing the sequence names.}
         \item{\code{ranges}}{IRanges object containing the ranges.}
         \item{\code{strand}}{Rle object, character vector, or factor
           containing the strand information.}
@@ -113,7 +113,7 @@
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
-      Creates a data.frame with columns \code{seqnames} (character), 
+      Creates a data.frame with columns \code{seqnames} (factor),
       \code{start} (integer), \code{end} (integer), \code{width} (integer),
       \code{strand} (factor), as well as the additional columns stored in
       \code{values(x)}.
@@ -127,8 +127,8 @@
   \describe{
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Gets or sets the sequence names. \code{value} can be an Rle object or
-      character vector.
+      Gets or sets the sequence names. \code{value} can be an Rle object,
+      character vector, or factor.
     }
     \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:

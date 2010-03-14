@@ -27,8 +27,8 @@ setClass("GRanges", contains = "Sequence",
 
 .valid.GRanges.seqnames <- function(x)
 {
-    if (!is.character(runValue(x@seqnames)))
-        "slot 'seqnames' should be a 'character' Rle"
+    if (!is.factor(runValue(x@seqnames)))
+        "slot 'seqnames' should be a 'factor' Rle"
     else if (IRanges:::anyMissing(runValue(x@seqnames)))
         "slot 'seqnames' contains missing values"
     else
@@ -84,8 +84,8 @@ function(seqnames = Rle(), ranges = IRanges(),
 {
     if (!is(seqnames, "Rle"))
         seqnames <- Rle(seqnames)
-    if (!is.character(runValue(seqnames)))
-        runValue(seqnames) <- as.character(runValue(seqnames))
+    if (!is.factor(runValue(seqnames)))
+        runValue(seqnames) <- factor(runValue(seqnames))
 
     if (!is(ranges, "IRanges"))
         ranges <- as(ranges, "IRanges")
@@ -173,6 +173,8 @@ setReplaceMethod("seqnames", "GRanges",
     {
         if (!is(value, "Rle"))
             value <- Rle(value)
+        if (!is.factor(runValue(value)))
+            runValue(value) <- factor(runValue(value))
         n <- length(x)
         k <- length(value)
         if (k != n) {
@@ -301,7 +303,7 @@ setMethod("coverage", "GRanges",
                 stop("some seqnames missing from names(", argname, ")")
             arg
         }
-        uniqueSeqnames <- unique(seqnames(x))
+        uniqueSeqnames <- levels(seqnames(x))
         shift <- fixArg(shift, "shift", uniqueSeqnames)
         width <- fixArg(width, "width", uniqueSeqnames)
         weight <- fixArg(weight, "weight", uniqueSeqnames)
@@ -411,7 +413,7 @@ setMethod("c", "GRanges",
     {
         if (recursive)
             stop("'recursive' mode not supported")
-        args <- list(x, ...)
+        args <- unname(list(x, ...))
         ans <-
           initialize(x,
                      seqnames = do.call(c, lapply(args, slot, "seqnames")),

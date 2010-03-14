@@ -17,7 +17,7 @@ test_matching_seqnames <- function()
 
 make_subject <- function() {
     new("GRanges",
-        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
         ranges = IRanges(1:10, width = 10:1),
         strand = Rle(strand(c("-", "+", "+", "-", "-", "-")), c(1, 2, 1, 1, 3, 2)),
         values = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))

@@ -93,9 +93,9 @@ setReplaceMethod("seqnames", "GRangesList",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
         if (!is(value, "Rle"))
-            value <- Rle(as.character(value))
-        else if (!is.character(runValue(value)))
-            runValue(value) <- as.character(runValue)
+            value <- Rle(factor(value))
+        else if (!is.factor(runValue(value)))
+            runValue(value) <- factor(runValue(value))
         x@unlistData@seqnames <- value
         x
     }

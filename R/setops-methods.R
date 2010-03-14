@@ -8,7 +8,8 @@ setMethod("pintersect", c("GRanges", "GRanges"),
         resolve.empty <- match.arg(resolve.empty)
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if (!all((seqnames(x) == seqnames(y)) &
+        if (!setequal(levels(seqnames(x)), levels(seqnames(y))) ||
+            !all((seqnames(x) == seqnames(y)) &
                   compatableStrand(strand(x), strand(y))))
             stop("'x' and 'y' must elements have compatable 'seqnames' ",
                  "and 'strand' values")
@@ -29,6 +30,9 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
         resolve.empty <- match.arg(resolve.empty)
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
+        if (!setequal(levels(seqnames(x@unlistData)), levels(seqnames(y))))
+            stop("'x' and 'y' must elements have compatable 'seqnames' ",
+                 "and 'strand' values")
         ok <-
           (seqnames(x@unlistData) == rep(seqnames(y), elementLengths(x))) &
           compatableStrand(strand(x@unlistData), rep(strand(y), elementLengths(x)))

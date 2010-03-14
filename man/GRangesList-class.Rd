@@ -72,7 +72,7 @@
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
       Creates a data.frame with columns \code{feature} (character),
-      \code{seqnames} (character), \code{start} (integer),
+      \code{seqnames} (factor), \code{start} (integer),
       \code{end} (integer), \code{width} (integer), \code{strand} (factor),
       as well as the additional columns stored in \code{values(x)}.
     }

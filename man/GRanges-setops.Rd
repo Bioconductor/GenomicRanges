@@ -64,8 +64,7 @@
 \examples{
   ## GRanges object
   gr <-
-    GRanges(seqnames =
-            Rle(c("chr2", "chr1", "chr1")),
+    GRanges(seqnames = c("chr2", "chr1", "chr1"),
             ranges = IRanges(1:3, width = 12),
             strand = Rle(strand(c("-", "*", "-"))))
   gr

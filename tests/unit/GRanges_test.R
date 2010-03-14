@@ -1,6 +1,6 @@
 make_test_GRanges <- function() {
     new("GRanges",
-        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
         ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
         strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
         values = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
@@ -50,7 +50,7 @@ test_GRanges_coercion <- function() {
       GRanges(seqnames = c(1,1,2),
               ranges = IRanges(1:3,4:6, names = head(letters,3)))
     df <-
-      data.frame(seqnames = as.character(c(1,1,2)),
+      data.frame(seqnames = factor(c(1,1,2)),
                  start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
                  strand = strand(rep("*", 3)),
                  row.names = head(letters,3),
@@ -63,7 +63,7 @@ test_GRanges_coercion <- function() {
               ranges = IRanges(1:3,4:6, names = head(letters,3)),
               score = c(10L,2L,NA))
     df <-
-      data.frame(seqnames = as.character(c(1,1,2)),
+      data.frame(seqnames = factor(c(1,1,2)),
                  start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
                  strand = strand(rep("*", 3)),
                  score = c(10L,2L,NA),
@@ -77,7 +77,7 @@ test_GRanges_coercion <- function() {
               ranges = IRanges(1:3,4:6, names = head(letters,3)),
               strand = strand(c("+", "-", "*")))
     df <-
-      data.frame(seqnames = as.character(c(1,1,2)),
+      data.frame(seqnames = factor(c(1,1,2)),
                  start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
                  strand = strand(c("+", "-", "*")),
                  row.names = head(letters,3),
@@ -91,7 +91,7 @@ test_GRanges_coercion <- function() {
               strand = strand(c("+", "-", "*")),
               score = c(10L,2L,NA))
     df <-
-      data.frame(seqnames = as.character(c(1,1,2)),
+      data.frame(seqnames = factor(c(1,1,2)),
                  start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
                  strand = strand(c("+", "-", "*")),
                  score = c(10L,2L,NA),
@@ -109,14 +109,14 @@ test_GRanges_accessors <- function() {
 
     gr <- make_test_GRanges()
     val <- seqnames(gr)
-    runValue(val) <- paste(runValue(val), ".new", sep="")
+    runValue(val) <- factor(paste(runValue(val), ".new", sep=""))
     seqnames(gr) <- val
     checkIdentical(seqnames(gr), val)
 
     gr <- make_test_GRanges()
     val <- head(letters, length(gr))
     seqnames(gr) <- val
-    checkIdentical(seqnames(gr), Rle(val))
+    checkIdentical(seqnames(gr), Rle(factor(val)))
 
     ## ranges
     checkException(ranges(GRanges()) <- NULL, silent = TRUE)
