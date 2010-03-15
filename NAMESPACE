@@ -1,3 +1,5 @@
+useDynLib(GenomicRanges)
+
 import(methods)
 import(IRanges)
 
@@ -7,7 +9,12 @@ export(
     seqnames, "seqnames<-",
     strand, "strand<-",
     GRanges,
-    GRangesList
+    GRangesList,
+    validCigar, cigarOpTable,
+    cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
+    cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
+    queryLoc2refLoc, queryLocs2refLocs,
+    splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable
 )
 
 exportMethods(
