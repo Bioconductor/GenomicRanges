@@ -78,7 +78,7 @@ library(GenomicRanges)
 First we use the \Rfunction{readBAMasGappedAlignments} function defined
 in the \Rpackage{Rsamtools} package to load a toy `BAM' file into a
 \Rclass{GappedAlignments} object:
-<<readBAMasGappedAlignments>>=
+<<readBAMasGappedAlignments,eval=FALSE>>=
 library(Rsamtools)
 aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 aln1 <- readBAMasGappedAlignments(aln1_file)
@@ -103,7 +103,7 @@ of this document.
 There is one accessor per field displayed by the \Rmethod{show} method
 and it has the same name as the field. All of them return a vector or
 factor of the same length as the object:
-<<accessors>>=
+<<accessors,eval=FALSE>>=
 head(rname(aln1))
 levels(rname(aln1))
 head(strand(aln1))
