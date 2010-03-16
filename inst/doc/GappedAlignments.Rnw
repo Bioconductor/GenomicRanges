@@ -1,0 +1,126 @@
+%\VignetteIndexEntry{An Introduction to Gapped Alignments}
+%\VignetteDepends{}
+%\VignetteKeywords{alignments, sequence, sequencing}
+%\VignettePackage{GenomicRanges}
+\documentclass[10pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+\newcommand{\GenomicRanges}{\Rpackage{GenomicRanges}}
+
+\newcommand{\ELAND}{\software{ELAND}}
+\newcommand{\MAQ}{\software{MAQ}}
+\newcommand{\Bowtie}{\software{Bowtie}}
+
+\title{An Introduction to Gapped Alignments}
+\author{Biocore Team}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+<<options,echo=FALSE>>=
+options(width=72)
+@ 
+
+In addition to \Rclass{GRanges} and \Rclass{GRangesList}, the two general
+purpose containers for storing genomic intervals, the \GenomicRanges{}
+package defines the \Rclass{GappedAlignments} class, which is a more
+specialized container for storing a set of alignments.
+The class is intended to support alignments in general, not only
+those coming from a `BAM' file. Also alignments with gaps in the
+reference sequence (a.k.a. \emph{gapped alignments}) are supported
+which, for example, makes the class suited for storing junction reads
+from an RNA-seq experiment.
+
+More precisely, a \Rclass{GappedAlignments} object is a vector-like
+object where each element describes an \emph{alignment}, that is,
+how a given sequence (called \emph{query} or \emph{read}, typically
+short) aligns to a reference sequence (typically long).
+
+As shown later in this document, a \Rclass{GappedAlignments} object
+can be created from a `BAM' file. In that case, each element in the
+resulting object will correspond to a record in the file.
+One important thing to note though is that not all the information
+present in the BAM/SAM records is stored in the object. In particular,
+for now, we discard the query sequences (SEQ field), the query ids
+(QNAME field), the query qualities (QUAL), the mapping qualities (MAPQ)
+and any other information that is not needed in order to support the
+basic set of operations described in this document.
+This also means that multi-reads (i.e. reads with multiple hits in the
+reference) don't receive any special treatment i.e. the various SAM/BAM
+records corresponding to a multi-read will show up in the GappedAlignments
+object as if they were coming from different/unrelated queries.
+Also paired-end reads will be treated as single-end reads and the
+pairing information will be lost. This might change in the future.
+
+
+\section{Basic manipulation}
+
+<<preliminaries>>=
+library(GenomicRanges)
+@ 
+
+\subsection{Load a `BAM' file into a \Rclass{GappedAlignments} object}
+
+First we use the \Rfunction{readBAMasGappedAlignments} function defined
+in the \Rpackage{Rsamtools} package to load a toy `BAM' file into a
+\Rclass{GappedAlignments} object:
+<<readBAMasGappedAlignments>>=
+library(Rsamtools)
+aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+aln1 <- readBAMasGappedAlignments(aln1_file)
+aln1
+length(aln1)
+@
+
+3271 `BAM' records were loaded into the object.
+
+Note that \Rfunction{readBAMasGappedAlignments} would have discarded
+any `BAM' record describing an unaligned query or a query that is
+a PCR or optical duplicate (see description of the <flag> field
+in the SAM Format Specification
+\footnote{\url{http://samtools.sourceforge.net/SAM1.pdf}}
+for more information).
+The reader interested in tracking down these events can always
+use the \Rfunction{scanBam} function but this goes beyond the scope
+of this document.
+
+\subsection{Simple accessor methods}
+
+There is one accessor per field displayed by the \Rmethod{show} method
+and it has the same name as the field. All of them return a vector or
+factor of the same length as the object:
+<<accessors>>=
+head(rname(aln1))
+levels(rname(aln1))
+head(strand(aln1))
+head(cigar(aln1))
+head(qwidth(aln1))
+head(start(aln1))
+head(end(aln1))
+head(width(aln1))
+head(ngap(aln1))
+@
+
+\subsection{More accessor methods}
+
+
+\section{A real use case}
+
+
+
+
+\end{document}

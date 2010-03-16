@@ -18,6 +18,14 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_alignment, 4),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_rname, 6),
 
+/* compact_bit_vector.c */
+	CALLMETHOD_DEF(logical_as_compact_raw_vector, 1),
+	CALLMETHOD_DEF(compact_raw_vector_as_logical, 2),
+	CALLMETHOD_DEF(subset_compact_raw_vector, 2),
+	CALLMETHOD_DEF(compact_raw_vector_bit_count, 1),
+	CALLMETHOD_DEF(compact_raw_vector_last_bit, 1),
+	CALLMETHOD_DEF(compact_raw_vector_set_op, 3),
+
 	{NULL, NULL, 0}
 };
 

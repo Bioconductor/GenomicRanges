@@ -22,3 +22,7 @@ Collate: seqnames.R
 	setops-methods.R
 	findOverlaps-methods.R
 	cigar-utils.R
+	GappedAlignments-class.R
+	Alignments0-class.R
+	Alignments1-class.R
+	Alignments2-class.R

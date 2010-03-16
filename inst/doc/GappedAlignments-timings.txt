@@ -1,0 +1,87 @@
+Timings on merlot2
+==================
+
+Except for the 'object.size(x)' rows, all values are times expressed in
+seconds.
+
+---------------------------------------------------------------------------
+FILE1: NA19239.SLX.maq.SRP000033.2009_09.subset.bam
+
+                                      Alignments0  Alignments1  Alignments2
+x <- readBAMasGappedAlignments(file):      82.491       78.744       73.891
+object.size(x):                         499724808    470817184    334064328
+x_rname <- rname(x):                        0            0.338        0
+x_strand <- strand(x):                      1.825        0.407        1.577
+x_cigar <- cigar(x):                        0.001        0.001        0
+x_qwidth <- qwidth(x):                      0.761        0.718        0.718
+x_grglist <- grglist(x):                    8.267        0            9.235
+x_rglist <- rglist(x):                      0            1.351        1.097
+x_start <- start(x):                        0.338        1.695        0
+x_end <- end(x):                            0.439        1.747        0.873
+x_width <- width(x):                        0.709        0.658        0.662
+x_ngap <- ngap(x):                          1.211        2.606        2.364
+show(x):                                    5.946       10.217        7.226
+xs1 <- x[1000:1]:                           3.185        2.592        0.678
+rname(x) <- sub("seq", "chr", rname(x)):   21.482       13.461       21.196
+x[strand(x) == "-"]:                       11.685       14.275        5.766
+qnx1 <- qnarrow(x, start=4, end=-6):       16.51        25.761       14.33
+qnx2 <- qnarrow(x, start=14, end=-16):     17.981       25.992       14.469
+nx1 <- narrow(x, start=4, end=-6):         17.582       25.292       14.614
+nx2 <- narrow(x, start=14, end=-16):       17.1         25.856       14.935
+cvg <- coverage(x):                        11.946       14.068       11.525
+fo1 <- findOverlaps(x, grg(x)[1]):         21.783        6.936       25.304
+
+---------------------------------------------------------------------------
+FILE2: NA19240.chrom1.454.ssaha2.SRP000032.2009_10.bam
+
+                                      Alignments0  Alignments1  Alignments2
+x <- readBAMasGappedAlignments(file):     147.754      115.475      112.332 
+object.size(x):                         217232672    216448992    195424928
+x_rname <- rname(x):                        0            0.045        0.001
+x_strand <- strand(x):                      0.21         0.054        0.209
+x_cigar <- cigar(x):                        0            0            0
+x_qwidth <- qwidth(x):                      0.454        0.449        0.45
+x_grglist <- grglist(x):                    1.27         0            2.093
+x_rglist <- rglist(x):                      0            0.149        0.512
+x_start <- start(x):                        0.045        0.194        0
+x_end <- end(x):                            0.049        0.199        0.463
+x_width <- width(x):                        0.441        0.44         0.439
+x_ngap <- ngap(x):                          0.114        0.262        0.625
+show(x):                                    1.638        2.283        2.502
+xs1 <- x[1000:1]:                           0.597        0.277        0.068
+rname(x) <- sub("seq", "chr", rname(x)):    4.157        1.655        3.358
+x[strand(x) == "-"]:                        4.157        3.456        1.368
+qnx1 <- qnarrow(x, start=4, end=-6):       14.085       18.112       13.583
+qnx2 <- qnarrow(x, start=14, end=-16):     16.89        24.663       16.581
+nx1 <- narrow(x, start=4, end=-6):         14.513       18.156       13.742
+nx2 <- narrow(x, start=14, end=-16):       16.041       18.448       10.835
+cvg <- coverage(x):                         3.843        4.792        4.608
+fo1 <- findOverlaps(x, grg(x)[1]):         10.652        2.045       15.277
+
+---------------------------------------------------------------------------
+FILE3: NA19240.chrom6.SLX.maq.SRP000032.2009_07.subset.bam
+
+                                      Alignments0  Alignments1  Alignments2
+x <- readBAMasGappedAlignments(file):      80.286       90.589       81.56
+object.size(x):                         537909504    531436512    359574672
+x_rname <- rname(x):                        0            0.366        0
+x_strand <- strand(x):                      1.816        0.445        1.854
+x_cigar <- cigar(x):                        0            0            0
+x_qwidth <- qwidth(x):                      0.726        0.724        0.724
+x_grglist <- grglist(x):                    9.347        0           13.684
+x_rglist <- rglist(x):                      0            1.491        1.218
+x_start <- start(x):                        0.363        1.916        0
+x_end <- end(x):                            0.393        ?            ?
+x_width <- width(x):                        0.698        0.656        0.653
+x_ngap <- ngap(x):                          1.331        3.63         2.648
+show(x):                                    6.365        ?            ?
+xs1 <- x[1000:1]:                           3.826        2.929        0.714
+rname(x) <- sub("seq", "chr", rname(x)):   22.208       14.179       21.16
+x[strand(x) == "-"]:                       12.823       16.291        6.27
+qnx1 <- qnarrow(x, start=4, end=-6):       17.892       28.488       15.3
+qnx2 <- qnarrow(x, start=14, end=-16):     18.869       31.548       15.928
+nx1 <- narrow(x, start=4, end=-6):         17.913        ?            ?
+nx2 <- narrow(x, start=14, end=-16):        ?            ?            ?
+cvg <- coverage(x):                         ?            ?            ?
+fo1 <- findOverlaps(x, grg(x)[1]):         32.184       11.443       34.746
+

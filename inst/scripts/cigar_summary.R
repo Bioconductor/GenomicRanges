@@ -22,6 +22,7 @@ readCigarTable <- function(file)
 ## Examples
 if (FALSE) {
 
+suppressMessages(library(GenomicRanges))
 suppressMessages(library(Rsamtools))
 dataDir <- "/home/biocdev/data_store/1000genomes/extdata"
 file1 <- file.path(dataDir, "NA19239.SLX.maq.SRP000033.2009_09.subset.bam")

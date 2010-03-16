@@ -3,7 +3,10 @@ useDynLib(GenomicRanges)
 import(methods)
 import(IRanges)
 
-exportClasses(GRanges, GRangesList)
+exportClasses(
+    GRanges, GRangesList,
+    GappedAlignments, Alignments0, Alignments1, Alignments2
+)
 
 export(
     seqnames, "seqnames<-",
@@ -14,10 +17,13 @@ export(
     cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
     queryLoc2refLoc, queryLocs2refLocs,
-    splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable
+    splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
+    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
+    Alignments0, Alignments1, Alignments2
 )
 
 exportMethods(
+    "length",
     "coerce", "as.data.frame",
     "seqnames", "ranges", "strand", "values",
     "seqnames<-", "ranges<-", "strand<-", "values<-",
@@ -25,10 +31,11 @@ exportMethods(
     "start", "end", "width", "start<-", "end<-", "width<-",
     "shift", "coverage",
     "ncol", "colnames", "colnames<-",
-    "[", "[<-", "c", "length", "rev", "seqselect", "seqselect<-",
+    "[", "[<-", "c", "rev", "seqselect", "seqselect<-",
     "split", "window",
     "show",
     "pintersect",
-    "findOverlaps", "countOverlaps", "match", "%in%"
+    "findOverlaps", "countOverlaps", "match", "%in%",
+    "rname", "rname<-", "cigar", "qwidth", "grglist", "grg", "rglist", "qnarrow"
 )
 
