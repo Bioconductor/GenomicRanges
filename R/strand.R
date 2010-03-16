@@ -56,7 +56,7 @@ setMethod("compatableStrand", c("factor", "factor"),
 
         ans <- x * y != -1L
         if (IRanges:::anyMissing(ans)) {
-            fix <- IRanges:::whichAsVector(is.na(ans))
+            fix <- which(is.na(ans))
             ans[fix] <- (x[fix] == 0L) | (y[fix] == 0L)
             if (IRanges:::anyMissing(ans))
                 ans[is.na(ans)] <- FALSE
@@ -83,7 +83,7 @@ setMethod("compatableStrand", c("Rle", "Rle"),
 
         ans <- x * y != -1L
         if (IRanges:::anyMissing(runValue(ans))) {
-            fix <- IRanges:::whichAsVector(is.na(runValue(ans)))
+            fix <- which(is.na(runValue(ans)))
             runValue(ans)[fix] <-
               (runValue(x) == 0L)[fix] | (runValue(y)[fix] == 0L)
             if (IRanges:::anyMissing(runValue(ans)))

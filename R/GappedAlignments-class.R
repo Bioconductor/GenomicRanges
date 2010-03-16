@@ -420,9 +420,9 @@ setMethod("pintersect", c("GappedAlignments", "GRanges"),
         if (inherits(bounds, "try-error"))
             stop("CIGAR is empty after intersection")
         start <- start(x) - (start(bounds) - 1L)
-        start[IRanges:::whichAsVector(start < 1L)] <- 1L
+        start[which(start < 1L)] <- 1L
         end <- (end(bounds) - 1L) - end(x)
-        end[IRanges:::whichAsVector(end > -1L)] <- -1L
+        end[which(end > -1L)] <- -1L
         narrow(x, start=start, end=end)
     }
 )

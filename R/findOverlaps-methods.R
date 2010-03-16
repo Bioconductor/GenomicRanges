@@ -103,10 +103,8 @@ setMethod("findOverlaps", c("GRanges", "GRanges"),
                           matches <-
                             cbind(query = as.integer(qIdxs)[qHits],
                                   subject = as.integer(sIdxs)[sHits])
-                          matches[IRanges:::whichAsVector(seqselect(queryStrand,
-                                                                    qIdxs)[qHits] *
-                                                          seqselect(subjectStrand,
-                                                                    sIdxs)[sHits] != -1L), ,
+                          matches[which(seqselect(queryStrand, qIdxs)[qHits] *
+                                        seqselect(subjectStrand, sIdxs)[sHits] != -1L), ,
                                   drop=FALSE]
                       }))
             matchMatrix <-
@@ -161,8 +159,7 @@ setMethod("findOverlaps", c("GRanges", "GRangesList"),
         unlistSubject <- unlist(subject, use.names=FALSE)
         subjectGroups <- togroup(subject@partitioning)
         if (type == "start") {
-            keep <-
-              IRanges:::whichAsVector(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
+            keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
             unlistSubject <-  unlistSubject[keep]
             subjectGroups <- subjectGroups[keep]
         } else if (type == "end") {
@@ -198,8 +195,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         unlistSubject <- unlist(subject, use.names=FALSE)
         subjectGroups <- togroup(subject@partitioning)
         if (type == "start") {
-            keep <-
-              IRanges:::whichAsVector(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
+            keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
             unlistSubject <-  unlistSubject[keep]
             subjectGroups <- subjectGroups[keep]
         } else if (type == "end") {
