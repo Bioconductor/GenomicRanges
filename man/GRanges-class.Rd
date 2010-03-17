@@ -173,14 +173,14 @@
       Gets or sets \code{width(ranges(x))}.
     }
     \item{}{
-      \code{shift(x, shift, use.names=TRUE)}:
+      \code{shift(x, shift, use.names = TRUE)}:
       Returns a new GRanges object containing intervals with start and
       end values that have been shifted by integer vector \code{shift}.
       The \code{use.names} argument determines whether or not to
       keep the names on the ranges.
     }
     \item{}{
-      \code{reduce(x, drop.empty.ranges=FALSE, min.gapwidth=1L)}:
+      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
       Reduces the ranges that belong to the same (seqname, strand) pair.
       Note that the possible values for the strand of a genomic range
       are \code{NA}, \code{"+"}, \code{"-"} and \code{"*"}, and that

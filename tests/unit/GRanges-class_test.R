@@ -209,13 +209,10 @@ test_GRanges_Ranges <- function() {
 
     ## reduce
     gr <- unname(make_test_GRanges())[ , character(0)]
-    ans <- reduce(gr)
-    ans0 <-
-      GRanges(seqnames = c("chr1", "chr1", "chr1",
-                           "chr2", "chr2", "chr3", "chr3"),
-              ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
-              strand = strand(c("+", "-", "*", "+", "*", "+", "-")))
-    checkIdentical(ans, ans0)
+    checkIdentical(reduce(gr),
+                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
+                           ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
+                           strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
 
     ## coverage
     gr <- make_test_GRanges()
