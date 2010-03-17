@@ -33,6 +33,7 @@
 \alias{width,GRanges-method}
 \alias{width<-,GRanges-method}
 \alias{shift,GRanges-method}
+\alias{reduce,GRanges-method}
 \alias{coverage,GRanges-method}
 
 % DataTable methods:
@@ -177,6 +178,17 @@
       end values that have been shifted by integer vector \code{shift}.
       The \code{use.names} argument determines whether or not to
       keep the names on the ranges.
+    }
+    \item{}{
+      \code{reduce(x, drop.empty.ranges=FALSE, min.gapwidth=1L)}:
+      Reduces the ranges that belong to the same (seqname, strand) pair.
+      Note that the possible values for the strand of a genomic range
+      are \code{NA}, \code{"+"}, \code{"-"} and \code{"*"}, and that
+      all these values are valid and treated the same way when forming
+      the (seqname, strand) pairs.
+      The names (\code{names(x)}) and the columns in \code{x} are dropped.
+      See \code{?\link[IRanges]{reduce}} for more information about
+      range reduction and for a description of the optional arguments.
     }
     \item{}{
       \code{coverage(x, shift = list(0L), width = list(NULL), weight = list(1L))}:
@@ -376,4 +388,7 @@
   unique(seqnames(gr))
   seqnames(gr) <- sub("chr", "Chrom", seqnames(gr))
   gr
+
+  # Range reduction
+  reduce(gr)
 }

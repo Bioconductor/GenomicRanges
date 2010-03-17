@@ -288,6 +288,55 @@ setMethod("shift", "GRanges",
     }
 )
 
+setMethod("reduce", "GRanges",
+    function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
+             with.inframe.attrib=FALSE)
+    {
+        if (!isTRUEorFALSE(drop.empty.ranges))
+            stop("'drop.empty.ranges' must be TRUE or FALSE")
+        if (!isSingleNumber(min.gapwidth))
+            stop("'min.gapwidth' must be a single integer")
+        if (!is.integer(min.gapwidth))
+            min.gapwidth <- as.integer(min.gapwidth)
+        if (min.gapwidth < 0L)
+            stop("'min.gapwidth' must be non-negative")
+        if (!identical(with.inframe.attrib, FALSE))
+            stop("'with.inframe.attrib' argument not supported ",
+                 "when reducing a GRanges object")
+        #if (!is.null(names(x)) || ncol(x) != 0L)
+        #    warning("reducing drops names and columns")
+        x_strand <- as.vector(strand(x))  # from Rle to factor
+        idx1 <- is.na(x_strand)
+        idx2 <- !idx1 & x_strand == "+"
+        idx3 <- !idx1 & x_strand == "-"
+        idx4 <- !idx1 & x_strand == "*"
+        #if (any(idx1) || any(idx4))
+        #    warning("non stranded ranges (NA or *) are reduced separately")
+        x_rg <- ranges(x)
+        f <- as.vector(seqnames(x))
+        rglist1 <- split(x_rg[idx1], f[idx1], drop=FALSE)
+        rglist2 <- split(x_rg[idx2], f[idx2], drop=FALSE)
+        rglist3 <- split(x_rg[idx3], f[idx3], drop=FALSE)
+        rglist4 <- split(x_rg[idx4], f[idx4], drop=FALSE)
+        ## Recombine the four CompressedIRangesList objects
+        tmp <- lapply(seq_len(nlevels(f)),
+                      function(i)
+                          c(rglist1[i], rglist2[i], rglist3[i], rglist4[i])
+               )
+        rglist <- do.call(c, tmp)
+        ## Reduce the recombined CompressedIRangesList object
+        tmp <- reduce(rglist, drop.empty.ranges=drop.empty.ranges,
+                      min.gapwidth=min.gapwidth)
+        ## Create 'ans'
+        nrg_per_space <- elementLengths(tmp)
+        ans_seqnames <- rep.int(rep(levels(f), each=4L), nrg_per_space)
+        ans_ranges <- tmp@unlistData
+        ans_strand <- rep.int(rep.int(c(NA, "+", "-", "*"), nlevels(f)),
+                              nrg_per_space)
+        GRanges(seqnames=ans_seqnames, ranges=ans_ranges, strand=ans_strand)
+    }
+)
+
 setMethod("coverage", "GRanges",
     function(x, shift = list(0L), width = list(NULL), weight = list(1L))
     {
