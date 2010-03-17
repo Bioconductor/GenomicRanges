@@ -33,6 +33,9 @@
 \alias{width,GRanges-method}
 \alias{width<-,GRanges-method}
 \alias{shift,GRanges-method}
+\alias{disjoin,GRanges-method}
+\alias{gaps,GRanges-method}
+\alias{range,GRanges-method}
 \alias{reduce,GRanges-method}
 \alias{coverage,GRanges-method}
 
@@ -180,15 +183,32 @@
       keep the names on the ranges.
     }
     \item{}{
+      \code{disjoin(x)}:
+      Returns a new GRanges object containing disjoint ranges for each
+      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
+      the columns in \code{x} are dropped.
+    }
+    \item{}{
+      \code{gaps(x, start=NA, end=NA)}:
+      Returns a new GRanges object containing complemented ranges for each
+      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
+      the columns in \code{x} are dropped. See
+      \code{?\link[IRanges:RangesList-utils]{gaps}} for more information
+      about range complements and for a description of the optional arguments.
+    }
+    \item{}{
+      \code{range(x, ...)}:
+      Returns a new GRanges object containing range bounds for each
+      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
+      the columns in \code{x} are dropped.
+    }
+    \item{}{
       \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
-      Reduces the ranges that belong to the same (seqname, strand) pair.
-      Note that the possible values for the strand of a genomic range
-      are \code{NA}, \code{"+"}, \code{"-"} and \code{"*"}, and that
-      all these values are valid and treated the same way when forming
-      the (seqname, strand) pairs.
-      The names (\code{names(x)}) and the columns in \code{x} are dropped.
-      See \code{?\link[IRanges]{reduce}} for more information about
-      range reduction and for a description of the optional arguments.
+      Returns a new GRanges object containing reduced ranges for each
+      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
+      the columns in \code{x} are dropped. See
+      \code{?\link[IRanges:RangesList-utils]{reduce}} for more information
+      about range reduction and for a description of the optional arguments.
     }
     \item{}{
       \code{coverage(x, shift = list(0L), width = list(NULL), weight = list(1L))}:
@@ -389,6 +409,9 @@
   seqnames(gr) <- sub("chr", "Chrom", seqnames(gr))
   gr
 
-  # Range reduction
+  # Inter-interval operations
+  disjoin(gr)
+  gaps(gr, start = 1, end = 10)
+  range(gr)
   reduce(gr)
 }

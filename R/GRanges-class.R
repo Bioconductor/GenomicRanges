@@ -288,37 +288,46 @@ setMethod("shift", "GRanges",
     }
 )
 
+.interIntervalGRanges <- function(x, FUN, ...)
+{
+    xIRangesList <-
+      split(unname(ranges(x)), paste(seqnames(x), strand(x), sep = "\r"))
+    ansIRangesList <- FUN(xIRangesList, ...)
+    k <- elementLengths(ansIRangesList)
+    splitListNames <- strsplit(names(ansIRangesList), split = "\r")
+    ansSeqnames <-
+      Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
+                 levels = levels(seqnames(x))), k)
+    ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
+    GRanges(seqnames = ansSeqnames,
+            ranges = unlist(ansIRangesList, use.names=FALSE),
+            strand = ansStrand)
+}
+
+setMethod("disjoin", "GRanges",
+    function(x)
+        .interIntervalGRanges(x, disjoin)
+)
+
+setMethod("gaps", "GRanges",
+    function(x, start=NA, end=NA)
+        .interIntervalGRanges(x, gaps, start = start, end = end)
+)
+
+setMethod("range", "GRanges",
+    function(x, ..., na.rm)
+        .interIntervalGRanges(unname(c(x, ...)), range)
+)
+
 setMethod("reduce", "GRanges",
     function(x, drop.empty.ranges = FALSE, min.gapwidth = 1L,
              with.inframe.attrib = FALSE)
     {
-        if (!isTRUEorFALSE(drop.empty.ranges))
-            stop("'drop.empty.ranges' must be TRUE or FALSE")
-        if (!isSingleNumber(min.gapwidth))
-            stop("'min.gapwidth' must be a single integer")
-        if (!is.integer(min.gapwidth))
-            min.gapwidth <- as.integer(min.gapwidth)
-        if (min.gapwidth < 0L)
-            stop("'min.gapwidth' must be non-negative")
         if (!identical(with.inframe.attrib, FALSE))
             stop("'with.inframe.attrib' argument not supported ",
                  "when reducing a GRanges object")
-        #if (!is.null(names(x)) || ncol(x) != 0L)
-        #    warning("reducing drops names and columns")
-        xIRangesList <-
-          split(unname(ranges(x)), paste(seqnames(x), strand(x), sep = "\r"))
-        ansIRangesList <-
-          reduce(xIRangesList, drop.empty.ranges = drop.empty.ranges,
-                 min.gapwidth = min.gapwidth)
-        k <- elementLengths(ansIRangesList)
-        splitListNames <- strsplit(names(ansIRangesList), split = "\r")
-        ansSeqnames <-
-          Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
-                     levels = levels(seqnames(x))), k)
-        ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
-        GRanges(seqnames = ansSeqnames,
-                ranges = unlist(ansIRangesList, use.names=FALSE),
-                strand = ansStrand)
+        .interIntervalGRanges(x, reduce, drop.empty.ranges = drop.empty.ranges,
+                              min.gapwidth = min.gapwidth)
     }
 )
 

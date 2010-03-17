@@ -207,6 +207,31 @@ test_GRanges_Ranges <- function() {
     checkIdentical(start(gr) + 10L, start(shifted))
     checkIdentical(width(gr), width(shifted))
 
+    ## disjoin
+    gr <- unname(make_test_GRanges())[ , character(0)]
+    checkIdentical(disjoin(gr),
+                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 3, 4)),
+                           ranges = IRanges(start=c(6, 1, 5, 2, 3, 4, 7, 8, 9, 10),
+                                            end=c(10, 10, 10, 2, 10, 10, 7, 10, 9, 10)),
+                           strand =
+                           strand(c("+", "-", "*", "+", "+", "*", "+", "+", "-", "-"))))
+
+    ## gaps
+    gr <- unname(make_test_GRanges())[ , character(0)]
+    checkIdentical(gaps(gr, start = 1, end = 10),
+                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(2, 3, 3)),
+                           ranges = IRanges(start=1,
+                                            end=c(5, 4, 1, 10, 3, 6, 8, 10)),
+                           strand =
+                           strand(c("+", "*", "+", "-", "*", "+", "-", "*"))))
+
+    ## range
+    gr <- unname(make_test_GRanges())[ , character(0)]
+    checkIdentical(range(gr),
+                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
+                           ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
+                           strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
+
     ## reduce
     gr <- unname(make_test_GRanges())[ , character(0)]
     checkIdentical(reduce(gr),
