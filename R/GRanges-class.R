@@ -8,7 +8,9 @@ setClass("GRanges", contains = "Sequence",
          representation(seqnames = "Rle",
                         ranges = "IRanges",
                         strand = "Rle",
-                        values = "DataFrame"))
+                        values = "DataFrame"),
+         prototype(seqnames = Rle(factor()),
+                   strand = Rle(strand())))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
