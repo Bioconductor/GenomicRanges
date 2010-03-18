@@ -27,6 +27,7 @@ test_GRanges_construction <- function() {
     checkException(GRanges(letters, IRanges(1:26, 1:26), rep(NA, 26)),
                    silent = TRUE)
 
+    checkTrue(validObject(new("GRanges")))
     checkTrue(validObject(GRanges()))
     checkTrue(validObject(GRanges(letters, IRanges(1:26, 1:26))))
     checkTrue(validObject(GRanges(letters, IRanges(1:26, 1:26), score = 1:26)))
