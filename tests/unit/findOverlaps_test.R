@@ -50,6 +50,12 @@ test_findOverlaps_no_overlaps_returns_empty_matches <- function()
     for (type in c("any", "start", "end")) {
         ans <- findOverlaps(query, subject, type = type, select = "all")
         checkIdentical(expect, ans)
+
+        ans <- countOverlaps(query, subject, type = type)
+        checkIdentical(c(0L, 0L, 0L), ans)
+
+        ans <- subsetByOverlaps(query, subject, type = type)
+        checkIdentical(query[integer(0)], ans)
     }
 
     ## select = "first"
@@ -74,6 +80,12 @@ test_findOverlaps_empty_query <- function()
     for (type in c("any", "start", "end")) {
         ans <- findOverlaps(query, subject, type = type, select = "all")
         checkIdentical(expect, ans)
+
+        ans <- countOverlaps(query, subject, type = type)
+        checkIdentical(integer(0), ans)
+
+        ans <- subsetByOverlaps(query, subject, type = type)
+        checkIdentical(query, ans)
     }
 
     ## select = "first"
@@ -98,6 +110,12 @@ test_findOverlaps_empty_subject <- function()
     for (type in c("any", "start", "end")) {
         ans <- findOverlaps(query, subject, type = type, select = "all")
         checkIdentical(expect, ans)
+
+        ans <- countOverlaps(query, subject, type = type)
+        checkIdentical(c(0L, 0L, 0L), ans)
+
+        ans <- subsetByOverlaps(query, subject, type = type)
+        checkIdentical(query[integer(0)], ans)
     }
 
     ## select = "first"
@@ -136,6 +154,20 @@ test_findOverlaps_zero_one_two_matches <- function()
     checkIdentical(expectAny, ansAny)
     checkIdentical(expectStart, ansStart)
     checkIdentical(expectEnd, ansEnd)
+
+    countsAny <- countOverlaps(query, subject, type = "any")
+    countsStart <- countOverlaps(query, subject, type = "start")
+    countsEnd <- countOverlaps(query, subject, type = "end")
+    checkIdentical(tabulate(queryHits(expectAny), 3), countsAny)
+    checkIdentical(tabulate(queryHits(expectStart), 3), countsStart)
+    checkIdentical(tabulate(queryHits(expectEnd), 3), countsEnd)
+
+    subsetAny <- subsetByOverlaps(query, subject, type = "any")
+    subsetStart <- subsetByOverlaps(query, subject, type = "start")
+    subsetEnd <- subsetByOverlaps(query, subject, type = "end")
+    checkIdentical(query[countsAny > 0], subsetAny)
+    checkIdentical(query[countsStart > 0], subsetStart)
+    checkIdentical(query[countsEnd > 0], subsetEnd)
 
     ## select = "first"
     expectAny <- c(NA_integer_, 7L, 1L)
@@ -179,6 +211,20 @@ test_findOverlaps_multimatch_within_one_query <- function()
     checkIdentical(expectAny, ansAny)
     checkIdentical(expectStart, ansStart)
     checkIdentical(expectEnd, ansEnd)
+
+    countsAny <- countOverlaps(query, subject, type = "any")
+    countsStart <- countOverlaps(query, subject, type = "start")
+    countsEnd <- countOverlaps(query, subject, type = "end")
+    checkIdentical(tabulate(queryHits(expectAny), 3), countsAny)
+    checkIdentical(tabulate(queryHits(expectStart), 3), countsStart)
+    checkIdentical(tabulate(queryHits(expectEnd), 3), countsEnd)
+
+    subsetAny <- subsetByOverlaps(query, subject, type = "any")
+    subsetStart <- subsetByOverlaps(query, subject, type = "start")
+    subsetEnd <- subsetByOverlaps(query, subject, type = "end")
+    checkIdentical(query[countsAny > 0], subsetAny)
+    checkIdentical(query[countsStart > 0], subsetStart)
+    checkIdentical(query[countsEnd > 0], subsetEnd)
 
     ## select = "first"
     expectAny <- c(NA_integer_, 7L, 1L)
@@ -224,6 +270,20 @@ test_findOverlaps_either_strand <- function()
     checkIdentical(expectAny, ansAny)
     checkIdentical(expectStart, ansStart)
     checkIdentical(expectEnd, ansEnd)
+
+    countsAny <- countOverlaps(query, subject, type = "any")
+    countsStart <- countOverlaps(query, subject, type = "start")
+    countsEnd <- countOverlaps(query, subject, type = "end")
+    checkIdentical(tabulate(queryHits(expectAny), 3), countsAny)
+    checkIdentical(tabulate(queryHits(expectStart), 3), countsStart)
+    checkIdentical(tabulate(queryHits(expectEnd), 3), countsEnd)
+
+    subsetAny <- subsetByOverlaps(query, subject, type = "any")
+    subsetStart <- subsetByOverlaps(query, subject, type = "start")
+    subsetEnd <- subsetByOverlaps(query, subject, type = "end")
+    checkIdentical(query[countsAny > 0], subsetAny)
+    checkIdentical(query[countsStart > 0], subsetStart)
+    checkIdentical(query[countsEnd > 0], subsetEnd)
 
     # select = "first"
     expectAny <- c(1L, 7L, 1L)

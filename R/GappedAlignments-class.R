@@ -58,6 +58,9 @@ setClass("GappedAlignments",
 ###                 GappedAlignments objects. Just a convenient wrapper for
 ###                 'countOverlaps(grglist(query), subject, ...)', etc...
 ###
+###   subsetByOverlaps(query, subject) - 'query' or 'subject' or both are
+###                 GappedAlignments objects.
+###
 ### Concrete GappedAlignments implementations just need to implement:
 ###   length, rname, rname<-, strand, cigar, rglist, [ and updateCigarAndStart
 ### and the default methods defined in this file will work.
@@ -521,5 +524,40 @@ setMethod("countOverlaps", c("GappedAlignments", "GappedAlignments"),
     {
         callGeneric(grglist(query), grglist(subject),
                     maxgap=maxgap, type=match.arg(type))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "subsetByOverlaps" methods.
+###
+
+setMethod("subsetByOverlaps", c("GappedAlignments", "ANY"),
+    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
+    }
+)
+
+setMethod("subsetByOverlaps", c("ANY", "GappedAlignments"),
+    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
+    }
+)
+
+setMethod("subsetByOverlaps", c("GappedAlignments", "GappedAlignments"),
+    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
     }
 )

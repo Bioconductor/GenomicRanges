@@ -10,6 +10,11 @@
 \alias{countOverlaps,GRangesList,GRanges-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
 
+\alias{subsetByOverlaps,GRanges,GRanges-method}
+\alias{subsetByOverlaps,GRanges,GRangesList-method}
+\alias{subsetByOverlaps,GRangesList,GRanges-method}
+\alias{subsetByOverlaps,GRangesList,GRangesList-method}
+
 \alias{match,GRanges,GRanges-method}
 \alias{match,GRanges,GRangesList-method}
 \alias{match,GRangesList,GRanges-method}
@@ -33,6 +38,8 @@
              type = c("any", "start", "end"), select = c("all", "first"))
   \S4method{countOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L,
               type = c("any", "start", "end"))
+  \S4method{subsetByOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L,
+                 type = c("any", "start", "end"))
   \S4method{match}{GRanges,GRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
   # Also:  x \%in\% table
 }
@@ -95,6 +102,9 @@
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
 
+  For \code{subsetByOverlaps} an object of the same class as \code{query}
+  containing the subset that overlapped at least one entity in \code{subject}.
+
   For \code{match} same as \code{findOverlaps} when \code{select = "first"}.
 
   For \code{\%in\%} the logical vector produced by
@@ -141,21 +151,26 @@
   table(gr \%in\% gr1)
   countOverlaps(gr, gr1)
   findOverlaps(gr, gr1)
+  subsetByOverlaps(gr, gr1)
   countOverlaps(gr, gr1, type = "start")
   findOverlaps(gr, gr1, type = "start")
+  subsetByOverlaps(gr, gr1, type = "start")
   findOverlaps(gr, gr1, select = "first")
 
   ## Overlapping a GRanges and a GRangesList object
   table(grlist \%in\% gr)
   countOverlaps(grlist, gr)
   findOverlaps(grlist, gr)
+  subsetByOverlaps(grlist, gr)
   countOverlaps(grlist, gr, type = "start")
   findOverlaps(grlist, gr, type = "start")
+  subsetByOverlaps(grlist, gr, type = "start")
   findOverlaps(grlist, gr, select = "first")
 
   ## Overlapping two GRangesList objects
   countOverlaps(grlist, rev(grlist))
   findOverlaps(grlist, rev(grlist))
+  subsetByOverlaps(grlist, rev(grlist))
 }
 
 \keyword{methods}

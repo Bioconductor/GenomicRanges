@@ -65,6 +65,9 @@
 \alias{countOverlaps,GappedAlignments,ANY-method}
 \alias{countOverlaps,ANY,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignments,ANY-method}
+\alias{subsetByOverlaps,ANY,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
 
 
 \title{GappedAlignments objects}
@@ -303,18 +306,21 @@
     }
     \item{}{
       \code{findOverlaps(query, subject, ...)},
-      \code{countOverlaps(query, subject, ...)}:
+      \code{countOverlaps(query, subject, ...)},
+      \code{subsetByOverlaps(query, subject, ...)}:
       \code{query} or \code{subject} or both are GappedAlignments objects.
-      \code{findOverlaps(query, subject, ...)} is equivalent
-      to \code{findOverlaps(grglist(query), subject, ...)}
-      when \code{query} is a GappedAlignments object, or to
+      \code{findOverlaps(query, subject, ...)} is equivalent to
+      \code{findOverlaps(grglist(query), subject, ...)} when
+      \code{query} is a GappedAlignments object, or to
       \code{findOverlaps(query, grglist(subject), ...)} when
       \code{subject} is a GappedAlignments object, or to
-      \code{findOverlaps(grglist(query), grglist(subject), ...)}
-      when both are GappedAlignments objects.
-      The same apply to \code{countOverlaps(query, subject, ...)}.
-      See \code{?`\link{findOverlaps,GRangesList,GRanges-method}`}
-      and \code{?`\link{countOverlaps,GRangesList,GRanges-method}`}
+      \code{findOverlaps(grglist(query), grglist(subject), ...)} when
+      both are GappedAlignments objects.
+      The same apply to \code{countOverlaps(query, subject, ...)} and
+      \code{subsetByOverlaps(query, subject, ...)}.
+      See \code{?`\link{findOverlaps,GRangesList,GRanges-method}`},
+      \code{?`\link{countOverlaps,GRangesList,GRanges-method}`} and
+      \code{?`\link{subsetByOverlaps,GRangesList,GRanges-method}`}
       for more information (in particular for descriptions of the
       extra arguments and the returned object).
     }
@@ -338,7 +344,8 @@
   \link[IRanges]{RleList-class},
   \link{pintersect,GRanges,GRanges-method},
   \link{findOverlaps,GRangesList,GRanges-method},
-  \link{countOverlaps,GRangesList,GRanges-method}
+  \link{countOverlaps,GRangesList,GRanges-method},
+  \link{subsetByOverlaps,GRangesList,GRanges-method},
 }
 
 \examples{
@@ -432,6 +439,7 @@ coverage(aln1)
 ## ---------------------------------------------------------------------
 findOverlaps(aln1, grg(aln1)[1])
 sum(countOverlaps(aln1, grg(aln1)[1]))
+subsetByOverlaps(aln1, grg(aln1)[1])
 }
 }
 

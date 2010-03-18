@@ -74,11 +74,13 @@ timingsGappedAlignments <- function(class, bam_filename)
     TCVG <- system.time(cvg <- coverage(x))[["elapsed"]]
     cat("cvg <- coverage(x): ", TCVG, "\n", sep="")
 
-    ## findOverlaps()/countOverlaps():
+    ## findOverlaps()/countOverlaps()/subsetByOverlaps():
     TFO1 <- system.time(fo1 <- findOverlaps(x, grg(x)[1]))[["elapsed"]]
     cat("fo1 <- findOverlaps(x, grg(x)[1]): ", TFO1, "\n", sep="")
     TCO1 <- system.time(co1 <- countOverlaps(x, grg(x)[1]))[["elapsed"]]
     cat("co1 <- countOverlaps(x, grg(x)[1]): ", TCO1, "\n", sep="")
+    TSO1 <- system.time(so1 <- subsetByOverlaps(x, grg(x)[1]))[["elapsed"]]
+    cat("so1 <- subsetByOverlaps(x, grg(x)[1]): ", TSO1, "\n", sep="")
 }
 
 for (file in c(f1, f2, f3)) {

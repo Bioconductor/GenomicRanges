@@ -267,6 +267,55 @@ setMethod("countOverlaps", c("GRangesList", "GRangesList"),
 
 
 ### =========================================================================
+### subsetByOverlaps methods
+### -------------------------------------------------------------------------
+
+setMethod("subsetByOverlaps", c("GRanges", "GRanges"),
+    function(query, subject, maxgap = 0L,
+             type = c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
+    }
+)
+
+setMethod("subsetByOverlaps", c("GRangesList", "GRanges"),
+    function(query, subject, maxgap = 0L,
+             type = c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
+    }
+)
+
+setMethod("subsetByOverlaps", c("GRanges", "GRangesList"),
+    function(query, subject, maxgap = 0L,
+             type = c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
+    }
+)
+
+setMethod("subsetByOverlaps", c("GRangesList", "GRangesList"),
+    function(query, subject, maxgap = 0L,
+             type = c("any", "start", "end"))
+    {
+        type <- match.arg(type)
+        query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                  minoverlap = minoverlap, type = type,
+                                  select = "first"))]
+    }
+)
+
+
+### =========================================================================
 ### match methods
 ### -------------------------------------------------------------------------
 
