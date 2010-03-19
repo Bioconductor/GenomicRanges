@@ -173,6 +173,8 @@
       See \code{?\link[Rsamtools]{readBAMasGappedAlignments}} for
       more information (you might need to install and load the package
       first).
+    }
+  }
 }
 
 \section{Accessor methods}{
