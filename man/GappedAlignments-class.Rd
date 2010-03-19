@@ -46,6 +46,7 @@
 \alias{width,GappedAlignments-method}
 \alias{as.data.frame,GappedAlignments-method}
 \alias{show,GappedAlignments-method}
+\alias{readGappedAlignments}
 \alias{coerce,GappedAlignments,Alignments0-method}
 \alias{coerce,GappedAlignments,Alignments1-method}
 \alias{coerce,GappedAlignments,Alignments2-method}
@@ -159,11 +160,19 @@
 }
 
 \section{Constructor}{
-  Use the \code{\link[Rsamtools]{readBAMasGappedAlignments}} function
-  defined in the Rsamtools package to read a BAM file as a GappedAlignments
-  object.
-  See \code{?\link[Rsamtools]{readBAMasGappedAlignments}} for more
-  information (you might need to install and load the package first).
+  \describe{
+    \item{}{
+      \code{readGappedAlignments(file, format="BAM", ...)}:
+      Read a file as a GappedAlignments object.
+      The function is just a front-end that delegates to a format-specific
+      back-end function (any extra argument is passed to the back-end
+      function).
+      Only the BAM format is supported for now. Its back-end is the
+      \code{\link[Rsamtools]{readBAMasGappedAlignments}} function defined
+      in the Rsamtools package.
+      See \code{?\link[Rsamtools]{readBAMasGappedAlignments}} for
+      more information (you might need to install and load the package
+      first).
 }
 
 \section{Accessor methods}{
@@ -350,9 +359,9 @@
 
 \examples{
 \dontrun{
-library(Rsamtools)  # for readBAMasGappedAlignments()
+library(Rsamtools)  # the toy file below is there
 aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-aln1 <- readBAMasGappedAlignments(aln1_file)
+aln1 <- readGappedAlignments(aln1_file)
 aln1
 
 ## ---------------------------------------------------------------------

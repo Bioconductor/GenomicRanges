@@ -18,7 +18,8 @@ export(
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
-    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
+    rname, "rname<-", cigar, qwidth, grglist, grg, rglist,
+    readGappedAlignments, qnarrow,
     Alignments0, Alignments1, Alignments2
 )
 

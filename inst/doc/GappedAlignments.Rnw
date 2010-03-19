@@ -75,20 +75,19 @@ library(GenomicRanges)
 
 \subsection{Load a `BAM' file into a \Rclass{GappedAlignments} object}
 
-First we use the \Rfunction{readBAMasGappedAlignments} function defined
-in the \Rpackage{Rsamtools} package to load a toy `BAM' file into a
-\Rclass{GappedAlignments} object:
-<<readBAMasGappedAlignments,eval=FALSE>>=
+First we use the \Rfunction{readGappedAlignments} function to load
+a toy `BAM' file into a \Rclass{GappedAlignments} object:
+<<readGappedAlignments,eval=FALSE>>=
 library(Rsamtools)
 aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-aln1 <- readBAMasGappedAlignments(aln1_file)
+aln1 <- readGappedAlignments(aln1_file)
 aln1
 length(aln1)
 @
 
 3271 `BAM' records were loaded into the object.
 
-Note that \Rfunction{readBAMasGappedAlignments} would have discarded
+Note that \Rfunction{readGappedAlignments} would have discarded
 any `BAM' record describing an unaligned query or a query that is
 a PCR or optical duplicate (see description of the <flag> field
 in the SAM Format Specification

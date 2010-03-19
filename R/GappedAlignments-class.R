@@ -34,6 +34,7 @@ setClass("GappedAlignments",
 ###   ngap(x)     - integer vector of the same length as 'x'.
 ###   as.data.frame(x) - just a convenience used by show(x).
 ###   show(x)     - compact display in a data.frame-like fashion.
+###   readGappedAlignments(x) - constructor.
 ###   x[i]        - GappedAlignments object of the same class as 'x'
 ###                 (endomorphism).
 ###
@@ -354,6 +355,46 @@ setMethod("show", "GappedAlignments",
         show(showme)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor.
+###
+
+readGappedAlignments <- function(file, format="BAM", ...,
+                                 ans.subtype="Alignments0")
+{
+    if (!isSingleString(file))
+        stop("'file' must be a single string")
+    if (!isSingleString(format))
+        stop("'format' must be a single string")
+    dotargs <- list(...)
+    if (length(dotargs) != 0L && is.null(names(dotargs)))
+        stop("extra arguments must be named")
+    if (!isSingleString(ans.subtype))
+        stop("'ans.subtype' must be a single string")
+    if (format == "BAM") {
+        if ("index" %in% names(dotargs)) {
+            index <- dotargs$index
+            dotargs$index <- NULL
+        } else {
+            index <- file
+        }
+        if ("which" %in% names(dotargs)) {
+            which <- dotargs$which
+            dotargs$which <- NULL
+        } else {
+            which <- RangesList()
+        }
+        args <- c(list(file=file, index=index),
+                  dotargs,
+                  list(which=which, ans.subtype=ans.subtype))
+        suppressMessages(library("Rsamtools"))
+        ans <- do.call(readBAMasGappedAlignments, args)
+        return(ans)
+    }
+    stop("only BAM format is supported for now")
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

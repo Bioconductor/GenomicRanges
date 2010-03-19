@@ -15,11 +15,10 @@ timingsGappedAlignments <- function(class, bam_filename)
     cat("----------------------------------------------------------------\n")
     f <- file.path(bam_dir, bam_filename)
 
-    ## readBAMasGappedAlignments:
-    library(Rsamtools)
+    ## readGappedAlignments:
     T0 <- system.time(x <-
-            readBAMasGappedAlignments(f, ans.subtype=class))[["elapsed"]]
-    cat("x <- readBAMasGappedAlignments(file): ", T0, "\n", sep="")
+            readGappedAlignments(f, ans.subtype=class))[["elapsed"]]
+    cat("x <- readGappedAlignments(file): ", T0, "\n", sep="")
     cat("object.size(x): ", object.size(x), "\n", sep="")
 
     ## Accessors:
