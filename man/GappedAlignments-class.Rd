@@ -168,9 +168,9 @@
       back-end function (any extra argument is passed to the back-end
       function).
       Only the BAM format is supported for now. Its back-end is the
-      \code{\link[Rsamtools]{readBAMasGappedAlignments}} function defined
+      \code{\link[Rsamtools]{readBamGappedAlignments}} function defined
       in the Rsamtools package.
-      See \code{?\link[Rsamtools]{readBAMasGappedAlignments}} for
+      See \code{?\link[Rsamtools]{readBamGappedAlignments}} for
       more information (you might need to install and load the package
       first).
     }
@@ -347,7 +347,7 @@
 }
 
 \seealso{
-  \code{\link[Rsamtools]{readBAMasGappedAlignments}},
+  \code{\link[Rsamtools]{readBamGappedAlignments}},
   \link{GRangesList-class},
   \link[IRanges]{NormalIRanges-class},
   \link[IRanges]{CompressedNormalIRangesList-class},

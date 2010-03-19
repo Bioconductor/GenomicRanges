@@ -390,7 +390,7 @@ readGappedAlignments <- function(file, format="BAM", ...,
                   dotargs,
                   list(which=which, ans.subtype=ans.subtype))
         suppressMessages(library("Rsamtools"))
-        ans <- do.call(readBAMasGappedAlignments, args)
+        ans <- do.call(readBamGappedAlignments, args)
         return(ans)
     }
     stop("only BAM format is supported for now")
