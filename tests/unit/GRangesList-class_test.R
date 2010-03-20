@@ -53,7 +53,7 @@ test_GRangesList_coercion <- function() {
               score = 12:13)
     grl <- GRangesList(a = gr1, b = gr2)
     df <-
-      data.frame(feature = rep(c("a","b"), c(3, 2)),
+      data.frame(element = rep(c("a","b"), c(3, 2)),
                  seqnames = factor(c(1,1,2,"chr1","chr2")),
                  start = c(1:3,1:2), end = c(4:6,1:2),
                  width = c(4L, 4L, 4L, 1L, 1L),

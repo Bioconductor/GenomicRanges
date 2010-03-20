@@ -20,7 +20,7 @@ test_GRanges_construction <- function() {
                    silent = TRUE)
     checkException(GRanges(letters, IRanges(1:26, 1:26), width = 1:26),
                    silent = TRUE)
-    checkException(GRanges(letters, IRanges(1:26, 1:26), feature = letters),
+    checkException(GRanges(letters, IRanges(1:26, 1:26), element = letters),
                    silent = TRUE)
     checkException(GRanges(c(letters, NA), IRanges(1:27, 1:27)),
                    silent = TRUE)

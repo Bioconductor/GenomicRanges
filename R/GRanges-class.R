@@ -27,6 +27,14 @@ setClass("GRanges", contains = "Sequence",
         NULL
 }
 
+.valid.GRanges.elementMetadata <- function(x)
+{
+    if (!is.null(x@elementMetadata))
+        "slot 'elementMetadata' contains information; use slot 'values'"
+    else
+        NULL
+}
+
 .valid.GRanges.seqnames <- function(x)
 {
     if (!is.factor(runValue(x@seqnames)))
@@ -50,15 +58,14 @@ setClass("GRanges", contains = "Sequence",
         NULL
 }
 
-
 .valid.GRanges.values <- function(x)
 {
     msg <- NULL
     if (any(c("seqnames", "ranges", "strand", "start", "end", "width",
-              "feature") %in% colnames(x@values)))
+              "element") %in% colnames(x@values)))
         msg <-
           paste("slot 'values' cannot use \"seqnames\", \"ranges\",",
-                "\"strand\", \"start\", \"end\", \"width\", or \"feature\"",
+                "\"strand\", \"start\", \"end\", \"width\", or \"element\"",
                 "as column names")
     if (!is.null(rownames(x@values)))
         msg <- c(msg, "slot 'values' cannot contain row names")
@@ -68,6 +75,7 @@ setClass("GRanges", contains = "Sequence",
 .valid.GRanges <- function(x)
 {
     c(.valid.GRanges.slots(x),
+      .valid.GRanges.elementMetadata(x),
       .valid.GRanges.seqnames(x),
       .valid.GRanges.strand(x),
       .valid.GRanges.values(x))

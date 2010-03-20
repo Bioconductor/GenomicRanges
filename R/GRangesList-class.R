@@ -39,10 +39,10 @@ setMethod("as.data.frame", "GRangesList",
         if (missing(row.names))
             row.names <- names(x@unlistData)
         if (is.null(names(x)))
-            feature <- rep(seq_len(length(x)), elementLengths(x))
+            element <- rep(seq_len(length(x)), elementLengths(x))
         else
-            feature <- rep(names(x), elementLengths(x))
-        data.frame(feature = feature,
+            element <- rep(names(x), elementLengths(x))
+        data.frame(element = element,
                    as.data.frame(unlist(x, use.names = FALSE),
                                  row.names = row.names),
                    stringsAsFactors = FALSE)

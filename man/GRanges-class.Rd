@@ -64,15 +64,14 @@
 
 \description{
   The GRanges class is a container for the genomic locations and
-  their associated annotations for a single feature.
+  their associated annotations.
 }
 
 \details{
-  The GRanges class stores the sequences of genomic locations and
-  associated annotations for a single feature. Each element in the sequence
-  is comprised of a sequence name, an interval, a \link{strand}, and optional
-  data values (e.g. score, GC content, etc.). This information is stored in
-  four slots:
+  The GRanges class stores the sequences of genomic locations and associated
+  annotations. Each element in the sequence is comprised of a sequence name,
+  an interval, a \link{strand}, and optional data values (e.g. score, GC
+  content, etc.). This information is stored in four slots:
   \describe{
     \item{\code{seqnames}}{a 'factor' \link[IRanges]{Rle} object
       containing the sequence names.}
@@ -83,7 +82,7 @@
     \item{\code{values}}{a \link[IRanges]{DataFrame} object containing
       the annotation columns. Columns cannot be named \code{"seqnames"},
       \code{"ranges"}, \code{"strand"}, \code{"start"}, \code{"end"},
-      \code{"width"}, or \code{"feature"}.}
+      \code{"width"}, or \code{"element"}.}
   }
 }
 
@@ -101,7 +100,7 @@
           containing the strand information.}
         \item{\code{\ldots}}{Optional annotation columns for the \code{values}
           slot. These columns cannot be named \code{"start"}, \code{"end"},
-          \code{"width"}, or \code{"feature"}.}
+          \code{"width"}, or \code{"element"}.}
       }
     }
   }
