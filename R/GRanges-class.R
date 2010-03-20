@@ -607,36 +607,77 @@ setMethod("show", "GRanges",
             nc, ifelse(nc == 1, " values column\n", " values columns\n"),
             sep = "")
         if (lo > 0) {
-            k <- ifelse(lo <= 12L, lo, min(lo, 10L))
-            subset  <- head(object, k)
-            out <-
-              cbind(seqnames = as.character(seqnames(subset)),
-                    ranges = IRanges:::showAsCell(ranges(subset)),
-                    strand = as.character(strand(subset)),
-                    "|" = rep.int("|", k))
-            if (nc > 0)
+            nms <- names(object)
+            if (lo < 20) {
                 out <-
-                  cbind(out,
-                        as.matrix(format.data.frame(do.call(data.frame,
-                                                            lapply(values(subset),
-                                                                    IRanges:::showAsCell)))))
-            if (is.null(names(subset)))
-                rownames(out) <- seq_len(k)
-            else
-                rownames(out) <- names(subset)
-            classinfo <-
-              matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                       unlist(lapply(values(subset), function(x)
-                                     paste("<", class(x), ">", sep = "")),
-                              use.names = FALSE)), nrow = 1,
-                     dimnames = list("", colnames(out)))
+                  cbind(seqnames = as.character(seqnames(object)),
+                        ranges = IRanges:::showAsCell(ranges(object)),
+                        strand = as.character(strand(object)),
+                        "|" = rep.int("|", lo))
+                if (nc > 0)
+                    out <-
+                      cbind(out,
+                            as.matrix(format(do.call(data.frame,
+                                             lapply(values(object),
+                                                    IRanges:::showAsCell)))))
+                if (is.null(nms))
+                    rownames(out) <-
+                      format(paste("[", seq_len(lo), "]", sep = ""),
+                             justify = "right")
+                else
+                    rownames(out) <-
+                      format(paste("[\"", nms, "\"]", sep = ""),
+                             justify = "right")
+                classinfo <-
+                  matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
+                           unlist(lapply(values(object), function(x)
+                                         paste("<", class(x), ">", sep = "")),
+                                  use.names = FALSE)), nrow = 1,
+                         dimnames = list("", colnames(out)))
+            } else {
+                top <- object[1:9]
+                bottom <- object[(lo-8L):lo]
+                out <-
+                  rbind(cbind(seqnames = as.character(seqnames(top)),
+                              ranges = IRanges:::showAsCell(ranges(top)),
+                              strand = as.character(strand(top)),
+                              "|" = rep.int("|", 9)),
+                        rbind(rep.int("...", 4)),
+                        cbind(seqnames = as.character(seqnames(bottom)),
+                              ranges = IRanges:::showAsCell(ranges(bottom)),
+                              strand = as.character(strand(bottom)),
+                              "|" = rep.int("|", 9)))
+                if (nc > 0)
+                    out <-
+                      cbind(out,
+                            rbind(as.matrix(format(do.call(data.frame,
+                                             lapply(values(top),
+                                                    IRanges:::showAsCell)))),
+                            rbind(rep.int("...", nc)),
+                            rbind(as.matrix(format(do.call(data.frame,
+                                             lapply(values(bottom),
+                                                    IRanges:::showAsCell)))))))
+                if (is.null(nms)) {
+                    rownames(out) <-
+                      format(c(paste("[", 1:9, "]", sep = ""), "...",
+                               paste("[", (lo-8L):lo, "]", sep = "")),
+                             justify = "right")
+                } else {
+                    rownames(out) <-
+                      format(c(paste("[\"", head(nms, 9), "\"]", sep = ""),
+                               "...",
+                               paste("[\"", tail(nms, 9), "\"]", sep = "")),
+                             justify = "right")
+                }
+                classinfo <-
+                  matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
+                           unlist(lapply(values(top), function(x)
+                                         paste("<", class(x), ">", sep = "")),
+                                  use.names = FALSE)), nrow = 1,
+                         dimnames = list("", colnames(out)))
+            }
             out <- rbind(classinfo, out)
             print(out, quote = FALSE, right = TRUE)
-            diffK <- lo - k
-            if (diffK > 0)
-                cat("...\n<", diffK,
-                    ifelse(diffK == 1, " more range>\n", " more ranges>\n"),
-                    sep="")
         }
     }
 )
