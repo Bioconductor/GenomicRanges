@@ -203,6 +203,13 @@ test_GRanges_Ranges <- function() {
     width(gr) <- as.numeric(10L + seq_len(length(gr)))
     checkIdentical(width(gr), 10L + seq_len(length(gr)))
 
+    ## resize
+    gr <- make_test_GRanges()
+    checkException(resize(gr, 10, fix = "end"), silent = TRUE)
+    resized <- resize(gr, 10)
+    checkIdentical(rep(10L, length(gr)), width(resized))
+    checkIdentical(c(1L, 2L, 3L, 2L, 3L, 6L, 7L, 8L, 1L, 1L), start(resized))
+
     ## shift
     gr <- make_test_GRanges()
     shifted <- shift(gr, 10)

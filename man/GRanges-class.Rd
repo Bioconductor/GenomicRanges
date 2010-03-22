@@ -32,6 +32,7 @@
 \alias{end<-,GRanges-method}
 \alias{width,GRanges-method}
 \alias{width<-,GRanges-method}
+\alias{resize,GRanges-method}
 \alias{shift,GRanges-method}
 \alias{disjoin,GRanges-method}
 \alias{gaps,GRanges-method}
@@ -167,6 +168,16 @@
     \item{}{
       \code{width(x)}, \code{width(x) <- value}:
       Gets or sets \code{width(ranges(x))}.
+    }
+    \item{}{
+      \code{resize(x, width, use.names = TRUE)}:
+      Returns a new GRanges object containing intervals that have been
+      resized to width \code{width} based on the \code{strand(x)} values.
+      Elements where \code{strand = "+"} are anchored at \code{start(x)},
+      elements where \code{strand = "-"} are anchored at the \code{end(x)},
+      and elements where \code{strand = "*"} are anchored at
+      \code{(end(x) - start(x))\%/\%2}. The \code{use.names} argument
+      determines whether or not to keep the names on the ranges.
     }
     \item{}{
       \code{shift(x, shift, use.names = TRUE)}:
@@ -380,6 +391,10 @@
   unique(seqnames(gr))
   seqnames(gr) <- sub("chr", "Chrom", seqnames(gr))
   gr
+
+  # Intra-interval operations
+  resize(gr, 10)
+  shift(gr, 1)
 
   # Inter-interval operations
   disjoin(gr)

@@ -281,10 +281,24 @@ setReplaceMethod("width", "GRanges",
     }
 )
 
+setMethod("resize", "GRanges",
+    function(x, width, fix = "start", use.names = TRUE)
+    {
+        if (!identical(fix, "start"))
+            stop("'fix' arguments is not supported for GRanges objects")
+        fix <- x@strand
+        levels(fix) <- c("start", "end", "center")
+        runValue(fix) <- as.character(runValue(fix))
+        x@ranges <-
+          resize(x@ranges, width = width, fix = fix, use.names = use.names)
+        x
+    }
+)
+
 setMethod("shift", "GRanges",
     function(x, shift, use.names = TRUE)
     {
-        x@ranges <- shift(x@ranges, shift, use.names=use.names)
+        x@ranges <- shift(x@ranges, shift, use.names = use.names)
         x
     }
 )

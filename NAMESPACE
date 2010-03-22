@@ -30,7 +30,7 @@ exportMethods(
     "seqnames<-", "ranges<-", "strand<-", "elementMetadata<-",
     "names", "names<-",
     "start", "end", "width", "start<-", "end<-", "width<-",
-    "shift",
+    "resize", "shift",
     "disjoin", "gaps", "range", "reduce",
     "coverage",
     "[", "[<-", "c", "rev", "seqselect", "seqselect<-",
