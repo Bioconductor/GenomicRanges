@@ -39,10 +39,10 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
         ok <-
           new2("CompressedLogicalList", unlistData = as.vector(ok),
                partitioning = x@partitioning)
-        if (ncol(x) > 0)
-            values(x) <- NULL
+        if (ncol(x@unlistData) > 0)
+            elementMetadata(x@unlistData) <- NULL
         if (ncol(y) > 0)
-            values(y) <- NULL
+            elementMetadata(y) <- NULL
         x <- x[ok]
         y <- rep(y, sum(ok))
         x@unlistData@ranges <- callGeneric(x@unlistData@ranges, y@ranges)

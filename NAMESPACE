@@ -25,9 +25,9 @@ export(
 
 exportMethods(
     "length",
-    "coerce", "as.data.frame",
-    "seqnames", "ranges", "strand", "values",
-    "seqnames<-", "ranges<-", "strand<-", "values<-",
+    "coerce", "as.data.frame", "unlist",
+    "seqnames", "ranges", "strand", "elementMetadata",
+    "seqnames<-", "ranges<-", "strand<-", "elementMetadata<-",
     "names", "names<-",
     "start", "end", "width", "start<-", "end<-", "width<-",
     "shift",

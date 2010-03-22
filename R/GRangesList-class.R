@@ -6,7 +6,43 @@
 
 setClass("GRangesList", contains = "CompressedList",
          prototype = prototype(elementType = "GRanges",
-                               unlistData = new("GRanges")))
+                               unlistData = new("GRanges"),
+                               elementMetadata = DataFrame()))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity.
+###
+
+.valid.GRangesList.elementMetadata <- function(x)
+{
+    msg <- NULL
+    if (nrow(x@elementMetadata) != length(x))
+        msg <- "slot 'elementMetadata' has an incorrect number of rows"
+    if (any(c("seqnames", "ranges", "strand", "start", "end", "width",
+              "element") %in% colnames(x@elementMetadata)))
+        msg <-
+          c(msg,
+            paste("slot 'elementMetadata' cannot use \"seqnames\", \"ranges\",",
+                  "\"strand\", \"start\", \"end\", \"width\", or \"element\"",
+                  "as column names"))
+    if (any(colnames(x@elementMetadata) %in%
+            colnames(x@unlistData@elementMetadata)))
+        msg <-
+          c(msg,
+            paste("slot 'elementMetadata' cannot use the same names for",
+                  "columns as unlisted GRanges elementMetadata"))
+    if (!is.null(rownames(x@elementMetadata)))
+        msg <- c(msg, "slot 'elementMetadata' cannot contain row names")
+    msg
+}
+
+.valid.GRangesList <- function(x)
+{
+    c(.valid.GRangesList.elementMetadata(x))
+}
+
+setValidity2("GRangesList", .valid.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,7 +56,10 @@ GRangesList <- function(...)
         listData <- listData[[1L]]
     if (!all(sapply(listData, is, "GRanges")))
         stop("all elements in '...' must be GRanges objects")
-    ans <- IRanges:::newCompressedList("GRangesList", listData)
+    ans <-
+      IRanges:::newCompressedList("GRangesList", listData,
+                                  elementMetadata =
+                                  new("DataFrame", nrows = length(listData)))
     validObject(ans)
     ans
 }
@@ -39,13 +78,22 @@ setMethod("as.data.frame", "GRangesList",
         if (missing(row.names))
             row.names <- names(x@unlistData)
         if (is.null(names(x)))
-            element <- rep(seq_len(length(x)), elementLengths(x))
+            element <- rep.int(seq_len(length(x)), elementLengths(x))
         else
-            element <- rep(names(x), elementLengths(x))
+            element <- rep.int(names(x), elementLengths(x))
         data.frame(element = element,
                    as.data.frame(unlist(x, use.names = FALSE),
                                  row.names = row.names),
                    stringsAsFactors = FALSE)
+    }
+)
+
+setMethod("unlist", "GRangesList",
+    function(x, recursive = TRUE, use.names = TRUE)
+    {
+        if (use.names && is.null(names(x@unlistData)))
+            names(x@unlistData) <- seq_len(length(x@unlistData))
+        callNextMethod()
     }
 )
 
@@ -72,15 +120,25 @@ setMethod("strand", "GRangesList",
              unlistData = x@unlistData@strand, partitioning = x@partitioning,
              check=FALSE))
 
-setMethod("values", "GRangesList",
-    function(x, ...)
+setMethod("elementMetadata", "GRangesList",
+    function(x, level = c("between", "within"), ...)
     {
-        values <- x@unlistData@values
-        nms <- names(x@unlistData)
-        if (!is.null(nms))
-            rownames(values) <- nms
-        new2("CompressedSplitDataFrameList",
-             unlistData = values, partitioning = x@partitioning, check=FALSE)
+        level <- match.arg(level)
+        if (level == "between") {
+            ans <- x@elementMetadata
+            if (!is.null(names(x)))
+                rownames(ans) <- names(x)
+            ans
+        } else {
+            elementMetadata <- x@unlistData@elementMetadata
+            nms <- names(x@unlistData)
+            if (!is.null(nms))
+                rownames(elementMetadata) <- nms
+            ans <-
+              new2("CompressedSplitDataFrameList", unlistData = elementMetadata,
+                   partitioning = x@partitioning, check=FALSE)
+        }
+        ans
     }
 )
 
@@ -131,20 +189,38 @@ setReplaceMethod("strand", "GRangesList",
     }
 )
 
-setReplaceMethod("values", "GRangesList",
-    function(x, value) 
+setReplaceMethod("elementMetadata", "GRangesList",
+    function(x, level = c("between", "within"), ..., value) 
     {
-        if (is.null(value)) {
-            value <- new("DataFrame", nrows = length(x@unlistData))
+        level <- match.arg(level)
+        if (level == "between") {
+            if (is.null(value))
+                value <- new("DataFrame", nrows = length(x))
+            else if (!is(value, "DataFrame"))
+                value <- DataFrame(value)
+            if (!is.null(rownames(value)))
+                rownames(value) <- NULL
+            n <- length(x)
+            k <- nrow(value)
+            if (k != n) {
+                if ((k == 0) || (k > n) || (n %% k != 0))
+                    stop(k, " rows in value to replace ", n, "rows")
+                value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
+            }
+            x@elementData <- value
         } else {
-            if (!is(value, "SplitDataFrameList") ||
-                !identical(elementLengths(x), elementLengths(value))) {
-                stop("replacement 'value' is not a SplitDataFrameList with ",
-                     "the same elementLengths as 'x'")
-             }
-             value <- unlist(value, use.names = FALSE)
+            if (is.null(value)) {
+                value <- new("DataFrame", nrows = length(x@unlistData))
+            } else {
+                if (!is(value, "SplitDataFrameList") ||
+                    !identical(elementLengths(x), elementLengths(value))) {
+                    stop("replacement 'value' is not a SplitDataFrameList with ",
+                            "the same elementLengths as 'x'")
+                }
+                value <- unlist(value, use.names = FALSE)
+            }
+            x@unlistData@elementMetadata <- value
         }
-        x@unlistData@values <- value
         x
     }
 )
@@ -242,10 +318,22 @@ setMethod("coverage", "GRangesList",
 setMethod("[", "GRangesList",
     function(x, i, j, ..., drop)
     {
-        if (!missing(i))
+        if (!missing(i)) {
             x <- callNextMethod(x = x, i = i)
-        if (!missing(j))
-            values(x) <- values(x)[, j, drop=FALSE]
+        }
+        if (!missing(j)) {
+            if (!is.character(j))
+                stop("'j' must be a character vector")
+            withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
+            if (any(withinLevel) && !all(withinLevel))
+                stop("'j' cannot mix between and within column names")
+            if (any(withinLevel)) {
+                elementMetadata(x, level="within") <-
+                  elementMetadata(x, level="within")[, j, drop=FALSE]
+            } else {
+                elementMetadata(x) <- elementMetadata(x)[, j, drop=FALSE]
+            }
+        }
         x
     }
 )
@@ -255,24 +343,47 @@ setReplaceMethod("[", "GRangesList",
     {
         if (!is(value, "GRangesList"))
             stop("replacement value must be a GRangesList object")
+        if (!missing(i)) {
+            iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
+            if (!is.null(iInfo[["msg"]]))
+                stop(iInfo[["msg"]])
+            i <- iInfo[["idx"]]
+        }
         if (!missing(j)) {
-            subvalues <- values(x)[i,,drop=FALSE]
-            subvalues[,j] <- values(value)
-            values(value) <- subvalues
+            if (!is.character(j))
+                stop("'j' must be a character vector")
+            withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
+            if (any(withinLevel) && !all(withinLevel))
+                stop("'j' cannot mix between and within column names")
+            if (missing(i)) {
+                if (any(withinLevel)) {
+                    elementMetadata(x, level="within")[, j] <-
+                      elementMetadata(x, level="within")
+                } else {
+                    elementMetadata(x)[, j] <- elementMetadata(x)
+                }
+            } else {
+                if (any(withinLevel)) {
+                    elementMetadata(x, level="within")[i, j] <-
+                            elementMetadata(x, level="within")
+                } else {
+                    elementMetadata(x)[i, j] <- elementMetadata(x)
+                }
+            }
         }
         callNextMethod(x = x, i = i, value = value)
     }
 )
 
-setMethod("ncol", "GRangesList", function(x) ncol(x@unlistData@values))
+setMethod("ncol", "GRangesList", function(x) ncol(x@elementMetadata))
 
 setMethod("colnames", "GRangesList",
     function(x, do.NULL = TRUE, prefix = "col") 
-        colnames(x@unlistData@values, do.NULL = do.NULL, prefix = prefix))
+        colnames(x@elementMetadata, do.NULL = do.NULL, prefix = prefix))
 setReplaceMethod("colnames", "GRangesList",
     function(x, value)
     {
-        colnames(x@unlistData@values) <- value
+        colnames(x@elementMetadata) <- value
         x
     }
 )

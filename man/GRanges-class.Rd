@@ -20,8 +20,8 @@
 \alias{ranges<-,GRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GRanges-method}
-\alias{values,GRanges-method}
-\alias{values<-,GRanges-method}
+\alias{elementMetadata,GRanges-method}
+\alias{elementMetadata<-,GRanges-method}
 \alias{names,GRanges-method}
 \alias{names<-,GRanges-method}
 
@@ -70,7 +70,7 @@
 \details{
   The GRanges class stores the sequences of genomic locations and associated
   annotations. Each element in the sequence is comprised of a sequence name,
-  an interval, a \link{strand}, and optional data values (e.g. score, GC
+  an interval, a \link{strand}, and optional element metadata (e.g. score, GC
   content, etc.). This information is stored in four slots:
   \describe{
     \item{\code{seqnames}}{a 'factor' \link[IRanges]{Rle} object
@@ -79,10 +79,10 @@
       the ranges.}
     \item{\code{strand}}{a 'factor' \link[IRanges]{Rle} object containing
       the \link{strand} information.}
-    \item{\code{values}}{a \link[IRanges]{DataFrame} object containing
-      the annotation columns. Columns cannot be named \code{"seqnames"},
-      \code{"ranges"}, \code{"strand"}, \code{"start"}, \code{"end"},
-      \code{"width"}, or \code{"element"}.}
+    \item{\code{elementMetadata}}{a \link[IRanges]{DataFrame} object
+      containing the annotation columns. Columns cannot be named
+      \code{"seqnames"}, \code{"ranges"}, \code{"strand"}, \code{"start"},
+      \code{"end"}, \code{"width"}, or \code{"element"}.}
   }
 }
 
@@ -98,9 +98,9 @@
         \item{\code{ranges}}{IRanges object containing the ranges.}
         \item{\code{strand}}{Rle object, character vector, or factor
           containing the strand information.}
-        \item{\code{\ldots}}{Optional annotation columns for the \code{values}
-          slot. These columns cannot be named \code{"start"}, \code{"end"},
-          \code{"width"}, or \code{"element"}.}
+        \item{\code{\ldots}}{Optional annotation columns for the
+          \code{elementMetadata} slot. These columns cannot be named
+          \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
       }
     }
   }
@@ -119,7 +119,7 @@
       Creates a data.frame with columns \code{seqnames} (factor),
       \code{start} (integer), \code{end} (integer), \code{width} (integer),
       \code{strand} (factor), as well as the additional columns stored in
-      \code{values(x)}.
+      \code{elementMetadata(x)}.
     }
   }
 }
@@ -143,7 +143,7 @@
       vector, or factor.
     }
     \item{}{
-      \code{values(x)}, \code{values(x) <- value}:
+      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
       Gets or sets the optional data columns. \code{value} can be a DataFrame,
       data.frame object, or NULL.
     }
@@ -229,12 +229,12 @@
   \describe{
     \item{}{
       \code{ncol(x)}:
-      Gets the number of column in \code{values(x)}.
+      Gets the number of column in \code{elementMetadata(x)}.
     }
     \item{}{
       \code{colnames(x, do.NULL = TRUE, prefix = "col")},
       \code{colnames(x) <- value}:
-      Gets or sets the column names of \code{values(x)}.
+      Gets or sets the column names of \code{elementMetadata(x)}.
     }
   }
 }
@@ -273,14 +273,14 @@
   \describe{
     \item{}{
       \code{x[i, j]}, \code{x[i, j] <- value}:
-      Gets or sets elements \code{i} with optional values columns
-      \code{values(x)[,j]}, where \code{i} can be missing; an NA-free
+      Gets or sets elements \code{i} with optional elementMetadata columns
+      \code{elementMetadata(x)[,j]}, where \code{i} can be missing; an NA-free
       logical, numeric, or character vector; or a 'logical' Rle object.
     }
     \item{}{
       \code{x[i,j] <- value}:
-      Replaces elements \code{i} and optional values columns \code{j} with
-      \code{values}.
+      Replaces elements \code{i} and optional elementMetadata columns \code{j}
+      with \code{value}.
     }
     \item{}{
       \code{head(x, n = 6L)}:
@@ -400,7 +400,7 @@
   # Summarizing elements
   table(seqnames(gr))
   sum(width(gr))
-  summary(values(gr)[,"score"])
+  summary(elementMetadata(gr)[,"score"])
   coverage(gr)
 
   # Changing sequence name

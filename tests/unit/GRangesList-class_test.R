@@ -5,13 +5,13 @@ make_test_GRangesList <- function() {
             seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
             ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
             strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-            values = DataFrame(score = 1:10, GC = seq(1, 0, length=10))),
+            elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10))),
         b =
         new("GRanges",
             seqnames = Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
             ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
             strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
-            values = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
+            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
 }
 
 test_GRangesList_construction <- function() {
@@ -69,7 +69,8 @@ test_GRangesList_accessors <- function() {
     checkIdentical(seqnames(grl), RleList(lapply(grl, seqnames), compress=TRUE))
     checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges)))
     checkIdentical(strand(grl), RleList(lapply(grl, strand), compress=TRUE))
-    checkIdentical(values(grl), SplitDataFrameList(lapply(grl, values)))
+    checkIdentical(elementMetadata(grl, level="within"),
+                   SplitDataFrameList(lapply(grl, elementMetadata)))
 }
 
 test_GRangesList_RangesList <- function() {
@@ -140,15 +141,12 @@ test_GRangesList_RangesList <- function() {
 
 test_GRangesList_SplitDataFrameList <- function() {
     checkIdentical(ncol(GRangesList()), 0L)
-    checkIdentical(ncol(make_test_GRangesList()), 2L)
+    checkIdentical(ncol(make_test_GRangesList()), 0L)
 
     checkException(colnames(GRangesList()) <- NULL, silent = TRUE)
     checkException(colnames(make_test_GRangesList()) <- "a", silent = TRUE)
     checkException(colnames(make_test_GRangesList()) <- letters,
                    silent = TRUE)
-    grl <- make_test_GRangesList()
-    colnames(grl) <- c("a", "b")
-    checkIdentical(colnames(grl), c("a", "b"))
 
     grl <- make_test_GRangesList()
     checkIdentical(grl, grl[])

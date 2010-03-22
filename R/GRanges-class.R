@@ -7,10 +7,10 @@
 setClass("GRanges", contains = "Sequence",
          representation(seqnames = "Rle",
                         ranges = "IRanges",
-                        strand = "Rle",
-                        values = "DataFrame"),
+                        strand = "Rle"),
          prototype(seqnames = Rle(factor()),
-                   strand = Rle(strand())))
+                   strand = Rle(strand()),
+                   elementMetadata = DataFrame()))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,16 +21,8 @@ setClass("GRanges", contains = "Sequence",
 {
     n <- length(x@seqnames)
     if ((length(x@ranges) != n) || (length(x@strand) != n) ||
-        (nrow(x@values) != n))
+        (nrow(x@elementMetadata) != n))
         "slot lengths are not all equal"
-    else
-        NULL
-}
-
-.valid.GRanges.elementMetadata <- function(x)
-{
-    if (!is.null(x@elementMetadata))
-        "slot 'elementMetadata' contains information; use slot 'values'"
     else
         NULL
 }
@@ -58,27 +50,26 @@ setClass("GRanges", contains = "Sequence",
         NULL
 }
 
-.valid.GRanges.values <- function(x)
+.valid.GRanges.elementMetadata <- function(x)
 {
     msg <- NULL
     if (any(c("seqnames", "ranges", "strand", "start", "end", "width",
-              "element") %in% colnames(x@values)))
+              "element") %in% colnames(x@elementMetadata)))
         msg <-
-          paste("slot 'values' cannot use \"seqnames\", \"ranges\",",
+          paste("slot 'elementMetadata' cannot use \"seqnames\", \"ranges\",",
                 "\"strand\", \"start\", \"end\", \"width\", or \"element\"",
                 "as column names")
-    if (!is.null(rownames(x@values)))
-        msg <- c(msg, "slot 'values' cannot contain row names")
+    if (!is.null(rownames(x@elementMetadata)))
+        msg <- c(msg, "slot 'elementMetadata' cannot contain row names")
     msg
 }
 
 .valid.GRanges <- function(x)
 {
     c(.valid.GRanges.slots(x),
-      .valid.GRanges.elementMetadata(x),
       .valid.GRanges.seqnames(x),
       .valid.GRanges.strand(x),
-      .valid.GRanges.values(x))
+      .valid.GRanges.elementMetadata(x))
 }
 
 setValidity2("GRanges", .valid.GRanges)
@@ -106,17 +97,17 @@ function(seqnames = Rle(), ranges = IRanges(),
         !identical(levels(runValue(strand)), levels(strand())))
         runValue(strand) <- strand(runValue(strand))
 
-    values <- DataFrame(...)
-    if (ncol(values) == 0)
-        values <- new("DataFrame", nrows = length(seqnames))
-    if (!is.null(rownames(values))) {
+    elementMetadata <- DataFrame(...)
+    if (ncol(elementMetadata) == 0)
+        elementMetadata <- new("DataFrame", nrows = length(seqnames))
+    if (!is.null(rownames(elementMetadata))) {
         if (!is.null(names(ranges)))
-            names(ranges) <- rownames(values)
-        rownames(values) <- NULL
+            names(ranges) <- rownames(elementMetadata)
+        rownames(elementMetadata) <- NULL
     }
 
     new("GRanges", seqnames = seqnames, ranges = ranges, strand = strand,
-        values = values)
+        elementMetadata = elementMetadata)
 }
 
 
@@ -154,7 +145,7 @@ setMethod("as.data.frame", "GRanges",
                    end = end(x),
                    width = width(x),
                    strand = as.vector(strand(x)),
-                   as.data.frame(values(x)),
+                   as.data.frame(elementMetadata(x)),
                    row.names = row.names,
                    stringsAsFactors = FALSE)
     }
@@ -168,10 +159,10 @@ setMethod("as.data.frame", "GRanges",
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
-setMethod("values", "GRanges",
+setMethod("elementMetadata", "GRanges",
     function(x, ...)
     {
-        ans <- x@values
+        ans <- x@elementMetadata
         if (!is.null(names(x)))
             rownames(ans) <- names(x)
         ans
@@ -228,7 +219,7 @@ setReplaceMethod("strand", "GRanges",
         initialize(x, strand = value)
     }
 )
-setReplaceMethod("values", "GRanges",
+setReplaceMethod("elementMetadata", "GRanges",
     function(x, value)
     {
         if (is.null(value))
@@ -244,7 +235,7 @@ setReplaceMethod("values", "GRanges",
                 stop(k, " rows in value to replace ", n, "rows")
             value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
         }
-        initialize(x, values = value)
+        initialize(x, elementMetadata = value)
     }
 )
 
@@ -377,15 +368,15 @@ setMethod("coverage", "GRanges",
 ### DataTable methods.
 ###
 
-setMethod("ncol", "GRanges", function(x) ncol(x@values))
+setMethod("ncol", "GRanges", function(x) ncol(x@elementMetadata))
 
 setMethod("colnames", "GRanges",
     function(x, do.NULL = TRUE, prefix = "col") 
-        colnames(x@values, do.NULL = do.NULL, prefix = prefix))
+        colnames(x@elementMetadata, do.NULL = do.NULL, prefix = prefix))
 setReplaceMethod("colnames", "GRanges",
     function(x, value)
     {
-        colnames(x@values) <- value
+        colnames(x@elementMetadata) <- value
         x
     }
 )
@@ -400,27 +391,34 @@ setMethod("[", "GRanges",
     {
         if (missing(i)) {
             if (!missing(j))
-                x <- initialize(x, values = x@values[, j, drop=FALSE])
+                x <-
+                  initialize(x,
+                             elementMetadata =
+                             x@elementMetadata[, j, drop=FALSE])
         } else {
             iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
             if (!is.null(iInfo[["msg"]]))
                 stop(iInfo[["msg"]])
             i <- iInfo[["idx"]]
             if (missing(j))
-                values <- x@values[i, , drop=FALSE]
+                elementMetadata <- x@elementMetadata[i, , drop=FALSE]
             else
-                values <- x@values[i, j, drop=FALSE]
-            x <-
-              initialize(x, seqnames = x@seqnames[i], ranges = x@ranges[i],
-                         strand = x@strand[i], values = values)
-            nms <- names(x)
+                elementMetadata <- x@elementMetadata[i, j, drop=FALSE]
+            ranges <- x@ranges[i]
+            nms <- names(ranges)
             if (!is.null(nms)) {
                 whichEmpty <- which(nms == "")
                 nms[whichEmpty] <- as.character(whichEmpty)
                 nms2 <- make.unique(nms)
                 if (length(whichEmpty) > 0 || !identical(nms, nms2))
-                    names(x) <- nms2
+                    names(ranges) <- nms2
             }
+            x <-
+              initialize(x,
+                         seqnames = x@seqnames[i],
+                         ranges = ranges,
+                         strand = x@strand[i],
+                         elementMetadata = elementMetadata)
         }
         x
     }
@@ -434,15 +432,15 @@ setReplaceMethod("[", "GRanges",
         seqnames <- x@seqnames
         ranges <- x@ranges
         strand <- x@strand
-        values <- x@values
+        elementMetadata <- x@elementMetadata
         if (missing(i)) {
             seqnames[] <- value@seqnames
             ranges[] <- value@ranges
             strand[] <- value@strand
             if (missing(j))
-                values[,] <- value@values
+                elementMetadata[,] <- value@elementMetadata
             else
-                values[,j] <- value@values
+                elementMetadata[,j] <- value@elementMetadata
         } else {
             iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
             if (!is.null(iInfo[["msg"]]))
@@ -452,12 +450,12 @@ setReplaceMethod("[", "GRanges",
             ranges[i] <- value@ranges
             strand[i] <- value@strand
             if (missing(j))
-                values[i,] <- value@values
+                elementMetadata[i,] <- value@elementMetadata
             else
-                values[i,j] <- value@values
+                elementMetadata[i,j] <- value@elementMetadata
         }
         initialize(x, seqnames = seqnames, ranges = ranges,
-                   strand = strand, values = values)
+                   strand = strand, elementMetadata = elementMetadata)
     }
 )
 
@@ -467,21 +465,21 @@ setMethod("c", "GRanges",
         if (recursive)
             stop("'recursive' mode not supported")
         args <- unname(list(x, ...))
-        ans <-
-          initialize(x,
-                     seqnames = do.call(c, lapply(args, slot, "seqnames")),
-                     ranges = do.call(c, lapply(args, slot, "ranges")),
-                     strand = do.call(c, lapply(args, slot, "strand")),
-                     values = do.call(rbind, lapply(args, slot, "values")))
-        nms <- names(ans)
+        ranges <- do.call(c, lapply(args, slot, "ranges"))
+        nms <- names(ranges)
         if (!is.null(nms)) {
             whichEmpty <- which(nms == "")
             nms[whichEmpty] <- as.character(whichEmpty)
             nms2 <- make.unique(nms)
             if (length(whichEmpty) > 0 || !identical(nms, nms2))
-                names(ans) <- nms2
+                names(ranges) <- nms2
         }
-        ans
+        initialize(x,
+                   seqnames = do.call(c, lapply(args, slot, "seqnames")),
+                   ranges = ranges,
+                   strand = do.call(c, lapply(args, slot, "strand")),
+                   elementMetadata =
+                   do.call(rbind, lapply(args, slot, "elementMetadata")))
     }
 )
 
@@ -495,7 +493,8 @@ setMethod("rev", "GRanges",
         else
             initialize(x, seqnames = rev(x@seqnames), ranges = rev(x@ranges),
                        strand = rev(x@strand),
-                       values = x@values[length(x):1, , drop=FALSE])
+                       elementMetadata =
+                       x@elementMetadata[length(x):1, , drop=FALSE])
     }
 )
 
@@ -510,20 +509,21 @@ setMethod("seqselect", "GRanges",
             stop(irInfo[["msg"]])
         if (irInfo[["useIdx"]]) {
             ir <- irInfo[["idx"]]
-            x <-
-              initialize(x,
-                         seqnames = seqselect(x@seqnames, ir),
-                         ranges = seqselect(x@ranges, ir),
-                         strand = seqselect(x@strand, ir),
-                         values = seqselect(x@values, ir))
-            nms <- names(x)
+            ranges <- seqselect(x@ranges, ir)
+            nms <- names(ranges)
             if (!is.null(nms)) {
                 whichEmpty <- which(nms == "")
                 nms[whichEmpty] <- as.character(whichEmpty)
                 nms2 <- make.unique(nms)
                 if (length(whichEmpty) > 0 || !identical(nms, nms2))
-                    names(x) <- nms2
+                    names(ranges) <- nms2
             }
+            x <-
+              initialize(x,
+                         seqnames = seqselect(x@seqnames, ir),
+                         ranges = ranges,
+                         strand = seqselect(x@strand, ir),
+                         elementMetadata = seqselect(x@elementMetadata, ir))
         }
         x
     }
@@ -554,13 +554,13 @@ setReplaceMethod("seqselect", "GRanges",
             seqnames <- as.vector(x@seqnames)
             ranges <- x@ranges
             strand <- as.vector(x@strand)
-            values <- x@values
+            elementMetadata <- x@elementMetadata
             seqselect(seqnames, ir) <- as.vector(value@seqnames)
             seqselect(ranges, ir) <- value@ranges
             seqselect(strand, ir) <- as.vector(value@strand)
-            seqselect(values, ir) <- value@values
+            seqselect(elementMetadata, ir) <- value@elementMetadata
             initialize(x, seqnames = Rle(seqnames), ranges = ranges, 
-                       strand = Rle(strand), values = values)
+                       strand = Rle(strand), elementMetadata = elementMetadata)
         }
     }
 )
@@ -576,7 +576,10 @@ setMethod("split", "GRanges",
                 f <- factor(nms, levels = nms)
         }
         IRanges:::newCompressedList("GRangesList", x, splitFactor = f,
-                                    drop = drop)
+                                    drop = drop,
+                                    elementMetadata =
+                                    new("DataFrame",
+                                        nrows = sum(!is.na(unique(f)))))
     }
 )
 
@@ -594,9 +597,9 @@ setMethod("window", "GRanges",
                    strand =
                    window(x@strand, start = start, end = end, width = width,
                           frequency = frequency, delta = delta),
-                   values =
-                   window(x@values, start = start, end = end, width = width,
-                          frequency = frequency, delta = delta))
+                   elementMetadata =
+                   window(x@elementMetadata, start = start, end = end,
+                          width = width, frequency = frequency, delta = delta))
     }
 )
 
@@ -612,7 +615,8 @@ setMethod("show", "GRanges",
         nc <- ncol(object)
         cat(class(object), " with ",
             lo, ifelse(lo == 1, " range and ", " ranges and "),
-            nc, ifelse(nc == 1, " values column\n", " values columns\n"),
+            nc, ifelse(nc == 1, " elementMetadata column\n",
+                       " elementMetadata columns\n"),
             sep = "")
         if (lo > 0) {
             nms <- names(object)
@@ -626,19 +630,17 @@ setMethod("show", "GRanges",
                     out <-
                       cbind(out,
                             as.matrix(format(do.call(data.frame,
-                                             lapply(values(object),
+                                             lapply(elementMetadata(object),
                                                     IRanges:::showAsCell)))))
                 if (is.null(nms))
                     rownames(out) <-
                       format(paste("[", seq_len(lo), "]", sep = ""),
                              justify = "right")
                 else
-                    rownames(out) <-
-                      format(paste("[\"", nms, "\"]", sep = ""),
-                             justify = "right")
+                    rownames(out) <- format(nms, justify = "right")
                 classinfo <-
                   matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                           unlist(lapply(values(object), function(x)
+                           unlist(lapply(elementMetadata(object), function(x)
                                          paste("<", class(x), ">", sep = "")),
                                   use.names = FALSE)), nrow = 1,
                          dimnames = list("", colnames(out)))
@@ -659,11 +661,11 @@ setMethod("show", "GRanges",
                     out <-
                       cbind(out,
                             rbind(as.matrix(format(do.call(data.frame,
-                                             lapply(values(top),
+                                             lapply(elementMetadata(top),
                                                     IRanges:::showAsCell)))),
                             rbind(rep.int("...", nc)),
                             rbind(as.matrix(format(do.call(data.frame,
-                                             lapply(values(bottom),
+                                             lapply(elementMetadata(bottom),
                                                     IRanges:::showAsCell)))))))
                 if (is.null(nms)) {
                     rownames(out) <-
@@ -672,14 +674,12 @@ setMethod("show", "GRanges",
                              justify = "right")
                 } else {
                     rownames(out) <-
-                      format(c(paste("[\"", head(nms, 9), "\"]", sep = ""),
-                               "...",
-                               paste("[\"", tail(nms, 9), "\"]", sep = "")),
+                      format(c(head(nms, 9), "...", tail(nms, 9)),
                              justify = "right")
                 }
                 classinfo <-
                   matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                           unlist(lapply(values(top), function(x)
+                           unlist(lapply(elementMetadata(top), function(x)
                                          paste("<", class(x), ">", sep = "")),
                                   use.names = FALSE)), nrow = 1,
                          dimnames = list("", colnames(out)))

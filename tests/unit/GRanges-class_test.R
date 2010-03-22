@@ -3,7 +3,7 @@ make_test_GRanges <- function() {
         seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
         ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
         strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        values = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
+        elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
 }
 
 test_GRanges_construction <- function() {
@@ -145,22 +145,23 @@ test_GRanges_accessors <- function() {
     strand(gr) <- val
     checkIdentical(strand(gr), Rle(val))
 
-    ## values
-    checkException(values(gr) <- DataFrame(strand = 1:length(gr)),
+    ## elementMetadata
+    checkException(elementMetadata(gr) <- DataFrame(strand = 1:length(gr)),
                    silent = TRUE)
-    checkException(values(gr) <- DataFrame(score = letters), silent = TRUE)
+    checkException(elementMetadata(gr) <- DataFrame(score = letters),
+                   silent = TRUE)
 
     gr <- make_test_GRanges()
-    values(gr) <- NULL
-    checkIdentical(values(gr),
+    elementMetadata(gr) <- NULL
+    checkIdentical(elementMetadata(gr),
                    new("DataFrame", nrows = length(gr), rownames = names(gr)))
 
     gr <- make_test_GRanges()
     val <- DataFrame(x = 1:length(gr), y = head(letters, length(gr)))
     rownames(val) <- names(gr)
-    values(gr) <- val
+    elementMetadata(gr) <- val
     checkTrue(validObject(gr))
-    checkIdentical(values(gr), val)
+    checkIdentical(elementMetadata(gr), val)
 
     ## names
     checkException(names(gr) <- letters, silent = TRUE)

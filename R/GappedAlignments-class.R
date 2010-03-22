@@ -141,7 +141,8 @@ GappedAlignmentsAsGRangesList <- function(rname, strand, rglist, check=TRUE)
     unlistData <- GRanges(seqnames=seqnames,
                           ranges=rglist@unlistData,
                           strand=strand)
-    new("GRangesList", unlistData=unlistData, partitioning=rglist@partitioning)
+    new("GRangesList", unlistData=unlistData, partitioning=rglist@partitioning,
+        elementMetadata = new("DataFrame", nrows = length(rglist@partitioning)))
 }
 
 

@@ -12,6 +12,7 @@
 % Coercion methods:
 \alias{coerce,RangedDataList,GRangesList-method}
 \alias{as.data.frame,GRangesList-method}
+\alias{unlist,GRangesList-method}
 
 % Accessor methods:
 \alias{seqnames,GRangesList-method}
@@ -20,8 +21,8 @@
 \alias{ranges<-,GRangesList-method}
 \alias{strand,GRangesList-method}
 \alias{strand<-,GRangesList-method}
-\alias{values,GRangesList-method}
-\alias{values<-,GRangesList-method}
+\alias{elementMetadata,GRangesList-method}
+\alias{elementMetadata<-,GRangesList-method}
 
 % RangesList methods:
 \alias{start,GRangesList-method}
@@ -74,7 +75,8 @@
       Creates a data.frame with columns \code{element} (character),
       \code{seqnames} (factor), \code{start} (integer),
       \code{end} (integer), \code{width} (integer), \code{strand} (factor),
-      as well as the additional columns stored in \code{values(x)}.
+      as well as the additional columns stored in
+      \code{elementMetadata(unlist(x))}.
     }
     \item{}{\code{as.list(x, use.names = TRUE)}:
       Creates a list containing the elements of \code{x}.
@@ -100,12 +102,6 @@
       \code{strand(x)}, \code{strand(x) <- value}:
       Gets or sets the strand in the form of an RleList. \code{value} can be
       an RleList or CharacterList object.
-    }
-    \item{}{
-      \code{values(x)}, \code{values(x) <- value}:
-      Gets or sets the optional data columns in the form of a
-      CompressedSplitDataFrameList. \code{value} can be a DataFrameList
-      object.
     }
   }
 }
@@ -177,12 +173,12 @@
   \describe{
     \item{}{
       \code{ncol(x)}:
-      Gets the number of column in \code{values(x)}.
+      Gets the number of column in \code{elementMetadata(x)}.
     }
     \item{}{
       \code{colnames(x, do.NULL = TRUE, prefix = "col")},
       \code{colnames(x) <- value}:
-      Gets or sets the column names of \code{values(x)}.
+      Gets or sets the column names of \code{elementMetadata(x)}.
     }
   }
 }
