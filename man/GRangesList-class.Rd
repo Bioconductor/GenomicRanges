@@ -34,12 +34,9 @@
 \alias{shift,GRangesList-method}
 \alias{coverage,GRangesList-method}
 
-% SplitDataFrameList methods:
+% Sequence methods:
 \alias{[,GRangesList-method}
 \alias{[<-,GRangesList-method}
-\alias{ncol,GRangesList-method}
-\alias{colnames,GRangesList-method}
-\alias{colnames<-,GRangesList-method}
 
 % show method:
 \alias{show,GRangesList-method}
@@ -163,22 +160,6 @@
       \code{x}, whose elements are passed into the \code{coverage} method for
       \link{IRanges} object. See \code{?\link[IRanges]{coverage}} for more
       information on these optional arguments.
-    }
-  }
-}
-
-\section{SplitDataFrameList methods}{
-  In the following code snippets, \code{x} is a GRangesList object.
-
-  \describe{
-    \item{}{
-      \code{ncol(x)}:
-      Gets the number of column in \code{elementMetadata(x)}.
-    }
-    \item{}{
-      \code{colnames(x, do.NULL = TRUE, prefix = "col")},
-      \code{colnames(x) <- value}:
-      Gets or sets the column names of \code{elementMetadata(x)}.
     }
   }
 }
@@ -396,11 +377,6 @@
             strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
   grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
   grl
-
-  # Extracting basic information
-  length(grl)
-  ncol(grl)
-  colnames(grl)
 
   # Summarizing elements
   elementLengths(grl)

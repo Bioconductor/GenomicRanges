@@ -139,15 +139,7 @@ test_GRangesList_RangesList <- function() {
                            "chr5" = Rle(0:4, c(13, 1, 1, 1, 1))))
 }
 
-test_GRangesList_SplitDataFrameList <- function() {
-    checkIdentical(ncol(GRangesList()), 0L)
-    checkIdentical(ncol(make_test_GRangesList()), 0L)
-
-    checkException(colnames(GRangesList()) <- NULL, silent = TRUE)
-    checkException(colnames(make_test_GRangesList()) <- "a", silent = TRUE)
-    checkException(colnames(make_test_GRangesList()) <- letters,
-                   silent = TRUE)
-
+test_GRangesList_Sequence <- function() {
     grl <- make_test_GRangesList()
     checkIdentical(grl, grl[])
     checkIdentical(grl[,"score"],

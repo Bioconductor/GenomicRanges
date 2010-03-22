@@ -312,7 +312,7 @@ setMethod("coverage", "GRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### SplitDataFrameList methods.
+### Sequence methods.
 ###
 
 setMethod("[", "GRangesList",
@@ -372,19 +372,6 @@ setReplaceMethod("[", "GRangesList",
             }
         }
         callNextMethod(x = x, i = i, value = value)
-    }
-)
-
-setMethod("ncol", "GRangesList", function(x) ncol(x@elementMetadata))
-
-setMethod("colnames", "GRangesList",
-    function(x, do.NULL = TRUE, prefix = "col") 
-        colnames(x@elementMetadata, do.NULL = do.NULL, prefix = prefix))
-setReplaceMethod("colnames", "GRangesList",
-    function(x, value)
-    {
-        colnames(x@elementMetadata) <- value
-        x
     }
 )
 

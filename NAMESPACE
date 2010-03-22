@@ -33,7 +33,6 @@ exportMethods(
     "shift",
     "disjoin", "gaps", "range", "reduce",
     "coverage",
-    "ncol", "colnames", "colnames<-",
     "[", "[<-", "c", "rev", "seqselect", "seqselect<-",
     "split", "window",
     "show",

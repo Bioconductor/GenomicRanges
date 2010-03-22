@@ -261,19 +261,6 @@ test_GRanges_Ranges <- function() {
                            "chr3" = Rle(0:4, c(8, 1, 1, 1, 1))))
 }
 
-test_GRanges_DataTable <- function() {
-    checkIdentical(ncol(GRanges()), 0L)
-    checkIdentical(ncol(make_test_GRanges()), 2L)
-
-    checkException(colnames(GRanges()) <- NULL, silent = TRUE)
-    checkException(colnames(make_test_GRanges()) <- "a", silent = TRUE)
-    checkException(colnames(make_test_GRanges()) <- letters,
-                   silent = TRUE)
-    gr <- make_test_GRanges()
-    colnames(gr) <- c("a", "b")
-    checkIdentical(colnames(gr), c("a", "b"))
-}
-
 test_GRanges_Sequence <- function() {
     ## [
     gr <- make_test_GRanges()

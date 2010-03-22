@@ -39,15 +39,9 @@
 \alias{reduce,GRanges-method}
 \alias{coverage,GRanges-method}
 
-% DataTable methods:
-\alias{[,GRanges-method}
-\alias{[<-,GRanges-method}
-\alias{ncol,GRanges-method}
-\alias{colnames,GRanges-method}
-\alias{colnames<-,GRanges-method}
-
 % Sequence methods:
 \alias{[,GRanges-method}
+\alias{[<-,GRanges-method}
 \alias{c,GRanges-method}
 \alias{length,GRanges-method}
 \alias{rev,GRanges-method}
@@ -223,22 +217,6 @@
   }
 }
 
-\section{DataTable methods}{
-  In the following code snippets, \code{x} is a GRanges object.
-
-  \describe{
-    \item{}{
-      \code{ncol(x)}:
-      Gets the number of column in \code{elementMetadata(x)}.
-    }
-    \item{}{
-      \code{colnames(x, do.NULL = TRUE, prefix = "col")},
-      \code{colnames(x) <- value}:
-      Gets or sets the column names of \code{elementMetadata(x)}.
-    }
-  }
-}
-
 \section{Splitting and Combining}{
   In the code snippets below, \code{x} is a GRanges object.
 
@@ -391,11 +369,6 @@
             score = 1:10,
             GC = seq(1, 0, length=10))
   gr
-
-  # Extracting basic information
-  length(gr)
-  ncol(gr)
-  colnames(gr)
 
   # Summarizing elements
   table(seqnames(gr))

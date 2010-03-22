@@ -365,24 +365,6 @@ setMethod("coverage", "GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### DataTable methods.
-###
-
-setMethod("ncol", "GRanges", function(x) ncol(x@elementMetadata))
-
-setMethod("colnames", "GRanges",
-    function(x, do.NULL = TRUE, prefix = "col") 
-        colnames(x@elementMetadata, do.NULL = do.NULL, prefix = prefix))
-setReplaceMethod("colnames", "GRanges",
-    function(x, value)
-    {
-        colnames(x@elementMetadata) <- value
-        x
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Sequence methods.
 ###
 
@@ -612,7 +594,7 @@ setMethod("show", "GRanges",
     function(object)
     {
         lo <- length(object)
-        nc <- ncol(object)
+        nc <- ncol(object@elementMetadata)
         cat(class(object), " with ",
             lo, ifelse(lo == 1, " range and ", " ranges and "),
             nc, ifelse(nc == 1, " elementMetadata column\n",
