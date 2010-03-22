@@ -302,7 +302,7 @@
       resulting "parallel" intersection is with respect to the reference.
     }
     \item{}{
-      \code{coverage(x)}:
+      \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
       \code{x} is a GappedAlignments object.
       Returns a named \link[IRanges]{RleList} object with one element
       (integer-Rle) per unique reference sequence. Each element represents
