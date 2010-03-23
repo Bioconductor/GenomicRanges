@@ -731,5 +731,7 @@ setMethod("show", "GRanges",
             out <- rbind(classinfo, out)
             print(out, quote = FALSE, right = TRUE)
         }
+        cat("\nseqlengths\n")
+        print(seqlengths(object))
     }
 )
