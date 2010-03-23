@@ -116,6 +116,16 @@ function(seqnames = Rle(), ranges = IRanges(),
         !identical(levels(runValue(strand)), levels(strand())))
         runValue(strand) <- strand(runValue(strand))
 
+    lx <- max(length(seqnames), length(ranges), length(strand))
+    if (lx > 1) {
+        if (length(seqnames) == 1)
+            seqnames <- rep(seqnames, lx)
+        if (length(ranges) == 1)
+            ranges <- rep(ranges, lx)
+        if (length(strand) == 1)
+            strand <- rep(strand, lx)
+    }
+
     if (!is.integer(seqlengths))
         seqlengths <- as.integer(seqlengths)
 
