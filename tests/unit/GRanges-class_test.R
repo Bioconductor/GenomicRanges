@@ -3,6 +3,8 @@ make_test_GRanges <- function() {
         seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
         ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
         strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        seqlengths =
+        c("chr1" = NA_integer_, "chr2" = NA_integer_, "chr3" = NA_integer_),
         elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
 }
 
@@ -115,9 +117,9 @@ test_GRanges_accessors <- function() {
     checkIdentical(seqnames(gr), val)
 
     gr <- make_test_GRanges()
-    val <- head(letters, length(gr))
+    val <- gsub("chr", "Chr", seqnames(gr))
     seqnames(gr) <- val
-    checkIdentical(seqnames(gr), Rle(factor(val)))
+    checkIdentical(seqnames(gr), val)
 
     ## ranges
     checkException(ranges(GRanges()) <- NULL, silent = TRUE)
@@ -144,6 +146,18 @@ test_GRanges_accessors <- function() {
     val <- rep(strand("+"), length(gr))
     strand(gr) <- val
     checkIdentical(strand(gr), Rle(val))
+
+    ## seqlengths
+    checkException(seqlengths(GRanges()) <- NULL, silent = TRUE)
+    checkException(seqlengths(make_test_GRanges()) <- NULL, silent = TRUE)
+    checkException(seqlengths(make_test_GRanges()) <- 1:10,
+                   silent = TRUE)
+
+    gr <- make_test_GRanges()
+    val <- seqlengths(gr)
+    val[] <- seq_len(length(val))
+    seqlengths(gr) <- val
+    checkIdentical(seqlengths(gr), val)
 
     ## elementMetadata
     checkException(elementMetadata(gr) <- DataFrame(strand = 1:length(gr)),

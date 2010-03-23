@@ -120,6 +120,8 @@ setMethod("strand", "GRangesList",
              unlistData = x@unlistData@strand, partitioning = x@partitioning,
              check=FALSE))
 
+setMethod("seqlengths", "GRangesList", function(x) x@unlistData@seqlengths)
+
 setMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ...)
     {
@@ -154,7 +156,7 @@ setReplaceMethod("seqnames", "GRangesList",
             value <- Rle(factor(value))
         else if (!is.factor(runValue(value)))
             runValue(value) <- factor(runValue(value))
-        x@unlistData@seqnames <- value
+        seqnames(x@unlistData) <- value
         x
     }
 )
@@ -166,7 +168,7 @@ setReplaceMethod("ranges", "GRangesList",
             !identical(elementLengths(x), elementLengths(value)))
             stop("replacement 'value' is not a RangesList with the same ",
                  "elementLengths as 'x'")
-        x@unlistData@ranges <- as(unlist(value, use.names = FALSE), "IRanges")
+        ranges(x@unlistData) <- as(unlist(value, use.names = FALSE), "IRanges")
         x
     }
 )
@@ -184,7 +186,15 @@ setReplaceMethod("strand", "GRangesList",
         else if (!is.factor(runValue(value)) ||
                  !identical(levels(runValue(value)), levels(strand())))
             runValue(value) <- strand(runValue(value))
-        x@unlistData@strand <- value
+        strand(x@unlistData) <- value
+        x
+    }
+)
+
+setReplaceMethod("seqlengths", "GRangesList",
+    function(x, value)
+    {
+        seqlengths(x@unlistData) <- value
         x
     }
 )
@@ -219,7 +229,7 @@ setReplaceMethod("elementMetadata", "GRangesList",
                 }
                 value <- unlist(value, use.names = FALSE)
             }
-            x@unlistData@elementMetadata <- value
+            elementMetadata(x@unlistData) <- value
         }
         x
     }
@@ -256,7 +266,7 @@ setReplaceMethod("start", "GRangesList",
             stop("replacement 'value' is not an IntegerList with the same ",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
-        start(x@unlistData@ranges) <- value
+        start(ranges(x@unlistData)) <- value
         x
     }
 )
@@ -269,7 +279,7 @@ setReplaceMethod("end", "GRangesList",
             stop("replacement 'value' is not an IntegerList with the same ",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
-        end(x@unlistData@ranges) <- value
+        end(ranges(x@unlistData)) <- value
         x
     }
 )
@@ -282,7 +292,7 @@ setReplaceMethod("width", "GRangesList",
             stop("replacement 'value' is not an IntegerList with the same ",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
-        width(x@unlistData@ranges) <- value
+        width(ranges(x@unlistData)) <- value
         x
     }
 )
@@ -297,7 +307,7 @@ setMethod("shift", "GRangesList",
             }
             shift <- unlist(shift, use.names=FALSE)
         }
-        x@unlistData@ranges <-
+        ranges(x@unlistData) <-
           shift(x@unlistData@ranges, shift, use.names=use.names)
         x
     }

@@ -9,7 +9,7 @@ exportClasses(
 )
 
 export(
-    seqnames, "seqnames<-",
+    seqnames, "seqnames<-", seqlengths, "seqlengths<-",
     strand, "strand<-",
     GRanges,
     GRangesList,
@@ -26,8 +26,8 @@ export(
 exportMethods(
     "length",
     "coerce", "as.data.frame", "unlist",
-    "seqnames", "ranges", "strand", "elementMetadata",
-    "seqnames<-", "ranges<-", "strand<-", "elementMetadata<-",
+    "seqnames", "ranges", "strand", "seqlengths", "elementMetadata",
+    "seqnames<-", "ranges<-", "strand<-", "seqlengths<-", "elementMetadata<-",
     "names", "names<-",
     "start", "end", "width", "start<-", "end<-", "width<-",
     "resize", "shift",

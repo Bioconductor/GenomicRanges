@@ -21,6 +21,8 @@
 \alias{ranges<-,GRangesList-method}
 \alias{strand,GRangesList-method}
 \alias{strand<-,GRangesList-method}
+\alias{seqlengths,GRangesList-method}
+\alias{seqlengths<-,GRangesList-method}
 \alias{elementMetadata,GRangesList-method}
 \alias{elementMetadata<-,GRangesList-method}
 
@@ -99,6 +101,11 @@
       \code{strand(x)}, \code{strand(x) <- value}:
       Gets or sets the strand in the form of an RleList. \code{value} can be
       an RleList or CharacterList object.
+    }
+    \item{}{
+      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+      Gets or sets the seqlengths. \code{value} can be a named non-negative
+      integer or numeric vector.
     }
   }
 }

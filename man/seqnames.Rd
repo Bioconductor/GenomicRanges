@@ -3,21 +3,29 @@
 \alias{seqnames}
 \alias{seqnames<-}
 
-\title{Accessing the sequence names stored in an object}
+\alias{seqlengths}
+\alias{seqlengths<-}
 
-\description{The \code{seqnames} generic is meant as an accessor for
-  the sequence names stored in an object.
+\title{Accessing the sequence names and lengths stored in an object}
+
+\description{The \code{seqnames} and \code{seqlengths} generics are meant
+  as accessors for the sequence names and lengths stored in an object,
+  respectively.
 }
 
-\usage{seqnames(x)}
+\usage{
+  seqnames(x)
+  seqlengths(x)
+}
 
 \arguments{
-  \item{x}{The object from which to access the sequence names.}
+  \item{x}{The object from which to access the sequence information.}
 }
 
 \details{
-  Various classes provide a \code{seqnames} method for getting or
-  setting the sequence names of an object of the class.
+  Various classes provide \code{seqnames} and \code{seqlengths} methods
+  for getting or setting the sequence names and lengths of an object of
+  the class, respectively.
 
   See for example \code{?`\link{seqnames,GRanges-method}`} for the
   \link{GRanges} class and \code{?`\link{seqnames,GRangesList-method}`}
@@ -27,8 +35,9 @@
   \link[BSgenome]{BSgenome} class defined in the BSgenome package (you
   might need to install and load the package first).
 
-  The full list can be seen with \code{showMethods("seqnames")}
-  (for the get methods) and \code{showMethods("seqnames<-")}
+  The full list can be seen with \code{showMethods("seqnames")} and
+  \code{showMethods("seqlengths")} (for the get methods) and
+  \code{showMethods("seqnames<-")} and \code{showMethods("seqlengths<-")}
   (for the replacement methods).
 }
 
@@ -41,6 +50,9 @@
 \examples{
   showMethods("seqnames")
   showMethods("seqnames<-")
+
+  showMethods("seqlengths")
+  showMethods("seqlengths<-")
 
   ?`seqnames,GRanges-method`
 }

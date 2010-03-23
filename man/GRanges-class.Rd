@@ -20,6 +20,8 @@
 \alias{ranges<-,GRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GRanges-method}
+\alias{seqlengths,GRanges-method}
+\alias{seqlengths<-,GRanges-method}
 \alias{elementMetadata,GRanges-method}
 \alias{elementMetadata<-,GRanges-method}
 \alias{names,GRanges-method}
@@ -76,8 +78,8 @@
       the \link{strand} information.}
     \item{\code{elementMetadata}}{a \link[IRanges]{DataFrame} object
       containing the annotation columns. Columns cannot be named
-      \code{"seqnames"}, \code{"ranges"}, \code{"strand"}, \code{"start"},
-      \code{"end"}, \code{"width"}, or \code{"element"}.}
+      \code{"seqnames"}, \code{"ranges"}, \code{"strand"}, \code{"seqlengths"},
+      \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
   }
 }
 
@@ -85,14 +87,20 @@
   \describe{
     \item{}{
       \code{GRanges(seqnames = Rle(), ranges = IRanges(),
-                    strand = Rle("*", length(seqnames)), ...)}:
+                    strand = Rle("*", length(seqnames)),
+                    ...,
+                    seqlengths =
+                    structure(rep(NA_integer_, length(levels(seqnames))),
+                              names = levels(seqnames)))}:
       Creates a GRanges object.
       \describe{
-        \item{\code{seqnames}}{Rle object,character vector, or factor
+        \item{\code{seqnames}}{Rle object, character vector, or factor
           containing the sequence names.}
         \item{\code{ranges}}{IRanges object containing the ranges.}
         \item{\code{strand}}{Rle object, character vector, or factor
           containing the strand information.}
+        \item{\code{seqlengths}}{a named integer vector containing the
+          sequence lengths for each \code{level(seqnames)}.}
         \item{\code{\ldots}}{Optional annotation columns for the
           \code{elementMetadata} slot. These columns cannot be named
           \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
@@ -136,6 +144,11 @@
       \code{strand(x)}, \code{strand(x) <- value}:
       Gets or sets the strand. \code{value} can be an Rle object, character
       vector, or factor.
+    }
+    \item{}{
+      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+      Gets or sets the seqlengths. \code{value} can be a named non-negative
+      integer or numeric vector.
     }
     \item{}{
       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:

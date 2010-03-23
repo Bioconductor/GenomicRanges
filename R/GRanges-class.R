@@ -7,7 +7,8 @@
 setClass("GRanges", contains = "Sequence",
          representation(seqnames = "Rle",
                         ranges = "IRanges",
-                        strand = "Rle"),
+                        strand = "Rle",
+                        seqlengths = "integer"),
          prototype(seqnames = Rle(factor()),
                    strand = Rle(strand()),
                    elementMetadata = DataFrame()))
@@ -50,15 +51,28 @@ setClass("GRanges", contains = "Sequence",
         NULL
 }
 
+.valid.GRanges.seqlengths <- function(x)
+{
+    msg <- NULL
+    if (length(x) > 0 && is.null(names(x@seqlengths)))
+        msg <- "slot 'seqlengths' is unnamed"
+    if (!setequal(names(x@seqlengths), levels(x@seqnames)))
+        msg <-
+          c(msg, "slot 'seqlengths' names to not match 'levels(seqnames)'")
+    if (any(x@seqlengths < 0L, na.rm = TRUE))
+        msg <- c(msg, "slot 'seqlengths' contains negative values")
+    msg
+}
+
 .valid.GRanges.elementMetadata <- function(x)
 {
     msg <- NULL
-    if (any(c("seqnames", "ranges", "strand", "start", "end", "width",
-              "element") %in% colnames(x@elementMetadata)))
+    if (any(c("seqnames", "ranges", "strand", "seqlengths", "start", "end",
+              "width", "element") %in% colnames(x@elementMetadata)))
         msg <-
           paste("slot 'elementMetadata' cannot use \"seqnames\", \"ranges\",",
-                "\"strand\", \"start\", \"end\", \"width\", or \"element\"",
-                "as column names")
+                "\"strand\", \"seqlengths\", \"start\", \"end\", \"width\", or",
+                "\"element\" as column names")
     if (!is.null(rownames(x@elementMetadata)))
         msg <- c(msg, "slot 'elementMetadata' cannot contain row names")
     msg
@@ -69,6 +83,7 @@ setClass("GRanges", contains = "Sequence",
     c(.valid.GRanges.slots(x),
       .valid.GRanges.seqnames(x),
       .valid.GRanges.strand(x),
+      .valid.GRanges.seqlengths(x),
       .valid.GRanges.elementMetadata(x))
 }
 
@@ -81,7 +96,11 @@ setValidity2("GRanges", .valid.GRanges)
 
 GRanges <-
 function(seqnames = Rle(), ranges = IRanges(),
-         strand = Rle("*", length(seqnames)), ...)
+         strand = Rle("*", length(seqnames)),
+         ...,
+         seqlengths =
+         structure(rep(NA_integer_, length(levels(seqnames))),
+                   names = levels(seqnames)))
 {
     if (!is(seqnames, "Rle"))
         seqnames <- Rle(seqnames)
@@ -97,6 +116,9 @@ function(seqnames = Rle(), ranges = IRanges(),
         !identical(levels(runValue(strand)), levels(strand())))
         runValue(strand) <- strand(runValue(strand))
 
+    if (!is.integer(seqlengths))
+        seqlengths <- as.integer(seqlengths)
+
     elementMetadata <- DataFrame(...)
     if (ncol(elementMetadata) == 0)
         elementMetadata <- new("DataFrame", nrows = length(seqnames))
@@ -107,7 +129,7 @@ function(seqnames = Rle(), ranges = IRanges(),
     }
 
     new("GRanges", seqnames = seqnames, ranges = ranges, strand = strand,
-        elementMetadata = elementMetadata)
+        seqlengths = seqlengths, elementMetadata = elementMetadata)
 }
 
 
@@ -159,6 +181,7 @@ setMethod("as.data.frame", "GRanges",
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
+setMethod("seqlengths", "GRanges", function(x) x@seqlengths)
 setMethod("elementMetadata", "GRanges",
     function(x, ...)
     {
@@ -183,7 +206,16 @@ setReplaceMethod("seqnames", "GRanges",
                 stop(k, " elements in value to replace ", n, "elements")
             value <- rep(value, length.out = n)
         }
-        initialize(x, seqnames = value)
+        seqlengths <- seqlengths(x)
+        if (identical(runLength(seqnames(x)), runLength(value))) {
+            matchTable <- table(runValue(seqnames(x)), runValue(value)) > 0L
+            if ((nrow(matchTable) == ncol(matchTable)) &&
+                all(rowSums(matchTable) == 1L) &&
+                all(colSums(matchTable) == 1L)) {
+                names(seqlengths) <- colnames(matchTable)[max.col(matchTable)]
+            }    
+        }
+        initialize(x, seqnames = value, seqlengths = seqlengths)
     }
 )
 setReplaceMethod("ranges", "GRanges",
@@ -217,6 +249,14 @@ setReplaceMethod("strand", "GRanges",
             value <- rep(value, length.out = n)
         }
         initialize(x, strand = value)
+    }
+)
+setReplaceMethod("seqlengths", "GRanges",
+    function(x, value)
+    {
+        if (!is.integer(value))
+            value <- as.integer(value)
+        initialize(x, seqlengths = value)
     }
 )
 setReplaceMethod("elementMetadata", "GRanges",
@@ -425,6 +465,8 @@ setReplaceMethod("[", "GRanges",
     {
         if (!is(value, "GRanges"))
             stop("replacement value must be a GRanges object")
+        if (!identical(seqlengths(x), seqlengths(value)))
+            stop("'seqlengths(x)' and 'seqlengths(value)' are not identical")
         seqnames <- x@seqnames
         ranges <- x@ranges
         strand <- x@strand
@@ -461,6 +503,9 @@ setMethod("c", "GRanges",
         if (recursive)
             stop("'recursive' mode not supported")
         args <- unname(list(x, ...))
+        seqnames <- do.call(c, lapply(args, slot, "seqnames"))
+        seqlengths <-
+          do.call(c, lapply(args, slot, "seqlengths"))[levels(seqnames)]
         ranges <- do.call(c, lapply(args, slot, "ranges"))
         nms <- names(ranges)
         if (!is.null(nms)) {
@@ -471,9 +516,10 @@ setMethod("c", "GRanges",
                 names(ranges) <- nms2
         }
         initialize(x,
-                   seqnames = do.call(c, lapply(args, slot, "seqnames")),
+                   seqnames = seqnames,
                    ranges = ranges,
                    strand = do.call(c, lapply(args, slot, "strand")),
+                   seqlengths = seqlengths,
                    elementMetadata =
                    do.call(rbind, lapply(args, slot, "elementMetadata")))
     }
@@ -530,6 +576,8 @@ setReplaceMethod("seqselect", "GRanges",
     {
         if (!is(value, "GRanges"))
             stop("replacement value must be a GRanges object")
+        if (!identical(seqlengths(x), seqlengths(value)))
+            stop("'seqlengths(x)' and 'seqlengths(value)' are not identical")
         if (is.null(end) && is.null(width)) {
             if (is.null(start))
                 ir <- IRanges(start = 1, width = length(x))
