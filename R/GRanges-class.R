@@ -662,7 +662,14 @@ setMethod("show", "GRanges",
             nc, ifelse(nc == 1, " elementMetadata column\n",
                        " elementMetadata columns\n"),
             sep = "")
-        if (lo > 0) {
+        if (lo == 0) {
+            out <-
+              matrix(nrow = 0L, ncol = 4L + nc,
+                     dimnames =
+                     list(NULL,
+                          c("seqnames", "ranges", "strand", "|",
+                            colnames(elementMetadata(object)))))
+        } else {
             nms <- names(object)
             if (lo < 20) {
                 out <-
@@ -729,8 +736,8 @@ setMethod("show", "GRanges",
                          dimnames = list("", colnames(out)))
             }
             out <- rbind(classinfo, out)
-            print(out, quote = FALSE, right = TRUE)
         }
+        print(out, quote = FALSE, right = TRUE)
         cat("\nseqlengths\n")
         print(seqlengths(object))
     }

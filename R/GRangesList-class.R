@@ -399,7 +399,7 @@ setMethod("show", "GRangesList",
         cat(class(object), " of length ", k, "\n", sep = "")
         if (k == 0L) {
             cat("<0 elements>\n")
-        } else if ((k == 1L) || (N <= 20L)) {
+        } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
             show(as.list(object))
         } else {
             sketch <- function(x) c(head(x, 3), "...", tail(x, 3))
