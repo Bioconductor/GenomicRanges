@@ -61,6 +61,20 @@ setClass("GRanges", contains = "Sequence",
           c(msg, "slot 'seqlengths' names to not match 'levels(seqnames)'")
     if (any(x@seqlengths < 0L, na.rm = TRUE))
         msg <- c(msg, "slot 'seqlengths' contains negative values")
+    if (any(is.na(x@seqlengths))) {
+        if (!all(is.na(x@seqlengths)))
+            msg <-
+              c(msg,
+                "slot 'seqlengths' cannot mix NAs and non-NA integers")
+    } else {
+        seqnames <- seqnames(x)
+        runValue(seqnames) <- runValue(seqnames)[drop=TRUE]
+        minStarts <- IRanges:::.tapplyDefault(start(x), seqnames, min)
+        maxEnds <- IRanges:::.tapplyDefault(end(x), seqnames, max)
+        if (any(minStarts < 1L) || any(maxEnds > x@seqlengths[names(maxEnds)]))
+            msg <-
+              c(msg, "slot 'ranges' contains values outside of sequence bounds")
+    }
     msg
 }
 
@@ -127,7 +141,8 @@ function(seqnames = Rle(), ranges = IRanges(),
     }
 
     if (!is.integer(seqlengths))
-        seqlengths <- as.integer(seqlengths)
+        seqlengths <-
+          structure(as.integer(seqlengths), names = names(seqlengths))
 
     elementMetadata <- DataFrame(...)
     if (ncol(elementMetadata) == 0)
@@ -310,23 +325,57 @@ setMethod("width", "GRanges", function(x) width(x@ranges))
 setReplaceMethod("start", "GRanges",
     function(x, value)
     {
-        start(x@ranges) <- value
-        x
+        if (!is.integer(value))
+            value <- as.integer(value)
+        ranges <- ranges(x)
+        starts <- start(ranges)
+        starts[] <- value
+        if (all(!is.na(seqlengths(x)))) {
+            if (IRanges:::anyMissingOrOutside(starts, 1L)) {
+                warning("trimmed start values to be positive")
+                starts[starts < 1L] <- 1L
+            }
+        }
+        start(ranges) <- starts
+        initialize(x, ranges = ranges)
     }
 )
 
 setReplaceMethod("end", "GRanges",
     function(x, value)
     {
-        end(x@ranges) <- value
-        x
+        if (!is.integer(value))
+            value <- as.integer(value)
+        ranges <- ranges(x)
+        ends <- end(ranges)
+        ends[] <- value
+        seqlengths <- seqlengths(x)
+        if (all(!is.na(seqlengths))) {
+            seqlengths <- seqlengths[levels(seqnames(x))]
+            maxEnds <- seqlengths[as.integer(seqnames(x))]
+            trim <- which(ends > maxEnds)
+            if (length(trim) > 0) {
+                warning("trimmed end values to be <= seqlengths")
+                ends[trim] <- maxEnds[trim]
+            }
+        }
+        end(ranges) <- ends
+        initialize(x, ranges = ranges)
     }
 )
 
 setReplaceMethod("width", "GRanges",
     function(x, value)
     {
-        width(x@ranges) <- value
+        if (!is.integer(value))
+            value <- as.integer(value)
+        if (all(!is.na(seqlengths(x)))) {
+            end(x) <- start(x) + (value - 1L)
+        } else {
+            ranges <- ranges(x)
+            width(ranges) <- value
+            x <- initialize(x, ranges = ranges)
+        }
         x
     }
 )
@@ -339,8 +388,14 @@ setMethod("resize", "GRanges",
         fix <- x@strand
         levels(fix) <- c("start", "end", "center")
         runValue(fix) <- as.character(runValue(fix))
-        x@ranges <-
-          resize(x@ranges, width = width, fix = fix, use.names = use.names)
+        ranges <-
+          resize(ranges(x), width = width, fix = fix, use.names = use.names)
+        if (all(!is.na(seqlengths(x)))) {
+            start(x) <- start(ranges)
+            end(x) <- end(ranges)
+        } else {
+            x <- initialize(x, ranges = ranges)
+        }
         x
     }
 )
@@ -348,7 +403,13 @@ setMethod("resize", "GRanges",
 setMethod("shift", "GRanges",
     function(x, shift, use.names = TRUE)
     {
-        x@ranges <- shift(x@ranges, shift, use.names = use.names)
+        ranges <- shift(ranges(x), shift, use.names = use.names)
+        if (all(!is.na(seqlengths(x)))) {
+            end(x) <- end(ranges)
+            start(x) <- pmin.int(start(ranges), end(x))
+        } else {
+            x <- initialize(x, ranges = ranges)
+        }
         x
     }
 )
@@ -366,7 +427,8 @@ setMethod("shift", "GRanges",
     ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
     GRanges(seqnames = ansSeqnames,
             ranges = unlist(ansIRangesList, use.names=FALSE),
-            strand = ansStrand)
+            strand = ansStrand,
+            seqlengths = seqlengths(x))
 }
 
 setMethod("disjoin", "GRanges",
@@ -397,12 +459,18 @@ setMethod("reduce", "GRanges",
 )
 
 setMethod("coverage", "GRanges",
-    function(x, shift = list(0L), width = list(NULL), weight = list(1L))
+    function(x, shift = list(0L), width = as.list(seqlengths(x)),
+             weight = list(1L))
     {
         fixArg <- function(arg, argname, uniqueSeqnames) {
             k <- length(uniqueSeqnames)
             if (!is.list(arg) || is(arg, "IntegerList"))
                 stop("'", argname, "' must be a list")
+            makeNULL <-
+              unlist(lapply(arg, function(y) length(y) == 1 && is.na(y)),
+                     use.names=FALSE)
+            if (any(makeNULL))
+                arg[makeNULL] <- rep(list(NULL), sum(makeNULL))
             if (length(arg) < k)
                 arg <- rep(arg, length.out = k)
             if (is.null(names(arg)))

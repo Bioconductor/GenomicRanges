@@ -20,7 +20,7 @@ setMethod("pintersect", c("GRanges", "GRanges"),
         if (length(resolveStrand) > 0)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
-        GRanges(seqnames(x), ansRanges, ansStrand)
+        GRanges(seqnames(x), ansRanges, ansStrand, seqlengths = seqlengths(x))
     }
 )
 

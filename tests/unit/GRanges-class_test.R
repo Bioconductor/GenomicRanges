@@ -155,7 +155,7 @@ test_GRanges_accessors <- function() {
 
     gr <- make_test_GRanges()
     val <- seqlengths(gr)
-    val[] <- seq_len(length(val))
+    val[] <- c(10L, 20L, 30L)
     seqlengths(gr) <- val
     checkIdentical(seqlengths(gr), val)
 

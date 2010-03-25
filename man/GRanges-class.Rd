@@ -228,7 +228,7 @@
       about range reduction and for a description of the optional arguments.
     }
     \item{}{
-      \code{coverage(x, shift = list(0L), width = list(NULL), weight = list(1L))}:
+      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
       Returns a named \link[IRanges]{RleList} object with one element
       ('integer' Rle) per unique sequence name representing how many
       times each position in the sequence is covered by the intervals in
