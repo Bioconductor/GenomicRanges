@@ -31,9 +31,14 @@
   \link{GRanges} class and \code{?`\link{seqnames,GRangesList-method}`}
   for the \link{GRangesList} class, both classes being defined in
   the GenomicRanges package.
-  See also \code{?`\link[BSgenome]{seqnames,BSgenome-method}`} for the
-  \link[BSgenome]{BSgenome} class defined in the BSgenome package (you
-  might need to install and load the package first).
+
+  For more examples see
+  \code{?`\link[BSgenome]{seqnames,BSgenome-method}`} for the
+  \link[BSgenome]{BSgenome} class defined in the BSgenome package
+  and \code{?`\link[GenomicFeatures]{seqnames,TranscriptDb-method}`}
+  for the \link[GenomicFeatures]{TranscriptDb} class defined in the
+  GenomicFeatures package (you might need to install and load these
+  packages first).
 
   The full list can be seen with \code{showMethods("seqnames")} and
   \code{showMethods("seqlengths")} (for the get methods) and
@@ -45,6 +50,7 @@
   \link{seqnames,GRanges-method},
   \link{seqnames,GRangesList-method},
   \link[BSgenome]{seqnames,BSgenome-method}
+  \link[GenomicFeatures]{seqnames,TranscriptDb-method}
 }
 
 \examples{
