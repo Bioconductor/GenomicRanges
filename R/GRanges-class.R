@@ -323,7 +323,7 @@ setMethod("end", "GRanges", function(x, ...) end(x@ranges))
 setMethod("width", "GRanges", function(x) width(x@ranges))
 
 setReplaceMethod("start", "GRanges",
-    function(x, value)
+    function(x, check = TRUE, value)
     {
         if (!is.integer(value))
             value <- as.integer(value)
@@ -336,13 +336,13 @@ setReplaceMethod("start", "GRanges",
                 starts[starts < 1L] <- 1L
             }
         }
-        start(ranges) <- starts
+        start(ranges, check = check) <- starts
         initialize(x, ranges = ranges)
     }
 )
 
 setReplaceMethod("end", "GRanges",
-    function(x, value)
+    function(x, check = TRUE, value)
     {
         if (!is.integer(value))
             value <- as.integer(value)
@@ -359,13 +359,13 @@ setReplaceMethod("end", "GRanges",
                 ends[trim] <- maxEnds[trim]
             }
         }
-        end(ranges) <- ends
+        end(ranges, check = check) <- ends
         initialize(x, ranges = ranges)
     }
 )
 
 setReplaceMethod("width", "GRanges",
-    function(x, value)
+    function(x, check = TRUE, value)
     {
         if (!is.integer(value))
             value <- as.integer(value)
@@ -373,7 +373,7 @@ setReplaceMethod("width", "GRanges",
             end(x) <- start(x) + (value - 1L)
         } else {
             ranges <- ranges(x)
-            width(ranges) <- value
+            width(ranges, check = check) <- value
             x <- initialize(x, ranges = ranges)
         }
         x

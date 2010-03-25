@@ -503,10 +503,12 @@ setMethod("coverage", "GappedAlignments",
 ###
 
 setMethod("findOverlaps", c("GappedAlignments", "ANY"),
-    function(query, subject, maxgap=0L,
+    function(query, subject, maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end"),
              select=c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         callGeneric(grglist(query), subject,
                     maxgap=maxgap, type=match.arg(type),
                     select=match.arg(select))
@@ -514,10 +516,12 @@ setMethod("findOverlaps", c("GappedAlignments", "ANY"),
 )
 
 setMethod("findOverlaps", c("ANY", "GappedAlignments"),
-    function(query, subject, maxgap=0L,
+    function(query, subject, maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end"),
              select=c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         callGeneric(query, grglist(subject),
                     maxgap=maxgap, type=match.arg(type),
                     select=match.arg(select))
@@ -531,10 +535,12 @@ setMethod("findOverlaps", c("ANY", "GappedAlignments"),
 ###    function "findOverlaps", target signature "Alignments1#Alignments0".
 ###    "ANY#GappedAlignments" would also be valid
 setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
-    function(query, subject, maxgap=0L,
+    function(query, subject, maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end"),
              select=c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         callGeneric(grglist(query), grglist(subject),
                     maxgap=maxgap, type=match.arg(type),
                     select=match.arg(select))
@@ -547,24 +553,33 @@ setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
 ###
 
 setMethod("countOverlaps", c("GappedAlignments", "ANY"),
-    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         callGeneric(grglist(query), subject,
                     maxgap=maxgap, type=match.arg(type))
     }
 )
 
 setMethod("countOverlaps", c("ANY", "GappedAlignments"),
-    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         callGeneric(query, grglist(subject),
                     maxgap=maxgap, type=match.arg(type))
     }
 )
 
 setMethod("countOverlaps", c("GappedAlignments", "GappedAlignments"),
-    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         callGeneric(grglist(query), grglist(subject),
                     maxgap=maxgap, type=match.arg(type))
     }
@@ -576,8 +591,11 @@ setMethod("countOverlaps", c("GappedAlignments", "GappedAlignments"),
 ###
 
 setMethod("subsetByOverlaps", c("GappedAlignments", "ANY"),
-    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,
@@ -586,8 +604,11 @@ setMethod("subsetByOverlaps", c("GappedAlignments", "ANY"),
 )
 
 setMethod("subsetByOverlaps", c("ANY", "GappedAlignments"),
-    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,
@@ -596,8 +617,11 @@ setMethod("subsetByOverlaps", c("ANY", "GappedAlignments"),
 )
 
 setMethod("subsetByOverlaps", c("GappedAlignments", "GappedAlignments"),
-    function(query, subject, maxgap=0L, type=c("any", "start", "end"))
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,

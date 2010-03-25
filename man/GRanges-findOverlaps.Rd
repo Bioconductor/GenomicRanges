@@ -34,11 +34,11 @@
 }
 
 \usage{
-  \S4method{findOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L,
+  \S4method{findOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"), select = c("all", "first"))
-  \S4method{countOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L,
+  \S4method{countOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
               type = c("any", "start", "end"))
-  \S4method{subsetByOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L,
+  \S4method{subsetByOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
                  type = c("any", "start", "end"))
   \S4method{match}{GRanges,GRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
   # Also:  x \%in\% table
@@ -51,6 +51,9 @@
   \item{maxgap}{
     A non-negative integer representing the maximum distance between
     a query interval and a subject interval.
+  }
+  \item{minoverlap}{
+    Ignored.
   }
   \item{type}{
     The type of acceptable overlap:

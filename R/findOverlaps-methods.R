@@ -42,10 +42,12 @@
 }
 
 setMethod("findOverlaps", c("GRanges", "GRanges"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -121,10 +123,12 @@ setMethod("findOverlaps", c("GRanges", "GRanges"),
 )
 
 setMethod("findOverlaps", c("GRangesList", "GRanges"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -147,10 +151,12 @@ setMethod("findOverlaps", c("GRangesList", "GRanges"),
 )
 
 setMethod("findOverlaps", c("GRanges", "GRangesList"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -183,10 +189,12 @@ setMethod("findOverlaps", c("GRanges", "GRangesList"),
 )
 
 setMethod("findOverlaps", c("GRangesList", "GRangesList"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -226,9 +234,11 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
 ### -------------------------------------------------------------------------
 
 setMethod("countOverlaps", c("GRanges", "GRanges"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
                                         type = type)), length(query))
@@ -236,9 +246,11 @@ setMethod("countOverlaps", c("GRanges", "GRanges"),
 )
 
 setMethod("countOverlaps", c("GRangesList", "GRanges"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
                                         type = type)), length(query))
@@ -246,9 +258,11 @@ setMethod("countOverlaps", c("GRangesList", "GRanges"),
 )
 
 setMethod("countOverlaps", c("GRanges", "GRangesList"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
                                         type = type)), length(query))
@@ -256,9 +270,11 @@ setMethod("countOverlaps", c("GRanges", "GRangesList"),
 )
 
 setMethod("countOverlaps", c("GRangesList", "GRangesList"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
                                         type = type)), length(query))
@@ -271,9 +287,11 @@ setMethod("countOverlaps", c("GRangesList", "GRangesList"),
 ### -------------------------------------------------------------------------
 
 setMethod("subsetByOverlaps", c("GRanges", "GRanges"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,
@@ -282,9 +300,11 @@ setMethod("subsetByOverlaps", c("GRanges", "GRanges"),
 )
 
 setMethod("subsetByOverlaps", c("GRangesList", "GRanges"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,
@@ -293,9 +313,11 @@ setMethod("subsetByOverlaps", c("GRangesList", "GRanges"),
 )
 
 setMethod("subsetByOverlaps", c("GRanges", "GRangesList"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,
@@ -304,9 +326,11 @@ setMethod("subsetByOverlaps", c("GRanges", "GRangesList"),
 )
 
 setMethod("subsetByOverlaps", c("GRangesList", "GRangesList"),
-    function(query, subject, maxgap = 0L,
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"))
     {
+        if (!identical(minoverlap, 1L))
+            warning("'minoverlap' argument is ignored")
         type <- match.arg(type)
         query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                                   minoverlap = minoverlap, type = type,
