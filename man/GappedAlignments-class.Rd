@@ -69,6 +69,12 @@
 \alias{subsetByOverlaps,GappedAlignments,ANY-method}
 \alias{subsetByOverlaps,ANY,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{match,GappedAlignments,ANY-method}
+\alias{match,ANY,GappedAlignments-method}
+\alias{match,GappedAlignments,GappedAlignments-method}
+\alias{\%in\%,GappedAlignments,ANY-method}
+\alias{\%in\%,ANY,GappedAlignments-method}
+\alias{\%in\%,GappedAlignments,GappedAlignments-method}
 
 
 \title{GappedAlignments objects}
@@ -318,7 +324,9 @@
     \item{}{
       \code{findOverlaps(query, subject, ...)},
       \code{countOverlaps(query, subject, ...)},
-      \code{subsetByOverlaps(query, subject, ...)}:
+      \code{subsetByOverlaps(query, subject, ...)},
+      \code{match(x, table, nomatch=NA_integer_, incomparables=NULL)},
+      \code{x \%in\% table}:
       \code{query} or \code{subject} or both are GappedAlignments objects.
       \code{findOverlaps(query, subject, ...)} is equivalent to
       \code{findOverlaps(grglist(query), subject, ...)} when
@@ -451,6 +459,8 @@ coverage(aln1)
 findOverlaps(aln1, grg(aln1)[1])
 sum(countOverlaps(aln1, grg(aln1)[1]))
 subsetByOverlaps(aln1, grg(aln1)[1])
+table(match(aln1, grg(aln1)[1]), useNA = "ifany")
+table(aln1 \%in\% grg(aln1)[1])
 }
 }
 

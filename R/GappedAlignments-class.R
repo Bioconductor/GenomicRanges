@@ -628,3 +628,52 @@ setMethod("subsetByOverlaps", c("GappedAlignments", "GappedAlignments"),
                                   select = "first"))]
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "match" methods.
+###
+
+setMethod("match", c("GappedAlignments", "ANY"),
+    function(x, table, nomatch = NA_integer_, incomparables = NULL)
+    {
+        callGeneric(grglist(x), table,
+                    nomatch=nomatch, incomparables=incomparables)
+    }
+)
+
+setMethod("match", c("ANY", "GappedAlignments"),
+    function(x, table, nomatch = NA_integer_, incomparables = NULL)
+    {
+        callGeneric(x, grglist(table),
+                    nomatch=nomatch, incomparables=incomparables)
+    }
+)
+
+setMethod("match", c("GappedAlignments", "GappedAlignments"),
+    function(x, table, nomatch = NA_integer_, incomparables = NULL)
+    {
+        callGeneric(grglist(x), grglist(table),
+                    nomatch=nomatch, incomparables=incomparables)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "%in%" methods.
+###
+
+setMethod("%in%", c("GappedAlignments", "ANY"),
+    function(x, table)
+        callGeneric(grglist(x), table)
+)
+
+setMethod("%in%", c("ANY", "GappedAlignments"),
+    function(x, table)
+        callGeneric(x, grglist(table))
+)
+
+setMethod("%in%", c("GappedAlignments", "GappedAlignments"),
+    function(x, table)
+        callGeneric(grglist(x), grglist(table))
+)
