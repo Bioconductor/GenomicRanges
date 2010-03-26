@@ -26,3 +26,4 @@ Collate: seqnames.R
 	Alignments0-class.R
 	Alignments1-class.R
 	Alignments2-class.R
+	test_GenomicRanges_package.R
