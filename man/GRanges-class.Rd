@@ -156,6 +156,10 @@
       data.frame object, or NULL.
     }
     \item{}{
+      \code{values(x), values(x) <- value}:
+      Alternative to \code{elementMetadata} functions.
+    }
+    \item{}{
       \code{names(x)}, \code{names(x) <- value}:
       Gets or sets the names of the elements.
     }
@@ -397,7 +401,7 @@
   # Summarizing elements
   table(seqnames(gr))
   sum(width(gr))
-  summary(elementMetadata(gr)[,"score"])
+  summary(elementMetadata(gr)[,"score"]) # or values(gr)
   coverage(gr)
 
   # Changing sequence name

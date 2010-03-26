@@ -107,6 +107,15 @@
       Gets or sets the seqlengths. \code{value} can be a named non-negative
       integer or numeric vector.
     }
+    \item{}{
+      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
+      Gets or sets the optional data columns for the GRangesList elements.
+      \code{value} can be a DataFrame, data.frame object, or NULL.
+    }
+    \item{}{
+      \code{values(x), values(x) <- value}:
+      Alternative to \code{elementMetadata} functions.
+    }
   }
 }
 

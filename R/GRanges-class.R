@@ -737,8 +737,8 @@ setMethod("show", "GRanges",
         nc <- ncol(object@elementMetadata)
         cat(class(object), " with ",
             lo, ifelse(lo == 1, " range and ", " ranges and "),
-            nc, ifelse(nc == 1, " elementMetadata column\n",
-                       " elementMetadata columns\n"),
+            nc, ifelse(nc == 1, " elementMetadata value\n",
+                       " elementMetadata values\n"),
             sep = "")
         if (lo == 0) {
             out <-

@@ -10,7 +10,7 @@ Version: 0.0.10
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
-Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.67)
+Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.71)
 Imports: methods, IRanges
 LinkingTo: IRanges
 Suggests: RUnit, GenomicFeatures, BSgenome
