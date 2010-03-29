@@ -3,16 +3,13 @@
 ### -------------------------------------------------------------------------
 ###
 
-### Incomplete implementation (the genomic ranges of the alignments are
-### missing). The full implementation is achieved by each concrete class:
-### Alignments0, Alignments1, Alignments2.
-### See inst/doc/GappedAlignments-timings.txt for the timings (and memory
-### footprint) of the various GappedAlignments implementations.
 setClass("GappedAlignments",
     contains="Sequence",
     representation(
-        "VIRTUAL",
-        cigar="character"             # extended CIGAR (see SAM format specs)
+        rname="factor",               # character factor
+        start="integer",              # POS field in SAM
+        cigar="character",            # extended CIGAR (see SAM format specs)
+        strand="raw"
         #mismatches="characterORNULL", # see MD optional field in SAM format specs
         #values="DataFrame"
     )
@@ -164,8 +161,6 @@ setMethod("grg", "GappedAlignments",
         GappedAlignmentsAsGRanges(rname(x), strand(x), start(x), width(x))
 )
 
-setMethod("start", "GappedAlignments", function(x, ...) min(rglist(x)))
-setMethod("end", "GappedAlignments", function(x, ...) max(rglist(x)))
 setMethod("width", "GappedAlignments", function(x) cigarToWidth(x@cigar))
 
 setMethod("ngap", "GappedAlignments",
@@ -362,8 +357,7 @@ setMethod("show", "GappedAlignments",
 ### Constructor.
 ###
 
-readGappedAlignments <- function(file, format="BAM", ...,
-                                 ans.subtype="Alignments0")
+readGappedAlignments <- function(file, format="BAM", ...)
 {
     if (!isSingleString(file))
         stop("'file' must be a single string")
@@ -372,8 +366,6 @@ readGappedAlignments <- function(file, format="BAM", ...,
     dotargs <- list(...)
     if (length(dotargs) != 0L && is.null(names(dotargs)))
         stop("extra arguments must be named")
-    if (!isSingleString(ans.subtype))
-        stop("'ans.subtype' must be a single string")
     if (format == "BAM") {
         if ("index" %in% names(dotargs)) {
             index <- dotargs$index
@@ -389,49 +381,13 @@ readGappedAlignments <- function(file, format="BAM", ...,
         }
         args <- c(list(file=file, index=index),
                   dotargs,
-                  list(which=which, ans.subtype=ans.subtype))
+                  list(which=which))
         suppressMessages(library("Rsamtools"))
         ans <- do.call(readBamGappedAlignments, args)
         return(ans)
     }
     stop("only BAM format is supported for now")
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-### Doesn't subset anything, just convert 'i' into integer vector and return
-### it. Supported input types for 'i': numeric vector, logical vector, NULL
-### and missing.
-setMethod("[", "GappedAlignments",
-    function(x, i, j, ... , drop=TRUE)
-    {
-        if (!missing(j) || length(list(...)) > 0L)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (!is.atomic(i))
-            stop("invalid subscript type")
-        lx <- length(x)
-        if (length(i) == 0L) {
-            i <- integer(0)
-        } else if (is.numeric(i)) {
-            if (min(i) < 0L)
-                i <- seq_len(lx)[i]
-            else if (!is.integer(i))
-                i <- as.integer(i)
-        } else if (is.logical(i)) {
-            if (length(i) > lx)
-                stop("subscript out of bounds")
-            i <- seq_len(lx)[i]
-        } else {
-            stop("invalid subscript type")
-        }
-        i
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -532,7 +488,8 @@ setMethod("findOverlaps", c("ANY", "GappedAlignments"),
 ### with the following note:
 ###   > findOverlaps(al1, al0)
 ###   Note: Method with signature "GappedAlignments#ANY" chosen for
-###    function "findOverlaps", target signature "Alignments1#Alignments0".
+###    function "findOverlaps", target signature
+###    "GappedAlignments#GappedAlignments".
 ###    "ANY#GappedAlignments" would also be valid
 setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
     function(query, subject, maxgap=0L, minoverlap=1L,

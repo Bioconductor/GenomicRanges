@@ -4,56 +4,30 @@
 \alias{class:GappedAlignments}
 \alias{GappedAlignments-class}
 \alias{GappedAlignments}
-\alias{class:Alignments0}
-\alias{Alignments0-class}
-\alias{Alignments0}
-\alias{class:Alignments1}
-\alias{Alignments1-class}
-\alias{Alignments1}
-\alias{class:Alignments2}
-\alias{Alignments2-class}
-\alias{Alignments2}
 
 \alias{length,GappedAlignments-method}
 \alias{rname}
-\alias{rname,Alignments0-method}
-\alias{rname,Alignments1-method}
-\alias{rname,Alignments2-method}
+\alias{rname,GappedAlignments-method}
 \alias{rname<-}
-\alias{rname<-,Alignments0-method}
-\alias{rname<-,Alignments1-method}
-\alias{rname<-,Alignments2-method}
-\alias{strand,Alignments0-method}
-\alias{strand,Alignments1-method}
-\alias{strand,Alignments2-method}
+\alias{rname<-,GappedAlignments-method}
+\alias{strand,GappedAlignments-method}
 \alias{cigar}
 \alias{cigar,GappedAlignments-method}
 \alias{qwidth}
 \alias{qwidth,GappedAlignments-method}
 \alias{grglist}
 \alias{grglist,GappedAlignments-method}
-\alias{grglist,Alignments1-method}
 \alias{grg}
 \alias{grg,GappedAlignments-method}
 \alias{rglist}
-\alias{rglist,Alignments0-method}
-\alias{rglist,Alignments1-method}
-\alias{rglist,Alignments2-method}
+\alias{rglist,GappedAlignments-method}
 \alias{start,GappedAlignments-method}
-\alias{start,Alignments2-method}
 \alias{end,GappedAlignments-method}
-\alias{end,Alignments2-method}
 \alias{width,GappedAlignments-method}
 \alias{as.data.frame,GappedAlignments-method}
 \alias{show,GappedAlignments-method}
 \alias{readGappedAlignments}
-\alias{coerce,GappedAlignments,Alignments0-method}
-\alias{coerce,GappedAlignments,Alignments1-method}
-\alias{coerce,GappedAlignments,Alignments2-method}
 \alias{[,GappedAlignments-method}
-\alias{[,Alignments0-method}
-\alias{[,Alignments1-method}
-\alias{[,Alignments2-method}
 \alias{qnarrow}
 \alias{qnarrow,GappedAlignments-method}
 \alias{narrow,GappedAlignments-method}
@@ -80,20 +54,12 @@
 \title{GappedAlignments objects}
 
 \description{
-  The GappedAlignments class is a simple virtual container which
+  The GappedAlignments class is a simple container which
   purpose is to store a set of alignments that will hold just enough
   information for supporting the operations described below.
 
-  There are currently 3 concrete implementations of the container:
-  Alignments0, Alignments1 and Alignments2. These implementations are
-  equivalent from a user point of view i.e. they hold the same data
-  (but organized differently) and allow the same operations. This is
-  a temporary situation until the developpers make a choice.
-
   WARNING! This is work-in-progress. Expect frequent changes in
-  functionalities. The name of the containers are provisory and
-  reflecting the fact that we are at a very early stage of their
-  design/implementation.
+  functionalities.
 }
 
 \details{
@@ -148,13 +114,8 @@
           deletion, encoded with a D, is NOT considered a gap.
   }
 
-  Strictly speaking, the last 2 items can be inferred from the CIGAR
-  and the "start" so, in theory, they don't need to be explicitely
-  stored in the GappedAlignments object. However, the 2 first
-  implementations (Alignments0 and Alignments1) store it for performance
-  reasons but at the cost of some redundancy (which impact on memory
-  footprint seems to be acceptable). Alignments2 just stores the strict
-  minimum (no redundancy) and is the smaller of the 3 containers.
+  Note that the last 2 items are not expicitly stored in the GappedAlignments
+  object: they are inferred on-the-fly from the CIGAR and the "start".
 
   The rest of this man page will focus on describing how to:
   \itemize{
@@ -262,8 +223,7 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new GappedAlignments object (of the same type as \code{x},
-      i.e. Alignments0, Alignments1 or Alignments2) made of the selected
+      Returns a new GappedAlignments object made of the selected
       alignments. \code{i} can be a numeric or logical vector.
     }
   }
@@ -275,8 +235,7 @@
     \item{}{
       \code{qnarrow(x, start=NA, end=NA, width=NA)}:
       \code{x} is a GappedAlignments object.
-      Returns a new GappedAlignments object of the same length and type
-      (i.e. Alignments0, Alignments1 or Alignments2) as \code{x}
+      Returns a new GappedAlignments object of the same length as \code{x}
       describing how the narrowed query sequences align to the reference.
       The \code{start}/\code{end}/\code{width} arguments describe how
       to narrow the query sequences. They must be vectors of integers.
@@ -287,8 +246,7 @@
     \item{}{
       \code{narrow(x, start=NA, end=NA, width=NA)}:
       \code{x} is a GappedAlignments object.
-      Returns a new GappedAlignments object of the same length and type
-      (i.e. Alignments0, Alignments1 or Alignments2) as \code{x}
+      Returns a new GappedAlignments object of the same length as \code{x}
       describing the narrowed alignments. Unlike with \code{qnarrow}
       now the \code{start}/\code{end}/\code{width} arguments describe
       the narrowing on the reference side, not the query side.
@@ -302,9 +260,8 @@
       Either \code{x} is a GappedAlignments object and \code{y} is a
       GRanges object or \code{x} is a GRanges object and \code{y} is a
       GappedAlignments object.
-      Returns a new GappedAlignments object of the same length and type
-      (i.e. Alignments0, Alignments1 or Alignments2) as the 
-      GappedAlignments input argument. Like with \code{narrow}, the
+      Returns a new GappedAlignments object of the same length as the 
+      GappedAlignments input arguments. Like with \code{narrow}, the
       resulting "parallel" intersection is with respect to the reference.
     }
     \item{}{

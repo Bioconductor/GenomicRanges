@@ -3,26 +3,46 @@
 ### -------------------------------------------------------------------------
 ###
 
-### Third GappedAlignments implementation: Alignments2
-### The genomic ranges of the alignments are stored in 3 slots: 'rname',
-### 'strand' and 'start'.
-setClass("Alignments2",
-    contains="GappedAlignments",
-    representation(
-        rname="factor",               # character factor
-        strand="raw",
-        start="integer"               # POS field in SAM
-    )
-)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some low-level helper functions for manipulating the @strand slot.
+###
+
+.logicalAsCompactRawVector <- function(x)
+{
+    if (!is.logical(x))
+        stop("'x' must be a logical vector")
+    .Call("logical_as_compact_raw_vector", x, PACKAGE="GenomicRanges")
+}
+
+.compactRawVectorAsLogical <- function(x, length.out)
+{
+    if (!is.raw(x))
+        stop("'x' must be a raw vector")
+    if (!isSingleNumber(length.out))
+        stop("'length.out' must be a single number")
+    if (!is.integer(length.out))
+        length.out <- as.integer(length.out)
+    .Call("compact_raw_vector_as_logical", x, length.out, PACKAGE="GenomicRanges")
+}
+
+.subsetCompactRawVector <- function(x, i)
+{
+    if (!is.raw(x))
+        stop("'x' must be a raw vector")
+    if (!is.integer(i))
+        stop("'i' must be an integer vector")
+    .Call("subset_compact_raw_vector", x, i, PACKAGE="GenomicRanges")
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
 
-setMethod("rname", "Alignments2", function(x) x@rname)
+setMethod("rname", "GappedAlignments", function(x) x@rname)
 
-setReplaceMethod("rname", "Alignments2",
+setReplaceMethod("rname", "GappedAlignments",
     function(x, value)
     {
         x@rname <- normargRNameReplaceValue(x, value)
@@ -30,24 +50,24 @@ setReplaceMethod("rname", "Alignments2",
     }
 )
 
-setMethod("strand", "Alignments2",
+setMethod("strand", "GappedAlignments",
     function(x) strand(.compactRawVectorAsLogical(x@strand, length(x)))
 )
 
-setMethod("rglist", "Alignments2",
+setMethod("rglist", "GappedAlignments",
     function(x) cigarToIRangesListByAlignment(x@cigar, x@start)
 )
 
-setMethod("start", "Alignments2", function(x, ...) x@start)
-setMethod("end", "Alignments2", function(x, ...) {x@start + width(x) - 1L})
+setMethod("start", "GappedAlignments", function(x, ...) x@start)
+setMethod("end", "GappedAlignments", function(x, ...) {x@start + width(x) - 1L})
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.
 ###
 
-Alignments2 <- function(rname=factor(), strand=NULL,
-                        pos=integer(0), cigar=character(0))
+GappedAlignments <- function(rname=factor(), pos=integer(0),
+                             cigar=character(0), strand=NULL)
 {
     if (!is.factor(rname) || !is.character(levels(rname))) {
         if (!is.character(rname))
@@ -56,6 +76,10 @@ Alignments2 <- function(rname=factor(), strand=NULL,
     }
     if (any(is.na(rname)))
         stop("'rname' cannot have NAs")
+    if (!is.integer(pos) || any(is.na(pos)))
+        stop("'pos' must be an integer vector with no NAs")
+    if (!is.character(cigar) || any(is.na(cigar)))
+        stop("'cigar' must be a character vector with no NAs")
     if (is.null(strand)) {
         if (length(rname) != 0L)
             stop("'strand' must be specified when 'rname' is not empty")
@@ -63,26 +87,9 @@ Alignments2 <- function(rname=factor(), strand=NULL,
     } else if (!is.factor(strand) 
            || !identical(levels(strand), levels(strand())))
         stop("invalid 'strand' argument")
-    if (!is.integer(pos) || any(is.na(pos)))
-        stop("'pos' must be an integer vector with no NAs")
-    if (!is.character(cigar) || any(is.na(cigar)))
-        stop("'cigar' must be a character vector with no NAs")
     strand <- .logicalAsCompactRawVector(strand == "-")
-    new("Alignments2", rname=rname, strand=strand,
-                       cigar=cigar, start=pos)
+    new("GappedAlignments", rname=rname, start=pos, cigar=cigar, strand=strand)
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-setAs("GappedAlignments", "Alignments2",
-    function(from)
-        Alignments2(rname=rname(from), strand=strand(from),
-                    pos=start(from), cigar=cigar(from))
-
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,14 +97,34 @@ setAs("GappedAlignments", "Alignments2",
 ###
 
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-setMethod("[", "Alignments2",
+setMethod("[", "GappedAlignments",
     function(x, i, j, ... , drop=TRUE)
     {
-        i <- callNextMethod()
-        x@cigar <- x@cigar[i]
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        if (!is.atomic(i))
+            stop("invalid subscript type")
+        lx <- length(x)
+        if (length(i) == 0L) {
+            i <- integer(0)
+        } else if (is.numeric(i)) {
+            if (min(i) < 0L)
+                i <- seq_len(lx)[i]
+            else if (!is.integer(i))
+                i <- as.integer(i)
+        } else if (is.logical(i)) {
+            if (length(i) > lx)
+                stop("subscript out of bounds")
+            i <- seq_len(lx)[i]
+        } else {
+            stop("invalid subscript type")
+        }
         x@rname <- x@rname[i]
-        x@strand <- .subsetCompactRawVector(x@strand, i)
         x@start <- x@start[i]
+        x@cigar <- x@cigar[i]
+        x@strand <- .subsetCompactRawVector(x@strand, i)
         x
     }
 )
@@ -109,7 +136,7 @@ setMethod("[", "Alignments2",
 ### Performs atomic update of the cigar/start information.
 ###
 
-setMethod("updateCigarAndStart", "Alignments2",
+setMethod("updateCigarAndStart", "GappedAlignments",
     function(x, cigar=NULL, start=NULL)
     {
         if (is.null(cigar))

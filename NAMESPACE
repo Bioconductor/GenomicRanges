@@ -5,7 +5,7 @@ import(IRanges)
 
 exportClasses(
     GRanges, GRangesList,
-    GappedAlignments, Alignments0, Alignments1, Alignments2
+    GappedAlignments
 )
 
 export(
@@ -19,8 +19,7 @@ export(
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist,
-    readGappedAlignments, qnarrow,
-    Alignments0, Alignments1, Alignments2
+    readGappedAlignments, qnarrow, GappedAlignments
 )
 
 exportMethods(
