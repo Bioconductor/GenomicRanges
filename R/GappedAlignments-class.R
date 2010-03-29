@@ -91,9 +91,8 @@ setGeneric("qnarrow",
 ###
 ### Note that their arguments are the different components of a
 ### GappedAlignments object instead of just the GappedAlignments object
-### itself (arg 'x'). This allows them to be used in different contexts e.g.
-### within the Alignments1() constructor when 'x' doesn't exist yet but is
-### in the process of being constructed.
+### itself (arg 'x'). This allows them to be used in many different contexts
+### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
 ###
 
 GappedAlignmentsAsGRanges <- function(rname, strand, start, width, check=TRUE)
@@ -149,7 +148,18 @@ GappedAlignmentsAsGRangesList <- function(rname, strand, rglist, check=TRUE)
 
 setMethod("length", "GappedAlignments", function(x) length(x@cigar))
 
+setMethod("rname", "GappedAlignments", function(x) x@rname)
+
 setMethod("cigar", "GappedAlignments", function(x) x@cigar)
+
+setMethod("width", "GappedAlignments", function(x) cigarToWidth(x@cigar))
+setMethod("start", "GappedAlignments", function(x, ...) x@start)
+setMethod("end", "GappedAlignments", function(x, ...) {x@start + width(x) - 1L})
+
+setMethod("strand", "GappedAlignments",
+    function(x) strand(IRanges:::compactBitvectorAsLogical(x@strand, length(x)))
+)
+
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
 
 setMethod("grglist", "GappedAlignments",
@@ -161,7 +171,9 @@ setMethod("grg", "GappedAlignments",
         GappedAlignmentsAsGRanges(rname(x), strand(x), start(x), width(x))
 )
 
-setMethod("width", "GappedAlignments", function(x) cigarToWidth(x@cigar))
+setMethod("rglist", "GappedAlignments",
+    function(x) cigarToIRangesListByAlignment(x@cigar, x@start)
+)
 
 setMethod("ngap", "GappedAlignments",
     function(x) {elementLengths(rglist(x)) - 1L}
@@ -169,7 +181,7 @@ setMethod("ngap", "GappedAlignments",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Used by the "rname<-" methods.
+### The "rname<-" method.
 ###
 
 normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
@@ -216,6 +228,14 @@ normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
                 "is not one-to-one")
     value
 }
+
+setReplaceMethod("rname", "GappedAlignments",
+    function(x, value)
+    {
+        x@rname <- normargRNameReplaceValue(x, value)
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -289,6 +309,106 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructors.
+###
+
+GappedAlignments <- function(rname=factor(), pos=integer(0),
+                             cigar=character(0), strand=NULL)
+{
+    if (!is.factor(rname) || !is.character(levels(rname))) {
+        if (!is.character(rname))
+            stop("'rname' must be a character vector/factor")
+        rname <- as.factor(rname)
+    }
+    if (any(is.na(rname)))
+        stop("'rname' cannot have NAs")
+    if (!is.integer(pos) || any(is.na(pos)))
+        stop("'pos' must be an integer vector with no NAs")
+    if (!is.character(cigar) || any(is.na(cigar)))
+        stop("'cigar' must be a character vector with no NAs")
+    if (is.null(strand)) {
+        if (length(rname) != 0L)
+            stop("'strand' must be specified when 'rname' is not empty")
+        strand <- strand()
+    } else if (!is.factor(strand)
+           || !identical(levels(strand), levels(strand())))
+        stop("invalid 'strand' argument")
+    strand <- IRanges:::logicalAsCompactBitvector(strand == "-")
+    new("GappedAlignments", rname=rname, start=pos, cigar=cigar, strand=strand)
+}
+
+readGappedAlignments <- function(file, format="BAM", ...)
+{
+    if (!isSingleString(file))
+        stop("'file' must be a single string")
+    if (!isSingleString(format))
+        stop("'format' must be a single string")
+    dotargs <- list(...)
+    if (length(dotargs) != 0L && is.null(names(dotargs)))
+        stop("extra arguments must be named")
+    if (format == "BAM") {
+        if ("index" %in% names(dotargs)) {
+            index <- dotargs$index
+            dotargs$index <- NULL
+        } else {
+            index <- file
+        }
+        if ("which" %in% names(dotargs)) {
+            which <- dotargs$which
+            dotargs$which <- NULL
+        } else {
+            which <- RangesList()
+        }
+        args <- c(list(file=file, index=index),
+                  dotargs,
+                  list(which=which))
+        suppressMessages(library("Rsamtools"))
+        ans <- do.call(readBamGappedAlignments, args)
+        return(ans)
+    }
+    stop("only BAM format is supported for now")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
+###
+
+### Supported 'i' types: numeric vector, logical vector, NULL and missing.
+setMethod("[", "GappedAlignments",
+    function(x, i, j, ... , drop=TRUE)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        if (!is.atomic(i))
+            stop("invalid subscript type")
+        lx <- length(x)
+        if (length(i) == 0L) {
+            i <- integer(0)
+        } else if (is.numeric(i)) {
+            if (min(i) < 0L)
+                i <- seq_len(lx)[i]
+            else if (!is.integer(i))
+                i <- as.integer(i)
+        } else if (is.logical(i)) {
+            if (length(i) > lx)
+                stop("subscript out of bounds")
+            i <- seq_len(lx)[i]
+        } else {
+            stop("invalid subscript type")
+        }
+        x@rname <- x@rname[i]
+        x@start <- x@start[i]
+        x@cigar <- x@cigar[i]
+        x@strand <- IRanges:::subsetCompactBitvector(x@strand, i)
+        x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "as.data.frame" and "show" methods.
 ###
 
@@ -354,40 +474,30 @@ setMethod("show", "GappedAlignments",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
+### The "updateCigarAndStart" method.
+###
+### Performs atomic update of the cigar/start information.
+### For internal use only (not exported).
 ###
 
-readGappedAlignments <- function(file, format="BAM", ...)
-{
-    if (!isSingleString(file))
-        stop("'file' must be a single string")
-    if (!isSingleString(format))
-        stop("'format' must be a single string")
-    dotargs <- list(...)
-    if (length(dotargs) != 0L && is.null(names(dotargs)))
-        stop("extra arguments must be named")
-    if (format == "BAM") {
-        if ("index" %in% names(dotargs)) {
-            index <- dotargs$index
-            dotargs$index <- NULL
-        } else {
-            index <- file
-        }
-        if ("which" %in% names(dotargs)) {
-            which <- dotargs$which
-            dotargs$which <- NULL
-        } else {
-            which <- RangesList()
-        }
-        args <- c(list(file=file, index=index),
-                  dotargs,
-                  list(which=which))
-        suppressMessages(library("Rsamtools"))
-        ans <- do.call(readBamGappedAlignments, args)
-        return(ans)
+setMethod("updateCigarAndStart", "GappedAlignments",
+    function(x, cigar=NULL, start=NULL)
+    {
+        if (is.null(cigar))
+            cigar <- cigar(x)
+        else if (!is.character(cigar) || length(cigar) != length(x))
+            stop("when not NULL, 'cigar' must be a character vector ",
+                 "of the same length as 'x'")
+        if (is.null(start))
+            start <- start(x)
+        else if (!is.integer(start) || length(start) != length(x))
+            stop("when not NULL, 'start' must be an integer vector ",
+                 "of the same length as 'x'")
+        x@cigar <- cigar
+        x@start <- start
+        x
     }
-    stop("only BAM format is supported for now")
-}
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
