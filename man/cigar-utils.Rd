@@ -323,11 +323,9 @@ extractCoverageFromBAM <- function(file)
   coverage(irl)
 }
 
-\dontrun{
 library(Rsamtools)
 f1 <- system.file("extdata", "ex1.bam", package="Rsamtools")
 extractCoverageFromBAM(f1)
-}
 }
 
 \keyword{manip}

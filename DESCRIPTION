@@ -6,14 +6,14 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 0.1.1
+Version: 0.1.2
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.74)
 Imports: methods, IRanges
 LinkingTo: IRanges
-Suggests: RUnit, GenomicFeatures, BSgenome
+Suggests: RUnit, GenomicFeatures, BSgenome, Rsamtools
 License: Artistic-2.0
 Collate: seqnames.R
 	strand.R
