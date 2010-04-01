@@ -129,6 +129,11 @@ function(seqnames = Rle(), ranges = IRanges(),
     if (!is.factor(runValue(strand)) ||
         !identical(levels(runValue(strand)), levels(strand())))
         runValue(strand) <- strand(runValue(strand))
+    whichMissingStrand <- which(is.na(runValue(strand)))
+    if (length(whichMissingStrand) > 0) {
+        warning("missing values in strand converted to \"*\"")
+        runValue(strand)[whichMissingStrand] <- "*"
+    }
 
     lx <- max(length(seqnames), length(ranges), length(strand))
     if (lx > 1) {
