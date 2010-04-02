@@ -61,7 +61,7 @@ setClass("GRanges", contains = "Sequence",
           c(msg, "slot 'seqlengths' names to not match 'levels(seqnames)'")
     if (any(x@seqlengths < 0L, na.rm = TRUE))
         msg <- c(msg, "slot 'seqlengths' contains negative values")
-    if (any(is.na(x@seqlengths))) {
+    if (IRanges:::anyMissing(x@seqlengths)) {
         if (!all(is.na(x@seqlengths)))
             msg <-
               c(msg,
@@ -129,10 +129,9 @@ function(seqnames = Rle(), ranges = IRanges(),
     if (!is.factor(runValue(strand)) ||
         !identical(levels(runValue(strand)), levels(strand())))
         runValue(strand) <- strand(runValue(strand))
-    whichMissingStrand <- which(is.na(runValue(strand)))
-    if (length(whichMissingStrand) > 0) {
+    if (IRanges:::anyMissing(runValue(strand))) {
         warning("missing values in strand converted to \"*\"")
-        runValue(strand)[whichMissingStrand] <- "*"
+        runValue(strand)[is.na(runValue(strand))] <- "*"
     }
 
     lx <- max(length(seqnames), length(ranges), length(strand))
@@ -335,7 +334,7 @@ setReplaceMethod("start", "GRanges",
         ranges <- ranges(x)
         starts <- start(ranges)
         starts[] <- value
-        if (all(!is.na(seqlengths(x)))) {
+        if (!IRanges:::anyMissing(seqlengths(x))) {
             if (IRanges:::anyMissingOrOutside(starts, 1L)) {
                 warning("trimmed start values to be positive")
                 starts[starts < 1L] <- 1L
@@ -355,7 +354,7 @@ setReplaceMethod("end", "GRanges",
         ends <- end(ranges)
         ends[] <- value
         seqlengths <- seqlengths(x)
-        if (all(!is.na(seqlengths))) {
+        if (!IRanges:::anyMissing(seqlengths)) {
             seqlengths <- seqlengths[levels(seqnames(x))]
             maxEnds <- seqlengths[as.integer(seqnames(x))]
             trim <- which(ends > maxEnds)
@@ -374,7 +373,7 @@ setReplaceMethod("width", "GRanges",
     {
         if (!is.integer(value))
             value <- as.integer(value)
-        if (all(!is.na(seqlengths(x)))) {
+        if (!IRanges:::anyMissing(seqlengths(x))) {
             end(x) <- start(x) + (value - 1L)
         } else {
             ranges <- ranges(x)
@@ -395,7 +394,7 @@ setMethod("resize", "GRanges",
         runValue(fix) <- as.character(runValue(fix))
         ranges <-
           resize(ranges(x), width = width, fix = fix, use.names = use.names)
-        if (all(!is.na(seqlengths(x)))) {
+        if (!IRanges:::anyMissing(seqlengths(x))) {
             start(x) <- start(ranges)
             end(x) <- end(ranges)
         } else {
@@ -409,7 +408,7 @@ setMethod("shift", "GRanges",
     function(x, shift, use.names = TRUE)
     {
         ranges <- shift(ranges(x), shift, use.names = use.names)
-        if (all(!is.na(seqlengths(x)))) {
+        if (!IRanges:::anyMissing(seqlengths(x))) {
             end(x) <- end(ranges)
             start(x) <- pmin.int(start(ranges), end(x))
         } else {
