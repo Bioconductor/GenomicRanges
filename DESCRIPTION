@@ -13,7 +13,7 @@ biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.74)
 Imports: methods, IRanges
 LinkingTo: IRanges
-Suggests: RUnit, GenomicFeatures, BSgenome, Rsamtools
+Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, leeBamViews
 License: Artistic-2.0
 Collate: seqnames.R
 	strand.R
