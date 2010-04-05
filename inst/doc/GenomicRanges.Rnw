@@ -1,0 +1,198 @@
+%\VignetteIndexEntry{The GenomicRanges infrastructure. Examples with RNA-Seq data}
+%\VignetteKeywords{annotation}
+%\VignettePackage{GenomicFeatures}
+\documentclass[11pt]{article}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+
+
+\title{The GenomicRanges infrastructure. Examples with RNA-Seq data}
+\author{Marc Carlson, Patrick Aboyoun, Herve Pages, Seth Falcon and Martin Morgan}
+
+\SweaveOpts{keep.source=TRUE}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+
+The \Rpackage{GenomicRanges} package introduces the
+\Rclass{GenomicRanges} and \Rclass{GappedAlignments} class which are
+highly useful for managing short read data.  \Rpackage{GenomicRanges}
+sits above the \Rpackage{IRanges}, \Rpackage{rtracklayer},
+\Rpackage{Rsamtools}, \Rpackage{BSgenome} and \Rpackage{Biostrings}
+packages and just below the annotation focused
+\Rpackage{GenomicFeatures package}.  Because of it's high level
+position in the hierarchy of bioconductor short read sequence packages
+the \Rpackage{GenomicRanges} package is a great place for an overview
+of how all these packages can be used together to solve some common
+problems.  For the 1st example we will focus on RNA-seq analysis.  But
+these tools can also be applied to other kinds of short read data
+analysis.
+
+
+It is also necessary to consider limitations imposed by BAM files and the
+way that they are read in.  BAM files can contain things that align
+to multiple places (multi-reads) and this makes things more complex
+since we don't know which things were aligned in this way.  Therefore
+if these things are not filtered out beforehand by the aligner, we
+will be counting some reads multiple times.  Also, because alignments
+consider the per base qualities of a sequence, it is also possible for
+the same called sequence to be aligned onto two different places.
+When we scan in the BAM file, these sequences will be read in based on
+their predicted positions from the aligner. Thus, they can count as
+different sequences even though they appear to be the same sequence
+(based on their base pairs).
+
+The \Rpackage{GenomicRanges} package can of course be loaded as any
+other and will bring along all of the relevant dependencies.
+
+<<loadGenomicRanges>>=
+library(GenomicRanges)
+@ 
+
+Lets begin by using the Rsamtools to get some actual from a yeast
+experiment and load it into a GappedAlignments object.  Here I will
+just load in a single file which contains RNA-seq data aligned from a
+wild type yeast experiment.  This particular file only has data from
+chromosome 13.  More data can of course be loaded, but for expediency
+in running this example, it will be ommitted from this example.
+
+<<YeastData>>=
+library(Rsamtools)
+testFile <- system.file("bam","isowt5_13e.bam",package="leeBamViews")
+anl <- readBamGappedAlignments(testFile)
+@
+
+At this point, we also have to consider carefully which build we have
+so that we can know which annotation we need.  For this data I am
+using data from Lee et all (PMID 19096707), which is available in the
+leeBamViews data package.  This data originates from Gavin Sherlocks
+group at Stanford and so naturally they designed their experiments
+with the SGD genomes in mind.  Therefore, it is probably reasonable to
+use the SGD genome assembly data for Saccharomyces cerevisiae when
+looking at their data.  This data is available from UCSC and is
+therefore also acessable through the \Rpackage{rtracklayer},
+\Rpackage{BSGenome} and \Rpackage{GenomicFeatures} packages.
+
+Now that we have chosen a data source to match the data that the genes
+were aligned to, we can simply get relevant annotation data to go with
+it.  The following code will load the \Rpackage{GenomicFeatures}
+package, and then create an annotation database based on material from
+the sgdGene track.
+
+<<GetAnnoations>>=
+library(GenomicFeatures) 
+txdb <- makeTranscriptDbFromUCSC(genome="sacCer2",tablename="sgdGene")
+@ 
+
+Then we simply have to retrieve data from the database.  But when we
+do so, we use the \Rfunction{exonsBy} method so that only exonic data
+will be retrieved.  Additionally, when we call \Rfunction{exonsBy}, we
+set the by parameter to "tx" so that the data is returned grouped
+according to the relevant transcripts.
+
+<<exonsBy>>=
+GRList <- exonsBy(txdb, "tx")
+@
+
+At this point, in spite of using the matching annotations for the
+data, there is still a discrepancy in how the chromosomes were named
+from one source to the next.  In our data these all start with "Sc",
+whereas in the annotations they do not.  Also, numbers of the
+chromosomes for the Annotation are given in classic roman numerals (as
+is traditional for yeast).  So lets quickly do a pair of simple
+substitutions to ammend the data so that it can match the annotations.
+
+<<ammendData>>=
+rname(anl) <- sub("^Sc","",rname(anl))
+rname(anl) <- sub("13","XIII",rname(anl))
+@ 
+
+
+Now we can count how many for each transcript, but since the GRList
+object only has ranges for exons, this use of countOverlaps will
+only consider the exon space when calculating the counts for each.
+<<count>>=
+counts <- countOverlaps(GRList, anl)
+@ 
+
+Using the annotation onbject, we can also get the number of bases
+representing each GRList element.  Note that this sum also only
+includes bases that are represented by the exons from each transcript.
+<<numBases>>=
+numBases <- sum(width(GRList))
+geneLengthsInKB <- (numBases/1000)
+@ 
+
+
+And from this we could (as an example) calculate the sum of the
+mappable reads and then calculate the RPKMs.
+% RPKM as intrepreted from python code:
+% RPKMs <- (counts/(sumMappable/1000000))/geneLengthsInKB
+To do that we 1st would need to calculate the total number of reads
+being considered by the experiment in millions of reads.
+<<RPKM>>=
+millionsMapped <- sum(counts)/1000000
+@ 
+
+Then we have to calculate the RPM by considering the number of reads
+for each transcript relative to this value.
+<<RPM>>=
+RPM <- counts/millionsMapped  ## counted reads / total reads in Millions
+@ 
+
+Finally, we calculate the RPKM by adjusting each RPM measurement for
+the length of the transcript in Kb.
+<<RPKM>>=
+RPKMs2 <- RPM/geneLengthsInKB ## reads per million per geneLength in Kb
+@ 
+
+
+
+
+
+
+
+
+% Some other ideas: 
+Retrieve data from the GenomicFeatures object for the range of a transcript.
+
+Convert that into a DNAStringSet so that we can search a BSGenome for
+the sequence (allowing for lots of gaps).
+
+See how many other instances of that are in a genome, pull those out,
+and then use GenomicFeatures again to identify those homologous
+ranges.
+
+
+
+
+
+
+
+\section{Getting data into a \Rclass{GenomeRanges}  object}
+
+\subsection{\Rclass{GenomeRanges} Objects}
+
+
+
+
+
+\section{Session Information}
+
+The version number of R and packages loaded for generating the vignette were:
+
+<<SessionInfo, echo=FALSE>>=
+sessionInfo()
+@
+
+\end{document}
