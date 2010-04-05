@@ -325,7 +325,6 @@
 }
 
 \examples{
-\dontrun{
 library(Rsamtools)  # the toy file below is there
 aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 aln1 <- readGappedAlignments(aln1_file)
@@ -418,7 +417,6 @@ sum(countOverlaps(aln1, grg(aln1)[1]))
 subsetByOverlaps(aln1, grg(aln1)[1])
 table(match(aln1, grg(aln1)[1]), useNA = "ifany")
 table(aln1 \%in\% grg(aln1)[1])
-}
 }
 
 \keyword{methods}

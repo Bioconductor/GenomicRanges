@@ -318,7 +318,7 @@ extractCoverageFromBAM <- function(file)
   bam <- scanBam(file, param=param)[[1]]
   ## Note that unmapped reads and reads that are PCR/optical duplicates
   ## have already been filtered out by using the ScanBamParam object above.
-  irl <- cigarToIRangesListByRName(as.vector(bam$cigar@.cigar), bam$rname, bam$pos)
+  irl <- cigarToIRangesListByRName(bam$cigar, bam$rname, bam$pos)
   irl <- irl[elementLengths(irl) != 0]  # drop empty elements
   coverage(irl)
 }
