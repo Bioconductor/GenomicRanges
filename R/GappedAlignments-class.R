@@ -6,7 +6,7 @@
 setClass("GappedAlignments",
     contains="Sequence",
     representation(
-        rname="factor",               # character factor
+        rname="Rle",                  # 'factor' Rle
         start="integer",              # POS field in SAM
         cigar="character",            # extended CIGAR (see SAM format specs)
         strand="raw"
@@ -17,10 +17,9 @@ setClass("GappedAlignments",
 
 ### Formal API:
 ###   length(x)   - single integer. Nb of alignments in 'x'.
-###   rname(x)    - character factor of the same length as 'x'.
+###   rname(x)    - 'factor' Rle of the same length as 'x'.
 ###   rname(x) <- value - replacement form of 'rname(x)'.
-###   strand(x)   - character factor of the same length as 'x' (levels: +, -,
-###                 *).
+###   strand(x)   - 'factor' Rle of the same length as 'x' (levels: +, -, *).
 ###   cigar(x)    - character vector of the same length as 'x'.
 ###   qwidth(x)   - integer vector of the same length as 'x'.
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
@@ -95,50 +94,24 @@ setGeneric("qnarrow",
 ### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
 ###
 
-GappedAlignmentsAsGRanges <- function(rname, strand, start, width, check=TRUE)
+.GappedAlignmentsAsGRanges <- function(rname, strand, start, width)
 {
-    if (check) {
-        if (is.factor(rname) && is.character(levels(rname)))
-            rname <- as.character(rname)
-        else if (!is.character(rname))
-            stop("'rname' must be a character vector/factor")
-        if (any(is.na(rname)))
-            stop("'rname' cannot have NAs")
-        if (!is.factor(strand) || !identical(levels(strand), levels(strand())))
-            stop("'strand' must be a character factor")
-        if (!is.integer(start))
-            stop("'start' must be an integer vector")
-        if (!is.integer(width))
-            stop("'width' must be an integer vector")
-    }
-    seqnames <- Rle(rname)
-    strand <- Rle(strand)
     ranges <- IRanges(start=start, width=width)
-    GRanges(seqnames=seqnames, ranges=ranges, strand=strand)
+    GRanges(seqnames=rname, ranges=ranges, strand=strand)
 }
 
-GappedAlignmentsAsGRangesList <- function(rname, strand, rglist, check=TRUE)
+.GappedAlignmentsAsGRangesList <- function(rname, strand, rglist)
 {
-    if (check) {
-        if (is.factor(rname) && is.character(levels(rname)))
-            rname <- as.character(rname)
-        else if (!is.character(rname))
-            stop("'rname' must be a character vector/factor")
-        if (any(is.na(rname)))
-            stop("'rname' cannot have NAs")
-        if (!is.factor(strand) || !identical(levels(strand), levels(strand())))
-            stop("'strand' must be a character factor")
-        if (!is(rglist, "CompressedNormalIRangesList"))
-            stop("'rglist' must be a CompressedNormalIRangesList object")
-    }
     nrg_per_alignment <- elementLengths(rglist)
-    seqnames <- Rle(rname, nrg_per_alignment)
-    strand <- Rle(strand, nrg_per_alignment)
+    seqnames <- rep.int(rname, nrg_per_alignment)
+    strand <- rep.int(strand, nrg_per_alignment)
     unlistData <- GRanges(seqnames=seqnames,
                           ranges=rglist@unlistData,
                           strand=strand)
-    new("GRangesList", unlistData=unlistData, partitioning=rglist@partitioning,
-        elementMetadata = new("DataFrame", nrows = length(rglist@partitioning)))
+    new("GRangesList",
+        unlistData=unlistData,
+        partitioning=rglist@partitioning,
+        elementMetadata=new("DataFrame", nrows=length(rglist@partitioning)))
 }
 
 
@@ -157,18 +130,19 @@ setMethod("start", "GappedAlignments", function(x, ...) x@start)
 setMethod("end", "GappedAlignments", function(x, ...) {x@start + width(x) - 1L})
 
 setMethod("strand", "GappedAlignments",
-    function(x) strand(IRanges:::compactBitvectorAsLogical(x@strand, length(x)))
+    function(x)
+        Rle(strand(IRanges:::compactBitvectorAsLogical(x@strand, length(x))))
 )
 
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
 
 setMethod("grglist", "GappedAlignments",
     function(x)
-        GappedAlignmentsAsGRangesList(rname(x), strand(x), rglist(x))
+        .GappedAlignmentsAsGRangesList(rname(x), strand(x), rglist(x))
 )
 setMethod("grg", "GappedAlignments",
     function(x)
-        GappedAlignmentsAsGRanges(rname(x), strand(x), start(x), width(x))
+        .GappedAlignmentsAsGRanges(rname(x), strand(x), start(x), width(x))
 )
 
 setMethod("rglist", "GappedAlignments",
@@ -193,35 +167,35 @@ normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
                               && !is.factor(runValue(value))))
         stop("'rname' value must be a character factor/vector, ",
              "or a 'character' Rle, or a 'factor' Rle")
-    if (ans.type == "factor" && !is.factor(value)) {
-        value <- as.factor(value)
+    if (ans.type == "factor") {
+        if (!is.factor(value))
+            value <- as.factor(value)
     } else if (ans.type == "Rle") {
-        ## We want to return a 'character' Rle.
+        ## We want to return a 'factor' Rle.
         if (!is(value, "Rle")) {
-            if (!is.character(value))
-                value <- as.character(value)
+            if (!is.factor(value))
+                value <- as.factor(value)
             value <- Rle(value)
-        } else if (!is.character(runValue(value))) {
-            runValue(value) <- as.character(runValue(value))
+        } else if (!is.factor(runValue(value))) {
+            runValue(value) <- as.factor(runValue(value))
         }
     }
     if (length(value) != length(x))
         stop("'rname' value must be the same length as the object")
 
     ## Check the mapping between old and new values.
-    old <- rname(x)  # guaranteed to be factor
-    if (ans.type == "factor") {
+    old <- rname(x)  # a 'factor' Rle
+    if (ans.type == "factor")
+        new <- Rle(value)
+    else
         new <- value
-    } else {
-        old <- Rle(old)
-        if (!identical(runLength(old), runLength(value))) {
-            warning("mapping between old an new 'rname' values ",
-                    "is not one-to-one")
-            return(value)
-        }
-        old <- runValue(old)
-        new <- runValue(value)
+    if (!identical(runLength(old), runLength(new))) {
+        warning("mapping between old an new 'rname' values ",
+                "is not one-to-one")
+        return(value)
     }
+    old <- runValue(old)
+    new <- runValue(new)
     mapping <- unique(data.frame(old=old, new=new))
     if (any(duplicated(mapping$old)) || any(duplicated(mapping$new)))
         warning("mapping between old an new 'rname' values ",
@@ -232,7 +206,7 @@ normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
 setReplaceMethod("rname", "GappedAlignments",
     function(x, value)
     {
-        x@rname <- normargRNameReplaceValue(x, value)
+        x@rname <- normargRNameReplaceValue(x, value, ans.type="Rle")
         x
     }
 )
@@ -256,9 +230,9 @@ setReplaceMethod("rname", "GappedAlignments",
 .valid.GappedAlignments.rname <- function(x)
 {
     x_rname <- rname(x)
-    if (!is.factor(x_rname) || !is.character(levels(x_rname))
+    if (!is(x_rname, "Rle") || !is.factor(runValue(x_rname))
      || !is.null(names(x_rname)) || any(is.na(x_rname)))
-        return("'rname(x)' must be an unnamed character factor with no NAs")
+        return("'rname(x)' must be an unnamed 'factor' Rle with no NAs")
     if (length(x_rname) != length(cigar(x)))
         return("'rname(x)' and 'cigar(x)' must have the same length")
     NULL
@@ -267,9 +241,10 @@ setReplaceMethod("rname", "GappedAlignments",
 .valid.GappedAlignments.strand <- function(x)
 {
     x_strand <- strand(x)
-    if (!is.factor(x_strand) || !identical(levels(x_strand), levels(strand()))
+    if (!is(x_strand, "Rle") || !is.factor(runValue(x_strand))
+     || !identical(levels(runValue(x_strand)), levels(strand()))
      || !is.null(names(x_strand)) || any(is.na(x_strand)))
-        return("'strand(x)' must be an unnamed character factor with no NAs (and with levels +, - and *)")
+        return("'strand(x)' must be an unnamed 'factor' Rle with no NAs (and with levels +, - and *)")
     if (length(x_strand) != length(cigar(x)))
         return("'strand(x)' and 'cigar(x)' must have the same length")
     NULL
@@ -312,14 +287,25 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
 ### Constructors.
 ###
 
-GappedAlignments <- function(rname=factor(), pos=integer(0),
+.asFactorRle <- function(x)
+{
+    if (is.character(x)) {
+        x <- Rle(as.factor(x))
+    } else if (is.factor(x)) {
+        x <- Rle(x)
+    } else if (is(x, "Rle") && is.character(runValue(x))) {
+        runValue(x) <- as.factor(runValue(x))
+    } else if (!is(x, "Rle") || !is.factor(runValue(x))) {
+        stop("'x' must be a character vector, a factor, ",
+             "a 'character' Rle, or a 'factor' Rle")
+    }
+    x
+}
+
+GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
                              cigar=character(0), strand=NULL)
 {
-    if (!is.factor(rname) || !is.character(levels(rname))) {
-        if (!is.character(rname))
-            stop("'rname' must be a character vector/factor")
-        rname <- as.factor(rname)
-    }
+    rname <- .asFactorRle(rname)
     if (any(is.na(rname)))
         stop("'rname' cannot have NAs")
     if (!is.integer(pos) || any(is.na(pos)))
@@ -329,11 +315,11 @@ GappedAlignments <- function(rname=factor(), pos=integer(0),
     if (is.null(strand)) {
         if (length(rname) != 0L)
             stop("'strand' must be specified when 'rname' is not empty")
-        strand <- strand()
-    } else if (!is.factor(strand)
-           || !identical(levels(strand), levels(strand())))
-        stop("invalid 'strand' argument")
-    strand <- IRanges:::logicalAsCompactBitvector(strand == "-")
+        strand <- Rle(strand())
+    } else if (is.factor(strand)) {
+        strand <- Rle(strand)
+    }
+    strand <- IRanges:::logicalAsCompactBitvector(as.character(strand) == "-")
     new("GappedAlignments", rname=rname, start=pos, cigar=cigar, strand=strand)
 }
 
@@ -382,6 +368,8 @@ setMethod("[", "GappedAlignments",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
+        if (is(i, "Rle"))
+            i <- as.vector(i)
         if (!is.atomic(i))
             stop("invalid subscript type")
         lx <- length(x)
@@ -417,8 +405,8 @@ setMethod("as.data.frame", "GappedAlignments",
     {
         if (!(is.null(row.names) || is.character(row.names)))
             stop("'row.names' must be NULL or a character vector")
-        ans <- data.frame(rname=rname(x),
-                          strand=strand(x),
+        ans <- data.frame(rname=as.character(rname(x)),
+                          strand=as.character(strand(x)),
                           cigar=cigar(x),
                           qwidth=qwidth(x),
                           start=start(x),
@@ -454,8 +442,8 @@ setMethod("show", "GappedAlignments",
                             "...",
                             as.vector(x[(length(x)-8L):length(x)]))
             showme <-
-              data.frame(rname=sketch(rname(object)),
-                         strand=sketch(strand(object)),
+              data.frame(rname=sketch(as.character(rname(object))),
+                         strand=sketch(as.character(strand(object))),
                          cigar=sketch(cigar(object)),
                          qwidth=sketch(qwidth(object)),
                          start=sketch(start(object)),
