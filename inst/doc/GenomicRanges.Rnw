@@ -90,6 +90,9 @@ data. This data is available from UCSC and is therefore also accessible
 through the \Rpackage{rtracklayer}, \Rpackage{BSGenome} and
 \Rpackage{GenomicFeatures} packages.
 
+
+\subsection{Getting relevant genomic annotations} 
+
 Now that we have chosen a data source to match the data that the genes
 were aligned to, we can simply get relevant annotation data to go with
 it. The following code will load the \Rpackage{GenomicFeatures}
@@ -123,8 +126,11 @@ rname(aligns) <- sub("^Sc", "", rname(aligns))
 rname(aligns) <- sub("13", "XIII", rname(aligns))
 @ 
 
-Now we can count how many for each transcript, but since the
-\Robject{exonRanges} object only has ranges for exons, this use of
+
+\subsection{Counting reads that overlap the annotations} 
+
+Now we can count how many reads mapped to each transcript.  And, since
+the \Robject{exonRanges} object only has ranges for exons, this use of
 \Rfunction{countOverlaps} will only consider the exon space when
 calculating the counts for each.
 <<count>>=
@@ -164,10 +170,12 @@ the length of the transcript in Kb.
 rpkm <- rpm/geneLengthsInKB
 @ 
 
+\subsection{Identifying and learning more about interesting transcripts} 
+
 Now that we have calculated the RPKM, we can start to ask basic
 questions about the results.  For example, which of the transcripts
 had the two highest scores?  We can get this easily, because rpkm and
-exonRanges will both be listed in the same order.
+exonRanges will both be listed in the same order. 
 
 <<sort>>=
 sortedRPKM <- sort(rpkm)
@@ -179,7 +187,7 @@ same as the index of exonRanges we need to retrieve?  We can therefore
 see that transcript 6678 and 6676 are also the IDs of the transcript
 with the highest RPKM. So we can use the \Rmethod{transcripts}
 accessor learn which gene that transcript is associated with like
-this:
+this: 
 
 <<annotate1>>=
 transcripts(txdb, 
@@ -188,7 +196,7 @@ transcripts(txdb,
 @ 
 
 Once you know the gene id, you can use gene-centric annotation data
-sources such as the org packages to learn more about it:
+sources such as the org packages to learn more about it: 
 
 <<annnotate2>>=
 library(org.Sc.sgd.db)
@@ -207,11 +215,8 @@ toTable(org.Sc.sgdGENENAME[c("YMR297W","YMR295C")])
 % and then use \Rpackage{GenomicFeatures} again to identify those
 % homologous ranges.
 
-
-
-\section{Getting data into a \Rclass{GenomeRanges}  object}
-
-\subsection{\Rclass{GenomeRanges} Objects}
+% \section{Getting data into a \Rclass{GenomeRanges}  object}
+% \subsection{\Rclass{GenomeRanges} Objects} 
 
 
 
