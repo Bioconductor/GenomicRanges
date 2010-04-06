@@ -13,11 +13,11 @@
 
 
 \title{The GenomicRanges infrastructure. Examples with RNA-Seq data}
-\author{Marc Carlson, Patrick Aboyoun, Herve Pages, Seth Falcon and Martin Morgan}
+\author{Marc Carlson, Patrick Aboyoun, Herve Pages, Seth Falcon and Martin Morgan} 
 
-\SweaveOpts{keep.source=TRUE}
+\SweaveOpts{keep.source=TRUE} 
 
-\begin{document}
+\begin{document} 
 
 \maketitle
 
@@ -43,10 +43,14 @@ and can be downloaded via \Rfunction{biocLite}:
 <<biocLite, eval=FALSE>>=
 source("http://bioconductor.org/biocLite.R")
 biocLite("GenomicRanges")
-@
+@ 
 <<initialize, results=hide>>=
 library(GenomicRanges)
-@
+@ 
+
+
+%\section{Chip-seq analysis}
+% Here is where Patrick can insert a section on chip-seq analysis. 
 
 
 \section{Simple RNA-seq Analysis}
@@ -202,6 +206,17 @@ sources such as the org packages to learn more about it:
 library(org.Sc.sgd.db)
 toTable(org.Sc.sgdGENENAME[c("YMR297W","YMR295C")])
 @ 
+
+
+% NEXT: Add a subsection on finding UNKNOWN transcribed regions.
+% Basically, 1) use the annotations to filter out reads from the aligned
+% reads object, and then 2) use chipseq tools to do pileups, and then
+% apply cutoffs to find putative transcribed regions.
+
+
+
+
+
 
 
 % Some other ideas: 
