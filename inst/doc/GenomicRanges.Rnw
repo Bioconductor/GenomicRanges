@@ -164,18 +164,48 @@ the length of the transcript in Kb.
 rpkm <- rpm/geneLengthsInKB
 @ 
 
+Now that we have calculated the RPKM, we can start to ask basic
+questions about the results.  For example, which of the transcripts
+had the two highest scores?  We can get this easily, because rpkm and
+exonRanges will both be listed in the same order.
+
+<<sort>>=
+sortedRPKM <- sort(rpkm)
+tail(sortedRPKM)
+@ 
+
+From the above output, notice how the names of the sortedRPKM are the
+same as the index of exonRanges we need to retrieve?  We can therefore
+see that transcript 6678 and 6676 are also the IDs of the transcript
+with the highest RPKM. So we can use the \Rmethod{transcripts}
+accessor learn which gene that transcript is associated with like
+this:
+
+<<annotate1>>=
+transcripts(txdb, 
+            vals=list(tx_id=c("6678","6676")), 
+            columns=c("tx_id","gene_id"))
+@ 
+
+Once you know the gene id, you can use gene-centric annotation data
+sources such as the org packages to learn more about it:
+
+<<annnotate2>>=
+library(org.Sc.sgd.db)
+toTable(org.Sc.sgdGENENAME[c("YMR297W","YMR295C")])
+@ 
 
 
 % Some other ideas: 
-Retrieve data from the \Rclass{GenomicFeatures} object for the range of
-a transcript.
+% Retrieve data from the \Rclass{GenomicFeatures} object for the range of
+% a transcript.
 
-Convert that into a \Rclass{DNAStringSet} so that we can search a
-\Rclass{BSgenome} for the sequence (allowing for lots of gaps).
+% Convert that into a \Rclass{DNAStringSet} so that we can search a
+% \Rclass{BSgenome} for the sequence (allowing for lots of gaps).
 
-See how many other instances of that are in a genome, pull those out,
-and then use \Rpackage{GenomicFeatures} again to identify those
-homologous ranges.
+% See how many other instances of that are in a genome, pull those out,
+% and then use \Rpackage{GenomicFeatures} again to identify those
+% homologous ranges.
 
 
 
