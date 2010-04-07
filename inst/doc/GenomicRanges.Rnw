@@ -141,10 +141,13 @@ calculating the counts for each.
 counts <- countOverlaps(exonRanges, aligns)
 @ 
 
-Using the annotation object, we can also get the number of bases
-representing each \Robject{exonRanges} element.  Note that this sum also
-only includes bases that are represented by the exons from each
-transcript.
+For simplicities sake, we will now calculate the RPKM.  This is not
+meant as an endorsement of any one measure over any other, it's just
+being used here as an example that users will probably have
+encountered before. Using the annotation object, we can also get the
+number of bases representing each \Robject{exonRanges} element.  Note
+that this sum also only includes bases that are represented by the
+exons from each transcript.
 <<numBases>>=
 numBases <- sum(width(exonRanges))
 geneLengthsInKB <- (numBases/1000)
@@ -208,12 +211,50 @@ toTable(org.Sc.sgdGENENAME[c("YMR297W","YMR295C")])
 @ 
 
 
-% NEXT: Add a subsection on finding UNKNOWN transcribed regions.
+
+
+% NEXT: Compete the subsection on finding UNKNOWN transcribed regions.
 % Basically, 1) use the annotations to filter out reads from the aligned
 % reads object, and then 2) use chipseq tools to do pileups, and then
 % apply cutoffs to find putative transcribed regions.
 
 
+\subsection{Identifying reads that do NOT overlap known annotation} 
+
+At this point you might be satisfied with calculating the amount of
+known genes in your model, but what if you wanted to know about
+regions that were transcribed but which were NOT found amongst the
+annotated transcripts?  To look at these you would 1st want to filter
+out transcripts that are known from your dataset using
+\Rfunction{subsetByOverlaps}.
+
+<<filterKnowns>>=
+filtData <- subsetByOverlaps(aligns, exonRanges)
+filtData
+@
+
+At this point, the filtData object only contains ranges that did not
+overlap with any of the known exons from Saccharomycess cerevisiae.
+It is interesting to note that in spite of having removed all known
+exons, this object still contains about half of the original set of
+aligned reads.  
+
+If a coarser level of filtering is desired, you could also use the
+output of \Rmethod{transcriptsBy} as the subject argument for
+\Rmethod{subsetByOverlaps}.
+Doing so would look like this:
+
+<<filterKnowns2>>=
+filtData2 <- subsetByOverlaps(aligns, transcriptsBy(txdb, "gene"))
+filtData2
+@ 
+
+In this specific case, you can see that not many additional things
+have been filtered out by the coarser filtering which indicates that
+not many of these unknown aligned reads are from intronic regions.
+Going forward in this example, we will use the set that has only
+filtered out the exons just so that we can look at the set of reads
+that is complementary to the ones we just counted..
 
 
 
