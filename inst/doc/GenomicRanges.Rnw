@@ -267,6 +267,12 @@ cov <- coverage(filtData)
 @ 
 
 Since we only have data for chromosome 13, lets subset down to that.
+Notice that in using the coverage method we lose the strand
+information.  This is ok in this case, since the experiment has not
+preserved the strand information anyhow.  If you had data that
+measured each strand separately, then you would want to call coverage
+twice at this point to keep the results separated.
+
 <<coverageSubset>>=
 cov <- cov[13]
 @ 
@@ -286,19 +292,11 @@ transcribedRegions <- islands[width(islands)> 1000]
 txr <- islands[width(islands)> 1000]
 @ 
 
-Having done that, we should then be able to go back to the BSGenome
-object and retrieve the actual sequences.
-
-% IN ADDITION to needing a simplified method here, we also need a way
-% to cast back up from the simpler view to a more complex object
-% represented by a GenomicRanges object. Specifically, when we have the
-% view, we LOST the strand and the chromosome.  We have to either
-% consider BOTH possible strands, or else get that from before.  For
-% Chromosome, we have to retrieve the lost information from before
-
-% IN FACT, we have to recover the strand and csome info. from before...  
-
-% How best to do that???  Use findOverlaps on original data?
+Finally, we should then be able to go back to the BSGenome object and
+retrieve the actual sequences.  In order to recover these sequences,
+we are going to specify that this data came from chromosome 13, and we
+will just retrieve the plus strand version of each (since the
+experiment collapsed that data anyhow).
 
 <<getSequence>>=
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
