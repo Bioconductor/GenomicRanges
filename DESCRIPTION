@@ -13,7 +13,8 @@ biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.5.74)
 Imports: methods, IRanges
 LinkingTo: IRanges
-Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, leeBamViews, org.Sc.sgd.db
+Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, leeBamViews,
+          org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
 License: Artistic-2.0
 Collate: seqnames.R
 	strand.R
