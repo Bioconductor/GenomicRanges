@@ -257,6 +257,65 @@ filtered out the exons just so that we can look at the set of reads
 that is complementary to the ones we just counted..
 
 
+The next step in looking for transcripts that are unknown is to see
+where the reads are located on the genome.  To do that we will use a
+function originally developed for chip-seq analysis.  The
+\Rfunction{coverage} method.
+
+<<coverage>>=
+cov <- coverage(filtData)
+@ 
+
+Since we only have data for chromosome 13, lets subset down to that.
+<<coverageSubset>>=
+cov <- cov[13]
+@ 
+
+And now we can slice that data so that we only consider islands where
+things are continuously 1 read deep.
+
+<<islands>>=
+islands <- slice(cov, lower=1)
+@ 
+
+Having identified those, we can then filter out just the islands where
+the final width is at least 1000 bases long.
+
+<<continous >1000>>=
+transcribedRegions <- islands[width(islands)> 1000]
+txr <- islands[width(islands)> 1000]
+@ 
+
+Having done that, we should then be able to go back to the BSGenome
+object and retrieve the actual sequences.
+
+% IN ADDITION to needing a simplified method here, we also need a way
+% to cast back up from the simpler view to a more complex object
+% represented by a GenomicRanges object. Specifically, when we have the
+% view, we LOST the strand and the chromosome.  We have to either
+% consider BOTH possible strands, or else get that from before.  For
+% Chromosome, we have to retrieve the lost information from before
+
+% IN FACT, we have to recover the strand and csome info. from before...  
+
+% How best to do that???  Use findOverlaps on original data?
+
+<<getSequence>>=
+library(BSgenome.Scerevisiae.UCSC.sacCer2)
+getYeastSequence = function(data){
+  chr = rep("chrXIII",length(start(data[[1]])))
+  starts = start(data[[1]])
+  ends = end(data[[1]])
+  strands = rep("+",length(start(data[[1]])))
+  getSeq(Scerevisiae, names=chr, start=starts, end=ends, strand=strands)
+}
+DNASet <- getYeastSequence(transcribedRegions)
+@ 
+
+
+
+% The next step after here is to compare these strings to the BSgenome and see if there are homologs, and if not, to then see if they are repeated etc.?
+
 
 
 
