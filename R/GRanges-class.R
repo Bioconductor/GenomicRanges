@@ -734,93 +734,96 @@ setMethod("window", "GRanges",
 ### show method.
 ###
 
-setMethod("show", "GRanges",
-    function(object)
-    {
-        lo <- length(object)
-        nc <- ncol(object@elementMetadata)
-        cat(class(object), " with ",
-            lo, ifelse(lo == 1, " range and ", " ranges and "),
-            nc, ifelse(nc == 1, " elementMetadata value\n",
-                       " elementMetadata values\n"),
+.showGRanges <-
+function(object, print.seqlengths = FALSE)
+{
+    lo <- length(object)
+    nc <- ncol(object@elementMetadata)
+    cat(class(object), " with ",
+        lo, ifelse(lo == 1, " range and ", " ranges and "),
+        nc, ifelse(nc == 1, " elementMetadata value\n",
+                   " elementMetadata values\n"),
             sep = "")
-        if (lo == 0) {
+    if (lo == 0) {
+        out <-
+          matrix(nrow = 0L, ncol = 4L + nc,
+                 dimnames = list(NULL,
+                                 c("seqnames", "ranges", "strand", "|",
+                                   colnames(elementMetadata(object)))))
+    } else {
+        nms <- names(object)
+        if (lo < 20) {
             out <-
-              matrix(nrow = 0L, ncol = 4L + nc,
-                     dimnames =
-                     list(NULL,
-                          c("seqnames", "ranges", "strand", "|",
-                            colnames(elementMetadata(object)))))
+              cbind(seqnames = as.character(seqnames(object)),
+                    ranges = IRanges:::showAsCell(ranges(object)),
+                    strand = as.character(strand(object)),
+                    "|" = rep.int("|", lo))
+            if (nc > 0)
+                out <-
+                  cbind(out,
+                        as.matrix(format(do.call(data.frame,
+                                                 lapply(elementMetadata(object),
+                                                        IRanges:::showAsCell)))))
+            if (is.null(nms))
+                rownames(out) <-
+                  format(paste("[", seq_len(lo), "]", sep = ""),
+                         justify = "right")
+            else
+                rownames(out) <- format(nms, justify = "right")
+            classinfo <-
+              matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
+                       unlist(lapply(elementMetadata(object), function(x)
+                                     paste("<", class(x), ">", sep = "")),
+                              use.names = FALSE)), nrow = 1,
+                     dimnames = list("", colnames(out)))
         } else {
-            nms <- names(object)
-            if (lo < 20) {
+            top <- object[1:9]
+            bottom <- object[(lo-8L):lo]
+            out <-
+              rbind(cbind(seqnames = as.character(seqnames(top)),
+                          ranges = IRanges:::showAsCell(ranges(top)),
+                          strand = as.character(strand(top)),
+                          "|" = rep.int("|", 9)),
+                    rbind(rep.int("...", 4)),
+                    cbind(seqnames = as.character(seqnames(bottom)),
+                          ranges = IRanges:::showAsCell(ranges(bottom)),
+                          strand = as.character(strand(bottom)),
+                          "|" = rep.int("|", 9)))
+            if (nc > 0)
                 out <-
-                  cbind(seqnames = as.character(seqnames(object)),
-                        ranges = IRanges:::showAsCell(ranges(object)),
-                        strand = as.character(strand(object)),
-                        "|" = rep.int("|", lo))
-                if (nc > 0)
-                    out <-
-                      cbind(out,
-                            as.matrix(format(do.call(data.frame,
-                                             lapply(elementMetadata(object),
-                                                    IRanges:::showAsCell)))))
-                if (is.null(nms))
-                    rownames(out) <-
-                      format(paste("[", seq_len(lo), "]", sep = ""),
-                             justify = "right")
-                else
-                    rownames(out) <- format(nms, justify = "right")
-                classinfo <-
-                  matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                           unlist(lapply(elementMetadata(object), function(x)
-                                         paste("<", class(x), ">", sep = "")),
-                                  use.names = FALSE)), nrow = 1,
-                         dimnames = list("", colnames(out)))
+                  cbind(out,
+                        rbind(as.matrix(format(do.call(data.frame,
+                                                       lapply(elementMetadata(top),
+                                                              IRanges:::showAsCell)))),
+                                        rbind(rep.int("...", nc)),
+                                        rbind(as.matrix(format(do.call(data.frame,
+                                                                        lapply(elementMetadata(bottom),
+                                                                               IRanges:::showAsCell)))))))
+            if (is.null(nms)) {
+                rownames(out) <-
+                  format(c(paste("[", 1:9, "]", sep = ""), "...",
+                           paste("[", (lo-8L):lo, "]", sep = "")),
+                         justify = "right")
             } else {
-                top <- object[1:9]
-                bottom <- object[(lo-8L):lo]
-                out <-
-                  rbind(cbind(seqnames = as.character(seqnames(top)),
-                              ranges = IRanges:::showAsCell(ranges(top)),
-                              strand = as.character(strand(top)),
-                              "|" = rep.int("|", 9)),
-                        rbind(rep.int("...", 4)),
-                        cbind(seqnames = as.character(seqnames(bottom)),
-                              ranges = IRanges:::showAsCell(ranges(bottom)),
-                              strand = as.character(strand(bottom)),
-                              "|" = rep.int("|", 9)))
-                if (nc > 0)
-                    out <-
-                      cbind(out,
-                            rbind(as.matrix(format(do.call(data.frame,
-                                             lapply(elementMetadata(top),
-                                                    IRanges:::showAsCell)))),
-                            rbind(rep.int("...", nc)),
-                            rbind(as.matrix(format(do.call(data.frame,
-                                             lapply(elementMetadata(bottom),
-                                                    IRanges:::showAsCell)))))))
-                if (is.null(nms)) {
-                    rownames(out) <-
-                      format(c(paste("[", 1:9, "]", sep = ""), "...",
-                               paste("[", (lo-8L):lo, "]", sep = "")),
-                             justify = "right")
-                } else {
-                    rownames(out) <-
-                      format(c(head(nms, 9), "...", tail(nms, 9)),
-                             justify = "right")
-                }
-                classinfo <-
-                  matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                           unlist(lapply(elementMetadata(top), function(x)
-                                         paste("<", class(x), ">", sep = "")),
-                                  use.names = FALSE)), nrow = 1,
-                         dimnames = list("", colnames(out)))
+                rownames(out) <-
+                  format(c(head(nms, 9), "...", tail(nms, 9)),
+                         justify = "right")
             }
-            out <- rbind(classinfo, out)
+            classinfo <-
+              matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
+                       unlist(lapply(elementMetadata(top), function(x)
+                                     paste("<", class(x), ">", sep = "")),
+                              use.names = FALSE)), nrow = 1,
+                     dimnames = list("", colnames(out)))
         }
-        print(out, quote = FALSE, right = TRUE)
+        out <- rbind(classinfo, out)
+    }
+    print(out, quote = FALSE, right = TRUE)
+    if (print.seqlengths) {
         cat("\nseqlengths\n")
         print(seqlengths(object))
     }
-)
+}
+
+setMethod("show", "GRanges",
+          function(object) .showGRanges(object, print.seqlengths = TRUE))

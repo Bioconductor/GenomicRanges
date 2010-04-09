@@ -217,7 +217,7 @@ setReplaceMethod("elementMetadata", "GRangesList",
                     stop(k, " rows in value to replace ", n, "rows")
                 value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
             }
-            x@elementData <- value
+            x@elementMetadata <- value
         } else {
             if (is.null(value)) {
                 value <- new("DataFrame", nrows = length(x@unlistData))
@@ -398,9 +398,22 @@ setMethod("show", "GRangesList",
         N <- tail(cumsumN, 1)
         cat(class(object), " of length ", k, "\n", sep = "")
         if (k == 0L) {
-            cat("<0 elements>\n")
+            cat("<0 elements>\n\n")
         } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
-            show(as.list(object))
+            nms <- names(object)
+            defnms <- paste("[[", seq_len(k), "]]", sep="")
+            if (is.null(nms)) {
+                nms <- defnms
+            } else {
+                empty <- nchar(nms) == 0L
+                nms[empty] <- defnms[empty]
+                nms[!empty] <- paste("$", nms[!empty], sep="")
+            }
+            for (i in seq_len(k)) {
+                cat(nms[i], "\n")
+                .showGRanges(object[[i]])
+                cat("\n")
+            }
         } else {
             sketch <- function(x) c(head(x, 3), "...", tail(x, 3))
             if (k >= 3 && cumsumN[3L] <= 20)
@@ -410,11 +423,27 @@ setMethod("show", "GRangesList",
             else
                 showK <- 1
             diffK <- k - showK
-            show(as.list(object[seq_len(showK)]))
-            if (diffK > 0)
+            nms <- names(object)[seq_len(showK)]
+            defnms <- paste("[[", seq_len(showK), "]]", sep="")
+            if (is.null(nms)) {
+                nms <- defnms
+            } else {
+                empty <- nchar(nms) == 0L
+                nms[empty] <- defnms[empty]
+                nms[!empty] <- paste("$", nms[!empty], sep="")
+            }
+            for (i in seq_len(showK)) {
+                cat(nms[i], "\n")
+                .showGRanges(object[[i]])
+                cat("\n")
+            }
+            if (diffK > 0) {
                 cat("...\n<", k - showK,
-                    ifelse(diffK == 1, " more element>\n", " more elements>\n"),
+                    ifelse(diffK == 1, " more element>\n\n", " more elements>\n\n"),
                     sep="")
+            }
         }
+        cat("seqlengths\n")
+        print(seqlengths(object))
     }
 )
