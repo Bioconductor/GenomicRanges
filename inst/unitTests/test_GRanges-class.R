@@ -215,6 +215,17 @@ test_GRanges_Ranges <- function() {
     width(gr) <- as.numeric(10L + seq_len(length(gr)))
     checkIdentical(width(gr), 10L + seq_len(length(gr)))
 
+    ## flank
+    gr <- make_test_GRanges()
+    flanked <- flank(gr, 10)
+    checkIdentical(rep(10L, length(gr)), width(flanked))
+    checkIdentical(ifelse(as.vector(strand(gr) != "-"),
+                          start(gr) - 10L, end(gr) + 1L), start(flanked))
+    flanked <- flank(gr, 10, FALSE)
+    checkIdentical(rep(10L, length(gr)), width(flanked))
+    checkIdentical(ifelse(as.vector(strand(gr) != "-"),
+                          end(gr) + 1L, start(gr) - 10L), start(flanked))
+
     ## resize
     gr <- make_test_GRanges()
     checkException(resize(gr, 10, fix = "end"), silent = TRUE)

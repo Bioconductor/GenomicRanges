@@ -384,6 +384,23 @@ setReplaceMethod("width", "GRanges",
     }
 )
 
+setMethod("flank", "GRanges",
+    function(x, width, start = TRUE, both = FALSE, use.names = TRUE)
+    {
+        start <- as.vector(start == (strand(x) != "-"))
+        ranges <-
+          flank(ranges(x), width = width, start = start, both = both,
+                use.names = use.names)
+        if (!IRanges:::anyMissing(seqlengths(x))) {
+            start(x) <- start(ranges)
+            end(x) <- end(ranges)
+        } else {
+            x <- initialize(x, ranges = ranges)
+        }
+        x
+    }
+)
+
 setMethod("resize", "GRanges",
     function(x, width, fix = "start", use.names = TRUE)
     {

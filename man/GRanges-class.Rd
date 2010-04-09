@@ -34,6 +34,7 @@
 \alias{end<-,GRanges-method}
 \alias{width,GRanges-method}
 \alias{width<-,GRanges-method}
+\alias{flank,GRanges-method}
 \alias{resize,GRanges-method}
 \alias{shift,GRanges-method}
 \alias{disjoin,GRanges-method}
@@ -187,11 +188,25 @@
       Gets or sets \code{width(ranges(x))}.
     }
     \item{}{
+      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE)}:
+      Returns a new GRanges object containing intervals of width \code{width}
+      that flank the intervals in \code{x}.
+      The \code{start} argument takes a logical indicating whether \code{x}
+      should be flanked at the "start" (\code{TRUE}) or the "end"
+      (\code{FALSE}), which for \code{strand(x) != "-"} is \code{start(x)} and
+      \code{end(x)} respectively and for \code{strand(x) == "-"} is 
+      code{end(x)} and \code{start(x)} respectively.
+      The \code{both} argument takes a single logical value indicating whether
+      the flanking region \code{width} positions extends \emph{into} the range.
+      If \code{both = TRUE}, the resulting range thus straddles the end point,
+      with \code{width} positions on either side.
+    }
+    \item{}{
       \code{resize(x, width, use.names = TRUE)}:
       Returns a new GRanges object containing intervals that have been
       resized to width \code{width} based on the \code{strand(x)} values.
-      Elements where \code{strand = "+"} are anchored at \code{start(x)},
-      elements where \code{strand = "-"} are anchored at the \code{end(x)},
+      Elements where \code{strand(x) == "+"} are anchored at \code{start(x)},
+      elements where \code{strand(x) == "-"} are anchored at the \code{end(x)},
       and elements where \code{strand = "*"} are anchored at
       \code{(end(x) - start(x))\%/\%2}. The \code{use.names} argument
       determines whether or not to keep the names on the ranges.
@@ -410,6 +425,7 @@
   gr
 
   # Intra-interval operations
+  flank(gr, 10)
   resize(gr, 10)
   shift(gr, 1)
 
