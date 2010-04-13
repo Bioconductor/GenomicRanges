@@ -5,6 +5,7 @@
 \alias{strand}
 \alias{strand,missing-method}
 \alias{strand,character-method}
+\alias{strand,factor-method}
 \alias{strand,logical-method}
 \alias{strand,DataTable-method}
 \alias{strand<-}
@@ -28,7 +29,7 @@
   standard levels that any strand factor should have: \code{+},
   \code{-}, and \code{*} (for either).
 
-  If \code{x} is a character vector, it is coerced to a factor
+  If \code{x} is a character vector or factor, it is coerced to a factor
   with the levels listed above.
 
   If \code{x} is a logical vector, it is coerced to a factor

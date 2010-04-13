@@ -13,6 +13,15 @@ setMethod("strand", "character",
         factor(x, levels=lvls)
     })
 
+setMethod("strand", "factor",
+          function(x) {
+            lvls <- levels(strand())
+            if (length(setdiff(levels(x), lvls)))
+              stop("strand values must be in '", paste(lvls, collapse="' '"),
+                   "'")
+            factor(x, levels=lvls)
+          })
+
 setMethod("strand", "logical",
     function(x) {
         ans <- strand()
