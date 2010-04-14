@@ -186,7 +186,7 @@ exonRanges will both be listed in the same order.
 
 <<sort>>=
 sortedRPKM <- sort(rpkm)
-tail(sortedRPKM)
+highScoreGenes <- tail(sortedRPKM)
 @ 
 
 From the above output, notice how the names of the sortedRPKM are the
@@ -197,9 +197,10 @@ accessor learn which gene that transcript is associated with like
 this: 
 
 <<annotate1>>=
-transcripts(txdb, 
-            vals=list(tx_id=c("6678","6676")), 
-            columns=c("tx_id","gene_id"))
+txs <- transcripts(txdb, 
+                   vals=list(tx_id=names(highScoreGenes)), 
+                   columns=c("tx_id","gene_id"))
+systNames <- as.vector(unlist(elementMetadata(txs)["gene_id"]))
 @ 
 
 Once you know the gene id, you can use gene-centric annotation data
@@ -207,7 +208,7 @@ sources such as the org packages to learn more about it:
 
 <<annnotate2>>=
 library(org.Sc.sgd.db)
-toTable(org.Sc.sgdGENENAME[c("YMR297W","YMR295C")])
+toTable(org.Sc.sgdGENENAME[systNames])
 @ 
 
 
@@ -251,11 +252,12 @@ filtData2
 
 In this specific case, you can see that not many additional things
 have been filtered out by the coarser filtering which indicates that
-not many of these unknown aligned reads are from intronic regions.
-Going forward in this example, we will use the set that has only
-filtered out the exons just so that we can look at the set of reads
-that is complementary to the ones we just counted..
-
+not many of these unknown aligned reads are from intronic or
+untranslated regions.  This makes sense, since introns in yeast tend
+to be rare, infrequent and small.  Going forward in this example, we
+will use the set that has only filtered out the exons just so that we
+can look at the set of reads that is complementary to the ones we just
+counted..
 
 The next step in looking for transcripts that are unknown is to see
 where the reads are located on the genome.  To do that we will use a
@@ -307,9 +309,15 @@ getYeastSequence = function(data){
   strands = rep("+",length(start(data[[1]])))
   getSeq(Scerevisiae, names=chr, start=starts, end=ends, strand=strands)
 }
-DNASet <- getYeastSequence(transcribedRegions)
+DNASet <- DNAStringSet(getYeastSequence(transcribedRegions))
 @ 
 
+
+
+% <<translate>>=
+% DNASet <- DNAStringSet(DNASet)
+% translate(DNASet)
+% @ 
 
 
 % The next step after here is to compare these strings to the BSgenome and see if there are homologs, and if not, to then see if they are repeated etc.?
