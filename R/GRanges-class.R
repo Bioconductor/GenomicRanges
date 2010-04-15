@@ -751,6 +751,31 @@ setMethod("window", "GRanges",
 ### show method.
 ###
 
+.showSeqlengths <-
+function(object)
+{
+    seqlens <- seqlengths(object)
+    nseq <- length(seqlens)
+    halfWidth <- getOption("width") %/% 2L
+    first <- max(1L, halfWidth)
+    showMatrix <-
+      rbind(as.character(head(names(seqlens), first)),
+            as.character(head(seqlens, first)))
+    if (nseq > first) {
+        last <- min(nseq - first, halfWidth)
+        showMatrix <-
+          cbind(showMatrix,
+                rbind(as.character(tail(names(seqlens), last)),
+                      as.character(tail(seqlens, last))))
+    }
+    showMatrix <- format(showMatrix, justify = "right")
+    cat("\nseqlengths\n")
+    cat(IRanges:::labeledLine("", showMatrix[1L,], count = FALSE,
+        labelSep = ""))
+    cat(IRanges:::labeledLine("", showMatrix[2L,], count = FALSE,
+        labelSep = ""))
+}
+
 .showGRanges <-
 function(object, print.seqlengths = FALSE)
 {
@@ -837,26 +862,7 @@ function(object, print.seqlengths = FALSE)
     }
     print(out, quote = FALSE, right = TRUE)
     if (print.seqlengths) {
-        seqlens <- seqlengths(object)
-        nseq <- length(seqlens)
-        halfWidth <- getOption("width") %/% 2L
-        first <- max(1L, halfWidth)
-        showMatrix <-
-          rbind(as.character(head(names(seqlens), first)),
-                as.character(head(seqlens, first)))
-        if (nseq > first) {
-            last <- min(nseq - first, halfWidth)
-            showMatrix <-
-              cbind(showMatrix,
-                    rbind(as.character(tail(names(seqlens), last)),
-                          as.character(tail(seqlens, last))))
-        }
-        showMatrix <- format(showMatrix, justify = "right")
-        cat("\nseqlengths\n")
-        cat(IRanges:::labeledLine("", showMatrix[1L,], count = FALSE,
-                                  labelSep = ""))
-        cat(IRanges:::labeledLine("", showMatrix[2L,], count = FALSE,
-                                  labelSep = ""))
+        .showSeqlengths(object)
     }
 }
 

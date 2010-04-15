@@ -443,7 +443,6 @@ setMethod("show", "GRangesList",
                     sep="")
             }
         }
-        cat("seqlengths\n")
-        print(seqlengths(object))
+        .showSeqlengths(object)
     }
 )
