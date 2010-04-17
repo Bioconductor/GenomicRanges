@@ -51,7 +51,7 @@ library(GenomicRanges)
 The most basic new data class added by \Rpackage{GenomicRanges} is the
 \Rclass{GRanges} class.  A \Rclass{GRanges} class is designed to hold
 basic ranged data like an \Rclass{IRanges} class, but with additional
-constraints required to represent meaningful Genomic Data. The easiest
+constraints required to represent meaningful genomic data. The easiest
 way to understand a what a \Rclass{GRanges} class contains is to look
 at an example.
 
@@ -75,7 +75,7 @@ important parts.  The 1st thing you will notice is that the output is
 split into two parts.  On the left side are the required parts of the
 \Rclass{GRanges} object.  These include the ranges, the strand
 information and the sequence names.  And on the right side are
-collumns of additional metadata. In the above example, score and GC
+columns of additional metadata. In the above example, score and GC
 content have been added as metadata.
 
 The required portion of the \Rclass{GRanges} has a set of accessor
@@ -146,7 +146,7 @@ currency for exploring when such regions overlap.  Therefore the
 \Rfunction{findOverlaps} function has therefore been adjusted so that
 it can be used with these kinds of objects.  The
 \Rfunction{findOverlaps} function takes a query and a subject and then
-returns back an Rclass{RangesMatching} object that contains details
+returns back an \Rclass{RangesMatching} object that contains details
 about the relationship between the elements of the query and the
 elements of the subject.  \Rfunction{findOverlaps} can take either a
 \Rclass{GRanges} or a \Rclass{GRangesLists} (or one of each) as its
