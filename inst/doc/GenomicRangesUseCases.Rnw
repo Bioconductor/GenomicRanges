@@ -1,7 +1,10 @@
 %\VignetteIndexEntry{GenomicRanges Use Cases}
-%\VignetteKeywords{annotation}
-%\VignettePackage{GenomicFeatures}
-\documentclass[11pt]{article}
+%\VignetteKeywords{sequence, sequencing, alignments}
+%\VignettePackage{GenomicRanges}
+\documentclass[10pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -11,46 +14,35 @@
 \newcommand{\Rclass}[1]{{\textit{#1}}}
 \newcommand{\Rcode}[1]{{\texttt{#1}}}
 
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+\newcommand{\Bioconductor}{\software{Bioconductor}}
+\newcommand{\GenomicRanges}{\Rpackage{GenomicRanges}}
 
-\title{The GenomicRanges infrastructure. Examples with RNA-Seq data}
+
+\title{GenomicRanges Use Cases}
 \author{Marc Carlson, Patrick Aboyoun, Herve Pages, Seth Falcon and Martin Morgan} 
-
-\SweaveOpts{keep.source=TRUE} 
+\date{\today}
 
 \begin{document} 
 
 \maketitle
 
+<<options,echo=FALSE>>=
+options(width=72)
+@
 
 \section{Introduction}
 
-The \Rpackage{GenomicRanges} package introduces the
-\Rclass{GRanges}, \Rclass{GRangesList}, and \Rclass{GappedAlignments}
-classes to manage range locations across genomes, which is useful in
-the analysis of short read data. In the Bioconductor package hierarchy,
-the \Rpackage{GenomicRanges} package sits above the \Rpackage{IRanges}
-package and below the \Rpackage{Rsamtools}, \Rpackage{BSgenome},
-\Rpackage{ShortRead}, \Rpackage{rtracklayer}, and
-\Rpackage{GenomicFeatures} packages. Because of it's low-level position
-in the hierarchy of Bioconductor sequence analysis packages, the
-\Rpackage{GenomicRanges} package takes on the role of providing an
-overview of how all these packages can be used together to solve some
-common problems.
+This vignette focuses on common use cases involving the 
+\Rpackage{GenomicRanges} package.
 
-The \Rpackage{GenomicRanges} package is available at bioconductor.org
-and can be downloaded via \Rfunction{biocLite}:
-
-<<biocLite, eval=FALSE>>=
-source("http://bioconductor.org/biocLite.R")
-biocLite("GenomicRanges")
-@ 
 <<initialize, results=hide>>=
 library(GenomicRanges)
 @ 
 
 
 %\section{Chip-seq analysis}
-% Here is where Patrick can insert a section on chip-seq analysis. 
 
 
 \section{Simple RNA-seq Analysis}
