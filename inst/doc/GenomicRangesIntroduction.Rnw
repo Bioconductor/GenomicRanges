@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{An Introduction to Genomic Ranges Classes}
+%\VignetteIndexEntry{An Introduction to GenomicRanges}
 %\VignetteDepends{Rsamtools}
 %\VignetteKeywords{alignments, sequence, sequencing}
 %\VignettePackage{GenomicRanges}

@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{The GenomicRanges infrastructure. Examples with RNA-Seq data}
+%\VignetteIndexEntry{GenomicRanges Use Cases}
 %\VignetteKeywords{annotation}
 %\VignettePackage{GenomicFeatures}
 \documentclass[11pt]{article}
