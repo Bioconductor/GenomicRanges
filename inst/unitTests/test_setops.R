@@ -52,3 +52,32 @@ test_pintersect <- function()
                   b = GRanges())
     checkIdentical(pintersect(gr[4:5], grlist), expect)
 }
+
+test_psetdiff <- function()
+{
+    gr <- make_test_GRanges()
+    grlist <- make_test_GRangesList()
+
+    checkException(psetdiff(grlist, gr), silent = TRUE)
+    checkException(psetdiff(grlist, grlist), silent = TRUE)
+
+    expect <- gr
+    width(expect) <- 0L
+    elementMetadata(expect) <- NULL
+    checkIdentical(psetdiff(gr, gr), expect)
+
+    expect <- gr
+    elementMetadata(expect) <- NULL
+    strand(expect) <- Rle(c("-", "+", "-"), c(1, 7, 2))
+    end(expect)[5:6] <- c(5, 5)
+    checkIdentical(psetdiff(gr, rev(gr)), expect)
+
+    expect <-
+      GRangesList(a = GRanges(),
+                  b =
+                  GRanges(factor("chr2",
+                                 levels = paste("chr", 1:5, sep = "")),
+                          IRanges(2, 10),
+                          "+"))
+    checkIdentical(psetdiff(gr[1:2], grlist[1:2]), expect)
+}

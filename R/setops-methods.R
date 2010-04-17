@@ -57,3 +57,49 @@ setMethod("pintersect", c("GRanges", "GRangesList"),
         callGeneric(y, x, resolve.empty=resolve.empty)
     }
 )
+
+
+setMethod("psetdiff", c("GRanges", "GRanges"),
+    function(x, y, ...)
+    {
+        if (length(x) != length(y)) 
+            stop("'x' and 'y' must have the same length")
+        if (!setequal(levels(seqnames(x)), levels(seqnames(y))))
+            stop("'x' and 'y' must elements have compatable 'seqnames'")
+        ok <-
+          (seqnames(x) == seqnames(y)) & compatableStrand(strand(x), strand(y))
+        ansRanges <- ranges(x)
+        seqselect(ansRanges, ok) <-
+          callGeneric(seqselect(ranges(x), ok), seqselect(ranges(y), ok))
+        ansStrand <- strand(x)
+        resolveStrand <- as(ansStrand == "*", "IRanges")
+        if (length(resolveStrand) > 0)
+            ansStrand[as.integer(resolveStrand)] <-
+              seqselect(strand(y), resolveStrand)
+        GRanges(seqnames(x), ansRanges, ansStrand, seqlengths = seqlengths(x))
+    }
+)
+
+setMethod("psetdiff", c("GRanges", "GRangesList"),
+    function(x, y, ...)
+    {
+        if (length(x) != length(y)) 
+            stop("'x' and 'y' must have the same length")
+        if (!setequal(levels(seqnames(x)), levels(seqnames(y@unlistData))))
+            stop("'x' and 'y' must elements have compatable 'seqnames'")
+        ok <-
+          (rep(seqnames(x), elementLengths(y)) == seqnames(y@unlistData)) &
+           compatableStrand(rep(strand(x), elementLengths(y)), strand(y@unlistData))
+        ok <-
+          new2("CompressedRleList", unlistData = ok, partitioning = y@partitioning)
+        ansRanges <- gaps(seqselect(ranges(y), ok), start = start(x), end = end(x))
+        ansSeqnames <- rep(seqnames(x), elementLengths(ansRanges))
+        ansStrand <- rep(strand(x), elementLengths(ansRanges))
+        ansGRanges <-
+          GRanges(ansSeqnames, unlist(ansRanges, use.names = FALSE), ansStrand,
+                  seqlengths = seqlengths(x))
+        new2("GRangesList", elementMetadata = new("DataFrame", nrows = length(x)),
+             unlistData = ansGRanges, partitioning = ansRanges@partitioning,
+             check=FALSE)
+    }
+)

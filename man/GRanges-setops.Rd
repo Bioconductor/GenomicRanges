@@ -4,16 +4,20 @@
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
 
+\alias{psetdiff,GRanges,GRanges-method}
+\alias{psetdiff,GRanges,GRangesList-method}
 
-\title{GRanges and GRangesList Set Operations}
+
+\title{GRanges and GRangesList Parallel Set Operations}
 
 \description{
-  Finds interval overlaps between a GRanges/GRangesList object
+  Parallel set operations between a GRanges/GRangesList object
   and a GRanges/GRangesList object.
 }
 
 \usage{
   \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
+  \S4method{psetdiff}{GRanges,GRanges}(x, y, ...)
 }
 
 \arguments{
@@ -22,6 +26,7 @@
     (i.e. \code{length(x) == length(y)}).
     For \code{pintersect}, \code{x} and \code{y} cannot both be
     \link{GRangesList} objects.
+    For \code{psetdiff}, \code{x} and must be a \link{GRanges} object.
   }
   \item{resolve.empty}{
     One of \code{"none"}, \code{"max.start"}, or \code{"start.x"} denoting
@@ -41,16 +46,25 @@
 \details{
   The \code{pintersect} methods involving \link{GRanges} and
   \link{GRangesList} objects use the triplet (sequence name, range,
-  strand) to determine the element by element intersection of features
-  (see paragraph below for the definition of feature), where a strand
-  value of \code{"*"} is treated as occurring on both the \code{"+"}
-  and \code{"-"} strand.
+  strand) to determine the element by element intersection of features,
+  where a strand value of \code{"*"} is treated as occurring on both the
+  \code{"+"} and \code{"-"} strand.
+
+  The \code{psetdiff} methods involving \link{GRanges} and
+  \link{GRangesList} objects use the triplet (sequence name, range,
+  strand) to determine the element by element set difference of features,
+  where a strand value of \code{"*"} is treated as occurring on both the
+  \code{"+"} and \code{"-"} strand.
 }
 
 \value{
   For \code{pintersect} either a \link{GRanges} object when both \code{x}
   and \code{y} are \link{GRanges} objects or a \link{GRangesList} object
   when one of the arguments is a \link{GRangesList} object.
+
+  For \code{psetdiff} either a \link{GRanges} object when both \code{x}
+  and \code{y} are \link{GRanges} objects or a \link{GRangesList} object
+  when \code{y} is a \link{GRangesList} object.
 }
 
 \author{P. Aboyoun}
@@ -58,7 +72,8 @@
 \seealso{
   \code{\link[IRanges]{pintersect}},
   \link{GRanges},
-  \link{GRangesList}
+  \link{GRangesList},
+  \link{findOverlaps,GRanges,GRanges-method}
 }
 
 \examples{
@@ -83,12 +98,20 @@
             strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
   grlist <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 
+
   ## Parallel intersection of two GRanges objects
   pintersect(gr2, shift(gr2, 3))
 
   ## Parallel intersection of a GRanges and a GRangesList object
   pintersect(gr, grlist)
   pintersect(grlist, gr)
+
+
+  ## Parallel set difference of two GRanges objects
+  psetdiff(gr2, shift(gr2, 3))
+
+  ## Parallel set difference of a GRanges and a GRangesList object
+  psetdiff(gr, grlist)
 }
 
 \keyword{methods}
