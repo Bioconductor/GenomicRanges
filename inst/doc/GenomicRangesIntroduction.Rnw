@@ -94,6 +94,17 @@ coordinates (seqnames, ranges, and strand) are located on the left-hand
 side and the element metadata (annotation) columns are located on the
 right, which for this example are \Rcode{score} and \Rcode{GC}.
 
+%\subsection{Basic \Rclass{GRanges} accessors}
+
+%      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+%      \code{ranges(x)}, \code{ranges(x) <- value}:
+%      \code{strand(x)}, \code{strand(x) <- value}:
+%      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+%      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
+%      \code{values(x), values(x) <- value}:
+%      \code{names(x)}, \code{names(x) <- value}:
+%      \code{length(x)}:
+
 The components of the genomic coordinates within a \Rclass{GRanges} object
 can be extracted using the \Rmethod{seqnames}, \Rmethod{ranges}, and
 \Rmethod{strand} accessor functions.
@@ -111,6 +122,40 @@ accessor.
 <<metadataAccess>>=
 elementMetadata(gr)[,"score"]
 @ 
+
+%\subsection{Splitting and combining \Rclass{GRanges} objects}
+
+%      \code{append(x, values, after = length(x))}:
+%      \code{c(x, ...)}:
+%      \code{split(x, f = seq_len(length(x)), drop = FALSE)}:
+
+%\subsection{Subsetting \Rclass{GRanges} objects}
+
+%      \code{x[i, j]}, \code{x[i, j] <- value}:
+%      \code{x[i,j] <- value}:
+%      \code{head(x, n = 6L)}:
+%      \code{rep(x, times, length.out, each)}:
+%      \code{rev(x)}:
+%      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
+%      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
+%      \code{subset(x, subset)}:
+%      \code{tail(x, n = 6L)}:
+%      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
+%      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
+
+%\subsection{Basic interval operations for \Rclass{GRanges} objects}
+
+%      \code{start(x)}, \code{start(x) <- value}:
+%      \code{end(x)}, \code{end(x) <- value}:
+%      \code{width(x)}, \code{width(x) <- value}:
+%      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE)}:
+%      \code{resize(x, width, use.names = TRUE)}:
+%      \code{shift(x, shift, use.names = TRUE)}:
+%      \code{disjoin(x)}:
+%      \code{gaps(x, start=NA, end=NA)}:
+%      \code{range(x, ...)}:
+%      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
+%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
 
 
 \section{\Rclass{GRangesLists}: Multiple Interval Range Features}
@@ -133,6 +178,20 @@ grl <- GRangesList("txA" = gr1, "txB" = gr2)
 grl
 @
 
+%\subsection{Basic \Rclass{GRangesList} accessors}
+
+%      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+%      \code{ranges(x)}, \code{ranges(x) <- value}:
+%      \code{strand(x)}, \code{strand(x) <- value}:
+%      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+%      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
+%      \code{values(x), values(x) <- value}:
+
+%      \code{length(x)}:
+%      \code{names(x)}, \code{names(x) <- value}:
+%      \code{elementLengths(x)}:
+%      \code{isEmpty(x)}:
+
 The \Rmethod{show} method displays \Rclass{GRangesList} objects as a list
 of \Rclass{GRanges} objects. Just as with \Rclass{GRanges} object,
 the components of the genomic coordinates within a \Rclass{GRangesList}
@@ -141,13 +200,61 @@ and \Rmethod{strand} accessor functions.
 
 <<accessors>>=
 strand(grl)
-@ 
+@
+
+%\subsection{Combining \Rclass{GRangesList} objects}
+
+%      \code{append(x, values, after = length(x))}:
+%      \code{c(x, ...)}:
+%      \code{unlist(x, recursive = TRUE, use.names = TRUE)}:
+
+%\subsection{Basic interval operations for \Rclass{GRangesList} objects}
+
+%      \code{start(x)}, \code{start(x) <- value}:
+%      \code{end(x)}, \code{end(x) <- value}:
+%      \code{width(x)}, \code{width(x) <- value}:
+%      \code{shift(x, shift, use.names = TRUE)}:
+%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
+
+%\subsection{Subsetting \Rclass{GRangesList} objects}
+
+%      \code{x[i, j]}, \code{x[i, j] <- value}:
+%      \code{x[[i]]}, \code{x[[i]] <- value}:
+%      \code{x$name}, \code{x$name <- value}:
+%      \code{head(x, n = 6L)}:
+%      \code{rep(x, times, length.out, each)}:
+%      \code{rev(x)}:
+%      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
+%      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
+%      \code{subset(x, subset)}:
+%      \code{tail(x, n = 6L)}:
+%      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
+%      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
+
+%\subsection{Looping over \Rclass{GRangesList} objects}
+
+%      \code{endoapply(X, FUN, ...)}:
+%      \code{lapply(X, FUN, ...)}:
+%      \code{Map(f, ...)}:
+%      \code{mapply(FUN, ..., MoreArgs = NULL, SIMPLIFY = TRUE, USE.NAMES = TRUE)}:
+%      \code{mendoapply(FUN, ..., MoreArgs = NULL)}:
+%      \code{Reduce(f, x, init, right = FALSE, accumulate = FALSE)}:
+%      \code{sapply(X, FUN, ..., simplify=TRUE, USE.NAMES=TRUE)}:
 
 For more information on the \Rcode{GRanges} and \Rcode{GRangesList}
 classes consult their respective man pages.
 
 
 \section{Interval overlaps involving \Rclass{GRanges} and \Rclass{GRangesLists} objects}
+
+%  findOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
+%               type = c("any", "start", "end"), select = c("all", "first"))
+%  countOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
+%                type = c("any", "start", "end"))
+%  subsetByOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
+%                   type = c("any", "start", "end"))
+%  match(x, table, nomatch = NA_integer_, incomparables = NULL)
+%  x \%in\% table
 
 Interval overlapping is perhaps the most common operation performed
 on \Rclass{GRanges} and \Rclass{GRangesList} objects. To this end,
