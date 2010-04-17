@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{An Introduction to Gapped Alignments}
+%\VignetteIndexEntry{An Introduction to Genomic Ranges Classes}
 %\VignetteDepends{Rsamtools}
 %\VignetteKeywords{alignments, sequence, sequencing}
 %\VignettePackage{GenomicRanges}
@@ -23,8 +23,8 @@
 \newcommand{\MAQ}{\software{MAQ}}
 \newcommand{\Bowtie}{\software{Bowtie}}
 
-\title{An Introduction to Gapped Alignments}
-\author{Biocore Team}
+\title{An Introduction to Genomic Ranges Classes}
+\author{Herve Pages, Marc Carlson, Patrick Aboyoun}
 \date{\today}
 
 \begin{document}
@@ -34,6 +34,164 @@
 <<options,echo=FALSE>>=
 options(width=72)
 @ 
+
+\section{Introduction}
+
+This vignette is to describe the basic containers introduced by the
+\Rpackage{GenomicRanges} package and to demonstrate some the basics of
+their intended usage.  
+
+
+<<preliminaries>>=
+library(GenomicRanges)
+@ 
+
+
+\section{\Rclass{GRanges}}
+The most basic new data class added by \Rpackage{GenomicRanges} is the
+\Rclass{GRanges} class.  A \Rclass{GRanges} class is designed to hold
+basic ranged data like an \Rclass{IRanges} class, but with additional
+constraints required to represent meaningful Genomic Data. The easiest
+way to understand a what a \Rclass{GRanges} class contains is to look
+at an example.
+
+<<sampleGR>>=
+gr <-
+  GRanges(seqnames =
+          Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+          ranges =
+          IRanges(1:10, width = 10:1, names = head(letters,10)),
+          strand =
+          Rle(strand(c("-", "+", "*", "+", "-")),
+              c(1, 2, 2, 3, 2)),
+          score = 1:10,
+          GC = seq(1, 0, length=10))
+gr
+@ 
+
+
+The output of the \Rclass{GRanges} show method highlights the most
+important parts.  The 1st thing you will notice is that the output is
+split into two parts.  On the left side are the required parts of the
+\Rclass{GRanges} object.  These include the ranges, the strand
+information and the sequence names.  And on the right side are
+collumns of additional metadata. In the above example, score and GC
+content have been added as metadata.
+
+The required portion of the \Rclass{GRanges} has a set of accessor
+methods for conveniently retrieving its components.  These include the
+\Rmethod{seqnames}, \Rmethod{ranges}, and \Rmethod{strand} methods.
+
+
+<<standardAccess>>=
+seqnames(gr)
+ranges(gr)
+strand(gr)
+@ 
+
+
+In order to access the more flexible part of a \Rclass{GRanges}
+object, users can use the \Rmethod{elementMetadata} method to retrieve
+a \Rclass{DataFrame} object containing the metadata.  For example, to
+retrieve the score you could use the following command.
+
+<<metadataAccess>>=
+elementMetadata(gr)["score"]
+@ 
+
+
+
+
+\section{\Rclass{GRangesLists}}
+
+Sometimes it is desirable to group sets of \Rclass{GRanges} objects
+according to their affiliation with particular IDs.  The most common
+use case for this is with annotations.  A typical example would be to
+group exons by transcript IDs.  The following example will show what
+such an object would look like
+
+<<sampleGRList>>=
+gr1 <-
+  GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
+          strand = "+", score = 5L, GC = 0.45)
+gr2 <-
+  GRanges(seqnames = c("chr1", "chr1"),
+          ranges = IRanges(c(7,13), width = 3),
+          strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
+grl <- GRangesList("txA" = gr1, "txB" = gr2)
+@
+
+
+
+You can see from the \Rmethod{show} method, that this object is really
+just a list of \Rclass{GRanges} objects.  As such, many of the same
+accessors are also available as were available for \Rclass{GRanges}
+objects.  Consider for example the \Rmethod{strand} accesor.
+
+<<accessors>>=
+strand(grl)
+@ 
+
+Which is vectorized to return strand information for all the
+\Rclass{GRanges} objects in the list.  For a more exhaustive listing
+of all the accessors for these classes be sure to see the manual pages
+for each.
+
+
+\section{Using \Rclass{GRanges} and \Rclass{GRangesLists}}
+
+Because they store information about specific genomic regions,
+\Rclass{GRanges} and \Rclass{GRangesLists} objects represent a useful
+currency for exploring when such regions overlap.  Therefore the
+\Rfunction{findOverlaps} function has therefore been adjusted so that
+it can be used with these kinds of objects.  The
+\Rfunction{findOverlaps} function takes a query and a subject and then
+returns back an Rclass{RangesMatching} object that contains details
+about the relationship between the elements of the query and the
+elements of the subject.  \Rfunction{findOverlaps} can take either a
+\Rclass{GRanges} or a \Rclass{GRangesLists} (or one of each) as its
+query and subject arguments.  But it compares the elements a little
+differently depending on the type of the arguments.  If the argument
+is a \Rclass{GRanges} object, then mapping be computed as a
+relationship between the various rows of the \Rclass{GRanges} as the
+elements, but if it is a \Rclass{GRangesLists} object then the
+relationship will be between the various matching elements of the
+list.
+
+<<findOL>>=
+mtch <- findOverlaps(gr,grl)
+matchMatrix(mtch)
+@ 
+
+
+
+Another important case is when you need to quantify the overlaps that
+occur between some of some of these objects.  For this there is the
+\Rfunction{countOverlaps} function.  The \Rfunction{countOverlaps}
+function also takes a subject and query argument, but instead of
+returning a Rclass{RangesMatching} object it returns an integer vector
+with the counts corresponding to the elements of the query.  The
+\Rfunction{countOverlaps} function counts a "match" as any overlap in
+any of the elements from either object.
+
+<<countOL>>=
+countOverlaps(gr,grl)
+@ 
+
+
+
+Finally, it will sometimes be the case that you simply want to remove
+ranges from a \Rclass{GRanges} or \Rclass{GRangesLists} object.  For
+this, there is the \Rfunction{subsetByOverlaps} function.
+
+<<subsetByOverlaps>>=
+subsetByOverlaps(gr,grl)
+@ 
+
+
+
+
+\section{Gapped Alignments}
 
 In addition to \Rclass{GRanges} and \Rclass{GRangesList}, the two general
 purpose containers for storing genomic intervals, the \GenomicRanges{}
@@ -66,12 +224,6 @@ object as if they were coming from different/unrelated queries.
 Also paired-end reads will be treated as single-end reads and the
 pairing information will be lost. This might change in the future.
 
-
-\section{Basic manipulation}
-
-<<preliminaries>>=
-library(GenomicRanges)
-@ 
 
 \subsection{Load a `BAM' file into a \Rclass{GappedAlignments} object}
 
