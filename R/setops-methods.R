@@ -90,9 +90,13 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
         ok <-
           (rep(seqnames(x), elementLengths(y)) == seqnames(y@unlistData)) &
            compatableStrand(rep(strand(x), elementLengths(y)), strand(y@unlistData))
-        ok <-
-          new2("CompressedRleList", unlistData = ok, partitioning = y@partitioning)
-        ansRanges <- gaps(seqselect(ranges(y), ok), start = start(x), end = end(x))
+        if (!all(ok)) {
+            ok <-
+              new2("CompressedLogicalList", unlistData = as.vector(ok),
+                   partitioning = y@partitioning)
+            y <- y[ok]
+        }
+        ansRanges <- gaps(ranges(y), start = start(x), end = end(x))
         ansSeqnames <- rep(seqnames(x), elementLengths(ansRanges))
         ansStrand <- rep(strand(x), elementLengths(ansRanges))
         ansGRanges <-
