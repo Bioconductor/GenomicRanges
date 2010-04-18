@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 
 setMethod("pintersect", c("GRanges", "GRanges"),
-    function(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
+    function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
         resolve.empty <- match.arg(resolve.empty)
         if (length(x) != length(y)) 
@@ -25,9 +25,8 @@ setMethod("pintersect", c("GRanges", "GRanges"),
 )
 
 setMethod("pintersect", c("GRangesList", "GRanges"),
-    function(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
+    function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
-        resolve.empty <- match.arg(resolve.empty)
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
         if (!setequal(levels(seqnames(x@unlistData)), levels(seqnames(y))))
@@ -45,16 +44,17 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
             elementMetadata(y) <- NULL
         x <- x[ok]
         y <- rep(y, sum(ok))
-        x@unlistData@ranges <- callGeneric(x@unlistData@ranges, y@ranges)
+        x@unlistData@ranges <-
+          callGeneric(x@unlistData@ranges, y@ranges,
+                      resolve.empty = "start.x")
         x[width(x) > 0L]
     }
 )
 
 setMethod("pintersect", c("GRanges", "GRangesList"),
-    function(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
+    function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
-        resolve.empty <- match.arg(resolve.empty)
-        callGeneric(y, x, resolve.empty=resolve.empty)
+        callGeneric(y, x)
     }
 )
 
