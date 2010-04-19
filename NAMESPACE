@@ -34,7 +34,7 @@ exportMethods(
     disjoin, gaps, range, reduce,
     coverage,
     union, intersect, setdiff,
-    pintersect, psetdiff,
+    punion, pintersect, psetdiff,
     findOverlaps, countOverlaps, match, "%in%",
     show,
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow

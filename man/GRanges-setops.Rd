@@ -4,6 +4,10 @@
 \alias{intersect,GRanges,GRanges-method}
 \alias{setdiff,GRanges,GRanges-method}
 
+\alias{punion,GRanges,GRanges-method}
+\alias{punion,GRanges,GRangesList-method}
+\alias{punion,GRangesList,GRanges-method}
+
 \alias{pintersect,GRanges,GRanges-method}
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
@@ -25,7 +29,8 @@
   \S4method{setdiff}{GRanges,GRanges}(x, y)
 
   ## Parallel set operations
-  \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
+  \S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ...)
+  \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
   \S4method{psetdiff}{GRanges,GRanges}(x, y, ...)
 }
 
@@ -38,6 +43,10 @@
     For \code{pintersect}, \code{x} and \code{y} cannot both be
     \link{GRangesList} objects.
     For \code{psetdiff}, \code{x} and must be a \link{GRanges} object.
+  }
+  \item{fill.gap}{
+    Logical indicating whether or not to force a union by using the rule
+    \code{start = min(start(x), start(y)), end = max(end(x), end(y))}.
   }
   \item{resolve.empty}{
     One of \code{"none"}, \code{"max.start"}, or \code{"start.x"} denoting
@@ -71,9 +80,10 @@
 \value{
   For \code{union}, \code{intersect}, and \code{setdiff} a \link{GRanges}.
 
-  For \code{pintersect} either a \link{GRanges} object when both \code{x}
-  and \code{y} are \link{GRanges} objects or a \link{GRangesList} object
-  when one of the arguments is a \link{GRangesList} object.
+  For \code{punion} and \code{pintersect} either a \link{GRanges} object
+  when both \code{x} and \code{y} are \link{GRanges} objects or a
+  \link{GRangesList} object when one of the arguments is a
+  \link{GRangesList} object.
 
   For \code{psetdiff} either a \link{GRanges} object when both \code{x}
   and \code{y} are \link{GRanges} objects or a \link{GRangesList} object

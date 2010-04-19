@@ -162,6 +162,7 @@ elementMetadata(gr)[,"score"]
 %      \code{union(x, y)}:
 %      \code{intersect(x, y)}:
 %      \code{setdiff(x, y)}:
+%      \code{punion(x, y)}:
 %      \code{pintersect(x, y)}:
 %      \code{psetdiff(x, y)}:
 

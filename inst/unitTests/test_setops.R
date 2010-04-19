@@ -80,6 +80,18 @@ test_setdiff <- function()
     checkIdentical(setdiff(grlist[[1]], grlist[[2]]), reduce(grlist[[1]]))
 }
 
+test_punion <- function()
+{
+    gr <- make_test_GRanges()
+    grlist <- make_test_GRangesList()
+
+    checkException(punion(grlist, grlist), silent = TRUE)
+
+    expect <- gr
+    elementMetadata(expect) <- NULL
+    checkIdentical(punion(gr, gr), expect)
+}
+
 test_pintersect <- function()
 {
     gr <- make_test_GRanges()

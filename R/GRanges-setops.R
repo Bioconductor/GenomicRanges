@@ -53,6 +53,47 @@ setMethod("setdiff", c("GRanges", "GRanges"),
 ### Parallel set operations
 ### -------------------------------------------------------------------------
 
+setMethod("punion", c("GRanges", "GRanges"),
+    function(x, y, fill.gap = FALSE, ...)
+    {
+        if (length(x) != length(y)) 
+            stop("'x' and 'y' must have the same length")
+        if (!setequal(levels(seqnames(x)), levels(seqnames(y))) ||
+            !all((seqnames(x) == seqnames(y)) &
+                 (strand(x) == strand(y))))
+            stop("'x' and 'y' must elements have compatable 'seqnames' ",
+                 "and 'strand' values")
+        GRanges(seqnames(x),
+                callGeneric(ranges(x), ranges(y), fill.gap = fill.gap),
+                strand(x),
+                seqlengths = seqlengths(x))
+    }
+)
+
+setMethod("punion", c("GRangesList", "GRanges"),
+    function(x, y, fill.gap = FALSE, ...)
+    {
+        n <- length(x)
+        if (n != length(y)) 
+            stop("'x' and 'y' must have the same length")
+        elementMetadata(x@unlistData) <- NULL
+        elementMetadata(y) <- NULL
+        ans <-
+          split(c(x@unlistData, y), 
+                c(Rle(seq_len(n), elementLengths(x)), Rle(seq_len(n))))
+        names(ans) <- names(x)
+        ans
+    }
+)
+
+setMethod("punion", c("GRanges", "GRangesList"),
+    function(x, y, fill.gap = FALSE, ...)
+    {
+        callGeneric(y, x)
+    }
+)
+
+
 setMethod("pintersect", c("GRanges", "GRanges"),
     function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
