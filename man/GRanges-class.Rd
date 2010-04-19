@@ -225,7 +225,7 @@
       the columns in \code{x} are dropped.
     }
     \item{}{
-      \code{gaps(x, start=NA, end=NA)}:
+      \code{gaps(x, start = 1L, end = seqlengths(x))}:
       Returns a new GRanges object containing complemented ranges for each
       distinct (seqname, strand) pairing. The names (\code{names(x)}) and
       the columns in \code{x} are dropped. See

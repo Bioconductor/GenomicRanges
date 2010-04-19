@@ -1,5 +1,56 @@
 ### =========================================================================
-### pintersect methods
+### Set operations
+### -------------------------------------------------------------------------
+
+setMethod("union", c("GRanges", "GRanges"),
+    function(x, y)
+    {
+        elementMetadata(x) <- NULL
+        elementMetadata(y) <- NULL
+        reduce(c(x, y), drop.empty.ranges=TRUE)
+    }
+)
+
+setMethod("intersect", c("GRanges", "GRanges"),
+    function(x, y)
+    {
+        elementMetadata(x) <- NULL
+        elementMetadata(y) <- NULL
+        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(x))))
+        seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
+        if (IRanges:::anyMissing(seqlengths)) {
+            maxs <-
+              sapply(IRanges:::newCompressedList("CompressedIntegerList",
+                               unlistData = c(end(x), end(y)),
+                               splitFactor = c(seqnames(x), seqnames(y))),
+                     function(x) if (length(x) > 0) max(x) else NA_integer_)
+            seqlengths[names(maxs)] <- maxs
+        }
+        setdiff(x, gaps(y, end = seqlengths))
+    }
+)
+
+setMethod("setdiff", c("GRanges", "GRanges"),
+    function(x, y) {
+        elementMetadata(x) <- NULL
+        elementMetadata(y) <- NULL
+        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(x))))
+        seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
+        if (IRanges:::anyMissing(seqlengths)) {
+            maxs <-
+              sapply(IRanges:::newCompressedList("CompressedIntegerList",
+                               unlistData = c(end(x), end(y)),
+                               splitFactor = c(seqnames(x), seqnames(y))),
+                     function(x) if (length(x) > 0) max(x) else NA_integer_)
+            seqlengths[names(maxs)] <- maxs
+        }
+        gaps(union(gaps(x, end = seqlengths), y), end = seqlengths)
+    }
+)
+
+
+### =========================================================================
+### Parallel set operations
 ### -------------------------------------------------------------------------
 
 setMethod("pintersect", c("GRanges", "GRanges"),

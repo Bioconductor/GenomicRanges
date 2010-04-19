@@ -283,8 +283,15 @@ setReplaceMethod("strand", "GRanges",
 setReplaceMethod("seqlengths", "GRanges",
     function(x, value)
     {
-        if (!is.integer(value))
+        if (!is.integer(value)) {
+            nms <- names(value)
             value <- as.integer(value)
+            names(value) <- nms
+        }
+        if (is.null(names(value))) {
+            names(value) <- names(seqlengths(x))
+        }
+        value <- value[names(seqlengths(x))]
         initialize(x, seqlengths = value)
     }
 )
@@ -458,8 +465,19 @@ setMethod("disjoin", "GRanges",
 )
 
 setMethod("gaps", "GRanges",
-    function(x, start=NA, end=NA)
+    function(x, start = 1L, end = seqlengths(x))
+    {
+        seqlevels <- levels(seqnames(x))
+        if (!is.null(names(start)))
+            start <- start[seqlevels]
+        if (!is.null(names(end)))
+            end <- end[seqlevels]
+        start <- IRanges:::recycleVector(start, length(seqlevels))
+        start <- rep(start, each = 3)
+        end <- IRanges:::recycleVector(end, length(seqlevels))
+        end <- rep(end, each = 3)
         .interIntervalGRanges(x, gaps, start = start, end = end)
+    }
 )
 
 setMethod("range", "GRanges",

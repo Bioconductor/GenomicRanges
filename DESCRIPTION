@@ -6,7 +6,7 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 0.1.15
+Version: 0.1.16
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
@@ -20,7 +20,7 @@ Collate: seqnames.R
 	strand.R
 	GRanges-class.R
 	GRangesList-class.R
-	setops-methods.R
+	GRanges-setops.R
 	findOverlaps-methods.R
 	cigar-utils.R
 	GappedAlignments-class.R

@@ -31,6 +31,55 @@ make_test_GRangesList <- function() {
             elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
 }
 
+test_union <- function()
+{
+    gr <- make_test_GRanges()
+    grlist <- make_test_GRangesList()
+
+    checkException(union(gr, grlist), silent = TRUE)
+    checkException(union(grlist, gr), silent = TRUE)
+    checkException(union(grlist, grlist), silent = TRUE)
+
+    expect <- gr
+    elementMetadata(expect) <- NULL
+    expect <- reduce(gr)
+    checkIdentical(union(gr, gr), expect)
+
+    checkIdentical(union(grlist[[1]], grlist[[2]]), reduce(unlist(grlist)))
+}
+
+test_intersect <- function()
+{
+    gr <- make_test_GRanges()
+    grlist <- make_test_GRangesList()
+
+    checkException(intersect(gr, grlist), silent = TRUE)
+    checkException(intersect(grlist, gr), silent = TRUE)
+    checkException(intersect(grlist, grlist), silent = TRUE)
+
+    expect <- gr
+    elementMetadata(expect) <- NULL
+    expect <- reduce(gr)
+    checkIdentical(intersect(gr, gr), expect)
+
+    checkIdentical(union(grlist[[1]], grlist[[2]]), reduce(unlist(grlist)))
+}
+
+test_setdiff <- function()
+{
+    gr <- make_test_GRanges()
+    grlist <- make_test_GRangesList()
+
+    checkException(setdiff(gr, grlist), silent = TRUE)
+    checkException(setdiff(grlist, gr), silent = TRUE)
+    checkException(setdiff(grlist, grlist), silent = TRUE)
+
+    expect <- GRanges(seqnames(gr)[integer(0)], seqlengths = seqlengths(gr))
+    checkIdentical(setdiff(gr, gr), expect)
+
+    checkIdentical(setdiff(grlist[[1]], grlist[[2]]), reduce(grlist[[1]]))
+}
+
 test_pintersect <- function()
 {
     gr <- make_test_GRanges()

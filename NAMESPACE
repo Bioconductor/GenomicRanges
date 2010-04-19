@@ -11,32 +11,32 @@ exportClasses(
 export(
     seqnames, "seqnames<-", seqlengths, "seqlengths<-",
     strand, "strand<-",
-    GRanges,
-    GRangesList,
+    GRanges, GRangesList,
     validCigar, cigarOpTable,
     cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
-    rname, "rname<-", cigar, qwidth, grglist, grg, rglist,
-    readGappedAlignments, qnarrow, GappedAlignments
+    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
+    readGappedAlignments, GappedAlignments
 )
 
 exportMethods(
-    "length",
-    "coerce", "as.data.frame", "unlist",
-    "seqnames", "ranges", "strand", "seqlengths", "elementMetadata",
+    length,
+    names, "names<-",
+    coerce, as.data.frame, unlist,
+    seqnames, ranges, strand, seqlengths, elementMetadata,
     "seqnames<-", "ranges<-", "strand<-", "seqlengths<-", "elementMetadata<-",
-    "names", "names<-",
-    "start", "end", "width", "start<-", "end<-", "width<-",
-    "resize", "shift",
-    "disjoin", "gaps", "range", "reduce",
-    "coverage",
-    "[", "[<-", "c", "rev", "seqselect", "seqselect<-",
-    "split", "window",
-    "show",
-    "pintersect",
-    "findOverlaps", "countOverlaps", "match", "%in%",
-    "rname", "rname<-", "cigar", "qwidth", "grglist", "grg", "rglist", "qnarrow"
+    start, end, width, "start<-", "end<-", "width<-",
+    "[", "[<-", c, rev, seqselect, "seqselect<-",
+    split, window,
+    flank, resize, shift,
+    disjoin, gaps, range, reduce,
+    coverage,
+    union, intersect, setdiff,
+    pintersect, psetdiff,
+    findOverlaps, countOverlaps, match, "%in%",
+    show,
+    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow
 )
 

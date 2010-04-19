@@ -1,5 +1,9 @@
 \name{GRanges-setops}
 
+\alias{union,GRanges,GRanges-method}
+\alias{intersect,GRanges,GRanges-method}
+\alias{setdiff,GRanges,GRanges-method}
+
 \alias{pintersect,GRanges,GRanges-method}
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
@@ -8,14 +12,19 @@
 \alias{psetdiff,GRanges,GRangesList-method}
 
 
-\title{GRanges and GRangesList Parallel Set Operations}
+\title{GRanges and GRangesList Set and Parallel Set Operations}
 
 \description{
-  Parallel set operations between a GRanges/GRangesList object
-  and a GRanges/GRangesList object.
+  Set and parallel set operations for GRanges/GRangesList objects.
 }
 
 \usage{
+  ## Set operations
+  \S4method{union}{GRanges,GRanges}(x, y)
+  \S4method{intersect}{GRanges,GRanges}(x, y)
+  \S4method{setdiff}{GRanges,GRanges}(x, y)
+
+  ## Parallel set operations
   \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
   \S4method{psetdiff}{GRanges,GRanges}(x, y, ...)
 }
@@ -24,6 +33,8 @@
   \item{x, y}{
     \link{GRanges} or \link{GRangesList} objects of equal length
     (i.e. \code{length(x) == length(y)}).
+    For \code{union}, \code{intersect}, \code{setdiff}, \code{x} and
+    \code{y} must both be \link{GRanges} objects.
     For \code{pintersect}, \code{x} and \code{y} cannot both be
     \link{GRangesList} objects.
     For \code{psetdiff}, \code{x} and must be a \link{GRanges} object.
@@ -58,6 +69,8 @@
 }
 
 \value{
+  For \code{union}, \code{intersect}, and \code{setdiff} a \link{GRanges}.
+
   For \code{pintersect} either a \link{GRanges} object when both \code{x}
   and \code{y} are \link{GRanges} objects or a \link{GRangesList} object
   when one of the arguments is a \link{GRangesList} object.
@@ -70,10 +83,10 @@
 \author{P. Aboyoun}
 
 \seealso{
-  \code{\link[IRanges]{pintersect}},
   \link{GRanges},
   \link{GRangesList},
-  \link{findOverlaps,GRanges,GRanges-method}
+  \link{findOverlaps,GRanges,GRanges-method},
+  \link{pintersect,GRanges,GRanges-method}
 }
 
 \examples{
@@ -97,6 +110,12 @@
             ranges = IRanges(c(1, 4), c(3, 9)),
             strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
   grlist <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+
+
+  ## Union, intersection, and set difference of two GRanges objects
+  union(gr2, gr3)
+  intersect(gr2, gr3)
+  setdiff(gr2, gr3)
 
 
   ## Parallel intersection of two GRanges objects
