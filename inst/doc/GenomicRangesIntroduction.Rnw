@@ -157,6 +157,14 @@ elementMetadata(gr)[,"score"]
 %      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
 %      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
 
+%\subsection{Interval set operations for \Rclass{GRanges} objects}
+
+%      \code{union(x, y)}:
+%      \code{intersect(x, y)}:
+%      \code{setdiff(x, y)}:
+%      \code{pintersect(x, y)}:
+%      \code{psetdiff(x, y)}:
+
 
 \section{\Rclass{GRangesLists}: Multiple Interval Range Features}
 
