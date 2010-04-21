@@ -54,18 +54,23 @@ In the \Bioconductor package hierarchy, it sits above the
 \Rpackage{ShortRead} (I/O \& QA), \Rpackage{rtracklayer} (I/O), and
 \Rpackage{GenomicFeatures} (infrastructure) packages.
 
-This package lays the foundation by introducing three classes
-(\Rclass{GRanges}, \Rclass{GRangesList}, and \Rclass{GappedAlignments}),
-which are used to represent single interval range features,
-multiple interval range features, and gapped alignments respectively.
-This vignette focuses on these classes and their associated methods.
+This package lays a foundation for genomic analysis by introducing
+three classes (\Rclass{GRanges}, \Rclass{GRangesList}, and
+\Rclass{GappedAlignments}), which are used to represent single
+interval range features, multiple interval range features, and gapped
+alignments respectively.  This vignette focuses on these classes and
+their associated methods.
 
 
 \section{\Rclass{GRanges}: Single Interval Range Features}
 
-The simplest genomic feature are those that lie on a single
-chromosome/contig, on one or both strands of the DNA, and
-have a start and end value. The collection of these features are
+The simplest genomic features to store in an object are those that are
+uniform in character.  These can be a set of binding sites,
+transcripts, or exons.  As long as the features being represented are
+all basically the same kind of genomic feature it makes sense to store
+them in a single object.  Such features will be defined by their
+position on one or several chromosomes/contigs, strandedness, and will
+always have a start and end value. A collection of such features are
 represented as \Rclass{GRanges} objects in the \Bioconductor
 project. These objects can be created by using the \Rfunction{GRanges}
 constructor function. For example,
@@ -95,7 +100,11 @@ side and the element metadata (annotation) columns are located on the
 right, which for this example are \Rcode{score} and \Rcode{GC}.
 
 %\subsection{Basic \Rclass{GRanges} accessors}
-
+% Question for PATRICK: 
+% Do we really want to show people in the vignette how to use length()?
+% Or is is sufficient to mention that these things exist?
+% ALSO: we need to describe the seqlengths values that are sometimes present.
+% 
 %      \code{seqnames(x)}, \code{seqnames(x) <- value}:
 %      \code{ranges(x)}, \code{ranges(x) <- value}:
 %      \code{strand(x)}, \code{strand(x) <- value}:
@@ -115,7 +124,7 @@ ranges(gr)
 strand(gr)
 @ 
 
-The annotations for these coordinates can be extracted as a
+Stored annotations for these coordinates can be extracted as a
 \Rclass{DataFrame} object using the \Rmethod{elementMetadata}
 accessor.
 
@@ -123,11 +132,20 @@ accessor.
 elementMetadata(gr)[,"score"]
 @ 
 
-%\subsection{Splitting and combining \Rclass{GRanges} objects}
 
+\subsection{Splitting and combining \Rclass{GRanges} objects}
+
+\Rclass{GRanges} objects can also be split apart.
+
+<<splitAppendGRanges>>=
+sp = split(gr, c(rep(1,5),rep(2,5)))
+sp
+@ 
 %      \code{append(x, values, after = length(x))}:
 %      \code{c(x, ...)}:
 %      \code{split(x, f = seq_len(length(x)), drop = FALSE)}:
+% ???Presently it appears that the append does not work???
+
 
 %\subsection{Subsetting \Rclass{GRanges} objects}
 
@@ -169,11 +187,14 @@ elementMetadata(gr)[,"score"]
 
 \section{\Rclass{GRangesLists}: Multiple Interval Range Features}
 
-When genomic features consist of multiple intervals ranges, they are
-represented as \Rclass{GRangesList} object within the \Bioconductor
-project. A common multiple interval range feature is a post-spliced
-transcript comprised of disjoint exons. These objects can be created
-by using the \Rfunction{GRangesList} constructor function. For example,
+Some important genomic features are not simple but are inherently
+compound structures.  A classic example of this would be exons.  Exons
+belong to and are defined by the transcripts that they are spliced
+into.  When genomic features consist of multiple intervals ranges that
+are grouped by a parent feature, they are represented as
+\Rclass{GRangesList} object. Consider the simple example of the two
+transcript \Rfunction{GRangesList} below created using the
+\Rfunction{GRangesList} constructor.
 
 <<example-GRangesList>>=
 gr1 <-
@@ -263,7 +284,7 @@ classes consult their respective man pages.
 %  subsetByOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
 %                   type = c("any", "start", "end"))
 %  match(x, table, nomatch = NA_integer_, incomparables = NULL)
-%  x \%in\% table
+%  x \%in\% table 
 
 Interval overlapping is perhaps the most common operation performed
 on \Rclass{GRanges} and \Rclass{GRangesList} objects. To this end,
@@ -301,7 +322,9 @@ subsetByOverlaps(gr,grl)
 @ 
 
 
-\section{Gapped Alignments}
+
+
+\section{Gapped Alignments} 
 
 In addition to \Rclass{GRanges} and \Rclass{GRangesList} classes, the
 \GenomicRanges{} package defines the \Rclass{GappedAlignments} class,
