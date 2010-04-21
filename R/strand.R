@@ -14,20 +14,31 @@ setMethod("strand", "character",
     })
 
 setMethod("strand", "factor",
-          function(x) {
-            lvls <- levels(strand())
-            if (length(setdiff(levels(x), lvls)))
-              stop("strand values must be in '", paste(lvls, collapse="' '"),
-                   "'")
-            factor(x, levels=lvls)
-          })
+    function(x) {
+        lvls <- levels(strand())
+        if (length(setdiff(levels(x), lvls)))
+            stop("strand values must be in '", paste(lvls, collapse="' '"), "'")
+        factor(x, levels=lvls)
+    })
+
+setMethod("strand", "integer",
+    function(x) {
+        lvls <- c(1L, -1L, NA)
+        if (length(setdiff(x, lvls)))
+            stop("strand values must be in '", paste(lvls, collapse="' '"), "'")
+        ans <- strand()
+        length(ans) <- length(x)
+        ans[x ==  1L] <- "+"
+        ans[x == -1L] <- "-"
+        ans
+    })
 
 setMethod("strand", "logical",
     function(x) {
         ans <- strand()
         length(ans) <- length(x)
         ans[!x] <- "+"
-        ans[x] <- "-"
+        ans[ x] <- "-"
         ans
     })
 
