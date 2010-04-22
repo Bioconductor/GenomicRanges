@@ -80,7 +80,7 @@ gr <-
   GRanges(seqnames =
           Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
           ranges =
-          IRanges(1:10, width = 10:1, names = head(letters, 10)),
+          IRanges(1:10, end = 7:16, names = head(letters, 10)),
           strand =
           Rle(strand(c("-", "+", "*", "+", "-")),
               c(1, 2, 2, 3, 2)),
@@ -141,13 +141,59 @@ elementMetadata(gr)[,"score"]
 sp = split(gr, c(rep(1,5),rep(2,5)))
 sp
 @ 
-%      \code{append(x, values, after = length(x))}:
-%      \code{c(x, ...)}:
-%      \code{split(x, f = seq_len(length(x)), drop = FALSE)}:
-% ???Presently it appears that the append does not work???
+
+And then put back together
+<<combine>>=
+c(sp[[1]],sp[[2]])
+append(sp[[1]],sp[[2]])
+@ 
 
 
-%\subsection{Subsetting \Rclass{GRanges} objects}
+\subsection{Subsetting \Rclass{GRanges} objects}
+
+All the usual subsetting operations are in effect for \Rclass{GRanges}
+objects.
+
+<<subset1>>=
+gr[1]
+gr[1:2]
+@ 
+
+And if you subset by "j" as well then you can specify which of the
+elementMetadat columns you desire. Notice that in this sense, the
+information about where the feature is located is almost like a label
+for the elementMetadata.
+
+<<subset2>>=
+gr[2:3,1]
+gr[2:3,2]
+@ 
+
+And of course you can assign into elements as well with various levels
+of specificity.
+
+<<assign>>=
+singles <- split(gr)
+grMod <- gr
+grMod[2] <-  singles[[1]]
+head(grMod)
+grMod[2,1] <-  singles[[3]][,1]
+head(grMod)
+@ 
+
+And you can also use a lot of other useful methods on \Rclass{GRanges}
+objects as well.
+
+<<other>>=
+rep(singles[[2]], times = 3)
+rev(gr)
+head(gr,n=2)
+tail(gr,n=2)
+window(gr, start=2,end=4)
+seqselect(gr, start =c(2,7), end=c(3,9))
+@ 
+
+
 
 %      \code{x[i, j]}, \code{x[i, j] <- value}:
 %      \code{x[i,j] <- value}:
@@ -156,12 +202,79 @@ sp
 %      \code{rev(x)}:
 %      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
 %      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
-%      \code{subset(x, subset)}:
-%      \code{tail(x, n = 6L)}:
+%      THIS ONE is not yet implemented
+% \code{subset(x, subset)}: 
+% \code{tail(x, n = 6L)}:
 %      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
 %      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
 
-%\subsection{Basic interval operations for \Rclass{GRanges} objects}
+
+
+
+\subsection{Basic interval operations for \Rclass{GRanges} objects}
+
+A lot of operations for \Rclass{GRanges} objects are derived from the
+kinds of operations that work on \Rclass{IRanges} objects.
+
+<<IRangesStuff>>=
+g <- gr[1:3]
+g <- append(g,singles[[10]])
+start(g)
+end(g)
+width(g)
+range(g)
+@ 
+
+Some of these methods are useful for deriving other ranges from the
+ranges in the original \Rclass{GRanges} object.  One of these is
+\Rmethod{flank} which can be used to recover regions flanking the
+set of ranges represented by the \Rclass{GRanges} object. For example
+to get a \Rclass{GRanges} object where the ranges represent the 10
+bases upstream of the ranges in our example we could call:
+
+<<flank>>=
+flank(g, 10)
+@ 
+
+And if we wanted the downstream bases we would call:
+
+<<flank2>>=
+flank(g, 10, start=FALSE)
+@ 
+
+
+Similar to \Rmethod{flank}, there are also operations to \Rmethod{resize} and
+\Rmethod{shift} our \Rclass{GRanges} object.
+
+<<shiftAndResize>>=
+shift(g,5)
+resize(g,30)
+@ 
+
+The \Rmethod{reduce} will align the ranges and merge overlapping
+ranges to produce a simplified set.
+  
+<<reduce>>=
+reduce(g)
+@ 
+
+Sometimes you may be intersted in the spaces or the qualities of the
+spaces between the ranges represented by your \Rclass{GRanges} object.
+The \Rmethod{gaps} method will help you calculate the spaces between a
+reduced version of your ranges:
+
+<<gaps>>=
+gaps(g)
+@ 
+
+And sometimes you also may want to know how many quantitatively unique
+fragments your ranges could possibly represent.  For this task there
+is the \Rmethod{disjoin} method.
+
+<<disjoin>>=
+disjoin(g)
+@ 
+
 
 %      \code{start(x)}, \code{start(x) <- value}:
 %      \code{end(x)}, \code{end(x) <- value}:
@@ -173,9 +286,12 @@ sp
 %      \code{gaps(x, start=NA, end=NA)}:
 %      \code{range(x, ...)}:
 %      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
-%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
+%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}: - do this one well, but do it LATER
 
-%\subsection{Interval set operations for \Rclass{GRanges} objects}
+
+
+
+\subsection{Interval set operations for \Rclass{GRanges} objects}
 
 %      \code{union(x, y)}:
 %      \code{intersect(x, y)}:
