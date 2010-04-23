@@ -11,6 +11,7 @@
 
 % Coercion methods:
 \alias{coerce,RangedData,GRanges-method}
+\alias{coerce,GRanges,RangedData-method}
 \alias{as.data.frame,GRanges-method}
 
 % Accessor methods:
@@ -117,6 +118,10 @@
     \item{}{
       \code{as(from, "GRanges")}:
       Creates a GRanges object from a RangedData object.
+    }
+    \item{}{
+      \code{as(from, "RangedData")}:
+      Creates a RangedData object from a GRanges object.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:

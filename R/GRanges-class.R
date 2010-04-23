@@ -183,6 +183,16 @@ setAs("RangedData", "GRanges",
     }
 )
 
+setAs("GRanges", "RangedData",
+      function(from)
+      {
+        rd <- RangedData(ranges(from), strand = strand(from),
+                         elementMetadata(from), space = seqnames(from))
+        elementMetadata(ranges(rd)) <- DataFrame(seqlengths = seqlengths(from))
+        rd
+      }
+)
+
 setMethod("as.data.frame", "GRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
