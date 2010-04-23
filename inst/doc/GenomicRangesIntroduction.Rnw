@@ -275,6 +275,14 @@ is the \Rmethod{disjoin} method.
 disjoin(g)
 @ 
 
+One of the most powerful methods for looking at \Rclass{GRanges}
+objects is the \Rmethod{coverage} method. The \Rmethod{coverage}
+method quantifies the degree of overlap for all the ranges in a
+\Rclass{GRanges} object.
+
+<<coverage>>=
+coverage(g)
+@ 
 
 %      \code{start(x)}, \code{start(x) <- value}:
 %      \code{end(x)}, \code{end(x) <- value}:
@@ -286,12 +294,41 @@ disjoin(g)
 %      \code{gaps(x, start=NA, end=NA)}:
 %      \code{range(x, ...)}:
 %      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
-%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}: - do this one well, but do it LATER
+%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}: - ok, but we will be covering this later as well.
 
 
 
 
 \subsection{Interval set operations for \Rclass{GRanges} objects}
+
+There are also operations for calculating relationships between
+different \Rclass{GRanges} objects. Here are a some examples for how
+you can calculate the \Rmethod{union}, the \Rmethod{intersect} and
+the asymmetric difference (using \Rmethod{setdiff}).
+
+<<intervals1>>=
+g2 <- head(gr,n=2)
+union(g,g2)
+intersect(g,g2)
+setdiff(g,g2)
+@
+
+In addition, there is similar set of operations that act at the level
+of the individual ranges within each \Rclass{GRanges}.  These
+operations all begin with a "p".  A requirement for this set of
+operations is that the number of elements in each \Rclass{GRanges}
+object has to be the same, and that both of the objects have to have
+the same seqnames and strand assignments throughout.
+
+<<intervals2>>=
+g3 <- g[1:2]
+ranges(g3[1]) <- IRanges(start=5,end=12)
+punion(g2,g3)
+pintersect(g2,g3)
+psetdiff(g2,g3)
+@ 
+
+
 
 %      \code{union(x, y)}:
 %      \code{intersect(x, y)}:
@@ -299,6 +336,8 @@ disjoin(g)
 %      \code{punion(x, y)}:
 %      \code{pintersect(x, y)}:
 %      \code{psetdiff(x, y)}:
+
+
 
 
 \section{\Rclass{GRangesLists}: Multiple Interval Range Features}
