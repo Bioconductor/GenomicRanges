@@ -99,20 +99,6 @@ coordinates (seqnames, ranges, and strand) are located on the left-hand
 side and the element metadata (annotation) columns are located on the
 right, which for this example are \Rcode{score} and \Rcode{GC}.
 
-%\subsection{Basic \Rclass{GRanges} accessors}
-% Question for PATRICK: 
-% Do we really want to show people in the vignette how to use length()?
-% Or is is sufficient to mention that these things exist?
-% ALSO: we need to describe the seqlengths values that are sometimes present.
-% 
-%      \code{seqnames(x)}, \code{seqnames(x) <- value}:
-%      \code{ranges(x)}, \code{ranges(x) <- value}:
-%      \code{strand(x)}, \code{strand(x) <- value}:
-%      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-%      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
-%      \code{values(x), values(x) <- value}:
-%      \code{names(x)}, \code{names(x) <- value}:
-%      \code{length(x)}:
 
 The components of the genomic coordinates within a \Rclass{GRanges} object
 can be extracted using the \Rmethod{seqnames}, \Rmethod{ranges}, and
@@ -125,11 +111,28 @@ strand(gr)
 @ 
 
 Stored annotations for these coordinates can be extracted as a
-\Rclass{DataFrame} object using the \Rmethod{elementMetadata}
-accessor.
+\Rclass{DataFrame} object using the \Rmethod{elementMetadata} or the
+\Rmethod{values} accessor.
 
 <<metadataAccess>>=
 elementMetadata(gr)[,"score"]
+values(gr)
+@ 
+
+Finally, the total lengths of the various sequences that the ranges
+are aligned to can also be stored in the \Rclass{GRanges} object.  So
+if this is data from Homo sapiens, we can set the values as:
+
+<<setSeqLengths>>=
+seqlengths(gr) <- c(249250621,243199373,198022430)
+gr
+@ 
+
+Methods for \Rmethod{length} and \Rmethod{names} have also been defined.
+
+<<names>>=
+names(gr)
+length(gr)
 @ 
 
 
@@ -181,8 +184,8 @@ grMod[2,1] <-  singles[[3]][,1]
 head(grMod)
 @ 
 
-And you can also use a lot of other useful methods on \Rclass{GRanges}
-objects as well.
+And you can also use a lot of other useful methods to repeat, reverse,
+or select specific portions of a on \Rclass{GRanges} objects as well.
 
 <<other>>=
 rep(singles[[2]], times = 3)
@@ -192,22 +195,6 @@ tail(gr,n=2)
 window(gr, start=2,end=4)
 seqselect(gr, start =c(2,7), end=c(3,9))
 @ 
-
-
-
-%      \code{x[i, j]}, \code{x[i, j] <- value}:
-%      \code{x[i,j] <- value}:
-%      \code{head(x, n = 6L)}:
-%      \code{rep(x, times, length.out, each)}:
-%      \code{rev(x)}:
-%      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
-%      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
-%      THIS ONE is not yet implemented
-% \code{subset(x, subset)}: 
-% \code{tail(x, n = 6L)}:
-%      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
-%      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
-
 
 
 
@@ -284,19 +271,6 @@ method quantifies the degree of overlap for all the ranges in a
 coverage(g)
 @ 
 
-%      \code{start(x)}, \code{start(x) <- value}:
-%      \code{end(x)}, \code{end(x) <- value}:
-%      \code{width(x)}, \code{width(x) <- value}:
-%      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE)}:
-%      \code{resize(x, width, use.names = TRUE)}:
-%      \code{shift(x, shift, use.names = TRUE)}:
-%      \code{disjoin(x)}:
-%      \code{gaps(x, start=NA, end=NA)}:
-%      \code{range(x, ...)}:
-%      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
-%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}: - ok, but we will be covering this later as well.
-
-
 
 
 \subsection{Interval set operations for \Rclass{GRanges} objects}
@@ -330,16 +304,6 @@ psetdiff(g2,g3)
 
 
 
-%      \code{union(x, y)}:
-%      \code{intersect(x, y)}:
-%      \code{setdiff(x, y)}:
-%      \code{punion(x, y)}:
-%      \code{pintersect(x, y)}:
-%      \code{psetdiff(x, y)}:
-
-
-
-
 \section{\Rclass{GRangesLists}: Multiple Interval Range Features}
 
 Some important genomic features are not simple but are inherently
@@ -361,62 +325,162 @@ gr2 <-
           strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
 grl <- GRangesList("txA" = gr1, "txB" = gr2)
 grl
-@
+@ 
 
-%\subsection{Basic \Rclass{GRangesList} accessors}
+The \Rmethod{show} method for a \Rclass{GRangesList} object displays
+it as a list of \Rclass{GRanges} objects.
 
-%      \code{seqnames(x)}, \code{seqnames(x) <- value}:
-%      \code{ranges(x)}, \code{ranges(x) <- value}:
-%      \code{strand(x)}, \code{strand(x) <- value}:
-%      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-%      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
-%      \code{values(x), values(x) <- value}:
 
-%      \code{length(x)}:
-%      \code{names(x)}, \code{names(x) <- value}:
-%      \code{elementLengths(x)}:
-%      \code{isEmpty(x)}:
 
-The \Rmethod{show} method displays \Rclass{GRangesList} objects as a list
-of \Rclass{GRanges} objects. Just as with \Rclass{GRanges} object,
-the components of the genomic coordinates within a \Rclass{GRangesList}
-object can be extracted using the \Rmethod{seqnames}, \Rmethod{ranges},
-and \Rmethod{strand} accessor functions.
+\subsection{Basic \Rclass{GRangesList} accessors}
 
-<<accessors>>=
+Just as with \Rclass{GRanges} object, the components of the genomic
+coordinates within a \Rclass{GRangesList} object can be extracted
+using simple accessor methods. Not surprisingly, the
+\Rclass{GRangesList} objects have many of the same accessors a
+\Rclass{GRanges} objects.  The difference is that most of these
+methods have to return a list since the input is now essentially a
+list of \Rclass{GRanges} objects. Here are a few examples:
+
+<<basicGRLAccessors>>=
+seqnames(grl)
+ranges(grl)
 strand(grl)
 @
 
-%\subsection{Combining \Rclass{GRangesList} objects}
+Some of the methods do not return a list however.  The
+\Rmethod{length} and \Rmethod{names} methods will return the length or
+names of the list that was input rather than of the individual
+\Rclass{GRanges} objects.  And, the \Rmethod{seqengths} method will
+only return one set of sequence lengths, since these are shared by all
+the \Rclass{GRangesList} elements.
 
+<<exceptions>>=
+length(grl)
+names(grl)
+seqlengths(grl)
+@ 
+
+The \Rmethod{elementLengths} method returns a list of integers
+corresponding to the result of calling \Rmethod{length} on each
+individual \Rclass{GRanges} object contained by the
+\Rclass{GRangesList}.  This is really a shortcut to avoid calling
+\Rmethod{apply} on the \Rclass{GRangesList}.
+
+<<elementLengths>>=
+elementLengths(grl)
+@ 
+
+You can also use \Rmethod{isEmpty} to test if a \Rclass{GRangesList}
+object contains anything.
+
+<<isEmpty>>=
+isEmpty(grl)
+@ 
+
+
+%% The following two things don't seem to work yet???
+%      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
+%      \code{values(x), values(x) <- value}:
+
+
+
+
+
+
+
+\subsection{Combining \Rclass{GRangesList} objects}
+
+\Rclass{GRangesList} objects can be unlisted to combine the separate
+\Rclass{GRanges} objects that they contain as an expanded
+\Rclass{GRanges}.
+
+<<unlistGRL>>=
+ul <- unlist(grl)
+@ 
+
+%% These two don't seem to exist yet??
 %      \code{append(x, values, after = length(x))}:
 %      \code{c(x, ...)}:
-%      \code{unlist(x, recursive = TRUE, use.names = TRUE)}:
 
-%\subsection{Basic interval operations for \Rclass{GRangesList} objects}
 
-%      \code{start(x)}, \code{start(x) <- value}:
-%      \code{end(x)}, \code{end(x) <- value}:
-%      \code{width(x)}, \code{width(x) <- value}:
-%      \code{shift(x, shift, use.names = TRUE)}:
-%      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
 
-%\subsection{Subsetting \Rclass{GRangesList} objects}
+\subsection{Basic interval operations for \Rclass{GRangesList} objects}
 
-%      \code{x[i, j]}, \code{x[i, j] <- value}:
-%      \code{x[[i]]}, \code{x[[i]] <- value}:
-%      \code{x$name}, \code{x$name <- value}:
-%      \code{head(x, n = 6L)}:
-%      \code{rep(x, times, length.out, each)}:
-%      \code{rev(x)}:
-%      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
-%      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
-%      \code{subset(x, subset)}:
-%      \code{tail(x, n = 6L)}:
-%      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
-%      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
+For interval operations, many of the same methods exist for
+\Rclass{GRangesList} objects as exist for \Rclass{GRanges} objects,
+and they behave similarly as well.  The only difference is that in
+this case, the operation will be applied to every element of every
+\Rclass{GRanges} object in the \Rclass{GRangesList}, and the result
+being another list object.
 
-%\subsection{Looping over \Rclass{GRangesList} objects}
+<<intOpsGRL>>=
+start(grl)
+end(grl)
+width(grl)
+@ 
+
+
+And as with \Rclass{GRanges} objects, you can also shift all the
+\Rclass{GRanges} objects in a \Rclass{GRangesList} object, or
+calculate the coverage.  Both of these operations are also carried out
+across each \Rclass{GRanges} list member.
+
+<<coverageGRL>>=
+shift(grl, 20)
+coverage(grl)
+@ 
+
+
+
+
+
+\subsection{Subsetting \Rclass{GRangesList} objects}
+
+As you might guess, the subsetting of a \Rclass{GRangesList} object is
+quite different from subsetting on a \Rclass{GRanges} object in that
+it acts as if you are subseting a list.
+
+<<subsetGRL>>=
+grl[1]
+grl[[1]]
+grl["txA"]
+grl$txB
+@ 
+
+But in addition to this, when subsetting a \Rclass{GRangesList}, you
+can also pass in another parameter (as with a \Rclass{GRanges} object)
+to specify which of the elementMetadata columns you wish to select.
+
+<<subsetGRL2>>=
+grl[1,"score"]
+grl["txB","GC"]
+@  
+
+The \Rmethod{head}, \Rmethod{tail}, \Rmethod{rep}, \Rmethod{rev},
+\Rmethod{window} and \Rmethod{seqselect} methods all behave as you would
+expect them to for a list object.  You will probably notice, for example how
+the elements referred to by \Rmethod{window} or \Rmethod{seqselect} are now
+list elements instead of \Rclass{GRanges} elements.
+
+<<otherSubsetGRL>>=
+rep(grl[[1]], times = 3)
+rev(grl)
+head(grl,n=1)
+tail(grl,n=1)
+window(grl, start=1,end=1)
+seqselect(grl,start=2, end=2)
+@ 
+
+
+
+\subsection{Looping over \Rclass{GRangesList} objects}
+
+For \Rclass{GRangesList} objects there is also a family of
+\Rmethod{apply} methods.  These include \Rmethod{endoapply},
+\Rmethod{lapply}, \Rmethod{Map}, \Rmethod{mapply},
+\Rmethod{mendoapply}, \Rmethod{Reduce}, and \Rmethod{sapply} .
+
 
 %      \code{endoapply(X, FUN, ...)}:
 %      \code{lapply(X, FUN, ...)}:
@@ -427,17 +491,22 @@ strand(grl)
 %      \code{sapply(X, FUN, ..., simplify=TRUE, USE.NAMES=TRUE)}:
 
 For more information on the \Rcode{GRanges} and \Rcode{GRangesList}
-classes consult their respective man pages.
+classes be sure to consult their respective man pages.
+
+<<manPage, eval=FALSE>>=
+?GRanges
+?GRangesList
+@ 
 
 
 \section{Interval overlaps involving \Rclass{GRanges} and \Rclass{GRangesLists} objects}
 
-%  findOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
-%               type = c("any", "start", "end"), select = c("all", "first"))
-%  countOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
-%                type = c("any", "start", "end"))
-%  subsetByOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
-%                   type = c("any", "start", "end"))
+ %  findOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
+ %               type = c("any", "start", "end"), select = c("all", "first"))
+ %  countOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
+ %                type = c("any", "start", "end"))
+ %  subsetByOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
+ %                   type = c("any", "start", "end"))
 %  match(x, table, nomatch = NA_integer_, incomparables = NULL)
 %  x \%in\% table 
 
@@ -522,7 +591,7 @@ aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 aln1 <- readGappedAlignments(aln1_file)
 aln1
 length(aln1)
-@
+@ 
 
 3271 `BAM' records were loaded into the object.
 
