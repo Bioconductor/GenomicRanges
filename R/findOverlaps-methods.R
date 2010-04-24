@@ -109,6 +109,11 @@ setMethod("findOverlaps", c("GRanges", "GRanges"),
                                         seqselect(subjectStrand, sIdxs)[sHits] != -1L), ,
                                   drop=FALSE]
                       }))
+            if (is.null(matchMatrix)) {
+                matchMatrix <-
+                  matrix(integer(0), nrow = 0, ncol = 2,
+                         dimnames = list(NULL, c("query", "subject")))
+            }
             matchMatrix <-
               matchMatrix[IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
                                                      matchMatrix[ , 2L, drop=TRUE]), ,
