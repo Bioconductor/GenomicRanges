@@ -245,7 +245,7 @@ ranges to produce a simplified set.
 reduce(g)
 @ 
 
-Sometimes you may be intersted in the spaces or the qualities of the
+Sometimes you may be interested in the spaces or the qualities of the
 spaces between the ranges represented by your \Rclass{GRanges} object.
 The \Rmethod{gaps} method will help you calculate the spaces between a
 reduced version of your ranges:
