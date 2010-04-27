@@ -22,7 +22,7 @@
 
 
 \title{An Introduction to Genomic Ranges Classes}
-\author{Patrick Aboyoun, Herve Pages, Marc Carlson}
+\author{Marc Carlson, Patrick Aboyoun, Herve Pages}
 \date{\today}
 
 \begin{document}
@@ -379,14 +379,16 @@ isEmpty(grl)
 @ 
 
 
-%% The following two things don't seem to work yet???
-%      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
-%      \code{values(x), values(x) <- value}:
+Finally, in the list context of a \Rclass{GRanges} object, the
+\Rmethod{elementMetadata} and \Rmethod{values} methods are both useful
+for assigning to and accessing data again, but this time the data is
+accessed at the list level.
 
-
-
-
-
+<<elementMetadataGRL>>=
+elementMetadata(grl) <- c("Transcript A","Transcript B")
+elementMetadata(grl)
+values(grl)
+@ 
 
 
 \subsection{Combining \Rclass{GRangesList} objects}
@@ -399,10 +401,20 @@ isEmpty(grl)
 ul <- unlist(grl)
 @ 
 
-%% These two don't seem to exist yet??
-%      \code{append(x, values, after = length(x))}:
-%      \code{c(x, ...)}:
 
+%% Patrick: Why no worky?
+% You can also append values together useing \Rmethod{append} or
+% \Rmethod{c}, but be warned that the names from both will have to be
+% unique for both \Rclass{GRangesList} objects in order for this to
+% work.
+
+% <<appendGRL>>=
+% grl2 <- shift(grl,10)
+% names(grl2) <- c("shiftTxA","shiftTxB")
+
+% append(grl, grl2)
+% c(grl, grl2)
+% @ 
 
 
 \subsection{Basic interval operations for \Rclass{GRangesList} objects}
@@ -477,21 +489,72 @@ seqselect(grl,start=2, end=2)
 \subsection{Looping over \Rclass{GRangesList} objects}
 
 For \Rclass{GRangesList} objects there is also a family of
-\Rmethod{apply} methods.  These include \Rmethod{endoapply},
-\Rmethod{lapply}, \Rmethod{Map}, \Rmethod{mapply},
-\Rmethod{mendoapply}, \Rmethod{Reduce}, and \Rmethod{sapply} .
+\Rmethod{apply} methods.  These include \Rmethod{lapply},
+\Rmethod{sapply}, \Rmethod{mapply}, \Rmethod{endoapply},
+\Rmethod{mendoapply}, \Rmethod{Map}, and \Rmethod{Reduce}.
+
+The different looping methods defined for \Rclass{GRangesList} objects
+are useful for returning different kinds of results.  The standard
+\Rmethod{lapply} and \Rmethod{sapply} behave as you would expect, with
+the \Rmethod{lapply} method returning a list and sapply returning a
+more simplified output.
+
+<<lapply>>=
+lapply(grl,length)
+sapply(grl,length)
+@ 
 
 
-%      \code{endoapply(X, FUN, ...)}:
-%      \code{lapply(X, FUN, ...)}:
-%      \code{Map(f, ...)}:
-%      \code{mapply(FUN, ..., MoreArgs = NULL, SIMPLIFY = TRUE, USE.NAMES = TRUE)}:
-%      \code{mendoapply(FUN, ..., MoreArgs = NULL)}:
-%      \code{Reduce(f, x, init, right = FALSE, accumulate = FALSE)}:
-%      \code{sapply(X, FUN, ..., simplify=TRUE, USE.NAMES=TRUE)}:
+But as with \Rclass{IRanges} objects, there is also a multivariate
+version of \Rmethod{sapply} defined for \Rclass{GRangesList} objects.
+If you don't want the results simplified, then you can call the
+\Rmethod{Map} method.
 
-For more information on the \Rcode{GRanges} and \Rcode{GRangesList}
-classes be sure to consult their respective man pages.
+% Check with Patrick to get a more interesting example method??
+<<mapply>>=
+grl2 <- shift(grl,10)
+names(grl2) <- c("shiftTxA","shiftTxB")
+
+mapply(c,grl,grl2)
+Map(c,grl,grl2)
+@ 
+
+
+Sometimes, you may not want to get back a simplified output or a list.
+Sometimes you will want to get back a modified version of the
+\Rclass{GRangesList} that you originally passed in.  This is
+conceptually similar to the mathematical notion of an endomorphism.
+Thus, we have the \Rmethod{endoapply} method which will return the
+results as a modified \Rclass{GRangesList} object.
+
+<<endoapply>>=
+endoapply(grl,rev)
+@ 
+
+
+And, there is also a multivariate version of the \Rmethod{endoapply}
+method in the form of the \Rmethod{mendoapply} method.
+
+<<mendoapply>>=
+mendoapply(c,grl,grl2)
+@ 
+
+
+Finally, the \Rmethod{Reduce} method will behave as expected and will
+allow the \Rclass{GRanges} objects to be collapsed across the whole of
+the \Rclass{GRangesList} object.
+
+% Again, this seems like a sub-optimal example to me.
+
+<<ReduceGRL>>=
+Reduce(c,grl)
+@ 
+
+
+
+For even more information on the \Rcode{GRanges} and
+\Rcode{GRangesList} classes be sure to consult their respective man
+pages.
 
 <<manPage, eval=FALSE>>=
 ?GRanges
@@ -500,15 +563,6 @@ classes be sure to consult their respective man pages.
 
 
 \section{Interval overlaps involving \Rclass{GRanges} and \Rclass{GRangesLists} objects}
-
- %  findOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
- %               type = c("any", "start", "end"), select = c("all", "first"))
- %  countOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
- %                type = c("any", "start", "end"))
- %  subsetByOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
- %                   type = c("any", "start", "end"))
-%  match(x, table, nomatch = NA_integer_, incomparables = NULL)
-%  x \%in\% table 
 
 Interval overlapping is perhaps the most common operation performed
 on \Rclass{GRanges} and \Rclass{GRangesList} objects. To this end,
@@ -528,7 +582,7 @@ As suggested in the sections discussing the nature of the
 \Rclass{GRanges} and \Rclass{GRangesList} classes, the index in the
 \Robject{matchMatrix} for a \Rclass{GRanges} object is a single range
 while for a \Rclass{GRangesList} object it is the set of ranges that
-define a ``feature".
+define a "feature".
 
 Another function in the overlaps family is \Rfunction{countOverlaps},
 which tabulates the number of overlaps for each element in the query.
@@ -545,6 +599,17 @@ element in the subject.
 subsetByOverlaps(gr,grl)
 @ 
 
+
+Finally, you can also call the standard \Rmethod{match} methods on
+these objects.
+
+<<match>>=
+match(gr,grl)
+match(grl,gr)
+
+gr %in% grl
+grl %in% gr
+@ 
 
 
 
