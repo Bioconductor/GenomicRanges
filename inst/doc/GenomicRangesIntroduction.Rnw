@@ -32,8 +32,25 @@
 <<options,echo=FALSE>>=
 options(width=72)
 @ 
+\tableofcontents
 
 \section{Introduction}
+
+The \Rpackage{GenomicRanges} package serves as the foundation for
+representing genomic locations within the \software{Bioconductor}
+project.  In the \software{Bioconductor} package hierarchy, it builds
+upon the \Rpackage{IRanges} (infrastructure) package and provides
+support for the \Rpackage{BSgenome} (infrastructure),
+\Rpackage{Rsamtools} (I/O), \Rpackage{ShortRead} (I/O \& QA),
+\Rpackage{rtracklayer} (I/O), and \Rpackage{GenomicFeatures}
+(infrastructure) packages.
+
+This package lays a foundation for genomic analysis by introducing
+three classes (\Rclass{GRanges}, \Rclass{GRangesList}, and
+\Rclass{GappedAlignments}), which are used to represent single
+interval range features, multiple interval range features, and gapped
+alignments respectively.  This vignette focuses on these classes and
+their associated methods.
 
 The \Rpackage{GenomicRanges} package is available at bioconductor.org
 and can be downloaded via \Rfunction{biocLite}:
@@ -46,34 +63,19 @@ biocLite("GenomicRanges")
 library(GenomicRanges)
 @ 
 
-The \Rpackage{GenomicRanges} package serves as the foundation for
-representing genomic locations within the \Bioconductor project.
-In the \Bioconductor package hierarchy, it sits above the 
-\Rpackage{IRanges} (infrastructure) package and below the
-\Rpackage{BSgenome} (infrastructure), \Rpackage{Rsamtools} (I/O),
-\Rpackage{ShortRead} (I/O \& QA), \Rpackage{rtracklayer} (I/O), and
-\Rpackage{GenomicFeatures} (infrastructure) packages.
-
-This package lays a foundation for genomic analysis by introducing
-three classes (\Rclass{GRanges}, \Rclass{GRangesList}, and
-\Rclass{GappedAlignments}), which are used to represent single
-interval range features, multiple interval range features, and gapped
-alignments respectively.  This vignette focuses on these classes and
-their associated methods.
-
 
 \section{\Rclass{GRanges}: Single Interval Range Features}
 
-The simplest genomic features to store in an object are those that are
-uniform in character.  These can be a set of binding sites,
+Genomic Features that can be contained in an \Rclass{GRanges} object
+can be any number of different things such as a set of binding sites,
 transcripts, or exons.  As long as the features being represented are
-all basically the same kind of genomic feature it makes sense to store
-them in a single object.  Such features will be defined by their
-position on one or several chromosomes/contigs, strandedness, and will
-always have a start and end value. A collection of such features are
-represented as \Rclass{GRanges} objects in the \Bioconductor
-project. These objects can be created by using the \Rfunction{GRanges}
-constructor function. For example,
+all the same kind of genomic feature then it will makes sense to store
+them all in a single \Rclass{GRanges} object.  In more concrete terms,
+such features are defined by their position on one or several
+chromosomes/contigs, their strandedness, and must always have a start
+and end value relative to a specific genome build. These objects can
+be created by using the \Rfunction{GRanges} constructor function. For
+example,
 
 <<example-GRanges>>=
 gr <-
@@ -89,20 +91,20 @@ gr <-
 gr
 @ 
 
-\noindent
-creates a \Rclass{GRanges} object with 10 single interval range
-features. The output of the \Rclass{GRanges} \Rmethod{show} method
-provides some insight into how this information is stored internally.
-For starters, a \Rclass{GRanges} object displayed in left and right
-hand parts that are separated by \Rcode{|} symbols. The genomic
-coordinates (seqnames, ranges, and strand) are located on the left-hand 
-side and the element metadata (annotation) columns are located on the
-right, which for this example are \Rcode{score} and \Rcode{GC}.
+\noindent creates a \Rclass{GRanges} object with 10 single interval
+range features. The output of the \Rclass{GRanges} \Rmethod{show}
+method provides some insight into how this information is stored
+internally.  Each \Rclass{GRanges} object has both a left and right
+hand region which are separated by \Rcode{|} symbols. The genomic
+coordinates (seqnames, ranges, and strand) are located on the
+left-hand side and the element metadata (annotation) columns are
+located on the right. For this example, the metadata includes a
+\Rcode{score} and \Rcode{GC}, but almost anything can be stored in the
+metadata portion of a \Rclass{GRanges} object.
 
-
-The components of the genomic coordinates within a \Rclass{GRanges} object
-can be extracted using the \Rmethod{seqnames}, \Rmethod{ranges}, and
-\Rmethod{strand} accessor functions.
+The components of the genomic coordinates within a \Rclass{GRanges}
+object can be extracted using the \Rmethod{seqnames},
+\Rmethod{ranges}, and \Rmethod{strand} accessor functions.
 
 <<GRanges-location-accessors>>=
 seqnames(gr)
@@ -125,10 +127,15 @@ if this is data from Homo sapiens, we can set the values as:
 
 <<setSeqLengths>>=
 seqlengths(gr) <- c(249250621,243199373,198022430)
-gr
 @ 
 
-Methods for \Rmethod{length} and \Rmethod{names} have also been defined.
+And then retrieves as:
+<<setSeqLengths2>>=
+seqlengths(gr)
+@ 
+
+Methods for accessing the \Rmethod{length} and \Rmethod{names} have
+also been defined.
 
 <<names>>=
 names(gr)
@@ -138,51 +145,74 @@ length(gr)
 
 \subsection{Splitting and combining \Rclass{GRanges} objects}
 
-\Rclass{GRanges} objects can also be split apart.
+\Rclass{GRanges} objects can also be split apart.  But notice that the
+object returned is no longer a \Rclass{GRanges} object but is actually
+a \Rclass{GRangesList} object.  \Rclass{GRangesList} objects will be
+discussed in detail in the next section.  For now, it is sufficient
+to just see how split can separate a single \Rclass{GRanges} object
+into what will basically act as a list of \Rclass{GRanges} objects.
 
 <<splitAppendGRanges>>=
 sp = split(gr, c(rep(1,5),rep(2,5)))
 sp
 @ 
 
-And then put back together
-<<combine>>=
+If you then grab the components of this list, they can also be merged
+by using the \Rmethod{c} and \Rmethod{append} methods.  Both
+
+<<combine1, eval=FALSE>>=
 c(sp[[1]],sp[[2]])
-append(sp[[1]],sp[[2]])
-@ 
+@
 
+and 
 
-\subsection{Subsetting \Rclass{GRanges} objects}
+<<combine2, eval=FALSE>>=
+c(sp[[1]],sp[[2]])
+@
 
-All the usual subsetting operations are in effect for \Rclass{GRanges}
-objects.
+will give an output like:
+
+<<combine3, echo=FALSE>>=
+c(sp[[1]],sp[[2]])
+@
+
+\subsection{Subsetting  \Rclass{GRanges} objects}
+
+The expected subsetting operations are also available for
+\Rclass{GRanges} objects.
 
 <<subset1>>=
-gr[1]
-gr[1:2]
+gr[2:3]
 @ 
 
-And if you subset by "j" as well then you can specify which of the
-elementMetadat columns you desire. Notice that in this sense, the
-information about where the feature is located is almost like a label
-for the elementMetadata.
+If you pass a second argument to the subset operator, then you can specify
+which elementMetadata columns will be returned from the \Rclass{GRanges}
+object.  So for example, I can request that only the 2nd column of the
+elementMetadata portion of the \Rclass{GRanges} object be returned.
 
 <<subset2>>=
-gr[2:3,1]
 gr[2:3,2]
 @ 
 
-And of course you can assign into elements as well with various levels
-of specificity.
+And of course you can also assign into elements of the
+\Rclass{GRanges} object as well with increasing degrees of specificity.
+So for example we can replace the 2nd row of a \Rclass{GRanges} object
+with the 1st row of \Robject{gr}.
 
 <<assign>>=
 singles <- split(gr)
 grMod <- gr
 grMod[2] <-  singles[[1]]
-head(grMod)
-grMod[2,1] <-  singles[[3]][,1]
-head(grMod)
+head(grMod, n=3)
 @ 
+
+Or you could assign only the metadata for score from the 3rd row to
+replace only the score from the 2nd row etc.
+<<assign2>>=
+grMod[2,1] <-  singles[[3]][,1]
+head(grMod, n=3)
+@ 
+
 
 And you can also use a lot of other useful methods to repeat, reverse,
 or select specific portions of a on \Rclass{GRanges} objects as well.
@@ -230,8 +260,13 @@ flank(g, 10, start=FALSE)
 @ 
 
 
-Similar to \Rmethod{flank}, there are also operations to \Rmethod{resize} and
-\Rmethod{shift} our \Rclass{GRanges} object.
+Similar to \Rmethod{flank}, there are also operations to
+\Rmethod{resize} and \Rmethod{shift} our \Rclass{GRanges} object.  The
+\Rmethod{shift} method will move the ranges by a specific number of
+base pairs, and the \Rmethod{resize} method will extend the ranges by
+a specified width. You may notice that these methods respect the
+boundaries imposed by beingon near end of the sequence (and also
+oriented the wrong way).
 
 <<shiftAndResize>>=
 shift(g,5)
@@ -276,9 +311,12 @@ coverage(g)
 \subsection{Interval set operations for \Rclass{GRanges} objects}
 
 There are also operations for calculating relationships between
-different \Rclass{GRanges} objects. Here are a some examples for how
-you can calculate the \Rmethod{union}, the \Rmethod{intersect} and
-the asymmetric difference (using \Rmethod{setdiff}).
+different \Rclass{GRanges} objects.  These operations are extremely
+useful, but note that they will drop element metadata from the return
+values.  This is because there is no way for these methods to know
+which metadata to retain.  Here are a some examples for how you can
+calculate the \Rmethod{union}, the \Rmethod{intersect} and the
+asymmetric difference (using \Rmethod{setdiff}).
 
 <<intervals1>>=
 g2 <- head(gr,n=2)
@@ -302,18 +340,25 @@ pintersect(g2,g3)
 psetdiff(g2,g3)
 @ 
 
+For even more information on the \Rcode{GRanges} classes be sure to
+consult the manual page.
+
+<<manPage, eval=FALSE>>=
+?GRanges
+@ 
 
 
 \section{\Rclass{GRangesLists}: Multiple Interval Range Features}
 
 Some important genomic features are not simple but are inherently
 compound structures.  A classic example of this would be exons.  Exons
-belong to and are defined by the transcripts that they are spliced
-into.  When genomic features consist of multiple intervals ranges that
-are grouped by a parent feature, they are represented as
-\Rclass{GRangesList} object. Consider the simple example of the two
-transcript \Rfunction{GRangesList} below created using the
-\Rfunction{GRangesList} constructor.
+both belong to and are defined by their respective transcripts.  Such
+a feature makes much more sense when expressed as a compound object
+such as a \Rclass{GRangesLists}.  Whenever genomic features consist of
+multiple ranges that are grouped by a parent feature, they can be
+represented as \Rclass{GRangesList} object. Consider the simple
+example of the two transcript \Rfunction{GRangesList} below created
+using the \Rfunction{GRangesList} constructor.
 
 <<example-GRangesList>>=
 gr1 <-
@@ -328,7 +373,14 @@ grl
 @ 
 
 The \Rmethod{show} method for a \Rclass{GRangesList} object displays
-it as a list of \Rclass{GRanges} objects.
+it as a named list of \Rclass{GRanges} objects.  And, the names of
+this list, are always the names of the grouping feature.  In the
+example above, the groups of individual exon ranges are represented as
+separate \Rclass{GRanges} objects which are further organized into a
+list structure where each element name is a transcript name. Many
+other combinations of grouped and labeled \Rclass{GRanges} objects are
+possible of course, but this example is expected to be a common
+arrangement. 
 
 
 
@@ -337,10 +389,10 @@ it as a list of \Rclass{GRanges} objects.
 Just as with \Rclass{GRanges} object, the components of the genomic
 coordinates within a \Rclass{GRangesList} object can be extracted
 using simple accessor methods. Not surprisingly, the
-\Rclass{GRangesList} objects have many of the same accessors a
+\Rclass{GRangesList} objects have many of the same accessors as
 \Rclass{GRanges} objects.  The difference is that most of these
-methods have to return a list since the input is now essentially a
-list of \Rclass{GRanges} objects. Here are a few examples:
+methods return a list since the input is now essentially a list of
+\Rclass{GRanges} objects. Here are a few examples:
 
 <<basicGRLAccessors>>=
 seqnames(grl)
@@ -351,7 +403,7 @@ strand(grl)
 Some of the methods do not return a list however.  The
 \Rmethod{length} and \Rmethod{names} methods will return the length or
 names of the list that was input rather than of the individual
-\Rclass{GRanges} objects.  And, the \Rmethod{seqengths} method will
+\Rclass{GRanges} objects.  And, the \Rmethod{seqlengths} method will
 only return one set of sequence lengths, since these are shared by all
 the \Rclass{GRangesList} elements.
 
@@ -379,10 +431,11 @@ isEmpty(grl)
 @ 
 
 
-Finally, in the list context of a \Rclass{GRanges} object, the
+Finally, in the context of a \Rclass{GRangesList} object, the
 \Rmethod{elementMetadata} and \Rmethod{values} methods are both useful
-for assigning to and accessing data again, but this time the data is
-accessed at the list level.
+and perform a similar operation to what they did on a \Rclass{GRanges}
+object.  But in this case, the data being accessed is at the list
+level instead of the level of the individual \Rclass{GRanges} objects.
 
 <<elementMetadataGRL>>=
 elementMetadata(grl) <- c("Transcript A","Transcript B")
@@ -420,11 +473,11 @@ ul <- unlist(grl)
 \subsection{Basic interval operations for \Rclass{GRangesList} objects}
 
 For interval operations, many of the same methods exist for
-\Rclass{GRangesList} objects as exist for \Rclass{GRanges} objects,
-and they behave similarly as well.  The only difference is that in
-this case, the operation will be applied to every element of every
-\Rclass{GRanges} object in the \Rclass{GRangesList}, and the result
-being another list object.
+\Rclass{GRangesList} objects that exist for \Rclass{GRanges} objects.
+And, these operations behave similarly as well.  The only difference
+is that in this case, the operation will be applied to every element
+of every \Rclass{GRanges} object in the \Rclass{GRangesList}, and the
+result being another list object.
 
 <<intOpsGRL>>=
 start(grl)
@@ -451,9 +504,10 @@ coverage(grl)
 
 As you might guess, the subsetting of a \Rclass{GRangesList} object is
 quite different from subsetting on a \Rclass{GRanges} object in that
-it acts as if you are subseting a list.
+it acts as if you are subseting a list.  If you try out the following
+you will notice that the standard conventions have been followed.
 
-<<subsetGRL>>=
+<<subsetGRL, eval=FALSE>>=
 grl[1]
 grl[[1]]
 grl["txA"]
@@ -461,8 +515,8 @@ grl$txB
 @ 
 
 But in addition to this, when subsetting a \Rclass{GRangesList}, you
-can also pass in another parameter (as with a \Rclass{GRanges} object)
-to specify which of the elementMetadata columns you wish to select.
+can also pass in a second parameter (as with a \Rclass{GRanges} object)
+to again specify which of the elementMetadata columns you wish to select.
 
 <<subsetGRL2>>=
 grl[1,"score"]
@@ -470,10 +524,10 @@ grl["txB","GC"]
 @  
 
 The \Rmethod{head}, \Rmethod{tail}, \Rmethod{rep}, \Rmethod{rev},
-\Rmethod{window} and \Rmethod{seqselect} methods all behave as you would
-expect them to for a list object.  You will probably notice, for example how
-the elements referred to by \Rmethod{window} or \Rmethod{seqselect} are now
-list elements instead of \Rclass{GRanges} elements.
+\Rmethod{window} and \Rmethod{seqselect} methods all behave as you
+would expect them to for a list object.  For example, the elements
+referred to by \Rmethod{window} or \Rmethod{seqselect} are now list
+elements instead of \Rclass{GRanges} elements.
 
 <<otherSubsetGRL>>=
 rep(grl[[1]], times = 3)
@@ -495,20 +549,20 @@ For \Rclass{GRangesList} objects there is also a family of
 
 The different looping methods defined for \Rclass{GRangesList} objects
 are useful for returning different kinds of results.  The standard
-\Rmethod{lapply} and \Rmethod{sapply} behave as you would expect, with
-the \Rmethod{lapply} method returning a list and sapply returning a
-more simplified output.
+\Rmethod{lapply} and \Rmethod{sapply} behave according to convention,
+with the \Rmethod{lapply} method returning a list and sapply returning
+a more simplified output.
 
 <<lapply>>=
 lapply(grl,length)
 sapply(grl,length)
 @ 
 
-
-But as with \Rclass{IRanges} objects, there is also a multivariate
-version of \Rmethod{sapply} defined for \Rclass{GRangesList} objects.
-If you don't want the results simplified, then you can call the
-\Rmethod{Map} method.
+As with \Rclass{IRanges} objects, there is also a multivariate version
+of \Rmethod{sapply} (called \Rmethod{mapply}) defined for
+\Rclass{GRangesList} objects. And, if you don't want the results
+simplified, you can call the \Rmethod{Map} method, which does the same
+things as \Rmethod{mapply} but without simplyfying the output.
 
 % Check with Patrick to get a more interesting example method??
 <<mapply>>=
@@ -540,9 +594,9 @@ mendoapply(c,grl,grl2)
 @ 
 
 
-Finally, the \Rmethod{Reduce} method will behave as expected and will
-allow the \Rclass{GRanges} objects to be collapsed across the whole of
-the \Rclass{GRangesList} object.
+Finally, the \Rmethod{Reduce} method will allow the \Rclass{GRanges}
+objects to be collapsed across the whole of the \Rclass{GRangesList}
+object.
 
 % Again, this seems like a sub-optimal example to me.
 
@@ -551,23 +605,20 @@ Reduce(c,grl)
 @ 
 
 
+For even more information on the \Rcode{GRangesList} classes be sure to
+consult the manual page.
 
-For even more information on the \Rcode{GRanges} and
-\Rcode{GRangesList} classes be sure to consult their respective man
-pages.
-
-<<manPage, eval=FALSE>>=
-?GRanges
+<<manPage2, eval=FALSE>>=
 ?GRangesList
 @ 
 
-
 \section{Interval overlaps involving \Rclass{GRanges} and \Rclass{GRangesLists} objects}
-
-Interval overlapping is perhaps the most common operation performed
-on \Rclass{GRanges} and \Rclass{GRangesList} objects. To this end,
-the \Rpackage{GenomicRanges} package provide a family of interval
-overlap function. The most general of these functions is
+Interval overlapping is the process of comparing the ranges in two
+objects to determine if and when they overlap.  As such, it is perhaps
+the most common operation performed on \Rclass{GRanges} and
+\Rclass{GRangesList} objects. To this end, the
+\Rpackage{GenomicRanges} package provide a family of interval overlap
+functions. The most general of these functions is
 \Rfunction{findOverlaps}, which takes a query and a subject as inputs
 and returns an \Rclass{RangesMatching} object containing the index
 pairings for the overlapping elements.
@@ -618,11 +669,11 @@ grl %in% gr
 In addition to \Rclass{GRanges} and \Rclass{GRangesList} classes, the
 \GenomicRanges{} package defines the \Rclass{GappedAlignments} class,
 which is a more specialized container for storing a set of alignments.
-The class is intended to support alignments in general, not only
-those coming from a `BAM' file. Also alignments with gaps in the
-reference sequence (a.k.a. \emph{gapped alignments}) are supported
-which, for example, makes the class suited for storing junction reads
-from an RNA-seq experiment.
+The class is intended to support alignments in general, not only those
+coming from a 'Binary Alignment Map' or 'BAM' files. Also alignments
+with gaps in the reference sequence (a.k.a. \emph{gapped alignments})
+are supported which, for example, makes the class suited for storing
+junction reads from an RNA-seq experiment.
 
 More precisely, a \Rclass{GappedAlignments} object is a vector-like
 object where each element describes an \emph{alignment}, that is,
@@ -630,7 +681,7 @@ how a given sequence (called \emph{query} or \emph{read}, typically
 short) aligns to a reference sequence (typically long).
 
 As shown later in this document, a \Rclass{GappedAlignments} object
-can be created from a `BAM' file. In that case, each element in the
+can be created from a 'BAM' file. In that case, each element in the
 resulting object will correspond to a record in the file.
 One important thing to note though is that not all the information
 present in the BAM/SAM records is stored in the object. In particular,
