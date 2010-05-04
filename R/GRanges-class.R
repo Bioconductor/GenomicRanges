@@ -290,21 +290,23 @@ setReplaceMethod("strand", "GRanges",
         initialize(x, strand = value)
     }
 )
-setReplaceMethod("seqlengths", "GRanges",
-    function(x, value)
-    {
-        if (!is.integer(value)) {
-            nms <- names(value)
-            value <- as.integer(value)
-            names(value) <- nms
-        }
-        if (is.null(names(value))) {
-            names(value) <- names(seqlengths(x))
-        }
-        value <- value[names(seqlengths(x))]
-        initialize(x, seqlengths = value)
+
+replace.seqlengths <- function(x, value)
+{
+    if (!is.integer(value)) {
+        nms <- names(value)
+        value <- as.integer(value)
+        names(value) <- nms
     }
-)
+    if (is.null(names(value))) {
+        names(value) <- names(seqlengths(x))
+    }
+    value <- value[names(seqlengths(x))]
+    initialize(x, seqlengths = value)
+}
+
+setReplaceMethod("seqlengths", "GRanges", replace.seqlengths)
+
 setReplaceMethod("elementMetadata", "GRanges",
     function(x, value)
     {
