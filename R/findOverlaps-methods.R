@@ -1,7 +1,7 @@
 .similarSeqnameConvention <- function(seqs1, seqs2) {
     funList <-
-      list(isRoman = function(x) grepl("[ivIV]", x),
-           isArabic = function(x) grepl("[1-9]", x),
+      list(isRoman = function(x) grepl("[ivIV]$", x),
+           isArabic = function(x) grepl("[1-9]$", x),
            haschr = function(x) grepl("^chr", x),
            hasChr = function(x) grepl("^Chr", x),
            hasCHR = function(x) grepl("^CHR", x),
