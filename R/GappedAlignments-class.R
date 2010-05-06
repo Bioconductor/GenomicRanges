@@ -205,11 +205,16 @@ setMethod("ngap", "GappedAlignments",
     old <- runValue(old_rname)
     new <- runValue(new_rname)
     tmp <- unique(data.frame(old=old, new=new))
-    if (!identical(runLength(old_rname), runLength(new_rname))
-     || any(duplicated(tmp$old)) || any(duplicated(tmp$new)))
+    if (!identical(runLength(old_rname), runLength(new_rname)) ||
+        anyDuplicated(tmp$old) || anyDuplicated(tmp$new))
         stop("mapping between old an new 'rname' values is not one-to-one")
-    tr_table <- tmp$new
-    names(tr_table) <- tmp$old
+    if (all.equal(as.integer(tmp$old), as.integer(tmp$new))) {
+        tr_table <- levels(new)
+        names(tr_table) <- levels(old)
+    } else {
+        tr_table <- tmp$new
+        names(tr_table) <- tmp$old
+    }
     tr_table
 }
 

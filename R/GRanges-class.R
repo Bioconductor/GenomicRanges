@@ -247,12 +247,20 @@ setReplaceMethod("seqnames", "GRanges",
         }
         seqlengths <- seqlengths(x)
         if (identical(runLength(seqnames(x)), runLength(value))) {
-            matchTable <- table(runValue(seqnames(x)), runValue(value)) > 0L
-            if ((nrow(matchTable) == ncol(matchTable)) &&
-                all(rowSums(matchTable) == 1L) &&
-                all(colSums(matchTable) == 1L)) {
-                names(seqlengths) <- colnames(matchTable)[max.col(matchTable)]
-            }    
+            matchTable <-
+              unique(data.frame(old = runValue(seqnames(x)),
+                                new = runValue(value)))
+            if (!anyDuplicated(matchTable[["old"]]) &&
+                !anyDuplicated(matchTable[["new"]])) {
+                if (all.equal(as.integer(matchTable[["old"]]),
+                              as.integer(matchTable[["new"]]))) {
+                    names(seqlengths) <- levels(value)
+                } else {
+                    names(seqlengths) <-
+                        matchTable[["new"]][match(names(seqlengths),
+                                            matchTable[["old"]])]
+                }
+            }
         }
         initialize(x, seqnames = value, seqlengths = seqlengths)
     }
