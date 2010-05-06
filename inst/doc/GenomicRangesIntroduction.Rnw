@@ -7,6 +7,13 @@
 \usepackage{times}
 \usepackage{hyperref}
 
+\textwidth=6.5in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=-.1in
+\evensidemargin=-.1in
+\headheight=-.3in
+
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
@@ -22,7 +29,7 @@
 
 
 \title{An Introduction to Genomic Ranges Classes}
-\author{Marc Carlson, Patrick Aboyoun, Herve Pages}
+\author{Marc Carlson \and Patrick Aboyoun \and Herv\'{e} Pag\`{e}s}
 \date{\today}
 
 \begin{document}

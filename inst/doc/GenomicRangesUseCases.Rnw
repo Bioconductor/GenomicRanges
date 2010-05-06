@@ -1,10 +1,19 @@
 %\VignetteIndexEntry{GenomicRanges Use Cases}
+%\VignetteDepends{EatonEtAlChIPseq, leeBamViews, Rsamtools, GenomicFeatures,
+%  org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 \documentclass[10pt]{article}
 
 \usepackage{times}
 \usepackage{hyperref}
+
+\textwidth=6.5in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=-.1in
+\evensidemargin=-.1in
+\headheight=-.3in
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -21,7 +30,7 @@
 
 
 \title{GenomicRanges Use Cases}
-\author{Marc Carlson, Patrick Aboyoun, Herve Pages, Seth Falcon and Martin Morgan} 
+\author{Marc Carlson \and Patrick Aboyoun}
 \date{\today}
 
 \begin{document} 
@@ -42,7 +51,257 @@ library(GenomicRanges)
 @ 
 
 
-%\section{Chip-seq analysis}
+\section{Chip-seq analysis}
+
+This section presents an example workflow using a subset of the
+ChIP-seq data for origin recognition complex (ORC) binding sites in
+\textit{Saccharomyces cerevisiae} from the paper \textit{Conserved
+nucleosome positioning defines replication origins}, Eaton et. al.
+(PMID 20351051). The subset consists of all the MAQ alignments to
+chromosome XIV for two replicates of ORC ChIP-seq data and is
+contained in the Bioconductor package \Rpackage{EatonEtAlChIPseq}.
+For illustration purposes we will focus on the first replicate.
+
+<<EatonOrcChIPseq>>=
+library(EatonEtAlChIPseq)
+data(orcAlignsRep1)
+orcAlignsRep1
+@
+
+\subsection{Filtering alignments}
+
+In this subsection we will demonstrate how to perform three filtering
+operations on alignments produced by the MAQ software through the
+following restrictions:
+
+\begin{itemize}
+\item Number of mismatches in alignment must be $\le$ 3 (guideline
+  specified in paper)
+\item No duplicates of \{chromosome, strand, position\} combinations
+  (PCR bias correction)
+\item An alignment on one strand must have a plausible alignment on
+  the complementary strand (``pseudo" paired-read restriction)
+\end{itemize} 
+
+\noindent
+The first two restrictions can be implemented using functionality from
+the \Rpackage{ShortRead} package, while the last one can be performed
+using operations within the \Rpackage{GenomicRanges} package.
+
+In the previous section we loaded the \Robject{orcAlignsRep1} object,
+an instance of the \Rpackage{ShortRead} class \Rclass{AlignedRead}.
+This object contains information on the characteristics of the read as
+well as its alignment to a reference genome, including information on
+the number of mismatches for the best alignment. Using functionality from
+the \Rpackage{ShortRead} package we can perform the first two filtering
+operations, which result in a subset that is roughly 18\% of the size of
+the original MAQ alignment file.
+
+<<EatonAlignmentFiltering-1>>=
+subsetRep1 <-
+  orcAlignsRep1[pData(alignData(orcAlignsRep1))[["nMismatchBestHit"]] <= 3L]
+length(subsetRep1) / length(orcAlignsRep1)
+subsetRep1 <- subsetRep1[occurrenceFilter(withSread=FALSE)(subsetRep1)]
+length(subsetRep1) / length(orcAlignsRep1)
+subsetRep1
+@
+
+The last filtering criterion, a ``pseudo" paired-read filter, requires
+an understanding of the interval spans for the alignments rather than
+just the ``leftmost" alignment location, i.e. start location on the
+positive strand or end location on the negative strand, represented in
+the \Rclass{AlignedRead} class. As such we will coerce the alignment
+subset contained in \Robject{subsetRep1} to a \Rclass{GRanges} object
+using a \Rmethod{coerce} method from the \Rpackage{ShortRead} package.
+
+<<EatonOrcRanges>>=
+rangesRep1 <- as(subsetRep1, "GRanges")
+head(rangesRep1, 3)
+@
+
+\Rclass{AlignedRead} objects lack information on chromosome length,
+so we will add it to the new \Robject{rangesRep1} object.
+
+<<EatonAddSeqlengths>>=
+seqlengths(rangesRep1) <- 784333
+@
+
+For our ``pseudo" paired-read filter, we will use the authors' estimate
+of the mean fragment length (around 150 base pairs). In particular, we
+will construct a filter where each alignment on the plus strand must have
+a corresponding alignment somewhere within [100, 200] bp downstream on the
+minus strand and vice versa with those alignments on the minus strand.
+
+This filtering process can be achieved through an interval overlap
+operation between the starts of the alignments on the minus strand
+and the projected end of the alignments on the plus strand, where
+the former can be derived by the code
+
+<<EatonNegStarts>>=
+negRangesRep1 <- rangesRep1[strand(rangesRep1) == "-"]
+negStartsRep1 <- resize(negRangesRep1, 1)
+@
+
+\noindent
+and the latter by the code
+
+<<EatonPossibleEnds>>=
+posRangesRep1 <- rangesRep1[strand(rangesRep1) == "+"]
+posEndsRep1 <- shift(posRangesRep1, 99)
+posEndsRep1 <- resize(posEndsRep1, 100)
+strand(posEndsRep1) <- "-"
+@
+
+The results of the interval overlap are shown below. This filter
+flagged roughly 4.5\% of the remaining alignments for removal,
+resulting in keeping 17.3\% of the original set of alignments when
+including the results of the first two filtering steps.
+
+<<EatonMatchingPairs>>=
+strandMatching <- findOverlaps(negStartsRep1, posEndsRep1)
+posKeep <- unique(subjectHits(strandMatching))
+negKeep <- unique(queryHits(strandMatching))
+length(posKeep) / length(posEndsRep1)
+length(negKeep) / length(negStartsRep1)
+(length(posKeep) + length(negKeep)) / length(orcAlignsRep1)
+@
+
+<<EatonAlignmentFiltering-2>>=
+posFilteredRangesRep1 <- posRangesRep1[posKeep]
+negFilteredRangesRep1 <- negRangesRep1[negKeep]
+@
+
+\subsection{Finding peaks}
+
+Once the alignments have been filtered, they can be aggregated into
+coverage vectors. Assuming the size of the reads are uniformly
+distributed within [100, 200] base pairs, we will generate a coverage
+vector by giving full weight to alignments within 100 bp upstream and
+then linearly decreasing weights for the next 100 bp upstream. For
+the \Rfunction{runwtsum} function from \Rpackage{IRanges}, these weights
+for the positive and negative strands are expressed by the vectors:
+
+<<CoverageWeights, fig=TRUE, include=FALSE, eps=FALSE, height=3>>=
+posWeights <- c(seq(0.01, 1, length = 100), rep(c(1, 0), c(101, 200)))
+negWeights <- rev(posWeights)
+plot(-200:200, posWeights, xlab = "Relative Position",
+     ylab = "Coverage Weight", type = "l")
+@
+
+\begin{figure}[tb]
+  \begin{center}
+     \includegraphics[width=\textwidth]{GenomicRangesUseCases-CoverageWeights}  
+     \caption{\label{fig-CoverageWeights}%
+      Coverage weights for positive strand weighted sums.}
+  \end{center}
+\end{figure}
+
+The first step in constructing this coverage vector is to tabulate
+the alignments by their start positions on both the positive and
+negative strand. We will use the \Rfunction{coverage} function on
+these start values, which will produce \Rclass{RleList}
+representations of the coverage vectors.
+
+<<EatonStartCoverage>>=
+posStartsCoverRep1 <- coverage(resize(posFilteredRangesRep1, 1))
+negStartsCoverRep1 <- coverage(resize(negFilteredRangesRep1, 1))
+@
+
+\noindent
+The second step in the process is aggregating upstream alignments
+using the \Robject{posWeights} and \Robject{negWeights} objects
+defined above.
+
+<<EatonExtendedCoverage>>=
+posExtCoverRep1 <-
+  round(runwtsum(posStartsCoverRep1, k = 401, wt = posWeights,
+                 endrule = "constant"))
+negExtCoverRep1 <-
+  round(runwtsum(negStartsCoverRep1, k = 401, wt = negWeights,
+                 endrule = "constant"))
+@
+
+Before we proceeded any further, we will define two plot functions
+for visualizing coverage vectors: \Rfunction{plotCoverage} for
+displaying a single coverage vector and
+\Rfunction{plotStrandedCoverage} for displaying back-to-back
+coverage vectors for dual-stranded data.
+
+<<plotCoverage>>=
+plotCoverage <-
+function(x, xlab = "Position", ylab = "Coverage",...)
+{
+    plot(c(start(x), length(x)), c(runValue(x), tail(runValue(x), 1)),
+         type = "s", col = "blue", xlab = xlab, ylab = ylab, ...)
+}
+plotStrandedCoverage <-
+function(positive, negative, xlab = "Position", ylab = "Coverage",...)
+{
+    ylim <- min(max(positive), max(negative)) * c(-1, 1)
+    plotCoverage(positive, ylim = ylim, ...)
+    lines(c(start(negative), length(negative)),
+          - c(runValue(negative), tail(runValue(negative), 1)),
+          type = "s", col = "red")
+    abline(h = 0, col = "dimgray")
+}
+@
+
+The coverage across chromosome XIV of the filtered alignements is
+shown in Figure \ref{fig-EatonPlotStrands}. In general this plot
+shows a near mirror image of coverage vectors between the positive
+and negative strand.
+
+<<EatonPlotStrands, fig=TRUE, include=FALSE, eps=FALSE, height=5>>=
+plotStrandedCoverage(posExtCoverRep1[[1]], negExtCoverRep1[[1]])
+@
+
+\begin{figure}[tb]
+  \begin{center}
+     \includegraphics[width=\textwidth]{GenomicRangesUseCases-EatonPlotStrands}  
+     \caption{\label{fig-EatonPlotStrands}%
+      Plot of coverage across chromosome XIV.}
+  \end{center}
+\end{figure}
+
+To reduce these measures to a single dimension, we will be
+conservative and choose the smallest value between the positive
+and negative strand coverage vectors using the \Rfunction{pmin}
+method for \Rclass{RleList} objects.
+
+<<EatonExtendedCoverage>>=
+combExtCoverRep1 <- pmin(posExtCoverRep1, negExtCoverRep1)
+quantile(combExtCoverRep1, c(0.5, 0.9, 0.95))
+@
+
+We now can call peaks off the combined coverage object
+\Robject{combExtCoverRep1}. Since the median height for the
+combined coverage on chromosome XIV is 4, we can limit our
+attention to areas on the chromosome with coverage $ge$ 5
+using the \Rfunction{slice} function. From there we can
+derive a heuristic for a significant peaks as those achieving
+a maximum height $ge$ 28, which selects 22 peaks.
+
+<<EatonPeaks>>=
+peaksRep1 <- slice(combExtCoverRep1, lower = 5)
+peakMaxsRep1 <- viewMaxs(peaksRep1)
+tail(sort(peakMaxsRep1[[1]]), 30)
+peaksRep1 <- peaksRep1[peakMaxsRep1 >= 28]
+peakRangesRep1 <-
+  GRanges("chrXIV", as(peaksRep1[[1]], "IRanges"),
+          seqlengths = seqlengths(rangesRep1))
+length(peakRangesRep1)
+@
+
+We can now compare the significant peaks we selected with
+those selected by the authors. Using interval comparison
+tools, we see there is general agreement between our peaks
+and those of the authors.
+
+<<EatonExtendedReads>>=
+data(orcPeaksRep1)
+countOverlaps(orcPeaksRep1, peakRangesRep1)
+countOverlaps(peakRangesRep1, orcPeaksRep1)
+@
 
 
 \section{Simple RNA-seq Analysis}
@@ -81,9 +340,9 @@ al (PMID 19096707), which is available in the \Rpackage{leeBamViews}
 data package. This data originates from Gavin Sherlock's group at
 Stanford and so naturally they designed their experiments with the SGD
 genomes in mind. Therefore, it is probably reasonable to use the SGD
-genome assembly data for Saccharomyces cerevisiae when looking at their
-data. This data is available from UCSC and is therefore also accessible
-through the \Rpackage{rtracklayer}, \Rpackage{BSGenome} and
+genome assembly data for \textit{Saccharomyces cerevisiae} when looking
+at their data. This data is available from UCSC and is therefore also
+accessible through the \Rpackage{rtracklayer}, \Rpackage{BSGenome} and
 \Rpackage{GenomicFeatures} packages.
 
 
@@ -98,7 +357,7 @@ the sgdGene track.
 <<GetAnnoations>>=
 library(GenomicFeatures)
 txdb <- makeTranscriptDbFromUCSC(genome="sacCer2", tablename="sgdGene")
-@ 
+@
 
 Then we simply have to retrieve data from the database using the
 \Rfunction{exonsBy} method so that only exonic locations for each
@@ -107,6 +366,8 @@ transcript will be retrieved by setting the \Rfunarg{by} argument to
 
 <<exonsBy>>=
 exonRanges <- exonsBy(txdb, "tx")
+length(exonRanges)
+exonRanges[1]
 @
 
 At this point, in spite of using the matching annotations for the data,
@@ -114,13 +375,14 @@ there is still a discrepancy in how the chromosomes were named from one
 source to the next. In our data these all start with "Sc", whereas in
 the annotations they do not. Also, numbers of the chromosomes for the
 annotation are given in classic Roman numerals (as is traditional for
-yeast). So let's quickly do a pair of simple substitutions to amend the
-data so that it can match the annotations.
+yeast). So let's recode the alignments to conform with the exon
+annotations.
 
 <<ammendData>>=
-rname(aligns) <- sub("^Sc", "", rname(aligns))
-rname(aligns) <- sub("13", "XIII", rname(aligns))
-@ 
+levels(rname(aligns))
+levels(rname(aligns)) <-
+  c(paste("chr", as.roman(1:16), sep=""), "chrM")
+@
 
 
 \subsection{Counting reads that overlap the annotations} 
@@ -131,7 +393,7 @@ the \Robject{exonRanges} object only has ranges for exons, this use of
 calculating the counts for each.
 <<count>>=
 counts <- countOverlaps(exonRanges, aligns)
-@ 
+@
 
 For simplicities sake, we will now calculate the RPKM.  This is not
 meant as an endorsement of any one measure over any other, it's just
@@ -142,8 +404,8 @@ that this sum also only includes bases that are represented by the
 exons from each transcript.
 <<numBases>>=
 numBases <- sum(width(exonRanges))
-geneLengthsInKB <- (numBases/1000)
-@ 
+geneLengthsInKB <- numBases / 1000
+@
 
 And from this we could (as an example) calculate the sum of the
 mappable reads and then calculate the RPKMs.
@@ -152,22 +414,22 @@ mappable reads and then calculate the RPKMs.
 To do that we first would need to calculate the total number of reads
 being considered by the experiment in millions of reads.
 <<millionsMapped>>=
-millionsMapped <- sum(counts)/1000000
-@ 
+millionsMapped <- sum(counts) / 1000000
+@
 
 Then we have to calculate the RPM by considering the number of reads
 for each transcript relative to this value.
 <<RPM>>=
 # counted reads / total reads in millions
-rpm <- counts/millionsMapped
-@ 
+rpm <- counts / millionsMapped
+@
 
 Finally, we calculate the RPKM by adjusting each RPM measurement for
 the length of the transcript in Kb.
 <<RPKM>>=
 # reads per million per geneLength in Kb
-rpkm <- rpm/geneLengthsInKB
-@ 
+rpkm <- rpm / geneLengthsInKB
+@
 
 \subsection{Identifying and learning more about interesting transcripts} 
 
@@ -179,7 +441,7 @@ exonRanges will both be listed in the same order.
 <<sort>>=
 sortedRPKM <- sort(rpkm)
 highScoreGenes <- tail(sortedRPKM)
-@ 
+@
 
 From the above output, notice how the names of the sortedRPKM are the
 same as the index of exonRanges we need to retrieve?  We can therefore
@@ -193,7 +455,7 @@ txs <- transcripts(txdb,
                    vals=list(tx_id=names(highScoreGenes)), 
                    columns=c("tx_id","gene_id"))
 systNames <- as.vector(unlist(elementMetadata(txs)["gene_id"]))
-@ 
+@
 
 Once you know the gene id, you can use gene-centric annotation data
 sources such as the org packages to learn more about it: 
@@ -201,7 +463,7 @@ sources such as the org packages to learn more about it:
 <<annnotate2>>=
 library(org.Sc.sgd.db)
 toTable(org.Sc.sgdGENENAME[systNames])
-@ 
+@
 
 
 
@@ -223,14 +485,14 @@ out transcripts that are known from your dataset using
 
 <<filterKnowns>>=
 filtData <- subsetByOverlaps(aligns, exonRanges)
-filtData
+length(filtData)
 @
 
 At this point, the filtData object only contains ranges that did not
-overlap with any of the known exons from Saccharomycess cerevisiae.
-It is interesting to note that in spite of having removed all known
-exons, this object still contains about half of the original set of
-aligned reads.  
+overlap with any of the known exons from \textit{Saccharomycess
+cerevisiae}. It is interesting to note that in spite of having removed
+all known exons, this object still contains about half of the original
+set of aligned reads.  
 
 If a coarser level of filtering is desired, you could also use the
 output of \Rmethod{transcriptsBy} as the subject argument for
@@ -239,8 +501,8 @@ Doing so would look like this:
 
 <<filterKnowns2>>=
 filtData2 <- subsetByOverlaps(aligns, transcriptsBy(txdb, "gene"))
-filtData2
-@ 
+length(filtData2)
+@
 
 In this specific case, you can see that not many additional things
 have been filtered out by the coarser filtering which indicates that
@@ -249,7 +511,7 @@ untranslated regions.  This makes sense, since introns in yeast tend
 to be rare, infrequent and small.  Going forward in this example, we
 will use the set that has only filtered out the exons just so that we
 can look at the set of reads that is complementary to the ones we just
-counted..
+counted.
 
 The next step in looking for transcripts that are unknown is to see
 where the reads are located on the genome.  To do that we will use a
@@ -258,7 +520,7 @@ function originally developed for chip-seq analysis.  The
 
 <<coverage>>=
 cov <- coverage(filtData)
-@ 
+@
 
 Since we only have data for chromosome 13, lets subset down to that.
 Notice that in using the coverage method we lose the strand
@@ -269,22 +531,22 @@ twice at this point to keep the results separated.
 
 <<coverageSubset>>=
 cov <- cov[13]
-@ 
+@
 
 And now we can slice that data so that we only consider islands where
 things are continuously 1 read deep.
 
 <<islands>>=
-islands <- slice(cov, lower=1)
-@ 
+islands <- slice(cov, lower = 1)
+@
 
 Having identified those, we can then filter out just the islands where
 the final width is at least 1000 bases long.
 
 <<continous >1000>>=
-transcribedRegions <- islands[width(islands)> 1000]
-txr <- islands[width(islands)> 1000]
-@ 
+transcribedRegions <- islands[width(islands) > 1000]
+txr <- islands[width(islands) > 1000]
+@
 
 Finally, we should then be able to go back to the BSGenome object and
 retrieve the actual sequences.  In order to recover these sequences,
@@ -294,15 +556,15 @@ experiment collapsed that data anyhow).
 
 <<getSequence>>=
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
-getYeastSequence = function(data){
-  chr = rep("chrXIII",length(start(data[[1]])))
-  starts = start(data[[1]])
-  ends = end(data[[1]])
-  strands = rep("+",length(start(data[[1]])))
+getYeastSequence <- function(data) {
+  chr <- rep("chrXIII",length(start(data[[1]])))
+  starts <- start(data[[1]])
+  ends <- end(data[[1]])
+  strands <- rep("+",length(start(data[[1]])))
   getSeq(Scerevisiae, names=chr, start=starts, end=ends, strand=strands)
 }
 DNASet <- DNAStringSet(getYeastSequence(transcribedRegions))
-@ 
+@
 
 
 
