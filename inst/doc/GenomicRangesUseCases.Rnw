@@ -62,7 +62,7 @@ chromosome XIV for two replicates of ORC ChIP-seq data and is
 contained in the Bioconductor package \Rpackage{EatonEtAlChIPseq}.
 For illustration purposes we will focus on the first replicate.
 
-<<EatonOrcChIPseq>>=
+<<EatonEtAlChIPseq>>=
 library(EatonEtAlChIPseq)
 data(orcAlignsRep1)
 orcAlignsRep1
