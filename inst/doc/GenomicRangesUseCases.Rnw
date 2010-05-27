@@ -99,7 +99,7 @@ the original MAQ alignment file.
 
 <<EatonAlignmentFiltering-1>>=
 subsetRep1 <-
-  orcAlignsRep1[pData(alignData(orcAlignsRep1))[["nMismatchBestHit"]] <= 3L]
+  orcAlignsRep1[alignData(orcAlignsRep1)[["nMismatchBestHit"]] <= 3L]
 length(subsetRep1) / length(orcAlignsRep1)
 subsetRep1 <- subsetRep1[occurrenceFilter(withSread=FALSE)(subsetRep1)]
 length(subsetRep1) / length(orcAlignsRep1)
@@ -276,10 +276,10 @@ quantile(combExtCoverRep1, c(0.5, 0.9, 0.95))
 We now can call peaks off the combined coverage object
 \Robject{combExtCoverRep1}. Since the median height for the
 combined coverage on chromosome XIV is 4, we can limit our
-attention to areas on the chromosome with coverage $ge$ 5
+attention to areas on the chromosome with coverage $\ge 5$
 using the \Rfunction{slice} function. From there we can
 derive a heuristic for a significant peaks as those achieving
-a maximum height $ge$ 28, which selects 22 peaks.
+a maximum height $\ge 28$, which selects 22 peaks.
 
 <<EatonPeaks>>=
 peaksRep1 <- slice(combExtCoverRep1, lower = 5)
@@ -458,7 +458,8 @@ systNames <- as.vector(unlist(elementMetadata(txs)["gene_id"]))
 @
 
 Once you know the gene id, you can use gene-centric annotation data
-sources such as the org packages to learn more about it: 
+sources such as the \Rpackage{org.Sc.sgd.db} package
+to learn more about it:
 
 <<annnotate2>>=
 library(org.Sc.sgd.db)
@@ -479,7 +480,7 @@ toTable(org.Sc.sgdGENENAME[systNames])
 At this point you might be satisfied with calculating the amount of
 known genes in your model, but what if you wanted to know about
 regions that were transcribed but which were NOT found amongst the
-annotated transcripts?  To look at these you would 1st want to filter
+annotated transcripts?  To look at these you would first want to filter
 out transcripts that are known from your dataset using
 \Rfunction{subsetByOverlaps}.
 
@@ -488,11 +489,11 @@ filtData <- subsetByOverlaps(aligns, exonRanges)
 length(filtData)
 @
 
-At this point, the filtData object only contains ranges that did not
-overlap with any of the known exons from \textit{Saccharomycess
-cerevisiae}. It is interesting to note that in spite of having removed
-all known exons, this object still contains about half of the original
-set of aligned reads.  
+At this point, the \Robject{filtData} object only contains ranges that
+did not overlap with any of the known exons from
+\textit{Saccharomycess cerevisiae}. It is interesting to note that in
+spite of having removed all known exons, this object still contains
+about half of the original set of aligned reads.
 
 If a coarser level of filtering is desired, you could also use the
 output of \Rmethod{transcriptsBy} as the subject argument for
@@ -534,7 +535,7 @@ cov <- cov[13]
 @
 
 And now we can slice that data so that we only consider islands where
-things are continuously 1 read deep.
+things are continuously at least one read deep.
 
 <<islands>>=
 islands <- slice(cov, lower = 1)
@@ -548,11 +549,11 @@ transcribedRegions <- islands[width(islands) > 1000]
 txr <- islands[width(islands) > 1000]
 @
 
-Finally, we should then be able to go back to the BSGenome object and
-retrieve the actual sequences.  In order to recover these sequences,
-we are going to specify that this data came from chromosome 13, and we
-will just retrieve the plus strand version of each (since the
-experiment collapsed that data anyhow).
+Finally, we should then be able to go back to the \Robject{BSGenome}
+object and retrieve the actual sequences.  In order to recover these
+sequences, we are going to specify that this data came from chromosome
+13, and we will just retrieve the plus strand version of each (since
+the experiment collapsed that data anyhow).
 
 <<getSequence>>=
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
