@@ -208,7 +208,7 @@ setMethod("ngap", "GappedAlignments",
     if (!identical(runLength(old_rname), runLength(new_rname)) ||
         anyDuplicated(tmp$old) || anyDuplicated(tmp$new))
         stop("mapping between old an new 'rname' values is not one-to-one")
-    if (all.equal(as.integer(tmp$old), as.integer(tmp$new))) {
+    if (isTRUE(all.equal(as.integer(tmp$old), as.integer(tmp$new)))) {
         tr_table <- levels(new)
         names(tr_table) <- levels(old)
     } else {

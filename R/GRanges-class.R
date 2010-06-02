@@ -252,8 +252,8 @@ setReplaceMethod("seqnames", "GRanges",
                                 new = runValue(value)))
             if (!anyDuplicated(matchTable[["old"]]) &&
                 !anyDuplicated(matchTable[["new"]])) {
-                if (all.equal(as.integer(matchTable[["old"]]),
-                              as.integer(matchTable[["new"]]))) {
+                if (isTRUE(all.equal(as.integer(matchTable[["old"]]),
+                                     as.integer(matchTable[["new"]])))) {
                     names(seqlengths) <- levels(value)
                 } else {
                     names(seqlengths) <-
