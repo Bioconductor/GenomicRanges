@@ -346,7 +346,7 @@ accessible through the \Rpackage{rtracklayer}, \Rpackage{BSGenome} and
 \Rpackage{GenomicFeatures} packages.
 
 
-\subsection{Getting relevant genomic annotations} 
+\subsection{Getting relevant genomic annotations}
 
 Now that we have chosen a data source to match the data that the genes
 were aligned to, we can simply get relevant annotation data to go with
@@ -385,7 +385,7 @@ levels(rname(aligns)) <-
 @
 
 
-\subsection{Counting reads that overlap the annotations} 
+\subsection{Counting reads that overlap the annotations}
 
 Now we can count how many reads mapped to each transcript.  And, since
 the \Robject{exonRanges} object only has ranges for exons, this use of
@@ -431,6 +431,28 @@ the length of the transcript in Kb.
 rpkm <- rpm / geneLengthsInKB
 @
 
+
+Once we have calculated a measure of gene expression, we might find it
+convenient to put it into a table as is expected by the
+\Rpackage{DESeq} package.  To do this, we have to consider that we
+will probably want to do all the above steps for however many samples
+we want to process, and then place each resulting vector into a
+\Robject{data.frame} or \Robject{matrix} as a column.  For the sake of
+saving space, lets assume you did that and created another vector
+called \Robject{rpkm2}, then you could create your \Rpackage{DESeq}
+object like this:
+
+<<DESeqFrame, eval=FALSE>>=
+deframe <- data.frame(rpkm, rpkm2)  
+@
+
+This will work in this case for as many other samples as you choose to
+process because the countOvelaps method is always using the same
+\Robject{exonRanges} object to quantify overlap regions with.
+
+
+
+
 \subsection{Identifying and learning more about interesting transcripts} 
 
 Now that we have calculated the RPKM, we can start to ask basic
@@ -466,7 +488,8 @@ library(org.Sc.sgd.db)
 toTable(org.Sc.sgdGENENAME[systNames])
 @
 
-
+If you wish, you can also use these systematic names to replace the
+rownames in any \Rpackage{DESeq} frame objects that you create.
 
 
 % NEXT: Compete the subsection on finding UNKNOWN transcribed regions.
