@@ -6,7 +6,8 @@
 static char errmsg_buf[200];
 
 /* Return the number of chars that was read, or 0 if there is no more char
-   to read (i.e. cig0[offset] is '\0'), or -1 in case of a parse error. */
+   to read (i.e. cig0[offset] is '\0'), or -1 in case of a parse error.
+   Zero-length operations are ignored. */
 static int get_next_cigar_OP(const char *cig0, int offset,
 		int *OPL, char *OP)
 {
@@ -16,67 +17,60 @@ static int get_next_cigar_OP(const char *cig0, int offset,
 	if (!cig0[offset])
 		return 0;
 	offset0 = offset;
-	/* Extract *OPL */
-	opl = 0;
-	while (isdigit(c = cig0[offset])) {
+	do {
+		/* Extract *OPL */
+		opl = 0;
+		while (isdigit(c = cig0[offset])) {
+			offset++;
+			opl *= 10;
+			opl += c - '0';
+		}
+		/* Extract *OP */
+		if (!(*OP = cig0[offset])) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unexpected CIGAR end at char %d",
+				 offset + 1);
+			return -1;
+		}
 		offset++;
-		opl *= 10;
-		opl += c - '0';
-	}
-	if (opl == 0) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "invalid CIGAR operation length at char %d",
-			 offset + 1);
-		return -1;
-	}
+	} while (opl == 0);
 	*OPL = opl;
-	/* Extract *OP */
-	if (!(*OP = cig0[offset])) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "unexpected CIGAR end at char %d",
-			 offset + 1);
-		return -1;
-	}
-	offset++;
 	return offset - offset0;
 }
 
 /* Return the number of chars that was read, or 0 if there is no more char
-   to read (i.e. offset is 0), or -1 in case of a parse error. */
+   to read (i.e. offset is 0), or -1 in case of a parse error.
+   Zero-length operations are ignored. */
 static int get_prev_cigar_OP(const char *cig0, int offset,
 		int *OPL, char *OP)
 {
 	char c;
-	int offset0, opl, tmp;
+	int offset0, opl, powof10;
 
 	if (offset == 0)
 		return 0;
 	offset0 = offset;
-	/* Extract *OP */
-	offset--;
-	*OP = cig0[offset];
-	/* Extract *OPL */
-	if (offset == 0) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "no CIGAR operation length at char %d",
-			 offset + 1);
-		return -1;
-	}
-	offset--;
-	opl = 0;
-	tmp = 1;
-	while (offset >= 0 && isdigit(c = cig0[offset])) {
-		opl += (c - '0') * tmp;
-		tmp *= 10;
+	do {
+		/* Extract *OP */
 		offset--;
-	}
-	offset++;
-	if (opl == 0) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "invalid CIGAR operation length at char %d",
-			 offset + 1);
-		return -1;
-	}
+		*OP = cig0[offset];
+		/* Extract *OPL */
+		if (offset == 0) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "no CIGAR operation length at char %d",
+				 offset + 1);
+			return -1;
+		}
+		offset--;
+		opl = 0;
+		powof10 = 1;
+		while (offset >= 0 && isdigit(c = cig0[offset])) {
+			opl += (c - '0') * powof10;
+			powof10 *= 10;
+			offset--;
+		}
+		offset++;
+	} while (opl == 0);
 	*OPL = opl;
 	return offset0 - offset;
 }
