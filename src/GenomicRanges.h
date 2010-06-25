@@ -11,8 +11,6 @@ SEXP cigar_op_table(SEXP cigar);
 
 SEXP cigar_to_qwidth(SEXP cigar, SEXP before_hard_clipping);
 
-SEXP cigar_to_qwidth2(SEXP cigar, SEXP before_hard_clipping);
-
 SEXP cigar_to_width(SEXP cigar);
 
 SEXP cigar_qnarrow(SEXP cigar, SEXP left_qwidth, SEXP right_qwidth);

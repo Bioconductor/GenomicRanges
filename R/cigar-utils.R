@@ -34,20 +34,6 @@ cigarToQWidth <- function(cigar, before.hard.clipping=FALSE)
           PACKAGE="GenomicRanges")
 }
 
-cigarToQWidth2 <- function(cigar, before.hard.clipping=FALSE)
-{
-    if (!is.character(cigar)) {
-        if (!is.factor(cigar) || !is.character(levels(cigar)))
-            stop("'cigar' must be a character vector/factor")
-        cigar <- as.vector(cigar)
-    }
-    if (!isTRUEorFALSE(before.hard.clipping))
-        stop("'before.hard.clipping' must be TRUE or FALSE")
-    .Call("cigar_to_qwidth2",
-          cigar, before.hard.clipping,
-          PACKAGE="GenomicRanges")
-}
-
 cigarToWidth <- function(cigar)
 {
     if (!is.character(cigar)) {

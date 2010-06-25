@@ -3,12 +3,6 @@
 
 #include <ctype.h> /* for isdigit() */
 
-
-#define OP_IN_REF(op) (op == 'M') || (op == 'D') || (op == 'N')
-#define OP_IN_QUERY(op) (op == 'M') || (op == 'I') || (op == 'S') || (op == 'H')
-#define OP_IN_ALIGN(op) (op == 'M') || (op == 'I') || (op == 'D') || (op == 'P')
-
-
 static char errmsg_buf[200];
 
 /* Return the number of chars that was read, or 0 if there is no more char
@@ -157,29 +151,6 @@ static const char *cigar_string_to_qwidth(SEXP cigar_string, int clip_reads,
 				 OP, offset + 1);
 			return errmsg_buf;
 		}
-		offset += n;
-	}
-	return NULL;
-}
-
-static const char *cigar_string_to_qwidth2(SEXP cigar_string, int clip_reads,
-		int *qwidth)
-{
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	if (cigar_string == NA_STRING)
-		return "CIGAR string is NA";
-	if (LENGTH(cigar_string) == 0)
-		return "CIGAR string is empty";
-	cig0 = CHAR(cigar_string);
-	*qwidth = offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
-		if (n == -1)
-			return errmsg_buf;
-		if (OP_IN_QUERY(OP))
-			*qwidth += OPL;
 		offset += n;
 	}
 	return NULL;
@@ -850,33 +821,6 @@ SEXP cigar_to_qwidth(SEXP cigar, SEXP before_hard_clipping)
 			continue;
 		}
 		errmsg = cigar_string_to_qwidth(cigar_string, clip_reads,
-				&qwidth);
-		if (errmsg != NULL) {
-			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1, errmsg);
-		}
-		INTEGER(ans)[i] = qwidth;
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-SEXP cigar_to_qwidth2(SEXP cigar, SEXP before_hard_clipping)
-{
-	SEXP ans, cigar_string;
-	int clip_reads, cigar_length, i, qwidth;
-	const char *errmsg;
-
-	clip_reads = !LOGICAL(before_hard_clipping)[0];
-	cigar_length = LENGTH(cigar);
-	PROTECT(ans = NEW_INTEGER(cigar_length));
-	for (i = 0; i < cigar_length; i++) {
-		cigar_string = STRING_ELT(cigar, i);
-		if (cigar_string == NA_STRING) {
-			INTEGER(ans)[i] = NA_INTEGER;
-			continue;
-		}
-		errmsg = cigar_string_to_qwidth2(cigar_string, clip_reads,
 				&qwidth);
 		if (errmsg != NULL) {
 			UNPROTECT(1);

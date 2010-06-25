@@ -10,7 +10,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(split_cigar, 1),
 	CALLMETHOD_DEF(cigar_op_table, 1),
 	CALLMETHOD_DEF(cigar_to_qwidth, 2),
-	CALLMETHOD_DEF(cigar_to_qwidth2, 2),
 	CALLMETHOD_DEF(cigar_to_width, 1),
 	CALLMETHOD_DEF(cigar_qnarrow, 3),
 	CALLMETHOD_DEF(cigar_narrow, 3),
