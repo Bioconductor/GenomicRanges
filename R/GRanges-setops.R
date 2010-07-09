@@ -16,8 +16,12 @@ setMethod("intersect", c("GRanges", "GRanges"),
     {
         elementMetadata(x) <- NULL
         elementMetadata(y) <- NULL
-        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(x))))
+        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(y))))
         seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
+        if (!identical(seqlengths(x), seqlengths))
+            seqlengths(x) <- seqlengths
+        if (!identical(seqlengths(y), seqlengths))
+            seqlengths(y) <- seqlengths
         if (IRanges:::anyMissing(seqlengths)) {
             maxs <-
               sapply(IRanges:::newCompressedList("CompressedIntegerList",
@@ -34,8 +38,12 @@ setMethod("setdiff", c("GRanges", "GRanges"),
     function(x, y) {
         elementMetadata(x) <- NULL
         elementMetadata(y) <- NULL
-        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(x))))
+        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(y))))
         seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
+        if (!identical(seqlengths(x), seqlengths))
+            seqlengths(x) <- seqlengths
+        if (!identical(seqlengths(y), seqlengths))
+            seqlengths(y) <- seqlengths
         if (IRanges:::anyMissing(seqlengths)) {
             maxs <-
               sapply(IRanges:::newCompressedList("CompressedIntegerList",

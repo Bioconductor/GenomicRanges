@@ -144,7 +144,21 @@ setMethod("strand", "GappedAlignments",
 )
 
 setMethod("seqlengths", "GappedAlignments", function(x) x@seqlengths)
-setReplaceMethod("seqlengths", "GappedAlignments", replace.seqlengths)
+setReplaceMethod("seqlengths", "GappedAlignments",
+    function(x, value)
+    {
+        if (!is.integer(value)) {
+            nms <- names(value)
+            value <- as.integer(value)
+            names(value) <- nms
+        }
+        if (is.null(names(value))) {
+            names(value) <- names(seqlengths(x))
+        }
+        value <- value[names(seqlengths(x))]
+        initialize(x, seqlengths = value)
+    }
+)
 
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
 

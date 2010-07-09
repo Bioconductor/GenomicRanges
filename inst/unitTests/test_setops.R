@@ -63,6 +63,21 @@ test_intersect <- function()
     checkIdentical(intersect(gr, gr), expect)
 
     checkIdentical(union(grlist[[1]], grlist[[2]]), reduce(unlist(grlist)))
+
+    gr1 <-
+      GRanges(seqnames = c("chr1", "chr2", "chr3", "chr4"),
+              ranges = IRanges(1:4, width = 10),
+              strand = c("-", "+", "+", "+"))
+    gr2 <-
+      GRanges(seqnames = c("chr1", "chr2", "chr5", "chr6"),
+              ranges = IRanges(1:4, width = 10), 
+              strand = c("-", "+", "+", "+")) 
+    expect <-
+      GRanges(seqnames =
+              factor(c("chr1", "chr2"), levels = paste("chr", 1:6, sep = "")),
+              ranges = IRanges(1:2, width = 10), 
+              strand = c("-", "+")) 
+    checkIdentical(intersect(gr1, gr2), expect)
 }
 
 test_setdiff <- function()
@@ -78,6 +93,21 @@ test_setdiff <- function()
     checkIdentical(setdiff(gr, gr), expect)
 
     checkIdentical(setdiff(grlist[[1]], grlist[[2]]), reduce(grlist[[1]]))
+
+    gr1 <-
+      GRanges(seqnames = c("chr1", "chr2", "chr3", "chr4"),
+              ranges = IRanges(1:4, width = 10),
+              strand = c("-", "+", "+", "+"))
+    gr2 <-
+      GRanges(seqnames = c("chr1", "chr2", "chr5", "chr6"),
+              ranges = IRanges(1:4, width = 10), 
+              strand = c("-", "+", "+", "+")) 
+    expect <-
+      GRanges(seqnames =
+              factor(c("chr3", "chr4"), levels = paste("chr", 1:6, sep = "")),
+              ranges = IRanges(3:4, width = 10), 
+              strand = c("+", "+")) 
+    checkIdentical(setdiff(gr1, gr2), expect)
 }
 
 test_punion <- function()
