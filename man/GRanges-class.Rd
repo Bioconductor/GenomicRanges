@@ -12,6 +12,8 @@
 % Coercion methods:
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,GRanges,RangedData-method}
+\alias{coerce,RangesList,GRanges-method}
+\alias{coerce,GRanges,RangesList-method}
 \alias{as.data.frame,GRanges-method}
 
 % Accessor methods:
@@ -117,11 +119,20 @@
   \describe{
     \item{}{
       \code{as(from, "GRanges")}:
-      Creates a GRanges object from a RangedData object.
+      Creates a GRanges object from a RangedData or RangesList object.
     }
     \item{}{
       \code{as(from, "RangedData")}:
-      Creates a RangedData object from a GRanges object.
+      Creates a RangedData object from a GRanges
+      object. The \code{strand} and the values become columns in the
+      result. The \code{seqlengths} are stored in the element metadata
+      of \code{ranges(rd)}.
+    }
+    \item{}{
+      \code{as(from, "RangesList")}:
+      Creates a RangesList object from a GRanges
+      object. The \code{strand} and values become element metadata on the
+      ranges. The \code{seqlengths} are stored in the element metadata.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:

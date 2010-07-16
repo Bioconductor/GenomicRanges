@@ -4,26 +4,66 @@
 \alias{findOverlaps,GRanges,GRangesList-method}
 \alias{findOverlaps,GRangesList,GRanges-method}
 \alias{findOverlaps,GRangesList,GRangesList-method}
+\alias{findOverlaps,RangesList,GRanges-method}
+\alias{findOverlaps,GRanges,RangesList-method}
+\alias{findOverlaps,GRangesList,RangesList-method}
+\alias{findOverlaps,RangesList,GRangesList-method}
+\alias{findOverlaps,RangedData,GRanges-method}
+\alias{findOverlaps,GRanges,RangedData-method}
+\alias{findOverlaps,GRangesList,RangedData-method}
+\alias{findOverlaps,RangedData,GRangesList-method}
 
 \alias{countOverlaps,GRanges,GRanges-method}
 \alias{countOverlaps,GRanges,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRanges-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
+\alias{countOverlaps,RangesList,GRanges-method}
+\alias{countOverlaps,GRanges,RangesList-method}
+\alias{countOverlaps,GRangesList,RangesList-method}
+\alias{countOverlaps,RangesList,GRangesList-method}
+\alias{countOverlaps,RangedData,GRanges-method}
+\alias{countOverlaps,GRanges,RangedData-method}
+\alias{countOverlaps,GRangesList,RangedData-method}
+\alias{countOverlaps,RangedData,GRangesList-method}
 
 \alias{subsetByOverlaps,GRanges,GRanges-method}
 \alias{subsetByOverlaps,GRanges,GRangesList-method}
 \alias{subsetByOverlaps,GRangesList,GRanges-method}
 \alias{subsetByOverlaps,GRangesList,GRangesList-method}
+\alias{subsetByOverlaps,RangesList,GRanges-method}
+\alias{subsetByOverlaps,GRanges,RangesList-method}
+\alias{subsetByOverlaps,GRangesList,RangesList-method}
+\alias{subsetByOverlaps,RangesList,GRangesList-method}
+\alias{subsetByOverlaps,RangedData,GRanges-method}
+\alias{subsetByOverlaps,GRanges,RangedData-method}
+\alias{subsetByOverlaps,GRangesList,RangedData-method}
+\alias{subsetByOverlaps,RangedData,GRangesList-method}
 
 \alias{match,GRanges,GRanges-method}
 \alias{match,GRanges,GRangesList-method}
 \alias{match,GRangesList,GRanges-method}
 \alias{match,GRangesList,GRangesList-method}
+\alias{match,RangesList,GRanges-method}
+\alias{match,GRanges,RangesList-method}
+\alias{match,GRangesList,RangesList-method}
+\alias{match,RangesList,GRangesList-method}
+\alias{match,RangedData,GRanges-method}
+\alias{match,GRanges,RangedData-method}
+\alias{match,GRangesList,RangedData-method}
+\alias{match,RangedData,GRangesList-method}
 
 \alias{\%in\%,GRanges,GRanges-method}
 \alias{\%in\%,GRanges,GRangesList-method}
 \alias{\%in\%,GRangesList,GRanges-method}
 \alias{\%in\%,GRangesList,GRangesList-method}
+\alias{\%in\%,RangesList,GRanges-method}
+\alias{\%in\%,GRanges,RangesList-method}
+\alias{\%in\%,GRangesList,RangesList-method}
+\alias{\%in\%,RangesList,GRangesList-method}
+\alias{\%in\%,RangedData,GRanges-method}
+\alias{\%in\%,GRanges,RangedData-method}
+\alias{\%in\%,GRangesList,RangedData-method}
+\alias{\%in\%,RangedData,GRangesList-method}
 
 
 \title{GRanges and GRangesList Interval Overlaps}
@@ -46,7 +86,11 @@
 
 \arguments{
   \item{query, subject, x, table}{
-    A \link{GRanges} or \link{GRangesList} object.
+    A \link{GRanges} or \link{GRangesList}
+    object. \linkS4class[IRanges:RangesList-class]{RangesList} and
+    \linkS4class[IRanges:RangedData-class]{RangedData} are also accepted
+    for one of \code{query} or \code{subject} (\code{x} or \code{table}
+    for \code{match}).
   }
   \item{maxgap}{
     A non-negative integer representing the maximum distance between
@@ -87,12 +131,13 @@
   \code{subject} have the same sequence name, have a compatible pairing
   of strands (e.g. \code{"+"}/\code{"+"}, \code{"-"}/\code{"-"},
   \code{"*"}/\code{"+"}, \code{"*"}/\code{"-"}, etc.), and satisfy the
-  interval overlap requirements.
+  interval overlap requirements. Strand is taken as \code{"*"}
+  for \code{RangedData} and \code{RangesList}.
 
   In the context of \code{findOverlaps}, a feature is a collection of
   ranges that are treated as a single entity. For \link{GRanges} objects,
   a feature is a single range; while for \link{GRangesList} objects,
-  a feature and a list element containing a set of ranges. In the results,
+  a feature is a list element containing a set of ranges. In the results,
   the features are referred to by number, which run from 1 to
   \code{length(query)}/\code{length(subject)}.
 }
@@ -100,7 +145,8 @@
 \value{
   For \code{findOverlaps} either a
   \link[IRanges:RangesMatching-class]{RangesMatching} object when
-  \code{select = "all"} or an integer vector when \code{select = "first"}.
+  \code{select = "all"} or an integer vector when \code{select =
+    "first"}. 
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
@@ -112,9 +158,15 @@
 
   For \code{\%in\%} the logical vector produced by
   \code{!is.na(match(x, table))}.
+
+  For \code{RangedData} and \code{RangesList}, with the exception of
+  \code{subsetByOverlaps}, the results align to the unlisted
+  form of the object. This turns out to be fairly convenient for
+  \code{RangedData} (not so much for \code{RangesList}, but something
+  has to give).
 }
 
-\author{P. Aboyoun and S. Falcon}
+\author{P. Aboyoun and S. Falcon and M. Lawrence}
 
 \seealso{
   \code{\link[IRanges]{findOverlaps}},

@@ -233,6 +233,85 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("findOverlaps", c("RangesList", "GRangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(as(query, "GRanges"), subject = subject,
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("RangesList", "GRanges"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(as(query, "GRanges"), subject = subject,
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("GRangesList", "RangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(query, as(subject, "GRanges"),
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("GRanges", "RangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(query, as(subject, "GRanges"),
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("RangedData", "GRangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(ranges(query), subject = subject,
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("RangedData", "GRanges"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(ranges(query), subject = subject,
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("GRangesList", "RangedData"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(query, ranges(query),
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
+
+setMethod("findOverlaps", c("GRanges", "RangedData"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"),
+                   select = c("all", "first"))
+          {
+            findOverlaps(query, ranges(query),
+                         maxgap = maxgap, minoverlap = minoverlap,
+                         type = match.arg(type), select = match.arg(select))
+          })
 
 ### =========================================================================
 ### countOverlaps methods
@@ -286,6 +365,102 @@ setMethod("countOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("countOverlaps", c("RangesList", "GRangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+setMethod("countOverlaps", c("GRangesList", "RangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+setMethod("countOverlaps", c("RangesList", "GRanges"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+setMethod("countOverlaps", c("GRanges", "RangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+
+setMethod("countOverlaps", c("RangedData", "GRangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+setMethod("countOverlaps", c("GRangesList", "RangedData"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+setMethod("countOverlaps", c("RangedData", "GRanges"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
+
+setMethod("countOverlaps", c("GRanges", "RangedData"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                            type = type)), length(query))
+          }
+          )
 
 ### =========================================================================
 ### subsetByOverlaps methods
@@ -343,6 +518,113 @@ setMethod("subsetByOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("subsetByOverlaps", c("RangesList", "GRangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            i <- !is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                     minoverlap = minoverlap, type = type,
+                                     select = "first"))
+            query[seqsplit(i, space(query), drop=FALSE)]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("GRangesList", "RangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                      minoverlap = minoverlap, type = type,
+                                      select = "first"))]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("RangesList", "GRanges"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            browser()
+            i <- !is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                     minoverlap = minoverlap, type = type,
+                                     select = "first"))
+            query[seqsplit(i, space(query), drop=FALSE)]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("GRanges", "RangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                      minoverlap = minoverlap, type = type,
+                                      select = "first"))]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("RangedData", "GRangesList"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                      minoverlap = minoverlap, type = type,
+                                      select = "first")),]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("GRangesList", "RangedData"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                      minoverlap = minoverlap, type = type,
+                                      select = "first"))]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("RangedData", "GRanges"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                      minoverlap = minoverlap, type = type,
+                                      select = "first")),]
+          }
+          )
+
+setMethod("subsetByOverlaps", c("GRanges", "RangedData"),
+          function(query, subject, maxgap = 0L, minoverlap = 1L,
+                   type = c("any", "start", "end"))
+          {
+            if (!identical(minoverlap, 1L))
+              warning("'minoverlap' argument is ignored")
+            type <- match.arg(type)
+            query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                                      minoverlap = minoverlap, type = type,
+                                      select = "first"))]
+          }
+          )
+
 
 ### =========================================================================
 ### match methods
@@ -396,6 +678,102 @@ setMethod("match", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("match", c("RangesList", "GRangesList"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("GRangesList", "RangesList"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("RangesList", "GRanges"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("GRanges", "RangesList"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("RangedData", "GRangesList"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("GRangesList", "RangedData"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("RangedData", "GRanges"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
+setMethod("match", c("GRanges", "RangedData"),
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+          {
+            if (length(nomatch) != 1)
+              stop("'nomatch' must be of length 1") 
+            ans <- findOverlaps(x, table, select = "first")
+            if (!is.na(nomatch) && IRanges:::anyMissing(ans))
+              ans[is.na(ans)] <- nomatch
+            ans
+          }
+          )
+
 
 ### =========================================================================
 ### %in% methods
@@ -420,3 +798,43 @@ setMethod("%in%", c("GRangesList", "GRangesList"),
     function(x, table)
         !is.na(match(x, table))
 )
+
+setMethod("%in%", c("GRangesList", "RangesList"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("RangesList", "GRangesList"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("GRanges", "RangesList"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("RangesList", "GRanges"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("GRangesList", "RangedData"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("RangedData", "GRangesList"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("GRanges", "RangedData"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
+
+setMethod("%in%", c("RangedData", "GRanges"),
+          function(x, table)
+          !is.na(match(x, table))
+          )
