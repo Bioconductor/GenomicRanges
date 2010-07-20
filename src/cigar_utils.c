@@ -726,8 +726,8 @@ SEXP split_cigar(SEXP cigar)
 			error("in 'cigar' element %d: %s", i + 1, errmsg);
 		}
 		PROTECT(ans_elt = NEW_LIST(2));
-		PROTECT(ans_elt_elt0 = CharAE_asRAW(&OPbuf));
-		PROTECT(ans_elt_elt1 = IntAE_asINTEGER(&OPLbuf));
+		PROTECT(ans_elt_elt0 = new_RAW_from_CharAE(&OPbuf));
+		PROTECT(ans_elt_elt1 = new_INTEGER_from_IntAE(&OPLbuf));
 		SET_VECTOR_ELT(ans_elt, 0, ans_elt_elt0);
 		SET_VECTOR_ELT(ans_elt, 1, ans_elt_elt1);
 		SET_VECTOR_ELT(ans, i, ans_elt);
