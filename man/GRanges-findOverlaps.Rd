@@ -87,8 +87,8 @@
 \arguments{
   \item{query, subject, x, table}{
     A \link{GRanges} or \link{GRangesList}
-    object. \linkS4class[IRanges:RangesList-class]{RangesList} and
-    \linkS4class[IRanges:RangedData-class]{RangedData} are also accepted
+    object. \link[IRanges:RangesList-class]{RangesList} and
+    \link[IRanges:RangedData-class]{RangedData} are also accepted
     for one of \code{query} or \code{subject} (\code{x} or \code{table}
     for \code{match}).
   }
