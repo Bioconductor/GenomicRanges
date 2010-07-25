@@ -196,6 +196,8 @@ setAs("GRanges", "RangedData",
 setAs("RangesList", "GRanges",
       function(from)
       {
+        if (!length(from))
+          return(GRanges())
         ranges <- unlist(from, use.names=FALSE)
         GRanges(seqnames = space(from),
                 ranges = ranges,
