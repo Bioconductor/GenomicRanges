@@ -28,7 +28,7 @@
 \newcommand{\Bioconductor}{\software{Bioconductor}}
 \newcommand{\GenomicRanges}{\Rpackage{GenomicRanges}}
 
-
+% TODO: Add example showing (for RNASeq) how to convert the results into a table such as can be used by DESeq and include in that example a conversion of the gene IDs to the gene symbols. 
 \title{GenomicRanges Use Cases}
 \author{Marc Carlson \and Patrick Aboyoun}
 \date{\today}
@@ -435,15 +435,14 @@ rpkm <- rpm / geneLengthsInKB
 Once we have calculated a measure of gene expression, we might find it
 convenient to put it into a table as is expected by the
 \Rpackage{DESeq} package.  To do this, we have to consider that we
-will probably want to do all the above steps for however many samples
-we want to process, and then place each resulting vector into a
+will probably want to do just the above steps that collect the raw counts and then place those vectors into a
 \Robject{data.frame} or \Robject{matrix} as a column.  For the sake of
 saving space, lets assume you did that and created another vector
-called \Robject{rpkm2}, then you could create your \Rpackage{DESeq}
+called \Robject{counts2}, then you could create your \Rpackage{DESeq}
 object like this:
 
 <<DESeqFrame, eval=FALSE>>=
-deframe <- data.frame(rpkm, rpkm2)  
+deframe <- data.frame(counts, counts2)  
 @
 
 This will work in this case for as many other samples as you choose to
