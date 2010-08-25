@@ -789,11 +789,13 @@ setMethod("split", "GRanges",
             else
                 f <- factor(nms, levels = nms)
         }
+        nrows <- nlevels(f)
+        if (nrows == 0)
+            nrows <- sum(!is.na(unique(f)))
         IRanges:::newCompressedList("GRangesList", x, splitFactor = f,
                                     drop = drop,
                                     elementMetadata =
-                                    new("DataFrame",
-                                        nrows = sum(!is.na(unique(f)))))
+                                    new("DataFrame", nrows = nrows))
     }
 )
 
