@@ -6,8 +6,7 @@
 setClass("GenomicRanges", representation("VIRTUAL"))
 
 ### The code in this file will work out-of-the-box on 'x' as long as
-### seqnames(x), ranges(x), strand(x), seqlengths(x) and elementMetadata(x)
-### are defined.
+### seqnames(x), ranges(x), strand(x) and seqlengths(x) are defined.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -145,6 +144,23 @@ setMethod("as.data.frame", "GenomicRanges",
                    stringsAsFactors = FALSE)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessor methods.
+###
+
+setMethod("elementMetadata", "GenomicRanges",
+    function(x, ...)
+    {
+        ans <- callNextMethod()
+        if (!is.null(names(x)))
+            rownames(ans) <- names(x)
+        ans
+    }
+)
+
+setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

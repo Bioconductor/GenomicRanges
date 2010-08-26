@@ -28,9 +28,9 @@
 \alias{strand<-,GRanges-method}
 \alias{seqlengths,GRanges-method}
 \alias{seqlengths<-,GRanges-method}
-\alias{elementMetadata,GRanges-method}
+\alias{elementMetadata,GenomicRanges-method}
 \alias{elementMetadata<-,GRanges-method}
-\alias{names,GRanges-method}
+\alias{names,GenomicRanges-method}
 \alias{names<-,GRanges-method}
 
 % Ranges methods:

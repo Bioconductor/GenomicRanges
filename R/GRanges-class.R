@@ -129,15 +129,6 @@ setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqlengths", "GRanges", function(x) x@seqlengths)
-setMethod("elementMetadata", "GRanges",
-    function(x, ...)
-    {
-        ans <- x@elementMetadata
-        if (!is.null(names(x)))
-            rownames(ans) <- names(x)
-        ans
-    }
-)
 
 setReplaceMethod("seqnames", "GRanges",
     function(x, value) 
@@ -249,7 +240,6 @@ setReplaceMethod("elementMetadata", "GRanges",
     }
 )
 
-setMethod("names", "GRanges", function(x) names(x@ranges))
 setReplaceMethod("names", "GRanges",
     function(x, value)
     {
