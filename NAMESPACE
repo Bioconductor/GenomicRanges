@@ -4,7 +4,7 @@ import(methods)
 import(IRanges)
 
 exportClasses(
-    GRanges, GRangesList,
+    GenomicRanges, GRanges, GRangesList,
     GappedAlignments
 )
 

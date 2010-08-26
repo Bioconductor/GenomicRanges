@@ -2,6 +2,9 @@
 \docType{class}
 
 % Class
+\alias{class:GenomicRanges}
+\alias{GenomicRanges-class}
+\alias{GenomicRanges}
 \alias{class:GRanges}
 \alias{GRanges-class}
 \alias{GRanges}
