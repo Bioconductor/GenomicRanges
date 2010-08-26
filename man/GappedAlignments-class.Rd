@@ -298,9 +298,9 @@
       both are GappedAlignments objects.
       The same apply to \code{countOverlaps(query, subject, ...)} and
       \code{subsetByOverlaps(query, subject, ...)}.
-      See \code{?`\link{findOverlaps,GRangesList,GRanges-method}`},
-      \code{?`\link{countOverlaps,GRangesList,GRanges-method}`} and
-      \code{?`\link{subsetByOverlaps,GRangesList,GRanges-method}`}
+      See \code{?`\link{findOverlaps,GRangesList,GenomicRanges-method}`},
+      \code{?`\link{countOverlaps,GRangesList,GenomicRanges-method}`} and
+      \code{?`\link{subsetByOverlaps,GRangesList,GenomicRanges-method}`}
       for more information (in particular for descriptions of the
       extra arguments and the returned object).
     }
@@ -323,9 +323,9 @@
   \code{\link[IRanges]{coverage}},
   \link[IRanges]{RleList-class},
   \link{pintersect,GRanges,GRanges-method},
-  \link{findOverlaps,GRangesList,GRanges-method},
-  \link{countOverlaps,GRangesList,GRanges-method},
-  \link{subsetByOverlaps,GRangesList,GRanges-method},
+  \link{findOverlaps,GRangesList,GenomicRanges-method},
+  \link{countOverlaps,GRangesList,GenomicRanges-method},
+  \link{subsetByOverlaps,GRangesList,GenomicRanges-method},
 }
 
 \examples{

@@ -1,67 +1,67 @@
 \name{GRanges-findOverlaps}
 
-\alias{findOverlaps,GRanges,GRanges-method}
-\alias{findOverlaps,GRanges,GRangesList-method}
-\alias{findOverlaps,GRangesList,GRanges-method}
+\alias{findOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{findOverlaps,GenomicRanges,GRangesList-method}
+\alias{findOverlaps,GRangesList,GenomicRanges-method}
 \alias{findOverlaps,GRangesList,GRangesList-method}
-\alias{findOverlaps,RangesList,GRanges-method}
-\alias{findOverlaps,GRanges,RangesList-method}
+\alias{findOverlaps,RangesList,GenomicRanges-method}
+\alias{findOverlaps,GenomicRanges,RangesList-method}
 \alias{findOverlaps,GRangesList,RangesList-method}
 \alias{findOverlaps,RangesList,GRangesList-method}
-\alias{findOverlaps,RangedData,GRanges-method}
-\alias{findOverlaps,GRanges,RangedData-method}
+\alias{findOverlaps,RangedData,GenomicRanges-method}
+\alias{findOverlaps,GenomicRanges,RangedData-method}
 \alias{findOverlaps,GRangesList,RangedData-method}
 \alias{findOverlaps,RangedData,GRangesList-method}
 
-\alias{countOverlaps,GRanges,GRanges-method}
-\alias{countOverlaps,GRanges,GRangesList-method}
-\alias{countOverlaps,GRangesList,GRanges-method}
+\alias{countOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{countOverlaps,GenomicRanges,GRangesList-method}
+\alias{countOverlaps,GRangesList,GenomicRanges-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
-\alias{countOverlaps,RangesList,GRanges-method}
-\alias{countOverlaps,GRanges,RangesList-method}
+\alias{countOverlaps,RangesList,GenomicRanges-method}
+\alias{countOverlaps,GenomicRanges,RangesList-method}
 \alias{countOverlaps,GRangesList,RangesList-method}
 \alias{countOverlaps,RangesList,GRangesList-method}
-\alias{countOverlaps,RangedData,GRanges-method}
-\alias{countOverlaps,GRanges,RangedData-method}
+\alias{countOverlaps,RangedData,GenomicRanges-method}
+\alias{countOverlaps,GenomicRanges,RangedData-method}
 \alias{countOverlaps,GRangesList,RangedData-method}
 \alias{countOverlaps,RangedData,GRangesList-method}
 
-\alias{subsetByOverlaps,GRanges,GRanges-method}
-\alias{subsetByOverlaps,GRanges,GRangesList-method}
-\alias{subsetByOverlaps,GRangesList,GRanges-method}
+\alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
+\alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GRangesList-method}
-\alias{subsetByOverlaps,RangesList,GRanges-method}
-\alias{subsetByOverlaps,GRanges,RangesList-method}
+\alias{subsetByOverlaps,RangesList,GenomicRanges-method}
+\alias{subsetByOverlaps,GenomicRanges,RangesList-method}
 \alias{subsetByOverlaps,GRangesList,RangesList-method}
 \alias{subsetByOverlaps,RangesList,GRangesList-method}
-\alias{subsetByOverlaps,RangedData,GRanges-method}
-\alias{subsetByOverlaps,GRanges,RangedData-method}
+\alias{subsetByOverlaps,RangedData,GenomicRanges-method}
+\alias{subsetByOverlaps,GenomicRanges,RangedData-method}
 \alias{subsetByOverlaps,GRangesList,RangedData-method}
 \alias{subsetByOverlaps,RangedData,GRangesList-method}
 
-\alias{match,GRanges,GRanges-method}
-\alias{match,GRanges,GRangesList-method}
-\alias{match,GRangesList,GRanges-method}
+\alias{match,GenomicRanges,GenomicRanges-method}
+\alias{match,GenomicRanges,GRangesList-method}
+\alias{match,GRangesList,GenomicRanges-method}
 \alias{match,GRangesList,GRangesList-method}
-\alias{match,RangesList,GRanges-method}
-\alias{match,GRanges,RangesList-method}
+\alias{match,RangesList,GenomicRanges-method}
+\alias{match,GenomicRanges,RangesList-method}
 \alias{match,GRangesList,RangesList-method}
 \alias{match,RangesList,GRangesList-method}
-\alias{match,RangedData,GRanges-method}
-\alias{match,GRanges,RangedData-method}
+\alias{match,RangedData,GenomicRanges-method}
+\alias{match,GenomicRanges,RangedData-method}
 \alias{match,GRangesList,RangedData-method}
 \alias{match,RangedData,GRangesList-method}
 
-\alias{\%in\%,GRanges,GRanges-method}
-\alias{\%in\%,GRanges,GRangesList-method}
-\alias{\%in\%,GRangesList,GRanges-method}
+\alias{\%in\%,GenomicRanges,GenomicRanges-method}
+\alias{\%in\%,GenomicRanges,GRangesList-method}
+\alias{\%in\%,GRangesList,GenomicRanges-method}
 \alias{\%in\%,GRangesList,GRangesList-method}
-\alias{\%in\%,RangesList,GRanges-method}
-\alias{\%in\%,GRanges,RangesList-method}
+\alias{\%in\%,RangesList,GenomicRanges-method}
+\alias{\%in\%,GenomicRanges,RangesList-method}
 \alias{\%in\%,GRangesList,RangesList-method}
 \alias{\%in\%,RangesList,GRangesList-method}
-\alias{\%in\%,RangedData,GRanges-method}
-\alias{\%in\%,GRanges,RangedData-method}
+\alias{\%in\%,RangedData,GenomicRanges-method}
+\alias{\%in\%,GenomicRanges,RangedData-method}
 \alias{\%in\%,GRangesList,RangedData-method}
 \alias{\%in\%,RangedData,GRangesList-method}
 
@@ -74,13 +74,13 @@
 }
 
 \usage{
-  \S4method{findOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
+  \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"), select = c("all", "first"))
-  \S4method{countOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
+  \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
               type = c("any", "start", "end"))
-  \S4method{subsetByOverlaps}{GRanges,GRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
+  \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
                  type = c("any", "start", "end"))
-  \S4method{match}{GRanges,GRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
+  \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
   # Also:  x \%in\% table
 }
 

@@ -95,7 +95,7 @@
 \seealso{
   \link{GRanges},
   \link{GRangesList},
-  \link{findOverlaps,GRanges,GRanges-method},
+  \link{findOverlaps,GenomicRanges,GenomicRanges-method},
   \link{pintersect,GRanges,GRanges-method}
 }
 
