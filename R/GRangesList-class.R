@@ -411,7 +411,7 @@ setMethod("show", "GRangesList",
             }
             for (i in seq_len(k)) {
                 cat(nms[i], "\n")
-                .showGRanges(object[[i]])
+                showGenomicRanges(object[[i]])
                 cat("\n")
             }
         } else {
@@ -434,7 +434,7 @@ setMethod("show", "GRangesList",
             }
             for (i in seq_len(showK)) {
                 cat(nms[i], "\n")
-                .showGRanges(object[[i]])
+                showGenomicRanges(object[[i]])
                 cat("\n")
             }
             if (diffK > 0) {

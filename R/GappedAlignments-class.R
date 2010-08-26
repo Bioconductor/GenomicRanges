@@ -303,7 +303,7 @@ setReplaceMethod("seqnames", "GappedAlignments",
       .valid.GappedAlignments.start(x),
       .valid.GappedAlignments.cigar(x),
       .valid.GappedAlignments.strand(x),
-      .valid.GRanges.seqlengths(x))
+      .valid.GenomicRanges.seqlengths(x))
 }
 
 setValidity2("GappedAlignments", .valid.GappedAlignments,

@@ -11,10 +11,10 @@
 
 % Coercion methods:
 \alias{coerce,RangedData,GRanges-method}
-\alias{coerce,GRanges,RangedData-method}
+\alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
-\alias{coerce,GRanges,RangesList-method}
-\alias{as.data.frame,GRanges-method}
+\alias{coerce,GenomicRanges,RangesList-method}
+\alias{as.data.frame,GenomicRanges-method}
 
 % Accessor methods:
 \alias{seqnames,GRanges-method}
@@ -31,11 +31,11 @@
 \alias{names<-,GRanges-method}
 
 % Ranges methods:
-\alias{start,GRanges-method}
+\alias{start,GenomicRanges-method}
 \alias{start<-,GRanges-method}
-\alias{end,GRanges-method}
+\alias{end,GenomicRanges-method}
 \alias{end<-,GRanges-method}
-\alias{width,GRanges-method}
+\alias{width,GenomicRanges-method}
 \alias{width<-,GRanges-method}
 \alias{flank,GRanges-method}
 \alias{resize,GRanges-method}
@@ -44,13 +44,13 @@
 \alias{gaps,GRanges-method}
 \alias{range,GRanges-method}
 \alias{reduce,GRanges-method}
-\alias{coverage,GRanges-method}
+\alias{coverage,GenomicRanges-method}
 
 % Sequence methods:
 \alias{[,GRanges-method}
 \alias{[<-,GRanges-method}
 \alias{c,GRanges-method}
-\alias{length,GRanges-method}
+\alias{length,GenomicRanges-method}
 \alias{rev,GRanges-method}
 \alias{seqselect,GRanges-method}
 \alias{seqselect<-,GRanges-method}
@@ -58,7 +58,7 @@
 \alias{window,GRanges-method}
 
 % show method:
-\alias{show,GRanges-method}
+\alias{show,GenomicRanges-method}
 
 
 \title{GRanges objects}
