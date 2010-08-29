@@ -390,8 +390,7 @@ setReplaceMethod("[[", "GRangesList",
     {
         nameValue <- if (is.character(i)) i else ""
         i <- IRanges:::normargSubset2_iOnly(x, i, j, ...,
-                 .errPrefix="[[<-,GRangesList-method: ",
-                 .warnPrefix="[[<-,GRangesList-method: ")
+                 .conditionPrefix="[[<-,GRangesList-method: ")
         len <- length(x)
         if (i > len) {
             value <- list(value)
