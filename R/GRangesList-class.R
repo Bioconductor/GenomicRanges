@@ -385,6 +385,33 @@ setReplaceMethod("[", "GRangesList",
     }
 )
 
+setReplaceMethod("[[", "GRangesList",
+    function(x, i, j, ..., value)
+    {
+        nameValue <- if (is.character(i)) i else ""
+        i <- withCallingHandlers(tryCatch({
+            IRanges:::normargSubset2_iOnly(x, i, j, ...)
+        }, error=function(err) {
+            stop("[[<-,GRangesList-methopd: 'i' ",
+                 conditionMessage(err))
+        }), warning=function(warn) {
+            warning("[[<-,GRangesList-method: ",
+                    conditionMessage(warn),
+                    call.=FALSE)
+            invokeRestart("muffleWarning")
+        })
+        len <- length(x)
+        if (i > len) {
+            value <- getFunction(class(x))(value)
+            x <- append(x, value)
+            names(x)[i] <- nameValue
+        } else {
+            x <- callNextMethod(x, i, ..., value=value)
+        }
+        validObject(x)
+        x
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.

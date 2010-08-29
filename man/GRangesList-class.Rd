@@ -39,6 +39,7 @@
 % Sequence methods:
 \alias{[,GRangesList-method}
 \alias{[<-,GRangesList-method}
+\alias{[[<-,GRangesList-method}
 
 % show method:
 \alias{show,GRangesList-method}

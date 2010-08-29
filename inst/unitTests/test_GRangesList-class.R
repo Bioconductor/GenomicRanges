@@ -155,4 +155,51 @@ test_GRangesList_Sequence <- function() {
     checkIdentical(grl[seqnames(grl) == "chr2", "score"],
                    GRangesList(lapply(grl, function(x) 
                                       x[seqnames(x) == "chr2", "score"])))
+
+    checkIdentical(GRangesList(), c(GRangesList(), GRangesList()))
+    checkIdentical(grl, c(grl, GRangesList()))
+    checkIdentical(grl, c(GRangesList(), grl))
+    GRL <- local({
+        x <- grl
+        names(x) <- toupper(names(grl))
+        for (i in seq_len(length(x)))
+            names(x[[i]]) <- toupper(names(grl[[i]]))
+        x
+    })
+    res <- c(grl, GRL)
+    checkTrue(validObject(res))
+    checkIdentical(grl, res[seq_len(length(grl))])
+    checkIdentical(GRL, res[-seq_len(length(grl))])
+
+    checkIdentical(grl, local({
+        x <- grl
+        seqselect(x, 1, 1) <- seqselect(grl, 1, 1)
+        x
+    }), "seqselect")
+    checkIdentical(grl, local({
+        x <- grl; x[1] <- grl[1]; x
+    }), "[<- 1")
+    checkIdentical(grl, local({
+        x <- grl; x[1:2] <- grl[1:2]; x
+    }), "[<- 2")
+    checkIdentical(grl, local({
+        x <- grl; x[[1]] <- grl[[1]]
+        names(x) <- names(grl)
+        x
+    }), "[[<-, replace")
+    checkIdentical(grl, local({
+        x <- grl; x[["b"]] <- grl[[2]]
+        names(x) <- names(grl)
+        x
+    }), "[[<-, replace char")
+    checkIdentical(grl, local({
+        x <- grl[1]; x[[2]] <- grl[[2]]
+        names(x) <- names(grl)
+        x
+    }), "[[<-, extend-by-1")
+    checkIdentical(grl, local({
+        x <- grl[1]; x[["b"]] <- grl[[2]]
+        names(x) <- names(grl)
+        x
+    }), "[[<-, extend-by-1 char")
 }
