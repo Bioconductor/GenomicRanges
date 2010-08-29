@@ -403,8 +403,8 @@ setReplaceMethod("[[", "GRangesList",
         len <- length(x)
         if (i > len) {
             value <- getFunction(class(x))(value)
+            names(value) <- nameValue
             x <- append(x, value)
-            names(x)[i] <- nameValue
         } else {
             x <- callNextMethod(x, i, ..., value=value)
         }
