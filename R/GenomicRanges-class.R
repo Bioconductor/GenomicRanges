@@ -134,11 +134,11 @@ setMethod("as.data.frame", "GenomicRanges",
             row.names <- names(x)
         if (!is.null(names(x)))
             names(x) <- NULL
-        data.frame(seqnames = as.vector(seqnames(x)),
+        data.frame(seqnames = as.factor(seqnames(x)),
                    start = start(x),
                    end = end(x),
                    width = width(x),
-                   strand = as.vector(strand(x)),
+                   strand = as.factor(strand(x)),
                    as.data.frame(elementMetadata(x)),
                    row.names = row.names,
                    stringsAsFactors = FALSE)

@@ -593,13 +593,13 @@ setReplaceMethod("seqselect", "GRanges",
         if (length(ir) == 0) {
             x
         } else {
-            seqnames <- as.vector(x@seqnames)
+            seqnames <- as.factor(x@seqnames)
             ranges <- x@ranges
-            strand <- as.vector(x@strand)
+            strand <- as.factor(x@strand)
             elementMetadata <- x@elementMetadata
-            seqselect(seqnames, ir) <- as.vector(value@seqnames)
+            seqselect(seqnames, ir) <- as.factor(value@seqnames)
             seqselect(ranges, ir) <- value@ranges
-            seqselect(strand, ir) <- as.vector(value@strand)
+            seqselect(strand, ir) <- as.factor(value@strand)
             seqselect(elementMetadata, ir) <- value@elementMetadata
             initialize(x, seqnames = Rle(seqnames), ranges = ranges, 
                        strand = Rle(strand), elementMetadata = elementMetadata)
@@ -608,7 +608,7 @@ setReplaceMethod("seqselect", "GRanges",
 )
 
 setMethod("split", "GRanges",
-    function(x, f, drop = FALSE)
+    function(x, f, drop = FALSE, ...)
     {
         if (missing(f)) {
             nms <- names(x)

@@ -50,7 +50,7 @@ setMethod("strand", "DataTable",
         else if (is.character(ans))
             ans <- strand(ans)
         else if (is(ans, "Rle"))
-            ans <- as.vector(ans)
+            ans <- as.factor(ans)
         ans
     })
 

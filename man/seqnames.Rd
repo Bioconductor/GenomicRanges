@@ -60,7 +60,8 @@
   showMethods("seqlengths")
   showMethods("seqlengths<-")
 
-  ?`seqnames,GRanges-method`
+  if (interactive())
+    ?`seqnames,GRanges-method`
 }
 
 \keyword{methods}
