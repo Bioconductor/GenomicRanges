@@ -389,22 +389,15 @@ setReplaceMethod("[[", "GRangesList",
     function(x, i, j, ..., value)
     {
         nameValue <- if (is.character(i)) i else ""
-        i <- withCallingHandlers(tryCatch({
-            IRanges:::normargSubset2_iOnly(x, i, j, ...)
-        }, error=function(err) {
-            stop("[[<-,GRangesList-methopd: 'i' ",
-                 conditionMessage(err))
-        }), warning=function(warn) {
-            warning("[[<-,GRangesList-method: ",
-                    conditionMessage(warn),
-                    call.=FALSE)
-            invokeRestart("muffleWarning")
-        })
+        i <- IRanges:::normargSubset2_iOnly(x, i, j, ...,
+                 .errPrefix="[[<-,GRangesList-method: ",
+                 .warnPrefix="[[<-,GRangesList-method: ")
         len <- length(x)
         if (i > len) {
-            value <- getFunction(class(x))(value)
-            names(value) <- nameValue
-            x <- append(x, value)
+            value <- list(value)
+            if (nzchar(nameValue))
+                names(value) <- nameValue
+            x <- c(x, do.call(getFunction(class(x)), value))
         } else {
             x <- callNextMethod(x, i, ..., value=value)
         }
