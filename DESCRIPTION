@@ -25,5 +25,6 @@ Collate: seqnames.R
 	findOverlaps-methods.R
 	cigar-utils.R
 	GappedAlignments-class.R
+	SeqSet-class.R
 	test_GenomicRanges_package.R
 	zzz.R
