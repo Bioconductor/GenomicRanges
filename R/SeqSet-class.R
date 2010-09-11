@@ -89,6 +89,7 @@ setMethod(assay, c("SeqSet", "character"),
         })
     if (is.null(res))
         stop(msg, "\n    not in names(assays(x))")
+    res
 })
 
 ## cannonical location for dim, dimnames; dimnames should be checked for
