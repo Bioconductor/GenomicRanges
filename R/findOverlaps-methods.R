@@ -1,15 +1,21 @@
-.similarSeqnameConvention <- function(seqs1, seqs2) {
-    funList <-
-      list(isRoman = function(x) grepl("[ivIV]$", x),
-           isArabic = function(x) grepl("[0-9]$", x),
-           haschr = function(x) grepl("^chr", x),
-           hasChr = function(x) grepl("^Chr", x),
-           hasCHR = function(x) grepl("^CHR", x),
-           haschrom = function(x) grepl("^chrom", x),
-           hasChrom = function(x) grepl("^Chrom", x),
-           hasCHROM = function(x) grepl("^CHROM", x))
-    all(sapply(funList, function(f) any(f(seqs1)) == any(f(seqs2))))
-}
+## No longer needed because we are no longer second guessing the users intent.
+## .similarSeqnameConvention <- function(seqs1, seqs2) {
+##     funList <-
+##       list(isRoman = function(x) grepl("[ivIV]$", x),
+##            isArabic = function(x) grepl("[0-9]$", x),
+##            haschr = function(x) grepl("^chr", x),
+##            hasChr = function(x) grepl("^Chr", x),
+##            hasCHR = function(x) grepl("^CHR", x),
+##            haschrom = function(x) grepl("^chrom", x),
+##            hasChrom = function(x) grepl("^Chrom", x),
+##            hasCHROM = function(x) grepl("^CHROM", x))
+##     all(sapply(funList, function(f) any(f(seqs1)) == any(f(seqs2))))
+## }
+
+.testSeqEquiv <- function(seqs1, seqs2) {
+  length(setdiff(seqs1, seqs2))!=0 &&
+  length(setdiff(seqs2, seqs1))!=0
+}                                         
 
 
 ### =========================================================================
@@ -67,11 +73,22 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
             subjectSplitRanges <- splitRanges(subjectSeqnames)
             uniqueSubjectSeqnames <- names(subjectSplitRanges)
 
-            if (!.similarSeqnameConvention(uniqueQuerySeqnames,
-                                           uniqueSubjectSeqnames))
-                warning("'query' and 'subject' do not use a similiar naming ",
-                        "convention for seqnames")
-
+            ## uniqueQuerySeqnames & uniqueSubjectSeqnames are my sets
+            ## It's ok if both sets are equivalent.
+            ## Also ok if one set is contained within the other.
+            ## But not ok if there are elements from each set that are not
+            ## in the other set.
+            if(.testSeqEquiv(uniqueQuerySeqnames, uniqueSubjectSeqnames)){ 
+                ## A different warning if there are no matches at all
+                if(is.na(table(uniqueQuerySeqnames
+                               %in% uniqueSubjectSeqnames)["TRUE"])){
+                  warning("No seqnames from the 'query' and 'subject' were identical")
+                }else ## Versus having some things match...
+                {
+                  warning("Only some seqnames from 'query' and 'subject' were not identical")
+                }
+            }
+            
             commonSeqnames <-
               intersect(uniqueQuerySeqnames, uniqueSubjectSeqnames)
 

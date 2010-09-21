@@ -1,18 +1,13 @@
 test_matching_seqnames <- function()
 {
-    prefixes <- c("", "chr", "Chr", "CHR", "chrom", "Chrom", "CHROM")
-    P <- length(prefixes)
-    for (isArabic1 in c(TRUE, FALSE)) {
-        for (pre1 in seq_len(P - 1L)) {
-            for (pre2 in ((pre1 + 1L):P)) {
-                num1 <- if(isArabic1) 1:24 else as.character(as.roman(1:30))
-                num2 <- if(!isArabic1) as.character(as.roman(1:24)) else 1:30
-                seq1 <- paste(prefixes[pre1], num1, sep = "")
-                seq2 <- paste(prefixes[pre2], num2, sep = "")
-                checkTrue(!GenomicRanges:::.similarSeqnameConvention(seq1, seq2))
-            }
-        }
-    }
+    tst1 <- c("a","b","c")
+    tst2 <- c("a","b")
+    tst3 <- c("c","d","e")
+    tst4 <- c("x","y","z")
+    checkTrue(!GenomicRanges:::.testSeqEquiv(tst1, tst1))## ok
+    checkTrue(!GenomicRanges:::.testSeqEquiv(tst1, tst2))## ok
+    checkTrue(GenomicRanges:::.testSeqEquiv(tst1, tst3))## not ok
+    checkTrue(GenomicRanges:::.testSeqEquiv(tst1, tst4))## not ok
 }
 
 make_subject <- function() {
