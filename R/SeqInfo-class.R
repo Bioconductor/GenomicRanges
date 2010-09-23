@@ -118,6 +118,7 @@ setValidity2("SeqInfo", .valid.SeqInfo)
 ### performed by new() thru the validity method.
 ###
 
+### Make sure this always return an *unnamed* integer vector.
 .normargSeqlengths <- function(seqlengths, lx)
 {
     if (identical(seqlengths, NA))
@@ -130,25 +131,26 @@ setValidity2("SeqInfo", .valid.SeqInfo)
     if (!is.numeric(seqlengths))
         stop("bad 'seqlengths' value")
     if (!is.integer(seqlengths))
-            seqlengths <- as.integer(seqlengths)
-    seqlengths
+            return(as.integer(seqlengths))
+    unname(seqlengths)
 }
 
+### Make sure this always return an *unnamed* logical vector.
 .normargIsCircular <- function(isCircular, lx)
 {
     if (identical(isCircular, NA))
         return(rep.int(NA, lx))
     if (!is.logical(isCircular))
         stop("bad 'isCircular' value")
-    isCircular
+    unname(isCircular)
 }
 
 SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
 {
     if (!is.character(seqnames))
         stop("'seqnames' must be a character vector")
-    seqlengths <- unname(.normargSeqlengths(seqlengths, length(seqnames)))
-    is_circular <- unname(.normargIsCircular(isCircular, length(seqnames)))
+    seqlengths <- .normargSeqlengths(seqlengths, length(seqnames))
+    is_circular <- .normargIsCircular(isCircular, length(seqnames))
     new("SeqInfo", seqnames=seqnames,
                    seqlengths=seqlengths,
                    is_circular=is_circular)
