@@ -18,7 +18,7 @@ Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, EatonEtAlChIPseq,
 License: Artistic-2.0
 Collate: seqnames.R
 	strand.R
-	SeqInfo-class.R
+	Seqinfo-class.R
 	GenomicRanges-class.R
 	GRanges-class.R
 	GRangesList-class.R

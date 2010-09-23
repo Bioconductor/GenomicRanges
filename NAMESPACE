@@ -4,7 +4,7 @@ import(methods)
 import(IRanges)
 
 exportClasses(
-    SeqInfo,
+    Seqinfo,
     GenomicRanges, GRanges, GRangesList,
     GappedAlignments
 )
@@ -13,7 +13,7 @@ export(
     seqnames, "seqnames<-", seqlengths, "seqlengths<-",
     strand, "strand<-",
     isCircular, "isCircular<-",
-    SeqInfo,
+    Seqinfo,
     GRanges, GRangesList,
     validCigar, cigarOpTable,
     cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,

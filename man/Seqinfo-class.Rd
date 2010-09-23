@@ -1,52 +1,52 @@
-\name{SeqInfo-class}
+\name{Seqinfo-class}
 \docType{class}
 
 % Classes:
-\alias{class:SeqInfo}
-\alias{SeqInfo-class}
-\alias{SeqInfo}
+\alias{class:Seqinfo}
+\alias{Seqinfo-class}
+\alias{Seqinfo}
 
 % Methods:
-\alias{length,SeqInfo-method}
-\alias{seqnames,SeqInfo-method}
-\alias{seqnames<-,SeqInfo-method}
-\alias{names,SeqInfo-method}
-\alias{names<-,SeqInfo-method}
-\alias{seqlengths,SeqInfo-method}
-\alias{seqlengths<-,SeqInfo-method}
+\alias{length,Seqinfo-method}
+\alias{seqnames,Seqinfo-method}
+\alias{seqnames<-,Seqinfo-method}
+\alias{names,Seqinfo-method}
+\alias{names<-,Seqinfo-method}
+\alias{seqlengths,Seqinfo-method}
+\alias{seqlengths<-,Seqinfo-method}
 \alias{isCircular}
 \alias{isCircular<-}
-\alias{isCircular,SeqInfo-method}
-\alias{isCircular<-,SeqInfo-method}
-\alias{as.data.frame,SeqInfo-method}
-\alias{show,SeqInfo-method}
+\alias{isCircular,Seqinfo-method}
+\alias{isCircular<-,Seqinfo-method}
+\alias{as.data.frame,Seqinfo-method}
+\alias{show,Seqinfo-method}
 
 
-\title{SeqInfo objects}
+\title{Seqinfo objects}
 
 \description{
-  A SeqInfo object is a data.frame-like object that contains basic
+  A Seqinfo object is a data.frame-like object that contains basic
   information about a set of genomic sequences. Currently only the
   length and circularity flag of each sequence is stored but more
   information might be added in the future.
 }
 
 \details{
-  Typically SeqInfo objects are not used directly but are part of
+  Typically Seqinfo objects are not used directly but are part of
   higher level objects.
 }
 
 \section{Constructor}{
   \describe{
     \item{}{
-        \code{SeqInfo(seqnames, seqlengths=NA, isCircular=NA)}:
-        Creates a SeqInfo object.
+        \code{Seqinfo(seqnames, seqlengths=NA, isCircular=NA)}:
+        Creates a Seqinfo object.
     }
   }
 }
 
 \section{Accessor methods}{
-  In the code snippets below, \code{x} is a SeqInfo object.
+  In the code snippets below, \code{x} is a Seqinfo object.
 
   \describe{
     \item{}{
@@ -73,7 +73,7 @@
 }
 
 \section{Coercion}{
-  In the code snippets below, \code{x} is a SeqInfo object.
+  In the code snippets below, \code{x} is a Seqinfo object.
 
   \describe{
     \item{}{

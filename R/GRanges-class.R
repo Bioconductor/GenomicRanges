@@ -8,7 +8,7 @@ setClass("GRanges", contains = c("Sequence", "GenomicRanges"),
          representation(seqnames = "Rle",
                         ranges = "IRanges",
                         strand = "Rle",
-                        seqinfo = "SeqInfo"),
+                        seqinfo = "Seqinfo"),
          prototype(seqnames = Rle(factor()),
                    strand = Rle(strand()),
                    elementMetadata = DataFrame()))
@@ -74,7 +74,7 @@ function(seqnames = Rle(), ranges = IRanges(),
     if (!is.integer(seqlengths))
         seqlengths <-
           structure(as.integer(seqlengths), names = names(seqlengths))
-    seqinfo <- SeqInfo(seqnames=names(seqlengths), seqlengths=seqlengths)
+    seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
 
     elementMetadata <- DataFrame(...)
     if (ncol(elementMetadata) == 0)
@@ -166,7 +166,7 @@ setReplaceMethod("seqnames", "GRanges",
             }
         }
         ## Safe because 'names(seqlengths)' is guaranteed to match the rows
-        ## in 'x@seqinfo'. Otherwise, we would need to use SeqInfo().
+        ## in 'x@seqinfo'. Otherwise, we would need to use Seqinfo().
         seqinfo <- initialize(x@seqinfo, seqnames = names(seqlengths))
         initialize(x, seqnames = value, seqinfo = seqinfo)
     }
@@ -219,7 +219,7 @@ setReplaceMethod("seqlengths", "GRanges",
         if (length(setdiff(names(value), names(seqlengths(x)))) == 0) {
             seqlengths <- value[names(seqlengths(x))]
             ## Safe because 'seqlengths' is guaranteed to match the rows
-            ## in 'x@seqinfo'. Otherwise, we would need to use SeqInfo().
+            ## in 'x@seqinfo'. Otherwise, we would need to use Seqinfo().
             seqinfo <- initialize(x@seqinfo, seqlengths = seqlengths)
             initialize(x, seqinfo = seqinfo)
         } else {
@@ -228,9 +228,9 @@ setReplaceMethod("seqlengths", "GRanges",
               factor(as.character(runValue(seqnames)), levels = names(value))
             is_circular <- isCircular(x)[names(value)]
             ## The 'initialize(x@seqinfo, ...)' form would not be safe here
-            ## because we are resizing 'x@seqinfo'. Need to use SeqInfo() to
+            ## because we are resizing 'x@seqinfo'. Need to use Seqinfo() to
             ## recreate the object from scratch.
-            seqinfo <- SeqInfo(seqnames = names(value),
+            seqinfo <- Seqinfo(seqnames = names(value),
                                seqlengths = value,
                                isCircular = is_circular)
             initialize(x, seqnames = seqnames, seqinfo = seqinfo)
@@ -534,9 +534,9 @@ setMethod("c", "GRanges",
         seqlengths <- do.call(c, lapply(args, seqlengths))[levels(seqnames)]
         is_circular <- do.call(c, lapply(args, isCircular))[levels(seqnames)]
         ## The 'initialize(x@seqinfo, ...)' form would not be safe here
-        ## because we are resizing 'x@seqinfo'. Need to use SeqInfo() to
+        ## because we are resizing 'x@seqinfo'. Need to use Seqinfo() to
         ## recreate the object from scratch.
-        seqinfo <- SeqInfo(seqnames = names(seqlengths),
+        seqinfo <- Seqinfo(seqnames = names(seqlengths),
                            seqlengths = seqlengths,
                            isCircular = is_circular)
         ranges <- do.call(c, lapply(args, slot, "ranges"))

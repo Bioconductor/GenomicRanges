@@ -1,14 +1,14 @@
 ### =========================================================================
-### SeqInfo objects
+### Seqinfo objects
 ### -------------------------------------------------------------------------
 ###
-### A SeqInfo object is a data.frame-like object that contains basic
+### A Seqinfo object is a data.frame-like object that contains basic
 ### information about a set of genomic sequences. Currently only the
 ### length and circularity flag of each sequence is stored but more
 ### information might be added in the future.
 ###
 
-setClass("SeqInfo",
+setClass("Seqinfo",
     representation(
         seqnames="character",
         seqlengths="integer",
@@ -16,21 +16,21 @@ setClass("SeqInfo",
     )
 )
 
-### NOTE: Other possible (maybe better) names: GSeqInfo or GenomicSeqInfo
-### for Genome/Genomic Sequence Info.
+### NOTE: Other possible (maybe better) names: GSeqinfo or GenomicSeqinfo
+### for Genome/Genomic Sequence info.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
 ###
 
-setMethod("seqnames", "SeqInfo", function(x) x@seqnames)
+setMethod("seqnames", "Seqinfo", function(x) x@seqnames)
 
-setMethod("names", "SeqInfo", function(x) seqnames(x))
+setMethod("names", "Seqinfo", function(x) seqnames(x))
 
-setMethod("length", "SeqInfo", function(x) length(seqnames(x)))
+setMethod("length", "Seqinfo", function(x) length(seqnames(x)))
 
-setMethod("seqlengths", "SeqInfo",
+setMethod("seqlengths", "Seqinfo",
     function(x)
     {
         ans <- x@seqlengths
@@ -43,7 +43,7 @@ setMethod("seqlengths", "SeqInfo",
 ### and same man page.
 setGeneric("isCircular", function(x) standardGeneric("isCircular"))
 
-setMethod("isCircular", "SeqInfo",
+setMethod("isCircular", "Seqinfo",
     function(x)
     {
         ans <- x@is_circular
@@ -57,7 +57,7 @@ setMethod("isCircular", "SeqInfo",
 ### Validity.
 ###
 
-.valid.SeqInfo.seqnames <- function(x)
+.valid.Seqinfo.seqnames <- function(x)
 {
     x_seqnames <- seqnames(x)
     if (!is.character(x_seqnames)
@@ -71,7 +71,7 @@ setMethod("isCircular", "SeqInfo",
 
 ### Not really checking the slot itself but the value returned by the
 ### slot accessor.
-.valid.SeqInfo.seqlengths <- function(x)
+.valid.Seqinfo.seqlengths <- function(x)
 {
     x_seqlengths <- seqlengths(x)
     if (!is.integer(x_seqlengths)
@@ -87,7 +87,7 @@ setMethod("isCircular", "SeqInfo",
 
 ### Not really checking the slot itself but the value returned by the
 ### slot accessor.
-.valid.SeqInfo.isCircular <- function(x)
+.valid.Seqinfo.isCircular <- function(x)
 {
     x_is_circular <- isCircular(x)
     if (!is.logical(x_is_circular)
@@ -99,14 +99,14 @@ setMethod("isCircular", "SeqInfo",
     NULL
 }
 
-.valid.SeqInfo <- function(x)
+.valid.Seqinfo <- function(x)
 {
-    c(.valid.SeqInfo.seqnames(x),
-      .valid.SeqInfo.seqlengths(x),
-      .valid.SeqInfo.isCircular(x))
+    c(.valid.Seqinfo.seqnames(x),
+      .valid.Seqinfo.seqlengths(x),
+      .valid.Seqinfo.isCircular(x))
 }
 
-setValidity2("SeqInfo", .valid.SeqInfo)
+setValidity2("Seqinfo", .valid.Seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,12 +153,12 @@ setValidity2("SeqInfo", .valid.SeqInfo)
     unname(isCircular)
 }
 
-SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
+Seqinfo <- function(seqnames, seqlengths=NA, isCircular=NA)
 {
     seqnames <- .normargSeqnames(seqnames)
     seqlengths <- .normargSeqlengths(seqlengths, length(seqnames))
     is_circular <- .normargIsCircular(isCircular, length(seqnames))
-    new("SeqInfo", seqnames=seqnames,
+    new("Seqinfo", seqnames=seqnames,
                    seqlengths=seqlengths,
                    is_circular=is_circular)
 }
@@ -168,7 +168,7 @@ SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
 ### Setters.
 ###
 
-setReplaceMethod("seqnames", "SeqInfo",
+setReplaceMethod("seqnames", "Seqinfo",
     function(x, value)
     {
         value <- .normargSeqnames(value)
@@ -180,11 +180,11 @@ setReplaceMethod("seqnames", "SeqInfo",
     }
 )
 
-setReplaceMethod("names", "SeqInfo",
+setReplaceMethod("names", "Seqinfo",
     function(x, value) `seqnames<-`(x, value)
 )
 
-setReplaceMethod("seqlengths", "SeqInfo",
+setReplaceMethod("seqlengths", "Seqinfo",
     function(x, value)
     {
         x@seqlengths <- .normargSeqlengths(value, length(x))
@@ -196,7 +196,7 @@ setReplaceMethod("seqlengths", "SeqInfo",
 ### file and same man page as the isCircular() and seqlengths() generics.
 setGeneric("isCircular<-", function(x, value) standardGeneric("isCircular<-"))
 
-setReplaceMethod("isCircular", "SeqInfo",
+setReplaceMethod("isCircular", "Seqinfo",
     function(x, value)
     {
         x@isCircular <- .normargIsCircular(value, length(x))
@@ -209,7 +209,7 @@ setReplaceMethod("isCircular", "SeqInfo",
 ### Coercion.
 ###
 
-setMethod("as.data.frame", "SeqInfo",
+setMethod("as.data.frame", "Seqinfo",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
         if (!is.null(row.names))
@@ -272,7 +272,7 @@ showCompactDataFrame <- function(x, rownames.label="", left.margin="")
     cat(paste(left.margin, showme, sep=""), sep="\n")
 }
 
-setMethod("show", "SeqInfo",
+setMethod("show", "Seqinfo",
     function(object)
     {
         lo <- length(object)
