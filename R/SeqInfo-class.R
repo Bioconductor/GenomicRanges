@@ -116,6 +116,16 @@ setValidity2("SeqInfo", .valid.SeqInfo)
 ### performed by new() thru the validity method.
 ###
 
+### Make sure this always return an *unnamed* character vector.
+.normargSeqnames <- function(seqnames)
+{
+    if (is.null(seqnames))
+        return(character(0))
+    if (!is.character(seqnames))
+        stop("bad 'seqnames' value")
+    unname(seqnames)
+}
+
 ### Make sure this always return an *unnamed* integer vector.
 .normargSeqlengths <- function(seqlengths, lx)
 {
@@ -145,8 +155,7 @@ setValidity2("SeqInfo", .valid.SeqInfo)
 
 SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
 {
-    if (!is.character(seqnames))
-        stop("'seqnames' must be a character vector")
+    seqnames <- .normargSeqnames(seqnames)
     seqlengths <- .normargSeqlengths(seqlengths, length(seqnames))
     is_circular <- .normargIsCircular(isCircular, length(seqnames))
     new("SeqInfo", seqnames=seqnames,
@@ -162,9 +171,7 @@ SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
 setReplaceMethod("seqnames", "SeqInfo",
     function(x, value)
     {
-        if (!is.vector(value) || !is.atomic(value))
-            stop("bad 'seqnames' replacement value")
-        value <- as.character(value)
+        value <- .normargSeqnames(value)
         if (length(value) != length(x))
             stop("'seqnames' replacement value ",
                  "must have 'length(x)' elements")
