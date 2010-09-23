@@ -1,5 +1,7 @@
 \name{GRanges-setops}
 
+\alias{GRanges-setops}
+
 \alias{union,GRanges,GRanges-method}
 \alias{intersect,GRanges,GRanges-method}
 \alias{setdiff,GRanges,GRanges-method}
