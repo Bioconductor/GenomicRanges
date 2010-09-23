@@ -4,6 +4,7 @@ import(methods)
 import(IRanges)
 
 exportClasses(
+    SeqInfo,
     GenomicRanges, GRanges, GRangesList,
     GappedAlignments
 )
@@ -11,6 +12,7 @@ exportClasses(
 export(
     seqnames, "seqnames<-", seqlengths, "seqlengths<-",
     strand, "strand<-",
+    isCircular, SeqInfo,
     GRanges, GRangesList,
     validCigar, cigarOpTable,
     cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
@@ -27,6 +29,7 @@ exportMethods(
     coerce, as.data.frame, unlist,
     seqnames, ranges, strand, seqlengths, elementMetadata,
     "seqnames<-", "ranges<-", "strand<-", "seqlengths<-", "elementMetadata<-",
+    isCircular,
     start, end, width, "start<-", "end<-", "width<-",
     "[", "[<-", c, rev, seqselect, "seqselect<-",
     split, window,
