@@ -9,10 +9,15 @@
 % Methods:
 \alias{length,SeqInfo-method}
 \alias{seqnames,SeqInfo-method}
+\alias{seqnames<-,SeqInfo-method}
 \alias{names,SeqInfo-method}
+\alias{names<-,SeqInfo-method}
 \alias{seqlengths,SeqInfo-method}
+\alias{seqlengths<-,SeqInfo-method}
 \alias{isCircular}
+\alias{isCircular<-}
 \alias{isCircular,SeqInfo-method}
+\alias{isCircular<-,SeqInfo-method}
 \alias{as.data.frame,SeqInfo-method}
 \alias{show,SeqInfo-method}
 
@@ -49,16 +54,20 @@
       Gets the number of sequences in \code{x}.
     }
     \item{}{
-      \code{seqnames(x)}, \code{names(x)}:
-      Gets the names of the sequences in \code{x}.
+      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+      Gets/sets the names of the sequences in \code{x}.
     }
     \item{}{
-      \code{seqlengths(x)}:
-      Gets the lengths of the sequences in \code{x}.
+      \code{names(x)}, \code{names(x) <- value}:
+      Same as \code{seqnames(x)} and \code{seqnames(x) <- value}.
     }
     \item{}{
-      \code{isCircular(x)}:
-      Gets the circularity flag of the sequences in \code{x}.
+      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+      Gets/sets the lengths of the sequences in \code{x}.
+    }
+    \item{}{
+      \code{isCircular(x)}, \code{isCircular(x) <- value}:
+      Gets/sets the circularity flag of the sequences in \code{x}.
     }
   }
 }

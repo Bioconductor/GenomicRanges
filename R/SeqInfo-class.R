@@ -21,10 +21,11 @@ setClass("SeqInfo",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Getters.
 ###
 
 setMethod("seqnames", "SeqInfo", function(x) x@seqnames)
+
 setMethod("names", "SeqInfo", function(x) seqnames(x))
 
 setMethod("length", "SeqInfo", function(x) length(seqnames(x)))
@@ -111,6 +112,93 @@ setValidity2("SeqInfo", .valid.SeqInfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor.
+###
+### Does only superficial checking of the arguments. The full validation is
+### performed by new() thru the validity method.
+###
+
+.normargSeqlengths <- function(seqlengths, lx)
+{
+    if (identical(seqlengths, NA))
+        return(rep.int(NA_integer_, lx))
+    if (is.logical(seqlengths)) {
+        if (all(is.na(seqlengths)))
+            return(as.integer(seqlengths))
+        stop("bad 'seqlengths' value")
+    }
+    if (!is.numeric(seqlengths))
+        stop("bad 'seqlengths' value")
+    if (!is.integer(seqlengths))
+            seqlengths <- as.integer(seqlengths)
+    seqlengths
+}
+
+.normargIsCircular <- function(isCircular, lx)
+{
+    if (identical(isCircular, NA))
+        return(rep.int(NA, lx))
+    if (!is.logical(isCircular))
+        stop("bad 'isCircular' value")
+    isCircular
+}
+
+SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
+{
+    if (!is.character(seqnames))
+        stop("'seqnames' must be a character vector")
+    seqlengths <- unname(.normargSeqlengths(seqlengths, length(seqnames)))
+    is_circular <- unname(.normargIsCircular(isCircular, length(seqnames)))
+    new("SeqInfo", seqnames=seqnames,
+                   seqlengths=seqlengths,
+                   is_circular=is_circular)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Setters.
+###
+
+setReplaceMethod("seqnames", "SeqInfo",
+    function(x, value)
+    {
+        if (!is.vector(value) || !is.atomic(value))
+            stop("bad 'seqnames' replacement value")
+        value <- as.character(value)
+        if (length(value) != length(x))
+            stop("'seqnames' replacement value ",
+                 "must have 'length(x)' elements")
+        x@seqnames <- value
+        x
+    }
+)
+
+setReplaceMethod("names", "SeqInfo",
+    function(x, value) `seqnames<-`(x, value)
+)
+
+setReplaceMethod("seqlengths", "SeqInfo",
+    function(x, value)
+    {
+        x@seqlengths <- .normargSeqlengths(value, length(x))
+        x
+    }
+)
+
+### TODO: Put the isCircular<-() and seqlengths<-() generics in the same
+### file and same man page as the isCircular() and seqlengths() generics.
+setGeneric("isCircular<-", function(x, value) standardGeneric("isCircular<-"))
+
+setReplaceMethod("isCircular", "SeqInfo",
+    function(x, value)
+    {
+        x@isCircular <- .normargIsCircular(value, length(x))
+        x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###
 
@@ -163,8 +251,8 @@ setMethod("as.data.frame", "SeqInfo",
     rbind(head, dotrow, tail)
 }
 
-### Use only on a "narrow" data frame. Doesn't work properly on a data.frame
-### that is wider than the terminal.
+### Should work properly on "narrow" data frames. Untested on data frames
+### that are wider than the terminal.
 showCompactDataFrame <- function(x, rownames.label="", left.margin="")
 {
     compactdf <- .compactDataFrame(x)
@@ -187,48 +275,4 @@ setMethod("show", "SeqInfo",
         showCompactDataFrame(as.data.frame(object), "seqnames")
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
-###
-### Does only superficial checking of the arguments. The full validation is
-### performed by new() thru the validaty method.
-###
-
-.normargSeqlengths <- function(seqlengths, lx)
-{
-    if (identical(seqlengths, NA))
-        return(rep.int(NA_integer_, lx))
-    if (is.logical(seqlengths)) {
-        if (all(is.na(seqlengths)))
-            return(as.integer(seqlengths))
-        stop("bad 'seqlengths' value")
-    }
-    if (!is.numeric(seqlengths))
-        stop("bad 'seqlengths' value")
-    if (!is.integer(seqlengths))
-            seqlengths <- as.integer(seqlengths)
-    seqlengths
-}
-
-.normargIsCircular <- function(isCircular, lx)
-{
-    if (identical(isCircular, NA))
-        return(rep.int(NA, lx))
-    if (!is.logical(isCircular))
-        stop("bad 'isCircular' value")
-    isCircular
-}
-
-SeqInfo <- function(seqnames, seqlengths=NA, isCircular=NA)
-{
-    if (!is.character(seqnames))
-        stop("'seqnames' must be a character vector")
-    seqlengths <- unname(.normargSeqlengths(seqlengths, length(seqnames)))
-    is_circular <- unname(.normargIsCircular(isCircular, length(seqnames)))
-    new("SeqInfo", seqnames=seqnames,
-                   seqlengths=seqlengths,
-                   is_circular=is_circular)
-}
 
