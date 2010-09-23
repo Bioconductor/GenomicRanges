@@ -23,6 +23,7 @@
 \alias{strand<-,GRangesList-method}
 \alias{seqlengths,GRangesList-method}
 \alias{seqlengths<-,GRangesList-method}
+\alias{isCircular,GRangesList-method}
 \alias{elementMetadata,GRangesList-method}
 \alias{elementMetadata<-,GRangesList-method}
 
@@ -107,6 +108,10 @@
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
       Gets or sets the seqlengths. \code{value} can be a named non-negative
       integer or numeric vector.
+    }
+    \item{}{
+      \code{isCircular(x)}:
+      Gets the circularity flags.
     }
     \item{}{
       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:

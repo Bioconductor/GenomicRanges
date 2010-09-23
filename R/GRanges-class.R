@@ -33,6 +33,8 @@ setValidity2("GRanges", .valid.GRanges.elementMetadata)
 ### Constructor.
 ###
 
+### TODO: Revisit this constructor to make it more user friendly.
+### Also provide a way to supply the sequence circularity flags.
 GRanges <-
 function(seqnames = Rle(), ranges = IRanges(),
          strand = Rle("*", length(seqnames)),
@@ -130,6 +132,7 @@ setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqlengths", "GRanges", function(x) seqlengths(x@seqinfo))
+setMethod("isCircular", "GRanges", function(x) isCircular(x@seqinfo))
 
 setReplaceMethod("seqnames", "GRanges",
     function(x, value) 
@@ -223,14 +226,19 @@ setReplaceMethod("seqlengths", "GRanges",
             seqnames <- seqnames(x)
             runValue(seqnames) <-
               factor(as.character(runValue(seqnames)), levels = names(value))
+            is_circular <- isCircular(x)[names(value)]
             ## The 'initialize(x@seqinfo, ...)' form would not be safe here
             ## because we are resizing 'x@seqinfo'. Need to use SeqInfo() to
             ## recreate the object from scratch.
-            seqinfo <- SeqInfo(seqnames = names(value), seqlengths = value)
+            seqinfo <- SeqInfo(seqnames = names(value),
+                               seqlengths = value,
+                               isCircular = is_circular)
             initialize(x, seqnames = seqnames, seqinfo = seqinfo)
         }
     }
 )
+
+### TODO: Add an isCircular replacement method here.
 
 setReplaceMethod("elementMetadata", "GRanges",
     function(x, value)
@@ -273,6 +281,7 @@ setReplaceMethod("start", "GRanges",
         ranges <- ranges(x)
         starts <- start(ranges)
         starts[] <- value
+        ## TODO: Revisit this to handle circularity (maybe).
         if (!IRanges:::anyMissing(seqlengths(x))) {
             if (IRanges:::anyMissingOrOutside(starts, 1L)) {
                 warning("trimmed start values to be positive")
@@ -293,6 +302,7 @@ setReplaceMethod("end", "GRanges",
         ends <- end(ranges)
         ends[] <- value
         seqlengths <- seqlengths(x)
+        ## TODO: Revisit this to handle circularity.
         if (!IRanges:::anyMissing(seqlengths)) {
             seqlengths <- seqlengths[levels(seqnames(x))]
             maxEnds <- seqlengths[as.integer(seqnames(x))]
@@ -477,6 +487,7 @@ setReplaceMethod("[", "GRanges",
     {
         if (!is(value, "GRanges"))
             stop("replacement value must be a GRanges object")
+        ## TODO: Shouldn't we also compare the circularity flags?
         if (!identical(seqlengths(x), seqlengths(value)))
             stop("'seqlengths(x)' and 'seqlengths(value)' are not identical")
         seqnames <- x@seqnames
@@ -516,12 +527,18 @@ setMethod("c", "GRanges",
             stop("'recursive' mode not supported")
         args <- unname(list(x, ...))
         seqnames <- do.call(c, lapply(args, seqnames))
+        ## TODO: Revisit the 2 lines below. This code is silently ignoring
+        ## the fact that we might be combining objects with incompatible
+        ## sequence lengths and/or circularity flags. Is it reasonable?
+        ## Note that it is inconsistent with what [<- does.
         seqlengths <- do.call(c, lapply(args, seqlengths))[levels(seqnames)]
+        is_circular <- do.call(c, lapply(args, isCircular))[levels(seqnames)]
         ## The 'initialize(x@seqinfo, ...)' form would not be safe here
         ## because we are resizing 'x@seqinfo'. Need to use SeqInfo() to
         ## recreate the object from scratch.
         seqinfo <- SeqInfo(seqnames = names(seqlengths),
-                           seqlengths = seqlengths)
+                           seqlengths = seqlengths,
+                           isCircular = is_circular)
         ranges <- do.call(c, lapply(args, slot, "ranges"))
         nms <- names(ranges)
         if (!is.null(nms)) {
@@ -590,6 +607,7 @@ setReplaceMethod("seqselect", "GRanges",
     {
         if (!is(value, "GRanges"))
             stop("replacement value must be a GRanges object")
+        ## TODO: Shouldn't we also compare the circularity flags?
         if (!identical(seqlengths(x), seqlengths(value)))
             stop("'seqlengths(x)' and 'seqlengths(value)' are not identical")
         if (is.null(end) && is.null(width)) {

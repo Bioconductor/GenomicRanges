@@ -6,7 +6,8 @@
 setClass("GenomicRanges", representation("VIRTUAL"))
 
 ### The code in this file will work out-of-the-box on 'x' as long as
-### seqnames(x), ranges(x), strand(x) and seqlengths(x) are defined.
+### seqnames(x), ranges(x), strand(x), seqlengths(x) and isCircular()
+### are defined.
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,15 +54,16 @@ setClass("GenomicRanges", representation("VIRTUAL"))
         msg <- "slot 'seqlengths' is unnamed"
     if (!setequal(names(seqlengths(x)), levels(seqnames(x))))
         msg <-
-          c(msg, "slot 'seqlengths' names to not match 'levels(seqnames)'")
-    if (any(seqlengths(x) < 0L, na.rm = TRUE))
-        msg <- c(msg, "slot 'seqlengths' contains negative values")
+          c(msg, "slot 'seqlengths' names do not match 'levels(seqnames)'")
     if (IRanges:::anyMissing(seqlengths(x))) {
         if (!all(is.na(seqlengths(x))))
             msg <-
               c(msg,
                 "slot 'seqlengths' cannot mix NAs and non-NA integers")
     } else {
+        if (any(seqlengths(x) < 0L, na.rm = TRUE))
+            msg <- c(msg, "slot 'seqlengths' contains negative values")
+        ## TODO: Loosen the check below for circular sequences.
         seqnames <- seqnames(x)
         runValue(seqnames) <- runValue(seqnames)[drop=TRUE]
         minStarts <- IRanges:::.tapplyDefault(start(x), seqnames, min)
@@ -73,15 +75,36 @@ setClass("GenomicRanges", representation("VIRTUAL"))
     msg
 }
 
+.valid.GenomicRanges.isCircular <- function(x)
+{
+    msg <- NULL
+    if (length(x) > 0 && is.null(names(isCircular(x))))
+        msg <- "slot 'isCircular' is unnamed"
+    if (!setequal(names(isCircular(x)), levels(seqnames(x))))
+        msg <-
+          c(msg, "slot 'isCircular' names do not match 'levels(seqnames)'")
+    if (IRanges:::anyMissing(isCircular(x))) {
+        if (!all(is.na(isCircular(x))))
+            msg <-
+              c(msg,
+                "slot 'isCircular' cannot mix NAs and non-NA integers")
+    }
+    msg
+}
+
 .valid.GenomicRanges.elementMetadata <- function(x)
 {
     msg <- NULL
-    if (any(c("seqnames", "ranges", "strand", "seqlengths", "start", "end",
-              "width", "element") %in% colnames(elementMetadata(x))))
+    ## NOTE: This list is also included in the man page for GRanges objects.
+    ## Keep the 2 lists in sync!
+    INVALID.COLNAMES <- c("seqnames", "ranges", "strand",
+                          "seqlengths", "isCircular",
+                          "start", "end", "width", "element")
+    if (any(INVALID.COLNAMES %in% colnames(elementMetadata(x))))
         msg <-
-          paste("slot 'elementMetadata' cannot use \"seqnames\", \"ranges\",",
-                "\"strand\", \"seqlengths\", \"start\", \"end\", \"width\", or",
-                "\"element\" as column names")
+          paste("slot 'elementMetadata' cannot use",
+                paste("\"", INVALID.COLNAMES, "\"", sep="", collapse=", "),
+                "as column names")
     msg
 }
 
@@ -91,6 +114,7 @@ setClass("GenomicRanges", representation("VIRTUAL"))
       .valid.GenomicRanges.seqnames(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.seqlengths(x),
+      .valid.GenomicRanges.isCircular(x),
       .valid.GenomicRanges.elementMetadata(x))
 }
 
@@ -106,7 +130,9 @@ setAs("GenomicRanges", "RangedData",
       {
         rd <- RangedData(ranges(from), strand = strand(from),
                          elementMetadata(from), space = seqnames(from))
-        elementMetadata(ranges(rd)) <- DataFrame(seqlengths = seqlengths(from))
+        elementMetadata(ranges(rd)) <- DataFrame(
+                                         seqlengths = seqlengths(from),
+                                         isCircular = isCircular(from))
         rd
       }
 )
@@ -121,7 +147,8 @@ setAs("GenomicRanges", "RangesList",
           elementMetadata(ranges) <- metadata
           ranges
         }, rl, emd)
-        elementMetadata(rl) <- DataFrame(seqlengths = seqlengths(from))
+        elementMetadata(rl) <- DataFrame(seqlengths = seqlengths(from),
+                                         isCircular = isCircular(from))
         rl
       }
       )

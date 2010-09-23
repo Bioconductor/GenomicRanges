@@ -122,6 +122,8 @@ setMethod("strand", "GRangesList",
 
 setMethod("seqlengths", "GRangesList", function(x) seqlengths(x@unlistData))
 
+setMethod("isCircular", "GRangesList", function(x) isCircular(x@unlistData))
+
 setMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ...)
     {
@@ -198,6 +200,8 @@ setReplaceMethod("seqlengths", "GRangesList",
         x
     }
 )
+
+### TODO: Add an isCircular replacement method here.
 
 setReplaceMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ..., value) 

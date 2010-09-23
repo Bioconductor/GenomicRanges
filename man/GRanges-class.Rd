@@ -28,6 +28,7 @@
 \alias{strand<-,GRanges-method}
 \alias{seqlengths,GRanges-method}
 \alias{seqlengths<-,GRanges-method}
+\alias{isCircular,GRanges-method}
 \alias{elementMetadata,GenomicRanges-method}
 \alias{elementMetadata<-,GRanges-method}
 \alias{names,GenomicRanges-method}
@@ -85,7 +86,8 @@
       the \link{strand} information.}
     \item{\code{elementMetadata}}{a \link[IRanges]{DataFrame} object
       containing the annotation columns. Columns cannot be named
-      \code{"seqnames"}, \code{"ranges"}, \code{"strand"}, \code{"seqlengths"},
+      \code{"seqnames"}, \code{"ranges"}, \code{"strand"},
+      \code{"seqlengths"}, \code{"isCircular"},
       \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
   }
 }
@@ -128,14 +130,15 @@
       \code{as(from, "RangedData")}:
       Creates a RangedData object from a GRanges
       object. The \code{strand} and the values become columns in the
-      result. The \code{seqlengths} are stored in the element metadata
-      of \code{ranges(rd)}.
+      result. The \code{seqlengths(from)} and \code{isCircular(from)}
+      vectors are stored in the element metadata of \code{ranges(rd)}.
     }
     \item{}{
       \code{as(from, "RangesList")}:
       Creates a RangesList object from a GRanges
       object. The \code{strand} and values become element metadata on the
-      ranges. The \code{seqlengths} are stored in the element metadata.
+      ranges. The \code{seqlengths(from)} and \code{isCircular(from)}
+      vectors are stored in the element metadata.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
@@ -169,6 +172,10 @@
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
       Gets or sets the seqlengths. \code{value} can be a named non-negative
       integer or numeric vector.
+    }
+    \item{}{
+      \code{isCircular(x)}:
+      Gets the circularity flags.
     }
     \item{}{
       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
