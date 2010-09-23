@@ -77,8 +77,7 @@ setMethod("isCircular", "SeqInfo",
     if (!is.integer(x_seqlengths)
      || length(x_seqlengths) != length(x)
      || !identical(names(x_seqlengths), seqnames(x)))
-        return("'seqlengths(x)' must be an integer vector of the ",
-               "length of 'x' and with names 'seqnames(x)'")
+        return("'seqlengths(x)' must be an integer vector of the length of 'x' and with names 'seqnames(x)'")
     if (length(unique(is.na(x_seqlengths))) == 2L)
         return("'seqlengths(x)' cannot mix NA and non-NA values")
     if (any(x_seqlengths < 0L, na.rm=TRUE))
@@ -94,8 +93,7 @@ setMethod("isCircular", "SeqInfo",
     if (!is.logical(x_is_circular)
      || length(x_is_circular) != length(x)
      || !identical(names(x_is_circular), seqnames(x)))
-        return("'isCircular(x)' must be a logical vector of the ",
-               "length of 'x' and with names 'seqnames(x)'")
+        return("'isCircular(x)' must be a logical vector of the length of 'x' and with names 'seqnames(x)'")
     if (length(unique(is.na(x_is_circular))) == 2L)
         return("'isCircular(x)' cannot mix NA and non-NA values")
     NULL
