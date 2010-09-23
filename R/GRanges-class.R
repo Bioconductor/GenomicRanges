@@ -8,7 +8,7 @@ setClass("GRanges", contains = c("Sequence", "GenomicRanges"),
          representation(seqnames = "Rle",
                         ranges = "IRanges",
                         strand = "Rle",
-                        seqlengths = "integer"),
+                        seqinfo = "SeqInfo"),
          prototype(seqnames = Rle(factor()),
                    strand = Rle(strand()),
                    elementMetadata = DataFrame()))
@@ -72,6 +72,7 @@ function(seqnames = Rle(), ranges = IRanges(),
     if (!is.integer(seqlengths))
         seqlengths <-
           structure(as.integer(seqlengths), names = names(seqlengths))
+    seqinfo <- SeqInfo(seqnames=names(seqlengths), seqlengths=seqlengths)
 
     elementMetadata <- DataFrame(...)
     if (ncol(elementMetadata) == 0)
@@ -83,7 +84,7 @@ function(seqnames = Rle(), ranges = IRanges(),
     }
 
     new("GRanges", seqnames = seqnames, ranges = ranges, strand = strand,
-        seqlengths = seqlengths, elementMetadata = elementMetadata)
+        seqinfo = seqinfo, elementMetadata = elementMetadata)
 }
 
 
@@ -128,7 +129,7 @@ setAs("RangesList", "GRanges",
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
-setMethod("seqlengths", "GRanges", function(x) x@seqlengths)
+setMethod("seqlengths", "GRanges", function(x) seqlengths(x@seqinfo))
 
 setReplaceMethod("seqnames", "GRanges",
     function(x, value) 
@@ -161,7 +162,10 @@ setReplaceMethod("seqnames", "GRanges",
                 }
             }
         }
-        initialize(x, seqnames = value, seqlengths = seqlengths)
+        ## Safe because 'names(seqlengths)' is guaranteed to match the rows
+        ## in 'x@seqinfo'. Otherwise, we would need to use SeqInfo().
+        seqinfo <- initialize(x@seqinfo, seqnames = names(seqlengths))
+        initialize(x, seqnames = value, seqinfo = seqinfo)
     }
 )
 setReplaceMethod("ranges", "GRanges",
@@ -210,12 +214,20 @@ setReplaceMethod("seqlengths", "GRanges",
             names(value) <- names(seqlengths(x))
         }
         if (length(setdiff(names(value), names(seqlengths(x)))) == 0) {
-            initialize(x, seqlengths = value[names(seqlengths(x))])
+            seqlengths <- value[names(seqlengths(x))]
+            ## Safe because 'seqlengths' is guaranteed to match the rows
+            ## in 'x@seqinfo'. Otherwise, we would need to use SeqInfo().
+            seqinfo <- initialize(x@seqinfo, seqlengths = seqlengths)
+            initialize(x, seqinfo = seqinfo)
         } else {
             seqnames <- seqnames(x)
             runValue(seqnames) <-
               factor(as.character(runValue(seqnames)), levels = names(value))
-            initialize(x, seqnames = seqnames, seqlengths = value)
+            ## The 'initialize(x@seqinfo, ...)' form would not be safe here
+            ## because we are resizing 'x@seqinfo'. Need to use SeqInfo() to
+            ## recreate the object from scratch.
+            seqinfo <- SeqInfo(seqnames = names(value), seqlengths = value)
+            initialize(x, seqnames = seqnames, seqinfo = seqinfo)
         }
     }
 )
@@ -503,9 +515,13 @@ setMethod("c", "GRanges",
         if (recursive)
             stop("'recursive' mode not supported")
         args <- unname(list(x, ...))
-        seqnames <- do.call(c, lapply(args, slot, "seqnames"))
-        seqlengths <-
-          do.call(c, lapply(args, slot, "seqlengths"))[levels(seqnames)]
+        seqnames <- do.call(c, lapply(args, seqnames))
+        seqlengths <- do.call(c, lapply(args, seqlengths))[levels(seqnames)]
+        ## The 'initialize(x@seqinfo, ...)' form would not be safe here
+        ## because we are resizing 'x@seqinfo'. Need to use SeqInfo() to
+        ## recreate the object from scratch.
+        seqinfo <- SeqInfo(seqnames = names(seqlengths),
+                           seqlengths = seqlengths)
         ranges <- do.call(c, lapply(args, slot, "ranges"))
         nms <- names(ranges)
         if (!is.null(nms)) {
@@ -519,7 +535,7 @@ setMethod("c", "GRanges",
                    seqnames = seqnames,
                    ranges = ranges,
                    strand = do.call(c, lapply(args, slot, "strand")),
-                   seqlengths = seqlengths,
+                   seqinfo = seqinfo,
                    elementMetadata =
                    do.call(rbind, lapply(args, slot, "elementMetadata")))
     }

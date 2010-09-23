@@ -3,8 +3,7 @@ make_test_GRanges <- function() {
         seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
         ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
         strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        seqlengths =
-        c("chr1" = NA_integer_, "chr2" = NA_integer_, "chr3" = NA_integer_),
+        seqinfo = SeqInfo(seqnames = paste("chr", 1:3, sep="")),
         elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
 }
 

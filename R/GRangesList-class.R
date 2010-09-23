@@ -120,7 +120,7 @@ setMethod("strand", "GRangesList",
              unlistData = x@unlistData@strand, partitioning = x@partitioning,
              check=FALSE))
 
-setMethod("seqlengths", "GRangesList", function(x) x@unlistData@seqlengths)
+setMethod("seqlengths", "GRangesList", function(x) seqlengths(x@unlistData))
 
 setMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ...)
