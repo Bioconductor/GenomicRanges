@@ -13,7 +13,7 @@ export(
     seqnames, "seqnames<-", seqlengths, "seqlengths<-",
     strand, "strand<-",
     isCircular, "isCircular<-",
-    Seqinfo,
+    Seqinfo, seqinfo,
     GRanges, GRangesList,
     validCigar, cigarOpTable,
     cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
@@ -23,7 +23,7 @@ export(
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
     SeqSet, assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
-    colData, "colData<-", exptData, "exptData<-"
+    colData, "colData<-", exptData, "exptData<-", clone
 )
 
 exportMethods(
@@ -42,7 +42,7 @@ exportMethods(
     union, intersect, setdiff,
     punion, pintersect, psetdiff,
     findOverlaps, countOverlaps, match, "%in%",
-    show,
+    show, update,
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
     dimnames, "dimnames<-"
 )

@@ -237,10 +237,18 @@ test_GRanges_Ranges <- function() {
 
     ## resize
     gr <- make_test_GRanges()
-    checkException(resize(gr, 10, fix = "end"), silent = TRUE)
+    checkException(resize(gr, 10, fix = "middle"), silent = TRUE)
+    checkException(resize(gr, 10, fix = rep("end", 3)), silent = TRUE)
     resized <- resize(gr, 10)
     checkIdentical(rep(10L, length(gr)), width(resized))
-    checkIdentical(c(1L, 2L, 3L, 2L, 3L, 6L, 7L, 8L, 1L, 1L), start(resized))
+    checkIdentical(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 1L), start(resized))
+    checkIdentical(ranges(resize(gr, 10, fix = "center")),
+                   IRanges(rep(1:5, each=2), width = 10,
+                           names = head(letters, 10)))
+    checkIdentical(ranges(resize(gr, 10, fix = c("start", "end"))),
+                   IRanges(c(1L, 1L, 3L, 1L, 5L, 1L, 7L, 1L, 1L, 10L),
+                           width = 10, names = head(letters, 10)))
+                   
 
     ## shift
     gr <- make_test_GRanges()

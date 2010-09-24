@@ -21,45 +21,45 @@
 
 % Accessor methods:
 \alias{seqnames,GRanges-method}
-\alias{seqnames<-,GRanges-method}
+\alias{seqnames<-,GenomicRanges-method}
 \alias{ranges,GRanges-method}
-\alias{ranges<-,GRanges-method}
+\alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
-\alias{strand<-,GRanges-method}
+\alias{strand<-,GenomicRanges-method}
 \alias{seqlengths,GRanges-method}
-\alias{seqlengths<-,GRanges-method}
+\alias{seqlengths<-,GenomicRanges-method}
 \alias{isCircular,GRanges-method}
 \alias{elementMetadata,GenomicRanges-method}
-\alias{elementMetadata<-,GRanges-method}
+\alias{elementMetadata<-,GenomicRanges-method}
 \alias{names,GenomicRanges-method}
-\alias{names<-,GRanges-method}
+\alias{names<-,GenomicRanges-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
-\alias{start<-,GRanges-method}
+\alias{start<-,GenomicRanges-method}
 \alias{end,GenomicRanges-method}
-\alias{end<-,GRanges-method}
+\alias{end<-,GenomicRanges-method}
 \alias{width,GenomicRanges-method}
-\alias{width<-,GRanges-method}
-\alias{flank,GRanges-method}
-\alias{resize,GRanges-method}
-\alias{shift,GRanges-method}
-\alias{disjoin,GRanges-method}
-\alias{gaps,GRanges-method}
-\alias{range,GRanges-method}
-\alias{reduce,GRanges-method}
+\alias{width<-,GenomicRanges-method}
+\alias{flank,GenomicRanges-method}
+\alias{resize,GenomicRanges-method}
+\alias{shift,GenomicRanges-method}
+\alias{disjoin,GenomicRanges-method}
+\alias{gaps,GenomicRanges-method}
+\alias{range,GenomicRanges-method}
+\alias{reduce,GenomicRanges-method}
 \alias{coverage,GenomicRanges-method}
 
 % Sequence methods:
-\alias{[,GRanges-method}
-\alias{[<-,GRanges-method}
-\alias{c,GRanges-method}
+\alias{[,GenomicRanges-method}
+\alias{[<-,GenomicRanges-method}
+\alias{c,GenomicRanges-method}
 \alias{length,GenomicRanges-method}
-\alias{rev,GRanges-method}
-\alias{seqselect,GRanges-method}
-\alias{seqselect<-,GRanges-method}
+\alias{rev,GenomicRanges-method}
+\alias{seqselect,GenomicRanges-method}
+\alias{seqselect<-,GenomicRanges-method}
 \alias{split,GRanges-method}
-\alias{window,GRanges-method}
+\alias{window,GenomicRanges-method}
 
 % show method:
 \alias{show,GenomicRanges-method}
