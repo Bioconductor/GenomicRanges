@@ -153,7 +153,7 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     unname(isCircular)
 }
 
-Seqinfo <- function(seqnames, seqlengths=NA, isCircular=NA)
+Seqinfo <- function(seqnames=NULL, seqlengths=NA, isCircular=NA)
 {
     seqnames <- .normargSeqnames(seqnames)
     seqlengths <- .normargSeqlengths(seqlengths, length(seqnames))
@@ -282,4 +282,93 @@ setMethod("show", "Seqinfo",
         showCompactDataFrame(as.data.frame(object), "seqnames")
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining.
+###
+### Why no "c" or "rbind" method? 'c(x, y)' would be expected to just append
+### the rows in 'y' to the rows in 'x' resulting in an object of length
+### 'length(x) + length(y)'. But that would not be compatible with the
+### unicity of the "seqnames" key.
+### So what we really need is a "merge" method that merge rows that have the
+### same key in 'x' and 'y'.
+###
+
+.Seqinfo.mergelowhigh <- function(low, high)
+{
+    if (any(low != high, na.rm=TRUE))
+        stop("incompatible Seqinfo objects")
+    idx <- is.na(low) & !is.na(high)
+    low[idx] <- high[idx]
+    low
+}
+
+.Seqinfo.mergexy <- function(x, y)
+{
+    if (is.null(x)) {
+        if (is.null(y))
+            return(Seqinfo())
+        if (is(y, "Seqinfo"))
+            return(y)
+        stop("all arguments must be Seqinfo objects (or NULLs)")
+    }
+    if (!is(x, "Seqinfo"))
+        stop("all arguments must be Seqinfo objects (or NULLs)")
+    if (is.null(y))
+        return(x)
+    if (!is(y, "Seqinfo"))
+        stop("all arguments must be Seqinfo objects (or NULLs)")
+    y2x_map <- match(seqnames(y), seqnames(x))
+    ## Keep only rows from 'y' that are not already in 'x'.
+    idx0 <- is.na(y2x_map)
+    y0_seqnames <- seqnames(y)[idx0]
+    y0_seqlengths <- seqlengths(y)[idx0]
+    y0_is_circular <- isCircular(y)[idx0]
+    ## Merge 'y' rows that already "exist" in 'x'.
+    idx1 <- !idx0
+    y2x_map1 <- y2x_map[idx1]
+    x_seqlengths <- seqlengths(x)
+    low <- x_seqlengths[y2x_map1]
+    high <- seqlengths(y)[idx1]
+    x_seqlengths[y2x_map1] <- .Seqinfo.mergelowhigh(low, high)
+    x_is_circular <- isCircular(x)
+    low <- x_is_circular[y2x_map1]
+    high <- isCircular(y)[idx1]
+    x_is_circular[y2x_map1] <- .Seqinfo.mergelowhigh(low, high)
+    ## Make and return the result.
+    Seqinfo(seqnames=c(seqnames(x), y0_seqnames),
+            seqlengths=c(x_seqlengths, y0_seqlengths),
+            isCircular=c(x_is_circular, y0_is_circular))
+}
+
+if (FALSE) {
+.Seqinfo.merge <- function(...)
+{
+    args <- unname(list(...))
+    ## Remove NULL elements...
+    arg_is_null <- sapply(args, is.null)
+    if (any(arg_is_null))
+        args[arg_is_null] <- NULL  # ... by setting them to NULL!
+    if (length(args) == 0L)
+        return(Seqinfo())
+    x <- args[[1L]]
+    if (!all(sapply(args, is, class(x))))
+        stop("all arguments in must be ", class(x), " objects (or NULLs)")
+
+    if (length(args) == 1L)
+        return(args[[1L]])
+    ans
+}
+
+### These methods should not be called with named arguments: this tends to
+### break dispatch!
+setMethod("merge", c("Seqinfo", "missing"),
+    function(x, y, ...) .Seqinfo.merge(x, ...)
+)
+
+setMethod("merge", c("Seqinfo", "Seqinfo"),
+    function(x, y, ...) .Seqinfo.merge(x, y, ...)
+)
+}
 
