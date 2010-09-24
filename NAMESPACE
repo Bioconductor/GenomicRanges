@@ -6,7 +6,7 @@ import(IRanges)
 exportClasses(
     Seqinfo,
     GenomicRanges, GRanges, GRangesList,
-    GappedAlignments
+    GappedAlignments, SeqSet
 )
 
 export(
@@ -21,7 +21,9 @@ export(
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
-    readGappedAlignments, GappedAlignments
+    readGappedAlignments, GappedAlignments,
+    SeqSet, assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
+    colData, "colData<-", exptData, "exptData<-"
 )
 
 exportMethods(
@@ -41,6 +43,7 @@ exportMethods(
     punion, pintersect, psetdiff,
     findOverlaps, countOverlaps, match, "%in%",
     show,
-    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow
+    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
+    dimnames, "dimnames<-"
 )
 
