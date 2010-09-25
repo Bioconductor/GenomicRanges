@@ -4,6 +4,9 @@
 
 ### TODO: What's the impact of circularity on the set operations?
 
+### NOTE: Doesn't properly merge 'seqinfo(x)' with 'seqinfo(y)' because
+### 'c(x, y)' currently doesn't do it either. This will automatically get
+### fixed when the "c" method gets fixed.
 setMethod("union", c("GRanges", "GRanges"),
     function(x, y)
     {
@@ -18,11 +21,16 @@ setMethod("intersect", c("GRanges", "GRanges"),
     {
         elementMetadata(x) <- NULL
         elementMetadata(y) <- NULL
+        ## TODO: Revisit the code below. It is silently ignoring the fact
+        ## that we might be combining objects with incompatible sequence
+        ## lengths and/or circularity flags (note that this is inconsistent
+        ## with what [<- does). Maybe we should use something like
+        ##     seqinfo(ans) <- merge(seqinfo(x), seqinfo(y))
+        ## when it becomes available.
+        ## Note that 'merge(seqinfo(x), seqinfo(y))' is aimed to become
+        ## the standard way of checking that objects have compatible
+        ## sequence info since it will raise an error if they don't.
         seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(y))))
-        ## TODO: Revisit the 2 lines below. This code is silently ignoring
-        ## the fact that we might be combining objects with incompatible
-        ## sequence lengths and/or circularity flags. Is it reasonable?
-        ## Note that it is inconsistent with what [<- does.
         seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
         is_circular <- c(isCircular(x), isCircular(y))[seqnames]
         if (!identical(seqlengths(x), seqlengths))
@@ -50,11 +58,9 @@ setMethod("setdiff", c("GRanges", "GRanges"),
     function(x, y) {
         elementMetadata(x) <- NULL
         elementMetadata(y) <- NULL
+        ## TODO: See TODO in "intersect" method above about using
+        ## 'merge(seqinfo(x), seqinfo(y))' for this.
         seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(y))))
-        ## TODO: Revisit the 2 lines below. This code is silently ignoring
-        ## the fact that we might be combining objects with incompatible
-        ## sequence lengths and/or circularity flags. Is it reasonable?
-        ## Note that it is inconsistent with what [<- does.
         seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
         is_circular <- c(isCircular(x), isCircular(y))[seqnames]
         if (!identical(seqlengths(x), seqlengths))
@@ -83,6 +89,10 @@ setMethod("setdiff", c("GRanges", "GRanges"),
 ### Parallel set operations
 ### -------------------------------------------------------------------------
 
+### FIXME: Why aren't all the parallel set operations using the same code
+### for checking strand compatibility? E.g. "pintersect" and "psetdiff" use
+### compatableStrand() for this but not "punion".
+
 setMethod("punion", c("GRanges", "GRanges"),
     function(x, y, fill.gap = FALSE, ...)
     {
@@ -93,10 +103,10 @@ setMethod("punion", c("GRanges", "GRanges"),
                  (strand(x) == strand(y))))
             stop("'x' and 'y' must elements have compatable 'seqnames' ",
                  "and 'strand' values")
-        ## TODO: Revisit this. The code below is silently ignoring
-        ## the fact that we might be combining objects with incompatible
-        ## sequence lengths and/or circularity flags. Is it reasonable?
-        ## Note that it is inconsistent with what [<- does.
+        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
+        ## in "intersect" method at the top of this file for more details.
+        ## Then the setequal check on the seqnames levels above won't be
+        ## necessary anymore.
         GRanges(seqnames(x),
                 callGeneric(ranges(x), ranges(y), fill.gap = fill.gap),
                 strand(x),
@@ -104,6 +114,15 @@ setMethod("punion", c("GRanges", "GRanges"),
     }
 )
 
+### FIXME: This is currently not doing a "punion" at all. It just appends
+### the ranges in 'y' to their corresponding element in 'x'.
+### 2 proposals for a more punion-like semantic:
+###   (a) for (i in seq_len(length(x)))
+###         x[[i]] <- punion(x[[i]], y[rep.int(i, length(x[[i]]))])
+###   (b) for (i in seq_len(length(x)))
+###         x[[i]] <- union(x[[i]], y[i])
+### Note that behaviour (b) could also be considered a valid candidate for
+### a union,GRangesList,GRanges method (which we don't have at the moment).
 setMethod("punion", c("GRangesList", "GRanges"),
     function(x, y, fill.gap = FALSE, ...)
     {
@@ -146,14 +165,26 @@ setMethod("pintersect", c("GRanges", "GRanges"),
         if (length(resolveStrand) > 0)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
-        ## TODO: Revisit this. The code below is silently ignoring
-        ## the fact that we might be combining objects with incompatible
-        ## sequence lengths and/or circularity flags. Is it reasonable?
-        ## Note that it is inconsistent with what [<- does.
+        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
+        ## in "intersect" method at the top of this file for more details.
+        ## Then the setequal check on the seqnames levels above won't be
+        ## necessary anymore.
         GRanges(seqnames(x), ansRanges, ansStrand, seqlengths = seqlengths(x))
     }
 )
 
+### TODO: Like for "punion", the semantic of the
+### pintersect,GRangesList,GRanges method should simply derive from
+### the semantic of the pintersect,GRanges,GRanges. Then both, the
+### implementation and documentation will be much easier to understand.
+### It's hard to guess what's the current semantic of this method is by
+### just looking at the code below, but it doesn't seem to be one of:
+###   (a) for (i in seq_len(length(x)))
+###         x[[i]] <- pintersect(x[[i]], y[rep.int(i, length(x[[i]]))])
+###   (b) for (i in seq_len(length(x)))
+###         x[[i]] <- intersect(x[[i]], y[i])
+### It seems to be close to (b) but with special treatment of the "*"
+### strand value in 'y'.
 setMethod("pintersect", c("GRangesList", "GRanges"),
     function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
@@ -174,6 +205,10 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
             elementMetadata(y) <- NULL
         x <- x[ok]
         y <- rep(y, sum(ok))
+        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
+        ## in "intersect" method at the top of this file for more details.
+        ## Then the setequal check on the seqnames levels above won't be
+        ## necessary anymore.
         x@unlistData@ranges <-
           callGeneric(x@unlistData@ranges, y@ranges,
                       resolve.empty = "start.x")
@@ -206,14 +241,18 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
         if (length(resolveStrand) > 0)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
-        ## TODO: Revisit this. The code below is silently ignoring
-        ## the fact that we might be combining objects with incompatible
-        ## sequence lengths and/or circularity flags. Is it reasonable?
-        ## Note that it is inconsistent with what [<- does.
-        GRanges(seqnames(x), ansRanges, ansStrand, seqlengths = seqlengths(x))
+        ans <- GRanges(seqnames(x), ansRanges, ansStrand)
+        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
+        ## in "intersect" method at the top of this file for more details.
+        ## Then the setequal check on the seqnames levels above won't be
+        ## necessary anymore.
+        ans@seqinfo <- x@seqinfo
+        ans
     }
 )
 
+### TODO: Review the semantic of this method (see previous TODO's for
+### "punion" and "pintersect" methods for GRanges,GRangesList).
 setMethod("psetdiff", c("GRanges", "GRangesList"),
     function(x, y, ...)
     {
@@ -233,15 +272,17 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
         ansRanges <- gaps(ranges(y), start = start(x), end = end(x))
         ansSeqnames <- rep(seqnames(x), elementLengths(ansRanges))
         ansStrand <- rep(strand(x), elementLengths(ansRanges))
-        ## TODO: Revisit this. The code below is silently ignoring
-        ## the fact that we might be combining objects with incompatible
-        ## sequence lengths and/or circularity flags. Is it reasonable?
-        ## Note that it is inconsistent with what [<- does.
         ansGRanges <-
-          GRanges(ansSeqnames, unlist(ansRanges, use.names = FALSE), ansStrand,
-                  seqlengths = seqlengths(x))
-        new2("GRangesList", elementMetadata = new("DataFrame", nrows = length(x)),
+          GRanges(ansSeqnames, unlist(ansRanges, use.names = FALSE), ansStrand)
+        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
+        ## in "intersect" method at the top of this file for more details.
+        ## Then the setequal check on the seqnames levels above won't be
+        ## necessary anymore.
+        ansGRanges@seqinfo <- x@seqinfo
+        new2("GRangesList",
+             elementMetadata = new("DataFrame", nrows = length(x)),
              unlistData = ansGRanges, partitioning = ansRanges@partitioning,
              check=FALSE)
     }
 )
+

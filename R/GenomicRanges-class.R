@@ -656,11 +656,16 @@ setMethod("c", "GenomicRanges",
             if (recursive)
               stop("'recursive' mode not supported")
             args <- unname(list(x, ...))
+            ## TODO: Revisit the code below. It is silently ignoring the fact
+            ## that we might be combining objects with incompatible sequence
+            ## lengths and/or circularity flags (note that this is inconsistent
+            ## with what [<- does). Maybe we should use something like
+            ##     seqinfo(ans) <- merge(seqinfo(x), seqinfo(y))
+            ## when it becomes available.
+            ## Note that 'merge(seqinfo(x), seqinfo(y))' is aimed to become
+            ## the standard way of checking that objects have compatible
+            ## sequence info since it will raise an error if they don't.
             seqnames <- do.call(c, lapply(args, seqnames))
-            ## TODO: Revisit the 2 lines below. This code is silently ignoring
-            ## the fact that we might be combining objects with incompatible
-            ## sequence lengths and/or circularity flags. Is it reasonable?
-            ## Note that it is inconsistent with what [<- does.
             seqlengths <- do.call(c, lapply(args, seqlengths))[levels(seqnames)]
             is_circular <-
               do.call(c, lapply(args, isCircular))[levels(seqnames)]
