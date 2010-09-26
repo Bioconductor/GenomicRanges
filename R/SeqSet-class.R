@@ -9,7 +9,6 @@ setClass("SeqSet",
 .valid.SeqSet <- function(x)
 {
     msg <- NULL
-
     msg1 <- '\n    is(assays(<SeqSet>)[[%d]], "matrix") is not TRUE'
     msg2 <- "\n    dim(<SeqSet>) does not equal dim(assays(<SeqSet>)[[%d]])"
     xdim <- dim(x)
@@ -160,7 +159,7 @@ setMethod(assay, c("SeqSet", "character"),
     res
 })
 
-setReplaceMethod("assay", c("SeqSet", "missing", "ANY"),
+setReplaceMethod("assay", c("SeqSet", "missing", "matrix"),
     function(x, i, ..., value)
 {
     if (0L == length(assays(x)))
@@ -172,14 +171,14 @@ setReplaceMethod("assay", c("SeqSet", "missing", "ANY"),
     x
 })
 
-setReplaceMethod("assay", c("SeqSet", "numeric", "ANY"),
+setReplaceMethod("assay", c("SeqSet", "numeric", "matrix"),
     function(x, i = 1, ..., value)
 {
     assays(x, ...)[[i]] <- value
     x
 })
 
-setReplaceMethod("assay", c("SeqSet", "character", "ANY"),
+setReplaceMethod("assay", c("SeqSet", "character", "matrix"),
     function(x, i = names(x)[1], ..., value)
 {
     assays(x, ...)[[i]] <- value

@@ -18,10 +18,9 @@
 \alias{assay,SeqSet,character-method}
 \alias{assay,SeqSet,numeric-method}
 \alias{assay,SeqSet,missing-method}
-\alias{assay<-,SeqSet-method}
-\alias{assay<-,SeqSet,character-method}
-\alias{assay<-,SeqSet,numeric-method}
-\alias{assay<-,SeqSet,missing-method}
+\alias{assay<-,SeqSet,character,matrix-method}
+\alias{assay<-,SeqSet,numeric,matrix-method}
+\alias{assay<-,SeqSet,missing,matrix-method}
 \alias{rowData,SeqSet-method}
 \alias{rowData<-,SeqSet,GenomicRanges-method}
 \alias{colData,SeqSet-method}
