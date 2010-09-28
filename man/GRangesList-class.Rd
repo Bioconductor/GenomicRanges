@@ -8,6 +8,7 @@
 
 % Constructor-like function:
 \alias{GRangesList}
+\alias{updateObject,GRangesList-method}
 
 % Coercion methods:
 \alias{coerce,RangedDataList,GRangesList-method}

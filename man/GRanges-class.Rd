@@ -11,6 +11,7 @@
 
 % Constructor-like function:
 \alias{GRanges}
+\alias{updateObject,GRanges-method}
 
 % Coercion methods:
 \alias{coerce,RangedData,GRanges-method}

@@ -64,6 +64,18 @@ GRangesList <- function(...)
     ans
 }
 
+setMethod("updateObject", "GRangesList",
+    function(object, ..., verbose=FALSE)
+    {
+        if (verbose)
+            message("updateObject(object = 'GRangesList')")
+        if (!is(try(object@unlistData@seqinfo, silent=TRUE), "try-error"))
+            return(object)
+        object@unlistData <- updateObject(object@unlistData)
+        object
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.

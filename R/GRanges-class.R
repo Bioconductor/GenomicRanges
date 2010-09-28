@@ -102,6 +102,26 @@ GRanges <-
   eval(newCall, parent.frame())
 }
 
+setMethod("updateObject", "GRanges",
+    function(object, ..., verbose=FALSE)
+    {
+        if (verbose)
+            message("updateObject(object = 'GRanges')")
+        if (!is(try(object@seqinfo, silent=TRUE), "try-error"))
+            return(object)
+        new(class(object),
+            seqnames = object@seqnames,
+            ranges = object@ranges,
+            strand = object@strand,
+            seqinfo = Seqinfo(seqnames = names(object@seqlengths),
+                              seqlengths = object@seqlengths),
+            elementMetadata = object@elementMetadata,
+            metadata = object@metadata
+        )
+    }
+)
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###
