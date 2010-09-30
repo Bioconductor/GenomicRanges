@@ -319,6 +319,7 @@ test_GRanges_Sequence <- function() {
                    as.data.frame(gr[c(1,3,5),"score"]))
     checkIdentical(as.data.frame(gr)[c(1,3,5),-7],
                    as.data.frame(gr[c(1,3,5),1]))
+    checkIdentical(gr, gr[Rle(TRUE)])
 
     ## [<-
     gr <- make_test_GRanges()

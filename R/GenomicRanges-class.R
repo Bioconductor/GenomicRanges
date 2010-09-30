@@ -577,16 +577,18 @@ setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 setMethod("[", "GenomicRanges",
           function(x, i, j, ..., drop)
           {
-            if (missing(i)) {
+            if (!missing(i)) {
+              iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
+              if (!is.null(iInfo[["msg"]]))
+                stop(iInfo[["msg"]])
+            }
+            if (missing(i) || !iInfo[["useIdx"]]) {
               if (!missing(j))
                 x <-
                   clone(x,
                          elementMetadata =
                          elementMetadata(x, FALSE)[, j, drop=FALSE])
             } else {
-              iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
-              if (!is.null(iInfo[["msg"]]))
-                stop(iInfo[["msg"]])
               i <- iInfo[["idx"]]
               if (missing(j))
                 elementMetadata <- elementMetadata(x, FALSE)[i, , drop=FALSE]
@@ -609,8 +611,7 @@ setMethod("[", "GenomicRanges",
                       elementMetadata = elementMetadata)
             }
             x
-          }
-          )
+          })
 
 setReplaceMethod("[", "GenomicRanges",
                  function(x, i, j, ..., value)
@@ -624,7 +625,12 @@ setReplaceMethod("[", "GenomicRanges",
                    ranges <- ranges(x)
                    strand <- strand(x)
                    elementMetadata <- elementMetadata(x, FALSE)
-                   if (missing(i)) {
+                   if (!missing(i)) {
+                     iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
+                     if (!is.null(iInfo[["msg"]]))
+                       stop(iInfo[["msg"]])
+                   }
+                   if (missing(i) || !iInfo[["useIdx"]]) {
                      seqnames[] <- seqnames(value)
                      ranges[] <- ranges(value)
                      strand[] <- strand(value)
@@ -633,9 +639,6 @@ setReplaceMethod("[", "GenomicRanges",
                      else
                        elementMetadata[,j] <- elementMetadata(value, FALSE)
                    } else {
-                     iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
-                     if (!is.null(iInfo[["msg"]]))
-                       stop(iInfo[["msg"]])
                      i <- iInfo[["idx"]]
                      seqnames[i] <- seqnames(value)
                      ranges[i] <- ranges(value)

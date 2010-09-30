@@ -166,8 +166,11 @@ test_GRangesList_Sequence <- function() {
     })
     res <- c(grl, GRL)
     checkTrue(validObject(res))
+    ## [
+    checkIdentical(grl, grl[Rle(TRUE)])
     checkIdentical(grl, res[seq_len(length(grl))])
     checkIdentical(GRL, res[-seq_len(length(grl))])
+    ## checkException(c(grl, grl), "c() check for duplicated names", TRUE)
 
     checkIdentical(grl, local({
         x <- grl
