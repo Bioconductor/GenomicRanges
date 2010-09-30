@@ -15,13 +15,13 @@
 \alias{assay}
 \alias{assay<-}
 
-\title{Accessing SeqSet instances}
+\title{Accessing SummarizedExperiment instances}
 
 \description{
 
   The generics documented on this page get and set data in the
-  \code{\linkS4class{SeqSet}-class}. See that page for additional
-  detail.
+  \code{\linkS4class{SummarizedExperiment}-class}. See that page for
+  additional detail.
 
 }
 
@@ -57,12 +57,12 @@ assay(x, i, ...) <- value
 }
 
 \seealso{
-  \code{\linkS4class{SeqSet}-class}
+  \code{\linkS4class{SummarizedExperiment}-class}
 }
 
 \examples{
   if (interactive())
-    ?`SeqSet-class`
+    ?`SummarizedExperiment-class`
 }
 
 \keyword{methods}

@@ -6,7 +6,7 @@ import(IRanges)
 exportClasses(
     Seqinfo,
     GenomicRanges, GRanges, GRangesList,
-    GappedAlignments, SeqSet
+    GappedAlignments, SummarizedExperiment
 )
 
 export(
@@ -22,7 +22,8 @@ export(
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
-    SeqSet, assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
+    SummarizedExperiment,
+    assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
     colData, "colData<-", exptData, "exptData<-", clone
 )
 

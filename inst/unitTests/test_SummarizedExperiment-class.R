@@ -2,20 +2,24 @@ m <- matrix(1, 5, 3, dimnames=list(NULL, NULL))
 assays <- SimpleList(m=m)
 rowData <- GRanges("chr1", IRanges(1:5, 10))
 colData <- DataFrame(x=letters[1:3])
-sset <- SeqSet(assays, rowData, colData)
+sset <- SummarizedExperiment(assays, rowData, colData)
 
-test_SeqSet_construction <- function() {
+test_SummarizedExperiment_construction <- function() {
     ## empty-ish
     m1 <- matrix(0, 0, 0)
-    checkTrue(validObject(new("SeqSet")))
-    checkTrue(validObject(SeqSet()))
-    checkTrue(validObject(SeqSet(assays=SimpleList(m1))))
-    checkException(SeqSet(assays=SimpleList(matrix())),
-                   "assays dim mismatch", TRUE)
-    checkException(SeqSet(assays=SimpleList(m1, matrix())),
-                   "assays dim mismatch", TRUE)
-    checkException(SeqSet(assays=SimpleList(character())),
-                   "assays class", TRUE)
+    checkTrue(validObject(new("SummarizedExperiment")))
+    checkTrue(validObject(SummarizedExperiment()))
+    checkTrue(validObject(
+        SummarizedExperiment(assays=SimpleList(m1))))
+    checkException(
+        SummarizedExperiment(assays=SimpleList(matrix())),
+        "assays dim mismatch", TRUE)
+    checkException(
+        SummarizedExperiment(assays=SimpleList(m1, matrix())),
+        "assays dim mismatch", TRUE)
+    checkException(
+        SummarizedExperiment(assays=SimpleList(character())),
+        "assays class", TRUE)
 
     ## substance
     checkTrue(validObject(sset))
@@ -24,7 +28,7 @@ test_SeqSet_construction <- function() {
     checkIdentical(DataFrame(x=letters[1:3]), colData(sset))
 }
 
-test_SeqSet_getters <- function() {
+test_SummarizedExperiment_getters <- function() {
     ## dim, dimnames
     checkIdentical(c(length(rowData), nrow(colData)), dim(sset))
     checkIdentical(list(NULL, NULL), dimnames(sset))
@@ -38,17 +42,27 @@ test_SeqSet_getters <- function() {
     m0 <- matrix(0L, 0, 0, dimnames=list(NULL, NULL))
     m1 <- matrix(0, 0, 0, dimnames=list(NULL, NULL))
     a <- SimpleList(a=m0, b=m1)
-    checkIdentical(a, assays(SeqSet(assays=a)))
+    checkIdentical(a, assays(SummarizedExperiment(assays=a)))
     ## assay
-    checkException(assay(SeqSet()), "0-length assay", TRUE)
-    checkIdentical(m0, assay(SeqSet(assays=a)), "default assay")
-    checkIdentical(m1, assay(SeqSet(assays=a), 2), "assay, numeric index")
-    checkException(assay(SeqSet(assays=a), 3), "invalid assay index", TRUE)
-    checkIdentical(m1, assay(SeqSet(assays=a), "b"), "assay, character index")
-    checkException(assay(SeqSet(assays=a), "c"), "invalid assay name", TRUE)
+    checkException(
+        assay(SummarizedExperiment()), "0-length assay", TRUE)
+    checkIdentical(m0,
+        assay(SummarizedExperiment(assays=a)), "default assay")
+    checkIdentical(m1,
+        assay(SummarizedExperiment(assays=a), 2),
+        "assay, numeric index")
+    checkException(
+        assay(SummarizedExperiment(assays=a), 3),
+        "invalid assay index", TRUE)
+    checkIdentical(m1,
+        assay(SummarizedExperiment(assays=a), "b"),
+        "assay, character index")
+    checkException(
+        assay(SummarizedExperiment(assays=a), "c"),
+        "invalid assay name", TRUE)
 }
 
-test_SeqSet_setters <- function()
+test_SummarizedExperiment_setters <- function()
 {
     ## row / col / exptData<-
     ss1 <- sset
@@ -97,7 +111,7 @@ test_SeqSet_setters <- function()
     checkIdentical(list(NULL, NULL), dimnames(ss1))
 }
 
-test_SeqSet_subset <- function()
+test_SummarizedExperiment_subset <- function()
 {
     ## numeric
     ss1 <- sset[2:3,]
@@ -141,7 +155,7 @@ test_SeqSet_subset <- function()
     checkIdentical(colData(ss1)[idx,,drop=FALSE], colData(ss2))
 }
 
-test_SeqSet_subsetassign <- 
+test_SummarizedExperiment_subsetassign <- 
     function()
 {
     ss1 <- sset

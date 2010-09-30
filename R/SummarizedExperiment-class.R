@@ -1,4 +1,4 @@
-setClass("SeqSet",
+setClass("SummarizedExperiment",
     representation(
         exptData="SimpleList",        # overall description
         rowData="GenomicRanges",      # rows and their anntoations
@@ -6,11 +6,13 @@ setClass("SeqSet",
         assays="SimpleList"),         # Data per-se -- e.g., list of matricies
     prototype(rowData=GRanges()))
 
-.valid.SeqSet <- function(x)
+.valid.SummarizedExperiment <- function(x)
 {
     msg <- NULL
-    msg1 <- '\n    is(assays(<SeqSet>)[[%d]], "matrix") is not TRUE'
-    msg2 <- "\n    dim(<SeqSet>) does not equal dim(assays(<SeqSet>)[[%d]])"
+    msg1 <-
+        '\n    is(assays(<SummarizedExperiment>)[[%d]], "matrix") is not TRUE'
+    msg2 <-
+        "\n    dim(<SummarizedExperiment>) does not equal dim(assays(<SummarizedExperiment>)[[%d]])"
     xdim <- dim(x)
     assays <- assays(x)
     for (i in seq_len(length(assays))) {
@@ -26,17 +28,17 @@ setClass("SeqSet",
     msg
 }
 
-setValidity2("SeqSet", .valid.SeqSet)
+setValidity2("SummarizedExperiment", .valid.SummarizedExperiment)
 
-SeqSet <-
+SummarizedExperiment <-
     function(assays=SimpleList(), rowData=GRanges(),
              colData=DataFrame(), exptData=SimpleList(), ...,
              verbose=FALSE)
 {
     ## FIXME: warn if dimnames(assays) != list( verbose=TRUE
     assays <- endoapply(assays, "dimnames<-", NULL)
-    new("SeqSet", exptData=exptData, rowData=rowData, colData=colData,
-        assays=assays, ...)
+    new("SummarizedExperiment", exptData=exptData,
+        rowData=rowData, colData=colData, assays=assays, ...)
 }
 
 ## FIXME: MTM thinks that generics do not belong with class definitions
@@ -71,49 +73,52 @@ setGeneric("assay<-",
 
 ## Simple 'getters' / 'setters'
 
-setMethod(exptData, "SeqSet", function(x, ...) slot(x, "exptData"))
+setMethod(exptData, "SummarizedExperiment",
+    function(x, ...) slot(x, "exptData"))
 
-setReplaceMethod("exptData", c("SeqSet", "SimpleList"),
+setReplaceMethod("exptData", c("SummarizedExperiment", "SimpleList"),
     function(x, ..., value)
 {
     initialize(x, ..., exptData=value)
 })
 
-setReplaceMethod("exptData", c("SeqSet", "list"),
+setReplaceMethod("exptData", c("SummarizedExperiment", "list"),
     function(x, ..., value)
 {
     initialize(x, ..., exptData=SimpleList(value))
 })
 
-setMethod(rowData, "SeqSet", function(x, ...) slot(x, "rowData"))
+setMethod(rowData, "SummarizedExperiment",
+    function(x, ...) slot(x, "rowData"))
 
-setReplaceMethod("rowData", c("SeqSet", "GenomicRanges"),
+setReplaceMethod("rowData", c("SummarizedExperiment", "GenomicRanges"),
     function(x, ..., value)
 {
     initialize(x, ..., rowData=value)
 })
 
-setMethod(colData, "SeqSet", function(x, ...) slot(x, "colData"))
+setMethod(colData, "SummarizedExperiment",
+    function(x, ...) slot(x, "colData"))
 
-setReplaceMethod("colData", c("SeqSet", "DataFrame"),
+setReplaceMethod("colData", c("SummarizedExperiment", "DataFrame"),
     function(x, ..., value)
 {
     initialize(x, ..., colData=value)
 })
 
-setMethod(assays, "SeqSet",
+setMethod(assays, "SummarizedExperiment",
     function(x, ...) 
 {
     endoapply(slot(x, "assays"), "dimnames<-", dimnames(x))
 })
 
-setReplaceMethod("assays", c("SeqSet", "SimpleList"),
+setReplaceMethod("assays", c("SummarizedExperiment", "SimpleList"),
     function(x, ..., value)
 {
     initialize(x, ..., assays=value)
 })
 
-setReplaceMethod("assays", c("SeqSet", "list"),
+setReplaceMethod("assays", c("SummarizedExperiment", "list"),
     function(x, ..., value)
 {
     value <- lapply(x, "dimnames<-", NULL)
@@ -121,22 +126,22 @@ setReplaceMethod("assays", c("SeqSet", "list"),
 })
 
 ## convenience for common use case 
-setMethod(assay, c("SeqSet", "missing"),
+setMethod(assay, c("SummarizedExperiment", "missing"),
     function(x, i, ...)
 {
     assays <- assays(x)
     if (0L == length(assays))
     {
-        msg <- 'assay(<SeqSet>, i="missing", ...) length(assays(<SeqSet>)) is 0'
+        msg <- 'assay(<SummarizedExperiment>, i="missing", ...) length(assays(<SummarizedExperiment>)) is 0'
         stop(msg)
     }
     assays[[1]]
 })
 
-setMethod(assay, c("SeqSet", "numeric"),
+setMethod(assay, c("SummarizedExperiment", "numeric"),
     function(x, i, ...) 
 {
-    msg <- 'assay(<SeqSet>, i="numeric", ...) invalid subscript "i"'
+    msg <- 'assay(<SummarizedExperiment>, i="numeric", ...) invalid subscript "i"'
     tryCatch({
         assays(x)[[i]]
     }, error=function(err) {
@@ -144,60 +149,63 @@ setMethod(assay, c("SeqSet", "numeric"),
     })
 })
 
-setMethod(assay, c("SeqSet", "character"),
+setMethod(assay, c("SummarizedExperiment", "character"),
     function(x, i = names(x)[1], ...) 
 {
-    msg <- 'assay(<SeqSet>, i="character", ...) invalid subscript "i"'
+    msg <- 'assay(<SummarizedExperiment>, i="character", ...) invalid subscript "i"'
     res <-
         tryCatch({
             assays(x)[[i]]
         }, error=function(err) {
             stop(msg, "\n", conditionMessage(err))
         })
-    if (is.null(res))
-        stop(msg, "\n    '", i, "' not in names(assays(<SeqSet>))")
+    if (is.null(res)) 
+        stop(msg, "\n    '", i, "' not in names(assays(<SummarizedExperiment>))")
     res
 })
 
-setReplaceMethod("assay", c("SeqSet", "missing", "matrix"),
+setReplaceMethod("assay", c("SummarizedExperiment", "missing", "matrix"),
     function(x, i, ..., value)
 {
     if (0L == length(assays(x)))
     {
-        msg <- "'assay(<SeqSet>) <- value' length(assays(<SeqSet>)) is 0"
+        msg <- "'assay(<SummarizedExperiment>) <- value' length(assays(<SummarizedExperiment>)) is 0"
         stop(msg)
     }
     assays(x)[[1]] <- value
     x
 })
 
-setReplaceMethod("assay", c("SeqSet", "numeric", "matrix"),
+setReplaceMethod("assay",
+    c("SummarizedExperiment", "numeric", "matrix"),
     function(x, i = 1, ..., value)
 {
     assays(x, ...)[[i]] <- value
     x
 })
 
-setReplaceMethod("assay", c("SeqSet", "character", "matrix"),
+setReplaceMethod("assay",
+    c("SummarizedExperiment", "character", "matrix"),
     function(x, i = names(x)[1], ..., value)
 {
     assays(x, ...)[[i]] <- value
     x
 })
 
-## cannonical location for dim, dimnames; dimnames should be checked for
-## consistency (if non-null) and stripped from assays on construction, or
-## added from assays if row/col names are NULL in <SeqSet> but not
-## assays. dimnames need to be added on to assays whne assays() invoked
-setMethod(dim, "SeqSet", function(x) {
+## cannonical location for dim, dimnames; dimnames should be checked
+## for consistency (if non-null) and stripped from assays on
+## construction, or added from assays if row/col names are NULL in
+## <SummarizedExperiment> but not assays. dimnames need to be added on
+## to assays whne assays() invoked
+setMethod(dim, "SummarizedExperiment", function(x) {
     c(length(rowData(x)), nrow(colData(x)))
 })
 
-setMethod(dimnames, "SeqSet", function(x) {
+setMethod(dimnames, "SummarizedExperiment", function(x) {
     list(names(rowData(x)), rownames(colData(x)))
 })
 
-setReplaceMethod("dimnames", c("SeqSet", "list"),
+setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
     function(x, value) 
 {
     rowData <- rowData(x)
@@ -207,7 +215,7 @@ setReplaceMethod("dimnames", c("SeqSet", "list"),
     initialize(x, rowData=rowData, colData=colData)
 })
         
-setReplaceMethod("dimnames", c("SeqSet", "NULL"),
+setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     function(x, value)
 {
     callNextMethod(x, value=list(NULL, NULL))
@@ -215,7 +223,7 @@ setReplaceMethod("dimnames", c("SeqSet", "NULL"),
 
 ## Subset -- array-like; [[, $ not defined
 
-.SeqSet.charbound <-
+.SummarizedExperiment.charbound <-
     function(idx, txt, fmt)
 {
     orig <- idx
@@ -227,16 +235,16 @@ setReplaceMethod("dimnames", c("SeqSet", "NULL"),
     idx
 }
 
-.SeqSet.subset <-
+.SummarizedExperiment.subset <-
     function(x, i, j, ...)
 {
     if (is.character(i)) {
-        msg <- "<SeqSet>[i,] index out of bounds: %s"
-        i <- .SeqSet.charbound(i, rownames(x), msg)
+        msg <- "<SummarizedExperiment>[i,] index out of bounds: %s"
+        i <- .SummarizedExperiment.charbound(i, rownames(x), msg)
     }
     if (is.character(j)) {
-        msg <- "<SeqSet>[,j] index out of bounds: %s"
-        j <- .SeqSet.charbound(j, colnames(x), msg)
+        msg <- "<SummarizedExperiment>[,j] index out of bounds: %s"
+        j <- .SummarizedExperiment.charbound(j, colnames(x), msg)
     }
     initialize(x, rowData=rowData(x)[i,,drop=FALSE],
                colData=colData(x)[j,,drop=FALSE],
@@ -247,31 +255,31 @@ setReplaceMethod("dimnames", c("SeqSet", "NULL"),
                }))
 }
 
-setMethod("[", c("SeqSet", "ANY", "ANY"),
+setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     function(x, i, j, ..., drop=TRUE)
 {
     if (1L != length(drop) || (!missing(drop) && drop))
-        warning("'drop' ignored '[,SeqSet,ANY,ANY-method'")
+        warning("'drop' ignored '[,SummarizedExperiment,ANY,ANY-method'")
     if (missing(i) && missing(j))
         x
     else if (missing(i))
-        .SeqSet.subset(x, TRUE, j, ...)
+        .SummarizedExperiment.subset(x, TRUE, j, ...)
     else if (missing(j))
-        .SeqSet.subset(x, i, TRUE, ...)
+        .SummarizedExperiment.subset(x, i, TRUE, ...)
     else
-        .SeqSet.subset(x, i, j, ...)
+        .SummarizedExperiment.subset(x, i, j, ...)
 })
 
-.SeqSet.subsetassign <-
+.SummarizedExperiment.subsetassign <-
     function(x, i, j, ..., value)
 {
     if (is.character(i)) {
-        msg <- "<SeqSet>[i,]<- index out of bounds: %s"
-        i <- .SeqSet.charbound(i, rownames(x), msg)
+        msg <- "<SummarizedExperiment>[i,]<- index out of bounds: %s"
+        i <- .SummarizedExperiment.charbound(i, rownames(x), msg)
     }
     if (is.character(j)) {
-        msg <- "<SeqSet>[,j]<- index out of bounds: %s"
-        j <- .SeqSet.charbound(j, colnames(x), msg)
+        msg <- "<SummarizedExperiment>[,j]<- index out of bounds: %s"
+        j <- .SummarizedExperiment.charbound(j, colnames(x), msg)
     }
     initialize(x,
                exptData=c(exptData(x), exptData(value)),
@@ -294,20 +302,21 @@ setMethod("[", c("SeqSet", "ANY", "ANY"),
                }))
 }
 
-setReplaceMethod("[", c("SeqSet", "ANY", "ANY", "SeqSet"),
+setReplaceMethod("[",
+    c("SummarizedExperiment", "ANY", "ANY", "SummarizedExperiment"),
     function(x, i, j, ..., value)
 {
     if (missing(i) && missing(j))
         x
     else if (missing(i))
-        .SeqSet.subsetassign(x, TRUE, j, ..., value=value)
+        .SummarizedExperiment.subsetassign(x, TRUE, j, ..., value=value)
     else if (missing(j))
-        .SeqSet.subsetassign(x, i, TRUE, ..., value=value)
+        .SummarizedExperiment.subsetassign(x, i, TRUE, ..., value=value)
     else
-        .SeqSet.subsetassign(x, i, j, ..., value=value)
+        .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
 })
            
-setMethod(show, "SeqSet",
+setMethod(show, "SummarizedExperiment",
     function(object)
 {
     selectSome <- IRanges:::selectSome
