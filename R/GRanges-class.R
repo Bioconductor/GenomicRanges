@@ -43,9 +43,10 @@ function(class, seqnames = Rle(), ranges = IRanges(),
          structure(rep(NA_integer_, length(levels(seqnames))),
                    names = levels(seqnames)))
 {
+    ## occurs first for generation of default seqlengths
     if (!is(seqnames, "Rle"))
         seqnames <- Rle(seqnames)
-    if (!is.factor(runValue(seqnames)))
+    if (!is.factor(runValue(seqnames))) 
         runValue(seqnames) <- factor(runValue(seqnames))
 
     if (!is(ranges, "IRanges"))
@@ -75,7 +76,9 @@ function(class, seqnames = Rle(), ranges = IRanges(),
         seqlengths <-
           structure(as.integer(seqlengths), names = names(seqlengths))
     seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
-
+    ## in case we have seqlengths for unrepresented sequences
+    runValue(seqnames) <- factor(runValue(seqnames), names(seqlengths))
+    
     elementMetadata <- DataFrame(...)
     if (ncol(elementMetadata) == 0)
         elementMetadata <- new("DataFrame", nrows = length(seqnames))
