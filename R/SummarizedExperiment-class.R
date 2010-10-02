@@ -30,16 +30,39 @@ setClass("SummarizedExperiment",
 
 setValidity2("SummarizedExperiment", .valid.SummarizedExperiment)
 
-SummarizedExperiment <-
-    function(assays=SimpleList(), rowData=GRanges(),
+setGeneric("SummarizedExperiment",
+    function(assays, ...) standardGeneric("SummarizedExperiment"))
+
+setMethod(SummarizedExperiment, "SimpleList",
+    function(assays, rowData=GRanges(),
              colData=DataFrame(), exptData=SimpleList(), ...,
              verbose=FALSE)
 {
+    if (missing(colData) && 0L != length(assays))
+        colData <- DataFrame(row.names=colnames(assays[[1]]))
     ## FIXME: warn if dimnames(assays) != list( verbose=TRUE
     assays <- endoapply(assays, "dimnames<-", NULL)
     new("SummarizedExperiment", exptData=exptData,
         rowData=rowData, colData=colData, assays=assays, ...)
-}
+})
+
+setMethod(SummarizedExperiment, "missing",
+    function(assays, ...)
+{
+    SummarizedExperiment(SimpleList(), ...)
+})
+
+setMethod(SummarizedExperiment, "list",
+    function(assays, ...)
+{
+    SummarizedExperiment(do.call(SimpleList, assays), ...)
+})
+
+setMethod(SummarizedExperiment, "matrix",
+    function(assays, ...)
+{
+    SummarizedExperiment(SimpleList(assays), ...)
+})
 
 ## FIXME: MTM thinks that generics do not belong with class definitions
 
@@ -322,14 +345,17 @@ setMethod(show, "SummarizedExperiment",
     selectSome <- IRanges:::selectSome
     scat <- function(fmt, vals)
     {
-        ## FIXME: strwrap
-        txt <- sprintf(fmt, length(vals),
-                       paste(selectSome(vals), collapse=" "))
-        cat(txt)
+        vals <- ifelse(nzchar(vals), vals, "''")
+        lbls <- paste(selectSome(vals), collapse=" ")
+        txt <- sprintf(fmt, length(vals), lbls)
+        cat(strwrap(txt, exdent=2), sep="\n")
     }
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-    scat("assays(%d): %s\n", names(assays(object)))
+    nms <- names(assays(object))
+    if (is.null(nms))
+        nms <- character(length(assays(object)))
+    scat("assays(%d): %s\n", nms)
     dimnames <- dimnames(object)
     dlen <- sapply(dimnames, length)
     if (dlen[[1]]) scat("rownames(%d): %s\n", dimnames[[1]])

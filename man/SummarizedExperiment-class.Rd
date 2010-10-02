@@ -7,25 +7,39 @@
 
 % Constructor-like function:
 \alias{SummarizedExperiment}
+\alias{SummarizedExperiment,missing-method}
+\alias{SummarizedExperiment,matrix-method}
+\alias{SummarizedExperiment,list-method}
+\alias{SummarizedExperiment,SimpleList-method}
 
 % Coercion methods:
 
 % Accessor methods:
+\alias{assays}
 \alias{assays,SummarizedExperiment-method}
+\alias{assays<-}
 \alias{assays<-,SummarizedExperiment,list-method}
 \alias{assays<-,SummarizedExperiment,SimpleList-method}
+\alias{assay}
 \alias{assay,SummarizedExperiment,ANY-method}
 \alias{assay,SummarizedExperiment,character-method}
 \alias{assay,SummarizedExperiment,numeric-method}
 \alias{assay,SummarizedExperiment,missing-method}
+\alias{assay<-}
 \alias{assay<-,SummarizedExperiment,character,matrix-method}
 \alias{assay<-,SummarizedExperiment,numeric,matrix-method}
 \alias{assay<-,SummarizedExperiment,missing,matrix-method}
+\alias{rowData}
 \alias{rowData,SummarizedExperiment-method}
+\alias{rowData<-}
 \alias{rowData<-,SummarizedExperiment,GenomicRanges-method}
+\alias{colData}
 \alias{colData,SummarizedExperiment-method}
+\alias{colData<-}
 \alias{colData<-,SummarizedExperiment,DataFrame-method}
+\alias{exptData}
 \alias{exptData,SummarizedExperiment-method}
+\alias{exptData<-}
 \alias{exptData<-,SummarizedExperiment,SimpleList-method}
 \alias{exptData<-,SummarizedExperiment,list-method}
 \alias{dim,SummarizedExperiment-method}
@@ -40,7 +54,7 @@
 % show method:
 \alias{show,SummarizedExperiment-method}
 
-\title{SummarizedExperiment objects}
+\title{SummarizedExperiment instances}
 
 \description{
 
@@ -50,6 +64,89 @@
   \code{\linkS4class{DataFrame}-class}). A \code{SummarizedExperiment}
   contains one or more assays, each represented by a matrix of numeric
   or other mode.
+
+}
+
+\usage{
+
+## Constructors
+
+SummarizedExperiment(assays, ...)
+\S4method{SummarizedExperiment}{SimpleList}(assays, rowData = GRanges(),
+    colData = DataFrame(), exptData = SimpleList(), ...,
+    verbose = FALSE)
+\S4method{SummarizedExperiment}{missing}(assays, ...)
+\S4method{SummarizedExperiment}{list}(assays, ...)
+\S4method{SummarizedExperiment}{matrix}(assays, ...)
+
+## Accessors
+
+assays(x, ...)
+assays(x, ...) <- value
+assay(x, i, ...)
+assay(x, i, ...) <- value
+rowData(x, ...)
+rowData(x, ...) <- value
+colData(x, ...)
+colData(x, ...) <- value
+exptData(x, ...)
+exptData(x, ...) <- value
+\S4method{dim}{SummarizedExperiment}(x)
+\S4method{dimnames}{SummarizedExperiment}(x)
+\S4method{dimnames}{SummarizedExperiment,NULL}(x) <- value
+\S4method{dimnames}{SummarizedExperiment,list}(x) <- value
+
+## Subsetting
+
+\S4method{[}{SummarizedExperiment}(x, i, j, ..., drop=TRUE)
+\S4method{[}{SummarizedExperiment,ANY,ANY,SummarizedExperiment}(x, i, j) <- value
+
+}
+
+\arguments{
+
+  \item{assays}{A \code{list} or \code{SimpleList} of matrix elements,
+    or a \code{matrix}. Each element of the list must have the same
+    dimensions, and dimension names (if present) must be consistent
+    across elements and with the row names of \code{rowData},
+    \code{colData}.}
+
+  \item{rowData}{A \code{GRanges} instance describing the ranges of
+    interest. Row names, if present, become the row names of the
+    \code{SummarizedExperiment}.}
+
+  \item{colData}{An optional \code{DataFrame} describing the
+    samples. Row names, if present, become the column names of the
+    \code{SummarizedExperiment}.}
+
+  \item{exptData}{An optional \code{SimpleList} of arbitrary content
+    describing the overall experiment.}
+
+  \item{...}{For \code{SummarizedExperiment}, S4 methods \code{list}
+    and \code{matrix}, arguments identical to those of the
+    \code{SimpleList} method.
+
+    For accessors, ignored.
+
+  }
+
+  \item{verbose}{A \code{logical(1)} indicating whether messages
+    about data coercion during construction should be printed.}
+
+  \item{x}{An instance of \code{SummarizedExperiment}-class.}
+
+  \item{i, j}{For \code{assay}, \code{assay<-}, \code{i} is a integer or
+    numeric scalar; see \sQuote{Details} for additional constraints.
+
+    For \code{SummarizedExperiment}, \code{SummarizedExperiment<-},
+    \code{i}, \code{j} are instances that can act to subset the
+    underlying \code{rowData}, \code{colData}, and \code{matrix}
+    elements of \code{assays}.}
+
+  \item{drop}{A \code{logical(1)}, ignored by these methods.}
+
+  \item{value}{An instance of a class specified in the S4 method
+    signature or as outlined in \sQuote{Details}.}
 
 }
 
@@ -117,37 +214,10 @@
 }
 
 \section{Constructor}{
-  \describe{
 
-    \item{\code{SummarizedExperiment(assays=SimpleList(),
-	rowData=GRanges(), colData=DataFrame(), exptData=SimpleList(),
-	...)}:}{
+  Instances are constructed using the \code{SummarizedExperiment}
+  function with arguments outlined above.
 
-      Creates a \code{SummarizedExperiment} instance, with arguments as
-      follows:
-
-      \describe{
-
-	\item{\code{assays}:}{A \code{SimpleList} of matrix
-	  elements. Each element must have the same dimensions, and
-	  dimension names (if present) must be consistent across
-	  elements and with the row names of \code{rowData},
-	  \code{colData}.}
-
-	\item{\code{rowData}:}{A \code{GRanges} describing the ranges of
-	  interest. Row names, if present, become the row names of the
-	  \code{SummarizedExperiment}.}
-
-	\item{\code{colData}:}{A \code{DataFrame} describing the
-	  samples. Row names, if present, become the column names of the
-	  \code{SummarizedExperiment}.}
-
-	\item{\code{exptData}:}{A \code{SimpleList} of arbitrary content
-	  describing the overall experiment.}
-
-      }
-    }
-  }
 }
 
 % \section{Coercion}{}
@@ -155,7 +225,7 @@
 \section{Accessors}{
 
   In the following code snippets, \code{x} is a
-  \code{SummarizedExperiment} object.
+  \code{SummarizedExperiment} instance.
 
   \describe{
 
@@ -202,7 +272,7 @@
 \section{Subsetting}{
 
   In the code snippets below, \code{x} is a \code{SummarizedExperiment}
-  object.
+  instance.
 
   \describe{
 
