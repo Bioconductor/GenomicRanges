@@ -50,47 +50,36 @@ setClass("GenomicRanges", contains = c("Sequence", "VIRTUAL"))
 
 .valid.GenomicRanges.seqlengths <- function(x)
 {
-    msg <- NULL
-    if (length(x) > 0 && is.null(names(seqlengths(x))))
-        msg <- "'seqlengths' is unnamed"
+    if (length(x) > 0L && is.null(names(seqlengths(x))))
+        return("'seqlengths(x)' is unnamed")
     if (!setequal(names(seqlengths(x)), levels(seqnames(x))))
-        msg <-
-          c(msg, "'seqlengths' names do not match 'levels(seqnames)'")
-    if (IRanges:::anyMissing(seqlengths(x))) {
-        if (!all(is.na(seqlengths(x))))
-            msg <-
-              c(msg,
-                "'seqlengths' cannot mix NAs and non-NA integers")
-    } else if (setequal(names(seqlengths(x)), levels(seqnames(x)))) {
-        if (any(seqlengths(x) < 0L, na.rm = TRUE))
-            msg <- c(msg, "'seqlengths' contains negative values")
-        ## TODO: Loosen the check below for circular sequences.
-        seqnames <- seqnames(x)
-        runValue(seqnames) <- runValue(seqnames)[drop=TRUE]
-        minStarts <- IRanges:::.tapplyDefault(start(x), seqnames, min)
-        maxEnds <- IRanges:::.tapplyDefault(end(x), seqnames, max)
-        if (any(minStarts < 1L) || any(maxEnds > seqlengths(x)[names(maxEnds)]))
-            msg <-
-              c(msg, "'ranges' contains values outside of sequence bounds")
-    }
-    msg
+        return("'seqlengths(x)' names do not match 'levels(seqnames)'")
+    if (length(x) == 0L)
+        return(NULL)
+    seqs_with_known_length <- names(seqlengths(x))[!is.na(seqlengths(x))]
+    if (length(seqs_with_known_length) == 0L)
+        return(NULL)
+    if (any(seqlengths(x) < 0L, na.rm = TRUE))
+        return("'seqlengths(x)' contains negative values")
+    ## TODO: Loosen the check below for circular sequences.
+    seqnames <- seqnames(x)
+    runValue(seqnames) <- runValue(seqnames)[drop=TRUE]
+    minStarts <- IRanges:::.tapplyDefault(start(x), seqnames, min)
+    maxEnds <- IRanges:::.tapplyDefault(end(x), seqnames, max)
+    if (any(minStarts[seqs_with_known_length] < 1L, na.rm = TRUE)
+     || any(maxEnds[seqs_with_known_length] >
+            seqlengths(x)[seqs_with_known_length], na.rm = TRUE))
+        return("'ranges' contains values outside of sequence bounds")
+    NULL
 }
 
 .valid.GenomicRanges.isCircular <- function(x)
 {
-    msg <- NULL
-    if (length(x) > 0 && is.null(names(isCircular(x))))
-        msg <- "'isCircular' is unnamed"
+    if (length(x) > 0L && is.null(names(isCircular(x))))
+        return("'isCircular' is unnamed")
     if (!setequal(names(isCircular(x)), levels(seqnames(x))))
-        msg <-
-          c(msg, "'isCircular' names do not match 'levels(seqnames)'")
-    if (IRanges:::anyMissing(isCircular(x))) {
-        if (!all(is.na(isCircular(x))))
-            msg <-
-              c(msg,
-                "'isCircular' cannot mix NAs and non-NA integers")
-    }
-    msg
+        return("'isCircular' names do not match 'levels(seqnames)'")
+    NULL
 }
 
 .valid.GenomicRanges.elementMetadata <- function(x)
