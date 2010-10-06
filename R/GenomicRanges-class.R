@@ -61,14 +61,19 @@ setClass("GenomicRanges", contains = c("Sequence", "VIRTUAL"))
         return(NULL)
     if (any(seqlengths(x) < 0L, na.rm = TRUE))
         return("'seqlengths(x)' contains negative values")
-    ## TODO: Loosen the check below for circular sequences.
+    ## We check only the ranges that are on a non-circular sequence with
+    ## a known length.
+    non_circ_seqs <- names(seqlengths(x))[!(isCircular(x) %in% TRUE)]
+    ncswkl <- intersect(non_circ_seqs, seqs_with_known_length)
+    if (length(ncswkl) == 0L)
+        return(NULL)
     seqnames <- seqnames(x)
     runValue(seqnames) <- runValue(seqnames)[drop=TRUE]
     minStarts <- IRanges:::.tapplyDefault(start(x), seqnames, min)
     maxEnds <- IRanges:::.tapplyDefault(end(x), seqnames, max)
-    if (any(minStarts[seqs_with_known_length] < 1L, na.rm = TRUE)
-     || any(maxEnds[seqs_with_known_length] >
-            seqlengths(x)[seqs_with_known_length], na.rm = TRUE))
+    if (any(minStarts[ncswkl] < 1L, na.rm = TRUE)
+     || any(maxEnds[ncswkl] >
+            seqlengths(x)[ncswkl], na.rm = TRUE))
         return("'ranges' contains values outside of sequence bounds")
     NULL
 }
