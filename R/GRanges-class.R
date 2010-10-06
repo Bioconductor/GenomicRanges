@@ -101,7 +101,10 @@ GRanges <-
                      names = levels(as.factor(runValue(as(seqnames, "Rle"))))))
 {
   mc <- match.call()
-  newCall <- as.call(c(list(newGRanges), "GRanges", as.list(mc)[-1]))
+  mcl <- as.list(mc)[-1L]
+  names(mcl)[!nzchar(names(mcl))] <-
+    as.character(as.list(substitute(list(...)))[-1L])
+  newCall <- as.call(c(list(newGRanges), "GRanges", mcl))
   eval(newCall, parent.frame())
 }
 
@@ -139,10 +142,12 @@ setAs("RangedData", "GRanges",
         whichStrand <- which(colnames(values) == "strand")
         if (length(whichStrand) > 0)
             values <- values[-whichStrand]
-        GRanges(seqnames = space(from),
-                ranges = ranges,
-                strand = Rle(strand(from)),
-                values)
+        gr <- GRanges(seqnames = space(from),
+                      ranges = ranges,
+                      strand = Rle(strand(from)),
+                      values)
+        metadata(gr) <- metadata(from)
+        gr
     }
 )
 
@@ -152,10 +157,12 @@ setAs("RangesList", "GRanges",
         if (!length(from))
           return(GRanges())
         ranges <- unlist(from, use.names=FALSE)
-        GRanges(seqnames = space(from),
-                ranges = ranges,
-                strand = Rle("*", length(ranges)),
-                values = elementMetadata(ranges))
+        gr <- GRanges(seqnames = space(from),
+                      ranges = ranges,
+                      strand = Rle("*", length(ranges)),
+                      values = elementMetadata(ranges))
+        metadata(gr) <- metadata(from)
+        gr
       })
 
 
