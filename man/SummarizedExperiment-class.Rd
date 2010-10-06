@@ -81,7 +81,7 @@ SummarizedExperiment(assays, ...)
 
 ## Accessors
 
-assays(x, ...)
+assays(x, ..., withDimnames=TRUE)
 assays(x, ...) <- value
 assay(x, i, ...)
 assay(x, i, ...) <- value
@@ -126,7 +126,10 @@ exptData(x, ...) <- value
     and \code{matrix}, arguments identical to those of the
     \code{SimpleList} method.
 
-    For accessors, ignored.
+    For \code{assay}, \code{...} may contain \code{withNames}, which is
+    forwarded to \code{assays}.
+
+    For other accessors, ignored.
 
   }
 
@@ -142,6 +145,9 @@ exptData(x, ...) <- value
     \code{i}, \code{j} are instances that can act to subset the
     underlying \code{rowData}, \code{colData}, and \code{matrix}
     elements of \code{assays}.}
+
+  \item{withDimnames}{A \code{logical(1)}, indicating whether dimnames
+    should be applied to extracted assay elements.}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
 

@@ -41,7 +41,8 @@ setMethod(SummarizedExperiment, "SimpleList",
     if (missing(colData) && 0L != length(assays))
         colData <- DataFrame(row.names=colnames(assays[[1]]))
     ## FIXME: warn if dimnames(assays) != list( verbose=TRUE
-    assays <- endoapply(assays, "dimnames<-", NULL)
+    if (!all(sapply(assays, function(x) is.null(dimnames(x)))))
+        assays <- endoapply(assays, "dimnames<-", NULL)
     new("SummarizedExperiment", exptData=exptData,
         rowData=rowData, colData=colData, assays=assays, ...)
 })
@@ -84,7 +85,9 @@ setGeneric("colData", function(x, ...) standardGeneric("colData"))
 setGeneric("colData<-",
     function(x, ..., value) standardGeneric("colData<-"))
 
-setGeneric("assays", function(x, ...) standardGeneric("assays"))
+setGeneric("assays",
+    function(x, ..., withDimnames=TRUE) standardGeneric("assays"),
+    signature="x")
 
 setGeneric("assays<-",
     function(x, ..., value) standardGeneric("assays<-"))
@@ -130,9 +133,12 @@ setReplaceMethod("colData", c("SummarizedExperiment", "DataFrame"),
 })
 
 setMethod(assays, "SummarizedExperiment",
-    function(x, ...) 
+    function(x, ..., withDimnames=TRUE) 
 {
-    endoapply(slot(x, "assays"), "dimnames<-", dimnames(x))
+    if (withDimnames)
+        endoapply(slot(x, "assays"), "dimnames<-", dimnames(x))
+    else
+        slot(x, "assays")
 })
 
 setReplaceMethod("assays", c("SummarizedExperiment", "SimpleList"),
@@ -152,7 +158,7 @@ setReplaceMethod("assays", c("SummarizedExperiment", "list"),
 setMethod(assay, c("SummarizedExperiment", "missing"),
     function(x, i, ...)
 {
-    assays <- assays(x)
+    assays <- assays(x, ...)
     if (0L == length(assays))
     {
         msg <- 'assay(<SummarizedExperiment>, i="missing", ...) length(assays(<SummarizedExperiment>)) is 0'
@@ -166,7 +172,7 @@ setMethod(assay, c("SummarizedExperiment", "numeric"),
 {
     msg <- 'assay(<SummarizedExperiment>, i="numeric", ...) invalid subscript "i"'
     tryCatch({
-        assays(x)[[i]]
+        assays(x, ...)[[i]]
     }, error=function(err) {
         stop(msg, "\n", conditionMessage(err))
     })
@@ -178,7 +184,7 @@ setMethod(assay, c("SummarizedExperiment", "character"),
     msg <- 'assay(<SummarizedExperiment>, i="character", ...) invalid subscript "i"'
     res <-
         tryCatch({
-            assays(x)[[i]]
+            assays(x, ...)[[i]]
         }, error=function(err) {
             stop(msg, "\n", conditionMessage(err))
         })
@@ -271,11 +277,8 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     }
     initialize(x, rowData=rowData(x)[i,,drop=FALSE],
                colData=colData(x)[j,,drop=FALSE],
-               assays=endoapply(assays(x), function(x) {
-                   x <- x[i, j, drop=FALSE]
-                   dimnames(x) <- NULL
-                   x
-               }))
+               assays=endoapply(assays(x, withDimnames=FALSE),
+                 "[", i, j, drop=FALSE))
 }
 
 setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
@@ -311,15 +314,15 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
                    r[i,] <- rowData(value)
                    r
                }), colData=local({
+                   browser()
                    c <- colData(x)
                    c[j,] <- colData(value)
                    c
                }), assays=local({
-                   a <- assays(x)
-                   v <- assays(value)
+                   a <- assays(x, withDimnames=FALSE)
+                   v <- assays(value, withDimnames=FALSE)
                    mendoapply(function(x, ..., value) {
                        x[i,j] <- value
-                       dimnames(x) <- NULL
                        x
                    }, x=a, value=v, ...)
                }))
@@ -343,23 +346,26 @@ setMethod(show, "SummarizedExperiment",
     function(object)
 {
     selectSome <- IRanges:::selectSome
-    scat <- function(fmt, vals)
+    scat <- function(fmt, vals=character(), exdent=2, ...)
     {
         vals <- ifelse(nzchar(vals), vals, "''")
         lbls <- paste(selectSome(vals), collapse=" ")
         txt <- sprintf(fmt, length(vals), lbls)
-        cat(strwrap(txt, exdent=2), sep="\n")
+        cat(strwrap(txt, exdent=exdent, ...), sep="\n")
     }
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-    nms <- names(assays(object))
+    nms <- names(assays(object, withDimnames=FALSE))
     if (is.null(nms))
-        nms <- character(length(assays(object)))
+        nms <- character(length(assays(object, withDimnames=FALSE)))
     scat("assays(%d): %s\n", nms)
     dimnames <- dimnames(object)
     dlen <- sapply(dimnames, length)
     if (dlen[[1]]) scat("rownames(%d): %s\n", dimnames[[1]])
-    else cat("rownames: NULL\n")
+    else scat("rownames: NULL\n")
+    scat("rowData values names(%d): %s\n",
+         names(values(rowData(object))))
     if (dlen[[2]]) scat("colnames(%d): %s\n", dimnames[[2]])
     else cat("colnames: NULL\n")
+    scat("colData names(%d): %s\n", names(colData(object)))
 })
