@@ -38,15 +38,6 @@
     }
 }
 
-.matchMatrixToVector <- function(matchMatrix, lengthQuery) {
-    matchMatrix <-
-      matchMatrix[IRanges:::diffWithInitialZero(matchMatrix[,1L,drop=TRUE]) != 0L,,
-                  drop=FALSE]
-    ans <- rep.int(NA_integer_, lengthQuery)
-    ans[matchMatrix[,1L,drop=TRUE]] <- matchMatrix[,2L,drop=TRUE]
-    ans
-}
-
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
@@ -139,7 +130,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         if (select == "all") {
             new("RangesMatching", matchMatrix = matchMatrix, DIM = DIM)
         } else {
-            .matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
         }
     }
 )
@@ -167,7 +158,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
         } else {
-            .matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
         }
     }
 )
@@ -205,7 +196,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
         } else {
-            .matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
         }
     }
 )
@@ -245,7 +236,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
         } else {
-            .matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
         }
     }
 )
