@@ -11,6 +11,38 @@ setClass("GenomicRanges", contains = c("Sequence", "VIRTUAL"))
 
 ### TODO: a GenomicRangesList would be nice
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Getters.
+###
+
+setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
+
+setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
+
+setGeneric("seqinfo", function(x, ...) standardGeneric("seqinfo"))
+
+setMethod("seqlengths", "GenomicRanges", function(x) seqlengths(seqinfo(x)))
+
+setMethod("isCircular", "GenomicRanges", function(x) isCircular(seqinfo(x)))
+
+setMethod("isCircularWithKnownLength", "GenomicRanges",
+    function(x) isCircularWithKnownLength(seqinfo(x))
+)
+
+setMethod("elementMetadata", "GenomicRanges",
+    function(x, row.names = TRUE, ...)
+    {
+        if (!IRanges:::isTRUEorFALSE(row.names))
+          stop("'row.names' must be TRUE or FALSE")
+        ans <- callNextMethod()
+        if (!row.names)
+          rownames(ans) <- NULL
+        ans
+    }
+)
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
@@ -169,23 +201,18 @@ setMethod("as.data.frame", "GenomicRanges",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Setters.
 ###
 
-setMethod("elementMetadata", "GenomicRanges",
-    function(x, row.names = TRUE, ...)
-    {
-        if (!IRanges:::isTRUEorFALSE(row.names))
-          stop("'row.names' must be TRUE or FALSE")
-        ans <- callNextMethod()
-        if (!row.names)
-          rownames(ans) <- NULL
-        ans
-    }
-)
-
-setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
+setReplaceMethod("names", "GenomicRanges",
+                 function(x, value)
+                 {
+                   names(ranges(x)) <- value
+                   x
+                 }
+                 )
 
 setReplaceMethod("seqnames", "GenomicRanges",
                  function(x, value) 
@@ -226,6 +253,7 @@ setReplaceMethod("seqnames", "GenomicRanges",
                    update(x, seqnames = value, seqinfo = seqinfo)
                  }
                  )
+
 setReplaceMethod("ranges", "GenomicRanges",
                  function(x, value) 
                  {
@@ -241,6 +269,7 @@ setReplaceMethod("ranges", "GenomicRanges",
                    update(x, ranges = value)
                  }
                  )
+
 setReplaceMethod("strand", "GenomicRanges",
                  function(x, value) 
                  {
@@ -315,18 +344,6 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
                  }
                  )
 
-setReplaceMethod("names", "GenomicRanges",
-                 function(x, value)
-                 {
-                   names(ranges(x)) <- value
-                   x
-                 }
-                 )
-
-setGeneric("seqinfo", function(x, ...) standardGeneric("seqinfo"))
-
-setMethod("seqlengths", "GenomicRanges", function(x) seqlengths(seqinfo(x)))
-setMethod("isCircular", "GenomicRanges", function(x) isCircular(seqinfo(x)))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Updating and cloning.
@@ -350,6 +367,7 @@ setMethod("clone", "ANY",
           {
             initialize(x, ...)
           })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Ranges methods.
@@ -386,7 +404,7 @@ setMethod("coverage", "GenomicRanges",
         weight <- fixArg(weight, "weight", uniqueSeqnames)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
-        IRanges:::newSimpleList("SimpleRleList",
+        ans0 <- IRanges:::newSimpleList("SimpleRleList",
                       lapply(structure(uniqueSeqnames, names = uniqueSeqnames),
                              function(i) {
                                  coverage(seqselect(xRanges, xSplitRanges[[i]]),
@@ -394,6 +412,26 @@ setMethod("coverage", "GenomicRanges",
                                           width = width[[i]],
                                           weight = weight[[i]])
                              }))
+        ans <- lapply(seq_len(ans0),
+                      function(i) {
+                          seqname <- names(ans0)[i]
+                          if (!(isCircular(x)[seqname] %in% TRUE)) {
+                              ans0[[i]]
+                          } else if (is.na(seqlengths(x)[seqname])) {
+                              warning("treating circular sequence ", seqname,
+                                      " as non-circular because its length is NA")
+                              ans0[[i]]
+                          } else if (!identical(shift, list(0L))
+                               || !identical(width, as.list(seqlengths(x)))) {
+                                   stop("cannot handle circularity yet when using ",
+                                        "non-default values for 'shift' and/or ",
+                                        "'width', sorry!")
+                          } else {
+
+                          }
+                      })
+        names(ans) <- names(ans0)
+        ans
     }
 )
 
@@ -567,8 +605,6 @@ setMethod("reduce", "GenomicRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Sequence methods.
 ###
-
-setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 
 setMethod("[", "GenomicRanges",
           function(x, i, j, ..., drop)

@@ -136,6 +136,10 @@ setMethod("seqlengths", "GRangesList", function(x) seqlengths(x@unlistData))
 
 setMethod("isCircular", "GRangesList", function(x) isCircular(x@unlistData))
 
+setMethod("isCircularWithKnownLength", "GRangesList",
+    function(x) isCircularWithKnownLength(seqinfo(x))
+)
+
 setMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ...)
     {

@@ -27,9 +27,12 @@
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GenomicRanges-method}
-\alias{seqlengths,GRanges-method}
+\alias{seqinfo}
+\alias{seqinfo,GRanges-method}
+\alias{seqlengths,GenomicRanges-method}
 \alias{seqlengths<-,GenomicRanges-method}
-\alias{isCircular,GRanges-method}
+\alias{isCircular,GenomicRanges-method}
+\alias{isCircularWithKnownLength,GenomicRanges-method}
 \alias{elementMetadata,GenomicRanges-method}
 \alias{elementMetadata<-,GenomicRanges-method}
 \alias{names,GenomicRanges-method}
@@ -170,13 +173,23 @@
       vector, or factor.
     }
     \item{}{
+      \code{seqinfo(x)}:
+      Returns a \link{Seqinfo} object containing information about
+      the underlying sequences.
+    }
+    \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the seqlengths. \code{value} can be a named non-negative
-      integer or numeric vector.
+      Gets or sets the seqlengths.  \code{seqlengths(x)} is formally
+      equivalent to \code{seqlengths(seqinfo(x))}.
+      \code{value} can be a named non-negative integer or numeric vector.
     }
     \item{}{
       \code{isCircular(x)}:
-      Gets the circularity flags.
+      Formally equivalent to \code{isCircular(seqinfo(x))}.
+    }
+    \item{}{
+      \code{isCircularWithKnownLength(x)}:
+      Formally equivalent to \code{isCircularWithKnownLength(seqinfo(x))}.
     }
     \item{}{
       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
@@ -420,11 +433,12 @@
 \author{P. Aboyoun}
 
 \seealso{
-  \link{GRangesList},
-  \link[IRanges]{Sequence},
-  \link[IRanges]{Ranges},
-  \link[IRanges]{Rle},
-  \link[IRanges]{DataFrame}
+  \link{GRangesList-class},
+  \link{Seqinfo-class},
+  \link[IRanges]{Sequence-class},
+  \link[IRanges]{Ranges-class},
+  \link[IRanges]{Rle-class},
+  \link[IRanges]{DataFrame-class}
 }
 
 \examples{

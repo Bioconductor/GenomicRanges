@@ -39,8 +39,8 @@ setMethod("seqlengths", "Seqinfo",
     }
 )
 
-### TODO: Put the isCircular() and seqlengths() generics in the same file
-### and same man page.
+### TODO: Put the isCircular(), isCircularWithKnownLength() and seqlengths()
+### generics in the same file and same man page.
 setGeneric("isCircular", function(x) standardGeneric("isCircular"))
 
 setMethod("isCircular", "Seqinfo",
@@ -50,6 +50,14 @@ setMethod("isCircular", "Seqinfo",
         names(ans) <- seqnames(x)
         ans
     }
+)
+
+setGeneric("isCircularWithKnownLength",
+    function(x) standardGeneric("isCircularWithKnownLength")
+)
+
+setMethod("isCircularWithKnownLength", "Seqinfo",
+    function(x) ((isCircular(x) %in% TRUE) & !is.na(seqlengths(x)))
 )
 
 

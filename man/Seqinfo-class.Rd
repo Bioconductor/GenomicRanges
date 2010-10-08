@@ -18,6 +18,8 @@
 \alias{isCircular<-}
 \alias{isCircular,Seqinfo-method}
 \alias{isCircular<-,Seqinfo-method}
+\alias{isCircularWithKnownLength}
+\alias{isCircularWithKnownLength,Seqinfo-method}
 \alias{as.data.frame,Seqinfo-method}
 \alias{show,Seqinfo-method}
 
@@ -67,7 +69,12 @@
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Gets/sets the circularity flag of the sequences in \code{x}.
+      Gets/sets the circularity flags of the sequences in \code{x}.
+    }
+    \item{}{
+      \code{isCircularWithKnownLength(x)}:
+      Formally defined as
+      \code{(isCircular(x) \%in\% TRUE) & !is.na(seqlengths(x))}.
     }
   }
 }

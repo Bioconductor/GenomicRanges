@@ -22,9 +22,11 @@
 \alias{ranges<-,GRangesList-method}
 \alias{strand,GRangesList-method}
 \alias{strand<-,GRangesList-method}
+\alias{seqinfo,GRangesList-method}
 \alias{seqlengths,GRangesList-method}
 \alias{seqlengths<-,GRangesList-method}
 \alias{isCircular,GRangesList-method}
+\alias{isCircularWithKnownLength,GRangesList-method}
 \alias{elementMetadata,GRangesList-method}
 \alias{elementMetadata<-,GRangesList-method}
 
@@ -106,13 +108,23 @@
       an RleList or CharacterList object.
     }
     \item{}{
+      \code{seqinfo(x)}:
+      Returns a \link{Seqinfo} object containing information about
+      the underlying sequences.
+    }
+    \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the seqlengths. \code{value} can be a named non-negative
-      integer or numeric vector.
+      Gets or sets the seqlengths. \code{seqlengths(x)} is formally
+      equivalent to \code{seqlengths(seqinfo(x))}.
+      \code{value} can be a named non-negative integer or numeric vector.
     }
     \item{}{
       \code{isCircular(x)}:
-      Gets the circularity flags.
+      Formally equivalent to \code{isCircular(seqinfo(x))}.
+    }
+    \item{}{
+      \code{isCircularWithKnownLength(x)}:
+      Formally equivalent to \code{isCircularWithKnownLength(seqinfo(x))}.
     }
     \item{}{
       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
@@ -378,11 +390,12 @@
 \author{P. Aboyoun}
 
 \seealso{
-  \link{GRanges},
-  \link[IRanges]{Sequence},
-  \link[IRanges]{RangesList},
-  \link[IRanges]{RleList},
-  \link[IRanges]{DataFrameList}
+  \link{GRanges-class},
+  \link{Seqinfo-class}
+  \link[IRanges]{Sequence-class},
+  \link[IRanges]{RangesList-class},
+  \link[IRanges]{RleList-class},
+  \link[IRanges]{DataFrameList-class}
 }
 
 \examples{
