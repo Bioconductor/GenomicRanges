@@ -56,7 +56,7 @@
 
 % Sequence methods:
 \alias{[,GenomicRanges-method}
-\alias{[<-,GenomicRanges-method}
+\alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{c,GenomicRanges-method}
 \alias{length,GenomicRanges-method}
 \alias{rev,GenomicRanges-method}
@@ -67,7 +67,6 @@
 
 % show method:
 \alias{show,GenomicRanges-method}
-
 
 \title{GRanges objects}
 

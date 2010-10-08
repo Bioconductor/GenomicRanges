@@ -42,7 +42,7 @@
 
 % Sequence methods:
 \alias{[,GRangesList-method}
-\alias{[<-,GRangesList-method}
+\alias{[<-,GRangesList,ANY,ANY,ANY-method}
 \alias{[[<-,GRangesList-method}
 
 % show method:
