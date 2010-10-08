@@ -96,16 +96,15 @@ GRanges <-
   function(seqnames = Rle(), ranges = IRanges(),
            strand = Rle("*", length(seqnames)),
            ...,
-           seqlengths =
+           seqlengths = # this default is more accurate than in newGRanges
            structure(rep(NA_integer_, length(unique(seqnames))),
                      names = levels(as.factor(runValue(as(seqnames, "Rle"))))))
 {
-  mc <- match.call()
-  mcl <- as.list(mc)[-1L]
-  names(mcl)[!nzchar(names(mcl))] <-
-    as.character(as.list(substitute(list(...)))[-1L])
-  newCall <- as.call(c(list(newGRanges), "GRanges", mcl))
-  eval(newCall, parent.frame())
+  if (missing(seqlengths)) # avoid potentially expensive seqnames conversion
+    newGRanges("GRanges", seqnames = seqnames, ranges = ranges, strand = strand,
+               ...)
+  else newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
+                  strand = strand, ..., seqlengths = seqlengths)
 }
 
 setMethod("updateObject", "GRanges",
