@@ -381,6 +381,9 @@ setMethod("coverage", "GenomicRanges",
     function(x, shift = list(0L), width = as.list(seqlengths(x)),
              weight = list(1L))
     {
+        if (any(start(x) < 1L))
+            stop("'x' contains ranges starting before position 1. ",
+                 "coverage() currently doesn't support this.")
         fixArg <- function(arg, argname, uniqueSeqnames) {
             k <- length(uniqueSeqnames)
             if (!is.list(arg) || is(arg, "IntegerList"))
@@ -404,36 +407,32 @@ setMethod("coverage", "GenomicRanges",
         weight <- fixArg(weight, "weight", uniqueSeqnames)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
-        ans0 <- IRanges:::newSimpleList("SimpleRleList",
-                      lapply(structure(uniqueSeqnames, names = uniqueSeqnames),
-                             function(i) {
-                                 coverage(seqselect(xRanges, xSplitRanges[[i]]),
-                                          shift = shift[[i]],
-                                          width = width[[i]],
-                                          weight = weight[[i]])
-                             }))
-        return(ans0)
-        ### NOT READY YET!
-        ans <- lapply(seq_len(ans0),
-                      function(i) {
-                          seqname <- names(ans0)[i]
-                          if (!(isCircular(x)[seqname] %in% TRUE)) {
-                              ans0[[i]]
-                          } else if (is.na(seqlengths(x)[seqname])) {
-                              warning("treating circular sequence ", seqname,
-                                      " as non-circular because its length is NA")
-                              ans0[[i]]
-                          } else if (!identical(shift, list(0L))
-                               || !identical(width, as.list(seqlengths(x)))) {
-                                   stop("cannot handle circularity yet when using ",
-                                        "non-default values for 'shift' and/or ",
-                                        "'width', sorry!")
-                          } else {
-
-                          }
-                      })
-        names(ans) <- names(ans0)
-        ans
+        IRanges:::newSimpleList("SimpleRleList",
+              lapply(structure(uniqueSeqnames, names = uniqueSeqnames),
+                     function(i) {
+                         rg <- seqselect(xRanges, xSplitRanges[[i]])
+                         if (isCircularWithKnownLength(x)[i]) {
+                             if (shift[[i]] < 0L ||
+                                 shift[[i]] >= seqlengths(x)[i])
+                                 stop("unsupported shift (", shift[[i]], ") ",
+                                      "for circular sequence ", i)
+                             cvg <- coverage(rg, weight = weight[[i]])
+                             cvg <- fold(cvg, seqlengths(x)[i])
+                             if (is.null(width[[i]])) {
+                                 cvg[(shift[[i]]+1L):length(cvg)] 
+                             } else {
+                                 if (shift[[i]] + width[[i]] > length(cvg))
+                                     stop("invalid shift/width combination ",
+                                          "for circular sequence ", i)
+                                 cvg[shift[[i]] + seq_len(width[[i]])]
+                             }
+                         } else {
+                             coverage(rg,
+                                  shift = shift[[i]],
+                                  width = width[[i]],
+                                  weight = weight[[i]])
+                         }
+                     }))
     }
 )
 
