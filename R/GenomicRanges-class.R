@@ -412,6 +412,8 @@ setMethod("coverage", "GenomicRanges",
                                           width = width[[i]],
                                           weight = weight[[i]])
                              }))
+        return(ans0)
+        ### NOT READY YET!
         ans <- lapply(seq_len(ans0),
                       function(i) {
                           seqname <- names(ans0)[i]
