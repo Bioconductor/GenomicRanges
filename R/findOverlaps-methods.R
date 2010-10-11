@@ -306,7 +306,7 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
                    type = c("any", "start", "end"),
                    select = c("all", "first"))
           {
-            findOverlaps(query, ranges(query),
+            findOverlaps(query, ranges(subject),
                          maxgap = maxgap, minoverlap = minoverlap,
                          type = match.arg(type), select = match.arg(select))
           })
@@ -316,7 +316,7 @@ setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
                    type = c("any", "start", "end"),
                    select = c("all", "first"))
           {
-            findOverlaps(query, ranges(query),
+            findOverlaps(query, ranges(subject),
                          maxgap = maxgap, minoverlap = minoverlap,
                          type = match.arg(type), select = match.arg(select))
           })
@@ -361,6 +361,17 @@ setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
     query[seqsplit(i, space(query), drop=FALSE)]
 }
 
+.subsetByOverlaps3 <- function(query, subject, maxgap = 0L, minoverlap = 1L,
+                               type = c("any", "start", "end"))
+{
+  if (!identical(minoverlap, 1L))
+    warning("'minoverlap' argument is ignored")
+  type <- match.arg(type)
+  query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                            minoverlap = minoverlap, type = type,
+                            select = "first")),]
+}
+
 .match.default <- function(x, table,
                            nomatch = NA_integer_, incomparables = NULL)
 {
@@ -389,10 +400,12 @@ setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
 
 for (sig in .signatures) {
     setMethod("countOverlaps", sig, .countOverlaps.default)
-    if (sig[1L] != "RangesList")
-        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.default)
-    else
+    if (sig[1L] == "RangesList")
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps2)
+    else if (sig[1L] == "RangedData")
+        setMethod("subsetByOverlaps", sig, .subsetByOverlaps3)
+    else
+        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.default)
     setMethod("match", sig, .match.default)
     setMethod("%in%", sig, function(x, table) !is.na(match(x, table)))
 }
