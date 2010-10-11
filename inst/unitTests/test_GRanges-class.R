@@ -255,6 +255,10 @@ test_GRanges_Ranges <- function() {
     shifted <- shift(gr, 10)
     checkIdentical(start(gr) + 10L, start(shifted))
     checkIdentical(width(gr), width(shifted))
+    gr <- GRanges("chrA", IRanges(20, 30), seqlengths=c(chrA=100))
+    checkIdentical(IRanges(8, 18), ranges(shift(gr, -12)))
+    shifted <- suppressWarnings(shift(gr, 78))
+    checkIdentical(IRanges(98, 100), ranges(shifted))
 
     ## disjoin
     gr <- unname(make_test_GRanges())[ , character(0)]

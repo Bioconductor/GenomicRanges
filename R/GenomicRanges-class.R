@@ -538,7 +538,7 @@ setMethod("shift", "GenomicRanges",
           {
             ranges <- shift(ranges(x), shift, use.names = use.names)
             if (!IRanges:::anyMissing(seqlengths(x))) {
-              end(x) <- end(ranges)
+              end(x, check=FALSE) <- end(ranges)
               start(x) <- pmin.int(start(ranges), end(x))
             } else {
               x <- clone(x, ranges = ranges)
