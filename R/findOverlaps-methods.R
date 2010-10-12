@@ -22,20 +22,46 @@
 ### findOverlaps methods
 ### -------------------------------------------------------------------------
 
-.cleanMatchMatrix <- function(matchMatrix) {
-    fastDiff <- IRanges:::diffWithInitialZero
-    nr <- nrow(matchMatrix)
-    nc <- ncol(matchMatrix)
-    if (nr <= 1L) {
-        matchMatrix
-    } else {
-        matchMatrix <-
-          matchMatrix[IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
-                                                 matchMatrix[ , 2L, drop=TRUE]), ,
-                      drop=FALSE]
-        matchMatrix[fastDiff(matchMatrix[,1L,drop=TRUE]) != 0L |
-                    fastDiff(matchMatrix[,2L,drop=TRUE]) != 0L, , drop=FALSE]
-    }
+### 'query' and 'subject' must be IRanges objects.
+### 'circle.length' must be NA (if the underlying sequence is linear) or the
+### length of the underlying circular sequence (integer vector of length 1
+### with the name of the sequence).
+.circular_ranges_findOverlaps <- function(query, subject,
+                                          maxgap, type, circle.length)
+{
+    if (is.na(circle.length))
+        return(findOverlaps(query, subject,
+                            maxgap = maxgap, type = type, select = "all"))
+    if (type != "any")
+        stop("overlap type \"", type, "\" is unsupported ",
+             "for circular sequence ", names(circle.length))
+    subject.shift0 <- (start(subject) - 1L) %% circle.length +
+                      1L - start(subject)
+    subject0 <- shift(subject, subject.shift0)
+    inttree0 <- IntervalTree(subject0)
+    query.shift0 <- (start(query) - 1L) %% circle.length +
+                    1L - start(query)
+    query0 <- shift(query, query.shift0)
+    overlaps00 <- findOverlaps(query0, inttree0,
+                               maxgap = maxgap, type = type, select = "all")
+    query1 <- shift(query0, circle.length)
+    overlaps10 <- findOverlaps(query1, inttree0,
+                               maxgap = maxgap, type = type, select = "all")
+    subject1 <- shift(subject0, circle.length)
+    overlaps01 <-findOverlaps(query0, subject1,
+                              maxgap = maxgap, type = type, select = "all")
+    ## Merge 'overlaps00', 'overlaps10' and 'overlaps01'.
+    qHits <- c(queryHits(overlaps00),
+               queryHits(overlaps10),
+               queryHits(overlaps01))
+    sHits <- c(subjectHits(overlaps00),
+               subjectHits(overlaps10),
+               subjectHits(overlaps01))
+    matchDataFrame <- data.frame(query = qHits, subject = sHits)
+    matchDataFrame <- matchDataFrame[!duplicated(matchDataFrame), , drop=FALSE]
+    row.names(matchDataFrame) <- NULL
+    new("RangesMatching", matchMatrix = as.matrix(matchDataFrame),
+                          DIM = overlaps00@DIM)
 }
 
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
@@ -56,6 +82,9 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
               matrix(integer(), ncol = 2,
                      dimnames = list(NULL, c("query", "subject")))
         } else {
+            ## TODO: Use merge() when it becomes available.
+            #seqinfo <- merge(seqinfo(query), seqinfo(subject))
+            seqinfo <- seqinfo(query)
             querySeqnames <- seqnames(query)
             querySplitRanges <- splitRanges(querySeqnames)
             uniqueQuerySeqnames <- names(querySplitRanges)
@@ -101,13 +130,16 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
               do.call(rbind,
                       lapply(commonSeqnames, function(seqnm)
                       {
+                          if (isCircular(seqinfo)[seqnm] %in% TRUE)
+                              circle.length <- seqlengths(seqinfo)[seqnm]
+                          else
+                              circle.length <- NA
                           qIdxs <- querySplitRanges[[seqnm]]
                           sIdxs <- subjectSplitRanges[[seqnm]]
-                          overlaps <-
-                            findOverlaps(seqselect(queryRanges, qIdxs),
-                                         seqselect(subjectRanges, sIdxs),
-                                         maxgap = maxgap, type = type,
-                                         select = "all")
+                          overlaps <- .circular_ranges_findOverlaps(
+                                          seqselect(queryRanges, qIdxs),
+                                          seqselect(subjectRanges, sIdxs),
+                                          maxgap, type, circle.length)
                           qHits <- queryHits(overlaps)
                           sHits <- subjectHits(overlaps)
                           matches <-
@@ -134,6 +166,22 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         }
     }
 )
+
+.cleanMatchMatrix <- function(matchMatrix) {
+    fastDiff <- IRanges:::diffWithInitialZero
+    nr <- nrow(matchMatrix)
+    nc <- ncol(matchMatrix)
+    if (nr <= 1L) {
+        matchMatrix
+    } else {
+        matchMatrix <-
+          matchMatrix[IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
+                                                 matchMatrix[ , 2L, drop=TRUE]), ,
+                      drop=FALSE]
+        matchMatrix[fastDiff(matchMatrix[,1L,drop=TRUE]) != 0L |
+                    fastDiff(matchMatrix[,2L,drop=TRUE]) != 0L, , drop=FALSE]
+    }
+}
 
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
@@ -241,6 +289,17 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        findOverlaps(as(query, "GRanges"), subject = subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
+
 setMethod("findOverlaps", c("RangesList", "GRangesList"),
           function(query, subject, maxgap = 0L, minoverlap = 1L,
                    type = c("any", "start", "end"),
@@ -251,75 +310,79 @@ setMethod("findOverlaps", c("RangesList", "GRangesList"),
                          type = match.arg(type), select = match.arg(select))
           })
 
-setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(as(query, "GRanges"), subject = subject,
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
+setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        findOverlaps(query, as(subject, "GRanges"),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
 
 setMethod("findOverlaps", c("GRangesList", "RangesList"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(query, as(subject, "GRanges"),
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
-
-setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(query, as(subject, "GRanges"),
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
-
-setMethod("findOverlaps", c("RangedData", "GRangesList"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(ranges(query), subject = subject,
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        findOverlaps(query, as(subject, "GRanges"),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
 
 setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(ranges(query), subject = subject,
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        ## Calls "findOverlaps" method for c("RangesList", "GenomicRanges")
+        ## defined above.
+        findOverlaps(ranges(query), subject = subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
 
-setMethod("findOverlaps", c("GRangesList", "RangedData"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(query, ranges(subject),
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
+setMethod("findOverlaps", c("RangedData", "GRangesList"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        ## Calls "findOverlaps" method for c("RangesList", "GRangesList")
+        ## defined above.
+        findOverlaps(ranges(query), subject = subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
 
 setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(query, ranges(subject),
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        ## Calls "findOverlaps" method for c("GenomicRanges", "RangesList")
+        ## defined above.
+        findOverlaps(query, ranges(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
+
+setMethod("findOverlaps", c("GRangesList", "RangedData"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        ## Calls "findOverlaps" method for c("GRangesList", "RangesList")
+        ## defined above.
+        findOverlaps(query, ranges(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
 
 
 ### =========================================================================
@@ -388,14 +451,14 @@ setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
     c("GRangesList", "GenomicRanges"),
     c("GenomicRanges", "GRangesList"),
     c("GRangesList", "GRangesList"),
-    c("RangesList", "GRangesList"),
-    c("GRangesList", "RangesList"),
     c("RangesList", "GenomicRanges"),
+    c("RangesList", "GRangesList"),
     c("GenomicRanges", "RangesList"),
-    c("RangedData", "GRangesList"),
-    c("GRangesList", "RangedData"),
+    c("GRangesList", "RangesList"),
     c("RangedData", "GenomicRanges"),
-    c("GenomicRanges", "RangedData")
+    c("RangedData", "GRangesList"),
+    c("GenomicRanges", "RangedData"),
+    c("GRangesList", "RangedData")
 )
 
 for (sig in .signatures) {
