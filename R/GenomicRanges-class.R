@@ -381,16 +381,14 @@ setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 {
     if (is.na(circle.length))
         return(coverage(rg, shift = shift, width = width, weight = weight))
-    if (shift < 0L || shift >= circle.length)
-        stop("invalid shift (", shift, ") ",
-             "for circular sequence ", names(circle.length))
-    cvg <- fold(coverage(rg, weight = weight), circle.length)
+    cvg <- fold(coverage(rg, weight = weight),
+                circle.length, from = 1L - shift)
     if (is.null(width))
-        return(cvg[(shift+1L):length(cvg)])
-    if (shift + width > length(cvg))
-        stop("invalid shift/width combination (", shift, "/", width, ") ",
+        return(cvg)
+    if (width > length(cvg))
+        stop("invalid width (", width, ") ",
              "for circular sequence ", names(circle.length))
-    cvg[shift + seq_len(width)]
+    cvg[seq_len(width)]
 }
 
 setMethod("coverage", "GenomicRanges",
