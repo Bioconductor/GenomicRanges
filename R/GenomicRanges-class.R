@@ -300,27 +300,23 @@ setReplaceMethod("seqlengths", "GenomicRanges",
                    if (is.null(names(value))) {
                      names(value) <- names(seqlengths(x))
                    }
-                   if (length(setdiff(names(value), names(seqlengths(x)))) == 0) {
-                     seqlengths <- value[names(seqlengths(x))]
-                     ## Safe because 'seqlengths' is guaranteed to
-                     ## match the rows in 'seqinfo(x)'. Otherwise, we
-                     ## would need to use Seqinfo().
-                     seqinfo <- initialize(seqinfo(x), seqlengths = seqlengths)
-                     update(x, seqinfo = seqinfo)
-                   } else {
-                     seqnames <- seqnames(x)
-                     runValue(seqnames) <-
-                       factor(as.character(runValue(seqnames)), levels = names(value))
-                     is_circular <- isCircular(x)[names(value)]
-                     ## The 'initialize(seqinfo(x), ...)' form would
-                     ## not be safe here because we are resizing
-                     ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
-                     ## the object from scratch.
-                     seqinfo <- Seqinfo(seqnames = names(value),
-                                        seqlengths = value,
-                                        isCircular = is_circular)
-                     update(x, seqnames = seqnames, seqinfo = seqinfo)
-                   }
+                   seqnames <- seqnames(x)
+                   danglingSeqnames <- setdiff(unique(seqnames), names(value))
+                   if (length(danglingSeqnames))
+                     stop("New seqlengths would exclude data for ",
+                          paste(danglingSeqnames, collapse = ", "),
+                          ". Consider subsetting first.")
+                   runValue(seqnames) <-
+                     factor(as.character(runValue(seqnames)), levels = names(value))
+                   is_circular <- isCircular(x)[names(value)]
+                   ## The 'initialize(seqinfo(x), ...)' form would
+                   ## not be safe here because we are resizing
+                   ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
+                   ## the object from scratch.
+                   seqinfo <- Seqinfo(seqnames = names(value),
+                                      seqlengths = value,
+                                      isCircular = is_circular)
+                   update(x, seqnames = seqnames, seqinfo = seqinfo)
                  }
                  )
 
