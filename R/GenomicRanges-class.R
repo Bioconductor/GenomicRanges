@@ -373,22 +373,23 @@ setMethod("start", "GenomicRanges", function(x, ...) start(ranges(x)))
 setMethod("end", "GenomicRanges", function(x, ...) end(ranges(x)))
 setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 
-### 'folding.width' must be NA (no folding) or the length of the underlying
-### circular sequence (integer vector of length 1 with the name of the
-### sequence).
-.circular_ranges_coverage <- function(rg, folding.width, shift, width, weight)
+### 'circle.length' must be NA (if the underlying sequence is linear) or the
+### length of the underlying circular sequence (integer vector of length 1
+### with the name of the sequence).
+### 'rg' must be an IRanges object.
+.coverage.circle <- function(circle.length, rg, shift, width, weight)
 {
-    if (is.na(folding.width))
+    if (is.na(circle.length))
         return(coverage(rg, shift = shift, width = width, weight = weight))
-    if (shift < 0L || shift >= folding.width)
-        stop("unsupported shift (", shift, ") ",
-             "for circular sequence ", names(folding.width))
-    cvg <- fold(coverage(rg, weight = weight), folding.width)
+    if (shift < 0L || shift >= circle.length)
+        stop("invalid shift (", shift, ") ",
+             "for circular sequence ", names(circle.length))
+    cvg <- fold(coverage(rg, weight = weight), circle.length)
     if (is.null(width))
         return(cvg[(shift+1L):length(cvg)])
     if (shift + width > length(cvg))
-        stop("invalid shift/width combination ",
-             "for circular sequence ", names(folding.width))
+        stop("invalid shift/width combination (", shift, "/", width, ") ",
+             "for circular sequence ", names(circle.length))
     cvg[shift + seq_len(width)]
 }
 
@@ -427,11 +428,11 @@ setMethod("coverage", "GenomicRanges",
                      function(i) {
                          rg <- seqselect(xRanges, xSplitRanges[[i]])
                          if (isCircular(x)[i] %in% TRUE)
-                             folding.width <- seqlengths(x)[i]
+                             circle.length <- seqlengths(x)[i]
                          else
-                             folding.width <- NA
-                         .circular_ranges_coverage(rg, folding.width,
-                                         shift[[i]], width[[i]], weight[[i]])
+                             circle.length <- NA
+                         .coverage.circle(circle.length, rg,
+                                          shift[[i]], width[[i]], weight[[i]])
                      }))
     }
 )

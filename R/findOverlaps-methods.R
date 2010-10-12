@@ -22,12 +22,11 @@
 ### findOverlaps methods
 ### -------------------------------------------------------------------------
 
-### 'query' and 'subject' must be IRanges objects.
 ### 'circle.length' must be NA (if the underlying sequence is linear) or the
 ### length of the underlying circular sequence (integer vector of length 1
 ### with the name of the sequence).
-.circular_ranges_findOverlaps <- function(query, subject,
-                                          maxgap, type, circle.length)
+### 'query' and 'subject' must be IRanges objects.
+.findOverlaps.circle <- function(circle.length, query, subject, maxgap, type)
 {
     if (is.na(circle.length))
         return(findOverlaps(query, subject,
@@ -136,10 +135,11 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                               circle.length <- NA
                           qIdxs <- querySplitRanges[[seqnm]]
                           sIdxs <- subjectSplitRanges[[seqnm]]
-                          overlaps <- .circular_ranges_findOverlaps(
+                          overlaps <- .findOverlaps.circle(
+                                          circle.length,
                                           seqselect(queryRanges, qIdxs),
                                           seqselect(subjectRanges, sIdxs),
-                                          maxgap, type, circle.length)
+                                          maxgap, type)
                           qHits <- queryHits(overlaps)
                           sHits <- subjectHits(overlaps)
                           matches <-
