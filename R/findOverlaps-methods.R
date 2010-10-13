@@ -68,8 +68,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
-        if (!identical(minoverlap, 1L))
-            warning("'minoverlap' argument is ignored")
+        #        if (!identical(minoverlap, 1L))
+        #    warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -188,20 +188,38 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
-        if (!identical(minoverlap, 1L))
-            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
-
+        unlistQuery <- unlist(query, use.names = FALSE)
+        queryGroups <- togroup(query@partitioning)
         ans <-
-          callGeneric(unlist(query, use.names=FALSE), subject,
+          callGeneric(unlistQuery, subject,
                       maxgap = maxgap, type = type, select = "all")
+        
         matchMatrix <- ans@matchMatrix
-        matchMatrix[, 1L] <-
-          togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
-        matchMatrix <- .cleanMatchMatrix(matchMatrix)
+        if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {  
+            matchMatrix <- ans@matchMatrix[FALSE,]
+            intrsct <- pintersect(ranges(unlistQuery)[queryHits(ans)],
+                    ranges(subject[subjectHits(ans)]))
+
+            df <- data.frame(q = queryHits(ans),
+                         subject = subjectHits(ans),
+                         query =queryGroups[queryHits(ans)],
+                         w=width(intrsct))
+        
+            mat <-  with(df, aggregate( w, list(query = query, subject = subject), sum))
+            indx <- mat$x >= minoverlap
+            if(any(indx)) 
+                matchMatrix  <- 
+                    as.matrix(mat[indx, c("query", "subject"), drop = FALSE], 
+                            rownames.force = FALSE)
+        } else {
+            matchMatrix[, 1L] <-
+                togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
+            matchMatrix <- .cleanMatchMatrix(matchMatrix)
+        }
         if (select == "all") {
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
@@ -216,8 +234,6 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
-        if (!identical(minoverlap, 1L))
-            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -238,8 +254,24 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
           callGeneric(query, unlistSubject, maxgap = maxgap,
                       type = type, select = "all")
         matchMatrix <- ans@matchMatrix
-        matchMatrix[, 2L] <- subjectGroups[matchMatrix[, 2L, drop=TRUE]]
-        matchMatrix <- .cleanMatchMatrix(matchMatrix)
+        if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {    
+            matchMatrix <- ans@matchMatrix[FALSE,]
+            intrsct <- pintersect(ranges(query)[queryHits(ans)],
+                        ranges(unlistSubject[subjectHits(ans)]))
+            df <- data.frame(query = queryHits(ans),
+                         s = subjectHits(ans),
+                         subject =subjectGroups[subjectHits(ans)],
+                         w=width(intrsct))
+            mat <-  with(df, aggregate( w, list(query = query, subject = subject), sum))
+            indx <- mat$x >= minoverlap
+            if(any(indx)) 
+                matchMatrix  <- 
+                    as.matrix(mat[indx, c("query", "subject"), drop = FALSE], 
+                            rownames.force = FALSE)
+        } else{
+            matchMatrix[, 2L] <- subjectGroups[matchMatrix[, 2L, drop=TRUE]]
+            matchMatrix <- .cleanMatchMatrix(matchMatrix)
+        }
         if (select == "all") {
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
@@ -254,8 +286,6 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
              type = c("any", "start", "end"),
              select = c("all", "first"))
     {
-        if (!identical(minoverlap, 1L))
-            warning("'minoverlap' argument is ignored")
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
@@ -263,6 +293,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
 
         unlistSubject <- unlist(subject, use.names=FALSE)
         subjectGroups <- togroup(subject@partitioning)
+        unlistQuery <- unlist(query, use.names = FALSE)
+        queryGroups <- togroup(query@partitioning)
+       
         if (type == "start") {
             keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
             unlistSubject <-  unlistSubject[keep]
@@ -272,14 +305,34 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             unlistSubject <-  unlistSubject[keep]
             subjectGroups <- subjectGroups[keep]
         }
+        
         ans <-
-          callGeneric(unlist(query, use.names=FALSE), unlistSubject,
+          callGeneric(unlistQuery, unlistSubject,
                       maxgap = maxgap, type = type, select = "all")
+        
         matchMatrix <- ans@matchMatrix
-        matchMatrix[, 1L] <-
-          togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
-        matchMatrix[, 2L] <- subjectGroups[matchMatrix[, 2L, drop=TRUE]]
-        matchMatrix <- .cleanMatchMatrix(matchMatrix)
+        if(minoverlap  > 1L  && nrow(ans@matchMatrix) > 0) {
+            matchMatrix <- ans@matchMatrix[FALSE,]
+            intrsct <- pintersect(ranges(unlistQuery)[queryHits(ans)],
+                    ranges(unlistSubject[subjectHits(ans)]))
+
+            df <- data.frame(q = queryHits(ans),
+                         s = subjectHits(ans),
+                         query = queryGroups[queryHits(ans)],
+                         subject =subjectGroups[subjectHits(ans)],
+                         w=width(intrsct))
+            mat <-  with(df, aggregate( w, list(query = query, subject = subject), sum))
+            indx <- mat$x >= minoverlap
+            if(any(indx)) 
+                matchMatrix  <- 
+                    as.matrix(mat[indx, c("query", "subject"), drop = FALSE], 
+                            rownames.force = FALSE)
+        } else {
+            matchMatrix[, 1L] <-
+                togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
+            matchMatrix[, 2L] <- subjectGroups[matchMatrix[, 2L, drop=TRUE]]
+            matchMatrix <- .cleanMatchMatrix(matchMatrix)
+        }       
         if (select == "all") {
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
