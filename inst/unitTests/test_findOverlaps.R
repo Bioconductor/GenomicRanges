@@ -293,3 +293,81 @@ test_findOverlaps_either_strand <- function()
     checkIdentical(expectStart, ansStart)
     checkIdentical(expectEnd, ansEnd)
 }
+
+test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
+    
+     query <- make_subject()
+     subject <- make_query()
+     current <- findOverlaps(query, subject, minoverlap = 5)
+     target <-  new("RangesMatching", matchMatrix = matrix(c(1L, 3L), 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(10L, 3L))
+     checkEquals(target, current)
+
+     current <- findOverlaps(query, subject, minoverlap = 6)
+     target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(10L, 3L))
+     checkEquals(target, current)
+}
+
+
+test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
+    
+     subject <- make_subject()
+     query <- make_query()
+     current <- findOverlaps(query, subject, minoverlap = 5)
+     target <-  new("RangesMatching", matchMatrix = matrix(c(3L, 1L), 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(3L, 10L))
+     checkEquals(target, current)
+
+     current <- findOverlaps(query, subject, minoverlap = 6)
+     target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(3L, 10L))
+     checkEquals(target, current)
+}
+
+
+test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
+
+     query <- make_query()
+     subject <- GRangesList("g1" = make_subject())
+     current <- findOverlaps(query, subject, minoverlap = 1)
+     target <- new("RangesMatching", matchMatrix = matrix(c(2L, 1L, 3L, 1L), 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(3L, 1L))
+     checkEquals(target, current)
+     
+     query <- make_query()
+     subject <- GRangesList("g1" = make_subject())
+     current <- findOverlaps(query, subject, minoverlap = 6)
+     target <- new("RangesMatching", matchMatrix = matrix(c(3L, 1L), 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(3L, 1L))
+     checkEquals(target, current)
+
+     query <- make_query()
+     subject <- GRangesList("g1" = make_subject())
+     current <- findOverlaps(query, subject, minoverlap = 7)
+     target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(3L, 1L))
+     checkEquals(target, current)
+
+     current <- findOverlaps(subject, query, minoverlap = 6)
+     target <-  new("RangesMatching", matchMatrix = matrix( c(1L, 3L) , 
+                     byrow = TRUE, ncol = 2L, 
+                     dimnames = list(NULL, c("query", "subject"))),
+                     DIM = c(1L, 3L))
+     checkEquals(target, current)
+
+}
