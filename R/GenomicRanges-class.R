@@ -351,14 +351,14 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
 ## initialize. Reference classes will want to override 'update'. Other
 ## external representations need further customization.
 
-setMethod("update", "ANY",
+setMethod("update", "GenomicRanges",
           function(object, ...)
           {
             initialize(object, ...)
           })
 
 setGeneric("clone", function(x, ...) standardGeneric("clone"))
-setMethod("clone", "ANY",
+setMethod("clone", "GenomicRanges",
           function(x, ...)
           {
             initialize(x, ...)
