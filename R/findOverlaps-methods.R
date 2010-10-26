@@ -26,11 +26,13 @@
 ### length of the underlying circular sequence (integer vector of length 1
 ### with the name of the sequence).
 ### 'query' and 'subject' must be IRanges objects.
-.findOverlaps.circle <- function(circle.length, query, subject, maxgap, type)
+.findOverlaps.circle <- function(circle.length, query, subject,
+                                 maxgap, minoverlap, type)
 {
     if (is.na(circle.length))
         return(findOverlaps(query, subject,
-                            maxgap = maxgap, type = type, select = "all"))
+                            maxgap = maxgap, minoverlap = minoverlap,
+                            type = type, select = "all"))
     if (type != "any")
         stop("overlap type \"", type, "\" is unsupported ",
              "for circular sequence ", names(circle.length))
@@ -42,13 +44,16 @@
                     1L - start(query)
     query0 <- shift(query, query.shift0)
     overlaps00 <- findOverlaps(query0, inttree0,
-                               maxgap = maxgap, type = type, select = "all")
+                               maxgap = maxgap, minoverlap = minoverlap,
+                               type = type, select = "all")
     query1 <- shift(query0, circle.length)
     overlaps10 <- findOverlaps(query1, inttree0,
-                               maxgap = maxgap, type = type, select = "all")
+                               maxgap = maxgap, minoverlap = minoverlap,
+                               type = type, select = "all")
     subject1 <- shift(subject0, circle.length)
     overlaps01 <-findOverlaps(query0, subject1,
-                              maxgap = maxgap, type = type, select = "all")
+                              maxgap = maxgap, minoverlap = minoverlap,
+                              type = type, select = "all")
     ## Merge 'overlaps00', 'overlaps10' and 'overlaps01'.
     qHits <- c(queryHits(overlaps00),
                queryHits(overlaps10),
@@ -139,7 +144,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                                           circle.length,
                                           seqselect(queryRanges, qIdxs),
                                           seqselect(subjectRanges, sIdxs),
-                                          maxgap, type)
+                                          maxgap, minoverlap, type)
                           qHits <- queryHits(overlaps)
                           sHits <- subjectHits(overlaps)
                           matches <-
