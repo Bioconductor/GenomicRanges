@@ -53,6 +53,8 @@
 \alias{range,GenomicRanges-method}
 \alias{reduce,GenomicRanges-method}
 \alias{coverage,GenomicRanges-method}
+\alias{precede,GenomicRanges,GenomicRanges-method}
+\alias{follow,GenomicRanges,GenomicRanges-method}
 
 % Sequence methods:
 \alias{[,GenomicRanges-method}
