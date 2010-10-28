@@ -303,14 +303,14 @@ test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(10L, 3L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 
      current <- findOverlaps(query, subject, minoverlap = 6)
      target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(10L, 3L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 }
 
 
@@ -323,14 +323,14 @@ test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(3L, 10L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 
      current <- findOverlaps(query, subject, minoverlap = 6)
      target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(3L, 10L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 }
 
 
@@ -343,7 +343,7 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(3L, 1L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
      
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
@@ -352,7 +352,7 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(3L, 1L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
@@ -361,13 +361,64 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(3L, 1L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 
      current <- findOverlaps(subject, query, minoverlap = 6)
      target <-  new("RangesMatching", matchMatrix = matrix( c(1L, 3L) , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
                      DIM = c(1L, 3L))
-     checkEquals(target, current)
+     checkIdentical(target, current)
 
 }
+
+test_findOverlaps_with_circular_sequences <- function()
+{
+    gr <- GRanges(seqnames=rep.int("A", 4),
+                  ranges=IRanges(start=c(2, 4, 6, 8), width=3))
+
+    ## With A of length 9 --> no overlap between last and first ranges.
+    gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=9, isCircular=TRUE)
+    current0 <- findOverlaps(gr, gr)
+    matchMatrix0 <- matrix(
+                        c(1L, 1L, 2L, 2L, 2L, 3L, 3L, 3L, 4L, 4L,
+                          1L, 2L, 1L, 2L, 3L, 2L, 3L, 4L, 3L, 4L),
+                        ncol = 2,
+                        dimnames = list(NULL, c("query", "subject")))
+    target0 <-  new("RangesMatching", matchMatrix = matchMatrix0,
+                                      DIM = c(4L, 4L))
+    checkIdentical(target0, current0)
+
+    ## With A of length 8 --> last and first ranges do overlap.
+    gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=8, isCircular=TRUE)
+    current1 <- findOverlaps(gr, gr)
+    matchMatrix1 <- rbind(matchMatrix0, matrix(c(1L, 4L, 4L, 1L), ncol = 2))
+    o1 <- IRanges:::orderTwoIntegers(matchMatrix1[ , "query"],
+                                     matchMatrix1[ , "subject"])
+    matchMatrix1 <- matchMatrix1[o1, ]
+    target1 <- new("RangesMatching", matchMatrix = matchMatrix1,
+                                     DIM = c(4L, 4L))
+    checkIdentical(target1, current1)
+
+    ## With A of length 8 and minoverlap=2 --> no overlap between last
+    ## and first ranges.
+    current2 <- findOverlaps(gr, gr, minoverlap=2)
+    matchMatrix2 <- matrix(c(1:4, 1:4), ncol = 2,
+                           dimnames = list(NULL, c("query", "subject")))
+    target2 <- new("RangesMatching", matchMatrix = matchMatrix2,
+                                     DIM = c(4L, 4L))
+    checkIdentical(target2, current2)
+
+    ## With A of length 7 and minoverlap=2 --> last and first ranges
+    ## do overlap.
+    gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=7, isCircular=TRUE)
+    current3 <- findOverlaps(gr, gr, minoverlap=2)
+    matchMatrix3 <- rbind(matchMatrix2, matrix(c(1L, 4L, 4L, 1L), ncol = 2))
+    o3 <- IRanges:::orderTwoIntegers(matchMatrix3[ , "query"],
+                                     matchMatrix3[ , "subject"])
+    matchMatrix3 <- matchMatrix3[o3, ]
+    target3 <- new("RangesMatching", matchMatrix = matchMatrix3,
+                                     DIM = c(4L, 4L))
+    checkIdentical(target3, current3)
+}
+
