@@ -964,3 +964,133 @@ function(object, print.seqlengths = FALSE)
 setMethod("show", "GenomicRanges",
           function(object) showGenomicRanges(object, print.seqlengths = TRUE))
 
+setMethod("precede", c("GenomicRanges", "GenomicRanges"),
+  function(x, subject, ...)
+  {
+      elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
+      elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
+      xLst <- split(x, seqnames(x), drop = FALSE)
+      xLst <- xLst[sapply(xLst, length) > 0]
+      xSeqNames <- names(xLst)
+      subjectLst <- split(subject, seqnames(subject), drop = FALSE)[xSeqNames]  
+      matchPos <- rep.int(NA_integer_, length(x))
+
+      for (sq in xSeqNames) {
+          x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
+          x1Split <- x1Split[lapply(x1Split, length) > 0]
+          s1 <- subjectLst[[sq]]
+          for (st in names(x1Split)) {
+              if( st == "+" ){
+                  subSplit <- unlist(split(s1, strand(s1))[c("+", "*")])
+                  ## call precede
+                  res <- precede(ranges(x1Split[[st]]), ranges(subSplit))
+                  indx <- !is.na(res)
+                  res <- res[indx]
+                  matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
+                  elementMetadata(subSplit)$posIndx[res]
+
+              }else if(st == "-"){
+                  subSplit <- unlist(split(s1, strand(s1))[c("-", "*")])
+                  ## call follow
+                  res <- follow(ranges(x1Split[[st]]), ranges(subSplit))
+                  indx <- !is.na(res)
+                  res <- res[indx]
+                  matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
+                  elementMetadata(subSplit)$posIndx[res]
+              }else if(st == "*"){
+                  subSplit1 <- unlist(split(s1, strand(s1))[c("+")])
+                  ## call precede
+                  res1 <- precede(ranges(x1Split[[st]]), ranges(subSplit1))
+                  indx1 <- !is.na(res1)
+                  res1 <- res1[indx1]
+                  k1 <- elementMetadata(x1Split[[st]])$posIndx[indx1]
+                  matchPos[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+
+                  subSplit2 <- unlist(split(s1, strand(s1))[c("-")])
+                  ## call follow
+                  res2 <- follow(ranges(x1Split[[st]]), ranges(subSplit2))
+                  indx2 <- !is.na(res2)
+                  res2 <- res2[indx2]
+                  k2 <- elementMetadata(x1Split[[st]])$posIndx[indx2]
+                  matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
+                  
+                  mt <- k1[k1==k2]
+                  for(p in mt) {
+                       mn <- which.min( c(start(subSplit1[indx1])-end(ranges(x1Split[[st]])), 
+                           start(ranges(x1Split[[st]])) - end(subSplit2[indx2])))
+                       if(mn==1){
+                           matchPos[p] <- elementMetadata(subSplit1)$posIndx[res1]
+                       }
+                  }
+              }
+          }
+      }              
+      matchPos
+  })
+
+
+setMethod("follow", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, ...)
+    {
+        elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
+        elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
+        xLst <- split(x, seqnames(x), drop = FALSE)
+        xLst <- xLst[sapply(xLst, length) > 0]
+        xSeqNames <- names(xLst)
+        subjectLst <- split(subject, seqnames(subject), drop = FALSE)[xSeqNames]  
+        matchPos <- rep.int(NA_integer_, length(x))
+
+        for (sq in xSeqNames) {
+            x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
+            x1Split <- x1Split[lapply(x1Split, length) > 0]
+            s1 <- subjectLst[[sq]]
+            for (st in names(x1Split)) {
+                if( st == "+" ){
+                    subSplit <- unlist(split(s1, strand(s1))[c("+", "*")])
+                    ## call follow
+                    res <- follow(ranges(x1Split[[st]]), ranges(subSplit))
+                    indx <- !is.na(res)
+                    res <- res[indx]
+                    matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
+                    elementMetadata(subSplit)$posIndx[res]
+
+                }else if(st == "-"){
+                    subSplit <- unlist(split(s1, strand(s1))[c("-", "*")])
+                    ## call precede
+                    res <- precede(ranges(x1Split[[st]]), ranges(subSplit))
+                    indx <- !is.na(res)
+                    res <- res[indx]
+                    matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
+                    elementMetadata(subSplit)$posIndx[res]
+
+                }else if(st == "*"){
+                    subSplit1 <- unlist(split(s1, strand(s1))[c("+")])
+                    ## call follow
+                    res1 <- follow(ranges(x1Split[[st]]), ranges(subSplit1))
+                    indx1 <- !is.na(res1)
+                    res1 <- res1[indx1]
+                    k1 <- elementMetadata(x1Split[[st]])$posIndx[indx1]
+                    matchPos[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+
+                    subSplit2 <- unlist(split(s1, strand(s1))[c("-")])
+                    ## call precede
+                    res2 <- precede(ranges(x1Split[[st]]), ranges(subSplit2))
+                    indx2 <- !is.na(res2)
+                    res2 <- res2[indx2]
+                    k2 <- elementMetadata(x1Split[[st]])$posIndx[indx2]
+                    matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
+
+                    mt <- k1[k1==k2]
+                    for(p in mt) {
+                       mn <- which.min( c(start(subSplit1[indx1])-end(ranges(x1Split[[st]])), 
+                           start(ranges(x1Split[[st]])) - end(subSplit2[indx2])))
+                       if(mn==1){
+                           matchPos[p] <- elementMetadata(subSplit1)$posIndx[res1]
+                       }
+                    }
+                }
+            }
+        }              
+        matchPos
+    })
+
