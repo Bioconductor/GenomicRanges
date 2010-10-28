@@ -47,6 +47,6 @@ exportMethods(
     findOverlaps, countOverlaps, match, "%in%",
     show,
     rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
-    dimnames, "dimnames<-"
+    dimnames, "dimnames<-", precede, follow
 )
 
