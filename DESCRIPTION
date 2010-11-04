@@ -16,7 +16,8 @@ LinkingTo: IRanges
 Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, EatonEtAlChIPseq,
 	leeBamViews, org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
 License: Artistic-2.0
-Collate: seqnames.R
+Collate: utils.R
+	seqnames.R
 	strand.R
 	Seqinfo-class.R
 	GenomicRanges-class.R
