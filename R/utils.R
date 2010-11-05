@@ -7,7 +7,7 @@
 ### not identical to 'z2 <- mergeNamedAtomicVectors(y, x)'. However 'z1' and
 ### 'z2' are both guaranteed to have unique names and to contain the same set
 ### of name/value pairs (but typically not in the same order).
-mergeNamedAtomicVectors <- function(x, y, what="vectors")
+mergeNamedAtomicVectors <- function(x, y, what=c("key", "values"))
 {
     if (!is.atomic(x) || !is.atomic(y) || typeof(x) != typeof(y))
         stop("'x' and 'y' must be atomic vectors of the same type")
@@ -27,14 +27,14 @@ mergeNamedAtomicVectors <- function(x, y, what="vectors")
     ans2 <- y[ans_names]
     idx <- which(ans != ans2)
     if (length(idx) != 0L) {
-        msg <- paste("keys ",
-                     paste(ans_names[idx], collapse=","),
-                     " have incompatible values (",
-                     paste(ans[idx], collapse=","),
-                     " vs ",
-                     paste(ans2[idx], collapse=","),
-                     ")", sep="")
-        msg <- c("cannot merge incompatible ", what, ":\n    ", msg)
+        msg <- c(what[1L], ifelse(length(idx) >= 2, "s", ""), " ",
+                 paste(ans_names[idx], collapse=", "), " ",
+                 ifelse(length(idx) >= 2, "have", "has"),
+                 " incompatible ", what[2L], " (",
+                 paste(ans[idx], collapse=", "),
+                 " vs ",
+                 paste(ans2[idx], collapse=", "),
+                 ")")
         stop(msg)
     }
     idx <- is.na(ans) & !is.na(ans2)
