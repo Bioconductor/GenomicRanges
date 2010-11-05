@@ -116,11 +116,12 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.
 ###
-### Does only superficial checking of the arguments. The full validation is
-### performed by new() thru the validity method.
+### The .normarg*() helper functions below do only partial checking of the
+### arguments. The full validation is performed by new() thru the validity
+### method.
 ###
 
-### Make sure this always return an *unnamed* character vector.
+### Make sure this always returns an *unnamed* character vector.
 .normargSeqnames <- function(seqnames)
 {
     if (is.null(seqnames))
@@ -130,11 +131,15 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     unname(seqnames)
 }
 
-### Make sure this always return an *unnamed* integer vector.
-.normargSeqlengths <- function(seqlengths, lx)
+### Make sure this always returns an *unnamed* integer vector.
+.normargSeqlengths <- function(seqlengths, seqnames)
 {
     if (identical(seqlengths, NA))
-        return(rep.int(NA_integer_, lx))
+        return(rep.int(NA_integer_, length(seqnames)))
+#    if (!is.null(names(seqlengths))
+#     && !identical(names(seqlengths), seqnames))
+#        stop("when the supplied seqlengths are named, ",
+#             "then those names must match the seqnames")
     if (is.logical(seqlengths)) {
         if (all(is.na(seqlengths)))
             return(as.integer(seqlengths))
@@ -143,15 +148,19 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     if (!is.numeric(seqlengths))
         stop("bad 'seqlengths' value")
     if (!is.integer(seqlengths))
-            return(as.integer(seqlengths))
+        return(as.integer(seqlengths))
     unname(seqlengths)
 }
 
-### Make sure this always return an *unnamed* logical vector.
-.normargIsCircular <- function(isCircular, lx)
+### Make sure this always returns an *unnamed* logical vector.
+.normargIsCircular <- function(isCircular, seqnames)
 {
     if (identical(isCircular, NA))
-        return(rep.int(NA, lx))
+        return(rep.int(NA, length(seqnames)))
+#    if (!is.null(names(isCircular))
+#     && !identical(names(isCircular), seqnames))
+#        stop("when the supplied circularity flags are named, ",
+#             "then those names must match the seqnames")
     if (!is.logical(isCircular))
         stop("bad 'isCircular' value")
     unname(isCircular)
@@ -160,8 +169,8 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 Seqinfo <- function(seqnames=NULL, seqlengths=NA, isCircular=NA)
 {
     seqnames <- .normargSeqnames(seqnames)
-    seqlengths <- .normargSeqlengths(seqlengths, length(seqnames))
-    is_circular <- .normargIsCircular(isCircular, length(seqnames))
+    seqlengths <- .normargSeqlengths(seqlengths, seqnames)
+    is_circular <- .normargIsCircular(isCircular, seqnames)
     new("Seqinfo", seqnames=seqnames,
                    seqlengths=seqlengths,
                    is_circular=is_circular)
@@ -191,7 +200,7 @@ setReplaceMethod("names", "Seqinfo",
 setReplaceMethod("seqlengths", "Seqinfo",
     function(x, value)
     {
-        x@seqlengths <- .normargSeqlengths(value, length(x))
+        x@seqlengths <- .normargSeqlengths(value, seqnames(x))
         x
     }
 )
@@ -203,7 +212,7 @@ setGeneric("isCircular<-", function(x, value) standardGeneric("isCircular<-"))
 setReplaceMethod("isCircular", "Seqinfo",
     function(x, value)
     {
-        x@isCircular <- .normargIsCircular(value, length(x))
+        x@is_circular <- .normargIsCircular(value, seqnames(x))
         x
     }
 )
@@ -291,62 +300,30 @@ setMethod("show", "Seqinfo",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
 ###
-### Why no "c" or "rbind" method? 'c(x, y)' would be expected to just append
-### the rows in 'y' to the rows in 'x' resulting in an object of length
-### 'length(x) + length(y)'. But that would not be compatible with the
-### unicity of the "seqnames" key.
-### So what we really need is a "merge" method that merge rows that have the
-### same key in 'x' and 'y'.
+### Why no "c" or "rbind" method for Seqinfo objects?
+### 'c(x, y)' would be expected to just append the rows in 'y' to the rows in
+### 'x' resulting in an object of length 'length(x) + length(y)'. But that
+### would tend to break the constraint that the seqnames of a Seqinfo object
+### must be unique.
+### So what we really need is the ability to "merge" Seqinfo objects, that is,
+### if a row in 'x' has the same seqname as a row in 'y', then the 2 rows must
+### be merged in a single row before it's put in the result. If 2 rows cannot
+### be merged because they contain incompatible information (e.g. different
+### seqlengths or different circularity flags), then an error must be raised.
 ###
-
-.Seqinfo.mergelowhigh <- function(low, high)
-{
-    if (any(low != high, na.rm=TRUE))
-        stop("incompatible Seqinfo objects")
-    idx <- is.na(low) & !is.na(high)
-    low[idx] <- high[idx]
-    low
-}
 
 .Seqinfo.mergexy <- function(x, y)
 {
-    if (is.null(x)) {
-        if (is.null(y))
-            return(Seqinfo())
-        if (is(y, "Seqinfo"))
-            return(y)
-        stop("all arguments must be Seqinfo objects (or NULLs)")
-    }
-    if (!is(x, "Seqinfo"))
-        stop("all arguments must be Seqinfo objects (or NULLs)")
-    if (is.null(y))
-        return(x)
-    if (!is(y, "Seqinfo"))
-        stop("all arguments must be Seqinfo objects (or NULLs)")
-    y2x_map <- match(seqnames(y), seqnames(x))
-    ## Keep only rows from 'y' that are not already in 'x'.
-    idx0 <- is.na(y2x_map)
-    y0_seqnames <- seqnames(y)[idx0]
-    y0_seqlengths <- seqlengths(y)[idx0]
-    y0_is_circular <- isCircular(y)[idx0]
-    ## Merge 'y' rows that already "exist" in 'x'.
-    idx1 <- !idx0
-    y2x_map1 <- y2x_map[idx1]
-    x_seqlengths <- seqlengths(x)
-    low <- x_seqlengths[y2x_map1]
-    high <- seqlengths(y)[idx1]
-    x_seqlengths[y2x_map1] <- .Seqinfo.mergelowhigh(low, high)
-    x_is_circular <- isCircular(x)
-    low <- x_is_circular[y2x_map1]
-    high <- isCircular(y)[idx1]
-    x_is_circular[y2x_map1] <- .Seqinfo.mergelowhigh(low, high)
-    ## Make and return the result.
-    Seqinfo(seqnames=c(seqnames(x), y0_seqnames),
-            seqlengths=c(x_seqlengths, y0_seqlengths),
-            isCircular=c(x_is_circular, y0_is_circular))
+    ans_seqnames <- union(seqnames(x), seqnames(y))
+    ans_seqlengths <- mergeNamedAtomicVectors(seqlengths(x), seqlengths(y),
+                          what=c("sequence", "seqlengths"))
+    ans_is_circular <- mergeNamedAtomicVectors(isCircular(x), isCircular(y),
+                           what=c("sequence", "circularity flags"))
+    Seqinfo(seqnames=ans_seqnames,
+            seqlengths=ans_seqlengths,
+            isCircular=ans_is_circular)
 }
 
-if (FALSE) {
 .Seqinfo.merge <- function(...)
 {
     args <- unname(list(...))
@@ -357,12 +334,14 @@ if (FALSE) {
     if (length(args) == 0L)
         return(Seqinfo())
     x <- args[[1L]]
+    if (length(args) == 1L)
+        return(x)
+    args <- args[-1L]
     if (!all(sapply(args, is, class(x))))
         stop("all arguments in must be ", class(x), " objects (or NULLs)")
-
-    if (length(args) == 1L)
-        return(args[[1L]])
-    ans
+    for (y in args)
+        x <- .Seqinfo.mergexy(x, y)
+    x
 }
 
 ### These methods should not be called with named arguments: this tends to
@@ -371,8 +350,15 @@ setMethod("merge", c("Seqinfo", "missing"),
     function(x, y, ...) .Seqinfo.merge(x, ...)
 )
 
+setMethod("merge", c("Seqinfo", "NULL"),
+    function(x, y, ...) .Seqinfo.merge(x, ...)
+)
+
+setMethod("merge", c("NULL", "Seqinfo"),
+    function(x, y, ...) .Seqinfo.merge(y, ...)
+)
+
 setMethod("merge", c("Seqinfo", "Seqinfo"),
     function(x, y, ...) .Seqinfo.merge(x, y, ...)
 )
-}
 
