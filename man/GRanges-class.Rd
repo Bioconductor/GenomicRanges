@@ -27,14 +27,13 @@
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GenomicRanges-method}
-\alias{seqinfo,GRanges-method}
-\alias{seqlengths<-,GenomicRanges-method}
-\alias{isCircular,GenomicRanges-method}
-\alias{isCircularWithKnownLength,GenomicRanges-method}
 \alias{elementMetadata,GenomicRanges-method}
 \alias{elementMetadata<-,GenomicRanges-method}
 \alias{names,GenomicRanges-method}
 \alias{names<-,GenomicRanges-method}
+\alias{seqinfo,GRanges-method}
+\alias{seqinfo<-,GRanges-method}
+\alias{seqlengths<-,GenomicRanges-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
@@ -158,6 +157,10 @@
 
   \describe{
     \item{}{
+      \code{length(x)}:
+      Gets the number of elements.
+    }
+    \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Gets or sets the sequence names. \code{value} can be an Rle object,
       character vector, or factor.
@@ -167,28 +170,13 @@
       Gets or sets the ranges. \code{value} can be a Ranges object.
     }
     \item{}{
+      \code{names(x)}, \code{names(x) <- value}:
+      Gets or sets the names of the elements.
+    }
+    \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
       Gets or sets the strand. \code{value} can be an Rle object, character
       vector, or factor.
-    }
-    \item{}{
-      \code{seqinfo(x)}:
-      Returns a \link{Seqinfo} object containing information about
-      the underlying sequences.
-    }
-    \item{}{
-      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the seqlengths.  \code{seqlengths(x)} is formally
-      equivalent to \code{seqlengths(seqinfo(x))}.
-      \code{value} can be a named non-negative integer or numeric vector.
-    }
-    \item{}{
-      \code{isCircular(x)}:
-      Formally equivalent to \code{isCircular(seqinfo(x))}.
-    }
-    \item{}{
-      \code{isCircularWithKnownLength(x)}:
-      Formally equivalent to \code{isCircularWithKnownLength(seqinfo(x))}.
     }
     \item{}{
       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
@@ -200,12 +188,24 @@
       Alternative to \code{elementMetadata} functions.
     }
     \item{}{
-      \code{names(x)}, \code{names(x) <- value}:
-      Gets or sets the names of the elements.
+      \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
+      Gets or sets the information about the underlying sequences.
+      \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
-      \code{length(x)}:
-      Gets the number of elements.
+      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+      Gets or sets the seqlengths.
+      \code{seqlengths(x)} is formally equivalent to
+      \code{seqlengths(seqinfo(x))}.
+      \code{value} can be a named non-negative integer or numeric vector
+      eventually with NAs.
+    }
+    \item{}{
+      \code{isCircular(x)}, \code{isCircular(x) <- value}:
+      Gets or sets the circularity flags.
+      \code{isCircular(x)} is formally equivalent to
+      \code{isCircular(seqinfo(x))}.
+      \code{value} must be a named logical vector eventually with NAs.
     }
   }
 }
