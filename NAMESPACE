@@ -10,11 +10,12 @@ exportClasses(
 )
 
 export(
+    seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     isCircularWithKnownLength,
-    Seqinfo, seqinfo,
+    Seqinfo,
     strand, "strand<-",
     GRanges, GRangesList,
     validCigar, cigarOpTable,
@@ -32,12 +33,12 @@ export(
 exportMethods(
     length,
     names, "names<-",
+    seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     isCircularWithKnownLength,
     merge,
-    seqinfo,
     coerce, as.data.frame, unlist,
     ranges, strand, elementMetadata,
     "ranges<-", "strand<-", "elementMetadata<-",

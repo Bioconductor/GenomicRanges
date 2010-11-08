@@ -193,3 +193,21 @@ setMethod("split", "GRanges",
                                     new("DataFrame", nrows = nrows))
     }
 )
+
+setReplaceMethod("seqinfo", "GRanges",
+    function(x, value)
+    {
+        if (!is(value, "Seqinfo"))
+            stop("'value' must be a Seqinfo object")
+        ## We only support this form of replacement for now.
+        if (length(value) < length(seqinfo(x))
+         || !identical(seqnames(value)[seq_len(length(seqinfo(x)))],
+                       seqnames(seqinfo(x))))
+            stop("the first elements in 'seqnames(value)' must be ",
+                 "identical to 'seqnames(seqinfo(x))'")
+        x@seqinfo <- value
+        levels(x@seqnames) <- seqnames(value)
+        x
+    }
+)
+
