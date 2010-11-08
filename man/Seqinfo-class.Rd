@@ -14,12 +14,8 @@
 \alias{names<-,Seqinfo-method}
 \alias{seqlengths,Seqinfo-method}
 \alias{seqlengths<-,Seqinfo-method}
-\alias{isCircular}
-\alias{isCircular<-}
 \alias{isCircular,Seqinfo-method}
 \alias{isCircular<-,Seqinfo-method}
-\alias{isCircularWithKnownLength}
-\alias{isCircularWithKnownLength,Seqinfo-method}
 \alias{as.data.frame,Seqinfo-method}
 \alias{show,Seqinfo-method}
 \alias{merge,Seqinfo,missing-method}
@@ -78,11 +74,6 @@
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
       Gets/sets the circularity flags of the sequences in \code{x}.
     }
-    \item{}{
-      \code{isCircularWithKnownLength(x)}:
-      Formally defined as
-      \code{(isCircular(x) \%in\% TRUE) & !is.na(seqlengths(x))}.
-    }
   }
 }
 
@@ -123,6 +114,10 @@
 }
 
 \author{H. Pages}
+
+\seealso{
+  \code{\link{seqinfo}}
+}
 
 \examples{
   x <- Seqinfo(seqnames=c("chr1", "chr2", "chr3", "chrM"),

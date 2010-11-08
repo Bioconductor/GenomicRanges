@@ -17,7 +17,7 @@ Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, EatonEtAlChIPseq,
 	leeBamViews, org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
 License: Artistic-2.0
 Collate: utils.R
-	seqnames.R
+	seqinfo.R
 	strand.R
 	Seqinfo-class.R
 	GenomicRanges-class.R

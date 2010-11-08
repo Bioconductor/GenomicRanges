@@ -27,9 +27,7 @@
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GenomicRanges-method}
-\alias{seqinfo}
 \alias{seqinfo,GRanges-method}
-\alias{seqlengths,GenomicRanges-method}
 \alias{seqlengths<-,GenomicRanges-method}
 \alias{isCircular,GenomicRanges-method}
 \alias{isCircularWithKnownLength,GenomicRanges-method}
@@ -435,6 +433,7 @@
 
 \seealso{
   \link{GRangesList-class},
+  \code{\link{seqinfo}},
   \link{Seqinfo-class},
   \link[IRanges]{Sequence-class},
   \link[IRanges]{Ranges-class},

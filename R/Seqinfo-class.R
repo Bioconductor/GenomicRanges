@@ -2,10 +2,11 @@
 ### Seqinfo objects
 ### -------------------------------------------------------------------------
 ###
-### A Seqinfo object is a data.frame-like object that contains basic
-### information about a set of genomic sequences. Currently only the
-### length and circularity flag of each sequence is stored but more
-### information might be added in the future.
+### A Seqinfo object is a table-like object that contains basic information
+### about a set of genomic sequences. The table has 1 row per sequence and
+### 1 column per sequence attribute. Currently the only attributes are the
+### length and circularity flag of the sequence but more attributes might
+### be added in the future.
 ###
 
 setClass("Seqinfo",
@@ -39,10 +40,6 @@ setMethod("seqlengths", "Seqinfo",
     }
 )
 
-### TODO: Put the isCircular(), isCircularWithKnownLength() and seqlengths()
-### generics in the same file and same man page.
-setGeneric("isCircular", function(x) standardGeneric("isCircular"))
-
 setMethod("isCircular", "Seqinfo",
     function(x)
     {
@@ -50,14 +47,6 @@ setMethod("isCircular", "Seqinfo",
         names(ans) <- seqnames(x)
         ans
     }
-)
-
-setGeneric("isCircularWithKnownLength",
-    function(x) standardGeneric("isCircularWithKnownLength")
-)
-
-setMethod("isCircularWithKnownLength", "Seqinfo",
-    function(x) ((isCircular(x) %in% TRUE) & !is.na(seqlengths(x)))
 )
 
 
@@ -204,10 +193,6 @@ setReplaceMethod("seqlengths", "Seqinfo",
         x
     }
 )
-
-### TODO: Put the isCircular<-() and seqlengths<-() generics in the same
-### file and same man page as the isCircular() and seqlengths() generics.
-setGeneric("isCircular<-", function(x, value) standardGeneric("isCircular<-"))
 
 setReplaceMethod("isCircular", "Seqinfo",
     function(x, value)

@@ -20,15 +20,7 @@ setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
-setGeneric("seqinfo", function(x, ...) standardGeneric("seqinfo"))
-
-setMethod("seqlengths", "GenomicRanges", function(x) seqlengths(seqinfo(x)))
-
 setMethod("isCircular", "GenomicRanges", function(x) isCircular(seqinfo(x)))
-
-setMethod("isCircularWithKnownLength", "GenomicRanges",
-    function(x) isCircularWithKnownLength(seqinfo(x))
-)
 
 setMethod("elementMetadata", "GenomicRanges",
     function(x, row.names = TRUE, ...)
