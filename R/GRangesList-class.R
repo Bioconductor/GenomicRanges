@@ -132,14 +132,6 @@ setMethod("strand", "GRangesList",
              unlistData = x@unlistData@strand, partitioning = x@partitioning,
              check=FALSE))
 
-setMethod("seqlengths", "GRangesList", function(x) seqlengths(x@unlistData))
-
-setMethod("isCircular", "GRangesList", function(x) isCircular(x@unlistData))
-
-setMethod("isCircularWithKnownLength", "GRangesList",
-    function(x) isCircularWithKnownLength(seqinfo(x))
-)
-
 setMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ...)
     {
@@ -161,6 +153,8 @@ setMethod("elementMetadata", "GRangesList",
         ans
     }
 )
+
+setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
 
 setReplaceMethod("seqnames", "GRangesList",
     function(x, value) 
@@ -209,16 +203,6 @@ setReplaceMethod("strand", "GRangesList",
     }
 )
 
-setReplaceMethod("seqlengths", "GRangesList",
-    function(x, value)
-    {
-        seqlengths(x@unlistData) <- value
-        x
-    }
-)
-
-### TODO: Add an isCircular replacement method here.
-
 setReplaceMethod("elementMetadata", "GRangesList",
     function(x, level = c("between", "within"), ..., value) 
     {
@@ -251,6 +235,16 @@ setReplaceMethod("elementMetadata", "GRangesList",
             }
             elementMetadata(x@unlistData) <- value
         }
+        x
+    }
+)
+
+### TODO: Add "seqinfo<-" and "isCircular<-" methods here.
+
+setReplaceMethod("seqlengths", "GRangesList",
+    function(x, value)
+    {
+        seqlengths(x@unlistData) <- value
         x
     }
 )

@@ -73,7 +73,7 @@
   \link{Seqinfo-class},
   \link{seqinfo,GRanges-method},
   \link{seqinfo,GRangesList-method},
-  \link[BSgenome]{seqnames,BSgenome-method}
+  \link[BSgenome]{seqnames,BSgenome-method},
   \link[GenomicFeatures]{seqnames,TranscriptDb-method}
 }
 
