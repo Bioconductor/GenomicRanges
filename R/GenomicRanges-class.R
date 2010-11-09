@@ -543,59 +543,61 @@ setMethod("shift", "GenomicRanges",
 
 .interIntervalGenomicRanges <- function(x, FUN, ...)
 {
-  xIRangesList <-
-    split(unname(ranges(x)), paste(seqnames(x), strand(x), sep = "\r"))
-  ansIRangesList <- FUN(xIRangesList, ...)
-  k <- elementLengths(ansIRangesList)
-  splitListNames <- strsplit(names(ansIRangesList), split = "\r")
-  ansSeqnames <-
-    Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
-               levels = levels(seqnames(x))), k)
-  ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
-  clone(x, seqnames = ansSeqnames,
-        ranges = unlist(ansIRangesList, use.names=FALSE),
-        strand = ansStrand,
-        elementMetadata = new("DataFrame", nrows = length(ansSeqnames)))
+    elementMetadata(x) <- NULL
+    xIRangesList <-
+        split(unname(ranges(x)), paste(seqnames(x), strand(x), sep = "\r"))
+    ansIRangesList <- FUN(xIRangesList, ...)
+    k <- elementLengths(ansIRangesList)
+    splitListNames <- strsplit(names(ansIRangesList), split = "\r")
+    ansSeqnames <-
+      Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
+                 levels = levels(seqnames(x))), k)
+    ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
+    clone(x, seqnames = ansSeqnames,
+          ranges = unlist(ansIRangesList, use.names=FALSE),
+          strand = ansStrand,
+          elementMetadata = new("DataFrame", nrows = length(ansSeqnames)))
 }
 
 setMethod("disjoin", "GenomicRanges",
-          function(x)
-          .interIntervalGenomicRanges(x, disjoin)
-          )
+    function(x)
+        .interIntervalGenomicRanges(x, disjoin)
+)
 
 setMethod("gaps", "GenomicRanges",
-          function(x, start = 1L, end = seqlengths(x))
-          {
-            seqlevels <- levels(seqnames(x))
-            if (!is.null(names(start)))
-              start <- start[seqlevels]
-            if (!is.null(names(end)))
-              end <- end[seqlevels]
-            start <- IRanges:::recycleVector(start, length(seqlevels))
-            start <- rep(start, each = 3)
-            end <- IRanges:::recycleVector(end, length(seqlevels))
-            end <- rep(end, each = 3)
-            .interIntervalGenomicRanges(x, gaps, start = start, end = end)
-          }
-          )
+    function(x, start = 1L, end = seqlengths(x))
+    {
+        seqlevels <- levels(seqnames(x))
+        if (!is.null(names(start)))
+            start <- start[seqlevels]
+        if (!is.null(names(end)))
+            end <- end[seqlevels]
+        start <- IRanges:::recycleVector(start, length(seqlevels))
+        start <- rep(start, each = 3)
+        end <- IRanges:::recycleVector(end, length(seqlevels))
+        end <- rep(end, each = 3)
+        .interIntervalGenomicRanges(x, gaps, start = start, end = end)
+    }
+)
 
 setMethod("range", "GenomicRanges",
-          function(x, ..., na.rm)
-          .interIntervalGenomicRanges(unname(c(x, ...)), range)
-          )
+    function(x, ..., na.rm)
+        .interIntervalGenomicRanges(unname(c(x, ...)), range)
+)
 
 setMethod("reduce", "GenomicRanges",
-          function(x, drop.empty.ranges = FALSE, min.gapwidth = 1L,
-                   with.inframe.attrib = FALSE)
-          {
-            if (!identical(with.inframe.attrib, FALSE))
-              stop("'with.inframe.attrib' argument not supported ",
-                   "when reducing a GenomicRanges object")
-            .interIntervalGenomicRanges(x, reduce,
-                                        drop.empty.ranges = drop.empty.ranges,
-                                        min.gapwidth = min.gapwidth)
-          }
-          )
+    function(x, drop.empty.ranges = FALSE, min.gapwidth = 1L,
+             with.inframe.attrib = FALSE)
+    {
+        if (!identical(with.inframe.attrib, FALSE))
+            stop("'with.inframe.attrib' argument not supported ",
+                 "when reducing a GenomicRanges object")
+        .interIntervalGenomicRanges(x, reduce,
+                                    drop.empty.ranges = drop.empty.ranges,
+                                    min.gapwidth = min.gapwidth)
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Sequence methods.

@@ -5,81 +5,55 @@
 ### TODO: What's the impact of circularity on the set operations?
 
 ### NOTE: Doesn't properly merge 'seqinfo(x)' with 'seqinfo(y)' because
-### 'c(x, y)' currently doesn't do it either. This will automatically get
-### fixed when the "c" method gets fixed.
+### 'c(x, y)' currently doesn't do it either. However, this should
+### automatically get fixed when the "c" method itself gets fixed.
 setMethod("union", c("GRanges", "GRanges"),
     function(x, y)
     {
-        elementMetadata(x) <- NULL
-        elementMetadata(y) <- NULL
+        values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
         reduce(c(x, y), drop.empty.ranges=TRUE)
     }
 )
 
+### 'x' must be a GRanges object.
+### Returns a named integer vector where the names are guaranteed
+### to be 'levels(seqnames(x))'.
+.maxEndPerSequence <- function(x)
+{
+    ends_list <- IRanges:::newCompressedList("CompressedIntegerList",
+                    unlistData=end(x),
+                    splitFactor=seqnames(x))
+    sapply(ends_list,
+           function(ends)
+               if (length(ends) > 0L) max(ends) else NA_integer_)
+}
+
 setMethod("intersect", c("GRanges", "GRanges"),
     function(x, y)
     {
-        elementMetadata(x) <- NULL
-        elementMetadata(y) <- NULL
-        ## TODO: Revisit the code below. It is silently ignoring the fact
-        ## that we might be combining objects with incompatible sequence
-        ## lengths and/or circularity flags (note that this is inconsistent
-        ## with what [<- does). Maybe we should use something like
-        ##     seqinfo(ans) <- merge(seqinfo(x), seqinfo(y))
-        ## when it becomes available.
-        ## Note that 'merge(seqinfo(x), seqinfo(y))' is aimed to become
-        ## the standard way of checking that objects have compatible
-        ## sequence info since it will raise an error if they don't.
-        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(y))))
-        seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
-        is_circular <- c(isCircular(x), isCircular(y))[seqnames]
-        if (!identical(seqlengths(x), seqlengths))
-            seqlengths(x) <- seqlengths
-        if (!identical(seqlengths(y), seqlengths))
-            seqlengths(y) <- seqlengths
-        ## TODO: Uncomment this when isCircular<- is available.
-        #if (!identical(isCircular(x), is_circular))
-        #    isCircular(x) <- is_circular
-        #if (!identical(isCircular(y), is_circular))
-        #    isCircular(y) <- is_circular
-        if (IRanges:::anyMissing(seqlengths)) {
-            maxs <-
-              sapply(IRanges:::newCompressedList("CompressedIntegerList",
-                               unlistData = c(end(x), end(y)),
-                               splitFactor = c(seqnames(x), seqnames(y))),
-                     function(x) if (length(x) > 0) max(x) else NA_integer_)
-            seqlengths[names(maxs)] <- maxs
-        }
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqinfo(y) <- merge(seqinfo(y), seqinfo(x))
+        seqlengths <- seqlengths(x)
+        ## If the length of a sequence is unknown (NA), then we use
+        ## the max end value found on that sequence in 'x' or 'y'.
+        values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
+        seqlengths[is.na(seqlengths)] <-
+            .maxEndPerSequence(c(x, y))[is.na(seqlengths)]
         setdiff(x, gaps(y, end = seqlengths))
     }
 )
 
 setMethod("setdiff", c("GRanges", "GRanges"),
-    function(x, y) {
-        elementMetadata(x) <- NULL
-        elementMetadata(y) <- NULL
-        ## TODO: See TODO in "intersect" method above about using
-        ## 'merge(seqinfo(x), seqinfo(y))' for this.
-        seqnames <- unique(c(levels(seqnames(x)), levels(seqnames(y))))
-        seqlengths <- c(seqlengths(x), seqlengths(y))[seqnames]
-        is_circular <- c(isCircular(x), isCircular(y))[seqnames]
-        if (!identical(seqlengths(x), seqlengths))
-            seqlengths(x) <- seqlengths
-        if (!identical(seqlengths(y), seqlengths))
-            seqlengths(y) <- seqlengths
-        ## TODO: Uncomment this when isCircular<- is available.
-        #if (!identical(isCircular(x), is_circular))
-        #    isCircular(x) <- is_circular
-        #if (!identical(isCircular(y), is_circular))
-        #    isCircular(y) <- is_circular
-        if (IRanges:::anyMissing(seqlengths)) {
-            maxs <-
-              sapply(IRanges:::newCompressedList("CompressedIntegerList",
-                               unlistData = c(end(x), end(y)),
-                               splitFactor = c(seqnames(x), seqnames(y))),
-                     function(x) if (length(x) > 0) max(x) else NA_integer_)
-            seqlengths[names(maxs)] <- maxs
-        }
+    function(x, y)
+    {
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqinfo(y) <- merge(seqinfo(y), seqinfo(x))
+        seqlengths <- seqlengths(x)
+        ## If the length of a sequence is unknown (NA), then we use
+        ## the max end value found on that sequence in 'x' or 'y'.
+        values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
+        seqlengths[is.na(seqlengths)] <-
+            .maxEndPerSequence(c(x, y))[is.na(seqlengths)]
         gaps(union(gaps(x, end = seqlengths), y), end = seqlengths)
     }
 )
