@@ -77,7 +77,7 @@ setMethod("elementMetadata", "GenomicRanges",
 {
     if (length(x) > 0L && is.null(names(seqlengths(x))))
         return("'seqlengths(x)' is unnamed")
-    if (!setequal(names(seqlengths(x)), levels(seqnames(x))))
+    if (!identical(names(seqlengths(x)), levels(seqnames(x))))
         return("'seqlengths(x)' names do not match 'levels(seqnames)'")
     if (length(x) == 0L)
         return(NULL)
@@ -107,7 +107,7 @@ setMethod("elementMetadata", "GenomicRanges",
 {
     if (length(x) > 0L && is.null(names(isCircular(x))))
         return("'isCircular' is unnamed")
-    if (!setequal(names(isCircular(x)), levels(seqnames(x))))
+    if (!identical(names(isCircular(x)), levels(seqnames(x))))
         return("'isCircular' names do not match 'levels(seqnames)'")
     NULL
 }
