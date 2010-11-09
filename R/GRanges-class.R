@@ -207,6 +207,7 @@ setReplaceMethod("seqinfo", "GRanges",
                  "identical to 'seqnames(seqinfo(x))'")
         x@seqinfo <- value
         levels(x@seqnames) <- seqnames(value)
+        validObject(x)
         x
     }
 )
