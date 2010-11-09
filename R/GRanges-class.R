@@ -4,7 +4,7 @@
 ###
 ### Class definition
 
-setClass("GRanges", contains = c("Sequence", "GenomicRanges"),
+setClass("GRanges", contains = "GenomicRanges",
          representation(seqnames = "Rle",
                         ranges = "IRanges",
                         strand = "Rle",

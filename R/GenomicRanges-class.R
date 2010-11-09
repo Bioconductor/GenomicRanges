@@ -3,7 +3,10 @@
 ### -------------------------------------------------------------------------
 ###
 
-setClass("GenomicRanges", contains = c("Sequence", "VIRTUAL"))
+setClass("GenomicRanges",
+    contains="Sequence",
+    representation("VIRTUAL")
+)
 
 ### The code in this file will work out-of-the-box on 'x' as long as
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),
