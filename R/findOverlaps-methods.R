@@ -106,10 +106,10 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                 ## A different warning if there are no matches at all
                 if(is.na(table(uniqueQuerySeqnames
                                %in% uniqueSubjectSeqnames)["TRUE"])){
-                  warning("No seqnames from the 'query' and 'subject' were identical")
+                  warning("no seqnames from 'query' and 'subject' were identical")
                 }else ## Versus having some things match...
                 {
-                  warning("Only some seqnames from 'query' and 'subject' were not identical")
+                  warning("some seqnames from 'query' and 'subject' differ")
                 }
             }
             
