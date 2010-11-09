@@ -125,17 +125,20 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 {
     if (identical(seqlengths, NA))
         return(rep.int(NA_integer_, length(seqnames)))
+    if (length(seqlengths) != length(seqnames))
+        stop("length of supplied 'seqlengths' must equal ",
+             "the number of sequences")
 #    if (!is.null(names(seqlengths))
 #     && !identical(names(seqlengths), seqnames))
-#        stop("when the supplied seqlengths are named, ",
-#             "then those names must match the seqnames")
+#        stop("when the supplied 'seqlengths' are named, ",
+#             "the names must match the seqnames")
     if (is.logical(seqlengths)) {
         if (all(is.na(seqlengths)))
             return(as.integer(seqlengths))
-        stop("bad 'seqlengths' value")
+        stop("bad supplied 'seqlengths' value")
     }
     if (!is.numeric(seqlengths))
-        stop("bad 'seqlengths' value")
+        stop("bad supplied 'seqlengths' value")
     if (!is.integer(seqlengths))
         return(as.integer(seqlengths))
     unname(seqlengths)
@@ -146,12 +149,15 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 {
     if (identical(isCircular, NA))
         return(rep.int(NA, length(seqnames)))
+    if (length(isCircular) != length(seqnames))
+        stop("length of supplied 'isCircular' must equal ",
+             "the number of sequences")
 #    if (!is.null(names(isCircular))
 #     && !identical(names(isCircular), seqnames))
 #        stop("when the supplied circularity flags are named, ",
-#             "then those names must match the seqnames")
+#             "the names must match the seqnames")
     if (!is.logical(isCircular))
-        stop("bad 'isCircular' value")
+        stop("bad supplied 'isCircular' value")
     unname(isCircular)
 }
 
@@ -175,8 +181,8 @@ setReplaceMethod("seqnames", "Seqinfo",
     {
         value <- .normargSeqnames(value)
         if (length(value) != length(x))
-            stop("'seqnames' replacement value ",
-                 "must have 'length(x)' elements")
+            stop("length of supplied 'seqnames' value must equal ",
+                 "the number of sequences")
         x@seqnames <- value
         x
     }
