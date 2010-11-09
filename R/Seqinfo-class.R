@@ -128,10 +128,10 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     if (length(seqlengths) != length(seqnames))
         stop("length of supplied 'seqlengths' must equal ",
              "the number of sequences")
-#    if (!is.null(names(seqlengths))
-#     && !identical(names(seqlengths), seqnames))
-#        stop("when the supplied 'seqlengths' are named, ",
-#             "the names must match the seqnames")
+    if (!is.null(names(seqlengths))
+     && !identical(names(seqlengths), seqnames))
+        stop("when the supplied 'seqlengths' are named, ",
+             "the names must match the seqnames")
     if (is.logical(seqlengths)) {
         if (all(is.na(seqlengths)))
             return(as.integer(seqlengths))
@@ -152,10 +152,10 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     if (length(isCircular) != length(seqnames))
         stop("length of supplied 'isCircular' must equal ",
              "the number of sequences")
-#    if (!is.null(names(isCircular))
-#     && !identical(names(isCircular), seqnames))
-#        stop("when the supplied circularity flags are named, ",
-#             "the names must match the seqnames")
+    if (!is.null(names(isCircular))
+     && !identical(names(isCircular), seqnames))
+        stop("when the supplied circularity flags are named, ",
+             "the names must match the seqnames")
     if (!is.logical(isCircular))
         stop("bad supplied 'isCircular' value")
     unname(isCircular)

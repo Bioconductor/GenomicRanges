@@ -283,35 +283,37 @@ setReplaceMethod("strand", "GenomicRanges",
                  )
 
 setReplaceMethod("seqlengths", "GenomicRanges",
-                 function(x, value)
-                 {
-                   if (!is.integer(value)) {
-                     nms <- names(value)
-                     value <- as.integer(value)
-                     names(value) <- nms
-                   }
-                   if (is.null(names(value))) {
-                     names(value) <- names(seqlengths(x))
-                   }
-                   seqnames <- seqnames(x)
-                   danglingSeqnames <- setdiff(unique(seqnames), names(value))
-                   if (length(danglingSeqnames))
-                     stop("New seqlengths would exclude data for ",
-                          paste(danglingSeqnames, collapse = ", "),
-                          ". Consider subsetting first.")
-                   runValue(seqnames) <-
-                     factor(as.character(runValue(seqnames)), levels = names(value))
-                   is_circular <- isCircular(x)[names(value)]
-                   ## The 'initialize(seqinfo(x), ...)' form would
-                   ## not be safe here because we are resizing
-                   ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
-                   ## the object from scratch.
-                   seqinfo <- Seqinfo(seqnames = names(value),
-                                      seqlengths = value,
-                                      isCircular = is_circular)
-                   update(x, seqnames = seqnames, seqinfo = seqinfo)
-                 }
-                 )
+    function(x, value)
+    {
+        if (!is.integer(value)) {
+            nms <- names(value)
+            value <- as.integer(value)
+            names(value) <- nms
+        }
+        if (is.null(names(value))
+         || identical(names(value), names(seqlengths(x)))) {
+            seqlengths(seqinfo(x)) <- value
+            return(x)
+        }
+        seqnames <- seqnames(x)
+        danglingSeqnames <- setdiff(unique(seqnames), names(value))
+        if (length(danglingSeqnames))
+            stop("New seqlengths would exclude data for ",
+                 paste(danglingSeqnames, collapse = ", "),
+                 ". Consider subsetting first.")
+        runValue(seqnames) <-
+          factor(as.character(runValue(seqnames)), levels = names(value))
+        is_circular <- isCircular(x)[names(value)]
+        ## The 'initialize(seqinfo(x), ...)' form would
+        ## not be safe here because we are resizing
+        ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
+        ## the object from scratch.
+        seqinfo <- Seqinfo(seqnames = names(value),
+                           seqlengths = unname(value),
+                           isCircular = unname(is_circular))
+        update(x, seqnames = seqnames, seqinfo = seqinfo)
+    }
+)
 
 setReplaceMethod("elementMetadata", "GenomicRanges",
                  function(x, value)
