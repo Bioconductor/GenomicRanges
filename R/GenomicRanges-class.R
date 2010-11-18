@@ -191,140 +191,134 @@ setMethod("as.data.frame", "GenomicRanges",
 ###
 
 setReplaceMethod("names", "GenomicRanges",
-                 function(x, value)
-                 {
-                   names(ranges(x)) <- value
-                   x
-                 }
-                 )
-
-setReplaceMethod("seqnames", "GenomicRanges",
-                 function(x, value) 
-                 {
-                   if (!is(value, "Rle"))
-                     value <- Rle(value)
-                   if (!is.factor(runValue(value)))
-                     runValue(value) <- factor(runValue(value))
-                   n <- length(x)
-                   k <- length(value)
-                   if (k != n) {
-                     if ((k == 0) || (k > n) || (n %% k != 0))
-                       stop(k, " elements in value to replace ", n, "elements")
-                     value <- rep(value, length.out = n)
-                   }
-                   seqlengths <- seqlengths(x)
-                   if (identical(runLength(seqnames(x)), runLength(value))) {
-                     matchTable <-
-                       unique(data.frame(old = runValue(seqnames(x)),
-                                         new = runValue(value)))
-                     if (!anyDuplicated(matchTable[["old"]]) &&
-                         !anyDuplicated(matchTable[["new"]])) {
-                       if (isTRUE(all.equal(as.integer(matchTable[["old"]]),
-                                            as.integer(matchTable[["new"]])))) {
-                         names(seqlengths) <- levels(value)
-                       } else {
-                         names(seqlengths) <-
-                           matchTable[["new"]][match(names(seqlengths),
-                                                     matchTable[["old"]])]
-                       }
-                     }
-                   }
-                   ## Safe because 'names(seqlengths)' is guaranteed
-                   ## to match the rows in 'seqinfo(x)'. Otherwise, we
-                   ## would need to use Seqinfo().
-                   seqinfo <- initialize(seqinfo(x),
-                                         seqnames = names(seqlengths))
-                   update(x, seqnames = value, seqinfo = seqinfo)
-                 }
-                 )
-
-setReplaceMethod("ranges", "GenomicRanges",
-                 function(x, value) 
-                 {
-                   if (!is(value, "IRanges"))
-                     value <- as(value, "IRanges")
-                   n <- length(x)
-                   k <- length(value)
-                   if (k != n) {
-                     if ((k == 0) || (k > n) || (n %% k != 0))
-                       stop(k, " elements in value to replace ", n, "elements")
-                     value <- rep(value, length.out = n)
-                   }
-                   update(x, ranges = value)
-                 }
-                 )
-
-setReplaceMethod("strand", "GenomicRanges",
-                 function(x, value) 
-                 {
-                   if (!is(value, "Rle"))
-                     value <- Rle(value)
-                   if (!is.factor(runValue(value)) ||
-                       !identical(levels(runValue(value)), levels(strand())))
-                     runValue(value) <- strand(runValue(value))
-                   n <- length(x)
-                   k <- length(value)
-                   if (k != n) {
-                     if ((k == 0) || (k > n) || (n %% k != 0))
-                       stop(k, " elements in value to replace ", n, "elements")
-                     value <- rep(value, length.out = n)
-                   }
-                   update(x, strand = value)
-                 }
-                 )
-
-setReplaceMethod("seqlengths", "GenomicRanges",
     function(x, value)
     {
-        if (!is.integer(value)) {
-            nms <- names(value)
-            value <- as.integer(value)
-            names(value) <- nms
+        names(ranges(x)) <- value
+        x
+    }
+)
+
+setReplaceMethod("seqnames", "GenomicRanges",
+    function(x, value) 
+    {
+        if (!is(value, "Rle"))
+            value <- Rle(value)
+        if (!is.factor(runValue(value)))
+            runValue(value) <- factor(runValue(value))
+        n <- length(x)
+        k <- length(value)
+        if (k != n) {
+            if ((k == 0) || (k > n) || (n %% k != 0))
+                stop(k, " elements in value to replace ", n, "elements")
+            value <- rep(value, length.out = n)
         }
-        if (is.null(names(value))
-         || identical(names(value), names(seqlengths(x)))) {
-            seqlengths(seqinfo(x)) <- value
-            return(x)
+        seqlengths <- seqlengths(x)
+        if (identical(runLength(seqnames(x)), runLength(value))) {
+            matchTable <-
+                unique(data.frame(old = runValue(seqnames(x)),
+                                  new = runValue(value)))
+            if (!anyDuplicated(matchTable[["old"]]) &&
+                !anyDuplicated(matchTable[["new"]])) {
+                if (isTRUE(all.equal(as.integer(matchTable[["old"]]),
+                                     as.integer(matchTable[["new"]]))))
+                {
+                    names(seqlengths) <- levels(value)
+                } else {
+                    names(seqlengths) <-
+                    matchTable[["new"]][match(names(seqlengths),
+                                              matchTable[["old"]])]
+                }
+            }
         }
-        seqnames <- seqnames(x)
-        danglingSeqnames <- setdiff(unique(seqnames), names(value))
-        if (length(danglingSeqnames))
-            stop("New seqlengths would exclude data for ",
-                 paste(danglingSeqnames, collapse = ", "),
-                 ". Consider subsetting first.")
-        runValue(seqnames) <-
-          factor(as.character(runValue(seqnames)), levels = names(value))
-        is_circular <- isCircular(x)[names(value)]
-        ## The 'initialize(seqinfo(x), ...)' form would
-        ## not be safe here because we are resizing
-        ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
-        ## the object from scratch.
-        seqinfo <- Seqinfo(seqnames = names(value),
-                           seqlengths = unname(value),
-                           isCircular = unname(is_circular))
-        update(x, seqnames = seqnames, seqinfo = seqinfo)
+        ## Safe because 'names(seqlengths)' is guaranteed
+        ## to match the rows in 'seqinfo(x)'. Otherwise, we
+        ## would need to use Seqinfo().
+        seqinfo <- initialize(seqinfo(x),
+                              seqnames = names(seqlengths))
+        update(x, seqnames = value, seqinfo = seqinfo)
+    }
+)
+
+setReplaceMethod("ranges", "GenomicRanges",
+    function(x, value) 
+    {
+        if (!is(value, "IRanges"))
+            value <- as(value, "IRanges")
+        n <- length(x)
+        k <- length(value)
+        if (k != n) {
+            if ((k == 0) || (k > n) || (n %% k != 0))
+                stop(k, " elements in value to replace ", n, "elements")
+            value <- rep(value, length.out = n)
+        }
+        update(x, ranges = value)
+    }
+)
+
+setReplaceMethod("strand", "GenomicRanges",
+    function(x, value) 
+    {
+        if (!is(value, "Rle"))
+            value <- Rle(value)
+        if (!is.factor(runValue(value)) ||
+            !identical(levels(runValue(value)), levels(strand())))
+        runValue(value) <- strand(runValue(value))
+        n <- length(x)
+        k <- length(value)
+        if (k != n) {
+            if ((k == 0) || (k > n) || (n %% k != 0))
+                stop(k, " elements in value to replace ", n, "elements")
+            value <- rep(value, length.out = n)
+        }
+        update(x, strand = value)
     }
 )
 
 setReplaceMethod("elementMetadata", "GenomicRanges",
-                 function(x, value)
-                 {
-                   if (is.null(value))
-                     value <- new("DataFrame", nrows = length(x))
-                   else if (!is(value, "DataFrame"))
-                     value <- DataFrame(value)
-                   if (!is.null(rownames(value)))
-                     rownames(value) <- NULL
-                   n <- length(x)
-                   k <- nrow(value)
-                   if (k != n) {
-                     if ((k == 0) || (k > n) || (n %% k != 0))
-                       stop(k, " rows in value to replace ", n, "rows")
-                     value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
-                   }
-                   update(x, elementMetadata = value)
-                 }
-                 )
+    function(x, value)
+    {
+        if (is.null(value))
+            value <- new("DataFrame", nrows = length(x))
+        else if (!is(value, "DataFrame"))
+            value <- DataFrame(value)
+        if (!is.null(rownames(value)))
+            rownames(value) <- NULL
+        n <- length(x)
+        k <- nrow(value)
+        if (k != n) {
+            if ((k == 0) || (k > n) || (n %% k != 0))
+                stop(k, " rows in value to replace ", n, "rows")
+            value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
+        }
+        update(x, elementMetadata = value)
+    }
+)
+
+setReplaceMethod("seqlevels", "GenomicRanges",
+    function(x, value)
+    {
+        if (!is.character(value) || any(is.na(value)))
+            stop("supplied 'seqlevels' must be a character vector with no NAs")
+        x_seqnames <- seqnames(x)
+        dangling_seqlevels <- setdiff(levels(x_seqnames), value)
+        if (length(dangling_seqlevels))
+            stop("Supplied 'seqlevels' would exclude data for ",
+                 paste(dangling_seqlevels, collapse = ", "),
+                 ". Consider subsetting first.")
+        runValue(x_seqnames) <-
+          factor(as.character(runValue(x_seqnames)), levels = value)
+        seqlengths <- seqlengths(x)[value]
+        is_circular <- isCircular(x)[value]
+        ## The 'initialize(seqinfo(x), ...)' form would
+        ## not be safe here because we are resizing
+        ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
+        ## the object from scratch.
+        seqinfo <- Seqinfo(seqnames = value,
+                           seqlengths = unname(seqlengths),
+                           isCircular = unname(is_circular))
+        update(x, seqnames = x_seqnames, seqinfo = seqinfo)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

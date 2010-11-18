@@ -22,11 +22,27 @@ setMethod("seqlengths", "ANY", function(x) seqlengths(seqinfo(x)))
 
 setGeneric("seqlengths<-", function(x, value) standardGeneric("seqlengths<-"))
 
+setReplaceMethod("seqlengths", "ANY",
+    function(x, value)
+    {
+        seqlengths(seqinfo(x)) <- value
+        x
+    }
+)
+
 setGeneric("isCircular", function(x) standardGeneric("isCircular"))
 
 setMethod("isCircular", "ANY", function(x) isCircular(seqinfo(x)))
 
 setGeneric("isCircular<-", function(x, value) standardGeneric("isCircular<-"))
+
+setReplaceMethod("isCircular", "ANY",
+    function(x, value)
+    {
+        isCircular(seqinfo(x)) <- value
+        x
+    }
+)
 
 setGeneric("isCircularWithKnownLength",
     function(x) standardGeneric("isCircularWithKnownLength")

@@ -10,9 +10,11 @@
 \alias{seqlengths}
 \alias{seqlengths,ANY-method}
 \alias{seqlengths<-}
+\alias{seqlengths<-,ANY-method}
 \alias{isCircular}
 \alias{isCircular,ANY-method}
 \alias{isCircular<-}
+\alias{isCircular<-,ANY-method}
 \alias{isCircularWithKnownLength}
 \alias{isCircularWithKnownLength,ANY-method}
 

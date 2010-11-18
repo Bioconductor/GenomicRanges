@@ -33,7 +33,7 @@
 \alias{names<-,GenomicRanges-method}
 \alias{seqinfo,GRanges-method}
 \alias{seqinfo<-,GRanges-method}
-\alias{seqlengths<-,GenomicRanges-method}
+\alias{seqlevels<-,GenomicRanges-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
@@ -197,7 +197,7 @@
       Gets or sets the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being
-      guaranteed to return indentical values on a GRanges object.
+      guaranteed to return indentical character vectors on a GRanges object.
       \code{value} must be a character vector with no NAs.
     }
     \item{}{
