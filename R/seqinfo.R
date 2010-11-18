@@ -10,6 +10,12 @@ setGeneric("seqnames", function(x) standardGeneric("seqnames"))
 
 setGeneric("seqnames<-", function(x, value) standardGeneric("seqnames<-"))
 
+setGeneric("seqlevels", function(x) standardGeneric("seqlevels"))
+
+setMethod("seqlevels", "ANY", function(x) seqlevels(seqinfo(x)))
+
+setGeneric("seqlevels<-", function(x, value) standardGeneric("seqlevels<-"))
+
 setGeneric("seqlengths", function(x) standardGeneric("seqlengths"))
 
 setMethod("seqlengths", "ANY", function(x) seqlengths(seqinfo(x)))
@@ -27,6 +33,6 @@ setGeneric("isCircularWithKnownLength",
 )
 
 setMethod("isCircularWithKnownLength", "ANY",
-    function(x) ((isCircular(x) %in% TRUE) & !is.na(seqlengths(x)))
+    function(x) isCircularWithKnownLength(seqinfo(x))
 )
 

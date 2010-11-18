@@ -302,8 +302,9 @@ setReplaceMethod("seqnames", "GappedAlignments",
     c(.valid.GappedAlignments.rname(x),
       .valid.GappedAlignments.start(x),
       .valid.GappedAlignments.cigar(x),
-      .valid.GappedAlignments.strand(x),
-      .valid.GenomicRanges.seqlengths(x))
+      .valid.GappedAlignments.strand(x))
+      ## Commented out until GappedAlignments objects have a seqinfo slot too
+      #.valid.GenomicRanges.seqinfo(x))
 }
 
 setValidity2("GappedAlignments", .valid.GappedAlignments,

@@ -12,10 +12,13 @@
 \alias{seqnames<-,Seqinfo-method}
 \alias{names,Seqinfo-method}
 \alias{names<-,Seqinfo-method}
+\alias{seqlevels,Seqinfo-method}
+\alias{seqlevels<-,Seqinfo-method}
 \alias{seqlengths,Seqinfo-method}
 \alias{seqlengths<-,Seqinfo-method}
 \alias{isCircular,Seqinfo-method}
 \alias{isCircular<-,Seqinfo-method}
+\alias{isCircularWithKnownLength,Seqinfo-method}
 \alias{as.data.frame,Seqinfo-method}
 \alias{show,Seqinfo-method}
 \alias{merge,Seqinfo,missing-method}
@@ -36,7 +39,9 @@
 
 \details{
   Typically Seqinfo objects are not used directly but are part of
-  higher level objects.
+  higher level objects. Those higher level objects will generally
+  provide a \code{seqinfo} accessor for getting/setting their
+  Seqinfo component.
 }
 
 \section{Constructor}{
@@ -67,12 +72,21 @@
       Same as \code{seqnames(x)} and \code{seqnames(x) <- value}.
     }
     \item{}{
+      \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
+      Same as \code{seqnames(x)} and \code{seqnames(x) <- value}.
+    }
+    \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
       Gets/sets the lengths of the sequences in \code{x}.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
       Gets/sets the circularity flags of the sequences in \code{x}.
+    }
+    \item{}{
+      \code{isCircularWithKnownLength(x)}:
+      Formally defined as
+      \code{(isCircular(x) \%in\% TRUE) & !is.na(seqlengths(x))}.
     }
   }
 }

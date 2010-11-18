@@ -31,6 +31,8 @@ setMethod("names", "Seqinfo", function(x) seqnames(x))
 
 setMethod("length", "Seqinfo", function(x) length(seqnames(x)))
 
+setMethod("seqlevels", "Seqinfo", function(x) seqnames(x))
+
 setMethod("seqlengths", "Seqinfo",
     function(x)
     {
@@ -47,6 +49,10 @@ setMethod("isCircular", "Seqinfo",
         names(ans) <- seqnames(x)
         ans
     }
+)
+
+setMethod("isCircularWithKnownLength", "Seqinfo",
+    function(x) ((isCircular(x) %in% TRUE) & !is.na(seqlengths(x)))
 )
 
 
@@ -189,6 +195,10 @@ setReplaceMethod("seqnames", "Seqinfo",
 )
 
 setReplaceMethod("names", "Seqinfo",
+    function(x, value) `seqnames<-`(x, value)
+)
+
+setReplaceMethod("seqlevels", "Seqinfo",
     function(x, value) `seqnames<-`(x, value)
 )
 

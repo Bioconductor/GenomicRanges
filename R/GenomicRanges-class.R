@@ -43,59 +43,76 @@ setMethod("elementMetadata", "GenomicRanges",
 .valid.GenomicRanges.length <- function(x)
 {
     n <- length(seqnames(x))
-    if ((length(ranges(x)) != n) || (length(strand(x)) != n) ||
-        (nrow(elementMetadata(x)) != n))
-        "slot lengths are not all equal"
-    else
-        NULL
+    if ((length(ranges(x)) != n)
+     || (length(strand(x)) != n)
+     || (nrow(elementMetadata(x)) != n))
+        return("slot lengths are not all equal")
+    NULL
 }
 
 .valid.GenomicRanges.seqnames <- function(x)
 {
     if (!is.factor(runValue(seqnames(x))))
-        "'seqnames' should be a 'factor' Rle"
-    else if (IRanges:::anyMissing(runValue(seqnames(x))))
-        "'seqnames' contains missing values"
-    else
-        NULL
+        return("'seqnames' should be a 'factor' Rle")
+    if (IRanges:::anyMissing(runValue(seqnames(x))))
+        return("'seqnames' contains missing values")
+    NULL
 }
 
 .valid.GenomicRanges.strand <- function(x)
 {
     if (!is.factor(runValue(strand(x))) ||
         !identical(levels(runValue(strand(x))), levels(strand())))
-        paste("'strand' should be a 'factor' Rle with levels c(",
-              paste('"', levels(strand()), '"', sep = "", collapse = ", "),
-                    ")", sep = "")
-    else if (IRanges:::anyMissing(runValue(strand(x))))
-        "'strand' contains missing values"
-    else
-        NULL
+    {
+        msg <- c("'strand' should be a 'factor' Rle with levels c(",
+                 paste('"', levels(strand()), '"', sep = "", collapse = ", "),
+                 ")")
+        return(paste(msg, sep = ""))
+    }
+    if (IRanges:::anyMissing(runValue(strand(x))))
+        return("'strand' contains missing values")
+    NULL
 }
 
-.valid.GenomicRanges.seqlengths <- function(x)
+.valid.GenomicRanges.elementMetadata <- function(x)
 {
-    if (length(x) > 0L && is.null(names(seqlengths(x))))
-        return("'seqlengths(x)' is unnamed")
-    if (!identical(names(seqlengths(x)), levels(seqnames(x))))
-        return("'seqlengths(x)' names do not match 'levels(seqnames)'")
-    if (length(x) == 0L)
-        return(NULL)
-    seqs_with_known_length <- names(seqlengths(x))[!is.na(seqlengths(x))]
+    ## NOTE: This list is also included in the man page for GRanges objects.
+    ## Keep the 2 lists in sync!
+    INVALID.COLNAMES <- c("seqnames", "ranges", "strand",
+                          "seqlevels", "seqlengths", "isCircular",
+                          "start", "end", "width", "element")
+    if (any(INVALID.COLNAMES %in% colnames(elementMetadata(x)))) {
+        msg <- c("slot 'elementMetadata' cannot use",
+                 paste("\"", INVALID.COLNAMES, "\"", sep="", collapse=", "),
+                 "as column names")
+        return(paste(msg))
+    }
+    NULL
+}
+
+.valid.GenomicRanges.seqinfo <- function(x)
+{
+    x_seqinfo <- seqinfo(x)
+    if (!identical(seqlevels(x_seqinfo), levels(seqnames(x))))
+        return("'seqlevels(seqinfo(x))' and 'levels(seqnames(x))' ",
+               "are not identical")
+    x_seqlengths <- seqlengths(x_seqinfo)
+    seqs_with_known_length <- names(x_seqlengths)[!is.na(x_seqlengths)]
     if (length(seqs_with_known_length) == 0L)
         return(NULL)
-    if (any(seqlengths(x) < 0L, na.rm = TRUE))
+    if (any(x_seqlengths < 0L, na.rm = TRUE))
         return("'seqlengths(x)' contains negative values")
     ## We check only the ranges that are on a non-circular sequence with
     ## a known length.
-    non_circ_seqs <- names(seqlengths(x))[!(isCircular(x) %in% TRUE)]
+    x_isCircular <- isCircular(x_seqinfo)
+    non_circ_seqs <- names(x_isCircular)[!(x_isCircular %in% TRUE)]
     ncswkl <- intersect(non_circ_seqs, seqs_with_known_length)
     if (length(ncswkl) == 0L)
         return(NULL)
-    seqnames <- seqnames(x)
-    runValue(seqnames) <- runValue(seqnames)[drop=TRUE]
-    minStarts <- IRanges:::.tapplyDefault(start(x), seqnames, min)
-    maxEnds <- IRanges:::.tapplyDefault(end(x), seqnames, max)
+    x_seqnames <- seqnames(x)
+    runValue(x_seqnames) <- runValue(x_seqnames)[drop=TRUE]
+    minStarts <- IRanges:::.tapplyDefault(start(x), x_seqnames, min)
+    maxEnds <- IRanges:::.tapplyDefault(end(x), x_seqnames, max)
     if (any(minStarts[ncswkl] < 1L, na.rm = TRUE)
      || any(maxEnds[ncswkl] >
             seqlengths(x)[ncswkl], na.rm = TRUE))
@@ -103,39 +120,13 @@ setMethod("elementMetadata", "GenomicRanges",
     NULL
 }
 
-.valid.GenomicRanges.isCircular <- function(x)
-{
-    if (length(x) > 0L && is.null(names(isCircular(x))))
-        return("'isCircular' is unnamed")
-    if (!identical(names(isCircular(x)), levels(seqnames(x))))
-        return("'isCircular' names do not match 'levels(seqnames)'")
-    NULL
-}
-
-.valid.GenomicRanges.elementMetadata <- function(x)
-{
-    msg <- NULL
-    ## NOTE: This list is also included in the man page for GRanges objects.
-    ## Keep the 2 lists in sync!
-    INVALID.COLNAMES <- c("seqnames", "ranges", "strand",
-                          "seqlengths", "isCircular",
-                          "start", "end", "width", "element")
-    if (any(INVALID.COLNAMES %in% colnames(elementMetadata(x))))
-        msg <-
-          paste("slot 'elementMetadata' cannot use",
-                paste("\"", INVALID.COLNAMES, "\"", sep="", collapse=", "),
-                "as column names")
-    msg
-}
-
 .valid.GenomicRanges <- function(x)
 {
     c(.valid.GenomicRanges.length(x),
       .valid.GenomicRanges.seqnames(x),
       .valid.GenomicRanges.strand(x),
-      .valid.GenomicRanges.seqlengths(x),
-      .valid.GenomicRanges.isCircular(x),
-      .valid.GenomicRanges.elementMetadata(x))
+      .valid.GenomicRanges.elementMetadata(x),
+      .valid.GenomicRanges.seqinfo(x))
 }
 
 setValidity2("GenomicRanges", .valid.GenomicRanges)

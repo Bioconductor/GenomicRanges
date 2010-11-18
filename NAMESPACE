@@ -12,6 +12,7 @@ exportClasses(
 export(
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
+    seqlevels, "seqlevels<-",
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     isCircularWithKnownLength,
@@ -35,6 +36,7 @@ exportMethods(
     names, "names<-",
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
+    seqlevels, "seqlevels<-",
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     isCircularWithKnownLength,

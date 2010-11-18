@@ -89,7 +89,7 @@
     \item{\code{elementMetadata}}{a \link[IRanges]{DataFrame} object
       containing the annotation columns. Columns cannot be named
       \code{"seqnames"}, \code{"ranges"}, \code{"strand"},
-      \code{"seqlengths"}, \code{"isCircular"},
+      \code{"seqlevels"}, \code{"seqlengths"}, \code{"isCircular"},
       \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
   }
 }
@@ -193,18 +193,24 @@
       \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
+      \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
+      Gets or sets the sequence levels.
+      \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
+      or to \code{levels(seqnames(x))}, those 2 expressions being
+      guaranteed to return indentical values on a GRanges object.
+      \code{value} must be a character vector with no NAs.
+    }
+    \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the seqlengths.
-      \code{seqlengths(x)} is formally equivalent to
-      \code{seqlengths(seqinfo(x))}.
+      Gets or sets the sequence lengths.
+      \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
       \code{value} can be a named non-negative integer or numeric vector
       eventually with NAs.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
       Gets or sets the circularity flags.
-      \code{isCircular(x)} is formally equivalent to
-      \code{isCircular(seqinfo(x))}.
+      \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
     }
   }
