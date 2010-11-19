@@ -55,11 +55,11 @@ setMethod("strand", "DataTable",
     })
 
 
-setGeneric("compatableStrand", signature=c("x","y"),
-    function(x, y) standardGeneric("compatableStrand")
+setGeneric("compatibleStrand", signature=c("x","y"),
+    function(x, y) standardGeneric("compatibleStrand")
 )
 
-setMethod("compatableStrand", c("factor", "factor"),
+setMethod("compatibleStrand", c("factor", "factor"),
     function(x, y)
     {
         lvls <- levels(strand())
@@ -85,7 +85,7 @@ setMethod("compatableStrand", c("factor", "factor"),
     }
 )
 
-setMethod("compatableStrand", c("Rle", "Rle"),
+setMethod("compatibleStrand", c("Rle", "Rle"),
     function(x, y)
     {
         lvls <- levels(strand())
