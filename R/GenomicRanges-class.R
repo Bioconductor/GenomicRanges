@@ -685,62 +685,32 @@ setReplaceMethod("[", "GenomicRanges",
                  )
 
 setMethod("c", "GenomicRanges",
-          function(x, ..., recursive = FALSE)
-          {
-            if (recursive)
-              stop("'recursive' mode not supported")
-            args <- unname(list(x, ...))
-            ## TODO: Revisit the code below. It is silently ignoring the fact
-            ## that we might be combining objects with incompatible sequence
-            ## lengths and/or circularity flags (note that this is inconsistent
-            ## with what [<- does). Maybe we should use something like
-            ##     seqinfo(ans) <- merge(seqinfo(x), seqinfo(y))
-            ## when it becomes available.
-            ## Note that 'merge(seqinfo(x), seqinfo(y))' is aimed to become
-            ## the standard way of checking that objects have compatible
-            ## sequence info since it will raise an error if they don't.
-            seqnames <- do.call(c, lapply(args, seqnames))
-            seqlengths <- do.call(c, lapply(args, seqlengths))[levels(seqnames)]
-            is_circular <-
-              do.call(c, lapply(args, isCircular))[levels(seqnames)]
-            ## The 'initialize(seqinfo(x), ...)' form would not be safe here
-            ## because we are resizing 'seqinfo(x)'. Need to use Seqinfo() to
-            ## recreate the object from scratch.
-            seqinfo <- Seqinfo(seqnames = names(seqlengths),
-                               seqlengths = seqlengths,
-                               isCircular = is_circular)
-            ranges <- do.call(c, lapply(args, ranges))
-            nms <- names(ranges)
-            if (!is.null(nms)) {
-              whichEmpty <- which(nms == "")
-              nms[whichEmpty] <- as.character(whichEmpty)
-              nms2 <- make.unique(nms)
-              if (length(whichEmpty) > 0 || !identical(nms, nms2))
-                names(ranges) <- nms2
-            }
-            clone(x,
-                  seqnames = seqnames,
-                  ranges = ranges,
-                  strand = do.call(c, lapply(args, strand)),
-                  seqinfo = seqinfo,
-                  elementMetadata =
-                  do.call(rbind, lapply(args, elementMetadata, FALSE)))
-          }
-          )
-
-setMethod("rev", "GenomicRanges",
-          function(x)
-          {
-            if (length(x) == 0)
-              x
-            else
-              clone(x, seqnames = rev(seqnames(x)),
-                    ranges = rev(ranges(x)),
-                    strand = rev(strand(x)),
-                    elementMetadata =
-                    elementMetadata(x, FALSE)[length(x):1, , drop=FALSE])
-          }
-          )
+    function(x, ..., recursive = FALSE)
+    {
+        if (recursive)
+            stop("'recursive' mode not supported")
+        args <- unname(list(x, ...))
+        ans_seqinfo <- do.call(merge, lapply(args, seqinfo))
+        ans_seqnames <- do.call(c, lapply(args, seqnames))
+        ans_ranges <- do.call(c, lapply(args, ranges))
+        ans_strand <- do.call(c, lapply(args, strand))
+        ans_elementMetadata <- do.call(rbind, lapply(args, elementMetadata, FALSE))
+        ans_names <- names(ans_ranges)
+        if (!is.null(ans_names)) {
+            whichEmpty <- which(ans_names == "")
+            ans_names[whichEmpty] <- as.character(whichEmpty)
+            ans_names2 <- make.unique(ans_names)
+            if (length(whichEmpty) > 0 || !identical(ans_names, ans_names2))
+                names(ans_ranges) <- ans_names2
+        }
+        clone(x,
+              seqnames = ans_seqnames,
+              ranges = ans_ranges,
+              strand = ans_strand,
+              seqinfo = ans_seqinfo,
+              elementMetadata = ans_elementMetadata)
+    }
+)
 
 setMethod("seqselect", "GenomicRanges",
           function(x, start = NULL, end = NULL, width = NULL)

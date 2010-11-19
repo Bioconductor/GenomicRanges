@@ -257,11 +257,6 @@
       }
     }
     \item{}{
-      \code{rev(x)}:
-      Returns a new object of the same class as \code{x} made of the original
-      elements in the reverse order.
-    }
-    \item{}{
       \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
       Similar to \code{window}, except that multiple consecutive subsequences
       can be requested for concatenation. As such two of the three \code{start},

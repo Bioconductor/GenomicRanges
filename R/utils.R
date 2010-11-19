@@ -17,7 +17,6 @@ similarSeqnameConvention <- function(seqs1, seqs2)
     all(sapply(funList, function(f) any(f(seqs1)) == any(f(seqs2))))
 }
 
-
 ### Note that, strictly speaking, mergeNamedAtomicVectors() is not
 ### commutative, i.e., in general 'z1 <- mergeNamedAtomicVectors(x, y)' is
 ### not identical to 'z2 <- mergeNamedAtomicVectors(y, x)'. However 'z1' and

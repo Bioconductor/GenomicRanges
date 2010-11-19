@@ -10,7 +10,7 @@ make_test_GRanges <- function() {
 }
 
 make_test_GRangesList <- function() {
-    GRangesList(
+    suppressWarnings(GRangesList(
         a =
         new("GRanges",
             seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
@@ -24,7 +24,7 @@ make_test_GRangesList <- function() {
             ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
             strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
             seqinfo = Seqinfo(seqnames = paste("chr", c(2L, 4:5), sep="")),
-            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
+            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13)))))
 }
 
 test_union <- function()
@@ -73,7 +73,7 @@ test_intersect <- function()
               factor(c("chr1", "chr2"), levels = paste("chr", 1:6, sep = "")),
               ranges = IRanges(1:2, width = 10), 
               strand = c("-", "+")) 
-    checkIdentical(intersect(gr1, gr2), expect)
+    checkIdentical(suppressWarnings(intersect(gr1, gr2)), expect)
 }
 
 test_setdiff <- function()
@@ -103,7 +103,7 @@ test_setdiff <- function()
               factor(c("chr3", "chr4"), levels = paste("chr", 1:6, sep = "")),
               ranges = IRanges(3:4, width = 10), 
               strand = c("+", "+")) 
-    checkIdentical(setdiff(gr1, gr2), expect)
+    checkIdentical(suppressWarnings(setdiff(gr1, gr2)), expect)
 }
 
 test_punion <- function()

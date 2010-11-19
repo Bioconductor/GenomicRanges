@@ -59,7 +59,6 @@
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{c,GenomicRanges-method}
 \alias{length,GenomicRanges-method}
-\alias{rev,GenomicRanges-method}
 \alias{seqselect,GenomicRanges-method}
 \alias{seqselect<-,GenomicRanges-method}
 \alias{split,GRanges-method}
@@ -368,11 +367,6 @@
         \item{\code{each}}{Non-negative integer.  Each element of \code{x} is
           repeated \code{each} times.}
       }
-    }
-    \item{}{
-      \code{rev(x)}:
-      Returns a new object of the same class as \code{x} made of the original
-      elements in the reverse order.
     }
     \item{}{
       \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:

@@ -1,15 +1,3 @@
-test_matching_seqnames <- function()
-{
-    tst1 <- c("a","b","c")
-    tst2 <- c("a","b")
-    tst3 <- c("c","d","e")
-    tst4 <- c("x","y","z")
-    checkTrue(!GenomicRanges:::.testSeqEquiv(tst1, tst1))## ok
-    checkTrue(!GenomicRanges:::.testSeqEquiv(tst1, tst2))## ok
-    checkTrue(GenomicRanges:::.testSeqEquiv(tst1, tst3))## not ok
-    checkTrue(GenomicRanges:::.testSeqEquiv(tst1, tst4))## not ok
-}
-
 make_subject <- function() {
     new("GRanges",
         seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
