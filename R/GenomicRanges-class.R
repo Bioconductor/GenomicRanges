@@ -331,7 +331,7 @@ setReplaceMethod("seqlengths", "GenomicRanges",
                  "'seqlevels(x)' (aka the\n  sequence levels). ",
                  "Please use the \"seqlevels\" setter if your intention ",
                  "was to\n  modify the sequence levels (i.e. use something ",
-                 "like 'seqlevels(x) <- value'\n  where ‘value’ is ",
+                 "like 'seqlevels(x) <- value'\n  where 'value' is ",
                  "a character vector containing the new levels).")
         callNextMethod()
     }
