@@ -315,6 +315,18 @@ setMethod("show", "Seqinfo",
 
 .Seqinfo.mergexy <- function(x, y)
 {
+    x_propernames <- setdiff(seqnames(x), seqnames(y))
+    y_propernames <- setdiff(seqnames(y), seqnames(x))
+    if (length(x_propernames) != 0L && length(y_propernames) != 0L) {
+        msg <- c("Each of the 2 combined objects has sequence levels not in ",
+                 "the other:\n  - in 'x': ",
+                 paste(x_propernames, collapse=", "), "\n  - in 'y': ",
+                 paste(y_propernames, collapse=", "), "\n",
+                 "  Make sure to always combine/compare objects based on the ",
+                 "same reference\n  genome (use suppressWarnings() to ",
+                 "suppress this warning).")
+        warning(msg)
+    }
     ans_seqnames <- union(seqnames(x), seqnames(y))
     ans_seqlengths <- mergeNamedAtomicVectors(seqlengths(x), seqlengths(y),
                           what=c("sequence", "seqlengths"))

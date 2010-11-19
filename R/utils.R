@@ -30,11 +30,9 @@ mergeNamedAtomicVectors <- function(x, y, what=c("key", "values"))
         msg <- c(what[1L], ifelse(length(idx) >= 2, "s", ""), " ",
                  paste(ans_names[idx], collapse=", "), " ",
                  ifelse(length(idx) >= 2, "have", "has"),
-                 " incompatible ", what[2L], " (",
-                 paste(ans[idx], collapse=", "),
-                 " vs ",
-                 paste(ans2[idx], collapse=", "),
-                 ")")
+                 " incompatible ", what[2L], ":\n  - in 'x': ",
+                 paste(ans[idx], collapse=", "), "\n  - in 'y': ",
+                 paste(ans2[idx], collapse=", "))
         stop(msg)
     }
     idx <- is.na(ans) & !is.na(ans2)

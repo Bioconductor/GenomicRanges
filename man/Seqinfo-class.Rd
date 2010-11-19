@@ -123,6 +123,12 @@
       with anything), then they are merged into a single row in the result.
       If they cannot be merged (because they contain different seqlengths
       and/or circularity flags), then an error is raised.
+      In addition to check for incompatible sequence information,
+      \code{merge(x, y)} also compares \code{seqnames(x)} with
+      \code{seqnames(y)} and issues a warning if each of them has names not
+      in the other. The purpose of these checks is to try to detect situations
+      where the user might be combining or comparing objects based on
+      different reference genomes.
     }
   }
 }
@@ -142,13 +148,14 @@
                seqlengths=c(300, NA, 15))
   y
   merge(x, y)  # rows for chr3 and chrM are merged
+  suppressWarnings(merge(x, y))
 
   ## Note that, strictly speaking, merging 2 Seqinfo objects is not
   ## a commutative operation, i.e., in general 'z1 <- merge(x, y)'
   ## is not identical to 'z2 <- merge(y, x)'. However 'z1' and 'z2'
   ## are guaranteed to contain the same information (i.e. the same
   ## rows, but typically not in the same order):
-  merge(y, x)
+  suppressWarnings(merge(y, x))
 
   ## This contradicts what 'x' says about circularity of chr3 and chrM:
   isCircular(y)[c("chr3", "chrM")] <- c(TRUE, FALSE)
