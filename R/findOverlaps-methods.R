@@ -1,23 +1,3 @@
-## No longer needed because we are no longer second guessing the users intent.
-## .similarSeqnameConvention <- function(seqs1, seqs2) {
-##     funList <-
-##       list(isRoman = function(x) grepl("[ivIV]$", x),
-##            isArabic = function(x) grepl("[0-9]$", x),
-##            haschr = function(x) grepl("^chr", x),
-##            hasChr = function(x) grepl("^Chr", x),
-##            hasCHR = function(x) grepl("^CHR", x),
-##            haschrom = function(x) grepl("^chrom", x),
-##            hasChrom = function(x) grepl("^Chrom", x),
-##            hasCHROM = function(x) grepl("^CHROM", x))
-##     all(sapply(funList, function(f) any(f(seqs1)) == any(f(seqs2))))
-## }
-
-.testSeqEquiv <- function(seqs1, seqs2) {
-  length(setdiff(seqs1, seqs2))!=0 &&
-  length(setdiff(seqs2, seqs1))!=0
-}                                         
-
-
 ### =========================================================================
 ### findOverlaps methods
 ### -------------------------------------------------------------------------
@@ -80,15 +60,15 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         type <- match.arg(type)
         select <- match.arg(select)
 
+        ## merge() also checks that 'query' and 'subject' are based on the
+        ## same reference genome.
+        seqinfo <- merge(seqinfo(query), seqinfo(subject))
         DIM <- c(length(query), length(subject))
         if (min(DIM) == 0L) {
             matchMatrix <-
               matrix(integer(), ncol = 2,
                      dimnames = list(NULL, c("query", "subject")))
         } else {
-            ## TODO: Use merge() when it becomes available.
-            #seqinfo <- merge(seqinfo(query), seqinfo(subject))
-            seqinfo <- seqinfo(query)
             querySeqnames <- seqnames(query)
             querySplitRanges <- splitRanges(querySeqnames)
             uniqueQuerySeqnames <- names(querySplitRanges)
@@ -97,22 +77,6 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
             subjectSplitRanges <- splitRanges(subjectSeqnames)
             uniqueSubjectSeqnames <- names(subjectSplitRanges)
 
-            ## uniqueQuerySeqnames & uniqueSubjectSeqnames are my sets
-            ## It's ok if both sets are equivalent.
-            ## Also ok if one set is contained within the other.
-            ## But not ok if there are elements from each set that are not
-            ## in the other set.
-            if(.testSeqEquiv(uniqueQuerySeqnames, uniqueSubjectSeqnames)){ 
-                ## A different warning if there are no matches at all
-                if(is.na(table(uniqueQuerySeqnames
-                               %in% uniqueSubjectSeqnames)["TRUE"])){
-                  warning("no seqnames from 'query' and 'subject' were identical")
-                }else ## Versus having some things match...
-                {
-                  warning("some seqnames from 'query' and 'subject' differ")
-                }
-            }
-            
             commonSeqnames <-
               intersect(uniqueQuerySeqnames, uniqueSubjectSeqnames)
 

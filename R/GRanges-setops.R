@@ -32,7 +32,7 @@ setMethod("intersect", c("GRanges", "GRanges"),
     function(x, y)
     {
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqinfo(y) <- merge(seqinfo(y), seqinfo(x))
+        seqinfo(y) <- suppressWarnings(merge(seqinfo(y), seqinfo(x)))
         seqlengths <- seqlengths(x)
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
@@ -47,7 +47,7 @@ setMethod("setdiff", c("GRanges", "GRanges"),
     function(x, y)
     {
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqinfo(y) <- merge(seqinfo(y), seqinfo(x))
+        seqinfo(y) <- suppressWarnings(merge(seqinfo(y), seqinfo(x)))
         seqlengths <- seqlengths(x)
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.

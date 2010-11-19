@@ -2,6 +2,22 @@
 ### Some low-level (non exported) utility functions.
 ###
 
+## No longer used.
+similarSeqnameConvention <- function(seqs1, seqs2)
+{
+    funList <-
+        list(isRoman = function(x) grepl("[ivIV]$", x),
+             isArabic = function(x) grepl("[0-9]$", x),
+             haschr = function(x) grepl("^chr", x),
+             hasChr = function(x) grepl("^Chr", x),
+             hasCHR = function(x) grepl("^CHR", x),
+             haschrom = function(x) grepl("^chrom", x),
+             hasChrom = function(x) grepl("^Chrom", x),
+             hasCHROM = function(x) grepl("^CHROM", x))
+    all(sapply(funList, function(f) any(f(seqs1)) == any(f(seqs2))))
+}
+
+
 ### Note that, strictly speaking, mergeNamedAtomicVectors() is not
 ### commutative, i.e., in general 'z1 <- mergeNamedAtomicVectors(x, y)' is
 ### not identical to 'z2 <- mergeNamedAtomicVectors(y, x)'. However 'z1' and
