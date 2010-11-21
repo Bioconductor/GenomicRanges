@@ -28,14 +28,14 @@ setMethod("union", c("GRanges", "GRanges"),
 setMethod("intersect", c("GRanges", "GRanges"),
     function(x, y)
     {
+        values(x) <- values(y) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
         ## it twice.
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         seqinfo(y) <- suppressWarnings(merge(seqinfo(y), seqinfo(x)))
         seqlengths <- seqlengths(x)
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
-        values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
         seqlengths[is.na(seqlengths)] <-
             .maxEndPerSequence(c(x, y))[is.na(seqlengths)]
         setdiff(x, gaps(y, end = seqlengths))
@@ -45,14 +45,14 @@ setMethod("intersect", c("GRanges", "GRanges"),
 setMethod("setdiff", c("GRanges", "GRanges"),
     function(x, y)
     {
+        values(x) <- values(y) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
         ## it twice.
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         seqinfo(y) <- suppressWarnings(merge(seqinfo(y), seqinfo(x)))
         seqlengths <- seqlengths(x)
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
-        values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
         seqlengths[is.na(seqlengths)] <-
             .maxEndPerSequence(c(x, y))[is.na(seqlengths)]
         gaps(union(gaps(x, end = seqlengths), y), end = seqlengths)
@@ -71,21 +71,15 @@ setMethod("setdiff", c("GRanges", "GRanges"),
 setMethod("punion", c("GRanges", "GRanges"),
     function(x, y, fill.gap = FALSE, ...)
     {
+        values(x) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if (!setequal(levels(seqnames(x)), levels(seqnames(y))) ||
-            !all((seqnames(x) == seqnames(y)) &
-                 (strand(x) == strand(y))))
-            stop("'x' and 'y' must elements have compatible 'seqnames' ",
+        if (!all((seqnames(x) == seqnames(y)) & (strand(x) == strand(y))))
+            stop("'x' and 'y' elements must have compatible 'seqnames' ",
                  "and 'strand' values")
-        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
-        ## in "intersect" method at the top of this file for more details.
-        ## Then the setequal check on the seqnames levels above won't be
-        ## necessary anymore.
-        GRanges(seqnames(x),
-                callGeneric(ranges(x), ranges(y), fill.gap = fill.gap),
-                strand(x),
-                seqlengths = seqlengths(x))
+        ranges(x) <- punion(ranges(x), ranges(y), fill.gap = fill.gap)
+        x
     }
 )
 
@@ -126,32 +120,32 @@ setMethod("pintersect", c("GRanges", "GRanges"),
     function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
         resolve.empty <- match.arg(resolve.empty)
+        values(x) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if (!setequal(levels(seqnames(x)), levels(seqnames(y))) ||
-            !all((seqnames(x) == seqnames(y)) &
+        if (!all((seqnames(x) == seqnames(y)) &
                   compatibleStrand(strand(x), strand(y))))
-            stop("'x' and 'y' must elements have compatible 'seqnames' ",
+            stop("'x' and 'y' elements must have compatible 'seqnames' ",
                  "and 'strand' values")
-        ansRanges <-
-          callGeneric(ranges(x), ranges(y), resolve.empty = resolve.empty)
+        ## Update the ranges.
+        ranges(x) <- pintersect(ranges(x), ranges(y),
+                                resolve.empty = resolve.empty)
+        ## Update the strand.
         ansStrand <- strand(x)
         resolveStrand <- as(ansStrand == "*", "IRanges")
         if (length(resolveStrand) > 0)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
-        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
-        ## in "intersect" method at the top of this file for more details.
-        ## Then the setequal check on the seqnames levels above won't be
-        ## necessary anymore.
-        GRanges(seqnames(x), ansRanges, ansStrand, seqlengths = seqlengths(x))
+        strand(x) <- ansStrand
+        x
     }
 )
 
 ### TODO: Like for "punion", the semantic of the
 ### pintersect,GRangesList,GRanges method should simply derive from
-### the semantic of the pintersect,GRanges,GRanges. Then both, the
-### implementation and documentation will be much easier to understand.
+### the semantic of the pintersect,GRanges,GRanges. Then the
+### implementation and documentation will be both much easier to understand.
 ### It's hard to guess what's the current semantic of this method is by
 ### just looking at the code below, but it doesn't seem to be one of:
 ###   (a) for (i in seq_len(length(x)))
@@ -160,17 +154,18 @@ setMethod("pintersect", c("GRanges", "GRanges"),
 ###         x[[i]] <- intersect(x[[i]], y[i])
 ### It seems to be close to (b) but with special treatment of the "*"
 ### strand value in 'y'.
+### FIXME: 'resolve.empty' is silently ignored.
 setMethod("pintersect", c("GRangesList", "GRanges"),
     function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
     {
+        ## TODO: Use "seqinfo<-" method for GRangesList objects when it
+        ## becomes available.
+        seqinfo(x@unlistData) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if (!setequal(levels(seqnames(x@unlistData)), levels(seqnames(y))))
-            stop("'x' and 'y' must elements have compatible 'seqnames' ",
-                 "and 'strand' values")
-        ok <-
-          (seqnames(x@unlistData) == rep(seqnames(y), elementLengths(x))) &
-          compatibleStrand(strand(x@unlistData), rep(strand(y), elementLengths(x)))
+        ok <- (seqnames(x@unlistData) == rep(seqnames(y), elementLengths(x))) &
+              compatibleStrand(strand(x@unlistData),
+                               rep(strand(y), elementLengths(x)))
         ok <-
           new2("CompressedLogicalList", unlistData = as.vector(ok),
                partitioning = x@partitioning)
@@ -180,13 +175,8 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
             elementMetadata(y) <- NULL
         x <- x[ok]
         y <- rep(y, sum(ok))
-        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
-        ## in "intersect" method at the top of this file for more details.
-        ## Then the setequal check on the seqnames levels above won't be
-        ## necessary anymore.
         x@unlistData@ranges <-
-          callGeneric(x@unlistData@ranges, y@ranges,
-                      resolve.empty = "start.x")
+          pintersect(x@unlistData@ranges, y@ranges, resolve.empty = "start.x")
         x[width(x) > 0L]
     }
 )
@@ -202,27 +192,25 @@ setMethod("pintersect", c("GRanges", "GRangesList"),
 setMethod("psetdiff", c("GRanges", "GRanges"),
     function(x, y, ...)
     {
+        values(x) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if (!setequal(levels(seqnames(x)), levels(seqnames(y))))
-            stop("'x' and 'y' must elements have compatible 'seqnames'")
-        ok <-
-          (seqnames(x) == seqnames(y)) & compatibleStrand(strand(x), strand(y))
+        ok <- (seqnames(x) == seqnames(y)) &
+              compatibleStrand(strand(x), strand(y))
+        ## Update the ranges.
         ansRanges <- ranges(x)
         seqselect(ansRanges, ok) <-
           callGeneric(seqselect(ranges(x), ok), seqselect(ranges(y), ok))
+        ranges(x) <- ansRanges
+        ## Update the strand.
         ansStrand <- strand(x)
         resolveStrand <- as(ansStrand == "*", "IRanges")
         if (length(resolveStrand) > 0)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
-        ans <- GRanges(seqnames(x), ansRanges, ansStrand)
-        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
-        ## in "intersect" method at the top of this file for more details.
-        ## Then the setequal check on the seqnames levels above won't be
-        ## necessary anymore.
-        ans@seqinfo <- x@seqinfo
-        ans
+        strand(x) <- ansStrand
+        x
     }
 )
 
@@ -231,13 +219,12 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
 setMethod("psetdiff", c("GRanges", "GRangesList"),
     function(x, y, ...)
     {
+        ansSeqinfo <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if (!setequal(levels(seqnames(x)), levels(seqnames(y@unlistData))))
-            stop("'x' and 'y' must elements have compatible 'seqnames'")
-        ok <-
-          (rep(seqnames(x), elementLengths(y)) == seqnames(y@unlistData)) &
-           compatibleStrand(rep(strand(x), elementLengths(y)), strand(y@unlistData))
+        ok <- (rep(seqnames(x), elementLengths(y)) == seqnames(y@unlistData)) &
+              compatibleStrand(rep(strand(x), elementLengths(y)),
+                               strand(y@unlistData))
         if (!all(ok)) {
             ok <-
               new2("CompressedLogicalList", unlistData = as.vector(ok),
@@ -249,11 +236,7 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
         ansStrand <- rep(strand(x), elementLengths(ansRanges))
         ansGRanges <-
           GRanges(ansSeqnames, unlist(ansRanges, use.names = FALSE), ansStrand)
-        ## TODO: 'seqinfo(x)' and 'seqinfo(y)' need to be merged. See TODO
-        ## in "intersect" method at the top of this file for more details.
-        ## Then the setequal check on the seqnames levels above won't be
-        ## necessary anymore.
-        ansGRanges@seqinfo <- x@seqinfo
+        seqinfo(ansGRanges) <- ansSeqinfo
         new2("GRangesList",
              elementMetadata = new("DataFrame", nrows = length(x)),
              unlistData = ansGRanges, partitioning = ansRanges@partitioning,
