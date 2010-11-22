@@ -280,14 +280,11 @@ setReplaceMethod("seqlevels", "GappedAlignments",
           factor(as.character(runValue(x_seqnames)), levels = value)
         seqlengths <- seqlengths(x)[value]
         is_circular <- isCircular(x)[value]
-        ## The 'initialize(seqinfo(x), ...)' form would
-        ## not be safe here because we are resizing
-        ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
-        ## the object from scratch.
-        seqinfo <- Seqinfo(seqnames = value,
-                           seqlengths = unname(seqlengths),
-                           isCircular = unname(is_circular))
-        update(x, seqnames = x_seqnames, seqinfo = seqinfo)
+        x@seqnames <- x_seqnames
+        x@seqinfo <- Seqinfo(seqnames = value,
+                             seqlengths = unname(seqlengths),
+                             isCircular = unname(is_circular))
+        x
     }
 )
 
