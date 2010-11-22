@@ -52,14 +52,16 @@ setValidity2("GRangesList", .valid.GRangesList)
 GRangesList <- function(...)
 {
     listData <- list(...)
-    if (length(listData) == 1 && is.list(listData[[1L]]))
+    if (length(listData) == 1L && is.list(listData[[1L]]))
         listData <- listData[[1L]]
     if (!all(sapply(listData, is, "GRanges")))
         stop("all elements in '...' must be GRanges objects")
-    ans <-
-      IRanges:::newCompressedList("GRangesList", listData,
-                                  elementMetadata =
-                                  new("DataFrame", nrows = length(listData)))
+    unlistData <- suppressWarnings(do.call("c", unname(listData)))
+    end <- cumsum(elementLengths(listData))
+    ans <- IRanges:::newCompressedList("GRangesList",
+               unlistData,
+               end = end, NAMES = names(listData),
+               elementMetadata = new("DataFrame", nrows = length(listData)))
     validObject(ans)
     ans
 }
