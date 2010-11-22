@@ -1,19 +1,22 @@
 \name{GappedAlignments-class}
-\Rdversion{1.1}
+\docType{class}
 
+% Class:
 \alias{class:GappedAlignments}
 \alias{GappedAlignments-class}
 \alias{GappedAlignments}
 
+% Constructors:
+\alias{readGappedAlignments}
+
+% Accessors:
 \alias{length,GappedAlignments-method}
 \alias{rname}
 \alias{rname,GappedAlignments-method}
 \alias{seqnames,GappedAlignments-method}
-\alias{seqlengths,GappedAlignments-method}
 \alias{rname<-}
 \alias{rname<-,GappedAlignments-method}
 \alias{seqnames<-,GappedAlignments-method}
-\alias{seqlengths<-,GappedAlignments-method}
 \alias{strand,GappedAlignments-method}
 \alias{cigar}
 \alias{cigar,GappedAlignments-method}
@@ -21,17 +24,35 @@
 \alias{qwidth,GappedAlignments-method}
 \alias{grglist}
 \alias{grglist,GappedAlignments-method}
+\alias{granges}
+\alias{granges,GappedAlignments-method}
 \alias{grg}
 \alias{grg,GappedAlignments-method}
 \alias{rglist}
 \alias{rglist,GappedAlignments-method}
+\alias{ranges,GappedAlignments-method}
 \alias{start,GappedAlignments-method}
 \alias{end,GappedAlignments-method}
 \alias{width,GappedAlignments-method}
+\alias{ngap,GappedAlignments-method}
+\alias{seqinfo,GappedAlignments-method}
+\alias{seqinfo<-,GappedAlignments-method}
+\alias{seqlevels<-,GappedAlignments-method}
+
+% Coercion:
 \alias{as.data.frame,GappedAlignments-method}
-\alias{show,GappedAlignments-method}
-\alias{readGappedAlignments}
+\alias{coerce,GappedAlignments,GRangesList-method}
+\alias{coerce,GappedAlignments,GRanges-method}
+\alias{coerce,GappedAlignments,RangesList-method}
+\alias{coerce,GappedAlignments,Ranges-method}
+
+% Subsetting:
 \alias{[,GappedAlignments-method}
+
+% "show" method:
+\alias{show,GappedAlignments-method}
+
+% Other methods:
 \alias{qnarrow}
 \alias{qnarrow,GappedAlignments-method}
 \alias{narrow,GappedAlignments-method}
@@ -148,7 +169,7 @@
   }
 }
 
-\section{Accessor methods}{
+\section{Accessors}{
   In the code snippets below, \code{x} is a GappedAlignments object.
 
   \describe{
@@ -157,15 +178,15 @@
       Returns the number of alignments in \code{x}.
     }
     \item{}{
-      \code{rname(x)}:
-      Returns a character factor of length \code{length(x)}
-      containing the name of the reference sequence for each alignment.
+      \code{rname(x)}, \code{rname(x) <- value}:
+      Gets or sets the name of the reference sequences for each alignment
+      in \code{x}.
+      \code{value} can be an \link[IRanges]{Rle} object, a character vector,
+      or a factor.
     }
     \item{}{
-      \code{rname(x) <- value}:
-      Replace the name of the reference sequence for each alignment.
-      \code{value} must be a character factor/vector, or a 'character' Rle,
-      or a 'factor' Rle, with the same length as \code{x}.
+      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+      Same as \code{rname(x)} and \code{rname(x) <- value}.
     }
     \item{}{
       \code{strand(x)}:
@@ -186,12 +207,16 @@
       the corresponding SAM/BAM record).
     }
     \item{}{
-      \code{grglist(x)}, \code{grg(x)}, \code{rglist(x)}:
-      Returns a \link{GRangesList}, a \link{GRanges} or a
-      \link[IRanges]{CompressedNormalIRangesList} object of
-      length \code{length(x)} where each element represents the regions
-      in the reference to which a query is aligned. See Details section
-      above for more information.
+      \code{grglist(x)}, \code{granges(x)}, \code{rglist(x)}, \code{ranges(x)}:
+      Returns either a \link{GRangesList} object, or a \link{GRanges} object,
+      or a \link[IRanges]{RangesList} object, or a \link[IRanges]{Ranges}
+      object of length \code{length(x)} where each element represents the
+      regions in the reference to which a query is aligned.
+      See Details section above for more information.
+      More precisely, the \link[IRanges]{RangesList} object returned by
+      \code{rglist(x)} is a \link[IRanges]{CompressedNormalIRangesList} object,
+      and the \link[IRanges]{Ranges} object returned by \code{ranges(x)} is
+      an \link[IRanges]{IRanges} object.
     }
     \item{}{
       \code{start(x)}, \code{end(x)}:
@@ -200,13 +225,13 @@
       for each alignment. See Details section above for the exact
       definitions of the "start" and "end" of a query.
       Note that \code{start(x)} and \code{end(x)} are equivalent
-      to \code{start(grg(x))} and \code{end(grg(x))}, respectively
-      (or, alternatively, to \code{min(rglist(x))} and
+      to \code{start(granges(x))} and \code{end(granges(x))},
+      respectively (or, alternatively, to \code{min(rglist(x))} and
       \code{max(rglist(x))}, respectively).
     }
     \item{}{
       \code{width(x)}:
-      Equivalent to \code{width(grg(x))} (or, alternatively, to
+      Equivalent to \code{width(granges(x))} (or, alternatively, to
       \code{end(x) - start(x) + 1L}).
       Note that this is generally different from \code{qwidth(x)}
       except for alignments with a trivial CIGAR string (i.e. a
@@ -217,6 +242,32 @@
       Returns an integer vector of length \code{length(x)}
       containing the number of gaps for each alignment.
       Equivalent to \code{elementLengths(rglist(x)) - 1L}.
+    }
+    \item{}{
+      \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
+      Gets or sets the information about the underlying sequences.
+      \code{value} must be a \link{Seqinfo} object.
+    }
+    \item{}{
+      \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
+      Gets or sets the sequence levels.
+      \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
+      or to \code{levels(rname(x))}, those 2 expressions being
+      guaranteed to return indentical character vectors on a GappedAlignments
+      object. \code{value} must be a character vector with no NAs.
+    }
+    \item{}{
+      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+      Gets or sets the sequence lengths.
+      \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
+      \code{value} can be a named non-negative integer or numeric vector
+      eventually with NAs.
+    }
+    \item{}{
+      \code{isCircular(x)}, \code{isCircular(x) <- value}:
+      Gets or sets the circularity flags.
+      \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
+      \code{value} must be a named logical vector eventually with NAs.
     }
   }
 }
@@ -340,11 +391,11 @@ aln1
 length(aln1)
 head(aln1)
 head(rname(aln1))
-levels(rname(aln1))
+seqlevels(aln1)
 
 ## Rename the reference sequences:
 rname(aln1) <- sub("seq", "chr", rname(aln1))
-levels(rname(aln1))
+seqlevels(aln1)
 
 head(strand(aln1))
 head(cigar(aln1))
@@ -352,8 +403,9 @@ head(qwidth(aln1))
 table(qwidth(aln1))
 
 grglist(aln1)  # a GRangesList object
-grg(aln1)      # a GRanges object
+granges(aln1)  # a GRanges object
 rglist(aln1)   # a CompressedNormalIRangesList object
+ranges(aln1)   # an IRanges object
 stopifnot(identical(elementLengths(grglist(aln1)), elementLengths(rglist(aln1))))
 
 head(start(aln1))
@@ -416,11 +468,11 @@ coverage(aln1)
 ## ---------------------------------------------------------------------
 ## E. findOverlaps()/countOverlaps()
 ## ---------------------------------------------------------------------
-findOverlaps(aln1, grg(aln1)[1])
-sum(countOverlaps(aln1, grg(aln1)[1]))
-subsetByOverlaps(aln1, grg(aln1)[1])
-table(match(aln1, grg(aln1)[1]), useNA = "ifany")
-table(aln1 \%in\% grg(aln1)[1])
+findOverlaps(aln1, granges(aln1)[1])
+sum(countOverlaps(aln1, granges(aln1)[1]))
+subsetByOverlaps(aln1, granges(aln1)[1])
+table(match(aln1, granges(aln1)[1]), useNA = "ifany")
+table(aln1 \%in\% granges(aln1)[1])
 }
 
 \keyword{methods}

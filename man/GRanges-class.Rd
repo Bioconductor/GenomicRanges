@@ -1,7 +1,7 @@
 \name{GRanges-class}
 \docType{class}
 
-% Class
+% Class:
 \alias{class:GenomicRanges}
 \alias{GenomicRanges-class}
 \alias{GenomicRanges}
@@ -9,18 +9,18 @@
 \alias{GRanges-class}
 \alias{GRanges}
 
-% Constructor-like function:
+% Constructors:
 \alias{GRanges}
 \alias{updateObject,GRanges-method}
 
-% Coercion methods:
+% Coercion:
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
 \alias{as.data.frame,GenomicRanges-method}
 
-% Accessor methods:
+% Accessors:
 \alias{seqnames,GRanges-method}
 \alias{seqnames<-,GenomicRanges-method}
 \alias{ranges,GRanges-method}
@@ -55,16 +55,16 @@
 \alias{follow,GenomicRanges,GenomicRanges-method}
 
 % Sequence methods:
+\alias{length,GenomicRanges-method}
 \alias{[,GenomicRanges-method}
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{c,GenomicRanges-method}
-\alias{length,GenomicRanges-method}
 \alias{seqselect,GenomicRanges-method}
 \alias{seqselect<-,GenomicRanges-method}
 \alias{split,GRanges-method}
 \alias{window,GenomicRanges-method}
 
-% show method:
+% "show" method:
 \alias{show,GenomicRanges-method}
 
 \title{GRanges objects}
@@ -162,8 +162,9 @@
     }
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Gets or sets the sequence names. \code{value} can be an Rle object,
-      character vector, or factor.
+      Gets or sets the sequence names.
+      \code{value} can be an \link[IRanges]{Rle} object, a character vector,
+      or a factor.
     }
     \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:

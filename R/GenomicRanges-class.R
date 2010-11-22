@@ -90,7 +90,8 @@ setMethod("elementMetadata", "GenomicRanges",
     NULL
 }
 
-.valid.GenomicRanges.seqinfo <- function(x)
+### Also used by the validity method for GappedAlignments objects.
+valid.GenomicRanges.seqinfo <- function(x)
 {
     x_seqinfo <- seqinfo(x)
     if (!identical(seqlevels(x_seqinfo), levels(seqnames(x))))
@@ -126,7 +127,7 @@ setMethod("elementMetadata", "GenomicRanges",
       .valid.GenomicRanges.seqnames(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.elementMetadata(x),
-      .valid.GenomicRanges.seqinfo(x))
+      valid.GenomicRanges.seqinfo(x))
 }
 
 setValidity2("GenomicRanges", .valid.GenomicRanges)

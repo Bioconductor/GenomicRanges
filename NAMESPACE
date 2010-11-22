@@ -24,7 +24,7 @@ export(
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
-    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
+    rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
     SummarizedExperiment,
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
@@ -54,7 +54,8 @@ exportMethods(
     punion, pintersect, psetdiff,
     findOverlaps, countOverlaps, match, "%in%",
     show,
-    rname, "rname<-", cigar, qwidth, grglist, grg, rglist, qnarrow,
+    rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, ngap,
+    qnarrow,
     dimnames, "dimnames<-", precede, follow
 )
 
