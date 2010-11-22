@@ -266,7 +266,7 @@ setReplaceMethod("strand", "GenomicRanges",
         n <- length(x)
         k <- length(value)
         if (k != n) {
-            if ((k == 0) || (k > n) || (n %% k != 0))
+            if ((k == 0L) || (k > n) || (n %% k != 0L))
                 stop(k, " elements in value to replace ", n, "elements")
             value <- rep(value, length.out = n)
         }
@@ -286,7 +286,7 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
         n <- length(x)
         k <- nrow(value)
         if (k != n) {
-            if ((k == 0) || (k > n) || (n %% k != 0))
+            if ((k == 0L) || (k > n) || (n %% k != 0L))
                 stop(k, " rows in value to replace ", n, "rows")
             value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
         }
@@ -341,12 +341,12 @@ setReplaceMethod("seqlengths", "GenomicRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Updating and cloning.
 ###
-## An object is either 'update'd in place (usually with a replacement
-## method) or 'clone'd (copied), with specified slots/fields overridden.
+### An object is either 'update'd in place (usually with a replacement
+### method) or 'clone'd (copied), with specified slots/fields overridden.
 
-## For an object with a pure S4 slot representation, these both map to
-## initialize. Reference classes will want to override 'update'. Other
-## external representations need further customization.
+### For an object with a pure S4 slot representation, these both map to
+### initialize. Reference classes will want to override 'update'. Other
+### external representations need further customization.
 
 setMethod("update", "GenomicRanges",
           function(object, ...)
@@ -645,44 +645,42 @@ setMethod("[", "GenomicRanges",
           })
 
 setReplaceMethod("[", "GenomicRanges",
-                 function(x, i, j, ..., value)
-                 {
-                   if (!is(value, "GenomicRanges"))
-                     stop("replacement value must be a GenomicRanges object")
-                   ## TODO: Shouldn't we also compare the circularity flags?
-                   if (!identical(seqlengths(x), seqlengths(value)))
-                     stop("'seqlengths(x)' and 'seqlengths(value)' are not identical")
-                   seqnames <- seqnames(x)
-                   ranges <- ranges(x)
-                   strand <- strand(x)
-                   elementMetadata <- elementMetadata(x, FALSE)
-                   if (!missing(i)) {
-                     iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
-                     if (!is.null(iInfo[["msg"]]))
-                       stop(iInfo[["msg"]])
-                   }
-                   if (missing(i) || !iInfo[["useIdx"]]) {
-                     seqnames[] <- seqnames(value)
-                     ranges[] <- ranges(value)
-                     strand[] <- strand(value)
-                     if (missing(j))
-                       elementMetadata[,] <- elementMetadata(value, FALSE)
-                     else
-                       elementMetadata[,j] <- elementMetadata(value, FALSE)
-                   } else {
-                     i <- iInfo[["idx"]]
-                     seqnames[i] <- seqnames(value)
-                     ranges[i] <- ranges(value)
-                     strand[i] <- strand(value)
-                     if (missing(j))
-                       elementMetadata[i,] <- elementMetadata(value, FALSE)
-                     else
-                       elementMetadata[i,j] <- elementMetadata(value, FALSE)
-                   }
-                   update(x, seqnames = seqnames, ranges = ranges,
-                          strand = strand, elementMetadata = elementMetadata)
-                 }
-                 )
+    function(x, i, j, ..., value)
+    {
+        if (!is(value, "GenomicRanges"))
+            stop("replacement value must be a GenomicRanges object")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
+        seqnames <- seqnames(x)
+        ranges <- ranges(x)
+        strand <- strand(x)
+        elementMetadata <- elementMetadata(x, FALSE)
+        if (!missing(i)) {
+            iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
+            if (!is.null(iInfo[["msg"]]))
+                stop(iInfo[["msg"]])
+        }
+        if (missing(i) || !iInfo[["useIdx"]]) {
+            seqnames[] <- seqnames(value)
+            ranges[] <- ranges(value)
+            strand[] <- strand(value)
+            if (missing(j))
+                elementMetadata[,] <- elementMetadata(value, FALSE)
+            else
+                elementMetadata[,j] <- elementMetadata(value, FALSE)
+        } else {
+            i <- iInfo[["idx"]]
+            seqnames[i] <- seqnames(value)
+            ranges[i] <- ranges(value)
+            strand[i] <- strand(value)
+            if (missing(j))
+                elementMetadata[i,] <- elementMetadata(value, FALSE)
+            else
+                elementMetadata[i,j] <- elementMetadata(value, FALSE)
+        }
+        update(x, seqnames = seqnames, ranges = ranges,
+               strand = strand, elementMetadata = elementMetadata)
+    }
+)
 
 setMethod("c", "GenomicRanges",
     function(x, ..., recursive = FALSE)
@@ -713,102 +711,97 @@ setMethod("c", "GenomicRanges",
 )
 
 setMethod("seqselect", "GenomicRanges",
-          function(x, start = NULL, end = NULL, width = NULL)
-          {
-            if (!is.null(end) || !is.null(width))
-              start <- IRanges(start = start, end = end, width = width)
-            irInfo <-
-              IRanges:::.bracket.Index(start, length(x), names(x),
-                                       asRanges = TRUE)
-            if (!is.null(irInfo[["msg"]]))
-              stop(irInfo[["msg"]])
-            if (irInfo[["useIdx"]]) {
-              ir <- irInfo[["idx"]]
-              ranges <- seqselect(ranges(x), ir)
-              nms <- names(ranges)
-              if (!is.null(nms)) {
+    function(x, start = NULL, end = NULL, width = NULL)
+    {
+        if (!is.null(end) || !is.null(width))
+            start <- IRanges(start = start, end = end, width = width)
+        irInfo <- IRanges:::.bracket.Index(start, length(x), names(x),
+                                           asRanges = TRUE)
+        if (!is.null(irInfo[["msg"]]))
+            stop(irInfo[["msg"]])
+        if (irInfo[["useIdx"]]) {
+            ir <- irInfo[["idx"]]
+            ranges <- seqselect(ranges(x), ir)
+            nms <- names(ranges)
+            if (!is.null(nms)) {
                 whichEmpty <- which(nms == "")
                 nms[whichEmpty] <- as.character(whichEmpty)
                 nms2 <- make.unique(nms)
-                if (length(whichEmpty) > 0 || !identical(nms, nms2))
-                  names(ranges) <- nms2
-              }
-              x <-
-                clone(x,
-                      seqnames = seqselect(seqnames(x), ir),
-                      ranges = ranges,
-                      strand = seqselect(strand(x), ir),
-                      elementMetadata =
-                      seqselect(elementMetadata(x, FALSE), ir))
+                if (length(whichEmpty) > 0L || !identical(nms, nms2))
+                    names(ranges) <- nms2
             }
-            x
-          }
-          )
+            x <- clone(x,
+                       seqnames = seqselect(seqnames(x), ir),
+                       ranges = ranges,
+                       strand = seqselect(strand(x), ir),
+                       elementMetadata =
+                       seqselect(elementMetadata(x, FALSE), ir))
+        }
+        x
+    }
+)
 
 setReplaceMethod("seqselect", "GenomicRanges",
-                 function(x, start = NULL, end = NULL, width = NULL, value)
-                 {
-                   if (!is(value, "GenomicRanges"))
-                     stop("replacement value must be a GenomicRanges object")
-                   if (!identical(seqlengths(x), seqlengths(value)))
-                     stop("'seqlengths(x)' and 'seqlengths(value)' are not identical")
-                   ## TODO: Shouldn't we also compare the circularity flags?
-                   if (is.null(end) && is.null(width)) {
-                     if (is.null(start))
-                       ir <- IRanges(start = 1, width = length(x))
-                     else if (is(start, "Ranges"))
-                       ir <- start
-                     else {
-                       if (is.logical(start) && length(start) != length(x))
-                         start <- rep(start, length.out = length(x))
-                       ir <- as(start, "IRanges")
-                     }
-                   } else {
-                     ir <- IRanges(start=start, end=end, width=width,
-                                   names=NULL)
-                   }
-                   ir <- reduce(ir)
-                   if (length(ir) == 0) {
-                     x
-                   } else {
-                     seqnames <- as.factor(seqnames(x))
-                     ranges <- ranges(x)
-                     strand <- as.factor(strand(x))
-                     elementMetadata <- elementMetadata(x, FALSE)
-                     seqselect(seqnames, ir) <- as.factor(seqnames(value))
-                     seqselect(ranges, ir) <- ranges(value)
-                     seqselect(strand, ir) <- as.factor(strand(value))
-                     seqselect(elementMetadata, ir) <- elementMetadata(value)
-                     update(x, seqnames = Rle(seqnames), ranges = ranges, 
-                            strand = Rle(strand),
-                            elementMetadata = elementMetadata)
-                   }
-                 }
-                 )
+    function(x, start = NULL, end = NULL, width = NULL, value)
+    {
+        if (!is(value, "GenomicRanges"))
+            stop("replacement value must be a GenomicRanges object")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
+        if (is.null(end) && is.null(width)) {
+            if (is.null(start))
+                ir <- IRanges(start = 1, width = length(x))
+            else if (is(start, "Ranges"))
+                ir <- start
+            else {
+                if (is.logical(start) && length(start) != length(x))
+                    start <- rep(start, length.out = length(x))
+                ir <- as(start, "IRanges")
+            }
+        } else {
+            ir <- IRanges(start = start, end = end, width = width, names = NULL)
+        }
+        ir <- reduce(ir)
+        if (length(ir) == 0) {
+            x
+        } else {
+            seqnames <- as.factor(seqnames(x))
+            ranges <- ranges(x)
+            strand <- as.factor(strand(x))
+            elementMetadata <- elementMetadata(x, FALSE)
+            seqselect(seqnames, ir) <- as.factor(seqnames(value))
+            seqselect(ranges, ir) <- ranges(value)
+            seqselect(strand, ir) <- as.factor(strand(value))
+            seqselect(elementMetadata, ir) <- elementMetadata(value)
+            update(x, seqnames = Rle(seqnames), ranges = ranges, 
+                   strand = Rle(strand),
+                   elementMetadata = elementMetadata)
+        }
+    }
+)
 
 setMethod("window", "GenomicRanges",
-          function(x, start = NA, end = NA, width = NA,
-                   frequency = NULL, delta = NULL, ...)
-          {
-            update(x,
-                   seqnames =
-                   window(seqnames(x), start = start, end = end,
-                          width = width, frequency = frequency,
-                          delta = delta),
-                   ranges =
-                   window(ranges(x), start = start, end = end,
-                          width = width, frequency = frequency,
-                          delta = delta),
-                   strand =
-                   window(strand(x), start = start, end = end,
-                          width = width, frequency = frequency,
-                          delta = delta),
-                   elementMetadata =
-                   window(elementMetadata(x, FALSE), start = start, end = end,
-                          width = width, frequency = frequency,
-                          delta = delta))
-          }
-          )
+    function(x, start = NA, end = NA, width = NA,
+             frequency = NULL, delta = NULL, ...)
+    {
+        update(x,
+               seqnames =
+               window(seqnames(x), start = start, end = end,
+                      width = width, frequency = frequency,
+                      delta = delta),
+               ranges =
+               window(ranges(x), start = start, end = end,
+                      width = width, frequency = frequency,
+                      delta = delta),
+               strand =
+               window(strand(x), start = start, end = end,
+                      width = width, frequency = frequency,
+                      delta = delta),
+               elementMetadata =
+               window(elementMetadata(x, FALSE), start = start, end = end,
+                      width = width, frequency = frequency,
+                      delta = delta))
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
