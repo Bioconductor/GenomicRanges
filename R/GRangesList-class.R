@@ -52,12 +52,16 @@ setValidity2("GRangesList", .valid.GRangesList)
 GRangesList <- function(...)
 {
     listData <- list(...)
-    if (length(listData) == 1L && is.list(listData[[1L]]))
-        listData <- listData[[1L]]
-    if (!all(sapply(listData, is, "GRanges")))
-        stop("all elements in '...' must be GRanges objects")
-    unlistData <- suppressWarnings(do.call("c", unname(listData)))
-    end <- cumsum(elementLengths(listData))
+    if (length(listData) == 0L) {
+        unlistData <- GRanges()
+    } else {
+        if (length(listData) == 1L && is.list(listData[[1L]]))
+            listData <- listData[[1L]]
+        if (!all(sapply(listData, is, "GRanges")))
+            stop("all elements in '...' must be GRanges objects")
+        unlistData <- suppressWarnings(do.call("c", unname(listData)))
+    }
+    end <- cumsum(elementLengths(unname(listData)))
     ans <- IRanges:::newCompressedList("GRangesList",
                unlistData,
                end = end, NAMES = names(listData),
@@ -241,12 +245,18 @@ setReplaceMethod("elementMetadata", "GRangesList",
     }
 )
 
-### TODO: Add "seqinfo<-" and "isCircular<-" methods here.
-
-setReplaceMethod("seqlengths", "GRangesList",
+setReplaceMethod("seqinfo", "GRangesList",
     function(x, value)
     {
-        seqlengths(x@unlistData) <- value
+        seqinfo(x@unlistData) <- value
+        x
+    }
+)
+
+setReplaceMethod("seqlevels", "GRangesList",
+    function(x, value)
+    {
+        seqlevels(x@unlistData) <- value
         x
     }
 )

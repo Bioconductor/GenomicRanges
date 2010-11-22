@@ -25,7 +25,8 @@
 \alias{elementMetadata,GRangesList-method}
 \alias{elementMetadata<-,GRangesList-method}
 \alias{seqinfo,GRangesList-method}
-\alias{seqlengths<-,GRangesList-method}
+\alias{seqinfo<-,GRangesList-method}
+\alias{seqlevels<-,GRangesList-method}
 
 % RangesList methods:
 \alias{start,GRangesList-method}
@@ -114,19 +115,30 @@
       Alternative to \code{elementMetadata} functions.
     }
     \item{}{
-      \code{seqinfo(x)}:
-      Returns a \link{Seqinfo} object containing information about
-      the underlying sequences.
+      \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
+      Gets or sets the information about the underlying sequences.
+      \code{value} must be a \link{Seqinfo} object.
+    }
+    \item{}{
+      \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
+      Gets or sets the sequence levels.
+      \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
+      or to \code{levels(seqnames(x))}, those 2 expressions being
+      guaranteed to return indentical character vectors on a GRanges object.
+      \code{value} must be a character vector with no NAs.
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the seqlengths. \code{seqlengths(x)} is formally
-      equivalent to \code{seqlengths(seqinfo(x))}.
-      \code{value} can be a named non-negative integer or numeric vector.
+      Gets or sets the sequence lengths.
+      \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
+      \code{value} can be a named non-negative integer or numeric vector
+      eventually with NAs.
     }
     \item{}{
-      \code{isCircular(x)}:
-      Formally equivalent to \code{isCircular(seqinfo(x))}.
+      \code{isCircular(x)}, \code{isCircular(x) <- value}:
+      Gets or sets the circularity flags.
+      \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
+      \code{value} must be a named logical vector eventually with NAs.
     }
   }
 }
