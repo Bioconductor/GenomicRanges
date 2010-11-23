@@ -369,14 +369,17 @@
 \seealso{
   \code{\link[Rsamtools]{readBamGappedAlignments}},
   \link{GRangesList-class},
-  \link[IRanges]{NormalIRanges-class},
+  \link{GRanges-class},
   \link[IRanges]{CompressedNormalIRangesList-class},
+  \link[IRanges]{IRanges-class},
+  \code{\link{seqinfo}},
+  \link{Seqinfo-class},
   \code{\link[IRanges]{coverage}},
   \link[IRanges]{RleList-class},
   \link{pintersect,GRanges,GRanges-method},
   \link{findOverlaps,GRangesList,GenomicRanges-method},
   \link{countOverlaps,GRangesList,GenomicRanges-method},
-  \link{subsetByOverlaps,GRangesList,GenomicRanges-method},
+  \link{subsetByOverlaps,GRangesList,GenomicRanges-method}
 }
 
 \examples{
