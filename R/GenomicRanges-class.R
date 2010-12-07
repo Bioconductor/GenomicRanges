@@ -39,6 +39,12 @@ setMethod("elementMetadata", "GenomicRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
+### TODO: Should we enforce ranges(x) to be an IRanges *instance* (i.e.
+### class(ranges(x) == "IRanges")) instead of just an IRanges *object* (i.e.
+### is(ranges(x), "IRanges"))? Right now I can create a GRanges object where
+### the ranges are a Views object on a very long DNAString subject with
+### something like 'GRanges("chr1", Views(subject, start=1:2, end=5))'.
+### Sounds cool but there are also some potential complications with this...
 
 .valid.GenomicRanges.length <- function(x)
 {
