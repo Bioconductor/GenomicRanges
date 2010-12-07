@@ -150,8 +150,8 @@ setAs("RangedData", "GRanges",
     }
 )
 
-### Does NOT propagate the names and elementMetadata i.e. always returns an
-### unnamed GRanges object with no elementMetadata.
+### Does NOT propagate the ranges names and elementMetadata i.e. always
+### returns an unnamed GRanges object with no elementMetadata.
 setAs("RangesList", "GRanges",
       function(from)
       {
