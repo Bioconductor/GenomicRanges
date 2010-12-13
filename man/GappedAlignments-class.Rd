@@ -472,16 +472,17 @@ coverage(galn)
 ## E. findOverlaps()/countOverlaps()
 ## ---------------------------------------------------------------------
 
-## Note the absence of query no. 9 in this result:
 subject <- granges(galn)[1]
+subject
+
+## Note the absence of query no. 9 (i.e. 'galn[9]') in this result:
 as.matrix(findOverlaps(galn, subject))
 
 ## This is because findOverlaps()/countOverlaps() are strand specific:
 galn[8:10]
-granges(galn)[1]
 countOverlaps(galn[8:10], subject)
 
-## If this is not the desired behaviour, then you can set strand(galn)
+## If this is not the desired behaviour, then you can set 'strand(galn)'
 ## to "*":
 strand(galn) <- "*"
 galn[8:10]
