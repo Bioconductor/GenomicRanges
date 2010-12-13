@@ -14,10 +14,11 @@
 \alias{rname}
 \alias{rname,GappedAlignments-method}
 \alias{seqnames,GappedAlignments-method}
+\alias{strand,GappedAlignments-method}
 \alias{rname<-}
 \alias{rname<-,GappedAlignments-method}
 \alias{seqnames<-,GappedAlignments-method}
-\alias{strand,GappedAlignments-method}
+\alias{strand<-,GappedAlignments-method}
 \alias{cigar}
 \alias{cigar,GappedAlignments-method}
 \alias{qwidth}
@@ -82,9 +83,6 @@
   The GappedAlignments class is a simple container which
   purpose is to store a set of alignments that will hold just enough
   information for supporting the operations described below.
-
-  WARNING! This is work-in-progress. Expect frequent changes in
-  functionalities.
 }
 
 \details{
@@ -179,20 +177,22 @@
     }
     \item{}{
       \code{rname(x)}, \code{rname(x) <- value}:
-      Gets or sets the name of the reference sequences for each alignment
-      in \code{x}.
-      \code{value} can be an \link[IRanges]{Rle} object, a character vector,
-      or a factor.
+      Gets or sets the name of the reference sequence for each alignment
+      in \code{x} (see Details section above for more information about
+      the RNAME field of a SAM/BAM file).
+      \code{value} can be a factor, or a 'factor' \link[IRanges]{Rle},
+      or a character vector.
     }
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Same as \code{rname(x)} and \code{rname(x) <- value}.
     }
     \item{}{
-      \code{strand(x)}:
-      Returns a character factor of length \code{length(x)}
-      (with levels +, - and *) containing the strand in the reference
-      sequence to which the query is aligned.
+      \code{strand(x)}, \code{strand(x) <- value}:
+      Gets or sets the strand for each alignment in \code{x} (see Details
+      section above for more information about the strand of an alignment).
+      \code{value} can be a factor (with levels +, - and *), or a 'factor'
+      \link[IRanges]{Rle}, or a character vector.
     }
     \item{}{
       \code{cigar(x)}:
@@ -383,68 +383,68 @@
 }
 
 \examples{
-library(Rsamtools)  # the toy file below is there
-aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-aln1 <- readGappedAlignments(aln1_file)
-aln1
+library(Rsamtools)  # the toy file we use below is in this package
+galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galn <- readGappedAlignments(galn_file)
+galn
 
 ## ---------------------------------------------------------------------
 ## A. BASIC MANIPULATION
 ## ---------------------------------------------------------------------
-length(aln1)
-head(aln1)
-head(rname(aln1))
-seqlevels(aln1)
+length(galn)
+head(galn)
+head(rname(galn))
+seqlevels(galn)
 
 ## Rename the reference sequences:
-rname(aln1) <- sub("seq", "chr", rname(aln1))
-seqlevels(aln1)
+rname(galn) <- sub("seq", "chr", rname(galn))
+seqlevels(galn)
 
-head(strand(aln1))
-head(cigar(aln1))
-head(qwidth(aln1))
-table(qwidth(aln1))
+head(strand(galn))
+head(cigar(galn))
+head(qwidth(galn))
+table(qwidth(galn))
 
-grglist(aln1)  # a GRangesList object
-granges(aln1)  # a GRanges object
-rglist(aln1)   # a CompressedNormalIRangesList object
-ranges(aln1)   # an IRanges object
-stopifnot(identical(elementLengths(grglist(aln1)), elementLengths(rglist(aln1))))
+grglist(galn)  # a GRangesList object
+granges(galn)  # a GRanges object
+rglist(galn)   # a CompressedNormalIRangesList object
+ranges(galn)   # an IRanges object
+stopifnot(identical(elementLengths(grglist(galn)), elementLengths(rglist(galn))))
 
-head(start(aln1))
-head(end(aln1))
-head(width(aln1))
-head(ngap(aln1))
+head(start(galn))
+head(end(galn))
+head(width(galn))
+head(ngap(galn))
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING
 ## ---------------------------------------------------------------------
-aln1[strand(aln1) == "-"]
-aln1[grep("I", cigar(aln1), fixed=TRUE)]
-aln1[grep("N", cigar(aln1), fixed=TRUE)]  # no gaps
+galn[strand(galn) == "-"]
+galn[grep("I", cigar(galn), fixed=TRUE)]
+galn[grep("N", cigar(galn), fixed=TRUE)]  # no gaps
 
 ## A confirmation that all the queries map to the reference with no
 ## gaps:
-stopifnot(all(ngap(aln1) == 0))
+stopifnot(all(ngap(galn) == 0))
 
 ## Different ways to subset:
-aln1[6]             # a GappedAlignments object of length 1
-grglist(aln1)[[6]]  # a GRanges object of length 1
-rglist(aln1)[[6]]   # a NormalIRanges object of length 1
+galn[6]             # a GappedAlignments object of length 1
+grglist(galn)[[6]]  # a GRanges object of length 1
+rglist(galn)[[6]]   # a NormalIRanges object of length 1
 
 ## Ds are NOT gaps:
-ii <- grep("D", cigar(aln1), fixed=TRUE)
-aln1[ii]
-ngap(aln1[ii])
-grglist(aln1[ii])
+ii <- grep("D", cigar(galn), fixed=TRUE)
+galn[ii]
+ngap(galn[ii])
+grglist(galn[ii])
 
 ## qwidth() vs width():
-aln1[qwidth(aln1) != width(aln1)]
+galn[qwidth(galn) != width(galn)]
 
 ## This MUST return an empty object:
-aln1[cigar(aln1) == "35M" & qwidth(aln1) != 35]
+galn[cigar(galn) == "35M" & qwidth(galn) != 35]
 ## but this doesn't have too:
-aln1[cigar(aln1) != "35M" & qwidth(aln1) == 35]
+galn[cigar(galn) != "35M" & qwidth(galn) == 35]
 
 ## ---------------------------------------------------------------------
 ## C. qnarrow()/narrow()
@@ -454,28 +454,46 @@ aln1[cigar(aln1) != "35M" & qwidth(aln1) == 35]
 
 ## This trims 3 nucleotides on the left and 5 nucleotides on the right
 ## of each alignment:
-qnarrow(aln1, start=4, end=-6)
+qnarrow(galn, start=4, end=-6)
 ## Note that the 'start' and 'end' arguments specify what part of each
 ## query sequence should be kept (negative values being relative to the
 ## right end of the query sequence), not what part should be trimmed.
 
 ## Trimming on the left doesn't change the "end" of the queries.
-qnarrow(aln1, start=21)
-stopifnot(identical(end(qnarrow(aln1, start=21)), end(aln1)))
+qnarrow(galn, start=21)
+stopifnot(identical(end(qnarrow(galn, start=21)), end(galn)))
 
 ## ---------------------------------------------------------------------
 ## D. coverage()
 ## ---------------------------------------------------------------------
-coverage(aln1)
+coverage(galn)
 
 ## ---------------------------------------------------------------------
 ## E. findOverlaps()/countOverlaps()
 ## ---------------------------------------------------------------------
-findOverlaps(aln1, granges(aln1)[1])
-sum(countOverlaps(aln1, granges(aln1)[1]))
-subsetByOverlaps(aln1, granges(aln1)[1])
-table(match(aln1, granges(aln1)[1]), useNA = "ifany")
-table(aln1 \%in\% granges(aln1)[1])
+
+## Note the absence of query no. 9 in this result:
+subject <- granges(galn)[1]
+as.matrix(findOverlaps(galn, subject))
+
+## This is because findOverlaps()/countOverlaps() are strand specific:
+galn[8:10]
+granges(galn)[1]
+countOverlaps(galn[8:10], subject)
+
+## If this is not the desired behaviour, then you can set strand(galn)
+## to "*":
+strand(galn) <- "*"
+galn[8:10]
+countOverlaps(galn[8:10], subject)
+
+## ---------------------------------------------------------------------
+## F. ADVANCED OVERLAP EXAMPLES
+## ---------------------------------------------------------------------
+
+subsetByOverlaps(galn, subject)
+table(match(galn, subject), useNA = "ifany")
+table(galn \%in\% subject)
 }
 
 \keyword{methods}

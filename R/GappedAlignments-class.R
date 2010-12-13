@@ -236,6 +236,14 @@ setReplaceMethod("seqnames", "GappedAlignments",
     function(x, value) `rname<-`(x, value)
 )
 
+setReplaceMethod("strand", "GappedAlignments",
+    function(x, value) 
+    {
+        x@strand <- normargGenomicRangesStrand(value, length(x))
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other setters.
