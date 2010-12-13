@@ -9,7 +9,7 @@ setClass("GappedAlignments",
         seqnames="Rle",               # 'factor' Rle
         start="integer",              # POS field in SAM
         cigar="character",            # extended CIGAR (see SAM format specs)
-        strand="raw",
+        strand="Rle",                 # 'factor' Rle
         seqinfo="Seqinfo"
         #mismatches="characterORNULL", # see MD optional field in SAM format specs
         #values="DataFrame"
@@ -62,9 +62,6 @@ setClass("GappedAlignments",
 ###   subsetByOverlaps(query, subject) - 'query' or 'subject' or both are
 ###                 GappedAlignments objects.
 ###
-### Concrete GappedAlignments implementations just need to implement:
-###   length, rname, rname<-, strand, cigar, rglist, [ and updateCigarAndStart
-### and the default methods defined in this file will work.
 
 setGeneric("rname", function(x) standardGeneric("rname"))
 
@@ -141,10 +138,7 @@ setMethod("width", "GappedAlignments", function(x) cigarToWidth(x@cigar))
 setMethod("start", "GappedAlignments", function(x, ...) x@start)
 setMethod("end", "GappedAlignments", function(x, ...) {x@start + width(x) - 1L})
 
-setMethod("strand", "GappedAlignments",
-    function(x)
-        Rle(strand(IRanges:::compactBitvectorAsLogical(x@strand, length(x))))
-)
+setMethod("strand", "GappedAlignments", function(x) x@strand)
 
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
 
@@ -386,7 +380,6 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
     } else if (is.factor(strand)) {
         strand <- Rle(strand)
     }
-    strand <- IRanges:::logicalAsCompactBitvector(as.character(strand) == "-")
     if (is.null(seqlengths)) {
         seqlengths <- rep(NA_integer_, length(levels(rname)))
         names(seqlengths) <- levels(rname)
@@ -481,7 +474,7 @@ setMethod("[", "GappedAlignments",
         x@seqnames <- x@seqnames[i]
         x@start <- x@start[i]
         x@cigar <- x@cigar[i]
-        x@strand <- IRanges:::subsetCompactBitvector(x@strand, i)
+        x@strand <- x@strand[i]
         x
     }
 )

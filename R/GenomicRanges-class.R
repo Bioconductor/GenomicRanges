@@ -269,7 +269,7 @@ setReplaceMethod("strand", "GenomicRanges",
             value <- Rle(value)
         if (!is.factor(runValue(value)) ||
             !identical(levels(runValue(value)), levels(strand())))
-        runValue(value) <- strand(runValue(value))
+            runValue(value) <- strand(runValue(value))
         n <- length(x)
         k <- length(value)
         if (k != n) {
