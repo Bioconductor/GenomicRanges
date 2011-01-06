@@ -46,6 +46,9 @@
 % show method:
 \alias{show,GRangesList-method}
 
+% "reduce" method:
+\alias{reduce,GRangesList-method}
+
 
 \title{GRangesList objects}
 
@@ -387,6 +390,21 @@
   }
 }
 
+\section{The "reduce" method}{
+  In the code snippets below, \code{x} is a GRangesList object.
+
+  \describe{
+    \item{}{
+      \code{reduce(x, drop.empty.ranges=FALSE, min.gapwidth=1L)}:
+      Reduces separately each element in \code{x} and returns them in a
+      GRangesList object with the same length & names & seqinfo &
+      elementMetadata as \code{x}. In other words, it is equivalent to
+      \code{endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
+                      min.gapwidth=min.gapwidth)}.
+    }
+  }
+}
+
 \author{P. Aboyoun}
 
 \seealso{
@@ -427,4 +445,11 @@
   unique(seqnames(grl))
   seqnames(grl) <- sub("chr", "Chrom", seqnames(grl))
   grl
+
+  # reduce():
+  reduce(grl)  # Doesn't really reduce anything but note the reordering
+               # of the inner elements in the 3rd top-level element: the
+               # ranges are reordered by sequence name first (the order of
+               # the sequence names is dictated by the sequence levels),
+               # and then by strand.
 }
