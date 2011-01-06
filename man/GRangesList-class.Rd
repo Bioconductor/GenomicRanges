@@ -397,8 +397,8 @@
     \item{}{
       \code{reduce(x, drop.empty.ranges=FALSE, min.gapwidth=1L)}:
       Reduces separately each element in \code{x} and returns them in a
-      GRangesList object with the same length & names & seqinfo &
-      elementMetadata as \code{x}. In other words, it is equivalent to
+      GRangesList object with the same length & names & elementMetadata &
+      seqinfo as \code{x}. In other words, it is equivalent to
       \code{endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
                       min.gapwidth=min.gapwidth)}.
     }

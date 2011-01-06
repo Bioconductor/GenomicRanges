@@ -523,7 +523,7 @@ setMethod("show", "GRangesList",
 ### More precisely, .reconstructGRLfromCIRL() transforms CompressedIRangesList
 ### object 'cirl' with names in the "f1|f2|f3" format (as produced by
 ### .deconstructGRLintoCIRL()) back into a GRangesList object with the same
-### names & seqinfo & elementMetadata as 'x'.
+### length & names & elementMetadata & seqinfo as 'x'.
 .reconstructGRLfromCIRL <- function(cirl, x)
 {
     snames <- strsplit(names(cirl), "|", fixed=TRUE)
