@@ -74,14 +74,14 @@
 }
 
 \usage{
-  \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"), select = c("all", "first"))
-  \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-              type = c("any", "start", "end"))
-  \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-                 type = c("any", "start", "end"))
-  \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
-  # Also:  x \%in\% table
+\S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
+           type = c("any", "start", "end"), select = c("all", "first"))
+\S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
+            type = c("any", "start", "end"))
+\S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
+               type = c("any", "start", "end"))
+\S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
+# Also:  x \%in\% table
 }
 
 \arguments{

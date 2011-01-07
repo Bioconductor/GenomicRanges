@@ -25,15 +25,15 @@
 }
 
 \usage{
-  ## Set operations
-  \S4method{union}{GRanges,GRanges}(x, y)
-  \S4method{intersect}{GRanges,GRanges}(x, y)
-  \S4method{setdiff}{GRanges,GRanges}(x, y)
+## Set operations
+\S4method{union}{GRanges,GRanges}(x, y)
+\S4method{intersect}{GRanges,GRanges}(x, y)
+\S4method{setdiff}{GRanges,GRanges}(x, y)
 
-  ## Parallel set operations
-  \S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ...)
-  \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
-  \S4method{psetdiff}{GRanges,GRanges}(x, y, ...)
+## Parallel set operations
+\S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ...)
+\S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
+\S4method{psetdiff}{GRanges,GRanges}(x, y, ...)
 }
 
 \arguments{

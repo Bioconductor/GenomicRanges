@@ -27,22 +27,22 @@
 }
 
 \usage{
-  seqinfo(x)
-  seqinfo(x) <- value
+seqinfo(x)
+seqinfo(x) <- value
 
-  seqnames(x)
-  seqnames(x) <- value
+seqnames(x)
+seqnames(x) <- value
 
-  seqlevels(x)
-  seqlevels(x) <- value
+seqlevels(x)
+seqlevels(x) <- value
 
-  seqlengths(x)
-  seqlengths(x) <- value
+seqlengths(x)
+seqlengths(x) <- value
 
-  isCircular(x)
-  isCircular(x) <- value
+isCircular(x)
+isCircular(x) <- value
 
-  isCircularWithKnownLength(x)
+isCircularWithKnownLength(x)
 }
 
 \arguments{
