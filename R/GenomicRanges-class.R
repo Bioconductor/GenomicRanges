@@ -941,6 +941,9 @@ setMethod("show", "GenomicRanges",
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
   function(x, subject, ...)
   {
+      if(all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
+        strand(x) <- strand(subject) <- "+"
+      
       elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
       elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
       xLst <- split(x, seqnames(x), drop = FALSE)
@@ -1006,6 +1009,9 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ...)
     {
+        if(all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
+            strand(x) <- strand(subject) <- "+"
+        
         elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
         elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
         xLst <- split(x, seqnames(x), drop = FALSE)
