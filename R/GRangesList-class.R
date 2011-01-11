@@ -494,58 +494,75 @@ setMethod("show", "GRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Deconstruction/reconstruction of a GRangesList into/from a GRanges
+### object.
+###
+### For internal use only (not exported).
+###
+
+### Unlist GRangesList object 'x' into a GRanges object but the differences
+### with the "unlist" method for GRangesList objects are:
+###   - The sequence names of the returned GRanges object are modified by
+###     embedding the "grouping by top-level element" information in them.
+###   - The seqinfo is lost.
+###   - It's also much faster.
+deconstructGRLintoGR <- function(x)
+{
+    ans <- x@unlistData
+    f1 <- rep.int(seq_len(length(x)), elementLengths(x))
+    f2 <- as.integer(seqnames(ans))
+    f12 <- paste(f1, f2, sep="|")
+    ans_seqlevels <- unique(f12[order(f1, f2)])
+    ## The 2 following modifications must be seen as an atomic operation
+    ## since doing the 1st without doing the 2nd would leave 'ans' in a
+    ## broken state.
+    ans@seqnames <- Rle(factor(f12, ans_seqlevels))
+    ans@seqinfo <- Seqinfo(ans_seqlevels)
+    ans
+}
+
+### The "inverse" transform of deconstructGRLintoGR().
+### More precisely, reconstructGRLfromGR() transforms GRanges object 'gr'
+### with sequence names in the "f1|f2" format (as produced by
+### deconstructGRLintoGR() above) back into a GRangesList object with the
+### same length & names & elementMetadata & seqinfo as 'x'.
+### The fundamental property of this deconstruction/reconstruction mechanism
+### is that, for any GRangesList object 'x':
+###
+###   reconstructGRLfromGR(deconstructGRLintoGR(x), x) is identical to x
+###
+reconstructGRLfromGR <- function(gr, x)
+{
+    snames <- strsplit(as.character(seqnames(gr)), "|", fixed=TRUE)
+    m12 <- matrix(as.integer(unlist(snames)), ncol=2, byrow=TRUE)
+
+    ## Restore the real sequence names.
+    f2 <- m12[ , 2L]
+    x_seqlevels <- seqlevels(x)
+    ## The 2 following modifications must be seen as an atomic operation
+    ## since doing the 1st without doing the 2nd would leave 'gr' in a
+    ## broken state.
+    gr@seqnames <- Rle(factor(x_seqlevels[f2], x_seqlevels))
+    gr@seqinfo <- seqinfo(x)
+
+    ## Split.
+    f1 <- m12[ , 1L]
+    ans <- split(gr, factor(f1, levels=seq_len(length(x))))
+    names(ans) <- names(x)
+    elementMetadata(ans) <- elementMetadata(x)
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "reduce" method.
 ###
 ### For a GRangesList object 'x', 'reduce(x)' is equivalent to
 ### 'endoapply(x, reduce)'. However, this naive implementation would be
 ### too inefficient. The fast implementation below takes advantage of the
-### fact that we already have a fast "reduce" method for CompressedIRangesList
-### objects (implemented in C). Depending on the size of 'x', it is 100-1000
-### times faster than 'endoapply(x, reduce)'.
-
-### Transforms GRangesList object 'x' into a CompressedIRangesList object
-### obtained by grouping all the ranges in 'x' by (f1,f2,f3) where:
-###   - f1 is the positional index of the top-level element in 'x' a range
-###     belongs to;
-###   - f2 is the sequence name associated to a range;
-###   - f3 is the strand associated to a range.
-.deconstructGRLintoCIRL <- function(x)
-{
-    f1 <- rep.int(seq_len(length(x)), elementLengths(x))
-    unlisted <- x@unlistData
-    f2 <- as.integer(seqnames(unlisted))
-    f3 <- as.integer(strand(unlisted))
-    f123 <- paste(f1, f2, f3, sep="|")
-    split(unlisted@ranges, f123)
-}
-
-### The "inverse" transform of .deconstructGRLintoCIRL().
-### More precisely, .reconstructGRLfromCIRL() transforms CompressedIRangesList
-### object 'cirl' with names in the "f1|f2|f3" format (as produced by
-### .deconstructGRLintoCIRL()) back into a GRangesList object with the same
-### length & names & elementMetadata & seqinfo as 'x'.
-.reconstructGRLfromCIRL <- function(cirl, x)
-{
-    snames <- strsplit(names(cirl), "|", fixed=TRUE)
-    i123 <- matrix(as.integer(unlist(snames)), ncol=3, byrow=TRUE)
-    oo <- order(i123[ , 1L], i123[ , 2L], i123[ , 3L])
-    cirl <- cirl[oo]
-    cirl_eltlens <- elementLengths(cirl)
-    i123 <- i123[oo, ]
-    unlisted <- x@unlistData
-    seqlevels <- levels(seqnames(unlisted))
-    i1 <- i123[ , 1L]
-    i2 <- factor(seqlevels[i123[ , 2L]], seqlevels)
-    i3 <- strand(levels(strand())[i123[ , 3L]])
-    ans_seqnames <- Rle(i2, cirl_eltlens)
-    ans_strand <- Rle(i3, cirl_eltlens)
-    ans_unlisted <- GRanges(ans_seqnames, cirl@unlistData, ans_strand)
-    seqinfo(ans_unlisted) <- seqinfo(unlisted)
-    ans <- split(ans_unlisted, rep.int(i1, cirl_eltlens))
-    names(ans) <- names(x)
-    elementMetadata(ans) <- elementMetadata(x)
-    ans
-}
+### fact that we already have a fast "reduce" method for GRanges objects.
+### Depending on the size of 'x', it is 50-1000 times faster than
+### 'endoapply(x, reduce)'.
 
 setMethod("reduce", "GRangesList",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
@@ -554,11 +571,11 @@ setMethod("reduce", "GRangesList",
         if (!identical(with.inframe.attrib, FALSE)) 
             stop("'with.inframe.attrib' argument is not supported ", 
                  "when reducing a GRangesList object")
-        cirl <- .deconstructGRLintoCIRL(x)
-        ## "reduce" method for CompressedIRangesList objects is fast.
-        rcirl <- reduce(cirl, drop.empty.ranges=drop.empty.ranges,
-                        min.gapwidth=min.gapwidth)
-        .reconstructGRLfromCIRL(rcirl, x)
+        gr <- deconstructGRLintoGR(x)
+        ## "reduce" method for GRanges objects is fast.
+        gr <- reduce(gr, drop.empty.ranges=drop.empty.ranges,
+                         min.gapwidth=min.gapwidth)
+        reconstructGRLfromGR(gr, x)
     }
 )
 

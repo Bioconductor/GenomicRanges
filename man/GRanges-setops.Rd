@@ -16,6 +16,7 @@
 
 \alias{psetdiff,GRanges,GRanges-method}
 \alias{psetdiff,GRanges,GRangesList-method}
+\alias{psetdiff,GRangesList,GRangesList-method}
 
 
 \title{GRanges and GRangesList Set and Parallel Set Operations}
@@ -44,7 +45,6 @@
     \code{y} must both be \link{GRanges} objects.
     For \code{pintersect}, \code{x} and \code{y} cannot both be
     \link{GRangesList} objects.
-    For \code{psetdiff}, \code{x} and must be a \link{GRanges} object.
   }
   \item{fill.gap}{
     Logical indicating whether or not to force a union by using the rule
@@ -143,6 +143,9 @@
 
   ## Parallel set difference of a GRanges and a GRangesList object
   psetdiff(gr, grlist)
+
+  ## Parallel set difference of two GRangesList objects
+  psetdiff(grlist, shift(grlist, 3))
 }
 
 \keyword{methods}

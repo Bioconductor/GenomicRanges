@@ -244,3 +244,18 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
     }
 )
 
+### Equivalent to 'mendoapply(setdiff, x, y)'.
+setMethod("psetdiff", c("GRangesList", "GRangesList"),
+    function(x, y, ...)
+    {
+        if (length(x) != length(y))
+            stop("'x' and 'y' must have the same length")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqlevels(y) <- seqlevels(x)
+        xgr <- deconstructGRLintoGR(x)
+        ygr <- deconstructGRLintoGR(y)
+        gr <- setdiff(xgr, ygr, ...)
+        reconstructGRLfromGR(gr, x)
+    }
+)
+
