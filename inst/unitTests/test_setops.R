@@ -146,7 +146,6 @@ test_psetdiff <- function()
     grlist <- make_test_GRangesList()
 
     checkException(psetdiff(grlist, gr), silent = TRUE)
-    checkException(psetdiff(grlist, grlist), silent = TRUE)
 
     expect <- gr
     width(expect) <- 0L
