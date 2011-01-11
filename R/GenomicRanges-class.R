@@ -100,9 +100,11 @@ setMethod("elementMetadata", "GenomicRanges",
 valid.GenomicRanges.seqinfo <- function(x)
 {
     x_seqinfo <- seqinfo(x)
-    if (!identical(seqlevels(x_seqinfo), levels(seqnames(x))))
-        return("'seqlevels(seqinfo(x))' and 'levels(seqnames(x))' ",
-               "are not identical")
+    if (!identical(seqlevels(x_seqinfo), levels(seqnames(x)))) {
+        msg <- c("'seqlevels(seqinfo(x))' and 'levels(seqnames(x))'",
+                 "are not identical")
+        return(paste(msg))
+    }
     x_seqlengths <- seqlengths(x_seqinfo)
     seqs_with_known_length <- names(x_seqlengths)[!is.na(x_seqlengths)]
     if (length(seqs_with_known_length) == 0L)
