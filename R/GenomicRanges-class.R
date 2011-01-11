@@ -73,7 +73,7 @@ setMethod("elementMetadata", "GenomicRanges",
         msg <- c("'strand' should be a 'factor' Rle with levels c(",
                  paste('"', levels(strand()), '"', sep = "", collapse = ", "),
                  ")")
-        return(paste(msg, sep = ""))
+        return(paste(msg, collapse=""))
     }
     if (IRanges:::anyMissing(runValue(strand(x))))
         return("'strand' contains missing values")
@@ -91,7 +91,7 @@ setMethod("elementMetadata", "GenomicRanges",
         msg <- c("slot 'elementMetadata' cannot use",
                  paste("\"", INVALID.COLNAMES, "\"", sep="", collapse=", "),
                  "as column names")
-        return(paste(msg))
+        return(paste(msg, collapse=" "))
     }
     NULL
 }
@@ -103,7 +103,7 @@ valid.GenomicRanges.seqinfo <- function(x)
     if (!identical(seqlevels(x_seqinfo), levels(seqnames(x)))) {
         msg <- c("'seqlevels(seqinfo(x))' and 'levels(seqnames(x))'",
                  "are not identical")
-        return(paste(msg))
+        return(paste(msg, collapse=" "))
     }
     x_seqlengths <- seqlengths(x_seqinfo)
     seqs_with_known_length <- names(x_seqlengths)[!is.na(x_seqlengths)]
