@@ -16,6 +16,39 @@ setClass("GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### 2 non-exported low-level helper functions.
+###
+### For the 2 functions below, 'x' must be a GenomicRanges object.
+### They both return a named integer vector where the names are guaranteed
+### to be 'seqlevels(x)'.
+###
+
+minStartPerGRangesSequence <- function(x)
+{
+    cil <- IRanges:::newCompressedList("CompressedIntegerList",
+                       unlistData=start(x),
+                       splitFactor=seqnames(x))
+    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
+    ans <- viewMins(v)
+    ans[width(v) == 0L] <- NA_integer_
+    names(ans) <- names(v)
+    ans
+}
+
+maxEndPerGRangesSequence <- function(x)
+{
+    cil <- IRanges:::newCompressedList("CompressedIntegerList",
+                       unlistData=end(x),
+                       splitFactor=seqnames(x))
+    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
+    ans <- viewMaxs(v)
+    ans[width(v) == 0L] <- NA_integer_
+    names(ans) <- names(v)
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
 ###
 
@@ -120,8 +153,8 @@ valid.GenomicRanges.seqinfo <- function(x)
         return(NULL)
     x_seqnames <- seqnames(x)
     runValue(x_seqnames) <- runValue(x_seqnames)[drop=TRUE]
-    minStarts <- IRanges:::.tapplyDefault(start(x), x_seqnames, min)
-    maxEnds <- IRanges:::.tapplyDefault(end(x), x_seqnames, max)
+    minStarts <- minStartPerGRangesSequence(x)
+    maxEnds <- maxEndPerGRangesSequence(x)
     if (any(minStarts[ncswkl] < 1L, na.rm = TRUE)
      || any(maxEnds[ncswkl] >
             seqlengths(x)[ncswkl], na.rm = TRUE))

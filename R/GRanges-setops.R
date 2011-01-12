@@ -12,19 +12,6 @@ setMethod("union", c("GRanges", "GRanges"),
     }
 )
 
-### 'x' must be a GRanges object.
-### Returns a named integer vector where the names are guaranteed
-### to be 'levels(seqnames(x))'.
-.maxEndPerSequence <- function(x)
-{
-    ends_list <- IRanges:::newCompressedList("CompressedIntegerList",
-                    unlistData=end(x),
-                    splitFactor=seqnames(x))
-    sapply(ends_list,
-           function(ends)
-               if (length(ends) > 0L) max(ends) else NA_integer_)
-}
-
 setMethod("intersect", c("GRanges", "GRanges"),
     function(x, y)
     {
@@ -37,7 +24,7 @@ setMethod("intersect", c("GRanges", "GRanges"),
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
-            .maxEndPerSequence(c(x, y))[is.na(seqlengths)]
+            maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
         setdiff(x, gaps(y, end = seqlengths))
     }
 )
@@ -54,7 +41,7 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
-            .maxEndPerSequence(c(x, y))[is.na(seqlengths)]
+            maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
         gaps(union(gaps(x, end = seqlengths), y), end = seqlengths)
     }
 )
