@@ -504,20 +504,40 @@ setMethod("show", "GRangesList",
 ### with the "unlist" method for GRangesList objects are:
 ###   - The sequence names of the returned GRanges object are modified by
 ###     embedding the "grouping by top-level element" information in them.
-###   - The seqinfo is lost.
-###   - It's also much faster.
-deconstructGRLintoGR <- function(x)
+###   - The seqinfo is modified accordingly.
+deconstructGRLintoGR <- function(x, expand.levels=FALSE)
 {
     ans <- x@unlistData
     f1 <- rep.int(seq_len(length(x)), elementLengths(x))
     f2 <- as.integer(seqnames(ans))
     f12 <- paste(f1, f2, sep="|")
-    ans_seqlevels <- unique(f12[order(f1, f2)])
-    ## The 2 following modifications must be seen as an atomic operation
-    ## since doing the 1st without doing the 2nd would leave 'ans' in a
-    ## broken state.
+
+    ## Compute 'ans_seqinfo'.
+    if (expand.levels) {
+        x_nlev <- length(seqlevels(x))
+        i1 <- rep(seq_len(length(x)), each=x_nlev)
+        i2 <- rep.int(seq_len(x_nlev), length(x))
+    } else {
+        oo <- IRanges:::orderTwoIntegers(f1, f2)
+        of1 <- f1[oo]
+        of2 <- f2[oo]
+        ## TODO: Add "presorted" method to IRanges:::duplicatedTwoIntegers()
+        ## for when the 2 input vectors are already sorted.
+        notdups <- !IRanges:::duplicatedTwoIntegers(of1, of2)
+        i1 <- of1[notdups]
+        i2 <- of2[notdups]
+    }
+    x_seqinfo <- seqinfo(x)
+    ans_seqlevels <- paste(i1, i2, sep="|")
+    ans_seqlengths <- unname(seqlengths(x_seqinfo))[i2]
+    ans_isCircular <- unname(isCircular(x_seqinfo))[i2]
+    ans_seqinfo <- Seqinfo(ans_seqlevels, ans_seqlengths, ans_isCircular)
+
+    ## The 2 following modifications must be seen as a single atomic
+    ## operation since doing the 1st without doing the 2nd would leave 'ans'
+    ## in a broken state.
     ans@seqnames <- Rle(factor(f12, ans_seqlevels))
-    ans@seqinfo <- Seqinfo(ans_seqlevels)
+    ans@seqinfo <- ans_seqinfo
     ans
 }
 
@@ -539,9 +559,9 @@ reconstructGRLfromGR <- function(gr, x)
     ## Restore the real sequence names.
     f2 <- m12[ , 2L]
     x_seqlevels <- seqlevels(x)
-    ## The 2 following modifications must be seen as an atomic operation
-    ## since doing the 1st without doing the 2nd would leave 'gr' in a
-    ## broken state.
+    ## The 2 following modifications must be seen as a single atomic
+    ## operation since doing the 1st without doing the 2nd would leave 'ans'
+    ## in a broken state.
     gr@seqnames <- Rle(factor(x_seqlevels[f2], x_seqlevels))
     gr@seqinfo <- seqinfo(x)
 
