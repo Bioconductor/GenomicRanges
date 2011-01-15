@@ -1109,3 +1109,62 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
         matchPos
     })
 
+
+setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, ...)
+    {
+        if(all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
+            strand(x) <- strand(subject) <- "+"
+         ## merge() also checks that 'query' and 'subject' are based on the
+        ## same reference genome.
+        sinfo <- merge(seqinfo(x), seqinfo(subject))
+        elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
+        elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
+        xLst <- split(x, seqnames(x), drop = FALSE)
+        xLst <- xLst[sapply(xLst, length) > 0]
+        xSeqNames <- names(xLst)
+        subjectLst <- split(subject, seqnames(subject), drop = FALSE)[xSeqNames]  
+        matchPos <- rep.int(NA_integer_, length(x))
+
+        for (sq in xSeqNames) {
+            x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
+            x1Split <- x1Split[lapply(x1Split, length) > 0]
+            s1 <- subjectLst[[sq]]
+            for (st in names(x1Split)) {
+                if( st == "+" ){
+                    subSplit <- s1[strand(s1) != "-"]
+                    res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
+                    matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                    elementMetadata(subSplit)$posIndx[res]
+
+                }else if(st == "-"){
+                    subSplit <- s1[strand(s1) != "+"]
+                    res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
+                    matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                    elementMetadata(subSplit)$posIndx[res]
+
+                }else if(st == "*"){
+                    subSplit1 <- s1[strand(s1) != "-"]
+                    res1 <- nearest(ranges(x1Split[[st]]), ranges(subSplit1))
+                    k1 <- elementMetadata(x1Split[[st]])$posIndx
+                    matchPos[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+                    
+                    subSplit2 <- s1[strand(s1) != "+"]
+                    res2 <- nearest(ranges(x1Split[[st]]), ranges(subSplit2))
+                    k2 <- elementMetadata(x1Split[[st]])$posIndx
+                    matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
+
+                    mt <- k1[k1==k2]
+                    for(p in mt) {
+                       mn <- which.min( c(start(subSplit1)-end(ranges(x1Split[[st]])), 
+                           start(ranges(x1Split[[st]])) - end(subSplit2)))
+                       if(mn==1){
+                           matchPos[p] <- elementMetadata(subSplit1)$posIndx[res1]
+                       }
+                    }
+                }
+            }
+        }              
+        matchPos
+    })
+
