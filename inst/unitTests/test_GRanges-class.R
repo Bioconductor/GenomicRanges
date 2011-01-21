@@ -408,3 +408,23 @@ test_GRanges_precede_follow <- function() {
     target  <- c(6, tmp ,tmp, 2, 2, 3, tmp, 1)
     checkEquals(target, current)
 }
+
+test_GRanges_nearest <- function() {
+    g1 <- GRanges(seqnames = c("chr2", "chr2", rep("chr1", 6)),
+        ranges = IRanges(c(45, 10, 10, 10, 10, 35, 35 ,35),  c(50, 15, 15, 15, 15, 40, 40, 40)),
+        strand = c("+", "+", "+", "-", "*", "+", "-", "*"))
+
+    g2 <- GRanges( seqnames = c("chr1", "chr1", "chr1", "chr2", "chr3", "chr2"),
+        ranges = IRanges(c(20, 20, 20, 20, 20, 30), c( 30, 30, 30, 30, 30, 40)),
+        strand = c("+", "-", "*", "+", "*", "+"))
+    current <- nearest(g1, g2)
+    target <- c(6, 4, 1, 2, 2, 3, 3, 3)
+    checkEquals(target, current)
+}
+
+
+
+
+
+
+
