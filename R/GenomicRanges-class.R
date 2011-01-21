@@ -1168,3 +1168,11 @@ setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
         matchPos
     })
 
+setMethod("narrow", c("GenomicRanges"),
+    function(x, start = NA, end = NA, width = NA, use.names = TRUE)
+    {
+        rng <- narrow(ranges(x), start = start, end = end , width = width,
+            use.names =  TRUE)
+        ranges(x) <- rng
+        x
+    })
