@@ -75,11 +75,11 @@
 
 \usage{
 \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-           type = c("any", "start", "end"), select = c("all", "first"))
+           type = c("any", "start", "end", "within", "equal"), select = c("all", "first"))
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-            type = c("any", "start", "end"))
+            type = c("any", "start", "end", "within", "equal"))
 \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-               type = c("any", "start", "end"))
+               type = c("any", "start", "end", "within", "equal"))
 \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
 # Also:  x \%in\% table
 }
@@ -92,25 +92,9 @@
     for one of \code{query} or \code{subject} (\code{x} or \code{table}
     for \code{match}).
   }
-  \item{maxgap}{
-    A non-negative integer representing the maximum distance between
-    a query interval and a subject interval.
-  }
-  \item{minoverlap}{
-    Ignored.
-  }
-  \item{type}{
-    The type of acceptable overlap:
-    \code{"any"} - any overlap within \code{maxgap},
-    \code{"start"} - the start of the \code{query} overlaps the start
-    of the \code{subject} within \code{maxgap}, and
-    \code{"end"} - the end of the \code{query} overlaps the end of the
-    \code{subject} within \code{maxgap}.
-  }
-  \item{select}{
-    Overlaps to return:
-    \code{"all"} - select all overlaps, and
-    \code{"first"} - select the first overlap.
+  \item{maxgap, minoverlap, type, select}{
+    See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
+    a description of these arguments.
   }
   \item{nomatch}{
     The integer value to be returned in the case when no match is found.
@@ -166,7 +150,7 @@
   has to give).
 }
 
-\author{P. Aboyoun and S. Falcon and M. Lawrence}
+\author{P. Aboyoun, S. Falcon, M. Lawrence, N. Gopalakrishnan and H. Pages}
 
 \seealso{
   \code{\link[IRanges]{findOverlaps}},
@@ -207,10 +191,17 @@
   countOverlaps(gr, gr1)
   findOverlaps(gr, gr1)
   subsetByOverlaps(gr, gr1)
+
   countOverlaps(gr, gr1, type = "start")
   findOverlaps(gr, gr1, type = "start")
   subsetByOverlaps(gr, gr1, type = "start")
+
   findOverlaps(gr, gr1, select = "first")
+
+  findOverlaps(gr1, gr)
+  findOverlaps(gr1, gr, type = "start")
+  findOverlaps(gr1, gr, type = "within")
+  findOverlaps(gr1, gr, type = "equal")
 
   ## Overlapping a GRanges and a GRangesList object
   table(grlist \%in\% gr)

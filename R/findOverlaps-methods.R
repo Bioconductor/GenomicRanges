@@ -14,7 +14,7 @@
                             maxgap = maxgap, minoverlap = minoverlap,
                             type = type, select = "all"))
     if (type != "any")
-        stop("overlap type \"", type, "\" is unsupported ",
+        stop("overlap type \"", type, "\" is not yet supported ",
              "for circular sequence ", names(circle.length))
     subject.shift0 <- (start(subject) - 1L) %% circle.length +
                       1L - start(subject)
@@ -50,7 +50,7 @@
 
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within", "equal"),
              select = c("all", "first"))
     {
         #        if (!identical(minoverlap, 1L))
@@ -312,14 +312,15 @@ setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
 )
 
 setMethod("findOverlaps", c("RangesList", "GRangesList"),
-          function(query, subject, maxgap = 0L, minoverlap = 1L,
-                   type = c("any", "start", "end"),
-                   select = c("all", "first"))
-          {
-            findOverlaps(as(query, "GRanges"), subject = subject,
-                         maxgap = maxgap, minoverlap = minoverlap,
-                         type = match.arg(type), select = match.arg(select))
-          })
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end"),
+             select = c("all", "first"))
+    {
+        findOverlaps(as(query, "GRanges"), subject = subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select))
+    }
+)
 
 setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
@@ -401,49 +402,43 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
 ### -------------------------------------------------------------------------
 
 .countOverlaps.default <- function(query, subject,
-                                   maxgap = 0L, minoverlap = 1L,
-                                   type = c("any", "start", "end"))
+        maxgap = 0L, minoverlap = 1L,
+        type = c("any", "start", "end", "within", "equal"))
 {
-    if (!identical(minoverlap, 1L))
-        warning("'minoverlap' argument is ignored")
-    type <- match.arg(type)
     tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
-                                    type = type)), length(query))
+                                    minoverlap = minoverlap,
+                                    type = match.arg(type))), length(query))
 }
 
 .subsetByOverlaps.default <- function(query, subject,
-                                      maxgap = 0L, minoverlap = 1L,
-                                      type = c("any", "start", "end"))
+        maxgap = 0L, minoverlap = 1L,
+        type = c("any", "start", "end", "within", "equal"))
 {
-    if (!identical(minoverlap, 1L))
-        warning("'minoverlap' argument is ignored")
-    type <- match.arg(type)
     query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
-                              minoverlap = minoverlap, type = type,
+                              minoverlap = minoverlap,
+                              type = match.arg(type),
                               select = "first"))]
 }
 
-.subsetByOverlaps2 <- function(query, subject, maxgap = 0L, minoverlap = 1L,
-                               type = c("any", "start", "end"))
+.subsetByOverlaps2 <- function(query, subject,
+        maxgap = 0L, minoverlap = 1L,
+        type = c("any", "start", "end", "within", "equal"))
 {
-    if (!identical(minoverlap, 1L))
-        warning("'minoverlap' argument is ignored")
-    type <- match.arg(type)
     i <- !is.na(findOverlaps(query, subject, maxgap = maxgap,
-                             minoverlap = minoverlap, type = type,
+                             minoverlap = minoverlap,
+                             type = match.arg(type),
                              select = "first"))
     query[seqsplit(i, space(query), drop=FALSE)]
 }
 
-.subsetByOverlaps3 <- function(query, subject, maxgap = 0L, minoverlap = 1L,
-                               type = c("any", "start", "end"))
+.subsetByOverlaps3 <- function(query, subject,
+        maxgap = 0L, minoverlap = 1L,
+        type = c("any", "start", "end", "within", "equal"))
 {
-  if (!identical(minoverlap, 1L))
-    warning("'minoverlap' argument is ignored")
-  type <- match.arg(type)
-  query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
-                            minoverlap = minoverlap, type = type,
-                            select = "first")),]
+    query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
+                              minoverlap = minoverlap,
+                              type = match.arg(type),
+                              select = "first")),]
 }
 
 .match.default <- function(x, table,
