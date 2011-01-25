@@ -363,6 +363,10 @@ setMethod("merge", c("Seqinfo", "missing"),
     function(x, y, ...) .Seqinfo.merge(x, ...)
 )
 
+setMethod("merge", c("missing", "Seqinfo"),
+    function(x, y, ...) .Seqinfo.merge(y, ...)
+)
+
 setMethod("merge", c("Seqinfo", "NULL"),
     function(x, y, ...) .Seqinfo.merge(x, ...)
 )

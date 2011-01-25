@@ -22,6 +22,7 @@
 \alias{as.data.frame,Seqinfo-method}
 \alias{show,Seqinfo-method}
 \alias{merge,Seqinfo,missing-method}
+\alias{merge,missing,Seqinfo-method}
 \alias{merge,Seqinfo,NULL-method}
 \alias{merge,NULL,Seqinfo-method}
 \alias{merge,Seqinfo,Seqinfo-method}
