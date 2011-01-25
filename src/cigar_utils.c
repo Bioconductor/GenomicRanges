@@ -1049,7 +1049,7 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 	PROTECT(ans_partitioning = new_PartitioningByEnd(
 			"PartitioningByEnd",
 			ans_partitioning_end, NULL));
-	PROTECT(ans = new_CompressedIRangesList(
+	PROTECT(ans = new_CompressedList(
 			"CompressedNormalIRangesList",
 			ans_unlistData, ans_partitioning));
 	UNPROTECT(4);
