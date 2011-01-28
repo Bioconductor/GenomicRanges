@@ -630,7 +630,7 @@ setMethod("gaps", "GenomicRanges",
 )
 
 setMethod("range", "GenomicRanges",
-    function(x, ..., na.rm)
+    function(x, ..., na.rm = FALSE)
         .interIntervalGenomicRanges(unname(c(x, ...)), range)
 )
 

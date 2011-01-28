@@ -46,7 +46,8 @@
 % show method:
 \alias{show,GRangesList-method}
 
-% "reduce" method:
+% isomorphisms:
+\alias{range,GRangesList-method}
 \alias{reduce,GRangesList-method}
 
 
@@ -390,22 +391,30 @@
   }
 }
 
-\section{The "reduce" method}{
+\section{The "range" and "reduce" methods}{
   In the code snippets below, \code{x} is a GRangesList object.
+  The methods in this section are isomorphisms, that is, they are endomorphisms
+  (i.e. they preserve the class of \code{x}) who also preserve the length &
+  names & elementMetadata of \code{x}. In addition, the seqinfo is preserved
+  too.
 
   \describe{
     \item{}{
+      \code{range(x)}:
+      Applies \code{range} to each element in \code{x}.
+      More precisely, it is equivalent to \code{endoapply(x, range)}.
+    }
+    \item{}{
       \code{reduce(x, drop.empty.ranges=FALSE, min.gapwidth=1L)}:
-      Reduces separately each element in \code{x} and returns them in a
-      GRangesList object with the same length & names & elementMetadata &
-      seqinfo as \code{x}. In other words, it is equivalent to
+      Applies \code{reduce} to each element in \code{x}.
+      More precisely, it is equivalent to
       \code{endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
                       min.gapwidth=min.gapwidth)}.
     }
   }
 }
 
-\author{P. Aboyoun}
+\author{P. Aboyoun & H. Pages}
 
 \seealso{
   \link{GRanges-class},
@@ -446,7 +455,8 @@
   seqnames(grl) <- sub("chr", "Chrom", seqnames(grl))
   grl
 
-  # reduce():
+  # range() and reduce():
+  range(grl)
   reduce(grl)  # Doesn't really reduce anything but note the reordering
                # of the inner elements in the 3rd top-level element: the
                # ranges are reordered by sequence name first (the order of

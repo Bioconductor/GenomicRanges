@@ -575,14 +575,32 @@ reconstructGRLfromGR <- function(gr, x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "reduce" method.
+### The "range" and "reduce" methods.
 ###
-### For a GRangesList object 'x', 'reduce(x)' is equivalent to
-### 'endoapply(x, reduce)'. However, this naive implementation would be
-### too inefficient. The fast implementation below takes advantage of the
-### fact that we already have a fast "reduce" method for GRanges objects.
-### Depending on the size of 'x', it is 50-1000 times faster than
-### 'endoapply(x, reduce)'.
+### For a GRangesList object 'x', 'range(x)' and 'reduce(x)' are equivalent
+### to 'endoapply(x, range)' and 'endoapply(x, reduce)', respectively.
+### This makes them isomorphisms, that is, they are endomorphisms (i.e. they
+### preserve the class of 'x') who also preserve the length & names &
+### elementMetadata of 'x'. In addition, the seqinfo is preserved too.
+###
+### However, using endoapply() for the implementation would be too
+### inefficient. The fast implementation below takes advantage of the
+### fact that we already have fast "range" and "reduce" methods for GRanges
+### objects. Depending on the size of 'x', the implementation below is 50x or
+### 1000x faster (or more) than the implementation using endoapply().
+
+setMethod("range", "GRangesList",
+    function(x, ..., na.rm=FALSE)
+    {
+        if (length(list(...)) != 0L)
+            stop("\"range\" method for GRangesList objects only ",
+                 "takes a single object")
+        gr <- deconstructGRLintoGR(x)
+        ## "range" method for GRanges objects is fast.
+        gr <- range(gr)
+        reconstructGRLfromGR(gr, x)
+    }
+)
 
 setMethod("reduce", "GRangesList",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
