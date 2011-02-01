@@ -2,12 +2,15 @@
 ### GRangesList objects
 ### -------------------------------------------------------------------------
 ###
-### Class definition
 
-setClass("GRangesList", contains = "CompressedList",
-         prototype = prototype(elementType = "GRanges",
-                               unlistData = new("GRanges"),
-                               elementMetadata = DataFrame()))
+setClass("GRangesList",
+    contains="CompressedList",
+    prototype=prototype(
+        elementType="GRanges",
+        unlistData=new("GRanges"),
+        elementMetadata=DataFrame()
+    )
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

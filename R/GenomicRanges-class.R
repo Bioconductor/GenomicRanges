@@ -59,7 +59,7 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 setMethod("elementMetadata", "GenomicRanges",
     function(x, row.names = TRUE, ...)
     {
-        if (!IRanges:::isTRUEorFALSE(row.names))
+        if (!isTRUEorFALSE(row.names))
           stop("'row.names' must be TRUE or FALSE")
         ans <- callNextMethod()
         if (!row.names)

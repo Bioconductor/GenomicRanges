@@ -10,9 +10,13 @@ setClass("GappedAlignments",
         start="integer",              # POS field in SAM
         cigar="character",            # extended CIGAR (see SAM format specs)
         strand="Rle",                 # 'factor' Rle
-        seqinfo="Seqinfo"
         #mismatches="characterORNULL", # see MD optional field in SAM format specs
-        #values="DataFrame"
+        elementMetadata="DataFrame",
+        seqinfo="Seqinfo"
+    ),
+    prototype(
+        seqnames=Rle(factor()),
+        strand=Rle(strand())
     )
 )
 
@@ -374,13 +378,17 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
 GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
                              cigar=character(0), strand=NULL, seqlengths=NULL)
 {
+    ## Prepare the 'rname' slot.
     rname <- .asFactorRle(rname)
     if (any(is.na(rname)))
         stop("'rname' cannot have NAs")
+    ## Prepare the 'pos' slot.
     if (!is.integer(pos) || any(is.na(pos)))
         stop("'pos' must be an integer vector with no NAs")
+    ## Prepare the 'cigar' slot.
     if (!is.character(cigar) || any(is.na(cigar)))
         stop("'cigar' must be a character vector with no NAs")
+    ## Prepare the 'strand' slot.
     if (is.null(strand)) {
         if (length(rname) != 0L)
             stop("'strand' must be specified when 'rname' is not empty")
@@ -388,6 +396,9 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
     } else if (is.factor(strand)) {
         strand <- Rle(strand)
     }
+    ## Prepare the 'elementMetadata' slot.
+    elementMetadata <- new("DataFrame", nrows=length(rname))
+    ## Prepare the 'seqinfo' slot.
     if (is.null(seqlengths)) {
         seqlengths <- rep(NA_integer_, length(levels(rname)))
         names(seqlengths) <- levels(rname)
@@ -401,8 +412,11 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
         storage.mode(seqlengths) <- "integer"
     }
     seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
+    ## Create and return the GappedAlignments instance.
     new("GappedAlignments", seqnames=rname, start=pos, cigar=cigar,
-                            strand=strand, seqinfo=seqinfo)
+                            strand=strand,
+                            elementMetadata=elementMetadata,
+                            seqinfo=seqinfo)
 }
 
 readGappedAlignments <- function(file, format="BAM", ...)
@@ -483,6 +497,7 @@ setMethod("[", "GappedAlignments",
         x@start <- x@start[i]
         x@cigar <- x@cigar[i]
         x@strand <- x@strand[i]
+        x@elementMetadata <- x@elementMetadata[i,,drop=FALSE]
         x
     }
 )

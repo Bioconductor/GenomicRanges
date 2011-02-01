@@ -2,16 +2,21 @@
 ### GRanges objects
 ### -------------------------------------------------------------------------
 ###
-### Class definition
 
-setClass("GRanges", contains = "GenomicRanges",
-         representation(seqnames = "Rle",
-                        ranges = "IRanges",
-                        strand = "Rle",
-                        seqinfo = "Seqinfo"),
-         prototype(seqnames = Rle(factor()),
-                   strand = Rle(strand()),
-                   elementMetadata = DataFrame()))
+setClass("GRanges",
+    contains="GenomicRanges",
+    representation(
+        seqnames="Rle",
+        ranges="IRanges",
+        strand="Rle",
+        elementMetadata="DataFrame",
+        seqinfo="Seqinfo"
+    ),
+    prototype(
+        seqnames=Rle(factor()),
+        strand=Rle(strand())
+    )
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,7 +85,7 @@ function(class, seqnames = Rle(), ranges = IRanges(),
     runValue(seqnames) <- factor(runValue(seqnames), names(seqlengths))
     
     elementMetadata <- DataFrame(...)
-    if (ncol(elementMetadata) == 0)
+    if (ncol(elementMetadata) == 0L)
         elementMetadata <- new("DataFrame", nrows = length(seqnames))
     if (!is.null(rownames(elementMetadata))) {
         if (!is.null(names(ranges)))
