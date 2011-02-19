@@ -564,6 +564,7 @@ setMethod("show", "GappedAlignments",
                          stringsAsFactors=FALSE)
         }
         show(showme)
+        .showSeqlengths(object)
     }
 )
 
