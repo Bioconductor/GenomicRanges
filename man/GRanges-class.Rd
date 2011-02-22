@@ -324,6 +324,15 @@
       The result is an object of the same class as \code{x}.
     }
     \item{}{
+      \code{c(x, ..., .ignoreElementMetadata=TRUE)}
+      If the \code{GRanges} objects have associated \code{\link{elementMetadata}}
+      (also known as \code{\link{values}}), each such \code{\linkS4class{DataFrame}}
+      must have the same columns in order to combine successfully. In order to circumvent
+      this restraint, you can pass in an \code{.ignoreElementMetadata=TRUE} argument
+      which will combine all the objects into one and drop all of their
+      \code{elementMetadata}.
+    }
+    \item{}{
       \code{split(x, f = seq_len(length(x)), drop = FALSE)}:
       Splits \code{x} into a \link{GRangesList}, according to \code{f},
       dropping elements corresponding to unrepresented levels if \code{drop}
@@ -477,4 +486,16 @@
   gaps(gr, start = 1, end = 10)
   range(gr)
   reduce(gr)
+  
+  # Combining objects
+  gr2 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 3, 4)),
+                 IRanges(1:10, width=5), strand='-',
+                 score=101:110, GC = runif(10))
+  gr3 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 4, 3)),
+                 IRanges(101:110, width=10), strand='-',
+                 score=21:30)
+  some.gr <- c(gr, gr2)
+  
+  ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
+  all.gr <- c(gr, gr2, gr3, .ignoreElementMetadata=TRUE)
 }

@@ -5,7 +5,7 @@
 ### TODO: What's the impact of circularity on the set operations?
 
 setMethod("union", c("GRanges", "GRanges"),
-    function(x, y)
+    function(x, y, ...)
     {
         values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
         reduce(c(x, y), drop.empty.ranges=TRUE)
@@ -13,7 +13,7 @@ setMethod("union", c("GRanges", "GRanges"),
 )
 
 setMethod("intersect", c("GRanges", "GRanges"),
-    function(x, y)
+    function(x, y, ...)
     {
         values(x) <- values(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
@@ -30,7 +30,7 @@ setMethod("intersect", c("GRanges", "GRanges"),
 )
 
 setMethod("setdiff", c("GRanges", "GRanges"),
-    function(x, y)
+    function(x, y, ...)
     {
         values(x) <- values(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))

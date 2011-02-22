@@ -730,7 +730,7 @@ setReplaceMethod("[", "GenomicRanges",
 )
 
 setMethod("c", "GenomicRanges",
-    function(x, ..., recursive = FALSE)
+    function(x, ..., .ignoreElementMetadata = FALSE, recursive = FALSE)
     {
         if (recursive)
             stop("'recursive' mode not supported")
@@ -739,7 +739,13 @@ setMethod("c", "GenomicRanges",
         ans_seqnames <- do.call(c, lapply(args, seqnames))
         ans_ranges <- do.call(c, lapply(args, ranges))
         ans_strand <- do.call(c, lapply(args, strand))
-        ans_elementMetadata <- do.call(rbind, lapply(args, elementMetadata, FALSE))
+        
+        if (.ignoreElementMetadata) {
+          ans_elementMetadata <- new("DataFrame", nrows = length(ans_ranges))
+        } else {
+          ans_elementMetadata <- do.call(rbind, lapply(args, elementMetadata, FALSE))
+        }
+        
         ans_names <- names(ans_ranges)
         if (!is.null(ans_names)) {
             whichEmpty <- which(ans_names == "")

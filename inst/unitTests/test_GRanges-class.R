@@ -422,9 +422,33 @@ test_GRanges_nearest <- function() {
     checkEquals(target, current)
 }
 
-
-
-
-
-
+test_GRanges_combine <- function() {
+  gr1 <- make_test_GRanges()
+  gr2 <- make_test_GRanges()
+  
+  #############################################################################
+  ## An unremarkable combination
+  gc1 <- c(gr1, gr2)
+  checkEquals(start(gc1), c(start(gr1), start(gr2)))
+  checkEquals(end(gc1), c(end(gr1), end(gr2)))
+  
+  ## Check the combined data frames -- the rownaming is different when
+  ## combining using these two strategies, so ignore them for now.
+  vc1 <- as.data.frame(values(gc1))
+  rownames(vc1) <- NULL
+  vc.orig <- as.data.frame(rbind(values(gr1), values(gr2)))
+  rownames(vc.orig) <- NULL
+  checkIdentical(vc1, vc.orig)
+  
+  #############################################################################
+  ## Combining GRanges objects with differing elementMetadata
+  colnames(values(gr1))[1] <- 'illegal'
+  checkException(c(gr1, gr2), silent=TRUE)
+  
+  ## Ignore elementMetadata
+  gc2 <- c(gr1, gr2, .ignoreElementMetadata=TRUE)
+  em2 <- elementMetadata(gc2)
+  checkIdentical(nrow(em2), length(gc2))
+  checkIdentical(ncol(em2), 0L)
+}
 
