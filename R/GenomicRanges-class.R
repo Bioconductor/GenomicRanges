@@ -540,9 +540,14 @@ setReplaceMethod("width", "GenomicRanges",
                  )
 
 setMethod("flank", "GenomicRanges",
-          function(x, width, start = TRUE, both = FALSE, use.names = TRUE)
-          {
-            start <- as.vector(start == (strand(x) != "-"))
+          function(x, width, start = TRUE, both = FALSE, use.names = TRUE,
+              ignore.strand = FALSE)
+          { 
+            if(ignore.strand)
+                start <- rep(TRUE, length(x))
+            else 
+                start <- as.vector(start == (strand(x) != "-"))
+
             ranges <-
               flank(ranges(x), width = width, start = start, both = both,
                     use.names = use.names)
@@ -557,13 +562,18 @@ setMethod("flank", "GenomicRanges",
           )
 
 setMethod("resize", "GenomicRanges",
-          function(x, width, fix = "start", use.names = TRUE)
+          function(x, width, fix = "start", use.names = TRUE, ignore.strand = FALSE)
           {
+
             if (!missing(fix) &&
                 (length(fix) > length(x) || length(x) %% length(fix) > 0))
               stop("'x' is not a multiple of 'fix' length")
             revFix <- c(start = "end", end = "start", center = "center")
-            fix <- ifelse(strand(x) == "-", revFix[fix], fix)
+               
+            if(ignore.strand)
+                fix <- Rle(rep(fix ,length(x)))
+            else 
+                fix <- ifelse(strand(x) == "-", revFix[fix], fix)
             ranges <-
               resize(ranges(x), width = width, fix = fix, use.names = use.names)
             if (!IRanges:::anyMissing(seqlengths(x))) {
@@ -590,11 +600,16 @@ setMethod("shift", "GenomicRanges",
           }
           )
 
-.interIntervalGenomicRanges <- function(x, FUN, ...)
+.interIntervalGenomicRanges <- function(x, FUN, ignore.strand, ...)
 {
     elementMetadata(x) <- NULL
-    xIRangesList <-
+    if (ignore.strand) {
+       xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
+                            Rle(factor(rep("+", length(x)))), sep = "\r"))
+    } else {
+       xIRangesList <-
         split(unname(ranges(x)), paste(seqnames(x), strand(x), sep = "\r"))
+    }
     ansIRangesList <- FUN(xIRangesList, ...)
     k <- elementLengths(ansIRangesList)
     splitListNames <- strsplit(names(ansIRangesList), split = "\r")
@@ -609,12 +624,12 @@ setMethod("shift", "GenomicRanges",
 }
 
 setMethod("disjoin", "GenomicRanges",
-    function(x)
-        .interIntervalGenomicRanges(x, disjoin)
+    function(x, ignore.strand = FALSE)
+        .interIntervalGenomicRanges(x, disjoin, ignore.strand = ignore.strand)
 )
 
 setMethod("gaps", "GenomicRanges",
-    function(x, start = 1L, end = seqlengths(x))
+    function(x, start = 1L, end = seqlengths(x), ignore.strand = FALSE)
     {
         seqlevels <- levels(seqnames(x))
         if (!is.null(names(start)))
@@ -625,25 +640,28 @@ setMethod("gaps", "GenomicRanges",
         start <- rep(start, each = 3)
         end <- IRanges:::recycleVector(end, length(seqlevels))
         end <- rep(end, each = 3)
-        .interIntervalGenomicRanges(x, gaps, start = start, end = end)
+        .interIntervalGenomicRanges(x, gaps, start = start, end = end, 
+            ignore.strand = ignore.strand)
     }
 )
 
 setMethod("range", "GenomicRanges",
-    function(x, ..., na.rm = FALSE)
-        .interIntervalGenomicRanges(unname(c(x, ...)), range)
+    function(x, ..., ignore.strand = FALSE, na.rm = FALSE)
+        .interIntervalGenomicRanges(unname(c(x, ...)), range, 
+         ignore.strand = ignore.strand)
 )
 
 setMethod("reduce", "GenomicRanges",
     function(x, drop.empty.ranges = FALSE, min.gapwidth = 1L,
-             with.inframe.attrib = FALSE)
+             with.inframe.attrib = FALSE, ignore.strand = FALSE)
     {
         if (!identical(with.inframe.attrib, FALSE))
             stop("'with.inframe.attrib' argument not supported ",
                  "when reducing a GenomicRanges object")
         .interIntervalGenomicRanges(x, reduce,
                                     drop.empty.ranges = drop.empty.ranges,
-                                    min.gapwidth = min.gapwidth)
+                                    min.gapwidth = min.gapwidth, 
+                                    ignore.strand = ignore.strand)
     }
 )
 
@@ -980,9 +998,12 @@ setMethod("show", "GenomicRanges",
           function(object) showGenomicRanges(object, print.seqlengths = TRUE))
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-  function(x, subject, ...)
-  {
-      if(all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
+  function(x, subject, ignore.strand = FALSE, ...)
+  {   
+      if (ignore.strand)
+        strand(x) <- strand(subject) <- "+"
+
+      if (all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
         strand(x) <- strand(subject) <- "+"
       
       elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
@@ -998,7 +1019,7 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
           x1Split <- x1Split[lapply(x1Split, length) > 0]
           s1 <- subjectLst[[sq]]
           for (st in names(x1Split)) {
-              if( st == "+" ){
+              if ( st == "+" ){
                   subSplit <- unlist(split(s1, strand(s1))[c("+", "*")])
                   ## call precede
                   res <- precede(ranges(x1Split[[st]]), ranges(subSplit))
@@ -1007,7 +1028,7 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
                   matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
                   elementMetadata(subSplit)$posIndx[res]
 
-              }else if(st == "-"){
+              }else if (st == "-"){
                   subSplit <- unlist(split(s1, strand(s1))[c("-", "*")])
                   ## call follow
                   res <- follow(ranges(x1Split[[st]]), ranges(subSplit))
@@ -1015,7 +1036,7 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
                   res <- res[indx]
                   matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
                   elementMetadata(subSplit)$posIndx[res]
-              }else if(st == "*"){
+              }else if (st == "*"){
                   subSplit1 <- unlist(split(s1, strand(s1))[c("+")])
                   ## call precede
                   res1 <- precede(ranges(x1Split[[st]]), ranges(subSplit1))
@@ -1033,7 +1054,7 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
                   matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
                   
                   mt <- k1[k1==k2]
-                  for(p in mt) {
+                  for (p in mt) {
                        mn <- which.min( c(start(subSplit1[indx1])-end(ranges(x1Split[[st]])), 
                            start(ranges(x1Split[[st]])) - end(subSplit2[indx2])))
                        if(mn==1){
@@ -1048,9 +1069,12 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
 
 
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, ...)
+    function(x, subject, ignore.strand = FALSE, ...)
     {
-        if(all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
+        if (ignore.strand)
+            strand(x) <- strand(subject) <- "+"
+
+        if (all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
             strand(x) <- strand(subject) <- "+"
         
         elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
@@ -1066,7 +1090,7 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
             x1Split <- x1Split[lapply(x1Split, length) > 0]
             s1 <- subjectLst[[sq]]
             for (st in names(x1Split)) {
-                if( st == "+" ){
+                if ( st == "+" ){
                     subSplit <- unlist(split(s1, strand(s1))[c("+", "*")])
                     ## call follow
                     res <- follow(ranges(x1Split[[st]]), ranges(subSplit))
@@ -1075,7 +1099,7 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
                     matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
                     elementMetadata(subSplit)$posIndx[res]
 
-                }else if(st == "-"){
+                }else if (st == "-"){
                     subSplit <- unlist(split(s1, strand(s1))[c("-", "*")])
                     ## call precede
                     res <- precede(ranges(x1Split[[st]]), ranges(subSplit))
@@ -1084,7 +1108,7 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
                     matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
                     elementMetadata(subSplit)$posIndx[res]
 
-                }else if(st == "*"){
+                }else if (st == "*"){
                     subSplit1 <- unlist(split(s1, strand(s1))[c("+")])
                     ## call follow
                     res1 <- follow(ranges(x1Split[[st]]), ranges(subSplit1))
@@ -1102,7 +1126,7 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
                     matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
 
                     mt <- k1[k1==k2]
-                    for(p in mt) {
+                    for (p in mt) {
                        mn <- which.min( c(start(subSplit1[indx1])-end(ranges(x1Split[[st]])), 
                            start(ranges(x1Split[[st]])) - end(subSplit2[indx2])))
                        if(mn==1){
@@ -1117,8 +1141,11 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
 
 
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, ...)
+    function(x, subject, ignore.strand = FALSE, ...)
     {
+        if (ignore.strand)
+            strand(x) <- strand(subject) <- "+"
+
         if(all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
             strand(x) <- strand(subject) <- "+"
          ## merge() also checks that 'query' and 'subject' are based on the
@@ -1137,19 +1164,19 @@ setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
             x1Split <- x1Split[lapply(x1Split, length) > 0]
             s1 <- subjectLst[[sq]]
             for (st in names(x1Split)) {
-                if( st == "+" ){
+                if ( st == "+" ){
                     subSplit <- s1[strand(s1) != "-"]
                     res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
                     matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
                     elementMetadata(subSplit)$posIndx[res]
 
-                }else if(st == "-"){
+                }else if (st == "-"){
                     subSplit <- s1[strand(s1) != "+"]
                     res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
                     matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
                     elementMetadata(subSplit)$posIndx[res]
 
-                }else if(st == "*"){
+                }else if (st == "*"){
                     subSplit1 <- s1[strand(s1) != "-"]
                     res1 <- nearest(ranges(x1Split[[st]]), ranges(subSplit1))
                     k1 <- elementMetadata(x1Split[[st]])$posIndx
@@ -1161,10 +1188,10 @@ setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
                     matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
 
                     mt <- k1[k1==k2]
-                    for(p in mt) {
+                    for (p in mt) {
                        mn <- which.min( c(start(subSplit1)-end(ranges(x1Split[[st]])), 
                            start(ranges(x1Split[[st]])) - end(subSplit2)))
-                       if(mn==1){
+                       if (mn==1){
                            matchPos[p] <- elementMetadata(subSplit1)$posIndx[res1]
                        }
                     }
@@ -1182,3 +1209,5 @@ setMethod("narrow", c("GenomicRanges"),
         ranges(x) <- rng
         x
     })
+
+
