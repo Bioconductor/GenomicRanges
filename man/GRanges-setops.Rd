@@ -26,9 +26,9 @@
 
 \usage{
 ## Set operations
-\S4method{union}{GRanges,GRanges}(x, y)
-\S4method{intersect}{GRanges,GRanges}(x, y)
-\S4method{setdiff}{GRanges,GRanges}(x, y)
+\S4method{union}{GRanges,GRanges}(x, y, ignore.strand = FALSE,...)
+\S4method{intersect}{GRanges,GRanges}(x, y, ignore.strand = FALSE,...)
+\S4method{setdiff}{GRanges,GRanges}(x, y, ignore.strand = FALSE,...)
 
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
