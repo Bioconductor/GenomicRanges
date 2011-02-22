@@ -51,7 +51,7 @@
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within", "equal"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         #        if (!identical(minoverlap, 1L))
         #    warning("'minoverlap' argument is ignored")
@@ -79,19 +79,24 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
             commonSeqnames <-
               intersect(uniqueQuerySeqnames, uniqueSubjectSeqnames)
-
-            queryStrand <- strand(query)
-            levels(queryStrand) <- c("1", "-1", "0")
-            queryStrand@values <-
-              as.integer(as.character(runValue(queryStrand)))
-            queryStrand <- as.vector(queryStrand)
+             
+            if (ignore.strand) {
+                queryStrand <- rep.int(1L, length(query))
+                subjectStrand <- rep.int(1L, length(subject))
+            } else {
+                queryStrand <- strand(query)
+                levels(queryStrand) <- c("1", "-1", "0")
+                queryStrand@values <-
+                as.integer(as.character(runValue(queryStrand)))
+                queryStrand <- as.vector(queryStrand)
+                
+                subjectStrand <- strand(subject)
+                levels(subjectStrand) <- c("1", "-1", "0")
+                subjectStrand@values <-
+                as.integer(as.character(runValue(subjectStrand)))
+                subjectStrand <- as.vector(subjectStrand)
+            }
             queryRanges <- unname(ranges(query))
-
-            subjectStrand <- strand(subject)
-            levels(subjectStrand) <- c("1", "-1", "0")
-            subjectStrand@values <-
-              as.integer(as.character(runValue(subjectStrand)))
-            subjectStrand <- as.vector(subjectStrand)
             subjectRanges <- unname(ranges(subject))
 
             matchMatrix <-
@@ -176,7 +181,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
@@ -186,7 +191,8 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         queryGroups <- togroup(query@partitioning)
         ans <-
           callGeneric(unlistQuery, subject,
-                      maxgap = maxgap, type = type, select = "all")
+                      maxgap = maxgap, type = type, select = "all",
+                      ignore.strand = ignore.strand)
         matchMatrix <- ans@matchMatrix
         if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {  
             matchMatrix[,"query"] <-  queryGroups[queryHits(ans)]
@@ -210,7 +216,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
 setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
@@ -230,7 +236,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
         }
         ans <-
           callGeneric(query, unlistSubject, maxgap = maxgap,
-                      type = type, select = "all")
+                      type = type, select = "all", ignore.strand = ignore.strand)
         matchMatrix <- ans@matchMatrix
         if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {    
             matchMatrix[,"subject"] <-  subjectGroups[subjectHits(ans)]
@@ -253,7 +259,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
@@ -277,7 +283,8 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         
         ans <-
           callGeneric(unlistQuery, unlistSubject,
-                      maxgap = maxgap, type = type, select = "all")
+                      maxgap = maxgap, type = type, select = "all",
+                      ignore.strand = ignore.strand)
         matchMatrix <- ans@matchMatrix
         if(minoverlap  > 1L  && nrow(ans@matchMatrix) > 0) {
             matchMatrix[,"subject"] <-  subjectGroups[subjectHits(ans)]
@@ -303,33 +310,36 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
 setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(as(query, "GRanges"), subject = subject,
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
 setMethod("findOverlaps", c("RangesList", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(as(query, "GRanges"), subject = subject,
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
 setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(query, as(subject, "GRanges"),
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
@@ -347,52 +357,56 @@ setMethod("findOverlaps", c("GRangesList", "RangesList"),
 setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("RangesList", "GenomicRanges")
         ## defined above.
         findOverlaps(ranges(query), subject = subject,
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
 setMethod("findOverlaps", c("RangedData", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("RangesList", "GRangesList")
         ## defined above.
         findOverlaps(ranges(query), subject = subject,
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
 setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("GenomicRanges", "RangesList")
         ## defined above.
         findOverlaps(query, ranges(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
 setMethod("findOverlaps", c("GRangesList", "RangedData"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("GRangesList", "RangesList")
         ## defined above.
         findOverlaps(query, ranges(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
@@ -403,42 +417,47 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
 
 .countOverlaps.default <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
-        type = c("any", "start", "end", "within", "equal"))
+        type = c("any", "start", "end", "within", "equal"),
+        ignore.strand = FALSE)
 {
     tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
                                     minoverlap = minoverlap,
-                                    type = match.arg(type))), length(query))
+                                    type = match.arg(type), ignore.strand =
+                                    ignore.strand)), length(query))
 }
 
 .subsetByOverlaps.default <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
-        type = c("any", "start", "end", "within", "equal"))
+        type = c("any", "start", "end", "within", "equal"), 
+        ignore.strand = FALSE)
 {
     query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                               minoverlap = minoverlap,
                               type = match.arg(type),
-                              select = "first"))]
+                              select = "first", ignore.strand = ignore.strand))]
 }
 
 .subsetByOverlaps2 <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
-        type = c("any", "start", "end", "within", "equal"))
+        type = c("any", "start", "end", "within", "equal"), 
+        ignore.strand = FALSE)
 {
     i <- !is.na(findOverlaps(query, subject, maxgap = maxgap,
                              minoverlap = minoverlap,
                              type = match.arg(type),
-                             select = "first"))
+                             select = "first", ignore.strand = ignore.strand))
     query[seqsplit(i, space(query), drop=FALSE)]
 }
 
 .subsetByOverlaps3 <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
-        type = c("any", "start", "end", "within", "equal"))
+        type = c("any", "start", "end", "within", "equal"), 
+        ignore.strand = FALSE)
 {
     query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                               minoverlap = minoverlap,
                               type = match.arg(type),
-                              select = "first")),]
+                              select = "first", ignore.strand = ignore.strand)),]
 }
 
 .match.default <- function(x, table,
