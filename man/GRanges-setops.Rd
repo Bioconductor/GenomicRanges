@@ -1,5 +1,4 @@
 \name{GRanges-setops}
-
 \alias{GRanges-setops}
 
 \alias{union,GRanges,GRanges-method}
@@ -32,9 +31,9 @@
 \S4method{setdiff}{GRanges,GRanges}(x, y)
 
 ## Parallel set operations
-\S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ...)
-\S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
-\S4method{psetdiff}{GRanges,GRanges}(x, y, ...)
+\S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
+\S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ignore.strand = FALSE, ...)
+\S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand = FALSE, ...)
 }
 
 \arguments{
@@ -59,6 +58,10 @@
     of \code{x} with any ambiguous empty range. (See
     \code{\link[IRanges]{pintersect}} for the definition of an ambiguous
     range.)
+  }
+  \item{ignore.strand}{
+    If set to TRUE, the strand information is ignored in the computation and the 
+    result has the strand information of x.
   }
   \item{...}{
     Further arguments to be passed to or from other methods.

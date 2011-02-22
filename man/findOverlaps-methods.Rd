@@ -75,9 +75,11 @@
 
 \usage{
 \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-           type = c("any", "start", "end", "within", "equal"), select = c("all", "first"))
+           type = c("any", "start", "end", "within", "equal"), select = c("all",
+               "first"), ignore.strand = FALSE)
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
-            type = c("any", "start", "end", "within", "equal"))
+            type = c("any", "start", "end", "within", "equal"), 
+            ignore.strand = FALSE )
 \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject, maxgap = 0L, minoverlap = 1L,
                type = c("any", "start", "end", "within", "equal"))
 \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch = NA_integer_, incomparables = NULL)
@@ -101,6 +103,11 @@
   }
   \item{incomparables}{
     This value is ignored.
+  }
+
+  \item{ignore.strand}{
+   When set to TRUE, the strand information is ignored in the overlap
+       calculations.
   }
 }
 
