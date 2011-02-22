@@ -42,7 +42,8 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
             maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
-        gaps(union(gaps(x, end = seqlengths), y), end = seqlengths)
+        gaps(union(gaps(x, end = seqlengths), y),
+            end = seqlengths)
     }
 )
 
@@ -56,15 +57,17 @@ setMethod("setdiff", c("GRanges", "GRanges"),
 ### compatibleStrand() for this but not "punion".
 
 setMethod("punion", c("GRanges", "GRanges"),
-    function(x, y, fill.gap = FALSE, ...)
+    function(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
     {
         values(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
+        if (ignore.strand) 
+           strand(y) <- strand(x) 
         if (!all((seqnames(x) == seqnames(y)) & (strand(x) == strand(y))))
-            stop("'x' and 'y' elements must have compatible 'seqnames' ",
-                 "and 'strand' values")
+                stop("'x' and 'y' elements must have compatible 'seqnames' ",
+            "and 'strand' values")
         ranges(x) <- punion(ranges(x), ranges(y), fill.gap = fill.gap)
         x
     }
@@ -104,13 +107,16 @@ setMethod("punion", c("GRanges", "GRangesList"),
 
 
 setMethod("pintersect", c("GRanges", "GRanges"),
-    function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
+    function(x, y, resolve.empty = c("none", "max.start", "start.x"),
+        ignore.strand = FALSE, ...)
     {
         resolve.empty <- match.arg(resolve.empty)
         values(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
+        if(ignore.strand)
+            strand(y) <- strand(x)
         if (!all((seqnames(x) == seqnames(y)) &
                   compatibleStrand(strand(x), strand(y))))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",
@@ -177,12 +183,14 @@ setMethod("pintersect", c("GRanges", "GRangesList"),
 
 
 setMethod("psetdiff", c("GRanges", "GRanges"),
-    function(x, y, ...)
+    function(x, y, ignore.strand = FALSE, ...)
     {
         values(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
+        if(ignore.strand)
+            strand(y) <- strand(x)
         ok <- (seqnames(x) == seqnames(y)) &
               compatibleStrand(strand(x), strand(y))
         ## Update the ranges.
