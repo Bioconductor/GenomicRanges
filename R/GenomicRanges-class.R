@@ -600,7 +600,7 @@ setMethod("shift", "GenomicRanges",
           }
           )
 
-.interIntervalGenomicRanges <- function(x, FUN, ignore.strand, ...)
+.interIntervalGenomicRanges <- function(x, FUN, ignore.strand = FALSE, ...)
 {
     elementMetadata(x) <- NULL
     if (ignore.strand) {
@@ -629,7 +629,7 @@ setMethod("disjoin", "GenomicRanges",
 )
 
 setMethod("gaps", "GenomicRanges",
-    function(x, start = 1L, end = seqlengths(x), ignore.strand = FALSE)
+    function(x, start = 1L, end = seqlengths(x))
     {
         seqlevels <- levels(seqnames(x))
         if (!is.null(names(start)))
@@ -640,8 +640,7 @@ setMethod("gaps", "GenomicRanges",
         start <- rep(start, each = 3)
         end <- IRanges:::recycleVector(end, length(seqlevels))
         end <- rep(end, each = 3)
-        .interIntervalGenomicRanges(x, gaps, start = start, end = end, 
-            ignore.strand = ignore.strand)
+        .interIntervalGenomicRanges(x, gaps, start = start, end = end)
     }
 )
 

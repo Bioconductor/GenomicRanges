@@ -5,15 +5,15 @@
 ### TODO: What's the impact of circularity on the set operations?
 
 setMethod("union", c("GRanges", "GRanges"),
-    function(x, y, ...)
+    function(x, y, ignore.strand = FALSE, ...)
     {
         values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
-        reduce(c(x, y), drop.empty.ranges=TRUE)
+        reduce(c(x, y), drop.empty.ranges=TRUE, ignore.strand = ignore.strand)
     }
 )
 
 setMethod("intersect", c("GRanges", "GRanges"),
-    function(x, y, ...)
+    function(x, y, ignore.strand = FALSE, ...)
     {
         values(x) <- values(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
@@ -25,12 +25,12 @@ setMethod("intersect", c("GRanges", "GRanges"),
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
             maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
-        setdiff(x, gaps(y, end = seqlengths))
+        setdiff(x, gaps(y, end = seqlengths), ignore.strand = ignore.strand)
     }
 )
 
 setMethod("setdiff", c("GRanges", "GRanges"),
-    function(x, y, ...)
+    function(x, y, ignore.strand = FALSE, ...)
     {
         values(x) <- values(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
@@ -42,7 +42,7 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
             maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
-        gaps(union(gaps(x, end = seqlengths), y),
+        gaps(union(gaps(x, end = seqlengths), y, ignore.strand = ignore.strand),
             end = seqlengths)
     }
 )
