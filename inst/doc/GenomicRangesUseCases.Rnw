@@ -380,8 +380,10 @@ annotations.
 
 <<ammendData>>=
 levels(rname(aligns))
-levels(rname(aligns)) <-
-  c(paste("chr", as.roman(1:16), sep=""), "chrM")
+newlvls <- c(paste("chr", as.roman(1:16), sep=""), "chrM", "2micron")
+seqlevels(exonRanges) <- seqlevels(aligns) <- levels(rname(aligns)) <-
+    newlvls
+seqlengths(aligns) <- seqlengths(exonRanges)
 @
 
 
