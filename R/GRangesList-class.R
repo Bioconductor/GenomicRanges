@@ -90,9 +90,6 @@ setMethod("updateObject", "GRangesList",
 ### Coercion.
 ###
 
-setAs("RangedDataList", "GRangesList",
-      function(from) GRangesList(lapply(from, as, "GRanges")))
-
 setMethod("as.data.frame", "GRangesList",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
@@ -117,6 +114,27 @@ setMethod("unlist", "GRangesList",
         callNextMethod()
     }
 )
+
+.GRangesListAsCompressedIRangesList <- function(from)
+{
+    ans_ranges <- from@unlistData@ranges
+    ans_ranges@elementMetadata <- from@unlistData@elementMetadata
+    new("CompressedIRangesList",
+        unlistData=ans_ranges,
+        partitioning=from@partitioning,
+        elementMetadata=from@elementMetadata)
+}
+
+setAs("GRangesList", "CompressedIRangesList",
+    .GRangesListAsCompressedIRangesList
+)
+
+setAs("GRangesList", "IRangesList",
+    .GRangesListAsCompressedIRangesList
+)
+
+setAs("RangedDataList", "GRangesList",
+      function(from) GRangesList(lapply(from, as, "GRanges")))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

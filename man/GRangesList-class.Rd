@@ -11,9 +11,11 @@
 \alias{updateObject,GRangesList-method}
 
 % Coercion methods:
-\alias{coerce,RangedDataList,GRangesList-method}
 \alias{as.data.frame,GRangesList-method}
 \alias{unlist,GRangesList-method}
+\alias{coerce,GRangesList,CompressedIRangesList-method}
+\alias{coerce,GRangesList,IRangesList-method}
+\alias{coerce,RangedDataList,GRangesList-method}
 
 % Accessor methods:
 \alias{seqnames,GRangesList-method}
@@ -73,10 +75,6 @@
 
   \describe{
     \item{}{
-      \code{as(from, "GRangesList")}:
-      Creates a GRangesList object from a RangedDataList object.
-    }
-    \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
       Creates a data.frame with columns \code{element} (character),
       \code{seqnames} (factor), \code{start} (integer),
@@ -86,6 +84,14 @@
     }
     \item{}{\code{as.list(x, use.names = TRUE)}:
       Creates a list containing the elements of \code{x}.
+    }
+    \item{}{\code{as(x, "IRangesList")}:
+      Turns \code{x} into an \link[IRanges]{IRangesList} object.
+    }
+    \item{}{
+      \code{as(from, "GRangesList")}:
+      Creates a GRangesList object from a \link[IRanges]{RangedDataList}
+      object.
     }
   }
 }
@@ -462,4 +468,7 @@
                # ranges are reordered by sequence name first (the order of
                # the sequence names is dictated by the sequence levels),
                # and then by strand.
+
+  # Coerce to IRangesList (seqnames and strand information are lost)
+  as(grl, "IRangesList")
 }

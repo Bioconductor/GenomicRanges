@@ -23,15 +23,26 @@ setClass("GRanges",
 ### Validity.
 ###
 
-.valid.GRanges.elementMetadata <- function(x)
+.valid.GRanges.ranges <- function(x)
 {
-    msg <- NULL
-    if (!is.null(rownames(x@elementMetadata)))
-        msg <- c(msg, "slot 'elementMetadata' cannot contain row names")
-    msg
+    if (!is.null(x@ranges@elementMetadata))
+        return("slot 'ranges' cannot have element metadata")
+    NULL
 }
 
-setValidity2("GRanges", .valid.GRanges.elementMetadata)
+.valid.GRanges.elementMetadata <- function(x)
+{
+    if (!is.null(rownames(x@elementMetadata)))
+        return("slot 'elementMetadata' cannot contain row names")
+    NULL
+}
+
+.valid.GRanges <- function(x)
+{
+    c(.valid.GRanges.ranges(x), .valid.GRanges.elementMetadata(x))
+}
+
+setValidity2("GRanges", .valid.GRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,7 +94,11 @@ function(class, seqnames = Rle(), ranges = IRanges(),
     seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
     ## in case we have seqlengths for unrepresented sequences
     runValue(seqnames) <- factor(runValue(seqnames), names(seqlengths))
-    
+
+    if (!is.null(elementMetadata(ranges))) {
+        warning("'ranges' has element metadata, dropping them")
+        elementMetadata(ranges) <- NULL
+    }
     elementMetadata <- DataFrame(...)
     if (ncol(elementMetadata) == 0L)
         elementMetadata <- new("DataFrame", nrows = length(seqnames))

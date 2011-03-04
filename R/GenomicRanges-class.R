@@ -98,6 +98,13 @@ setMethod("elementMetadata", "GenomicRanges",
     NULL
 }
 
+.valid.GenomicRanges.ranges <- function(x)
+{
+    if (class(ranges(x)) != "IRanges")
+        return("'ranges(x)' must be an IRanges instance")
+    NULL
+}
+
 .valid.GenomicRanges.strand <- function(x)
 {
     if (!is.factor(runValue(strand(x))) ||
@@ -166,6 +173,7 @@ valid.GenomicRanges.seqinfo <- function(x)
 {
     c(.valid.GenomicRanges.length(x),
       .valid.GenomicRanges.seqnames(x),
+      .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.elementMetadata(x),
       valid.GenomicRanges.seqinfo(x))
