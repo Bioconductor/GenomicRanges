@@ -1,6 +1,11 @@
 ### -------------------------------------------------------------------------
 ### Some low-level (non exported) utility functions to operate on transcripts
-### represented as groups of exon ranges
+### represented as groups of exon ranges.
+###
+### These functions are implemented in C. This file only contains R wrappers
+### for the .Call entry points. Those wrappers are not doing any argument
+### checking and therefore are considered "unsafe". They are called by safe
+### and user-friendly higher level wrappers defined in GenomicFeatures.
 ###
 ### For all the functions below:
 ###   o 'exonStarts', 'exonEnds' are assumed to be lists of integer vectors.
@@ -10,8 +15,6 @@
 ###     "+" and "-" only;
 ###   o 'reorder.exons.on.minus.strand' is assumed to be TRUE or FALSE.
 
-
-### The safe and user-friendly wrapper to this is in GenomicFeatures.
 unsafe.transcriptWidths <- function(exonStarts, exonEnds)
 {
     .Call("transcript_widths",
@@ -19,7 +22,6 @@ unsafe.transcriptWidths <- function(exonStarts, exonEnds)
           PACKAGE="GenomicRanges")
 }
 
-### The safe and user-friendly wrapper to this is in Biostrings.
 unsafe.extractTranscripts <- function(classname, x,
                 exonStarts, exonEnds, strand,
                 reorder.exons.on.minus.strand, lkup)
@@ -31,7 +33,6 @@ unsafe.extractTranscripts <- function(classname, x,
           PACKAGE="GenomicRanges")
 }
 
-### The safe and user-friendly wrapper to this is in GenomicFeatures.
 ### 'tlocs' is assumed to be a list of integer vectors of the same length (but
 ### not necessarily the "same shape") as 'exonStarts' and 'exonEnds'.
 unsafe.transcriptLocs2refLocs <- function(tlocs,
