@@ -17,6 +17,11 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_alignment, 4),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_rname, 6),
 
+/* transcript_utils.c */
+	CALLMETHOD_DEF(transcript_widths, 2),
+	CALLMETHOD_DEF(extract_transcripts, 7),
+	CALLMETHOD_DEF(tlocs2rlocs, 5),
+
 	{NULL, NULL, 0}
 };
 

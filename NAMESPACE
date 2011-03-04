@@ -10,6 +10,12 @@ exportClasses(
 )
 
 export(
+    validCigar, cigarOpTable,
+    cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
+    cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
+    queryLoc2refLoc, queryLocs2refLocs,
+    splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
+
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlevels, "seqlevels<-",
@@ -19,11 +25,6 @@ export(
     Seqinfo,
     strand, "strand<-",
     GRanges, GRangesList,
-    validCigar, cigarOpTable,
-    cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
-    cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
-    queryLoc2refLoc, queryLocs2refLocs,
-    splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
     SummarizedExperiment,

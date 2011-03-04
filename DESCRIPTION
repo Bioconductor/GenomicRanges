@@ -17,6 +17,8 @@ Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, EatonEtAlChIPseq,
 	leeBamViews, org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
 License: Artistic-2.0
 Collate: utils.R
+	cigar-utils.R
+	transcript-utils.R
 	seqinfo.R
 	strand.R
 	Seqinfo-class.R
@@ -25,7 +27,6 @@ Collate: utils.R
 	GRangesList-class.R
 	GRanges-setops.R
 	findOverlaps-methods.R
-	cigar-utils.R
 	GappedAlignments-class.R
 	SummarizedExperiment-class.R
 	test_GenomicRanges_package.R
