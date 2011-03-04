@@ -4,8 +4,11 @@
 ###
 ### These functions are implemented in C. This file only contains R wrappers
 ### for the .Call entry points. Those wrappers are not doing any argument
-### checking and therefore are considered "unsafe". They are called by safe
-### and user-friendly higher level wrappers defined in GenomicFeatures.
+### checking and therefore are considered "unsafe". They are in turn called
+### by "safe" and user-friendly higher level wrappers defined in
+### GenomicFeatures. The reason why the "unsafe" wrappers are here and not in
+### the GenomicFeatures package was to keep GenomicFeatures free of native
+### code.
 ###
 ### For all the functions below:
 ###   o 'exonStarts', 'exonEnds' are assumed to be lists of integer vectors.
