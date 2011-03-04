@@ -43,6 +43,14 @@ SEXP transcript_widths(
 	SEXP exonEnds
 );
 
+SEXP tlocs2rlocs(
+	SEXP tlocs,
+	SEXP exonStarts,
+	SEXP exonEnds,
+	SEXP strand,
+	SEXP reorder_exons_on_minus_strand
+);
+
 SEXP extract_transcripts(
 	SEXP classname,
 	SEXP x,
@@ -51,13 +59,5 @@ SEXP extract_transcripts(
 	SEXP strand,
 	SEXP reorder_exons_on_minus_strand,
 	SEXP lkup
-);
-
-SEXP tlocs2rlocs(
-	SEXP tlocs,
-	SEXP exonStarts,
-	SEXP exonEnds,
-	SEXP strand,
-	SEXP reorder_exons_on_minus_strand
 );
 

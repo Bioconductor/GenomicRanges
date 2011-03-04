@@ -25,17 +25,6 @@ unsafe.transcriptWidths <- function(exonStarts, exonEnds)
           PACKAGE="GenomicRanges")
 }
 
-unsafe.extractTranscripts <- function(classname, x,
-                exonStarts, exonEnds, strand,
-                reorder.exons.on.minus.strand, lkup)
-{
-    .Call("extract_transcripts",
-          classname, x,
-          exonStarts, exonEnds, strand,
-          reorder.exons.on.minus.strand, lkup,
-          PACKAGE="GenomicRanges")
-}
-
 ### 'tlocs' is assumed to be a list of integer vectors of the same length (but
 ### not necessarily the "same shape") as 'exonStarts' and 'exonEnds'.
 unsafe.transcriptLocs2refLocs <- function(tlocs,
@@ -46,6 +35,17 @@ unsafe.transcriptLocs2refLocs <- function(tlocs,
           tlocs,
           exonStarts, exonEnds, strand,
           reorder.exons.on.minus.strand,
+          PACKAGE="GenomicRanges")
+}
+
+unsafe.extractTranscripts <- function(classname, x,
+                exonStarts, exonEnds, strand,
+                reorder.exons.on.minus.strand, lkup)
+{
+    .Call("extract_transcripts",
+          classname, x,
+          exonStarts, exonEnds, strand,
+          reorder.exons.on.minus.strand, lkup,
           PACKAGE="GenomicRanges")
 }
 
