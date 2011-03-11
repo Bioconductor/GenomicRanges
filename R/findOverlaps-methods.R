@@ -297,7 +297,19 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                 togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
             matchMatrix[, 2L] <- subjectGroups[matchMatrix[, 2L, drop=TRUE]]
             matchMatrix <- .cleanMatchMatrix(matchMatrix)
-        }       
+        }
+        if (type == "within") {
+            keep <- sapply(seq_len(nrow(matchMatrix)),
+                        function(i) {
+                            q <- matchMatrix[i, "query"]
+                            qq <- query@partitioning[[q]]
+                            s <- matchMatrix[i, "subject"]
+                            ss <- subject@partitioning[[s]]
+                            all(qq %in% ans@matchMatrix[ans@matchMatrix[ , "subject"] %in% ss, "query"])
+                        }
+                    )
+            matchMatrix <- matchMatrix[keep, ]
+        }
         if (select == "all") {
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
