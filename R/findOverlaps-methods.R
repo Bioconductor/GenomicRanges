@@ -258,7 +258,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 
 setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
