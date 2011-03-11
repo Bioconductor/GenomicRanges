@@ -322,7 +322,7 @@ test_GRanges_Ranges <- function() {
                            B=Rle(c(0L, 1L), c(5, 7))))
 }
 
-test_GRanges_Sequence <- function() {
+test_GRanges_Vector <- function() {
     ## [
     gr <- make_test_GRanges()
     checkException(gr[1000], silent = TRUE)

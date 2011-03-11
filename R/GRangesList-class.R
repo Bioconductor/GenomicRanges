@@ -369,7 +369,7 @@ setMethod("coverage", "GRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Sequence methods.
+### Vector methods.
 ###
 
 setMethod("[", "GRangesList",

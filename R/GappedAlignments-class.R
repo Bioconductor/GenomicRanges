@@ -4,7 +4,7 @@
 ###
 
 setClass("GappedAlignments",
-    contains="Sequence",
+    contains="Vector",
     representation(
         seqnames="Rle",               # 'factor' Rle
         start="integer",              # POS field in SAM

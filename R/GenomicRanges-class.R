@@ -4,7 +4,7 @@
 ###
 
 setClass("GenomicRanges",
-    contains="Sequence",
+    contains="Vector",
     representation("VIRTUAL")
 )
 
@@ -674,7 +674,7 @@ setMethod("reduce", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Sequence methods.
+### Vector methods.
 ###
 
 setMethod("[", "GenomicRanges",

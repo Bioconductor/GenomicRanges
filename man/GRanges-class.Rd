@@ -54,7 +54,7 @@
 \alias{precede,GenomicRanges,GenomicRanges-method}
 \alias{follow,GenomicRanges,GenomicRanges-method}
 
-% Sequence methods:
+% Vector methods:
 \alias{length,GenomicRanges-method}
 \alias{[,GenomicRanges-method}
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
@@ -446,7 +446,7 @@
   \link{GRangesList-class},
   \code{\link{seqinfo}},
   \link{Seqinfo-class},
-  \link[IRanges]{Sequence-class},
+  \link[IRanges]{Vector-class},
   \link[IRanges]{Ranges-class},
   \link[IRanges]{Rle-class},
   \link[IRanges]{DataFrame-class}

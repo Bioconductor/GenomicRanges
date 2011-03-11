@@ -40,7 +40,7 @@
 \alias{shift,GRangesList-method}
 \alias{coverage,GRangesList-method}
 
-% Sequence methods:
+% Vector methods:
 \alias{[,GRangesList-method}
 \alias{[<-,GRangesList,ANY,ANY,ANY-method}
 \alias{[[<-,GRangesList-method}
@@ -425,7 +425,7 @@
 \seealso{
   \link{GRanges-class},
   \link{Seqinfo-class}
-  \link[IRanges]{Sequence-class},
+  \link[IRanges]{Vector-class},
   \link[IRanges]{RangesList-class},
   \link[IRanges]{RleList-class},
   \link[IRanges]{DataFrameList-class}

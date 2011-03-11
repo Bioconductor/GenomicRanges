@@ -142,7 +142,7 @@ test_GRangesList_RangesList <- function() {
                            "chr5" = Rle(0:4, c(13, 1, 1, 1, 1))))
 }
 
-test_GRangesList_Sequence <- function() {
+test_GRangesList_Vector <- function() {
     grl <- make_test_GRangesList()
     checkIdentical(grl, grl[])
     checkIdentical(grl[,"score"],
