@@ -65,6 +65,7 @@ function(class, seqnames = Rle(), ranges = IRanges(),
     if (!is.factor(runValue(seqnames))) 
         runValue(seqnames) <- factor(runValue(seqnames))
 
+    ranges <- force(ranges)
     if (!is(ranges, "IRanges"))
         ranges <- as(ranges, "IRanges")
 
@@ -199,6 +200,13 @@ setAs("RangesList", "GRanges",
         gr
       })
 
+setAs("RleList", "GRanges", function(from) {
+  rd <- as(from, "RangedData")
+  rd$strand <- "*"
+  gr <- as(rd, "GRanges")
+  seqlengths(gr) <- elementLengths(from)
+  gr
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
