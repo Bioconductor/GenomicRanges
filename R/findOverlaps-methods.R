@@ -434,8 +434,9 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
 {
     tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
                                     minoverlap = minoverlap,
-                                    type = match.arg(type), ignore.strand =
-                                    ignore.strand)), length(query))
+                                    type = match.arg(type),
+                                    ignore.strand = ignore.strand)),
+             NROW(query))
 }
 
 .subsetByOverlaps.default <- function(query, subject,
