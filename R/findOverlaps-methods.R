@@ -180,7 +180,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
@@ -204,6 +204,17 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
                 togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
             matchMatrix <- .cleanMatchMatrix(matchMatrix)
         }
+        if (type == "within") {
+            keep <- sapply(seq_len(nrow(matchMatrix)),
+                        function(i) {
+                            q <- matchMatrix[i, "query"]
+                            qq <- query@partitioning[[q]]
+                            s <- matchMatrix[i, "subject"]
+                            all(qq %in% ans@matchMatrix[ans@matchMatrix[ , "subject"] == s, "query"])
+                        }
+                    )
+            matchMatrix <- matchMatrix[keep, , drop=FALSE]
+        }
         if (select == "all") {
             DIM <- c(length(query), length(subject))
             initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
@@ -215,7 +226,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
 
 setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
@@ -308,7 +319,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                             all(qq %in% ans@matchMatrix[ans@matchMatrix[ , "subject"] %in% ss, "query"])
                         }
                     )
-            matchMatrix <- matchMatrix[keep, ]
+            matchMatrix <- matchMatrix[keep, , drop=FALSE]
         }
         if (select == "all") {
             DIM <- c(length(query), length(subject))
@@ -321,7 +332,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
 
 setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(as(query, "GRanges"), subject = subject,
@@ -333,7 +344,7 @@ setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
 
 setMethod("findOverlaps", c("RangesList", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(as(query, "GRanges"), subject = subject,
@@ -345,7 +356,7 @@ setMethod("findOverlaps", c("RangesList", "GRangesList"),
 
 setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(query, as(subject, "GRanges"),
@@ -357,7 +368,7 @@ setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
 
 setMethod("findOverlaps", c("GRangesList", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"))
     {
         findOverlaps(query, as(subject, "GRanges"),
@@ -368,7 +379,7 @@ setMethod("findOverlaps", c("GRangesList", "RangesList"),
 
 setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("RangesList", "GenomicRanges")
@@ -382,7 +393,7 @@ setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
 
 setMethod("findOverlaps", c("RangedData", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("RangesList", "GRangesList")
@@ -396,7 +407,7 @@ setMethod("findOverlaps", c("RangedData", "GRangesList"),
 
 setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("GenomicRanges", "RangesList")
@@ -410,7 +421,7 @@ setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
 
 setMethod("findOverlaps", c("GRangesList", "RangedData"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end"),
+             type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("GRangesList", "RangesList")
