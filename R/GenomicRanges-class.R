@@ -410,7 +410,7 @@ setMethod("update", "GenomicRanges",
           })
 
 setGeneric("clone", function(x, ...) standardGeneric("clone"))
-setMethod("clone", "GenomicRanges",
+setMethod("clone", "ANY",
           function(x, ...)
           {
             initialize(x, ...)
@@ -610,7 +610,7 @@ setMethod("shift", "GenomicRanges",
 
 .interIntervalGenomicRanges <- function(x, FUN, ignore.strand = FALSE, ...)
 {
-    elementMetadata(x) <- NULL
+    x <- clone(x, elementMetadata = NULL)
     if (ignore.strand) {
        xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
                             Rle(factor(rep("+", length(x)))), sep = "\r"))
@@ -625,10 +625,10 @@ setMethod("shift", "GenomicRanges",
       Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
                  levels = levels(seqnames(x))), k)
     ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
-    clone(x, seqnames = ansSeqnames,
-          ranges = unlist(ansIRangesList, use.names=FALSE),
-          strand = ansStrand,
-          elementMetadata = new("DataFrame", nrows = length(ansSeqnames)))
+    update(x, seqnames = ansSeqnames,
+           ranges = unlist(ansIRangesList, use.names=FALSE),
+           strand = ansStrand,
+           elementMetadata = new("DataFrame", nrows = length(ansSeqnames)))
 }
 
 setMethod("disjoin", "GenomicRanges",
