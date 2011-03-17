@@ -110,3 +110,12 @@ test_cigarToIRangesListByRName <- function()
     checkIdentical(ans, ans0)
 }
 
+test_refLocs2queryLocs <- function() {
+  cigar <- "66S42M2I20M8I18D15M43243N5M1D38M1D85M1D115M139S"
+  pos <- 525776L
+  ref <- 43425L + pos - 1L
+  query <- 173L
+  ans <-
+    .Call("ref_locs_to_query_locs", ref, cigar, pos, PACKAGE="GenomicRanges")
+  checkIdentical(ans, query)
+}

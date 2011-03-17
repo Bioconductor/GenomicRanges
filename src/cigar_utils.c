@@ -1144,3 +1144,65 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 	return ans;
 }
 
+/****************************************************************************
+ * --- .Call ENTRY POINT ---
+ * Args:
+ *   ref_locs: global positions in the reference that we will map
+ *   cigar: character string containing the extended CIGAR;
+ *   pos: reference position at which the query alignment begins
+ * Returns the local query positions. This assumes that the reference
+ * positions actually occur in the read alignment region, outside of
+ * any deletions or insertions. 
+ */
+SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
+{
+  int nlocs, i;
+  SEXP query_locs;
+  
+  nlocs = LENGTH(ref_locs);
+  PROTECT(query_locs = allocVector(INTSXP, nlocs));
+  
+  for (i = 0; i < nlocs; i++) {
+    int query_loc = INTEGER(ref_locs)[i] - INTEGER(pos)[i] + 1;
+    int n, offset = 0, OPL, query_consumed = 0;
+    char OP;
+    const char *cig0 = CHAR(STRING_ELT(cigar, i));
+    while (query_consumed < query_loc &&
+           (n = get_next_cigar_OP(cig0, offset, &OPL, &OP)))
+    {
+      switch (OP) {
+        /* Alignment match (can be a sequence match or mismatch) */
+      case 'M':
+      case 'S':
+      case 'H':
+        query_consumed += OPL;
+        break;
+        /* Insertion to the reference */
+      case 'I':
+        query_loc += OPL;
+        query_consumed += OPL;
+        break;
+        /* Deletion from the reference */
+      case 'D':
+      case 'N': /* Skipped region from the reference */
+        query_loc -= OPL;
+        break;
+        /* Soft/hard clip on the read */
+        /* Padding (silent deletion from the padded reference
+           sequence) */
+      case 'P':
+        
+        break;
+      default:
+        break;
+      }
+      offset += n;
+    }
+    if (n == 0)
+      error("hit end of cigar string %d: %s", i + 1, cig0);
+    INTEGER(query_locs)[i] = query_loc;
+  }
+
+  UNPROTECT(1);
+  return query_locs;
+}
