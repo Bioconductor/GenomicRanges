@@ -610,7 +610,7 @@ setMethod("shift", "GenomicRanges",
 
 .interIntervalGenomicRanges <- function(x, FUN, ignore.strand = FALSE, ...)
 {
-    x <- clone(x, elementMetadata = values(x)[NULL])
+    elementMetadata(x) <- NULL
     if (ignore.strand) {
        xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
                             Rle(factor(rep("+", length(x)))), sep = "\r"))
