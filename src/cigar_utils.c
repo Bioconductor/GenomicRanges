@@ -1150,6 +1150,7 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
  *   ref_locs: global positions in the reference that we will map
  *   cigar: character string containing the extended CIGAR;
  *   pos: reference position at which the query alignment begins
+ *        (after clip)
  * Returns the local query positions. This assumes that the reference
  * positions actually occur in the read alignment region, outside of
  * any deletions or insertions. 
@@ -1173,8 +1174,6 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
       switch (OP) {
         /* Alignment match (can be a sequence match or mismatch) */
       case 'M':
-      case 'S':
-      case 'H':
         query_consumed += OPL;
         break;
         /* Insertion to the reference */
@@ -1188,10 +1187,12 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
         query_loc -= OPL;
         break;
         /* Soft/hard clip on the read */
+      case 'S':
+      case 'H':
+        break;
         /* Padding (silent deletion from the padded reference
            sequence) */
       case 'P':
-        
         break;
       default:
         break;
