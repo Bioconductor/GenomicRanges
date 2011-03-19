@@ -75,13 +75,13 @@ setGeneric("cigar", function(x) standardGeneric("cigar"))
 
 setGeneric("qwidth", function(x) standardGeneric("qwidth"))
 
-setGeneric("grglist", function(x) standardGeneric("grglist"))
+setGeneric("grglist", function(x, ...) standardGeneric("grglist"))
 
-setGeneric("granges", function(x) standardGeneric("granges"))
+setGeneric("granges", function(x, ...) standardGeneric("granges"))
 
-setGeneric("grg", function(x) standardGeneric("grg"))
+setGeneric("grg", function(x, ...) standardGeneric("grg"))
 
-setGeneric("rglist", function(x) standardGeneric("rglist"))
+setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
 setGeneric("updateCigarAndStart",
     function(x, cigar=NULL, start=NULL) standardGeneric("updateCigarAndStart")
@@ -147,9 +147,10 @@ setMethod("strand", "GappedAlignments", function(x) x@strand)
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
 
 setMethod("grglist", "GappedAlignments",
-    function(x)
-        .GappedAlignmentsAsGRangesList(rname(x), rglist(x),
-                                       strand(x), seqinfo(x))
+    function(x, drop.D.ranges = FALSE)
+          .GappedAlignmentsAsGRangesList(rname(x),
+                                         rglist(x, drop.D.ranges=drop.D.ranges),
+                                         strand(x), seqinfo(x))
 )
 setMethod("granges", "GappedAlignments",
     function(x)
@@ -160,7 +161,9 @@ setMethod("granges", "GappedAlignments",
 setMethod("grg", "GappedAlignments", function(x) granges(x))
 
 setMethod("rglist", "GappedAlignments",
-    function(x) cigarToIRangesListByAlignment(x@cigar, x@start)
+    function(x, drop.D.ranges = FALSE)
+          cigarToIRangesListByAlignment(x@cigar, x@start,
+                                        drop.D.ranges = drop.D.ranges)
 )
 
 setMethod("ranges", "GappedAlignments",

@@ -207,11 +207,17 @@
       the corresponding SAM/BAM record).
     }
     \item{}{
-      \code{grglist(x)}, \code{granges(x)}, \code{rglist(x)}, \code{ranges(x)}:
+      \code{grglist(x, drop.D.ranges = FALSE)}, \code{granges(x)},
+      \code{rglist(x, drop.D.ranges = FALSE)}, \code{ranges(x)}:
       Returns either a \link{GRangesList} object, or a \link{GRanges} object,
       or a \link[IRanges]{RangesList} object, or a \link[IRanges]{Ranges}
       object of length \code{length(x)} where each element represents the
-      regions in the reference to which a query is aligned.
+      regions in the reference to which a query is
+      aligned. If \code{drop.D.ranges} is \code{TRUE} for
+      either \code{grglist} or \code{rglist}, the ranges corresponding
+      to deletions in the CIGAR string are dropped, i.e., they are not
+      considered part of the alignment but are treated like the N (intron)
+      CIGAR element.
       See Details section above for more information.
       More precisely, the \link[IRanges]{RangesList} object returned by
       \code{rglist(x)} is a \link[IRanges]{CompressedNormalIRangesList} object,
