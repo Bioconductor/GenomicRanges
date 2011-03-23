@@ -66,7 +66,7 @@ function(class, seqnames = Rle(), ranges = IRanges(),
         runValue(seqnames) <- factor(runValue(seqnames))
 
     ranges <- force(ranges)
-    if (!is(ranges, "IRanges"))
+    if (class(ranges) != "IRanges")
         ranges <- as(ranges, "IRanges")
 
     if (!is(strand, "Rle"))
