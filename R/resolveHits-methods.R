@@ -40,14 +40,6 @@ resDivide <- function(query, subject, type)
 
 resUniqueDisjoint <- function(query, subject, type)
 {
-    ## uncessary to include type in these comparisions?
-    ## read has been pre-filtered for type
-    ## i.e., unique disjoint isn't about being "start" or "end"
-    #fo <- findOverlaps(query, subject, type=type)
-    #lst <- split(subjectHits(fo), queryHits(fo))
-    #if (length(lst) == 0)
-    #    return(rep.int(0, length(unlist(subject))))
-    
     gr <- unlist(subject)
     d <- disjoin(gr)
     ud <- d[countOverlaps(d, gr) == 1]
