@@ -49,10 +49,10 @@ test_input_type <- function()
     subject <- make_subject()
     GRquery <- make_GRquery()
     GAquery <- make_GAquery() 
-    GRq_GRLs <- countGenomicOverlaps(GRquery, subject)
-    GAq_GRLs <- countGenomicOverlaps(GAquery, subject)
-    GRq_GRs <- countGenomicOverlaps(GAquery, unlist(subject))
-    GAq_GRs <- countGenomicOverlaps(GAquery, unlist(subject))
+    GRq_GRLs <- GenomicRanges:::countGenomicOverlaps(GRquery, subject)
+    GAq_GRLs <- GenomicRanges:::countGenomicOverlaps(GAquery, subject)
+    GRq_GRs <- GenomicRanges:::countGenomicOverlaps(GAquery, unlist(subject))
+    GAq_GRs <- GenomicRanges:::countGenomicOverlaps(GAquery, unlist(subject))
 
     checkIdentical(GRq_GRLs, GAq_GRLs) 
     checkIdentical(GRq_GRs, GAq_GRs) 
@@ -65,9 +65,9 @@ test_typeAny <- function(type="any", ...)
         subject <- make_subject()
         query <- make_GRquery()
 
-        anyNone <- countGenomicOverlaps(query, subject, type, resolution="none")
-        anyDivide <- countGenomicOverlaps(query, subject, type, resolution="divide")
-        anyUD <- countGenomicOverlaps(query, subject, type, resolution="uniqueDisjoint")
+        anyNone <- GenomicRanges:::countGenomicOverlaps(query, subject, type, resolution="none")
+        anyDivide <- GenomicRanges:::countGenomicOverlaps(query, subject, type, resolution="divide")
+        anyUD <- GenomicRanges:::countGenomicOverlaps(query, subject, type, resolution="uniqueDisjoint")
  
         checkIdentical(.getCounts(anyNone), c(1, 1, rep.int(0L, 12)))
         checkIdentical(round(.getCounts(anyDivide), 3), c(1, 1, rep.int(0.5, 4), 
@@ -87,8 +87,8 @@ test_typeWithin <- function(type="within", ...)
         subject <- make_subject()
         query <- make_GRquery()
 
-        withinNone <- countGenomicOverlaps(query, subject, type=type, resolution="none")
-        withinDivide <- countGenomicOverlaps(query, subject, type=type, resolution="divide")
+        withinNone <- GenomicRanges:::countGenomicOverlaps(query, subject, type=type, resolution="none")
+        withinDivide <- GenomicRanges:::countGenomicOverlaps(query, subject, type=type, resolution="divide")
  
         checkIdentical(.getCounts(withinNone), c(0, 1, rep.int(0L, 12)))
         checkIdentical(.getCounts(withinDivide), 
