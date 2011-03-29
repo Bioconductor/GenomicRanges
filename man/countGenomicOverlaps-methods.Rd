@@ -1,4 +1,4 @@
-\name{unknownPkg-countGenomicOverlaps}
+\name{countGenomicOverlaps}
 
 \alias{countGenomicOverlaps,GRangesList,GRangesList-method}
 \alias{countGenomicOverlaps,GenomicRanges,GenomicRanges-method}
@@ -19,37 +19,37 @@
     query, subject, 
     type = c("any", "start", "end", "within", "equal"),
     resolution = c("none", "divide", "uniqueDisjoint"),
-    junctionwt = 0.5, strandaware = TRUE, ...) 
+    junctionwt = 0.5, ignore.strand = FALSE, ...) 
 }
 
 \arguments{
   \item{query}{
-    A \link[GenomicRanges:GRangesList-class]{GRangesList}, 
-    \link[GenomicRanges:GRanges-class]{GRanges}, or 
-    \link[GenomicRanges:GappedAlignments-class]{GappedAlignments} object, 
+    A \link{GRangesList}, 
+    \link{GRanges}, or 
+    \link{GappedAlignments} object, 
     or a character. The \code{query} is intended to be a 
-    \code{\link[GenomicRanges]{GRangesList} 
+    \code{\link{GRangesList}} 
     where each list element is a read. When the length of a list element is
     greater than 1, it is assumed to represent a spliced read.
     When \code{query} is a character, it should specify
     the full path to a bam file. Both 
-    \link[GenomicRanges:GRanges-class]{GRanges} and 
-    \link[GenomicRanges:GappedAlignments-class]{GappedAlignments} are coerced 
-    to a \link[GenomicRanges:GRangesList-class]{GRangesList} with each row as 
+    \link{GRanges} and 
+    \link{GappedAlignments} are coerced 
+    to a \link{GRangesList} with each row as 
     a single list element. If the cigar in the
-    \link[GenomicRanges:GappedAlignments-class]{GappedAlignments} has gaps, the 
+    \link{GappedAlignments} has gaps, the 
     read will be represented in the corresponding 
-    \link[GenomicRanges:GRangesList-class]{GRangesList} object 
+    \link{GRangesList} object 
     as a split read (i.e., list element of length 2). 
   }
   \item{subject}{
-    A \code{\link[GenomicRanges]{GRangesList}, or a 
-    \link[GenomicRanges:GRanges-class]{GRanges} object. 
+    A \code{\link{GRangesList}}, or a 
+    \link{GRanges} object. 
     The subject is expected to be a list of genomic features, 
     specifically genes, with each row representing an exon. If a 
-    \link[GenomicRanges:GRanges-class]{GRanges}
+    \link{GRanges}
     object is provided, it will be coerced to a 
-    \link[GenomicRanges:GRangesList-class]{GRangesList} 
+    \link{GRangesList} 
     with each original range representing as a single list element
     (i.e., as a single gene). 
   }
@@ -82,8 +82,11 @@
     read is defined as a split read query that hits 2 exons either in the
     same gene or in different genes. The default is 1. 
   }
-  \item{strandaware}{
+  \item{ignore.strand}{
     A logical value indicating if strand should be considered when matching.
+  }
+  \item{...}{Additional arguments, perhaps used by methods defined on
+  this generic.
   }
 }
 
@@ -107,13 +110,49 @@
 }
 
 \value{
-  A \link[GenomicRanges:GRangesList-class]{GRangesList} object with an
+  A \link{GRangesList} object with an
   additional metadata column specifying the number of hits.
 }
 
 \author{Valerie Obenchain and Martin Morgan}
 
 \examples{
+rng <- function(s, w)
+GRanges(seq="chr1", IRanges(s, width=w), strand="+")
+
+rng2 <- function(s, w)
+GRanges(seq="chr2", IRanges(s, width=w), strand="+")
+
+subj <- GRangesList(A=rng(1000, 500),
+                    B=rng2(2000, 900),
+                    C=rng(c(3000, 3600), c(500, 300)),
+                    D=rng2(c(7000, 7500), c(600, 300)),
+                    E1=rng(4000, 500), E2=rng(c(4300, 4500), c(400, 400)),
+                    F=rng2(3000, 500),
+                    G=rng(c(5000, 5600), c(500, 300)),
+                    H1=rng(6000, 500), H2=rng(6600, 400))
+
+query <- GRangesList(a=rng(1400, 500),
+                     b=rng2(2700, 100),
+                     c=rng(3400, 300),
+                     d=rng2(7100, 600),
+                     e=rng(4200, 500),
+                     f=rng2(c(3100, 3300), 50),
+                     g=rng(c(5400, 5600), 50),
+                     h=rng(c(6400, 6600), 50))
+
+## overlap type="any"
+a1 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="none")
+a2 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="none",
+                           junctionwt=5)
+a3 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="divide")
+a4 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="uniqueDisjoint")
+
+res_any <- data.frame(none = values(unlist(a1))[["hits"]],
+                      noneWithjctwt = values(unlist(a2))[["hits"]],
+                      divide = values(unlist(a3))[["hits"]],
+                      uniqDisj = values(unlist(a4))[["hits"]])
+
 }
 
 \keyword{methods}
