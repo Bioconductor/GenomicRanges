@@ -141,21 +141,28 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     }
 )
 
-### TODO: Make this a function of 2 integer vectors (of the same length) and
-### move it to IRanges/R/utils.R (place it just after orderTwoIntegers()).
-.cleanMatchMatrix <- function(matchMatrix) {
-    fastDiff <- IRanges:::diffWithInitialZero
-    nr <- nrow(matchMatrix)
-    if (nr <= 1L) {
-        matchMatrix
-    } else {
-        matchMatrix <-
-          matchMatrix[IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
-                                                 matchMatrix[ , 2L, drop=TRUE]), ,
-                      drop=FALSE]
-        matchMatrix[fastDiff(matchMatrix[,1L,drop=TRUE]) != 0L |
-                    fastDiff(matchMatrix[,2L,drop=TRUE]) != 0L, , drop=FALSE]
-    }
+### Extract the unique rows from 2-col matrix 'matchMatrix' and return them
+### sorted first by 1st col and then by 2nd col (actually the sorting is
+### done first and then unique rows are extracted but this is an
+### implementation detail since the final result doesn't depend on the
+### order in which those things are done).
+### TODO: Make this a function of 2 integer vectors (of equal length) and
+### move it to IRanges/R/int-utils.R
+### TODO: Try to invert the order i.e. first extract unique rows with
+### IRanges:::duplicatedTwoIntegers() and then sort them. Could this be
+### faster?
+.cleanMatchMatrix <- function(matchMatrix)
+{
+    if (nrow(matchMatrix) <= 1L)
+        return(matchMatrix)
+    ## First sort the rows.
+    oo <- IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
+                                     matchMatrix[ , 2L, drop=TRUE])
+    matchMatrix <- matchMatrix[oo, , drop=FALSE]
+    ## Then keep the unique rows.
+    keep <- IRanges:::runEndsOfIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
+                                            matchMatrix[ , 2L, drop=TRUE])
+    matchMatrix[keep, , drop=FALSE]
 }
 
 .groupSums <- function(x, by)
@@ -278,12 +285,11 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 
     query1 <- togroup(qpartitioning, unname(mm01[ , "query"]))
     subject1 <- unname(mm01[ , "subject"])
-    rle11 <- Rle(paste(query1, subject1, sep="|"))
-    runlen <- runLength(rle11)
-    runend <- cumsum(runlen)
+    runend <- IRanges:::runEndsOfIntegerPairs(query1, subject1)
     mm11 <- cbind(query=query1, subject=subject1)[runend, , drop=FALSE]
 
     if (type.is.within) {
+        runlen <- IRanges:::diffWithInitialZero(runend)
         keep <- width(qpartitioning)[mm11[ , "query"]] == runlen
         mm11 <- mm11[keep, , drop=FALSE]
     }
