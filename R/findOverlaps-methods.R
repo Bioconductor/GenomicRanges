@@ -185,6 +185,26 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     matchMatrix <- matchMatrix[indx,  ,drop = FALSE]  
 }
 
+.makeGRL2GRmatchMatrix <- function(mm00, qpartitioning,
+                                   type.is.within)
+{
+    query0 <- unname(mm00[ , "query"])
+    subject0 <- unname(mm00[ , "subject"])
+    oo <- IRanges:::orderTwoIntegers(subject0, query0)
+    mm00 <- mm00[oo, , drop=FALSE]
+
+    query1 <- togroup(qpartitioning, unname(mm00[ , "query"]))
+    subject0 <- unname(mm00[ , "subject"])
+    runend <- IRanges:::runEndsOfIntegerPairs(query1, subject0)
+    mm10 <- cbind(query=query1, subject=subject0)[runend, , drop=FALSE]
+
+    if (type.is.within) {
+        runlen <- IRanges:::diffWithInitialZero(runend)
+        keep <- width(qpartitioning)[mm10[ , "query"]] == runlen
+        mm10 <- mm10[keep, , drop=FALSE]
+    }
+    mm10
+}
 
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
@@ -201,33 +221,34 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
           callGeneric(unlistQuery, subject,
                       maxgap = maxgap, type = type, select = "all",
                       ignore.strand = ignore.strand)
-        matchMatrix <- ans@matchMatrix
-        if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {  
-            matchMatrix[,"query"] <-  queryGroups[queryHits(ans)]
+        mm00 <- ans@matchMatrix
+        if (minoverlap > 1L && nrow(mm00) > 0L) {
+            query1 <- queryGroups[queryHits(ans)]
+            subject0 <- unname(mm00[ , "subject"])
+            mm10 <- cbind(query=query1, subject=subject0)
             intrsct <- pintersect(ranges(unlistQuery)[queryHits(ans)],
-                    ranges(subject[subjectHits(ans)]))
-            matchMatrix <- .updateMatchMatrix(matchMatrix, intrsct, minoverlap)
+                                  ranges(subject)[subjectHits(ans)])
+            mm10 <- .updateMatchMatrix(mm10, intrsct, minoverlap)
+            if (type == "within") {
+                ## TODO: Call .makeGRL2GRmatchMatrix() and intersect the
+                ## result with 'mm10'.
+                stop("'type=\"within\"' is not yet supported ",
+                     "when 'minoverlap' > 1")
+            }
         } else {
-            matchMatrix[, 1L] <-
-                togroup(query@partitioning)[matchMatrix[, 1L, drop=TRUE]]
-            matchMatrix <- .cleanMatchMatrix(matchMatrix)
+            mm10 <- .makeGRL2GRmatchMatrix(mm00,
+                                           query@partitioning,
+                                           type == "within")
         }
-        if (type == "within") {
-            keep <- sapply(seq_len(nrow(matchMatrix)),
-                        function(i) {
-                            q <- matchMatrix[i, "query"]
-                            qq <- query@partitioning[[q]]
-                            s <- matchMatrix[i, "subject"]
-                            all(qq %in% ans@matchMatrix[ans@matchMatrix[ , "subject"] == s, "query"])
-                        }
-                    )
-            matchMatrix <- matchMatrix[keep, , drop=FALSE]
-        }
+        ## Only for sorting, rows are already unique.
+        ## TODO: Optimize this (.cleanMatchMatrix is also extracting unique
+        ## rows but this is not necessary since they are already unique).
+        mm10 <- .cleanMatchMatrix(mm10)
         if (select == "all") {
             DIM <- c(length(query), length(subject))
-            initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
+            initialize(ans, matchMatrix = mm10, DIM = DIM)
         } else {
-            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.matchMatrixToVector(mm10, length(query))
         }
     }
 )
@@ -327,11 +348,12 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                       ignore.strand = ignore.strand)
         mm00 <- ans@matchMatrix
         if (minoverlap > 1L && nrow(mm00) > 0L) {
-            mm00[ , "query"] <- queryGroups[queryHits(ans)]
-            mm00[ , "subject"] <- subjectGroups[subjectHits(ans)]
+            query1 <- queryGroups[queryHits(ans)]
+            subject1 <- subjectGroups[subjectHits(ans)]
+            mm11 <- cbind(query=query1, subject=subject1)
             intrsct <- pintersect(ranges(unlistQuery)[queryHits(ans)],
                                   ranges(unlistSubject)[subjectHits(ans)])
-            mm11 <- .updateMatchMatrix(mm00, intrsct, minoverlap)
+            mm11 <- .updateMatchMatrix(mm11, intrsct, minoverlap)
             if (type == "within") {
                 ## TODO: Call .makeGRL2GRLmatchMatrix() and intersect the
                 ## result with 'mm11'.
@@ -344,6 +366,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                                             subject@partitioning,
                                             type == "within")
         }
+        ## Only for sorting, rows are already unique.
+        ## TODO: Optimize this (.cleanMatchMatrix is also extracting unique
+        ## rows but this is not necessary since they are already unique).
         mm11 <- .cleanMatchMatrix(mm11)
         if (select == "all") {
             DIM <- c(length(query), length(subject))
