@@ -28,7 +28,7 @@
 
 \usage{
 seqinfo(x)
-seqinfo(x) <- value
+seqinfo(x, old2new=NULL) <- value
 
 seqnames(x)
 seqnames(x) <- value
@@ -46,10 +46,35 @@ isCircularWithKnownLength(x)
 }
 
 \arguments{
-  \item{x}{The object from/on which to get/set the sequence information.}
-  \item{value}{Typically a \link{Seqinfo} object for the \code{seqinfo}
-  setter. A vector containing the sequence information to store for the
-  other setters.}
+  \item{x}{
+    The object from/on which to get/set the sequence information.
+  }
+  \item{old2new}{
+    The \code{old2new} argument allows the user to add, drop, reorder or
+    rename the "sequence levels" in \code{x}.
+
+    \code{old2new} can be \code{NULL} or an integer vector with one element
+    per sequence level in \code{x} (i.e. \code{old2new} and
+    \code{seqlevels(x)} must have the same length) describing how the
+    "old" sequence levels should be mapped to the "new" sequence levels,
+    that is, how the rows in \code{seqinfo(x)} should be mapped to the rows
+    in \link{Seqinfo} object \code{value}. The values in \code{old2new} must
+    be >= 1 and <= \code{length(value)}. \code{NA}s are allowed and indicate
+    the sequence levels that must be dropped, but this will fail if those
+    levels are in use (e.g. if \code{x} is a \link{GRanges} object with ranges
+    defined on those sequence levels).
+
+    If \code{old2new=NULL}, then sequence levels can only be added to the
+    existing ones, that is, \code{value} must have at least as many rows
+    as \code{seqinfo(x)} (i.e. \code{length(values) >= length(seqinfo(x))})
+    and also \code{seqlevels(values)[seq_len(length(seqlevels(x)))]} must be
+    identical to \code{seqlevels(x)}.
+  }
+  \item{value}{
+    Typically a \link{Seqinfo} object for the \code{seqinfo} setter.
+    A vector containing the sequence information to store for the other
+    setters.
+  }
 }
 
 \details{

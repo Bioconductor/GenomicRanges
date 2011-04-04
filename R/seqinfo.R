@@ -4,23 +4,31 @@
 
 setGeneric("seqinfo", function(x) standardGeneric("seqinfo"))
 
-setGeneric("seqinfo<-", function(x, value) standardGeneric("seqinfo<-"))
+setGeneric("seqinfo<-", signature="x",
+    function(x, old2new=NULL, value) standardGeneric("seqinfo<-")
+)
 
 setGeneric("seqnames", function(x) standardGeneric("seqnames"))
 
-setGeneric("seqnames<-", function(x, value) standardGeneric("seqnames<-"))
+setGeneric("seqnames<-", signature="x",
+    function(x, value) standardGeneric("seqnames<-")
+)
 
 setGeneric("seqlevels", function(x) standardGeneric("seqlevels"))
 
 setMethod("seqlevels", "ANY", function(x) seqlevels(seqinfo(x)))
 
-setGeneric("seqlevels<-", function(x, value) standardGeneric("seqlevels<-"))
+setGeneric("seqlevels<-", signature="x",
+    function(x, value) standardGeneric("seqlevels<-")
+)
 
 setGeneric("seqlengths", function(x) standardGeneric("seqlengths"))
 
 setMethod("seqlengths", "ANY", function(x) seqlengths(seqinfo(x)))
 
-setGeneric("seqlengths<-", function(x, value) standardGeneric("seqlengths<-"))
+setGeneric("seqlengths<-", signature="x",
+    function(x, value) standardGeneric("seqlengths<-")
+)
 
 setReplaceMethod("seqlengths", "ANY",
     function(x, value)
@@ -34,7 +42,9 @@ setGeneric("isCircular", function(x) standardGeneric("isCircular"))
 
 setMethod("isCircular", "ANY", function(x) isCircular(seqinfo(x)))
 
-setGeneric("isCircular<-", function(x, value) standardGeneric("isCircular<-"))
+setGeneric("isCircular<-", signature="x",
+    function(x, value) standardGeneric("isCircular<-")
+)
 
 setReplaceMethod("isCircular", "ANY",
     function(x, value)

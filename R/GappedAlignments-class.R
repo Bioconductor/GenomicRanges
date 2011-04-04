@@ -257,7 +257,7 @@ setReplaceMethod("strand", "GappedAlignments",
 ###
 
 setReplaceMethod("seqinfo", "GappedAlignments",
-    function(x, value)
+    function(x, old2new=NULL, value)
     {
         if (!is(value, "Seqinfo"))
             stop("'value' must be a Seqinfo object")
