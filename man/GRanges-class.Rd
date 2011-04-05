@@ -33,7 +33,6 @@
 \alias{names<-,GenomicRanges-method}
 \alias{seqinfo,GRanges-method}
 \alias{seqinfo<-,GRanges-method}
-\alias{seqlevels<-,GenomicRanges-method}
 \alias{seqlengths<-,GenomicRanges-method}
 
 % Ranges methods:

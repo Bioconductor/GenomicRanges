@@ -349,32 +349,6 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
     }
 )
 
-setReplaceMethod("seqlevels", "GenomicRanges",
-    function(x, value)
-    {
-        if (!is.character(value) || any(is.na(value)))
-            stop("supplied 'seqlevels' must be a character vector with no NAs")
-        x_seqnames <- seqnames(x)
-        dangling_seqlevels <- setdiff(unique(x_seqnames), value)
-        if (length(dangling_seqlevels))
-            stop("Supplied 'seqlevels' would exclude data for ",
-                 paste(dangling_seqlevels, collapse = ", "),
-                 ". Consider subsetting first.")
-        runValue(x_seqnames) <-
-          factor(as.character(runValue(x_seqnames)), levels = value)
-        seqlengths <- seqlengths(x)[value]
-        is_circular <- isCircular(x)[value]
-        ## The 'initialize(seqinfo(x), ...)' form would
-        ## not be safe here because we are resizing
-        ## 'seqinfo(x)'. Need to use Seqinfo() to recreate
-        ## the object from scratch.
-        seqinfo <- Seqinfo(seqnames = value,
-                           seqlengths = unname(seqlengths),
-                           isCircular = unname(is_circular))
-        update(x, seqnames = x_seqnames, seqinfo = seqinfo)
-    }
-)
-
 ### Needed only for BioC 2.8 to redirect users that are trying to modify the
 ### levels of 'seqnames(x)' via this method.
 ### TODO: Remove in BioC 2.9.

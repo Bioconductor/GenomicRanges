@@ -7,6 +7,7 @@
 \alias{seqlevels}
 \alias{seqlevels,ANY-method}
 \alias{seqlevels<-}
+\alias{seqlevels<-,ANY-method}
 \alias{seqlengths}
 \alias{seqlengths,ANY-method}
 \alias{seqlengths<-}
@@ -72,6 +73,10 @@ isCircularWithKnownLength(x)
   }
   \item{value}{
     Typically a \link{Seqinfo} object for the \code{seqinfo} setter.
+
+    Either an unnamed or named character vector for the \code{seqlevels}
+    setter.
+
     A vector containing the sequence information to store for the other
     setters.
   }
@@ -90,7 +95,7 @@ isCircularWithKnownLength(x)
   \item Classes that implement the \code{seqinfo} getter are typically
         expected to return a \link{Seqinfo} object.
   \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular}
-        and \code{isCircularWithKnownLength} getters are provided.
+        and \code{isCircularWithKnownLength} getters and setters are provided.
         By default, \code{seqlevels(x)} does \code{seqlevels(seqinfo(x))},
         \code{seqlengths(x)} does \code{seqlengths(seqinfo(x))},
         \code{isCircular(x)} does \code{isCircular(seqinfo(x))},
