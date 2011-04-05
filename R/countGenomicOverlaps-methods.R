@@ -102,7 +102,7 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     ## split reads
     if (resolution == "none") {
         split <- rep.int(0, length(unlist(subject))) 
-        query <- query[!(elementLengths(query) > 1)]
+        query <- query[elementLengths(query) <= 1]
     } else {
         if (any(elementLengths(query) > 1)) { 
             sr <- query[elementLengths(query) > 1]
@@ -121,7 +121,7 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
             wt <- ifelse(wt == 1, junctionwt, 1)
             split <- rep.int(0, length(unlist(subject)))
             split[runValue(subRle)] <- wt 
-            query <- query[!(elementLengths(query) > 1)]
+            query <- query[elementLengths(query) <= 1]
         } else split <- rep.int(0, length(unlist(subject)))
     } 
  

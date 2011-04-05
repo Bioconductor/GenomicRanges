@@ -24,23 +24,16 @@
 
 \arguments{
   \item{query}{
-    A \link{GRangesList}, 
-    \link{GRanges}, or 
-    \link{GappedAlignments} object, 
-    or a character. The \code{query} is intended to be a 
-    \code{\link{GRangesList}} 
-    where each list element is a read. When the length of a list element is
-    greater than 1, it is assumed to represent a spliced read.
-    When \code{query} is a character, it should specify
-    the full path to a bam file. Both 
-    \link{GRanges} and 
-    \link{GappedAlignments} are coerced 
-    to a \link{GRangesList} with each row as 
-    a single list element. If the cigar in the
-    \link{GappedAlignments} has gaps, the 
-    read will be represented in the corresponding 
-    \link{GRangesList} object 
-    as a split read (i.e., list element of length 2). 
+    A \link{GRangesList}, \link{GRanges}, or \link{GappedAlignments}
+    object. The \code{query} is intended to be a
+    \code{\link{GRangesList}} where each list element is a read. When
+    the length of a list element is greater than 1, it is assumed to
+    represent a spliced read.  Both \link{GRanges} and
+    \link{GappedAlignments} are coerced to a \link{GRangesList} with
+    each row as a single list element. If the cigar in the
+    \link{GappedAlignments} has gaps, the read will be represented in
+    the corresponding \link{GRangesList} object as a split read (i.e.,
+    list element of length 2).
   }
   \item{subject}{
     A \code{\link{GRangesList}}, or a 
@@ -58,9 +51,10 @@
     a description of this argument.
   }
   \item{resolution}{
-    A character string of "none", "divide", "uniqueDisjoint", or "coverage".
+    A \code{character(1)} string of "none", "divide", "uniqueDisjoint", or "coverage".
     These rule sets are used to distribute read hits when 
     multiple subjects are hit by the same query.
+
     \itemize{
       \item "none" : No conflict resolution is peformed. All queries that
             hit more than 1 subject are dropped. No split reads are counted.

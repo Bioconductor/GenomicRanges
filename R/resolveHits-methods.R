@@ -19,12 +19,12 @@ setMethod("resolveHits", c("GRangesList", "GRangesList"),
     resolution <- match.arg(resolution)
     type <- match.arg(type)
     switch(resolution,
+           ## FIXME: for 'none', what about 'clean' hits?
            none = rep.int(0L, length(unlist(subject))),
            divide = resDivide(query, subject, type),
            uniqueDisjoint = resUniqueDisjoint(query, subject, type),
            coverage = resCoverage(query, subject, type)) 
 })
-
 
 resDivide <- function(query, subject, type)
 {
@@ -36,7 +36,6 @@ resDivide <- function(query, subject, type)
     hits[unlist(lst)] <- div
     hits
 }
-
 
 resUniqueDisjoint <- function(query, subject, type)
 {
