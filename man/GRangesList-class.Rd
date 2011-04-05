@@ -28,7 +28,6 @@
 \alias{elementMetadata<-,GRangesList-method}
 \alias{seqinfo,GRangesList-method}
 \alias{seqinfo<-,GRangesList-method}
-\alias{seqlevels<-,GRangesList-method}
 
 % RangesList methods:
 \alias{start,GRangesList-method}

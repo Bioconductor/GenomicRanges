@@ -274,14 +274,6 @@ setReplaceMethod("seqinfo", "GRangesList",
     }
 )
 
-setReplaceMethod("seqlevels", "GRangesList",
-    function(x, value)
-    {
-        seqlevels(x@unlistData) <- value
-        x
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### RangesList methods.
