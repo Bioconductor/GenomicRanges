@@ -38,7 +38,6 @@
 \alias{ngap,GappedAlignments-method}
 \alias{seqinfo,GappedAlignments-method}
 \alias{seqinfo<-,GappedAlignments-method}
-\alias{seqlevels<-,GappedAlignments-method}
 
 % Coercion:
 \alias{as.data.frame,GappedAlignments-method}
@@ -403,7 +402,7 @@ head(rname(galn))
 seqlevels(galn)
 
 ## Rename the reference sequences:
-rname(galn) <- sub("seq", "chr", rname(galn))
+seqlevels(galn) <- sub("seq", "chr", seqlevels(galn))
 seqlevels(galn)
 
 head(strand(galn))

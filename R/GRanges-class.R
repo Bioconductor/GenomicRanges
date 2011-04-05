@@ -208,8 +208,9 @@ setAs("RleList", "GRanges", function(from) {
   gr
 })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Slot getters and setters.
 ###
 
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
@@ -240,45 +241,10 @@ setMethod("split", "GRanges",
 setReplaceMethod("seqinfo", "GRanges",
     function(x, old2new=NULL, value)
     {
-        if (!is(value, "Seqinfo"))
-            stop("'value' must be a Seqinfo object")
-        if (is.null(old2new)) {
-            if (length(value) < length(seqinfo(x)) ||
-                !identical(seqlevels(value)[seq_len(length(seqlevels(x)))],
-                           seqlevels(x)))
-                stop("when 'old2new' is NULL, the first elements in ",
-                     "'seqlevels(value)' must be identical to 'seqlevels(x)'")
-            x@seqinfo <- value
-            levels(x@seqnames) <- seqlevels(value)
-        } else {
-            if (!is.integer(old2new) ||
-                length(old2new) != length(seqlevels(x)))
-                stop("when 'old2new' is not NULL, it must be an integer ",
-                     "vector of the same length as 'seqlevels(x)'")
-            min_old2new <- suppressWarnings(min(old2new, na.rm=TRUE))
-            if (min_old2new != Inf) {
-                if (min_old2new < 1L ||
-                    max(old2new, na.rm=TRUE) > length(value))
-                    stop("non-NA values in 'old2new' must be >= 1 ",
-                         "and <= 'length(value)'")
-            }
-            if (any(duplicated(old2new) & !is.na(old2new)))
-                stop("duplicates are not allowed among non-NA values ",
-                     "in 'old2new'")
-            x_seqnames <- seqnames(x)
-            dangling_seqlevels <- intersect(unique(x_seqnames),
-                                            seqlevels(x)[is.na(old2new)])
-            if (length(dangling_seqlevels) != 0L)
-                stop("cannot drop levels currently in use: ",
-                     paste(dangling_seqlevels, collapse = ", "),
-                     ". Please consider subsetting first.")
-            tmp <- runValue(x_seqnames)
-            levels(tmp) <- seqlevels(value)[old2new]
-            runValue(x_seqnames) <- factor(as.character(tmp),
-                                           levels=seqlevels(value))
-            x@seqinfo <- value
-            x@seqnames <- x_seqnames
-        }
+        x@seqnames <- makeNewSeqnames(x, old2new, value)
+        x@seqinfo <- value
+        ## The ranges in 'x' need to be validated against the new sequence
+        ## information (e.g. the sequence lengths might have changed).
         validObject(x)
         x
     }

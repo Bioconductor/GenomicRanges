@@ -328,6 +328,11 @@ aligned from a wild type yeast experiment. This particular file only
 has data from chromosome 13. While more data can be loaded, we will
 limit our analysis to this subset for expediency purposes.
 
+% FIXME: The reads in this BAM file from leeBamViews seem to have been
+% aligned against a different reference genome than the one we use later
+% for extracting the transcripts (sacCer2) (see below the different sequence
+% lengths for chrX and chrXIV). This is wrong and is exactly what we should
+% tell the users to NOT do!
 <<YeastData>>=
 library(Rsamtools)
 testFile <- system.file("bam", "isowt5_13e.bam", package="leeBamViews")
@@ -379,10 +384,15 @@ yeast). So let's recode the alignments to conform with the exon
 annotations.
 
 <<ammendData>>=
-levels(rname(aligns))
+seqlevels(exonRanges)
 newlvls <- c(paste("chr", as.roman(1:16), sep=""), "chrM", "2micron")
-seqlevels(exonRanges) <- seqlevels(aligns) <- levels(rname(aligns)) <-
-    newlvls
+newlvls
+seqlevels(exonRanges) <- newlvls  # reorder the levels
+
+names(newlvls) <- seqlevels(aligns)
+newlvls
+seqlevels(aligns) <- newlvls  # rename the levels
+
 seqlengths(aligns) <- seqlengths(exonRanges)
 @
 

@@ -178,7 +178,7 @@ setMethod("seqinfo", "GappedAlignments", function(x) x@seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "rname<-" method.
+### Slot setters.
 ###
 
 .normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
@@ -251,48 +251,12 @@ setReplaceMethod("strand", "GappedAlignments",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other setters.
-###
-
 setReplaceMethod("seqinfo", "GappedAlignments",
     function(x, old2new=NULL, value)
     {
-        if (!is(value, "Seqinfo"))
-            stop("'value' must be a Seqinfo object")
-        ## We only support this form of replacement for now.
-        if (length(value) < length(seqinfo(x))
-         || !identical(seqnames(value)[seq_len(length(seqinfo(x)))],
-                       seqnames(seqinfo(x))))
-            stop("the first elements in 'seqnames(value)' must be ",
-                 "identical to 'seqnames(seqinfo(x))'")
+        x@seqnames <- makeNewSeqnames(x, old2new, value)
         x@seqinfo <- value
-        levels(x@seqnames) <- seqnames(value)
         validObject(x)
-        x
-    }
-)
-
-setReplaceMethod("seqlevels", "GappedAlignments",
-    function(x, value)
-    {
-        if (!is.character(value) || any(is.na(value)))
-            stop("supplied 'seqlevels' must be a character vector with no NAs")
-        x_seqnames <- seqnames(x)
-        dangling_seqlevels <- setdiff(unique(x_seqnames), value)
-        if (length(dangling_seqlevels))
-            stop("Supplied 'seqlevels' would exclude data for ",
-                 paste(dangling_seqlevels, collapse = ", "),
-                 ". Consider subsetting first.")
-        runValue(x_seqnames) <-
-          factor(as.character(runValue(x_seqnames)), levels = value)
-        seqlengths <- seqlengths(x)[value]
-        is_circular <- isCircular(x)[value]
-        x@seqnames <- x_seqnames
-        x@seqinfo <- Seqinfo(seqnames = value,
-                             seqlengths = unname(seqlengths),
-                             isCircular = unname(is_circular))
         x
     }
 )

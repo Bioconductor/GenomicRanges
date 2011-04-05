@@ -13,6 +13,48 @@ setGeneric("seqinfo<-", signature="x",
     function(x, old2new=NULL, value) standardGeneric("seqinfo<-")
 )
 
+### Compute the new seqnames associated with a seqinfo replacement.
+### Assumes that 'seqnames(x)' is a 'factor' Rle (which is true if 'x' is a
+### GRanges or GappedAlignments object, but not if it's a GRangesList object),
+### and returns a 'factor' Rle of the same length (and same runLength vector).
+makeNewSeqnames <- function(x, old2new=NULL, new_seqinfo)
+{
+    if (!is(new_seqinfo, "Seqinfo"))
+        stop("supplied 'seqinfo' must be a Seqinfo object")
+    x_seqnames <- seqnames(x)
+    if (is.null(old2new)) {
+        if (length(new_seqinfo) < length(seqinfo(x)) ||
+            !identical(seqlevels(new_seqinfo)[seq_len(length(seqlevels(x)))],
+                       seqlevels(x)))
+            stop("when 'old2new' is NULL, the first sequence levels in the ",
+                 "supplied 'seqinfo' must be identical to 'seqlevels(x)'")
+        levels(x_seqnames) <- seqlevels(new_seqinfo)
+        return(x_seqnames)
+    }
+    if (!is.integer(old2new) || length(old2new) != length(seqlevels(x)))
+        stop("when 'old2new' is not NULL, it must be an integer ",
+             "vector of the same length as 'seqlevels(x)'")
+    min_old2new <- suppressWarnings(min(old2new, na.rm=TRUE))
+    if (min_old2new != Inf) {
+        if (min_old2new < 1L || max(old2new, na.rm=TRUE) > length(new_seqinfo))
+            stop("non-NA values in 'old2new' must be >= 1 and <= N, ",
+                 "where N is the nb of rows in the supplied 'seqinfo'")
+    }
+    if (any(duplicated(old2new) & !is.na(old2new)))
+        stop("duplicates are not allowed among non-NA values in 'old2new'")
+    dangling_seqlevels <- intersect(unique(x_seqnames),
+                                    seqlevels(x)[is.na(old2new)])
+    if (length(dangling_seqlevels) != 0L)
+        stop("cannot drop levels currently in use: ",
+             paste(dangling_seqlevels, collapse = ", "),
+             ". Please consider subsetting 'x' first.")
+    tmp <- runValue(x_seqnames)
+    levels(tmp) <- seqlevels(new_seqinfo)[old2new]
+    runValue(x_seqnames) <- factor(as.character(tmp),
+                                   levels=seqlevels(new_seqinfo))
+    return(x_seqnames)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### seqnames() getter and setter.
