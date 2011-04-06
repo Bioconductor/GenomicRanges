@@ -90,10 +90,14 @@ setGeneric("seqlevels<-", signature="x",
     length(tmp) == 0L
 }
 
-### Does NOT check for NA, duplicated or zero-length values since this will
-### typically be done later by the Seqinfo() constructor.
-normargSeqlevels <- function(seqlevels, old_seqlevels)
+### Returns -2 for "subsetting" mode, -1 for "renaming" mode, or an integer
+### vector containing the mapping from the new to the old levels for "general"
+### mode (i.e. a combination of renaming and/or subsetting). Note that this
+### integer vector is guaranteed to contain no negative values.
+getSeqlevelsReplacementMode <- function(seqlevels, old_seqlevels)
 {
+    ## Does NOT check for NA, duplicated or zero-length values since this will
+    ## typically be done later by the Seqinfo() constructor.
     if (!is.character(seqlevels))
         stop("supplied 'seqlevels' must be a character vector")
     if (!is.null(names(seqlevels))) {
@@ -102,16 +106,22 @@ normargSeqlevels <- function(seqlevels, old_seqlevels)
             length(setdiff(nonempty_names, old_seqlevels)) != 0L)
             stop("names of supplied 'seqlevels' contain duplicates ",
                  "or invalid sequence levels")
-    } else if (.is_partial_renaming(old_seqlevels, seqlevels)) {
-        names(seqlevels) <- old_seqlevels
-    } else {
-        ## Adding, dropping and/or reordering of the sequence levels
-        ## *without* renaming.
-        implicit_names <- seqlevels
-        implicit_names[!(seqlevels %in% old_seqlevels)] <- ""
-        names(seqlevels) <- implicit_names
+        return(match(names(seqlevels), old_seqlevels))
     }
-    seqlevels
+    if (.is_partial_renaming(old_seqlevels, seqlevels))
+        return(-1L)
+    return(-2L)
+}
+
+### Returns the mapping from the old to the new sequence levels.
+.getOld2NewSeqlevels <- function(old_seqlevels, new_seqlevels)
+{
+    mode <- getSeqlevelsReplacementMode(new_seqlevels, old_seqlevels)
+    if (identical(mode, -2L))
+        return(match(old_seqlevels, new_seqlevels))
+    if (identical(mode, -1L))
+        return(seq_len(length(new_seqlevels)))
+    match(old_seqlevels, names(new_seqlevels))
 }
 
 ### Default "seqlevels<-" method works on any object 'x' with working
@@ -119,11 +129,9 @@ normargSeqlevels <- function(seqlevels, old_seqlevels)
 setReplaceMethod("seqlevels", "ANY",
     function(x, value)
     {
-        old_seqlevels <- seqlevels(x)
-        new_seqlevels <- normargSeqlevels(value, old_seqlevels)
-        old2new <- match(old_seqlevels, names(new_seqlevels))
         x_seqinfo <- seqinfo(x)
-        seqlevels(x_seqinfo) <- new_seqlevels
+        seqlevels(x_seqinfo) <- value
+        old2new <- .getOld2NewSeqlevels(seqlevels(x), value)
         seqinfo(x, old2new=old2new) <- x_seqinfo
         x
     }

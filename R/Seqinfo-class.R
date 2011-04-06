@@ -179,6 +179,33 @@ Seqinfo <- function(seqnames=NULL, seqlengths=NA, isCircular=NA)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
+###
+
+### Support subsetting only by name.
+setMethod("[", "Seqinfo",
+    function(x, i, j, ..., drop=TRUE)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        if (missing(i))
+            return(x)
+        if (!is.character(i))
+            stop("a Seqinfo object can be subsetted only by name")
+        if (!identical(drop, TRUE))
+            warning("'drop' argument is ignored when subsetting ",
+                    "a Seqinfo object")
+        x_names <- names(x)
+        i2names <- match(i, x_names)
+        new_seqlengths <- unname(seqlengths(x))[i2names]
+        new_isCircular <- unname(isCircular(x))[i2names]
+        Seqinfo(i, seqlengths=new_seqlengths, isCircular=new_isCircular)
+
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
 ###
 
@@ -201,12 +228,16 @@ setReplaceMethod("names", "Seqinfo",
 setReplaceMethod("seqlevels", "Seqinfo",
     function(x, value)
     {
-        old_seqlevels <- seqlevels(x)
-        new_seqlevels <- normargSeqlevels(value, old_seqlevels)
-        new2old <- match(names(new_seqlevels), old_seqlevels)
-        new_seqlengths <- unname(seqlengths(x))[new2old]
-        new_isCircular <- unname(isCircular(x))[new2old]
-        Seqinfo(new_seqlevels,
+        mode <- getSeqlevelsReplacementMode(value, seqlevels(x))
+        if (identical(mode, -2L))
+            return(x[value])
+        if (identical(mode, -1L)) {
+            seqnames(x) <- value
+            return(x)
+        }
+        new_seqlengths <- unname(seqlengths(x))[mode]
+        new_isCircular <- unname(isCircular(x))[mode]
+        Seqinfo(value,
                 seqlengths=new_seqlengths,
                 isCircular=new_isCircular)
     }

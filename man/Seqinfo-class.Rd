@@ -83,7 +83,7 @@
     }
     \item{}{
       \code{seqlevels(x) <- value}:
-      Can be used to drop, add, reorder and/or rename the sequence levels.
+      Can be used to rename, drop, add and/or reorder the sequence levels.
       \code{value} must be either a named or unnamed character vector.
       When named, the names only serve the purpose of mapping the old
       sequence levels to the new ones. Otherwise the mapping is implicit,
@@ -178,14 +178,17 @@
                isCircular=c(NA, FALSE, FALSE, TRUE))
   x
 
+  x[c("chrY", "chr3", "chr1")]  # subset by names
+
+  ## Rename, drop, add and/or reorder the sequence levels:
   xx <- x
-  seqlevels(xx) <- sub("chr", "ch", seqlevels(xx))  # rename the levels
+  seqlevels(xx) <- sub("chr", "ch", seqlevels(xx))  # rename
   xx
-  seqlevels(xx) <- rev(seqlevels(xx))  # reorder the sequence levels
+  seqlevels(xx) <- rev(seqlevels(xx))  # reorder
   xx
-  seqlevels(xx) <- c("ch1", "ch2", "chX")  # drop/add/reorder some levels
+  seqlevels(xx) <- c("ch1", "ch2", "chY")  # drop/add/reorder
   xx
-  seqlevels(xx) <- c(chX="X", ch1="I", "II")  # rename the levels and add one
+  seqlevels(xx) <- c(chY="Y", ch1="1", "22")  # rename/reorder/drop/add
   xx
 
   y <- Seqinfo(seqnames=c("chr3", "chr4", "chrM"),
