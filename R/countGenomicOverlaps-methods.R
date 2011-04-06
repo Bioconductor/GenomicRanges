@@ -11,7 +11,7 @@ setGeneric("countGenomicOverlaps", signature = c("query", "subject"),
             standardGeneric("countGenomicOverlaps")
 )
 
-setMethod("countGenomicOverlaps", c("GRangesList", "GRanges"),
+setMethod("countGenomicOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
@@ -24,7 +24,7 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRanges"),
                 junctionwt = junctionwt, ignore.strand = ignore.strand, ...)
 })
 
-setMethod("countGenomicOverlaps", c("GRanges", "GRangesList"),
+setMethod("countGenomicOverlaps", c("GenomicRanges", "GRangesList"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
@@ -37,7 +37,7 @@ setMethod("countGenomicOverlaps", c("GRanges", "GRangesList"),
                 junctionwt = junctionwt, ignore.strand = ignore.strand, ...)
 })
 
-setMethod("countGenomicOverlaps", c("GRanges", "GRanges"),
+setMethod("countGenomicOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
@@ -64,7 +64,7 @@ setMethod("countGenomicOverlaps", c("GappedAlignments", "GRangesList"),
                 junctionwt = junctionwt, ignore.strand = ignore.strand, ...)
 })
 
-setMethod("countGenomicOverlaps", c("GappedAlignments", "GRanges"),
+setMethod("countGenomicOverlaps", c("GappedAlignments", "GenomicRanges"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
@@ -87,12 +87,13 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
 {
     resolution <- match.arg(resolution)
     type <- match.arg(type)
-    if (!ignore.strand)
+    if (ignore.strand)
         strand(subject@unlistData) <- "*"
     if (type == "within" && resolution == "uniqueDisjoint")
-        stop("It is not logical to use resolution `uniqueDisjoint` with ",
-             "type `within`.")
-    co <- countOverlaps(query, unlist(subject), type=type)
+        stop("resolution `uniqueDisjoint' with type `within'",
+             "is not logical")
+    co <- countOverlaps(query, unlist(subject), type=type, 
+                        ignore.strand=ignore.strand)
     if (!any(co)) {
         values(subject@unlistData)[["hits"]] <- 
           rep.int(0L, length(unlist(subject))) 
@@ -106,16 +107,18 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     } else {
         if (any(elementLengths(query) > 1)) { 
             sr <- query[elementLengths(query) > 1]
-            co <- countOverlaps(unlist(sr), unlist(subject), type=type)
+            co <- countOverlaps(unlist(sr), unlist(subject), type=type,
+                                ignore.strand=ignore.strand)
             if (any(co > 2)) {
-                warning("Split reads that hit > 2 exons have been ",
-                        "detected and will be dropped.")
+                warning("split reads that hit > 2 exons have been ",
+                        "detected and will be dropped")
                 query <- query[co < 3] 
                 sr <- query[elementLengths(query) > 1]
             } 
             ## exon hit by both read seqments gets wt = 1 
             ## exons hit by one read seqments each get wt = junctionwt 
-            fo <- findOverlaps(unlist(sr), unlist(subject), type=type)
+            fo <- findOverlaps(unlist(sr), unlist(subject), type=type,
+                               ignore.strand=ignore.strand)
             subRle <- Rle(subjectHits(fo))
             wt <- runLength(subRle)
             wt <- ifelse(wt == 1, junctionwt, 1)
@@ -125,17 +128,20 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
         } else split <- rep.int(0, length(unlist(subject)))
     } 
  
-    co <- countOverlaps(query, unlist(subject), type=type)
+    co <- countOverlaps(query, unlist(subject), type=type, 
+                        ignore.strand=ignore.strand)
     ## read hit one subject
     if (any(co == 1)) {
-        clean <- countOverlaps(unlist(subject), query[co == 1])
+        clean <- countOverlaps(unlist(subject), query[co == 1],
+                               ignore.strand=ignore.strand)
     } else {
         clean <- rep.int(0, length(unlist(subject)))
     }
     ## read hit multiple subjects
     if (any(co > 1)) {
         resolved <- resolveHits(query[co > 1], subject, type=type, 
-                                resolution=resolution) 
+                                resolution=resolution, 
+                                ignore.strand=ignore.strand) 
     } else {
         resolved <- rep.int(0, length(unlist(subject)))
     }

@@ -1,5 +1,6 @@
 \name{countGenomicOverlaps}
 
+\alias{countGenomicOverlaps}
 \alias{countGenomicOverlaps,GRangesList,GRangesList-method}
 \alias{countGenomicOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{countGenomicOverlaps,GenomicRanges,GRangesList-method}
@@ -11,7 +12,7 @@
 \title{Count Read Hits in Genomic Features} 
 
 \description{
-  Count read hits per exon and resolve multi-hit reads. 
+  Count read hits per exon or transcript and resolve multi-hit reads. 
 }
 
 \usage{
@@ -39,7 +40,8 @@
     A \code{\link{GRangesList}}, or a 
     \link{GRanges} object. 
     The subject is expected to be a list of genomic features, 
-    specifically genes, with each row representing an exon. If a 
+    specifically genes, with each row representing a feature
+    where the feature could be an exon or transcript. If a 
     \link{GRanges}
     object is provided, it will be coerced to a 
     \link{GRangesList} 
@@ -51,30 +53,30 @@
     a description of this argument.
   }
   \item{resolution}{
-    A \code{character(1)} string of "none", "divide", "uniqueDisjoint", or "coverage".
+    A \code{character(1)} string of "none", "divide", or "uniqueDisjoint".
     These rule sets are used to distribute read hits when 
     multiple subjects are hit by the same query.
 
     \itemize{
-      \item "none" : No conflict resolution is peformed. All queries that
+      \item "none" : No conflict resolution is performed. All queries that
             hit more than 1 subject are dropped. No split reads are counted.
-      \item "divide" : The hit from a single query is divided equally amoung 
+      \item "divide" : The hit from a single query is divided equally among 
             all subjects that were hit. If a query hit 4 subjects 
-            each subject is assigned 1/4. 
+            each subject is assigned 1/4 of a hit.
       \item "uniqueDisjoint" : Subjects hit by a common query are 
             partitioned into disjoint intervals. Any regions that are shared 
             between the subjects are discarded. If the read overlaps one of 
             these remaining unique disjoint regions the hit is assigned to 
-            that exon. If the read overlaps both or none of the regions, 
-            no hit is assigned. Therefore, unlike the \code{'divide'} option, 
-            \code{'uniqueDisjoint'} does not resolve multi-hit conflict in 
+            that feature. If the read overlaps both or none of the regions, 
+            no hit is assigned. Therefore, unlike the \code{divide} option, 
+            \code{uniqueDisjoint} does not resolve multi-hit conflict in 
             all situations.
    }
   }
   \item{junctionwt}{
     A numeric value representing the hit weight for junction reads. A junction
-    read is defined as a split read query that hits 2 exons either in the
-    same gene or in different genes. The default is 1. 
+    read is defined as a split read query that hits 2 features in the 
+    same gene or in different genes. The default is 0.5. 
   }
   \item{ignore.strand}{
     A logical value indicating if strand should be considered when matching.
@@ -86,13 +88,13 @@
 
 \details{
   The \code{countGenomicOverlaps} methods use the \code{findOverlaps} 
-  function in conjunction with defined rule sets to identify overlaps
+  function in conjunction with a resolution method to identify overlaps
   and resolve queries that match multiple subjects.
   The usual \code{type} argument of \code{findOverlaps}
-  is used to specify the type of overlap. the \code{resolve}
+  is used to specify the type of overlap. The \code{resolve}
   argument is used to select a method to resolve the conflict
   when a query hits more than 1 subject. Here the
-  term `hit` means an overlap identified by \code{findOverlaps}.
+  term `hit' means an overlap identified by \code{findOverlaps}.
  
   Split reads are handled separately from the single and multiple 
   hit reads. If both portions of a split read hit the same subject, the
@@ -100,6 +102,9 @@
   each is assigned the default \code{junctionwt} value of 0.5. 
   The user can modify the value assigned to such junction reads with the
   \code{junctionwt} argument. 
+
+  More detailed examples can be found in the \code{countGenomicOverlaps}
+  vignette. 
 
 }
 
@@ -111,41 +116,43 @@
 \author{Valerie Obenchain and Martin Morgan}
 
 \examples{
-rng <- function(s, w)
+rng1 <- function(s, w)
 GRanges(seq="chr1", IRanges(s, width=w), strand="+")
 
 rng2 <- function(s, w)
 GRanges(seq="chr2", IRanges(s, width=w), strand="+")
 
-subj <- GRangesList(A=rng(1000, 500),
+subj <- GRangesList(A=rng1(1000, 500),
                     B=rng2(2000, 900),
-                    C=rng(c(3000, 3600), c(500, 300)),
+                    C=rng1(c(3000, 3600), c(500, 300)),
                     D=rng2(c(7000, 7500), c(600, 300)),
-                    E1=rng(4000, 500), E2=rng(c(4300, 4500), c(400, 400)),
+                    E1=rng1(4000, 500), E2=rng1(c(4300, 4500), c(400, 400)),
                     F=rng2(3000, 500),
-                    G=rng(c(5000, 5600), c(500, 300)),
-                    H1=rng(6000, 500), H2=rng(6600, 400))
+                    G=rng1(c(5000, 5600), c(500, 300)),
+                    H1=rng1(6000, 500), H2=rng1(6600, 400))
 
-query <- GRangesList(a=rng(1400, 500),
+query <- GRangesList(a=rng1(1400, 500),
                      b=rng2(2700, 100),
-                     c=rng(3400, 300),
+                     c=rng1(3400, 300),
                      d=rng2(7100, 600),
-                     e=rng(4200, 500),
+                     e=rng1(4200, 500),
                      f=rng2(c(3100, 3300), 50),
-                     g=rng(c(5400, 5600), 50),
-                     h=rng(c(6400, 6600), 50))
+                     g=rng1(c(5400, 5600), 50),
+                     h=rng1(c(6400, 6600), 50))
 
-## overlap type="any"
-a1 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="none")
-a2 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="none",
-                           junctionwt=5)
-a3 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="divide")
-a4 <- GenomicRanges:::countGenomicOverlaps(query, subj, type="any", resolution="uniqueDisjoint")
 
-res_any <- data.frame(none = values(unlist(a1))[["hits"]],
-                      noneWithjctwt = values(unlist(a2))[["hits"]],
-                      divide = values(unlist(a3))[["hits"]],
-                      uniqDisj = values(unlist(a4))[["hits"]])
+## overlap type = "any"
+none <- countGenomicOverlaps(query, subj, type="any", resolution="none")
+divide <- countGenomicOverlaps(query, subj, type="any", resolution="divide")
+divide_wt <- countGenomicOverlaps(query, subj, type="any", resolution="divide",
+                                  junctionwt=5)
+uniqueDisjoint <- countGenomicOverlaps(query, subj, type="any", 
+                                       resolution="uniqueDisjoint")
+
+res_any <- data.frame(none = values(unlist(none))[["hits"]],
+                      divide = values(unlist(divide))[["hits"]],
+                      divide_wt = values(unlist(divide_wt))[["hits"]],
+                      uniqDisj = values(unlist(uniqueDisjoint))[["hits"]])
 
 }
 

@@ -57,6 +57,7 @@ exportMethods(
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, ngap,
     qnarrow,
-    dimnames, "dimnames<-", precede, follow
+    dimnames, "dimnames<-", precede, follow,
+    countGenomicOverlaps
 )
 
