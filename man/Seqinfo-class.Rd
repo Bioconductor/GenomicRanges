@@ -99,8 +99,8 @@
           \code{seqnames(x) <- value} but it's still recommended to use
           \code{seqlevels(x) <- value} as it is much safer.
 
-      (2) Otherwise (i.e. if the conditions for (1) are not satisfied),
-          then \code{seqlevels(x) <- value} will consider that the sequence
+      (2) Otherwise (i.e. if the conditions for (1) are not satisfied)
+          \code{seqlevels(x) <- value} will consider that the sequence
           levels are not being renamed and will map the old levels to the
           new levels based on the values of their elements. This is a
           drop/add/reorder operation on the sequence levels with no
@@ -184,6 +184,8 @@
   seqlevels(xx) <- rev(seqlevels(xx))  # reorder the sequence levels
   xx
   seqlevels(xx) <- c("ch1", "ch2", "chX")  # drop/add/reorder some levels
+  xx
+  seqlevels(xx) <- c(chX="X", ch1="I", "II")  # rename the levels and add one
   xx
 
   y <- Seqinfo(seqnames=c("chr3", "chr4", "chrM"),
