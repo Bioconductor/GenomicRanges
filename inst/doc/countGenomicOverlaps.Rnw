@@ -75,8 +75,6 @@ query <- GRangesList(read1=rng1(1400, 500),
                      read7=rng2(c(3100, 3300), 50),
                      read8=rng1(c(5400, 5600), 50),
                      read9=rng1(c(6400, 6600), 50))
-
-
 @
 
 One might also create \Robject{subj} with \Rfunction{makeTranscriptDbFromUCSC},
@@ -94,7 +92,6 @@ of the corresponding packages.
 
 \begin{figure}[!h]
 \begin{center}
-%\includegraphics[angle=0,width= 0.75\columnwidth]{countGenomicOverlaps-genes.eps}
 \includegraphics{countGenomicOverlaps-genes.pdf}
 \caption{Overlap Cases}
 \label{fig-countGenomicOverlaps-genes}
@@ -103,8 +100,8 @@ of the corresponding packages.
 
 The \Robject{subj} and \Robject{query} objects contain the genes and reads
 shown in Figure~\ref{fig-countGenomicOverlaps-genes}.
-The external boxes labeled with "G" represent the
-genes. The internal boxes labeled with "F"
+The external boxes labeled with ``G'' represent the
+genes. The internal boxes labeled with ``F''
 represent a feature which may be either
 exons or transcripts. The unlabeled boxes are the reads.
 The \Robject{subj} contains 11 genes where
@@ -128,7 +125,6 @@ to demonstrate how \Rfunction{countGenomicOverlaps} counts
 'hits' in various circumstances.
 
 
-
 \section{\Rfunction{countGenomicOverlaps} Decision Logic}
 
 The logic behind \Rfunction{countGenomicOverlaps}
@@ -138,15 +134,15 @@ The \Rfunarg{type} argument is passed
 to \Rfunction{findOverlaps} and has the same options
 described in the
 \Rfunction{findOverlaps} documentation
-(i.e., "any", "start", "end", "within", "equal").
+(i.e., ``any'', ``start'', ``end'', ``within'', ``equal'').
 The \Rfunarg{resolution} argument indicates how
 multi-hit reads should be resolved; the options are
-"none", "divide", and "uniqueDisjoint". Option "none"
+``none'', ``divide'', and ``uniqueDisjoint''. Option ``none''
 ignores multi-hit reads and split reads.
-"divide" simply divides the
+``divide'' simply divides the
 hit equally among all features hit. For example,
 three 3 overlapping features will all get 1/3 of a hit.
-The "uniqueDisjoint" option first identifies the
+The ``uniqueDisjoint'' option first identifies the
 disjoint regions of all features hit.
 Regions that are common to multiple
 features (i.e., overlapping) are  removed
@@ -186,24 +182,25 @@ is shown graphically in Figure~\ref{fig-countGenomicOverlaps-decisiontree}.
 \end{center}
 \end{figure}
 
+
 \section{Examples}
 Below we investigate the counting of reads in
 the situations depicted in Figure~\ref{fig-countGenomicOverlaps-genes}
-using \Rfunarg{type} "any" and "within".
+using \Rfunarg{type} ``any'' and ``within''.
 
-\subsection{\Rfunarg{type} = "any"}
+\subsection{\Rfunarg{type} = ``any''}
 When the \Rfunarg{resolution}
-is "none", both the multi-hit and split reads are
+is ``none'', both the multi-hit and split reads are
 ignored. In this case we have hits only for F1 and
 F2.
 
-When \Rfunarg{resolution} "divide" is used,
+When \Rfunarg{resolution} ``divide'' is used,
 we see all features in all genes are hit. This
-is a quality of the "divide" option; if a read
+is a quality of the ``divide'' option; if a read
 hits a feature that feature receives either a
-whole hit or some shared piece of a hit. "divide"
+whole hit or some shared piece of a hit. ``divide''
 does not choose between features or drop reads
-it cannot resolve as is done with "uniqueDisjoint".
+it cannot resolve as is done with ``uniqueDisjoint''.
 Genes G3 and G4 each
 have two features hit by a
 single read, thus F3, F4 and
@@ -215,13 +212,13 @@ reads and each assigned the default value of 0.5.
 The split read in G8 hits only one feature so that
 feature, F12, gets the full hit. We see the impact of
 modifying the \Rfunarg{junctionwt}
-argument for the split reads in the "divide\_wt" results.
+argument for the split reads in the ``divide\_wt'' results.
 
 The decision making of \Rfunarg{resolution}
-"uniqueDisjoint" can be explored by comparing
-G6 to G3, G4 and G5. "uniqueDisjoint" is able to
+``uniqueDisjoint'' can be explored by comparing
+G6 to G3, G4 and G5. ``uniqueDisjoint'' is able to
 resolve multi-hits in cases such as G6 but not in G3,
-G4 or G5. For "uniqueDisjoint" to resolve a multi-hit read,
+G4 or G5. For ``uniqueDisjoint'' to resolve a multi-hit read,
 there must exist a unique disjoint region
 (i.e., a region not shared with the other features)
 that is hit by the read for only one of the features.
@@ -229,20 +226,20 @@ In G6 but there exists such a region for F9 and thus
 the hit is assigned to it.
 This is not the case in G3, G4 or G5. In G3 and G4
 unique disjoint regions exist for all (both) of the
-features in the gene so "uniqueDisjoint" is unable to
+features in the gene so ``uniqueDisjoint'' is unable to
 make a decision and the read is discarded.
 Alternatively, in G5 no unique disjoint
 regions exist for either feature so the read is discarded.
 There are certainly other examples of feature overlap
 not depicted in the graphic in
 Figure~\ref{fig-countGenomicOverlaps-decisiontree}.
-However the same concepts apply in that "uniqueDisjoint"
+However the same concepts apply in that ``uniqueDisjoint''
 is able to resolve multi-hit reads if there exists a
 unique disjoint region of one of the features hit by the read.
 Multiple such regions or none at all are cases where
-"uniqueDisjoint" is unable to resolve the hit.
+``uniqueDisjoint'' is unable to resolve the hit.
 The resolution of the split reads in G8, G9 and G10
-are the same for "uniqueDisjoint" as for "divide".
+are the same for ``uniqueDisjoint'' as for ``divide''.
 
 <<typeAny>>=
 none <- countGenomicOverlaps(query, subj, type="any",
@@ -263,18 +260,17 @@ rownames(res_any) <- paste("F", seq_len(16), sep="")
 res_any
 @
 
-\subsection{\Rfunarg{type} = "within"}
+\subsection{\Rfunarg{type} = ``within''}
 
-When \Rfunarg{type} = "within" is chosen, the \Rfunarg{resolution} option
-"uniqueDisjoint" is not available. "uniqueDisjoint" resolves multi-hits
+When \Rfunarg{type} = ``within'' is chosen, the \Rfunarg{resolution} option
+``uniqueDisjoint'' is not available. ``uniqueDisjoint'' resolves multi-hits
 by creating disjoint regions of all overlapping features and removing
 those regions that are common (i.e., where features overlap).
-If a read was identified as a multi-hit read with \Rfunarg{type} = "within"
+If a read was identified as a multi-hit read with \Rfunarg{type} = ``within''
 then by definition it falls in the common region that
-\Rfunarg{resolution} "uniqueDisjoint" discards. Therefore it does
-not make sense to resolve \Rfunarg{type} "within" with
-\Rfunarg{resolution} "uniqueDisjoint".
-
+\Rfunarg{resolution} ``uniqueDisjoint'' discards. Therefore it does
+not make sense to resolve \Rfunarg{type} ``within'' with
+\Rfunarg{resolution} ``uniqueDisjoint''.
 
 <<typeWithin>>=
 none <- countGenomicOverlaps(query, subj, type="within", resolution="none")
@@ -285,10 +281,9 @@ rownames(res_within) <- paste("F", seq_len(16), sep="")
 res_within
 @
 
-Comparing our results with those of the \Rfunarg{type} "any" we see that F1
-is now not hit. When \Rfunarg{resolution} is "divide" we hit F7 and F8 in gene G5
+Comparing our results with those of the \Rfunarg{type} ``any'' we see that F1
+is now not hit. When \Rfunarg{resolution} is ``divide'' we hit F7 and F8 in gene G5
 but not the features in genes G3 and G4. Results for the split reads are the
-same as for \Rfunarg{type} "any".
-
+same as for \Rfunarg{type} ``any''.
 
 \end{document}
