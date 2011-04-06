@@ -199,7 +199,17 @@ setReplaceMethod("names", "Seqinfo",
 )
 
 setReplaceMethod("seqlevels", "Seqinfo",
-    function(x, value) `seqnames<-`(x, value)
+    function(x, value)
+    {
+        old_seqlevels <- seqlevels(x)
+        new_seqlevels <- normargSeqlevels(value, old_seqlevels)
+        new2old <- match(names(new_seqlevels), old_seqlevels)
+        new_seqlengths <- unname(seqlengths(x))[new2old]
+        new_isCircular <- unname(isCircular(x))[new2old]
+        Seqinfo(new_seqlevels,
+                seqlengths=new_seqlengths,
+                isCircular=new_isCircular)
+    }
 )
 
 setReplaceMethod("seqlengths", "Seqinfo",

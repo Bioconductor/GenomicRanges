@@ -74,7 +74,7 @@ isCircularWithKnownLength(x)
   \item{value}{
     Typically a \link{Seqinfo} object for the \code{seqinfo} setter.
 
-    Either an unnamed or named character vector for the \code{seqlevels}
+    Either a named or unnamed character vector for the \code{seqlevels}
     setter.
 
     A vector containing the sequence information to store for the other

@@ -90,40 +90,41 @@ setGeneric("seqlevels<-", signature="x",
     length(tmp) == 0L
 }
 
+### Does NOT check for NA, duplicated or zero-length values since this will
+### typically be done later by the Seqinfo() constructor.
+normargSeqlevels <- function(seqlevels, old_seqlevels)
+{
+    if (!is.character(seqlevels))
+        stop("supplied 'seqlevels' must be a character vector")
+    if (!is.null(names(seqlevels))) {
+        nonempty_names <- names(seqlevels)[!(names(seqlevels) %in% c(NA, ""))]
+        if (any(duplicated(nonempty_names)) ||
+            length(setdiff(nonempty_names, old_seqlevels)) != 0L)
+            stop("names of supplied 'seqlevels' contain duplicates ",
+                 "or invalid sequence levels")
+    } else if (.is_partial_renaming(old_seqlevels, seqlevels)) {
+        names(seqlevels) <- old_seqlevels
+    } else {
+        ## Adding, dropping and/or reordering of the sequence levels
+        ## *without* renaming.
+        implicit_names <- seqlevels
+        implicit_names[!(seqlevels %in% old_seqlevels)] <- ""
+        names(seqlevels) <- implicit_names
+    }
+    seqlevels
+}
+
 ### Default "seqlevels<-" method works on any object 'x' with working
 ### "seqinfo" and "seqinfo<-" methods.
 setReplaceMethod("seqlevels", "ANY",
     function(x, value)
     {
-        ## More checkings of 'value' (e.g. no NAs, no zero-length or duplicated
-        ## sequence names) is done later by the Seqinfo() constructor.
-        if (!is.character(value))
-            stop("supplied 'seqlevels' must be a character vector")
-        if (!is.null(names(value))) {
-            nonempty_names <- names(value)[!(names(value) %in% c(NA, ""))]
-            if (any(duplicated(nonempty_names)) ||
-                length(setdiff(nonempty_names, seqlevels(x))) != 0L)
-                stop("names of supplied 'seqlevels' contain duplicates ",
-                     "or invalid sequence levels")
-        } else if (.is_partial_renaming(seqlevels(x), value)) {
-            names(value) <- seqlevels(x)
-        } else {
-            ## Adding, dropping and/or reordering of the sequence levels
-            ## *without* renaming.
-            implicit_names <- value
-            implicit_names[!(value %in% seqlevels(x))] <- ""
-            names(value) <- implicit_names
-        }
-        old2new <- match(seqlevels(x), names(value))
-        new2old <- rep.int(NA_integer_, length(value))
-        new2old[old2new[!is.na(old2new)]] <-
-            seq_len(length(seqlevels(x)))[!is.na(old2new)]
-        new_seqlengths <- unname(seqlengths(x))[new2old]
-        new_isCircular <- unname(isCircular(x))[new2old]
-        new_seqinfo <- Seqinfo(value,
-                               seqlengths=new_seqlengths,
-                               isCircular=new_isCircular)
-        seqinfo(x, old2new=old2new) <- new_seqinfo
+        old_seqlevels <- seqlevels(x)
+        new_seqlevels <- normargSeqlevels(value, old_seqlevels)
+        old2new <- match(old_seqlevels, names(new_seqlevels))
+        x_seqinfo <- seqinfo(x)
+        seqlevels(x_seqinfo) <- new_seqlevels
+        seqinfo(x, old2new=old2new) <- x_seqinfo
         x
     }
 )

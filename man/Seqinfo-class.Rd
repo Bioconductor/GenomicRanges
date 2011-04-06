@@ -66,15 +66,47 @@
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Gets/sets the names of the sequences in \code{x}.
       Those names must be non-NA, non-empty and unique.
-      They are also called the \emph{keys} of the Seqinfo object.
+      They are also called the \emph{sequence levels} or the \emph{keys}
+      of the Seqinfo object.
+
+      Note that, in general, the end-user should not try to alter the
+      sequence levels with \code{seqnames(x) <- value}. The recommended way
+      to do this is with \code{seqlevels(x) <- value} as described below.
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
       Same as \code{seqnames(x)} and \code{seqnames(x) <- value}.
     }
     \item{}{
-      \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
-      Same as \code{seqnames(x)} and \code{seqnames(x) <- value}.
+      \code{seqlevels(x)}:
+      Same as \code{seqnames(x)}.
+    }
+    \item{}{
+      \code{seqlevels(x) <- value}:
+      Can be used to drop, add, reorder and/or rename the sequence levels.
+      \code{value} must be either a named or unnamed character vector.
+      When named, the names only serve the purpose of mapping the old
+      sequence levels to the new ones. Otherwise the mapping is implicit,
+      i.e. the following rules apply:
+
+      (1) If the number of old and new levels are the same, and if the
+          positional mapping between the old and new levels shows that
+          some or all of the levels are being renamed, and if the levels
+          that are being renamed are renamed with levels that didn't exist
+          before (i.e. are not present in the old levels), then
+          \code{seqlevels(x) <- value} will just rename the sequence levels.
+          Note that in that case the result is the same as with
+          \code{seqnames(x) <- value} but it's still recommended to use
+          \code{seqlevels(x) <- value} as it is much safer.
+
+      (2) Otherwise (i.e. if the conditions for (1) are not satisfied),
+          then \code{seqlevels(x) <- value} will consider that the sequence
+          levels are not being renamed and will map the old levels to the
+          new levels based on the values of their elements. This is a
+          drop/add/reorder operation on the sequence levels with no
+          renaming.
+
+      See below for some examples.
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
@@ -145,6 +177,15 @@
                seqlengths=c(100, 200, NA, 15),
                isCircular=c(NA, FALSE, FALSE, TRUE))
   x
+
+  xx <- x
+  seqlevels(xx) <- sub("chr", "ch", seqlevels(xx))  # rename the levels
+  xx
+  seqlevels(xx) <- rev(seqlevels(xx))  # reorder the sequence levels
+  xx
+  seqlevels(xx) <- c("ch1", "ch2", "chX")  # drop/add/reorder some levels
+  xx
+
   y <- Seqinfo(seqnames=c("chr3", "chr4", "chrM"),
                seqlengths=c(300, NA, 15))
   y
