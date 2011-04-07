@@ -19,6 +19,7 @@
 \alias{isCircular,Seqinfo-method}
 \alias{isCircular<-,Seqinfo-method}
 \alias{isCircularWithKnownLength,Seqinfo-method}
+\alias{[,Seqinfo-method}
 \alias{as.data.frame,Seqinfo-method}
 \alias{show,Seqinfo-method}
 \alias{merge,Seqinfo,missing-method}
@@ -48,8 +49,8 @@
 \section{Constructor}{
   \describe{
     \item{}{
-        \code{Seqinfo(seqnames, seqlengths=NA, isCircular=NA)}:
-        Creates a Seqinfo object.
+      \code{Seqinfo(seqnames, seqlengths=NA, isCircular=NA)}:
+      Creates a Seqinfo object.
     }
   }
 }
@@ -85,26 +86,25 @@
       \code{seqlevels(x) <- value}:
       Can be used to rename, drop, add and/or reorder the sequence levels.
       \code{value} must be either a named or unnamed character vector.
-      When named, the names only serve the purpose of mapping the old
-      sequence levels to the new ones. Otherwise the mapping is implicit,
-      i.e. the following rules apply:
+      When \code{value} has names, the names only serve the purpose of
+      mapping the new sequence levels to the old ones.
+      Otherwise (i.e. when \code{value} is unnamed) this mapping is
+      implicitly inferred from the following rules:
 
-      (1) If the number of old and new levels are the same, and if the
-          positional mapping between the old and new levels shows that
+      (1) If the number of new and old levels are the same, and if the
+          positional mapping between the new and old levels shows that
           some or all of the levels are being renamed, and if the levels
           that are being renamed are renamed with levels that didn't exist
           before (i.e. are not present in the old levels), then
           \code{seqlevels(x) <- value} will just rename the sequence levels.
           Note that in that case the result is the same as with
           \code{seqnames(x) <- value} but it's still recommended to use
-          \code{seqlevels(x) <- value} as it is much safer.
+          \code{seqlevels(x) <- value} as it is safer.
 
       (2) Otherwise (i.e. if the conditions for (1) are not satisfied)
           \code{seqlevels(x) <- value} will consider that the sequence
-          levels are not being renamed and will map the old levels to the
-          new levels based on the values of their elements. This is a
-          drop/add/reorder operation on the sequence levels with no
-          renaming.
+          levels are not being renamed and will just perform
+          \code{x <- x[value]}.
 
       See below for some examples.
     }
@@ -120,6 +120,22 @@
       \code{isCircularWithKnownLength(x)}:
       Formally defined as
       \code{(isCircular(x) \%in\% TRUE) & !is.na(seqlengths(x))}.
+    }
+  }
+}
+
+\section{Subsetting}{
+  In the code snippets below, \code{x} is a Seqinfo object.
+
+  \describe{
+    \item{}{
+      \code{x[i]}:
+      A Seqinfo object can be subsetted only by name i.e. \code{i}
+      must be a character vector.
+      This is a convenient way to drop/add/reorder the rows (aka the
+      sequence levels) of a Seqinfo object.
+
+      See below for some examples.
     }
   }
 }

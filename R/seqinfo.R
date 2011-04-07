@@ -10,38 +10,40 @@
 setGeneric("seqinfo", function(x) standardGeneric("seqinfo"))
 
 setGeneric("seqinfo<-", signature="x",
-    function(x, old2new=NULL, value) standardGeneric("seqinfo<-")
+    function(x, new2old=NULL, value) standardGeneric("seqinfo<-")
 )
 
 ### Compute the new seqnames associated with a seqinfo replacement.
 ### Assumes that 'seqnames(x)' is a 'factor' Rle (which is true if 'x' is a
 ### GRanges or GappedAlignments object, but not if it's a GRangesList object),
 ### and returns a 'factor' Rle of the same length (and same runLength vector).
-makeNewSeqnames <- function(x, old2new=NULL, new_seqinfo)
+makeNewSeqnames <- function(x, new2old=NULL, new_seqinfo)
 {
     if (!is(new_seqinfo, "Seqinfo"))
         stop("supplied 'seqinfo' must be a Seqinfo object")
     x_seqnames <- seqnames(x)
-    if (is.null(old2new)) {
-        if (length(new_seqinfo) < length(seqinfo(x)) ||
-            !identical(seqlevels(new_seqinfo)[seq_len(length(seqlevels(x)))],
-                       seqlevels(x)))
-            stop("when 'old2new' is NULL, the first sequence levels in the ",
-                 "supplied 'seqinfo' must be identical to 'seqlevels(x)'")
+    M <- length(new_seqinfo)
+    N <- length(seqlevels(x))
+    if (is.null(new2old)) {
+        if (M < N ||
+            !identical(seqlevels(new_seqinfo)[seq_len(N)], seqlevels(x)))
+            stop("when 'new2old' is NULL, the first sequence levels in the ",
+                 "supplied 'seqinfo' must be indentical to 'seqlevels(x)'")
         levels(x_seqnames) <- seqlevels(new_seqinfo)
         return(x_seqnames)
     }
-    if (!is.integer(old2new) || length(old2new) != length(seqlevels(x)))
-        stop("when 'old2new' is not NULL, it must be an integer ",
-             "vector of the same length as 'seqlevels(x)'")
-    min_old2new <- suppressWarnings(min(old2new, na.rm=TRUE))
-    if (min_old2new != Inf) {
-        if (min_old2new < 1L || max(old2new, na.rm=TRUE) > length(new_seqinfo))
-            stop("non-NA values in 'old2new' must be >= 1 and <= N, ",
-                 "where N is the nb of rows in the supplied 'seqinfo'")
+    if (!is.integer(new2old) || length(new2old) != M)
+        stop("when 'new2old' is not NULL, it must be an integer ",
+             "vector of the same length as the supplied 'seqinfo'")
+    min_new2old <- suppressWarnings(min(new2old, na.rm=TRUE))
+    if (min_new2old != Inf) {
+        if (min_new2old < 1L || max(new2old, na.rm=TRUE) > N)
+            stop("non-NA values in 'new2old' must be >= 1 and <= N, ",
+                 "where N is the nb of sequence levels in 'x'")
     }
-    if (any(duplicated(old2new) & !is.na(old2new)))
-        stop("duplicates are not allowed among non-NA values in 'old2new'")
+    if (any(duplicated(new2old) & !is.na(new2old)))
+        stop("duplicates are not allowed among non-NA values in 'new2old'")
+    old2new <- IRanges:::reverseIntegerInjection(new2old, N)
     dangling_seqlevels <- intersect(unique(x_seqnames),
                                     seqlevels(x)[is.na(old2new)])
     if (length(dangling_seqlevels) != 0L)
@@ -113,15 +115,15 @@ getSeqlevelsReplacementMode <- function(seqlevels, old_seqlevels)
     return(-2L)
 }
 
-### Returns the mapping from the old to the new sequence levels.
-.getOld2NewSeqlevels <- function(old_seqlevels, new_seqlevels)
+### Returns the mapping from the new to the old sequence levels.
+.getNew2OldSeqlevels <- function(new_seqlevels, old_seqlevels)
 {
     mode <- getSeqlevelsReplacementMode(new_seqlevels, old_seqlevels)
     if (identical(mode, -2L))
-        return(match(old_seqlevels, new_seqlevels))
+        return(match(new_seqlevels, old_seqlevels))
     if (identical(mode, -1L))
         return(seq_len(length(new_seqlevels)))
-    match(old_seqlevels, names(new_seqlevels))
+    return(mode)
 }
 
 ### Default "seqlevels<-" method works on any object 'x' with working
@@ -131,8 +133,8 @@ setReplaceMethod("seqlevels", "ANY",
     {
         x_seqinfo <- seqinfo(x)
         seqlevels(x_seqinfo) <- value
-        old2new <- .getOld2NewSeqlevels(seqlevels(x), value)
-        seqinfo(x, old2new=old2new) <- x_seqinfo
+        new2old <- .getNew2OldSeqlevels(value, seqlevels(x))
+        seqinfo(x, new2old=new2old) <- x_seqinfo
         x
     }
 )

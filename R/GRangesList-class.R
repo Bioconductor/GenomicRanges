@@ -267,9 +267,9 @@ setReplaceMethod("elementMetadata", "GRangesList",
 )
 
 setReplaceMethod("seqinfo", "GRangesList",
-    function(x, old2new=NULL, value)
+    function(x, new2old=NULL, value)
     {
-        seqinfo(x@unlistData, old2new=old2new) <- value
+        seqinfo(x@unlistData, new2old=new2old) <- value
         x
     }
 )

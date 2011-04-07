@@ -252,9 +252,9 @@ setReplaceMethod("strand", "GappedAlignments",
 )
 
 setReplaceMethod("seqinfo", "GappedAlignments",
-    function(x, old2new=NULL, value)
+    function(x, new2old=NULL, value)
     {
-        x@seqnames <- makeNewSeqnames(x, old2new, value)
+        x@seqnames <- makeNewSeqnames(x, new2old, value)
         x@seqinfo <- value
         validObject(x)
         x

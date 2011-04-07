@@ -239,9 +239,9 @@ setMethod("split", "GRanges",
 )
 
 setReplaceMethod("seqinfo", "GRanges",
-    function(x, old2new=NULL, value)
+    function(x, new2old=NULL, value)
     {
-        x@seqnames <- makeNewSeqnames(x, old2new, value)
+        x@seqnames <- makeNewSeqnames(x, new2old, value)
         x@seqinfo <- value
         ## The ranges in 'x' need to be validated against the new sequence
         ## information (e.g. the sequence lengths might have changed).
