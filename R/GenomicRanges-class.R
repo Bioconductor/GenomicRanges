@@ -255,37 +255,17 @@ setReplaceMethod("seqnames", "GenomicRanges",
             value <- Rle(value)
         if (!is.factor(runValue(value)))
             runValue(value) <- factor(runValue(value))
+        if (!identical(levels(value), seqlevels(x)))
+            stop("levels of supplied 'seqnames' must be ",
+                 "identical to 'seqlevels(x)'")
         n <- length(x)
         k <- length(value)
         if (k != n) {
             if ((k == 0) || (k > n) || (n %% k != 0))
-                stop(k, " elements in value to replace ", n, "elements")
+                stop(k, " elements in value to replace ", n, " elements")
             value <- rep(value, length.out = n)
         }
-        seqlengths <- seqlengths(x)
-        if (identical(runLength(seqnames(x)), runLength(value))) {
-            matchTable <-
-                unique(data.frame(old = runValue(seqnames(x)),
-                                  new = runValue(value)))
-            if (!anyDuplicated(matchTable[["old"]]) &&
-                !anyDuplicated(matchTable[["new"]])) {
-                if (isTRUE(all.equal(as.integer(matchTable[["old"]]),
-                                     as.integer(matchTable[["new"]]))))
-                {
-                    names(seqlengths) <- levels(value)
-                } else {
-                    names(seqlengths) <-
-                    matchTable[["new"]][match(names(seqlengths),
-                                              matchTable[["old"]])]
-                }
-            }
-        }
-        ## Safe because 'names(seqlengths)' is guaranteed
-        ## to match the rows in 'seqinfo(x)'. Otherwise, we
-        ## would need to use Seqinfo().
-        seqinfo <- initialize(seqinfo(x),
-                              seqnames = names(seqlengths))
-        update(x, seqnames = value, seqinfo = seqinfo)
+        update(x, seqnames = value)
     }
 )
 

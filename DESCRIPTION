@@ -13,8 +13,9 @@ biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.9.30)
 Imports: methods, IRanges
 LinkingTo: IRanges
-Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools, EatonEtAlChIPseq,
-	leeBamViews, org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
+Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools,
+	EatonEtAlChIPseq (>= 0.0.2), leeBamViews,
+	org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
 License: Artistic-2.0
 Collate: utils.R
 	cigar-utils.R
