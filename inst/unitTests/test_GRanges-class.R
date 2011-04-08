@@ -117,17 +117,6 @@ test_GRanges_accessors <- function() {
     checkException(seqnames(make_test_GRanges()) <- letters,
                    silent = TRUE)
 
-    gr <- make_test_GRanges()
-    val <- seqnames(gr)
-    runValue(val) <- factor(paste(runValue(val), ".new", sep=""))
-    seqnames(gr) <- val
-    checkIdentical(seqnames(gr), val)
-
-    gr <- make_test_GRanges()
-    val <- gsub("chr", "Chr", seqnames(gr))
-    seqnames(gr) <- val
-    checkIdentical(seqnames(gr), val)
-
     ## ranges
     checkException(ranges(GRanges()) <- NULL, silent = TRUE)
     checkException(ranges(make_test_GRanges()) <- NULL, silent = TRUE)
@@ -153,18 +142,6 @@ test_GRanges_accessors <- function() {
     val <- rep(strand("+"), length(gr))
     strand(gr) <- val
     checkIdentical(strand(gr), Rle(val))
-
-    ## seqlengths
-    checkException(seqlengths(GRanges()) <- NULL, silent = TRUE)
-    checkException(seqlengths(make_test_GRanges()) <- NULL, silent = TRUE)
-    checkException(seqlengths(make_test_GRanges()) <- 1:10,
-                   silent = TRUE)
-
-    gr <- make_test_GRanges()
-    val <- seqlengths(gr)
-    val[] <- c(10L, 20L, 30L)
-    seqlengths(gr) <- val
-    checkIdentical(seqlengths(gr), val)
 
     ## elementMetadata
     checkException(elementMetadata(gr) <- DataFrame(strand = 1:length(gr)),
@@ -194,6 +171,25 @@ test_GRanges_accessors <- function() {
     gr <- make_test_GRanges()
     names(gr) <- head(letters, length(gr))
     checkIdentical(names(gr), head(letters, length(gr)))
+
+    ## seqlevels
+    gr <- make_test_GRanges()
+    val <- seqlevels(gr)
+    val <- gsub("chr", "Chr", val)
+    seqlevels(gr) <- val
+    checkIdentical(seqlevels(gr), val)
+
+    ## seqlengths
+    checkException(seqlengths(GRanges()) <- NULL, silent = TRUE)
+    checkException(seqlengths(make_test_GRanges()) <- NULL, silent = TRUE)
+    checkException(seqlengths(make_test_GRanges()) <- 1:10,
+                   silent = TRUE)
+
+    gr <- make_test_GRanges()
+    val <- seqlengths(gr)
+    val[] <- c(10L, 20L, 30L)
+    seqlengths(gr) <- val
+    checkIdentical(seqlengths(gr), val)
 }
 
 test_GRanges_Ranges <- function() {
