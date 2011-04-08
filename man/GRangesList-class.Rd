@@ -455,9 +455,9 @@
   grl[seqnames(grl) == "chr1", ]
   grl[seqnames(grl) == "chr1" & strand(grl) == "+", ]
 
-  # Changing sequence name
-  unique(seqnames(grl))
-  seqnames(grl) <- sub("chr", "Chrom", seqnames(grl))
+  # Renaming the underlying sequences
+  seqlevels(grl)
+  seqlevels(grl) <- sub("chr", "Chrom", seqlevels(grl))
   grl
 
   # range() and reduce():

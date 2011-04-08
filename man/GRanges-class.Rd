@@ -470,9 +470,9 @@
   summary(elementMetadata(gr)[,"score"]) # or values(gr)
   coverage(gr)
 
-  # Changing sequence name
-  unique(seqnames(gr))
-  seqnames(gr) <- sub("chr", "Chrom", seqnames(gr))
+  # Renaming the underlying sequences
+  seqlevels(gr)
+  seqlevels(gr) <- sub("chr", "Chrom", seqlevels(gr))
   gr
 
   # Intra-interval operations
