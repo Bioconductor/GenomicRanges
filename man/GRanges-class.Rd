@@ -18,6 +18,7 @@
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
+\alias{coerce,RleList,GRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
 
 % Accessors:
