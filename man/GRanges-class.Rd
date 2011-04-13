@@ -125,8 +125,8 @@
 
   \describe{
     \item{}{
-      \code{as(from, "GRanges")}:
-      Creates a GRanges object from a RangedData or RangesList object.
+      \code{as(from, "GRanges")}: Creates a GRanges object from a
+      RangedData, RangesList or RleList object.
     }
     \item{}{
       \code{as(from, "RangedData")}:
