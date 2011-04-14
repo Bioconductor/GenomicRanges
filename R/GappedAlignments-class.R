@@ -562,7 +562,7 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
   new_seqnames <- do.call(c, lapply(args, seqnames))
   new_start <- unlist(lapply(args, function(i) i@start), use.names = FALSE)
   new_cigar <- unlist(lapply(args, function(i) i@cigar), use.names = FALSE)
-  new_strand <- unlist(lapply(args, function(i) i@strand), use.names = FALSE)
+  new_strand <- do.call(c, lapply(args, function(i) i@strand))
   new_seqinfo <- do.call(merge, lapply(args, seqinfo))
   new_elementMetadata <- do.call(rbind, lapply(args, elementMetadata))
   
