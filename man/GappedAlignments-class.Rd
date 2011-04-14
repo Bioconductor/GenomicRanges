@@ -49,6 +49,9 @@
 % Subsetting:
 \alias{[,GappedAlignments-method}
 
+% Combining:
+\alias{c,GappedAlignments-method}
+
 % "show" method:
 \alias{show,GappedAlignments-method}
 
@@ -285,6 +288,15 @@
       \code{x[i]}:
       Returns a new GappedAlignments object made of the selected
       alignments. \code{i} can be a numeric or logical vector.
+    }
+  }
+}
+
+\section{Combining}{ 
+  \describe{
+    \item{}{
+      \code{c(...)}:
+      Concatenates the GappedAlignment objects in \code{...}.
     }
   }
 }

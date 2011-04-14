@@ -535,6 +535,46 @@ setMethod("show", "GappedAlignments",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining and concatenation
+###
+
+setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
+  if (!identical(recursive, FALSE))
+    stop("'recursive' argument not supported")
+  if (missing(x)) {
+    args <- unname(list(...))
+    x <- args[[1L]]
+  }
+  else {
+    args <- unname(list(x, ...))
+  }
+  
+  if (length(args) == 1L)
+    return(x)
+  
+  arg_is_null <- sapply(args, is.null)
+  if (any(arg_is_null))
+    args[arg_is_null] <- NULL
+  if (!all(sapply(args, is, class(x))))
+    stop("all arguments in '...' must be ", class(x), " objects (or NULLs)")
+  
+  new_seqnames <- do.call(c, lapply(args, seqnames))
+  new_start <- unlist(lapply(args, function(i) i@start), use.names = FALSE)
+  new_cigar <- unlist(lapply(args, function(i) i@cigar), use.names = FALSE)
+  new_strand <- unlist(lapply(args, function(i) i@strand), use.names = FALSE)
+  new_seqinfo <- do.call(merge, lapply(args, seqinfo))
+  new_elementMetadata <- do.call(rbind, lapply(args, elementMetadata))
+  
+  initialize(x,
+             start = new_start,
+             seqnames = new_seqnames,
+             strand = new_strand,
+             cigar = new_cigar,
+             seqinfo = new_seqinfo,
+             elementMetadata = new_elementMetadata)
+})
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "updateCigarAndStart" method.
