@@ -414,7 +414,7 @@ test_GRanges_nearest <- function() {
         ranges = IRanges(c(20, 20, 20, 20, 20, 30), c( 30, 30, 30, 30, 30, 40)),
         strand = c("+", "-", "*", "+", "*", "+"))
     current <- nearest(g1, g2)
-    target <- c(6, 4, 1, 2, 2, 3, 3, 3)
+    target <- c(6, 4, 1, 2, 1, 3, 3, 3)
     checkEquals(target, current)
 }
 
