@@ -274,7 +274,7 @@
     \item{}{
       \code{isDisjoint(x)}:
       Return a logical value indicating whether the ranges
-          ‘x’ are disjoint (i.e. non-overlapping).
+          \code{x} are disjoint (i.e. non-overlapping).
     }
     \item{}{
       \code{gaps(x, start = 1L, end = seqlengths(x))}:

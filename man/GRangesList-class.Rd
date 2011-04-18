@@ -38,6 +38,7 @@
 \alias{width<-,GRangesList-method}
 \alias{shift,GRangesList-method}
 \alias{coverage,GRangesList-method}
+\alias{isDisjoint,GRangesList-method}
 
 % Vector methods:
 \alias{[,GRangesList-method}
@@ -209,6 +210,11 @@
       \code{x}, whose elements are passed into the \code{coverage} method for
       \link{IRanges} object. See \code{?\link[IRanges]{coverage}} for more
       information on these optional arguments.
+    }
+    \item{}{
+      \code{isDisjoint(x)} Return a vector of logical values indicating
+      whether the ranges of each element of \code{x} are disjoint
+      (i.e. non-overlapping). 
     }
   }
 }
@@ -470,4 +476,7 @@
 
   # Coerce to IRangesList (seqnames and strand information are lost)
   as(grl, "IRangesList")
+
+  # isDisjoint():
+  isDisjoint(grl)
 }

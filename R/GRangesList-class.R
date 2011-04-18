@@ -359,6 +359,32 @@ setMethod("coverage", "GRangesList",
     }
 )
 
+setMethod("isDisjoint", "GRangesList",
+    function(x, ignore.strand = FALSE)
+    {
+        gr <- GenomicRanges:::deconstructGRLintoGR(x)
+
+        if (ignore.strand) 
+            xIRangesList <- split(unname(ranges(gr)), paste(seqnames(gr),
+                           Rle(factor(rep("+", length(gr)))), sep = "\r"))
+        else 
+            xIRangesList <- split(unname(ranges(gr)),
+                                  paste(seqnames(gr), strand(gr), sep = "\r"))
+         
+        ansIRanges <- isDisjoint(xIRangesList)
+        splitListNames <- strsplit(names(ansIRanges), split="\r")
+        snames <- strsplit(unlist(lapply(splitListNames, "[[", 1L)), "|",
+                           fixed=TRUE)
+        m12 <- matrix(as.integer(unlist(snames)), ncol=2, byrow=TRUE)
+        
+        ansIRangesList <- split(ansIRanges,
+                                factor(m12[, 1L], levels=seq_len(length(x))))
+        ans <-  unlist(lapply(ansIRangesList, all))
+        names(ans) <- names(x)
+        ans
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Vector methods.
