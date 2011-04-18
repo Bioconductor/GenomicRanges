@@ -591,6 +591,21 @@ setMethod("disjoin", "GenomicRanges",
         .interIntervalGenomicRanges(x, disjoin, ignore.strand = ignore.strand)
 )
 
+setMethod("isDisjoint", "GenomicRanges",
+    function(x, ignore.strand = FALSE)
+    {
+        if (ignore.strand) 
+            xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
+                           Rle(factor(rep("+", length(x)))), sep = "\r"))
+        else 
+            xIRangesList <- split(unname(ranges(x)),
+                                  paste(seqnames(x), strand(x), sep = "\r"))
+         
+        all(isDisjoint(xIRangesList))
+
+    }
+)
+
 setMethod("gaps", "GenomicRanges",
     function(x, start = 1L, end = seqlengths(x))
     {

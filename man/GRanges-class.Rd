@@ -53,6 +53,7 @@
 \alias{coverage,GenomicRanges-method}
 \alias{precede,GenomicRanges,GenomicRanges-method}
 \alias{follow,GenomicRanges,GenomicRanges-method}
+\alias{isDisjoint,GenomicRanges,GenomicRanges-method}
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
@@ -271,6 +272,11 @@
       the columns in \code{x} are dropped.
     }
     \item{}{
+      \code{isDisjoint(x)}:
+      Return a logical value indicating whether the ranges
+          ‘x’ are disjoint (i.e. non-overlapping).
+    }
+    \item{}{
       \code{gaps(x, start = 1L, end = seqlengths(x))}:
       Returns a new GRanges object containing complemented ranges for each
       distinct (seqname, strand) pairing. The names (\code{names(x)}) and
@@ -482,6 +488,7 @@
   shift(gr, 1)
 
   # Inter-interval operations
+  isDisjoint(gr)
   disjoin(gr)
   gaps(gr, start = 1, end = 10)
   range(gr)
