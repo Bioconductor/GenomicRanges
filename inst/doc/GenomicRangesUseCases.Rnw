@@ -334,8 +334,9 @@ limit our analysis to this subset for expediency purposes.
 % lengths for chrX and chrXIV). This is wrong and is exactly what we should
 % tell the users to NOT do!
 <<YeastData>>=
-library(Rsamtools)
+library(leeBamViews)
 testFile <- system.file("bam", "isowt5_13e.bam", package="leeBamViews")
+library(Rsamtools)
 aligns <- readBamGappedAlignments(testFile)
 @
 
