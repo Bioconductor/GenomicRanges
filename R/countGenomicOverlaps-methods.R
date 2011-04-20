@@ -107,12 +107,12 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     } else {
         if (any(elementLengths(query) > 1)) { 
             sr <- query[elementLengths(query) > 1]
-            co <- countOverlaps(unlist(sr), unlist(subject), type=type,
+            co_split <- countOverlaps(unlist(sr), unlist(subject), type=type,
                                 ignore.strand=ignore.strand)
-            if (any(co > 2)) {
+            if (any(co_split > 2)) {
                 warning("split reads that hit > 2 exons have been ",
                         "detected and will be dropped")
-                query <- query[co < 3] 
+                query <- query[co_split < 3] 
                 sr <- query[elementLengths(query) > 1]
             } 
             ## exon hit by both read seqments gets wt = 1 

@@ -33,24 +33,30 @@ resDivide <- function(query, subject, type, ignore.strand)
                        ignore.strand=ignore.strand)
     qrle <- Rle(queryHits(fo))
     div <- rep.int((1/runLength(qrle)), runLength(qrle))
+    idx <- unique(subjectHits(fo))
+    counts <- lapply(split(div, subjectHits(fo)), sum)
     hits <- rep.int(0, length(unlist(subject)))
-    hits[subjectHits(fo)] <- div
+    hits[idx] <- unlist(counts) 
     hits
 }
 
 resUniqueDisjoint <- function(query, subject, type, ignore.strand)
 {
+    ## ud regions
     gr <- unlist(subject)
     d <- disjoin(gr)
     ud <- d[countOverlaps(d, gr, type=type, ignore.strand=ignore.strand) == 1]
- 
-    co <- countOverlaps(ud, query, type=type, ignore.strand=ignore.strand)
-    fo <- findOverlaps(ud[co == 1], unlist(subject), type=type,
+    ## remove reads that hit multiple ud regions
+    multihit <- countOverlaps(query, ud, type=type, ignore.strand=ignore.strand)
+    fo <- findOverlaps(query[multihit == 1], ud, type=type,
+        ignore.strand=ignore.strand)
+    ## map ud regions back to original subjects
+    backmap <- findOverlaps(ud[subjectHits(fo)], unlist(subject), type=type,
                        ignore.strand=ignore.strand)
-    el <- rep(elementLengths(subject), elementLengths(subject))
-    h <- subjectHits(fo)[el[subjectHits(fo)] == 1]
+    idx <- unique(subjectHits(backmap))
+    counts <- lapply(split(subjectHits(backmap), subjectHits(backmap)), length)
     hits <- rep.int(0, length(unlist(subject)))
-    hits[h] <- 1
+    hits[idx] <- unlist(counts)
     hits
 }
 
