@@ -53,7 +53,7 @@
 \alias{coverage,GenomicRanges-method}
 \alias{precede,GenomicRanges,GenomicRanges-method}
 \alias{follow,GenomicRanges,GenomicRanges-method}
-\alias{isDisjoint,GenomicRanges,GenomicRanges-method}
+\alias{isDisjoint,GenomicRanges-method}
 
 % Vector methods:
 \alias{length,GenomicRanges-method}

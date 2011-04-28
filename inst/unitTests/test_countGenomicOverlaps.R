@@ -80,10 +80,11 @@ test_typeAny <- function(type="any", ...)
                                       resolution="uniqueDisjoint",
                                       ignore.strand=ignore.strand)
  
-        checkIdentical(.getCounts(anyNone), c(1, 1, rep.int(0L, 13)))
-        checkIdentical(round(.getCounts(anyDivide), 3), c(1, 1, rep.int(0.5, 4), 
-                       rep.int(0.333, 3), 1, rep.int(0.5, 4), 0))
-        checkIdentical(round(.getCounts(anyUD), 3), c(1, 1, rep.int(0, 4), 1, 
+        checkIdentical(round(.getCounts(anyNone), 2), c(1, 1, integer(7), 1, 
+            rep.int(0.5, 4), 0))
+        checkIdentical(round(.getCounts(anyDivide), 2), c(1, 1, rep.int(0.5, 4), 
+                       rep.int(0.33, 3), 1, rep.int(0.5, 4), 0))
+        checkIdentical(round(.getCounts(anyUD), 2), c(1, 1, integer(4), 1, 
                        0, 0, 1, rep.int(0.5, 4), 0))
     }
 
@@ -99,10 +100,11 @@ test_typeAny <- function(type="any", ...)
                                       resolution="uniqueDisjoint", 
                                       ignore.strand=ignore.strand)
  
-        checkIdentical(.getCounts(anyNone), c(1, 1, rep.int(0L, 12), 1))
-        checkIdentical(round(.getCounts(anyDivide), 3), c(1, 1, rep.int(0.5, 4), 
-                       rep.int(0.333, 3), 1, rep.int(0.5, 4), 1))
-        checkIdentical(round(.getCounts(anyUD), 3), c(1, 1, rep.int(0, 4), 1, 
+        checkIdentical(round(.getCounts(anyNone), 2), c(1, 1, integer(7), 1, 
+            rep(0.5, 4), 1))
+        checkIdentical(round(.getCounts(anyDivide), 2), c(1, 1, rep.int(0.5, 4), 
+                       rep.int(0.33, 3), 1, rep.int(0.5, 4), 1))
+        checkIdentical(round(.getCounts(anyUD), 2), c(1, 1, integer(4), 1, 
                        0, 0, 1, rep.int(0.5, 4), 1))
     }
     .ignoreStrandFalse()
@@ -110,19 +112,20 @@ test_typeAny <- function(type="any", ...)
 } 
 
 
-test_typeWithin <- function(type="within", ignore.strand=TRUE, ...)
+test_typeWithin <- function(type="within", ignore.strand=FALSE, ...)
 {
     subject <- make_subject()
     query <- make_GRquery()
  
     withinNone <- countGenomicOverlaps(query, subject, type=type, 
-                                       resolution="none", ...)
+        resolution="none", ignore.strand=ignore.strand)
     withinDivide <- countGenomicOverlaps(query, subject, type=type, 
-                                         resolution="divide", ...)
+        resolution="divide", ignore.strand=ignore.strand)
  
-    checkIdentical(.getCounts(withinNone), c(0, 1, rep.int(0L, 13)))
-    checkIdentical(.getCounts(withinDivide), 
-                   c(0, 1, rep.int(0L, 7), 1, 0.5, 0.5, 0.5, 0.5, 0))
+    checkIdentical(round(.getCounts(withinNone), 2), c(0, 1, integer(7),
+        1, rep.int(0.5, 4), 0))
+    checkIdentical(round(.getCounts(withinDivide), 2), 
+                   c(0, 1, integer(7), 1, rep.int(0.5, 4), 0))
 } 
 
 
