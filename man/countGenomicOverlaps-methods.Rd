@@ -34,7 +34,7 @@
     each row as a single list element. If the cigar in the
     \link{GappedAlignments} has gaps, the read will be represented in
     the corresponding \link{GRangesList} object as a split read (i.e.,
-    list element of length 2).
+    list element of length 2 or greater).
   }
   \item{subject}{
     A \code{\link{GRangesList}}, or a 
@@ -59,7 +59,7 @@
 
     \itemize{
       \item "none" : No conflict resolution is performed. All queries that
-            hit more than 1 subject are dropped. No split reads are counted.
+            hit more than 1 subject are dropped.
       \item "divide" : The hit from a single query is divided equally among 
             all subjects that were hit. If a query hit 4 subjects 
             each subject is assigned 1/4 of a hit.
@@ -91,16 +91,18 @@
   when a query hits more than 1 subject. Here the
   term `hit' means an overlap identified by \code{findOverlaps}.
  
-  Split reads are handled separately from the single and multiple 
-  hit reads. The \code{resolution} methods are not applied to the
-  split reads when determining the distribution of the hit. The
-  single weight of the read is divided in as many parts as there
-  are read fragments. These fractions are further divided by the
-  number of subjects each read fragment hits. For example, if a split
-  read consists of three fragments they each have 1/3 of a hit to
-  distribute. If they all hit the same subject that subject gets a
-  hit value of 1. If two read fragments hit two separate subjects,
-  those subjects each get 1/3 of a hit.  
+  The primary difference in the handling of split reads vs
+  simple reads (i.e., no gap in the CIGAR) is the portion of
+  the read hit each split read fragment has to contribute.
+  All reads, whether simple or split, have an overall value
+  of 1 to contribute to a subject they hit. In the case of the
+  split reads, this value is further divided by the number of
+  fragments in the read. For example, if a split read has 3
+  fragments (i.e., two gaps in the CIGAR) each
+  fragment has a value of 1/3 to contribute to the subject
+  they hit. As with the simple reads, depending upon the
+  \code{resolution} chosen the value may be divided, fully 
+  assigned or discarded.
 
   More detailed examples can be found in the \code{countGenomicOverlaps}
   vignette. 
