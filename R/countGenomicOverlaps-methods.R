@@ -69,9 +69,10 @@ setMethod("countGenomicOverlaps", c("GappedAlignments", "GenomicRanges"),
 {
     listSubject <- split(subject, seq_len(length(subject))) 
     listQuery <- as(query, "GRangesList") 
-    callGeneric(listQuery, listSubject, 
-                type = type, resolution = resolution, 
-                ignore.strand = ignore.strand, ...)
+    ans <- callGeneric(listQuery, listSubject, 
+        type = type, resolution = resolution, 
+        ignore.strand = ignore.strand, ...)
+    unlist(ans)
 })
 
 setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
