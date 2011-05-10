@@ -249,13 +249,12 @@
       with \code{width} positions on either side.
     }
     \item{}{
-      \code{resize(x, width, use.names = TRUE)}:
-      Returns a new GRanges object containing intervals that have been
-      resized to width \code{width} based on the \code{strand(x)} values.
-      Elements where \code{strand(x) == "+"} are anchored at \code{start(x)},
-      elements where \code{strand(x) == "-"} are anchored at the \code{end(x)},
-      and elements where \code{strand = "*"} are anchored at
-      \code{(end(x) - start(x))\%/\%2}. The \code{use.names} argument
+      \code{resize(x, width, use.names = TRUE)}: Returns a new GRanges
+      object containing intervals that have been resized to width
+      \code{width} based on the \code{strand(x)} values.  Elements where
+      \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at
+      \code{start(x)} and elements where \code{strand(x) == "-"} are
+      anchored at the \code{end(x)}. The \code{use.names} argument
       determines whether or not to keep the names on the ranges.
     }
     \item{}{
