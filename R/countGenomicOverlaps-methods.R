@@ -6,7 +6,7 @@ setGeneric("countGenomicOverlaps", signature = c("query", "subject"),
             function(query, subject, 
                      type = c("any", "start", "end", "within", "equal"),
                      resolution = c("none", "divide", "uniqueDisjoint"),
-                     ignore.strand = FALSE, ...)
+                     ignore.strand = FALSE, splitreads = TRUE, ...)
             standardGeneric("countGenomicOverlaps")
 )
 
@@ -14,12 +14,12 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listSubject <- split(subject, seq_len(length(subject))) 
     ans <- callGeneric(query, listSubject, 
         type = type, resolution = resolution, 
-        ignore.strand = ignore.strand, ...)
+        ignore.strand = ignore.strand, splitreads = TRUE, ...)
     unlist(ans)
 })
 
@@ -27,7 +27,7 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GRangesList"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listQuery <- split(query, seq_len(length(query))) 
     callGeneric(listQuery, subject, 
@@ -39,7 +39,7 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listSubject <- split(subject, seq_len(length(subject))) 
     listQuery <- split(query, seq_len(length(query))) 
@@ -53,25 +53,25 @@ setMethod("countGenomicOverlaps", c("GappedAlignments", "GRangesList"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listQuery <- as(query, "GRangesList") 
     callGeneric(listQuery, subject, 
                 type = type, resolution = resolution, 
-                ignore.strand = ignore.strand, ...)
+                ignore.strand = ignore.strand, splitreads = TRUE, ...)
 })
 
 setMethod("countGenomicOverlaps", c("GappedAlignments", "GenomicRanges"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listSubject <- split(subject, seq_len(length(subject))) 
     listQuery <- as(query, "GRangesList") 
     ans <- callGeneric(listQuery, listSubject, 
         type = type, resolution = resolution, 
-        ignore.strand = ignore.strand, ...)
+        ignore.strand = ignore.strand, splitreads = TRUE, ...)
     unlist(ans)
 })
 
@@ -79,7 +79,7 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, 
              type = c("any", "start", "end", "within", "equal"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     resolution <- match.arg(resolution)
     type <- match.arg(type)
@@ -89,19 +89,25 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
         stop("resolution `uniqueDisjoint' with type `within'",
              "is not logical")
 
-    uquery <- unlist(query, use.names=FALSE)
-    usubject <- unlist(subject, use.names=FALSE)
+    ## value each read or read fragment contributes
+    if (splitreads == TRUE) {
+        readValue <- rep.int(1/elementLengths(query), elementLengths(query))
+        uquery <- unlist(query, use.names=FALSE)
+    } else {
+        query <- query[elementLengths(query) == 1]
+        readValue <- rep.int(1, length(query))
+        uquery <- unlist(query, use.names=FALSE)
+    }
 
+    usubject <- unlist(subject, use.names=FALSE)
     co <- countOverlaps(uquery, usubject, 
         type=type, ignore.strand=ignore.strand)
     if (!any(co)) {
         values(subject@unlistData)[["hits"]] <- 
           integer(length(usubject)) 
+        warning("no overlaps detected")
         return(subject)
     }
-
-    ## define the hit value each read contributes
-    readValue <- rep.int(1/elementLengths(query), elementLengths(query))
 
     ## read hit one subject
     if (any(co == 1)) {

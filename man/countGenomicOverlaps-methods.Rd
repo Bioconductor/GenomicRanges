@@ -20,7 +20,7 @@
     query, subject, 
     type = c("any", "start", "end", "within", "equal"),
     resolution = c("none", "divide", "uniqueDisjoint"),
-    ignore.strand = FALSE, ...) 
+    ignore.strand = FALSE, splitreads = TRUE, ...) 
 }
 
 \arguments{
@@ -75,6 +75,9 @@
   }
   \item{ignore.strand}{
     A logical value indicating if strand should be considered when matching.
+  }
+  \item{splitreads}{
+    A logical value indicating if split reads should be included.
   }
   \item{...}{Additional arguments, perhaps used by methods defined on
   this generic.
@@ -150,14 +153,15 @@ data.frame(none = values(unlist(none))[["hits"]],
            divide = values(unlist(divide))[["hits"]],
            uniqDisj = values(unlist(uniqueDisjoint))[["hits"]])
 
-## Split read with 4 fragments :
-## - 2 fragments hit the same subject 
-## - 1 fragment hits two different subjects
-## - 1 fragment hits a single subject 
+## Split read with 4 fragments where
+## 2 fragments hit the same subject, 
+## 1 fragment hits two different subjects,
+## 1 fragment hits a single subject 
 splitreads <- GRangesList(c(rng1(c(3000, 3200, 4000), 100), rng1(5400, 300)))
 split_none <- countGenomicOverlaps(splitreads, subj, type="any")
 split_divide <- countGenomicOverlaps(splitreads, subj, type="any", 
     resolution="divide")
+
 data.frame(none = values(unlist(split_none))[["hits"]],
            divide = values(unlist(split_divide))[["hits"]])
 
