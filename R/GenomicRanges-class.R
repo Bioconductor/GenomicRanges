@@ -329,23 +329,6 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
     }
 )
 
-### Needed only for BioC 2.8 to redirect users that are trying to modify the
-### levels of 'seqnames(x)' via this method.
-### TODO: Remove in BioC 2.9.
-setReplaceMethod("seqlengths", "GenomicRanges",
-    function(x, value)
-    {
-        if (!is.null(names(value)) && !setequal(names(value), seqlevels(x)))
-            stop("The names of the supplied 'seqlengths' don't match ",
-                 "'seqlevels(x)' (aka the\n  sequence levels). ",
-                 "Please use the \"seqlevels\" setter if your intention ",
-                 "was to\n  modify the sequence levels (i.e. use something ",
-                 "like 'seqlevels(x) <- value'\n  where 'value' is ",
-                 "a character vector containing the new levels).")
-        callNextMethod()
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Updating and cloning.
