@@ -387,8 +387,8 @@ setMethod("coverage", "GenomicRanges",
         if (any(start(x) < 1L))
             stop("'x' contains ranges starting before position 1. ",
                  "coverage() currently doesn't support this.")
-        fixArg <- function(arg, argname, uniqueSeqnames) {
-            k <- length(uniqueSeqnames)
+        fixArg <- function(arg, argname, seqlevels) {
+            k <- length(seqlevels)
             if (!is.list(arg) || is(arg, "IntegerList"))
                 stop("'", argname, "' must be a list")
             makeNULL <-
@@ -399,19 +399,19 @@ setMethod("coverage", "GenomicRanges",
             if (length(arg) < k)
                 arg <- rep(arg, length.out = k)
             if (is.null(names(arg)))
-                names(arg) <- uniqueSeqnames
-            if (!all(uniqueSeqnames %in% names(arg)))
+                names(arg) <- seqlevels
+            if (!all(seqlevels %in% names(arg)))
                 stop("some seqnames missing from names(", argname, ")")
             arg
         }
-        uniqueSeqnames <- levels(seqnames(x))
-        shift <- fixArg(shift, "shift", uniqueSeqnames)
-        width <- fixArg(width, "width", uniqueSeqnames)
-        weight <- fixArg(weight, "weight", uniqueSeqnames)
+        seqlevels <- seqlevels(x)
+        shift <- fixArg(shift, "shift", seqlevels)
+        width <- fixArg(width, "width", seqlevels)
+        weight <- fixArg(weight, "weight", seqlevels)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
         IRanges:::newSimpleList("SimpleRleList",
-              lapply(structure(uniqueSeqnames, names = uniqueSeqnames),
+              lapply(structure(seqlevels, names = seqlevels),
                      function(i) {
                          rg <- seqselect(xRanges, xSplitRanges[[i]])
                          if (isCircular(x)[i] %in% TRUE)
@@ -455,7 +455,7 @@ setReplaceMethod("end", "GenomicRanges",
                    seqlengths <- seqlengths(x)
                    ## TODO: Revisit this to handle circularity.
                    if (!IRanges:::anyMissing(seqlengths)) {
-                     seqlengths <- seqlengths[levels(seqnames(x))]
+                     seqlengths <- seqlengths[seqlevels(x)]
                      maxEnds <- seqlengths[as.integer(seqnames(x))]
                      trim <- which(ends > maxEnds)
                      if (length(trim) > 0) {
@@ -561,7 +561,7 @@ setMethod("shift", "GenomicRanges",
     splitListNames <- strsplit(names(ansIRangesList), split = "\r")
     ansSeqnames <-
       Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
-                 levels = levels(seqnames(x))), k)
+                 levels = seqlevels(x)), k)
     ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
     update(x, seqnames = ansSeqnames,
            ranges = unlist(ansIRangesList, use.names=FALSE),
@@ -592,7 +592,7 @@ setMethod("isDisjoint", "GenomicRanges",
 setMethod("gaps", "GenomicRanges",
     function(x, start = 1L, end = seqlengths(x))
     {
-        seqlevels <- levels(seqnames(x))
+        seqlevels <- seqlevels(x)
         if (!is.null(names(start)))
             start <- start[seqlevels]
         if (!is.null(names(end)))
