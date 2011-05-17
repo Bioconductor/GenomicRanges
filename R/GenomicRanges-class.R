@@ -434,10 +434,10 @@ setMethod("coverage", "GenomicRanges",
         if (any(start(x) < 1L))
             stop("'x' contains ranges starting before position 1. ",
                  "coverage() currently doesn't support this.")
-        seqlevels <- seqlevels(x)
         shift <- .coverage.normargShiftOrWeight(shift, "shift", x)
         width <- .coverage.normargWidth(width, x)
         weight <- .coverage.normargShiftOrWeight(weight, "weight", x)
+        seqlevels <- seqlevels(x)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
         IRanges:::newSimpleList("SimpleRleList",
