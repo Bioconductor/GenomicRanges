@@ -362,6 +362,54 @@ setMethod("start", "GenomicRanges", function(x, ...) start(ranges(x)))
 setMethod("end", "GenomicRanges", function(x, ...) end(ranges(x)))
 setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 
+.coverage.recycleListArg <- function(arg, argname, seqlevels)
+{
+    ## 'arg' is guaranteed to be a list or a List object.
+    k <- length(seqlevels)
+    if (length(arg) < k)
+        arg <- rep(arg, length.out = k)
+    if (is.null(names(arg)))
+        names(arg) <- seqlevels
+    if (!all(seqlevels %in% names(arg)))
+        stop("some seqnames missing from names(", argname, ")")
+    arg
+}
+
+.coverage.normargShiftOrWeight <- function(arg, argname, x)
+{
+    if (is.list(arg) || is(arg, "List"))
+        return(.coverage.recycleListArg(arg, argname, seqlevels(x)))
+    if (is.numeric(arg)) {
+        if (length(arg) == 1L) {
+            arg <- recycleNumericArg(arg, argname, length(seqlevels(x)))
+            arg <- as.list(arg)
+            names(arg) <- seqlevels(x)
+        } else {
+            arg <- recycleNumericArg(arg, argname, length(x))
+            arg <- split(arg, as.factor(seqnames(x)))
+        }
+        return(arg)
+    }
+    stop("'", argname, "' must be a numeric vector, or a list, ",
+         "or a List object")
+}
+
+.coverage.normargWidth <- function(width, x)
+{
+    if (is.null(width))
+        width <- as.list(seqlengths(x))
+    else if (!is.list(width))
+        stop("'width' must be NULL or a list")
+    makeNULL <- unlist(
+                    lapply(width,
+                           function(y)
+                               is.atomic(y) && length(y) == 1L && is.na(y)),
+                    use.names=FALSE)
+    if (any(makeNULL))
+        width[makeNULL] <- rep(list(NULL), sum(makeNULL))
+    .coverage.recycleListArg(width, "width", seqlevels(x))
+}
+
 ### 'circle.length' must be NA (if the underlying sequence is linear) or the
 ### length of the underlying circular sequence (integer vector of length 1
 ### with the name of the sequence).
@@ -381,33 +429,15 @@ setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 }
 
 setMethod("coverage", "GenomicRanges",
-    function(x, shift = list(0L), width = as.list(seqlengths(x)),
-             weight = list(1L))
+    function(x, shift=0L, width=NULL, weight=1L)
     {
         if (any(start(x) < 1L))
             stop("'x' contains ranges starting before position 1. ",
                  "coverage() currently doesn't support this.")
-        fixArg <- function(arg, argname, seqlevels) {
-            k <- length(seqlevels)
-            if (!is.list(arg) || is(arg, "IntegerList"))
-                stop("'", argname, "' must be a list")
-            makeNULL <-
-              unlist(lapply(arg, function(y) length(y) == 1 && is.na(y)),
-                     use.names=FALSE)
-            if (any(makeNULL))
-                arg[makeNULL] <- rep(list(NULL), sum(makeNULL))
-            if (length(arg) < k)
-                arg <- rep(arg, length.out = k)
-            if (is.null(names(arg)))
-                names(arg) <- seqlevels
-            if (!all(seqlevels %in% names(arg)))
-                stop("some seqnames missing from names(", argname, ")")
-            arg
-        }
         seqlevels <- seqlevels(x)
-        shift <- fixArg(shift, "shift", seqlevels)
-        width <- fixArg(width, "width", seqlevels)
-        weight <- fixArg(weight, "weight", seqlevels)
+        shift <- .coverage.normargShiftOrWeight(shift, "shift", x)
+        width <- .coverage.normargWidth(width, x)
+        weight <- .coverage.normargShiftOrWeight(weight, "weight", x)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
         IRanges:::newSimpleList("SimpleRleList",

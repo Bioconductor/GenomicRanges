@@ -297,15 +297,34 @@
       about range reduction and for a description of the optional arguments.
     }
     \item{}{
-      \code{coverage(x, shift = list(0L), width = as.list(seqlengths(x)), weight = list(1L))}:
+      \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
       Returns a named \link[IRanges]{RleList} object with one element
-      ('integer' Rle) per unique sequence name representing how many
-      times each position in the sequence is covered by the intervals in
-      \code{x}. The \code{shift}, \code{width}, and \code{weight} arguments
-      take list arguments, possibly named by the unique sequence names in
-      \code{x}, whose elements are passed into the \code{coverage} method for
-      \link{IRanges} object. See \code{?\link[IRanges]{coverage}} for more
-      information on these optional arguments.
+      ('integer' Rle) per underlying sequence in \code{x} representing how
+      many times each position in the sequence is covered by the intervals in
+      \code{x}.
+
+      See \code{?\link[IRanges]{coverage}} for the role of optional
+      arguments \code{shift}, \code{width} and \code{weight}.
+
+      Here is how those arguments are handled when \code{x} is a
+      \link{GRanges} object:
+      \itemize{
+      \item \code{shift}, \code{weight}: can be either a numeric vector
+            (integers) or a list. If a list, then it should be named by the
+            sequence levels in \code{x} (i.e. by the names of the underlying
+            sequences), and its elements are passed into the \code{coverage}
+            method for \link[IRanges]{IRanges} objects. If a numeric vector,
+            then it is first recycled to the length of \code{x}, then turned
+            into a list with \code{split(shift, as.factor(seqnames(x)))},
+            and finally the elements of this list are passed into the
+            \code{coverage} method for \link[IRanges]{IRanges} objects.
+      \item \code{width}: can be a list (that should be named by the
+            sequence levels in \code{x}) or \code{NULL} (in that case it is
+            equivalent to \code{as.list(seqlengths(x))}). Like for \code{shift}
+            and \code{weight}, its elements are passed into the \code{coverage}
+            method for \link[IRanges]{IRanges} objects (elements that are
+            single \code{NA}s are replaced by \code{NULL}).
+      }
     }
   }
 }
