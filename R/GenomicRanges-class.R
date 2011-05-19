@@ -406,7 +406,7 @@ setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
                                is.atomic(y) && length(y) == 1L && is.na(y)),
                     use.names=FALSE)
     if (any(makeNULL))
-        width[makeNULL] <- rep(list(NULL), sum(makeNULL))
+        width[makeNULL] <- rep.int(list(NULL), sum(makeNULL))
     .coverage.recycleListArg(width, "width", seqlevels(x))
 }
 
@@ -429,7 +429,7 @@ setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 }
 
 setMethod("coverage", "GenomicRanges",
-    function(x, shift=0L, width=NULL, weight=1L)
+    function(x, shift=0L, width=NULL, weight=1L, ...)
     {
         if (any(start(x) < 1L))
             stop("'x' contains ranges starting before position 1. ",

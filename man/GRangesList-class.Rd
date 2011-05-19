@@ -201,15 +201,8 @@
       keep the names on the ranges.
     }
     \item{}{
-      \code{coverage(x, shift = list(0L), width = list(NULL), weight = list(1L))}:
-      Returns a named \link[IRanges]{RleList} object with one element
-      ('integer' Rle) per unique sequence name representing how many
-      times each position in the sequence is covered by the intervals in
-      \code{x}. The \code{shift}, \code{width}, and \code{weight} arguments
-      take list arguments, possibly named by the unique sequence names in
-      \code{x}, whose elements are passed into the \code{coverage} method for
-      \link{IRanges} object. See \code{?\link[IRanges]{coverage}} for more
-      information on these optional arguments.
+      \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
+      Equivalent to \code{coverage(unlist(x), shift, width, weight)}.
     }
     \item{}{
       \code{isDisjoint(x)} Return a vector of logical values indicating

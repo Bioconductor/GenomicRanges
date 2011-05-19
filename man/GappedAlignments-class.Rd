@@ -338,17 +338,7 @@
     }
     \item{}{
       \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
-      \code{x} is a GappedAlignments object.
-      Returns a named \link[IRanges]{RleList} object with one element
-      (integer-Rle) per unique reference sequence. Each element represents
-      \code{x}'s coverage of the corresponding reference sequence, that is,
-      how many times each nucleotide position in the sequence is covered
-      by the alignments in \code{x}.
-      Note that the semantic of the \code{coverage} method for
-      GappedAlignments objects is different from the semantic of the method
-      for \link[IRanges]{Ranges} objects (the latter returns a single
-      integer-Rle object representing the coverage of all ranges
-      relatively to a unique imaginary reference sequence).
+      Equivalent to \code{coverage(as(x, "GRangesList"), shift, width, weight)}.
     }
     \item{}{
       \code{findOverlaps(query, subject, ...)},

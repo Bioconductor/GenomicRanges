@@ -655,15 +655,7 @@ setMethod("pintersect", c("GRanges", "GappedAlignments"),
 
 setMethod("coverage", "GappedAlignments",
     function(x, shift=0L, width=NULL, weight=1L, ...)
-    {
-        shift <- as.list(shift)
-        if (is.null(width))
-            width <- list(width)
-        else
-            width <- as.list(width)
-        weight <- as.list(weight)
         callGeneric(grglist(x), shift=shift, width=width, weight=weight, ...)
-    }
 )
 
 

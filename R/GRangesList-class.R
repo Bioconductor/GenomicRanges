@@ -353,10 +353,8 @@ setMethod("shift", "GRangesList",
 )
 
 setMethod("coverage", "GRangesList",
-    function(x, shift = list(0L), width = list(NULL), weight = list(1L))
-    {
-        callGeneric(x@unlistData, shift = shift, width = width, weight = weight)
-    }
+    function(x, shift=0L, width=NULL, weight=1L, ...)
+        callGeneric(x@unlistData, shift=shift, width=width, weight=weight, ...)
 )
 
 setMethod("isDisjoint", "GRangesList",
