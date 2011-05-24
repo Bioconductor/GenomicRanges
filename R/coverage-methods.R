@@ -3,9 +3,10 @@
 ### -------------------------------------------------------------------------
 ###
 
-.coverage.recycleListArg <- function(arg, argname, seqlevels)
+### Should work if 'arg' is an ordinary vector (i.e. atomic vector or list),
+### or a List object.
+.coverage.recycleAndSetNames <- function(arg, argname, seqlevels)
 {
-    ## 'arg' is guaranteed to be a list or a List object.
     k <- length(seqlevels)
     if (length(arg) < k)
         arg <- rep(arg, length.out = k)
@@ -19,7 +20,7 @@
 .coverage.normargShiftOrWeight <- function(arg, argname, x)
 {
     if (is.list(arg) || is(arg, "List"))
-        return(.coverage.recycleListArg(arg, argname, seqlevels(x)))
+        return(.coverage.recycleAndSetNames(arg, argname, seqlevels(x)))
     if (is.numeric(arg)) {
         if (length(arg) == 1L) {
             arg <- recycleNumericArg(arg, argname, length(seqlevels(x)))
@@ -38,17 +39,10 @@
 .coverage.normargWidth <- function(width, x)
 {
     if (is.null(width))
-        width <- as.list(seqlengths(x))
-    else if (!is.list(width))
-        stop("'width' must be NULL or a list")
-    makeNULL <- unlist(
-                    lapply(width,
-                           function(y)
-                               is.atomic(y) && length(y) == 1L && is.na(y)),
-                    use.names=FALSE)
-    if (any(makeNULL))
-        width[makeNULL] <- rep.int(list(NULL), sum(makeNULL))
-    .coverage.recycleListArg(width, "width", seqlevels(x))
+        width <- seqlengths(x)
+    else if (!is.numeric(width))
+        stop("'width' must be NULL or a numeric vector")
+    .coverage.recycleAndSetNames(width, "width", seqlevels(x))
 }
 
 ### 'circle.length' must be NA (if the underlying sequence is linear) or the
@@ -89,8 +83,11 @@ setMethod("coverage", "GenomicRanges",
                              circle.length <- seqlengths(x)[i]
                          else
                              circle.length <- NA
+                         width_i <- width[[i]]
+                         if (is.na(width_i))
+                             width_i <- NULL
                          .coverage.circle(circle.length, rg,
-                                          shift[[i]], width[[i]], weight[[i]])
+                                          shift[[i]], width_i, weight[[i]])
                      }))
     }
 )

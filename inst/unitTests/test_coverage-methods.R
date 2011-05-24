@@ -31,7 +31,7 @@ test_coverage_GRanges <- function() {
                    RleList("chr1" = Rle(1:3, c(4, 1, 5)),
                            "chr2" = Rle(0:3, c(1, 1, 1, 7)),
                            "chr3" = Rle(0:4, c(6, 1, 1, 1, 1))))
-    checkIdentical(coverage(gr, width = list(10, 20, 30)),
+    checkIdentical(coverage(gr, width = c(10, 20, 30)),
                    RleList("chr1" = Rle(1:3, c(4, 1, 5)),
                            "chr2" = Rle(c(0:3, 0L), c(1, 1, 1, 7, 10)),
                            "chr3" = Rle(c(0:4, 0L), c(6, 1, 1, 1, 1, 20))))
@@ -63,7 +63,7 @@ test_coverage_GRangesList <- function() {
                            "chr3" = Rle(0:4, c(6, 1, 1, 1, 1)),
                            "chr4" = Rle(0:6, c(3, 1, 1, 1, 1, 1, 5)),
                            "chr5" = Rle(0:4, c(9, 1, 1, 1, 1))))
-    checkIdentical(coverage(grl, width = list(10, 20, 30, 40, 50)),
+    checkIdentical(coverage(grl, width = c(10, 20, 30, 40, 50)),
                    RleList("chr1" = Rle(1:3, c(4, 1, 5)),
                            "chr2" = Rle(c(1L, 3L, 5L, 6L, 3L, 0L), c(1, 1, 1, 7, 3, 7)),
                            "chr3" = Rle(c(0:4, 0L), c(6, 1, 1, 1, 1, 20)),

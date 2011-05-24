@@ -41,12 +41,13 @@
         into a list with \code{split(shift, as.factor(seqnames(x)))},
         and finally the elements of this list are passed into the
         \code{coverage} method for \link[IRanges]{IRanges} objects.
-  \item \code{width}: can be a list (that should be named by the
-        sequence levels in \code{x}) or \code{NULL} (in that case it is
-        equivalent to \code{as.list(seqlengths(x))}). Like for \code{shift}
-        and \code{weight}, its elements are passed into the \code{coverage}
-        method for \link[IRanges]{IRanges} objects (elements that are
-        single \code{NA}s are first replaced by \code{NULL}).
+  \item \code{width}: can be either \code{NULL} or a numeric vector.
+        If a numeric vector, then it should be named by the sequence
+        levels in \code{x}. If \code{NULL} (the default), then it is
+        replaced with \code{seqlengths(x)}. Like for \code{shift} and
+        \code{weight}, its elements are passed into the \code{coverage}
+        method for \link[IRanges]{IRanges} objects (if the element is
+        \code{NA} then \code{NULL} is passed instead).
   }
 
   When \code{x} is a \link{GRangesList} object, \code{coverage(x, ...)}
