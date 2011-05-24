@@ -1,5 +1,5 @@
-\name{GRanges-setops}
-\alias{GRanges-setops}
+\name{setops-methods}
+\alias{setops-methods}
 
 \alias{union,GRanges,GRanges-method}
 \alias{intersect,GRanges,GRanges-method}

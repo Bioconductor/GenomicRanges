@@ -62,21 +62,6 @@
 \alias{pintersect,GappedAlignments,GRanges-method}
 \alias{pintersect,GRanges,GappedAlignments-method}
 \alias{coverage,GappedAlignments-method}
-\alias{findOverlaps,GappedAlignments,ANY-method}
-\alias{findOverlaps,ANY,GappedAlignments-method}
-\alias{findOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{countOverlaps,GappedAlignments,ANY-method}
-\alias{countOverlaps,ANY,GappedAlignments-method}
-\alias{countOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignments,ANY-method}
-\alias{subsetByOverlaps,ANY,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{match,GappedAlignments,ANY-method}
-\alias{match,ANY,GappedAlignments-method}
-\alias{match,GappedAlignments,GappedAlignments-method}
-\alias{\%in\%,GappedAlignments,ANY-method}
-\alias{\%in\%,ANY,GappedAlignments-method}
-\alias{\%in\%,GappedAlignments,GappedAlignments-method}
 
 
 \title{GappedAlignments objects}
@@ -340,28 +325,6 @@
       \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
       Equivalent to \code{coverage(as(x, "GRangesList"), shift, width, weight)}.
     }
-    \item{}{
-      \code{findOverlaps(query, subject, ...)},
-      \code{countOverlaps(query, subject, ...)},
-      \code{subsetByOverlaps(query, subject, ...)},
-      \code{match(x, table, nomatch=NA_integer_, incomparables=NULL)},
-      \code{x \%in\% table}:
-      \code{query} or \code{subject} or both are GappedAlignments objects.
-      \code{findOverlaps(query, subject, ...)} is equivalent to
-      \code{findOverlaps(grglist(query), subject, ...)} when
-      \code{query} is a GappedAlignments object, or to
-      \code{findOverlaps(query, grglist(subject), ...)} when
-      \code{subject} is a GappedAlignments object, or to
-      \code{findOverlaps(grglist(query), grglist(subject), ...)} when
-      both are GappedAlignments objects.
-      The same apply to \code{countOverlaps(query, subject, ...)} and
-      \code{subsetByOverlaps(query, subject, ...)}.
-      See \code{?`\link{findOverlaps,GRangesList,GenomicRanges-method}`},
-      \code{?`\link{countOverlaps,GRangesList,GenomicRanges-method}`} and
-      \code{?`\link{subsetByOverlaps,GRangesList,GenomicRanges-method}`}
-      for more information (in particular for descriptions of the
-      extra arguments and the returned object).
-    }
   }
 }
 
@@ -384,9 +347,7 @@
   \code{\link[IRanges]{coverage}},
   \link[IRanges]{RleList-class},
   \link{pintersect,GRanges,GRanges-method},
-  \link{findOverlaps,GRangesList,GenomicRanges-method},
-  \link{countOverlaps,GRangesList,GenomicRanges-method},
-  \link{subsetByOverlaps,GRangesList,GenomicRanges-method}
+  \link{findOverlaps-methods}
 }
 
 \examples{
@@ -474,34 +435,6 @@ stopifnot(identical(end(qnarrow(galn, start=21)), end(galn)))
 ## D. coverage()
 ## ---------------------------------------------------------------------
 coverage(galn)
-
-## ---------------------------------------------------------------------
-## E. findOverlaps()/countOverlaps()
-## ---------------------------------------------------------------------
-
-subject <- granges(galn)[1]
-subject
-
-## Note the absence of query no. 9 (i.e. 'galn[9]') in this result:
-as.matrix(findOverlaps(galn, subject))
-
-## This is because findOverlaps()/countOverlaps() are strand specific:
-galn[8:10]
-countOverlaps(galn[8:10], subject)
-
-## If this is not the desired behaviour, then you can set 'strand(galn)'
-## to "*":
-strand(galn) <- "*"
-galn[8:10]
-countOverlaps(galn[8:10], subject)
-
-## ---------------------------------------------------------------------
-## F. ADVANCED OVERLAP EXAMPLES
-## ---------------------------------------------------------------------
-
-subsetByOverlaps(galn, subject)
-table(match(galn, subject), useNA = "ifany")
-table(galn \%in\% subject)
 }
 
 \keyword{methods}

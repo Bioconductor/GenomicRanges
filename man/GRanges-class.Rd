@@ -468,11 +468,12 @@
 \seealso{
   \link{GRangesList-class},
   \code{\link{seqinfo}},
-  \link{Seqinfo-class},
   \link[IRanges]{Vector-class},
   \link[IRanges]{Ranges-class},
   \link[IRanges]{Rle-class},
-  \link[IRanges]{DataFrame-class}
+  \link[IRanges]{DataFrame-class},
+  \link{setops-methods},
+  \link{findOverlaps-methods}
 }
 
 \examples{

@@ -418,11 +418,12 @@ setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
 setMethod("findOverlaps", c("GRangesList", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"))
+             select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(query, as(subject, "GRanges"),
                      maxgap = maxgap, minoverlap = minoverlap,
-                     type = match.arg(type), select = match.arg(select))
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
     }
 )
 
@@ -482,6 +483,49 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     }
 )
 
+setMethod("findOverlaps", c("GappedAlignments", "ANY"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(grglist(query), subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
+setMethod("findOverlaps", c("ANY", "GappedAlignments"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(query, grglist(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
+### Not strictly needed! Defining the above 2 methods covers that case but
+### with the following note:
+###   > findOverlaps(al1, al0)
+###   Note: Method with signature "GappedAlignments#ANY" chosen for
+###    function "findOverlaps", target signature
+###    "GappedAlignments#GappedAlignments".
+###    "ANY#GappedAlignments" would also be valid
+setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(grglist(query), grglist(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
 
 ### =========================================================================
 ### findOverlaps-based methods
@@ -507,7 +551,8 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                               minoverlap = minoverlap,
                               type = match.arg(type),
-                              select = "first", ignore.strand = ignore.strand))]
+                              select = "first",
+                              ignore.strand = ignore.strand))]
 }
 
 .subsetByOverlaps2 <- function(query, subject,
@@ -518,7 +563,8 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     i <- !is.na(findOverlaps(query, subject, maxgap = maxgap,
                              minoverlap = minoverlap,
                              type = match.arg(type),
-                             select = "first", ignore.strand = ignore.strand))
+                             select = "first",
+                             ignore.strand = ignore.strand))
     query[seqsplit(i, space(query), drop=FALSE)]
 }
 
@@ -530,7 +576,8 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     query[!is.na(findOverlaps(query, subject, maxgap = maxgap,
                               minoverlap = minoverlap,
                               type = match.arg(type),
-                              select = "first", ignore.strand = ignore.strand)),]
+                              select = "first",
+                              ignore.strand = ignore.strand)),]
 }
 
 .match.default <- function(x, table,
@@ -556,7 +603,10 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     c("RangedData", "GenomicRanges"),
     c("RangedData", "GRangesList"),
     c("GenomicRanges", "RangedData"),
-    c("GRangesList", "RangedData")
+    c("GRangesList", "RangedData"),
+    c("GappedAlignments", "ANY"),
+    c("ANY", "GappedAlignments"),
+    c("GappedAlignments", "GappedAlignments")
 )
 
 for (sig in .signatures) {

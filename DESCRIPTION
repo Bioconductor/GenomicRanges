@@ -26,10 +26,11 @@ Collate: utils.R
 	GenomicRanges-class.R
 	GRanges-class.R
 	GRangesList-class.R
-	GRanges-setops.R
-	findOverlaps-methods.R
 	GappedAlignments-class.R
 	SummarizedExperiment-class.R
+	coverage-methods.R
+	setops-methods.R
+	findOverlaps-methods.R
 	countGenomicOverlaps-methods.R
 	resolveHits-methods.R
 	test_GenomicRanges_package.R

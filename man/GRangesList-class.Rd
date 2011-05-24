@@ -426,7 +426,9 @@
   \link[IRanges]{Vector-class},
   \link[IRanges]{RangesList-class},
   \link[IRanges]{RleList-class},
-  \link[IRanges]{DataFrameList-class}
+  \link[IRanges]{DataFrameList-class},
+  \link{setops-methods},
+  \link{findOverlaps-methods}
 }
 
 \examples{
