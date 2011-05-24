@@ -31,9 +31,9 @@
                                maxgap = maxgap, minoverlap = minoverlap,
                                type = type, select = "all")
     subject1 <- shift(subject0, circle.length)
-    overlaps01 <-findOverlaps(query0, subject1,
-                              maxgap = maxgap, minoverlap = minoverlap,
-                              type = type, select = "all")
+    overlaps01 <- findOverlaps(query0, subject1,
+                               maxgap = maxgap, minoverlap = minoverlap,
+                               type = type, select = "all")
     ## Merge 'overlaps00', 'overlaps10' and 'overlaps01'.
     qHits <- c(queryHits(overlaps00),
                queryHits(overlaps10),
@@ -217,10 +217,9 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         select <- match.arg(select)
         unlistQuery <- unlist(query, use.names = FALSE)
         queryGroups <- togroup(query@partitioning)
-        ans <-
-          callGeneric(unlistQuery, subject,
-                      maxgap = maxgap, type = type, select = "all",
-                      ignore.strand = ignore.strand)
+        ans <- findOverlaps(unlistQuery, subject,
+                            maxgap = maxgap, type = type, select = "all",
+                            ignore.strand = ignore.strand)
         mm00 <- ans@matchMatrix
         if (minoverlap > 1L && nrow(mm00) > 0L) {
             query1 <- queryGroups[queryHits(ans)]
@@ -274,9 +273,9 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
             unlistSubject <-  unlistSubject[keep]
             subjectGroups <- subjectGroups[keep]
         }
-        ans <-
-          callGeneric(query, unlistSubject, maxgap = maxgap,
-                      type = type, select = "all", ignore.strand = ignore.strand)
+        ans <- findOverlaps(query, unlistSubject,
+                            maxgap = maxgap, type = type, select = "all",
+                            ignore.strand = ignore.strand)
         matchMatrix <- ans@matchMatrix
         if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {    
             matchMatrix[,"subject"] <-  subjectGroups[subjectHits(ans)]
@@ -342,10 +341,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             subjectGroups <- subjectGroups[keep]
         }
         
-        ans <-
-          callGeneric(unlistQuery, unlistSubject,
-                      maxgap = maxgap, type = type, select = "all",
-                      ignore.strand = ignore.strand)
+        ans <- findOverlaps(unlistQuery, unlistSubject,
+                            maxgap = maxgap, type = type, select = "all",
+                            ignore.strand = ignore.strand)
         mm00 <- ans@matchMatrix
         if (minoverlap > 1L && nrow(mm00) > 0L) {
             query1 <- queryGroups[queryHits(ans)]

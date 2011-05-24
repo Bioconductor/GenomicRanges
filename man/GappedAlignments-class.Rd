@@ -61,7 +61,6 @@
 \alias{narrow,GappedAlignments-method}
 \alias{pintersect,GappedAlignments,GRanges-method}
 \alias{pintersect,GRanges,GappedAlignments-method}
-\alias{coverage,GappedAlignments-method}
 
 
 \title{GappedAlignments objects}
@@ -321,10 +320,6 @@
       GappedAlignments input arguments. Like with \code{narrow}, the
       resulting "parallel" intersection is with respect to the reference.
     }
-    \item{}{
-      \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
-      Equivalent to \code{coverage(as(x, "GRangesList"), shift, width, weight)}.
-    }
   }
 }
 
@@ -340,18 +335,16 @@
   \code{\link[Rsamtools]{readBamGappedAlignments}},
   \link{GRangesList-class},
   \link{GRanges-class},
+  \code{\link{seqinfo}},
   \link[IRanges]{CompressedNormalIRangesList-class},
   \link[IRanges]{IRanges-class},
-  \code{\link{seqinfo}},
-  \link{Seqinfo-class},
-  \code{\link[IRanges]{coverage}},
-  \link[IRanges]{RleList-class},
   \link{pintersect,GRanges,GRanges-method},
+  \link{coverage-methods},
   \link{findOverlaps-methods}
 }
 
 \examples{
-library(Rsamtools)  # the toy file we use below is in this package
+library(Rsamtools)  # because file ex1.bam is in this package
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galn <- readGappedAlignments(galn_file)
 galn
@@ -430,11 +423,6 @@ qnarrow(galn, start=4, end=-6)
 ## Trimming on the left doesn't change the "end" of the queries.
 qnarrow(galn, start=21)
 stopifnot(identical(end(qnarrow(galn, start=21)), end(galn)))
-
-## ---------------------------------------------------------------------
-## D. coverage()
-## ---------------------------------------------------------------------
-coverage(galn)
 }
 
 \keyword{methods}

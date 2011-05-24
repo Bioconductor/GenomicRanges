@@ -1,0 +1,85 @@
+make_test_GRanges <- function() {
+    new("GRanges",
+        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
+        ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
+        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
+        elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
+}
+
+make_test_GRangesList <- function() {
+    GRangesList(
+        a =
+        new("GRanges",
+            seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
+            ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
+            strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+            seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
+            elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10))),
+        b =
+        new("GRanges",
+            seqnames = Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
+            ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
+            strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
+            seqinfo = Seqinfo(seqnames = paste("chr", c(2L, 4:5), sep="")),
+            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
+}
+
+test_coverage_GRanges <- function() {
+    gr <- make_test_GRanges()
+    checkIdentical(coverage(gr),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(0:3, c(1, 1, 1, 7)),
+                           "chr3" = Rle(0:4, c(6, 1, 1, 1, 1))))
+    checkIdentical(coverage(gr, width = list(10, 20, 30)),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(c(0:3, 0L), c(1, 1, 1, 7, 10)),
+                           "chr3" = Rle(c(0:4, 0L), c(6, 1, 1, 1, 1, 20))))
+    checkIdentical(coverage(gr, weight = list(1L, 10L, 100L)),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(10L * 0:3, c(1, 1, 1, 7)),
+                           "chr3" = Rle(100L * 0:4, c(6, 1, 1, 1, 1))))
+    checkIdentical(coverage(gr, shift = list(0, 1, 2)),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(0:3, c(2, 1, 1, 7)),
+                           "chr3" = Rle(0:4, c(8, 1, 1, 1, 1))))
+
+    ## with circular sequences
+    gr <- GRanges(seqnames=c("A", "B"),
+                  ranges=IRanges(start=5:6, width=7))
+    gr@seqinfo <- Seqinfo(seqnames=c("A", "B"),
+                          seqlengths=c(10, NA),
+                          isCircular=c(TRUE, FALSE))
+    checkIdentical(coverage(gr),
+                   RleList(A=Rle(c(1L, 0L, 1L), c(1, 3, 6)),
+                           B=Rle(c(0L, 1L), c(5, 7))))
+}
+
+test_coverage_GRangesList <- function() {
+    grl <- make_test_GRangesList()
+    checkIdentical(coverage(grl),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(c(1L, 3L, 5L, 6L, 3L), c(1, 1, 1, 7, 3)),
+                           "chr3" = Rle(0:4, c(6, 1, 1, 1, 1)),
+                           "chr4" = Rle(0:6, c(3, 1, 1, 1, 1, 1, 5)),
+                           "chr5" = Rle(0:4, c(9, 1, 1, 1, 1))))
+    checkIdentical(coverage(grl, width = list(10, 20, 30, 40, 50)),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(c(1L, 3L, 5L, 6L, 3L, 0L), c(1, 1, 1, 7, 3, 7)),
+                           "chr3" = Rle(c(0:4, 0L), c(6, 1, 1, 1, 1, 20)),
+                           "chr4" = Rle(c(0:6, 0L), c(3, 1, 1, 1, 1, 1, 5, 27)),
+                           "chr5" = Rle(c(0:4, 0L), c(9, 1, 1, 1, 1, 37))))
+    checkIdentical(coverage(grl, weight = list(1L, 10L, 100L, 1000L, 10000L)),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(10L * c(1L, 3L, 5L, 6L, 3L), c(1, 1, 1, 7, 3)),
+                           "chr3" = Rle(100L * 0:4, c(6, 1, 1, 1, 1)),
+                           "chr4" = Rle(1000L * 0:6, c(3, 1, 1, 1, 1, 1, 5)),
+                           "chr5" = Rle(10000L * 0:4, c(9, 1, 1, 1, 1))))
+    checkIdentical(coverage(grl, shift = list(0, 1, 2, 3, 4)),
+                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
+                           "chr2" = Rle(c(0L, 1L, 3L, 5L, 6L, 3L), c(1, 1, 1, 1, 7, 3)),
+                           "chr3" = Rle(0:4, c(8, 1, 1, 1, 1)),
+                           "chr4" = Rle(0:6, c(6, 1, 1, 1, 1, 1, 5)),
+                           "chr5" = Rle(0:4, c(13, 1, 1, 1, 1))))
+}
+

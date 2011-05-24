@@ -37,7 +37,6 @@
 \alias{width,GRangesList-method}
 \alias{width<-,GRangesList-method}
 \alias{shift,GRangesList-method}
-\alias{coverage,GRangesList-method}
 \alias{isDisjoint,GRangesList-method}
 
 % Vector methods:
@@ -199,10 +198,6 @@
       end values that have been shifted by integer vector \code{shift}.
       The \code{use.names} argument determines whether or not to
       keep the names on the ranges.
-    }
-    \item{}{
-      \code{coverage(x, shift=0L, width=NULL, weight=1L)}:
-      Equivalent to \code{coverage(unlist(x), shift, width, weight)}.
     }
     \item{}{
       \code{isDisjoint(x)} Return a vector of logical values indicating
@@ -422,11 +417,12 @@
 
 \seealso{
   \link{GRanges-class},
-  \link{Seqinfo-class}
+  \code{\link{seqinfo}},
   \link[IRanges]{Vector-class},
   \link[IRanges]{RangesList-class},
   \link[IRanges]{RleList-class},
   \link[IRanges]{DataFrameList-class},
+  \link{coverage-methods},
   \link{setops-methods},
   \link{findOverlaps-methods}
 }
@@ -450,7 +446,6 @@
   # Summarizing elements
   elementLengths(grl)
   table(seqnames(grl))
-  coverage(grl)
 
   # Extracting subsets
   grl[seqnames(grl) == "chr1", ]

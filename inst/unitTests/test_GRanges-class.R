@@ -287,35 +287,6 @@ test_GRanges_Ranges <- function() {
                    GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
                            ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
                            strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
-
-    ## coverage
-    gr <- make_test_GRanges()
-    checkIdentical(coverage(gr),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(0:3, c(1, 1, 1, 7)),
-                           "chr3" = Rle(0:4, c(6, 1, 1, 1, 1))))
-    checkIdentical(coverage(gr, width = list(10, 20, 30)),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(c(0:3, 0L), c(1, 1, 1, 7, 10)),
-                           "chr3" = Rle(c(0:4, 0L), c(6, 1, 1, 1, 1, 20))))
-    checkIdentical(coverage(gr, weight = list(1L, 10L, 100L)),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(10L * 0:3, c(1, 1, 1, 7)),
-                           "chr3" = Rle(100L * 0:4, c(6, 1, 1, 1, 1))))
-    checkIdentical(coverage(gr, shift = list(0, 1, 2)),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(0:3, c(2, 1, 1, 7)),
-                           "chr3" = Rle(0:4, c(8, 1, 1, 1, 1))))
-
-    ## coverage with circular sequences
-    gr <- GRanges(seqnames=c("A", "B"),
-                  ranges=IRanges(start=5:6, width=7))
-    gr@seqinfo <- Seqinfo(seqnames=c("A", "B"),
-                          seqlengths=c(10, NA),
-                          isCircular=c(TRUE, FALSE))
-    checkIdentical(coverage(gr),
-                   RleList(A=Rle(c(1L, 0L, 1L), c(1, 3, 6)),
-                           B=Rle(c(0L, 1L), c(5, 7))))
 }
 
 test_GRanges_Vector <- function() {

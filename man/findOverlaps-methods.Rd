@@ -191,90 +191,91 @@
 }
 
 \examples{
-  ## ---------------------------------------------------------------------
-  ## WITH GRanges AND/OR GRangesList OBJECTS
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## WITH GRanges AND/OR GRangesList OBJECTS
+## ---------------------------------------------------------------------
 
-  ## GRanges object:
-  gr <-
-    GRanges(seqnames =
-            Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-            ranges =
-            IRanges(1:10, width = 10:1, names = head(letters,10)),
-            strand =
-            Rle(strand(c("-", "+", "*", "+", "-")),
-                c(1, 2, 2, 3, 2)),
-            score = 1:10,
-            GC = seq(1, 0, length=10))
-  gr
+## GRanges object:
+gr <-
+  GRanges(seqnames =
+          Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+          ranges =
+          IRanges(1:10, width = 10:1, names = head(letters,10)),
+          strand =
+          Rle(strand(c("-", "+", "*", "+", "-")),
+              c(1, 2, 2, 3, 2)),
+          score = 1:10,
+          GC = seq(1, 0, length=10))
+gr
 
-  ## GRangesList object:
-  gr1 <-
-    GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
-            strand = "+", score = 5L, GC = 0.45)
-  gr2 <-
-    GRanges(seqnames = c("chr1", "chr1"),
-            ranges = IRanges(c(7,13), width = 3),
-            strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
-  gr3 <-
-    GRanges(seqnames = c("chr1", "chr2"),
-            ranges = IRanges(c(1, 4), c(3, 9)),
-            strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
-  grlist <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+## GRangesList object:
+gr1 <-
+  GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
+          strand = "+", score = 5L, GC = 0.45)
+gr2 <-
+  GRanges(seqnames = c("chr1", "chr1"),
+          ranges = IRanges(c(7,13), width = 3),
+          strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
+gr3 <-
+  GRanges(seqnames = c("chr1", "chr2"),
+          ranges = IRanges(c(1, 4), c(3, 9)),
+          strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
+grlist <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 
-  ## Overlapping two GRanges objects:
-  table(gr \%in\% gr1)
-  countOverlaps(gr, gr1)
-  findOverlaps(gr, gr1)
-  subsetByOverlaps(gr, gr1)
+## Overlapping two GRanges objects:
+table(gr \%in\% gr1)
+countOverlaps(gr, gr1)
+findOverlaps(gr, gr1)
+subsetByOverlaps(gr, gr1)
 
-  countOverlaps(gr, gr1, type = "start")
-  findOverlaps(gr, gr1, type = "start")
-  subsetByOverlaps(gr, gr1, type = "start")
+countOverlaps(gr, gr1, type = "start")
+findOverlaps(gr, gr1, type = "start")
+subsetByOverlaps(gr, gr1, type = "start")
 
-  findOverlaps(gr, gr1, select = "first")
+findOverlaps(gr, gr1, select = "first")
 
-  findOverlaps(gr1, gr)
-  findOverlaps(gr1, gr, type = "start")
-  findOverlaps(gr1, gr, type = "within")
-  findOverlaps(gr1, gr, type = "equal")
+findOverlaps(gr1, gr)
+findOverlaps(gr1, gr, type = "start")
+findOverlaps(gr1, gr, type = "within")
+findOverlaps(gr1, gr, type = "equal")
 
-  ## Overlapping a GRanges and a GRangesList object:
-  table(grlist \%in\% gr)
-  countOverlaps(grlist, gr)
-  findOverlaps(grlist, gr)
-  subsetByOverlaps(grlist, gr)
-  countOverlaps(grlist, gr, type = "start")
-  findOverlaps(grlist, gr, type = "start")
-  subsetByOverlaps(grlist, gr, type = "start")
-  findOverlaps(grlist, gr, select = "first")
+## Overlapping a GRanges and a GRangesList object:
+table(grlist \%in\% gr)
+countOverlaps(grlist, gr)
+findOverlaps(grlist, gr)
+subsetByOverlaps(grlist, gr)
+countOverlaps(grlist, gr, type = "start")
+findOverlaps(grlist, gr, type = "start")
+subsetByOverlaps(grlist, gr, type = "start")
+findOverlaps(grlist, gr, select = "first")
 
-  ## Overlapping two GRangesList objects:
-  countOverlaps(grlist, rev(grlist))
-  findOverlaps(grlist, rev(grlist))
-  subsetByOverlaps(grlist, rev(grlist))
+## Overlapping two GRangesList objects:
+countOverlaps(grlist, rev(grlist))
+findOverlaps(grlist, rev(grlist))
+subsetByOverlaps(grlist, rev(grlist))
 
-  ## ---------------------------------------------------------------------
-  ## WITH A GappedAlignments OBJECT
-  ## ---------------------------------------------------------------------
+## ---------------------------------------------------------------------
+## WITH A GappedAlignments OBJECT
+## ---------------------------------------------------------------------
+library(Rsamtools)  # because file ex1.bam is in this package
+galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galn <- readGappedAlignments(galn_file)
 
-  galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-  galn <- readGappedAlignments(galn_file)
-  subject <- granges(galn)[1]
+subject <- granges(galn)[1]
 
-  ## Note the absence of query no. 9 (i.e. 'galn[9]') in this result:
-  as.matrix(findOverlaps(galn, subject))
+## Note the absence of query no. 9 (i.e. 'galn[9]') in this result:
+as.matrix(findOverlaps(galn, subject))
 
-  ## This is because, by default, findOverlaps()/countOverlaps() are
-  ## strand specific:
-  galn[8:10]
-  countOverlaps(galn[8:10], subject)
-  countOverlaps(galn[8:10], subject, ignore.strand=TRUE)
+## This is because, by default, findOverlaps()/countOverlaps() are
+## strand specific:
+galn[8:10]
+countOverlaps(galn[8:10], subject)
+countOverlaps(galn[8:10], subject, ignore.strand=TRUE)
 
-  ## Advanced examples:
-  subsetByOverlaps(galn, subject)
-  table(match(galn, subject), useNA = "ifany")
-  table(galn \%in\% subject)
+## Advanced examples:
+subsetByOverlaps(galn, subject)
+table(match(galn, subject), useNA = "ifany")
+table(galn \%in\% subject)
 }
 
 \keyword{methods}

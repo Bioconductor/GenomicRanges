@@ -97,11 +97,13 @@ setMethod("coverage", "GenomicRanges",
 
 setMethod("coverage", "GRangesList",
     function(x, shift=0L, width=NULL, weight=1L, ...)
-        callGeneric(x@unlistData, shift=shift, width=width, weight=weight, ...)
+    {
+        coverage(x@unlistData, shift=shift, width=width, weight=weight, ...)
+    }
 )
 
 setMethod("coverage", "GappedAlignments",
     function(x, shift=0L, width=NULL, weight=1L, ...)
-        callGeneric(grglist(x), shift=shift, width=width, weight=weight, ...)
+        coverage(grglist(x), shift=shift, width=width, weight=weight, ...)
 )
 

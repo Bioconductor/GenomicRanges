@@ -113,33 +113,6 @@ test_GRangesList_RangesList <- function() {
     grl <- make_test_GRangesList()
     shifted <- shift(grl, 10)
     checkIdentical(start(grl) + 10L, start(shifted))
-
-    ## coverage
-    grl <- make_test_GRangesList()
-    checkIdentical(coverage(grl),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(c(1L, 3L, 5L, 6L, 3L), c(1, 1, 1, 7, 3)),
-                           "chr3" = Rle(0:4, c(6, 1, 1, 1, 1)),
-                           "chr4" = Rle(0:6, c(3, 1, 1, 1, 1, 1, 5)),
-                           "chr5" = Rle(0:4, c(9, 1, 1, 1, 1))))
-    checkIdentical(coverage(grl, width = list(10, 20, 30, 40, 50)),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(c(1L, 3L, 5L, 6L, 3L, 0L), c(1, 1, 1, 7, 3, 7)),
-                           "chr3" = Rle(c(0:4, 0L), c(6, 1, 1, 1, 1, 20)),
-                           "chr4" = Rle(c(0:6, 0L), c(3, 1, 1, 1, 1, 1, 5, 27)),
-                           "chr5" = Rle(c(0:4, 0L), c(9, 1, 1, 1, 1, 37))))
-    checkIdentical(coverage(grl, weight = list(1L, 10L, 100L, 1000L, 10000L)),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(10L * c(1L, 3L, 5L, 6L, 3L), c(1, 1, 1, 7, 3)),
-                           "chr3" = Rle(100L * 0:4, c(6, 1, 1, 1, 1)),
-                           "chr4" = Rle(1000L * 0:6, c(3, 1, 1, 1, 1, 1, 5)),
-                           "chr5" = Rle(10000L * 0:4, c(9, 1, 1, 1, 1))))
-    checkIdentical(coverage(grl, shift = list(0, 1, 2, 3, 4)),
-                   RleList("chr1" = Rle(1:3, c(4, 1, 5)),
-                           "chr2" = Rle(c(0L, 1L, 3L, 5L, 6L, 3L), c(1, 1, 1, 1, 7, 3)),
-                           "chr3" = Rle(0:4, c(8, 1, 1, 1, 1)),
-                           "chr4" = Rle(0:6, c(6, 1, 1, 1, 1, 1, 5)),
-                           "chr5" = Rle(0:4, c(13, 1, 1, 1, 1))))
 }
 
 test_GRangesList_Vector <- function() {
