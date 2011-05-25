@@ -185,9 +185,9 @@
 \seealso{
   \code{\link[IRanges]{findOverlaps}},
   \link[IRanges]{RangesMatching-class},
-  \link{GRanges},
-  \link{GRangesList},
-  \link{GappedAlignments}
+  \link{GRanges-class},
+  \link{GRangesList-class},
+  \link{GappedAlignments-class}
 }
 
 \examples{

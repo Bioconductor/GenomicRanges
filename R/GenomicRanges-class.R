@@ -1087,7 +1087,7 @@ setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
     })
 
 
-setMethod("narrow", c("GenomicRanges"),
+setMethod("narrow", "GenomicRanges",
     function(x, start = NA, end = NA, width = NA, use.names = TRUE)
     {
         rng <- narrow(ranges(x), start = start, end = end , width = width,

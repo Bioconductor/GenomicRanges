@@ -27,7 +27,7 @@
   \item{query}{
     A \link{GRangesList}, \link{GRanges}, or \link{GappedAlignments}
     object. The \code{query} is intended to be a
-    \code{\link{GRangesList}} where each list element is a read. When
+    \link{GRangesList} where each list element is a read. When
     the length of a list element is greater than 1, it is assumed to
     represent a spliced read.  Both \link{GRanges} and
     \link{GappedAlignments} are coerced to a \link{GRangesList} with
@@ -37,8 +37,7 @@
     list element of length 2 or greater).
   }
   \item{subject}{
-    A \code{\link{GRangesList}}, or a 
-    \link{GRanges} object. 
+    A \link{GRangesList}, or a \link{GRanges} object. 
     The subject is expected to be a list of genomic features, 
     specifically genes, with each row representing a feature
     where the feature could be an exon or transcript. If a 

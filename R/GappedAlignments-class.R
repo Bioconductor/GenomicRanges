@@ -583,11 +583,17 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
 setMethod("updateCigarAndStart", "GappedAlignments",
     function(x, cigar=NULL, start=NULL)
     {
-        if (is.null(cigar))
+        if (is.null(cigar)) {
             cigar <- cigar(x)
-        else if (!is.character(cigar) || length(cigar) != length(x))
-            stop("when not NULL, 'cigar' must be a character vector ",
-                 "of the same length as 'x'")
+        } else {
+            if (!is.character(cigar) || length(cigar) != length(x))
+                stop("when not NULL, 'cigar' must be a character vector ",
+                     "of the same length as 'x'")
+            ## There might be an "rshift" attribute on 'cigar', typically.
+            ## We want to get rid of it as well as any other potential
+            ## attribute like names, dim, dimnames etc...
+            attributes(cigar) <- NULL
+        }
         if (is.null(start))
             start <- start(x)
         else if (!is.integer(start) || length(start) != length(x))
@@ -601,7 +607,7 @@ setMethod("updateCigarAndStart", "GappedAlignments",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "qnarrow", "narrow", and "pintersect" methods.
+### The "qnarrow" and "narrow" methods.
 ###
 
 setMethod("qnarrow", "GappedAlignments",
@@ -621,27 +627,6 @@ setMethod("narrow", "GappedAlignments",
                                  start=start, end=end, width=width)
         ans_start <- start(x) + attr(ans_cigar, "rshift")
         updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
-    }
-)
-
-setMethod("pintersect", c("GappedAlignments", "GRanges"),
-    function(x, y, ...)
-    {
-        bounds <- try(callGeneric(granges(x), y), silent = TRUE)
-        if (inherits(bounds, "try-error"))
-            stop("CIGAR is empty after intersection")
-        start <- start(x) - (start(bounds) - 1L)
-        start[which(start < 1L)] <- 1L
-        end <- (end(bounds) - 1L) - end(x)
-        end[which(end > -1L)] <- -1L
-        narrow(x, start=start, end=end)
-    }
-)
-
-setMethod("pintersect", c("GRanges", "GappedAlignments"),
-    function(x, y, ...)
-    {
-        callGeneric(y, x)
     }
 )
 

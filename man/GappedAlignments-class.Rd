@@ -59,8 +59,6 @@
 \alias{qnarrow}
 \alias{qnarrow,GappedAlignments-method}
 \alias{narrow,GappedAlignments-method}
-\alias{pintersect,GappedAlignments,GRanges-method}
-\alias{pintersect,GRanges,GappedAlignments-method}
 
 
 \title{GappedAlignments objects}
@@ -311,15 +309,6 @@
       rules of the SEW (Start/End/Width) interface (see
       \code{?\link[IRanges]{solveUserSEW}} for the details).
     }
-    \item{}{
-      \code{pintersect(x, y)}:
-      Either \code{x} is a GappedAlignments object and \code{y} is a
-      GRanges object or \code{x} is a GRanges object and \code{y} is a
-      GappedAlignments object.
-      Returns a new GappedAlignments object of the same length as the 
-      GappedAlignments input arguments. Like with \code{narrow}, the
-      resulting "parallel" intersection is with respect to the reference.
-    }
   }
 }
 
@@ -338,8 +327,8 @@
   \code{\link{seqinfo}},
   \link[IRanges]{CompressedNormalIRangesList-class},
   \link[IRanges]{IRanges-class},
-  \link{pintersect,GRanges,GRanges-method},
   \link{coverage-methods},
+  \link{setops-methods},
   \link{findOverlaps-methods}
 }
 

@@ -12,16 +12,18 @@
 \alias{pintersect,GRanges,GRanges-method}
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
+\alias{pintersect,GappedAlignments,GRanges-method}
+\alias{pintersect,GRanges,GappedAlignments-method}
 
 \alias{psetdiff,GRanges,GRanges-method}
 \alias{psetdiff,GRanges,GRangesList-method}
 \alias{psetdiff,GRangesList,GRangesList-method}
 
 
-\title{GRanges and GRangesList Set and Parallel Set Operations}
+\title{Set operations on GRanges/GRangesList/GappedAlignments objects}
 
 \description{
-  Set and parallel set operations for GRanges/GRangesList objects.
+  Performs set operations on GRanges/GRangesList/GappedAlignments objects.
 }
 
 \usage{
@@ -33,17 +35,29 @@
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
 \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ignore.strand = FALSE, ...)
+\S4method{pintersect}{GappedAlignments,GRanges}(x, y, ...)
 \S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand = FALSE, ...)
 }
 
 \arguments{
   \item{x, y}{
-    \link{GRanges} or \link{GRangesList} objects of equal length
-    (i.e. \code{length(x) == length(y)}).
-    For \code{union}, \code{intersect}, \code{setdiff}, \code{x} and
+    For \code{union}, \code{intersect}, \code{setdiff}: \code{x} and
     \code{y} must both be \link{GRanges} objects.
-    For \code{pintersect}, \code{x} and \code{y} cannot both be
-    \link{GRangesList} objects.
+
+    For \code{punion}: one of \code{x} or \code{y} must be a \link{GRanges}
+    object, the other one can be a \link{GRanges} or \link{GRangesList} object.
+
+    For \code{pintersect}: one of \code{x} or \code{y} must be a \link{GRanges}
+    object, the other one can be a \link{GRanges}, \link{GRangesList} or
+    \link{GappedAlignments} object.
+
+    For \code{psetdiff}: \code{x} and \code{y} can be any combination of
+    \link{GRanges} and/or \link{GRangesList} objects, with the exception
+    that if \code{x} is a \link{GRangesList} object then \code{y} must be
+    a \link{GRangesList} too.
+
+    In addition, for the "parallel" operations, \code{x} and \code{y} must
+    be of equal length (i.e. \code{length(x) == length(y)}).
   }
   \item{fill.gap}{
     Logical indicating whether or not to force a union by using the rule
@@ -69,13 +83,13 @@
 }
 
 \details{
-  The \code{pintersect} methods involving \link{GRanges} and
-  \link{GRangesList} objects use the triplet (sequence name, range,
+  The \code{pintersect} methods involving \link{GRanges}, \link{GRangesList}
+  and/or \link{GappedAlignments} objects use the triplet (sequence name, range,
   strand) to determine the element by element intersection of features,
   where a strand value of \code{"*"} is treated as occurring on both the
   \code{"+"} and \code{"-"} strand.
 
-  The \code{psetdiff} methods involving \link{GRanges} and
+  The \code{psetdiff} methods involving \link{GRanges} and/or
   \link{GRangesList} objects use the triplet (sequence name, range,
   strand) to determine the element by element set difference of features,
   where a strand value of \code{"*"} is treated as occurring on both the
@@ -83,72 +97,70 @@
 }
 
 \value{
-  For \code{union}, \code{intersect}, and \code{setdiff} a \link{GRanges}.
+  For \code{union}, \code{intersect}, and \code{setdiff}: a \link{GRanges}.
 
-  For \code{punion} and \code{pintersect} either a \link{GRanges} object
-  when both \code{x} and \code{y} are \link{GRanges} objects or a
-  \link{GRangesList} object when one of the arguments is a
-  \link{GRangesList} object.
+  For \code{punion} and \code{pintersect}: when \code{x} or \code{y} is
+  not a \link{GRanges} object, an object of the same class as this
+  non-\link{GRanges} object. Otherwise, a \link{GRanges} object.
 
-  For \code{psetdiff} either a \link{GRanges} object when both \code{x}
-  and \code{y} are \link{GRanges} objects or a \link{GRangesList} object
+  For \code{psetdiff}: either a \link{GRanges} object when both \code{x}
+  and \code{y} are \link{GRanges} objects, or a \link{GRangesList} object
   when \code{y} is a \link{GRangesList} object.
 }
 
 \author{P. Aboyoun}
 
 \seealso{
-  \link{GRanges},
-  \link{GRangesList},
-  \link{findOverlaps,GenomicRanges,GenomicRanges-method},
-  \link{pintersect,GRanges,GRanges-method}
+  \link[IRanges]{IRanges-setops},
+  \link{GRanges-class},
+  \link{GRangesList-class},
+  \link{GappedAlignments-class},
+  \link{findOverlaps-methods}
 }
 
 \examples{
-  ## GRanges object
-  gr <-
-    GRanges(seqnames = c("chr2", "chr1", "chr1"),
-            ranges = IRanges(1:3, width = 12),
-            strand = Rle(strand(c("-", "*", "-"))))
-  gr
+## GRanges object:
+gr <- GRanges(seqnames=c("chr2", "chr1", "chr1"),
+              ranges=IRanges(1:3, width = 12),
+              strand=Rle(strand(c("-", "*", "-"))))
 
-  ## GRangesList object
-  gr1 <-
-    GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
-            strand = "+", score = 5L, GC = 0.45)
-  gr2 <-
-    GRanges(seqnames = c("chr1", "chr1"),
-            ranges = IRanges(c(7,13), width = 3),
-            strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
-  gr3 <-
-    GRanges(seqnames = c("chr1", "chr2"),
-            ranges = IRanges(c(1, 4), c(3, 9)),
-            strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
-  grlist <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+## GRangesList object
+gr1 <- GRanges(seqnames="chr2",
+               ranges=IRanges(3, 6))
+gr2 <- GRanges(seqnames=c("chr1", "chr1"),
+               ranges=IRanges(c(7,13), width = 3),
+               strand=c("+", "-"))
+gr3 <- GRanges(seqnames=c("chr1", "chr2"),
+               ranges=IRanges(c(1, 4), c(3, 9)),
+               strand=c("-", "-"))
+grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 
+## Union, intersection, and set difference of two GRanges objects
+union(gr2, gr3)
+intersect(gr2, gr3)
+setdiff(gr2, gr3)
 
-  ## Union, intersection, and set difference of two GRanges objects
-  union(gr2, gr3)
-  intersect(gr2, gr3)
-  setdiff(gr2, gr3)
+## Parallel intersection of two GRanges objects
+pintersect(gr2, shift(gr2, 3))
 
+## Parallel intersection of a GRanges and a GRangesList object
+pintersect(gr, grlist)
+pintersect(grlist, gr)
 
-  ## Parallel intersection of two GRanges objects
-  pintersect(gr2, shift(gr2, 3))
+## Parallel intersection of a GappedAlignments and a GRanges object
+library(Rsamtools)  # because file ex1.bam is in this package
+galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galn <- readGappedAlignments(galn_file)
+pintersect(galn, shift(as(galn, "GRanges"), 6L))
 
-  ## Parallel intersection of a GRanges and a GRangesList object
-  pintersect(gr, grlist)
-  pintersect(grlist, gr)
+## Parallel set difference of two GRanges objects
+psetdiff(gr2, shift(gr2, 3))
 
+## Parallel set difference of a GRanges and a GRangesList object
+psetdiff(gr, grlist)
 
-  ## Parallel set difference of two GRanges objects
-  psetdiff(gr2, shift(gr2, 3))
-
-  ## Parallel set difference of a GRanges and a GRangesList object
-  psetdiff(gr, grlist)
-
-  ## Parallel set difference of two GRangesList objects
-  psetdiff(grlist, shift(grlist, 3))
+## Parallel set difference of two GRangesList objects
+psetdiff(grlist, shift(grlist, 3))
 }
 
 \keyword{methods}
