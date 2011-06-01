@@ -152,13 +152,19 @@ test_GRanges_accessors <- function() {
     gr <- make_test_GRanges()
     elementMetadata(gr) <- NULL
     checkIdentical(elementMetadata(gr),
-                   new("DataFrame", nrows = length(gr), rownames = names(gr)))
+                   new("DataFrame", nrows = length(gr)))
 
     gr <- make_test_GRanges()
     val <- DataFrame(x = 1:length(gr), y = head(letters, length(gr)))
-    rownames(val) <- names(gr)
     elementMetadata(gr) <- val
     checkTrue(validObject(gr))
+    checkIdentical(elementMetadata(gr), val)
+    rownames(val) <- names(gr)
+    checkIdentical(elementMetadata(gr, row.names=TRUE), val)
+    elementMetadata(gr) <- val
+    checkTrue(validObject(gr))
+    checkIdentical(elementMetadata(gr, row.names=TRUE), val)
+    rownames(val) <- NULL
     checkIdentical(elementMetadata(gr), val)
 
     ## names

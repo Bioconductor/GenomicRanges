@@ -57,7 +57,7 @@ setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
 setMethod("elementMetadata", "GenomicRanges",
-    function(x, row.names=FALSE)
+    function(x, row.names=FALSE, ...)
     {
         if (!isTRUEorFALSE(row.names))
             stop("'row.names' must be TRUE or FALSE")
@@ -310,7 +310,7 @@ setReplaceMethod("strand", "GenomicRanges",
 )
 
 setReplaceMethod("elementMetadata", "GenomicRanges",
-    function(x, value)
+    function(x, ..., value)
     {
         if (is.null(value))
             value <- new("DataFrame", nrows = length(x))

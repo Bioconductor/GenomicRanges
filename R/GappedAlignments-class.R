@@ -182,7 +182,7 @@ setMethod("ngap", "GappedAlignments",
 )
 
 setMethod("elementMetadata", "GappedAlignments",
-    function(x, row.names=FALSE)
+    function(x, row.names=FALSE, ...)
     {
         if (!isTRUEorFALSE(row.names))
             stop("'row.names' must be TRUE or FALSE")
