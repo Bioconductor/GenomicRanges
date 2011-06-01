@@ -1,0 +1,149 @@
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Utility functions for subsetting and renaming seqlevels 
+###
+
+## keepSeqlevels :
+
+setGeneric("keepSeqlevels", signature = c("x", "value"),
+           function(x, value, ...)
+           standardGeneric("keepSeqlevels")
+)
+
+setMethod("keepSeqlevels",  c("GenomicRanges", "GenomicRanges"),
+            function(x, value, ...)
+{
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GenomicRanges", "GRangesList"),
+            function(x, value, ...)
+{
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GenomicRanges", "GappedAlignments"),
+            function(x, value, ...)
+{
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GRangesList", "GenomicRanges"),
+            function(x, value, ...)
+{
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GRangesList", "GRangesList"),
+            function(x, value, ...)
+{
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GRangesList", "GappedAlignments"),
+            function(x, value, ...)
+{
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GRangesList", "character"),
+            function(x, value, ...)
+{
+    if (!any(value %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+
+    grlSeqnames <- seqnames(unlist(x))
+    idx <- rep(runValue(grlSeqnames) %in% value, runLength(grlSeqnames))
+    grReduced <- GenomicRanges:::deconstructGRLintoGR(x)[idx]
+    grlReduced <- GenomicRanges:::reconstructGRLfromGR(grReduced, x)
+
+    seqlevels(grlReduced) <- seqlevels(x)[seqlevels(x) %in% value]
+    grlReduced[elementLengths(grlReduced) != 0] 
+})
+
+## FIXME : x=GappedAlignments methods ignore CIGAR/split reads by coercing 
+##         to GRanges and not GRangesList
+setMethod("keepSeqlevels",  c("GappedAlignments", "GenomicRanges"),
+            function(x, value, ...)
+{
+    x <- as(x, "GRanges")
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GappedAlignments", "GRangesList"),
+            function(x, value, ...)
+{
+    x <- as(x, "GRanges")
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GappedAlignments", "GappedAlignments"),
+            function(x, value, ...)
+{
+    x <- as(x, "GRanges")
+    value <- seqlevels(value)
+    callGeneric(x, value, ...)
+})
+
+setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
+            function(x, value, ...)
+{
+    x <- as(x, "GRanges")
+    callGeneric(x, value, ...)
+})
+
+
+setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
+            function(x, value, ...)
+{
+    if (!any(value %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+    x <- x[seqnames(x) %in% value]
+    seqlevels(x) <- seqlevels(x)[seqlevels(x) %in% value]
+    x
+})
+
+
+## renameSeqlevels : 
+
+setGeneric("renameSeqlevels", signature = c("x", "value"),
+           function(x, value, ...)
+           standardGeneric("renameSeqlevels")
+)
+
+setMethod("renameSeqlevels",  c("GappedAlignments", "list"),
+            function(x, value, ...)
+{
+    x <- as(x, "GRanges")
+    callGeneric(x, value, ...)
+})
+
+setMethod("renameSeqlevels",  c("GRangesList", "list"),
+            function(x, value, ...)
+{
+    old <- names(value)
+    new <- unlist(value, use.names=FALSE)
+    if (!any(old %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+    seqlevels(x)[seqlevels(x) %in% old] <- new
+    x
+})
+
+setMethod("renameSeqlevels", c("GenomicRanges", "list"),
+          function(x, value, ...)
+{
+    old <- names(value)
+    new <- unlist(value, use.names=FALSE)
+    if (!any(old %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+    seqlevels(x)[seqlevels(x) %in% old] <- new
+    x
+})
+
