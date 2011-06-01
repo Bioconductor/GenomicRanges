@@ -6,6 +6,7 @@
 setClass("GappedAlignments",
     contains="Vector",
     representation(
+        NAMES="characterORNULL",      # R doesn't like @names !!
         seqnames="Rle",               # 'factor' Rle
         start="integer",              # POS field in SAM
         cigar="character",            # extended CIGAR (see SAM format specs)
@@ -21,6 +22,7 @@ setClass("GappedAlignments",
 )
 
 ### Formal API:
+###   names(x)    - NULL or character vector.
 ###   length(x)   - single integer. Nb of alignments in 'x'.
 ###   rname(x)    - 'factor' Rle of the same length as 'x'.
 ###   seqnames(x) - same as 'rname(x)'.
@@ -38,7 +40,7 @@ setClass("GappedAlignments",
 ###   ngap(x)     - integer vector of the same length as 'x'.
 ###   as.data.frame(x) - just a convenience used by show(x).
 ###   show(x)     - compact display in a data.frame-like fashion.
-###   readGappedAlignments(x) - constructor.
+###   GappedAlignments(x) - constructor.
 ###   x[i]        - GappedAlignments object of the same class as 'x'
 ###                 (endomorphism).
 ###
@@ -98,14 +100,16 @@ setGeneric("qnarrow",
 ### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
 ###
 
-.GappedAlignmentsAsGRanges <- function(rname, start, width, strand, seqinfo)
+.GappedAlignmentsAsGRanges <- function(rname, start, width, strand, seqinfo,
+                                       names=NULL)
 {
-    ranges <- IRanges(start=start, width=width)
+    ranges <- IRanges(start=start, width=width, names=names)
     ans <- GRanges(seqnames=rname, ranges=ranges, strand=strand)
     seqinfo(ans) <- seqinfo
     ans
 }
 
+### Names are taken from the 'rglist' arg (CompressedNormalIRangesList).
 .GappedAlignmentsAsGRangesList <- function(rname, rglist, strand, seqinfo)
 {
     nrg_per_alignment <- elementLengths(rglist)
@@ -125,6 +129,8 @@ setGeneric("qnarrow",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor-like methods.
 ###
+
+setMethod("names", "GappedAlignments", function(x) x@NAMES)
 
 setMethod("length", "GappedAlignments", function(x) length(x@cigar))
 
@@ -152,23 +158,39 @@ setMethod("grglist", "GappedAlignments",
 setMethod("granges", "GappedAlignments",
     function(x)
         .GappedAlignmentsAsGRanges(rname(x), start(x), width(x),
-                                   strand(x), seqinfo(x))
+                                   strand(x), seqinfo(x), names(x))
 )
 
 setMethod("grg", "GappedAlignments", function(x) granges(x))
 
 setMethod("rglist", "GappedAlignments",
     function(x, drop.D.ranges = FALSE)
-          cigarToIRangesListByAlignment(x@cigar, x@start,
-                                        drop.D.ranges = drop.D.ranges)
+    {
+        ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
+                                             drop.D.ranges = drop.D.ranges)
+        names(ans) <- names(x)
+        ans
+    }
 )
 
 setMethod("ranges", "GappedAlignments",
-    function(x) IRanges(start=start(x), width=width(x))
+    function(x) IRanges(start=start(x), width=width(x), names=names(x))
 )
 
 setMethod("ngap", "GappedAlignments",
     function(x) {elementLengths(rglist(x)) - 1L}
+)
+
+setMethod("elementMetadata", "GappedAlignments",
+    function(x, row.names=FALSE)
+    {
+        if (!isTRUEorFALSE(row.names))
+            stop("'row.names' must be TRUE or FALSE")
+        ans <- x@elementMetadata
+        if (row.names)
+            rownames(ans) <- names(x)
+        ans
+    }
 )
 
 setMethod("seqinfo", "GappedAlignments", function(x) x@seqinfo)
@@ -263,6 +285,21 @@ setReplaceMethod("seqinfo", "GappedAlignments",
 ### Validity.
 ###
 
+.valid.GappedAlignments.names <- function(x)
+{
+    x_names <- names(x)
+    if (is.null(x_names))
+        return(NULL)
+    if (!is.character(x_names) || !is.null(attributes(x_names))) {
+        msg <- c("'names(x)' must be NULL or a character vector ",
+                 "with no attributes")
+        return(paste(msg, collapse=""))
+    }
+    if (length(x_names) != length(x))
+        return("'names(x)' and 'x' must have the same length")
+    NULL
+}
+
 .valid.GappedAlignments.rname <- function(x)
 {
     x_rname <- rname(x)
@@ -309,7 +346,8 @@ setReplaceMethod("seqinfo", "GappedAlignments",
 
 .valid.GappedAlignments <- function(x)
 {
-    c(.valid.GappedAlignments.rname(x),
+    c(.valid.GappedAlignments.names(x),
+      .valid.GappedAlignments.rname(x),
       .valid.GappedAlignments.start(x),
       .valid.GappedAlignments.cigar(x),
       .valid.GappedAlignments.strand(x),
@@ -340,7 +378,8 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
 }
 
 GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
-                             cigar=character(0), strand=NULL, seqlengths=NULL)
+                             cigar=character(0), strand=NULL,
+                             names=NULL, seqlengths=NULL)
 {
     ## Prepare the 'rname' slot.
     rname <- .asFactorRle(rname)
@@ -377,18 +416,21 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
     }
     seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
     ## Create and return the GappedAlignments instance.
-    new("GappedAlignments", seqnames=rname, start=pos, cigar=cigar,
+    new("GappedAlignments", NAMES=names,
+                            seqnames=rname, start=pos, cigar=cigar,
                             strand=strand,
                             elementMetadata=elementMetadata,
                             seqinfo=seqinfo)
 }
 
-readGappedAlignments <- function(file, format="BAM", ...)
+readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 {
     if (!isSingleString(file))
         stop("'file' must be a single string")
     if (!isSingleString(format))
         stop("'format' must be a single string")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
     dotargs <- list(...)
     if (length(dotargs) != 0L && is.null(names(dotargs)))
         stop("extra arguments must be named")
@@ -405,7 +447,7 @@ readGappedAlignments <- function(file, format="BAM", ...)
         } else {
             which <- RangesList()
         }
-        args <- c(list(file=file, index=index),
+        args <- c(list(file=file, index=index, use.names=use.names),
                   dotargs,
                   list(which=which))
         suppressMessages(library("Rsamtools"))
@@ -431,6 +473,7 @@ setAs("GappedAlignments", "Ranges", function(from) ranges(from))
 ###
 
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
+### TODO: Support subsetting by names.
 setMethod("[", "GappedAlignments",
     function(x, i, j, ... , drop=TRUE)
     {
@@ -457,6 +500,7 @@ setMethod("[", "GappedAlignments",
         } else {
             stop("invalid subscript type")
         }
+        x@NAMES <- x@NAMES[i]
         x@seqnames <- x@seqnames[i]
         x@start <- x@start[i]
         x@cigar <- x@cigar[i]
@@ -474,7 +518,9 @@ setMethod("[", "GappedAlignments",
 setMethod("as.data.frame", "GappedAlignments",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
-        if (!(is.null(row.names) || is.character(row.names)))
+        if (is.null(row.names))
+            row.names <- names(x)
+        else if (!is.character(row.names))
             stop("'row.names' must be NULL or a character vector")
         ans <- data.frame(rname=as.character(rname(x)),
                           strand=as.character(strand(x)),
@@ -555,7 +601,8 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
     args[arg_is_null] <- NULL
   if (!all(sapply(args, is, class(x))))
     stop("all arguments in '...' must be ", class(x), " objects (or NULLs)")
-  
+ 
+  new_NAMES <- unlist(lapply(args, function(i) i@NAMES), use.names = FALSE)
   new_seqnames <- do.call(c, lapply(args, seqnames))
   new_start <- unlist(lapply(args, function(i) i@start), use.names = FALSE)
   new_cigar <- unlist(lapply(args, function(i) i@cigar), use.names = FALSE)
@@ -564,6 +611,7 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
   new_elementMetadata <- do.call(rbind, lapply(args, elementMetadata))
   
   initialize(x,
+             NAMES = new_NAMES,
              start = new_start,
              seqnames = new_seqnames,
              strand = new_strand,

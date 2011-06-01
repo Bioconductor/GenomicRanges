@@ -160,19 +160,19 @@ setMethod("strand", "GRangesList",
              check=FALSE))
 
 setMethod("elementMetadata", "GRangesList",
-    function(x, level = c("between", "within"), ...)
+    function(x, row.names=FALSE, level=c("between", "within"))
     {
+        if (!isTRUEorFALSE(row.names))
+            stop("'row.names' must be TRUE or FALSE")
         level <- match.arg(level)
         if (level == "between") {
             ans <- x@elementMetadata
-            if (!is.null(names(x)))
+            if (row.names)
                 rownames(ans) <- names(x)
-            ans
         } else {
             elementMetadata <- x@unlistData@elementMetadata
-            nms <- names(x@unlistData)
-            if (!is.null(nms))
-                rownames(elementMetadata) <- nms
+            if (row.names)
+                rownames(elementMetadata) <- names(x@unlistData)
             ans <-
               new2("CompressedSplitDataFrameList", unlistData = elementMetadata,
                    partitioning = x@partitioning, check=FALSE)
@@ -231,7 +231,7 @@ setReplaceMethod("strand", "GRangesList",
 )
 
 setReplaceMethod("elementMetadata", "GRangesList",
-    function(x, level = c("between", "within"), ..., value) 
+    function(x, level = c("between", "within"), value) 
     {
         level <- match.arg(level)
         if (level == "between") {

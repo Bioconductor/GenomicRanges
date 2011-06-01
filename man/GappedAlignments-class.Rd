@@ -11,6 +11,7 @@
 
 % Accessors:
 \alias{length,GappedAlignments-method}
+\alias{names,GappedAlignments-method}
 \alias{rname}
 \alias{rname,GappedAlignments-method}
 \alias{seqnames,GappedAlignments-method}
@@ -36,6 +37,7 @@
 \alias{end,GappedAlignments-method}
 \alias{width,GappedAlignments-method}
 \alias{ngap,GappedAlignments-method}
+\alias{elementMetadata,GappedAlignments-method}
 \alias{seqinfo,GappedAlignments-method}
 \alias{seqinfo<-,GappedAlignments-method}
 
@@ -80,10 +82,9 @@
   object will correspond to a record. BAM/SAM records generally contain
   a lot of information but only part of that information is loaded
   in the GappedAlignments object. In particular, we discard the query
-  sequences (SEQ field), the query ids (QNAME field), the query qualities
-  (QUAL), the mapping qualities (MAPQ) and any other information that
-  is not needed in order to support the operations or methods described
-  below.
+  sequences (SEQ field), the query qualities (QUAL), the mapping qualities
+  (MAPQ) and any other information that is not needed in order to support
+  the operations or methods described below.
 
   This means that multi-reads (i.e. reads with multiple hits in the
   reference) won't receive any special treatment i.e. the various SAM/BAM
@@ -124,6 +125,10 @@
   Note that the last 2 items are not expicitly stored in the GappedAlignments
   object: they are inferred on-the-fly from the CIGAR and the "start".
 
+  Optionally, a GappedAlignments object can have names (accessed thru the
+  \code{\link[base]{names}} generic function) which will be coming from
+  the QNAME field of the SAM/BAM records.
+
   The rest of this man page will focus on describing how to:
   \itemize{
     \item Access the information stored in a GappedAlignments object
@@ -136,17 +141,23 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{readGappedAlignments(file, format="BAM", ...)}:
+      \code{readGappedAlignments(file, format="BAM", use.names=FALSE, ...)}:
       Read a file as a GappedAlignments object.
-      The function is just a front-end that delegates to a format-specific
-      back-end function (any extra argument is passed to the back-end
-      function).
+      By default (i.e. \code{use.names=FALSE}), the resulting object has no
+      names. If \code{use.names} is \code{TRUE}, then the names are
+      constructed from the query template names (QNAME field in a SAM/BAM
+      file).
+
+      Note that this function is just a front-end that delegates to the
+      format-specific back-end function specified via the \code{format}
+      argument. The \code{use.names} argument and any extra argument are
+      passed to the back-end function.
       Only the BAM format is supported for now. Its back-end is the
       \code{\link[Rsamtools]{readBamGappedAlignments}} function defined
       in the Rsamtools package.
       See \code{?\link[Rsamtools]{readBamGappedAlignments}} for
-      more information (you might need to install and load the package
-      first).
+      more information (you might need to install and load the Rsamtools
+      package first).
     }
   }
 }
@@ -158,6 +169,11 @@
     \item{}{
       \code{length(x)}:
       Returns the number of alignments in \code{x}.
+    }
+    \item{}{
+      \code{names(x)}:
+      Gets the names of \code{x}. See \code{readGappedAlignments} above
+      for how the names are set.
     }
     \item{}{
       \code{rname(x)}, \code{rname(x) <- value}:
@@ -343,6 +359,7 @@ galn
 ## ---------------------------------------------------------------------
 length(galn)
 head(galn)
+names(galn)  # no names by default
 head(rname(galn))
 seqlevels(galn)
 
