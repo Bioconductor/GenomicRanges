@@ -426,6 +426,17 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
                             seqinfo=seqinfo)
 }
 
+setMethod("updateObject", "GappedAlignments",
+    function(object, ..., verbose=FALSE)
+    {
+        if (verbose)
+            message("updateObject(object = 'GappedAlignments')")
+        if (is(try(object@NAMES, silent=TRUE), "try-error"))
+            object@NAMES <- NULL
+        object
+    }
+)
+
 readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 {
     if (!isSingleString(file))

@@ -7,6 +7,7 @@
 \alias{GappedAlignments}
 
 % Constructors:
+\alias{updateObject,GappedAlignments-method}
 \alias{readGappedAlignments}
 
 % Accessors:
