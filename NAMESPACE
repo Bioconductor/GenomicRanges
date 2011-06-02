@@ -55,7 +55,7 @@ exportMethods(
     punion, pintersect, psetdiff,
     findOverlaps, countOverlaps, match, "%in%",
     show,
-    rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, ngap,
+    rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,
     dimnames, "dimnames<-", precede, follow,
     countGenomicOverlaps, keepSeqlevels, renameSeqlevels

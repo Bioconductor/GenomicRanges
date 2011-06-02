@@ -29,7 +29,6 @@
 \alias{granges}
 \alias{granges,GappedAlignments-method}
 \alias{grg}
-\alias{grg,GappedAlignments-method}
 \alias{rglist}
 \alias{rglist,GappedAlignments-method}
 \alias{ranges,GappedAlignments-method}

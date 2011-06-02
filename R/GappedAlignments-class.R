@@ -32,7 +32,7 @@ setClass("GappedAlignments",
 ###   strand(x)   - 'factor' Rle of the same length as 'x' (levels: +, -, *).
 ###   qwidth(x)   - integer vector of the same length as 'x'.
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
-###   granges(x), grg(x) - GRanges object of the same length as 'x'.
+###   granges(x)  - GRanges object of the same length as 'x'.
 ###   rglist(x)   - CompressedNormalIRangesList object of the same length as
 ###                 'x'.
 ###   ranges(x)   - IRanges object of the same length as 'x'.
@@ -78,7 +78,12 @@ setGeneric("grglist", function(x, ...) standardGeneric("grglist"))
 
 setGeneric("granges", function(x, ...) standardGeneric("granges"))
 
-setGeneric("grg", function(x, ...) standardGeneric("grg"))
+### The old version of granges().
+grg <- function(x, ...)
+{
+    .Deprecated("granges")
+    granges(x, ...)
+}
 
 setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
@@ -160,8 +165,6 @@ setMethod("granges", "GappedAlignments",
         .GappedAlignmentsAsGRanges(rname(x), start(x), width(x),
                                    strand(x), seqinfo(x), names(x))
 )
-
-setMethod("grg", "GappedAlignments", function(x) granges(x))
 
 setMethod("rglist", "GappedAlignments",
     function(x, drop.D.ranges = FALSE)
