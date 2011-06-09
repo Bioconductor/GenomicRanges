@@ -8,6 +8,7 @@
 
 % Constructor-like function:
 \alias{GRangesList}
+\alias{makeGRangesListFromFeatureFragments}
 \alias{updateObject,GRangesList-method}
 
 % Coercion methods:
@@ -59,12 +60,19 @@
   of GRanges objects.
 }
 
-\section{Constructor}{
+\section{Constructors}{
   \describe{
     \item{}{
       \code{GRangesList(...)}:
       Creates a GRangesList object using GRanges objects
       supplied in \code{\ldots}.
+    }
+    \item{}{
+      \code{makeGRangesListFromFeatureFragments(seqnames=Rle(factor()),
+            fragmentStarts=list(), fragmentEnds=list(), fragmentWidths=list(),
+            strand=character(0), sep=",")}:
+      Constructs a GRangesList object from a list of fragmented features.
+      See the Examples section below.
     }
   }
 }
@@ -428,45 +436,57 @@
 }
 
 \examples{
-  ## Construction using GRangesList
-  gr1 <-
-    GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
-            strand = "+", score = 5L, GC = 0.45)
-  gr2 <-
-    GRanges(seqnames = c("chr1", "chr1"),
-            ranges = IRanges(c(7,13), width = 3),
-            strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
-  gr3 <-
-    GRanges(seqnames = c("chr1", "chr2"),
-            ranges = IRanges(c(1, 4), c(3, 9)),
-            strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
-  grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
-  grl
+## Construction with GRangesList():
+gr1 <-
+  GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
+          strand = "+", score = 5L, GC = 0.45)
+gr2 <-
+  GRanges(seqnames = c("chr1", "chr1"),
+          ranges = IRanges(c(7,13), width = 3),
+          strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
+gr3 <-
+  GRanges(seqnames = c("chr1", "chr2"),
+          ranges = IRanges(c(1, 4), c(3, 9)),
+          strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
+grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+grl
 
-  # Summarizing elements
-  elementLengths(grl)
-  table(seqnames(grl))
+## Summarizing elements:
+elementLengths(grl)
+table(seqnames(grl))
 
-  # Extracting subsets
-  grl[seqnames(grl) == "chr1", ]
-  grl[seqnames(grl) == "chr1" & strand(grl) == "+", ]
+## Extracting subsets:
+grl[seqnames(grl) == "chr1", ]
+grl[seqnames(grl) == "chr1" & strand(grl) == "+", ]
 
-  # Renaming the underlying sequences
-  seqlevels(grl)
-  seqlevels(grl) <- sub("chr", "Chrom", seqlevels(grl))
-  grl
+## Renaming the underlying sequences:
+seqlevels(grl)
+seqlevels(grl) <- sub("chr", "Chrom", seqlevels(grl))
+grl
 
-  # range() and reduce():
-  range(grl)
-  reduce(grl)  # Doesn't really reduce anything but note the reordering
-               # of the inner elements in the 3rd top-level element: the
-               # ranges are reordered by sequence name first (the order of
-               # the sequence names is dictated by the sequence levels),
-               # and then by strand.
+## range() and reduce():
+range(grl)
+reduce(grl)  # Doesn't really reduce anything but note the reordering
+             # of the inner elements in the 3rd top-level element: the
+             # ranges are reordered by sequence name first (the order of
+             # the sequence names is dictated by the sequence levels),
+             # and then by strand.
 
-  # Coerce to IRangesList (seqnames and strand information are lost)
-  as(grl, "IRangesList")
+## Coerce to IRangesList (seqnames and strand information is lost):
+as(grl, "IRangesList")
 
-  # isDisjoint():
-  isDisjoint(grl)
+## isDisjoint():
+isDisjoint(grl)
+
+## Construction with makeGRangesListFromFeatureFragments():
+filepath <- system.file("extdata", "feature_frags.txt",
+                        package="GenomicRanges")
+featfrags <- read.table(filepath, header=TRUE, stringsAsFactors=FALSE) 
+grl2 <- with(featfrags,
+             makeGRangesListFromFeatureFragments(seqnames=targetName,
+                                                 fragmentStarts=targetStart,
+                                                 fragmentWidths=blockSizes,
+                                                 strand=strand))
+names(grl2) <- featfrags$RefSeqID
+grl2
 }

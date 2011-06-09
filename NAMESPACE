@@ -24,7 +24,7 @@ export(
     isCircularWithKnownLength,
     Seqinfo,
     strand, "strand<-",
-    GRanges, GRangesList,
+    GRanges, GRangesList, makeGRangesListFromFeatureFragments,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
     SummarizedExperiment,

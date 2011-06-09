@@ -49,7 +49,7 @@ setValidity2("GRangesList", .valid.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
+### Constructors.
 ###
 
 GRangesList <- function(...)
@@ -69,6 +69,88 @@ GRangesList <- function(...)
                unlistData,
                end = end, NAMES = names(listData),
                elementMetadata = new("DataFrame", nrows = length(listData)))
+    validObject(ans)
+    ans
+}
+
+### TODO: Use this in GenomicFeatures::transcriptLocs2refLocs() and remove
+### GenomicFeatures:::.normargExonStartsOrEnds().
+.normargListOfIntegers <- function(arg, sep, argname) 
+{
+    if (is.list(arg)) 
+        return(arg)
+    if (is(arg, "IntegerList")) 
+        return(as.list(arg))
+    if (is.character(arg)) 
+        return(strsplitAsListOfIntegerVectors(arg, sep=sep))
+    stop("'", argname, "' must be a list of integer vectors, ", 
+        "an IntegerList object,\n  or a character vector where ", 
+        "each element is a comma-separated list of\n  integers")
+}
+
+### Typically, the field values will come from a file that needs to be loaded
+### into a data.frame first.
+makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
+                                                fragmentStarts=list(),
+                                                fragmentEnds=list(),
+                                                fragmentWidths=list(),
+                                                strand=character(0),
+                                                sep=",")
+{
+    fragmentStarts <- .normargListOfIntegers(fragmentStarts, sep,
+                                             "fragmentStarts")
+    nfrag_per_feature <- elementLengths(fragmentStarts)
+    start <- unlist(fragmentStarts, recursive=FALSE, use.names=FALSE)
+
+    fragmentEnds <- .normargListOfIntegers(fragmentEnds, sep,
+                                           "fragmentEnds")
+    nend_per_elt <- elementLengths(fragmentEnds)
+    if (length(nend_per_elt) != 0L) {
+        if (length(nfrag_per_feature) == 0L)
+            nfrag_per_feature <- nend_per_elt
+        else if (!identical(nend_per_elt, nfrag_per_feature))
+            stop("'fragmentStarts' and 'fragmentEnds' have ",
+                 "incompatible \"shapes\"")
+    }
+    end <- unlist(fragmentEnds, recursive=FALSE, use.names=FALSE)
+
+    fragmentWidths <- .normargListOfIntegers(fragmentWidths, sep,
+                                             "fragmentWidths")
+    nwidth_per_elt <- elementLengths(fragmentWidths)
+    if (length(nwidth_per_elt) != 0L) {
+        if (length(nfrag_per_feature) == 0L)
+            nfrag_per_feature <- nwidth_per_elt
+        else if (!identical(nwidth_per_elt, nfrag_per_feature))
+            stop("\"shape\" of 'fragmentWidths' is incompatible ",
+                 "with \"shape\" of 'fragmentStarts' or 'fragmentEnds'")
+    }
+    width <- unlist(fragmentWidths, recursive=FALSE, use.names=FALSE)
+
+    ranges <- IRanges(start=start, end=end, width=width)
+    nfrag <- sum(nfrag_per_feature)
+    if (nfrag != length(ranges))
+        stop("GenomicRanges internal error in makeGRangesListFromFields(): ",
+             "nfrag != length(ranges). This should never happen. ",
+             "Please report.")
+    if (nfrag == 0L) {
+        ## Cannot blindly subset by FALSE because it doesn't work on a
+        ## zero-length Rle.
+        if (length(seqnames) != 0L)
+            seqnames <- seqnames[FALSE]
+        if (length(strand) != 0L)
+            strand <- strand[FALSE]
+    } else {
+        if (length(seqnames) != length(nfrag_per_feature) ||
+            length(strand) != length(nfrag_per_feature))
+            stop("length of 'seqnames' and/or 'strand' is incompatible ",
+                 "with fragmentStarts/Ends/Widths")
+        seqnames <- rep.int(seqnames, nfrag_per_feature)
+        strand <- rep.int(strand, nfrag_per_feature)
+    }
+    unlistData <- GRanges(seqnames=seqnames, ranges=ranges, strand=strand)
+    ans <- IRanges:::newCompressedList("GRangesList",
+             unlistData, end=cumsum(nfrag_per_feature), NAMES=NULL,
+             elementMetadata=new("DataFrame", nrows=length(nfrag_per_feature)))
     validObject(ans)
     ans
 }
