@@ -24,8 +24,8 @@
 }
 
 \description{
-  Rename or subset the seqlevels in a \code{GenomicRanges}, \code{GRangesList} 
-  or \code{GappedAlignments} object.
+  Rename or subset the seqlevels in a \link{GenomicRanges}, \link{GRangesList} 
+  or \link{GappedAlignments} object.
 }
 
 \usage{
@@ -49,11 +49,11 @@
 
 \arguments{
   \item{x}{
-    The \code{GenomicRanges}, \code{GRangesList} or \code{GappedAlignments} object 
+    The \link{GenomicRanges}, \link{GRangesList} or \link{GappedAlignments} object 
     for which the seqlevels will be removed or renamed.
   }
   \item{value}{
-    For \code{keepSeqlevels}, a \code{GenomicRanges}, \code{GRangesList} or
+    For \code{keepSeqlevels}, a \link{GRanges}, \link{GRangesList} or
     \code{GappedAlignments} or character vector. The seqlevels from 
     \code{value} object will be used to subset the seqlevels in the
     \code{x}. 
@@ -72,7 +72,7 @@
 }
 
 \details{
-  Many operations on \code{GenomicRanges} objects require the seqlevels 
+  Many operations on \link{GRanges} objects require the seqlevels 
   to match before a comparison can be made 
   (e.g., \code{findOverlaps(type="within")}).
   \code{keepSeqlevels} and \code{renameSeqlevels} are convenience functions 
@@ -83,6 +83,11 @@
   in \code{value} that are not in \code{x} are ignored. If
   none of the seqlevels in the \code{value} are present in
   \code{x} an error is thrown. 
+  When \code{x} is a \link{GRangesList}, keepSeqlevels retains only
+  the seqlevels specified in \code{value}. If a list element
+  has multiple chromosomes but not all chromosomes are specified
+  in \code{value}, a reduced list element is returned.
+  All empty list elements are dropped. See examples.
 
   \code{renameSeqlevels} renames the seqlevels in \code{x} based on
   those provided in \code{value}. \code{value} is a named
@@ -90,7 +95,8 @@
   \code{x}. The matching seqlevels will be renamed to the corresponding
   list values. List names in \code{value} that are not in 
   \code{x} are ignored. An error is thrown if none of the list names in 
-  \code{value} match the seqlevels in \code{x}.
+  \code{value} match the seqlevels in \code{x}
+
 }
 
 \examples{
@@ -119,6 +125,8 @@ grl1 <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 grl2 <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3_rename)
 grl1_rename <- renameSeqlevels(grl1, list(CHROM4="chr4"))
 identical(grl1_rename, grl2)
+
+grl1_subset <- keepSeqlevels(grl1, "chr3")
 
 ## GappedAlignments :
 library(Rsamtools)

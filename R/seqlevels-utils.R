@@ -51,6 +51,16 @@ setMethod("keepSeqlevels",  c("GRangesList", "GappedAlignments"),
     callGeneric(x, value, ...)
 })
 
+setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
+            function(x, value, ...)
+{
+    if (!any(value %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+    x <- x[seqnames(x) %in% value]
+    seqlevels(x) <- seqlevels(x)[seqlevels(x) %in% value]
+    x
+})
+
 setMethod("keepSeqlevels",  c("GRangesList", "character"),
             function(x, value, ...)
 {
@@ -66,12 +76,9 @@ setMethod("keepSeqlevels",  c("GRangesList", "character"),
     grlReduced[elementLengths(grlReduced) != 0] 
 })
 
-## FIXME : x=GappedAlignments methods ignore CIGAR/split reads by coercing 
-##         to GRanges and not GRangesList
 setMethod("keepSeqlevels",  c("GappedAlignments", "GenomicRanges"),
             function(x, value, ...)
 {
-    x <- as(x, "GRanges")
     value <- seqlevels(value)
     callGeneric(x, value, ...)
 })
@@ -79,7 +86,6 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "GenomicRanges"),
 setMethod("keepSeqlevels",  c("GappedAlignments", "GRangesList"),
             function(x, value, ...)
 {
-    x <- as(x, "GRanges")
     value <- seqlevels(value)
     callGeneric(x, value, ...)
 })
@@ -87,20 +93,11 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "GRangesList"),
 setMethod("keepSeqlevels",  c("GappedAlignments", "GappedAlignments"),
             function(x, value, ...)
 {
-    x <- as(x, "GRanges")
     value <- seqlevels(value)
     callGeneric(x, value, ...)
 })
 
 setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
-            function(x, value, ...)
-{
-    x <- as(x, "GRanges")
-    callGeneric(x, value, ...)
-})
-
-
-setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
             function(x, value, ...)
 {
     if (!any(value %in% seqlevels(x)))
@@ -109,6 +106,7 @@ setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
     seqlevels(x) <- seqlevels(x)[seqlevels(x) %in% value]
     x
 })
+
 
 
 ## renameSeqlevels : 
@@ -121,8 +119,12 @@ setGeneric("renameSeqlevels", signature = c("x", "value"),
 setMethod("renameSeqlevels",  c("GappedAlignments", "list"),
             function(x, value, ...)
 {
-    x <- as(x, "GRanges")
-    callGeneric(x, value, ...)
+    old <- names(value)
+    new <- unlist(value, use.names=FALSE)
+    if (!any(old %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+    seqlevels(x)[seqlevels(x) %in% old] <- new
+    x
 })
 
 setMethod("renameSeqlevels",  c("GRangesList", "list"),
