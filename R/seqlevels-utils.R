@@ -111,41 +111,30 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
 
 ## renameSeqlevels : 
 
+.renameSeqlevels <- function(x, value, ...)
+{
+    old <- names(value)
+    new <- unlist(value, use.names=FALSE)
+    if (!any(old %in% seqlevels(x)))
+        stop("none of the values in 'value' are present in 'x'")
+    seqlevels(x)[seqlevels(x) %in% old] <- new
+    x 
+}
+
 setGeneric("renameSeqlevels", signature = c("x", "value"),
-           function(x, value, ...)
-           standardGeneric("renameSeqlevels")
+    function(x, value, ...)
+    standardGeneric("renameSeqlevels")
 )
 
-setMethod("renameSeqlevels",  c("GappedAlignments", "list"),
-            function(x, value, ...)
-{
-    old <- names(value)
-    new <- unlist(value, use.names=FALSE)
-    if (!any(old %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
-    seqlevels(x)[seqlevels(x) %in% old] <- new
-    x
-})
+setMethod("renameSeqlevels",  c(x="GappedAlignments", value="list"),
+    function(x, value, ...) .renameSeqlevels(x, value, ...)
+)
 
 setMethod("renameSeqlevels",  c("GRangesList", "list"),
-            function(x, value, ...)
-{
-    old <- names(value)
-    new <- unlist(value, use.names=FALSE)
-    if (!any(old %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
-    seqlevels(x)[seqlevels(x) %in% old] <- new
-    x
-})
+    function(x, value, ...) .renameSeqlevels(x, value, ...)
+)
 
-setMethod("renameSeqlevels", c("GenomicRanges", "list"),
-          function(x, value, ...)
-{
-    old <- names(value)
-    new <- unlist(value, use.names=FALSE)
-    if (!any(old %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
-    seqlevels(x)[seqlevels(x) %in% old] <- new
-    x
-})
+setMethod("renameSeqlevels",  c("GenomicRanges", "list"),
+    function(x, value, ...) .renameSeqlevels(x, value, ...)
+)
 
