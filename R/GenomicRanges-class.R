@@ -1097,3 +1097,45 @@ setMethod("narrow", "GenomicRanges",
     })
 
 
+
+.checkParms <- function(x, parm) {
+
+    if(!all(is.na(parm))) {
+        if(!all(names(parm) %in% levels(seqnames(x))))
+            stop("start should be a named numeric vector corresponding to seqnames")
+    }
+    temp <- structure(rep(NA_integer_,  length(levels(seqnames(x)))), 
+                    names = levels(seqnames(x)))
+    temp[names(parm)] <- parm
+    temp
+}
+
+
+setMethod("restrict", "GenomicRanges",
+    function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
+    {
+        if(is.null(names(start)) && is.null(names(end)))
+        {
+            ranges(x) <- restrict(ranges(x), start, end, keep.all.ranges, use.names)
+            return(x)
+        }
+        emData <- elementMetadata(x)
+        elementMetadata(x) <- DataFrame("posIndx" = seq_len(length(x)))
+        splt <- split(x, seqnames(x))
+        
+        start <- .checkParms(x, start)
+        end <- .checkParms(x, end) 
+        res <- lapply(names(splt), function(i) {
+                    rg <- splt[[i]]
+                    ranges(rg) <- restrict(ranges(rg), start = start[i], end = end[i],
+                                      keep.all.ranges, use.names)
+                    rg
+                })
+        names(res) <- names(splt)
+        ord <- unlist(GRangesList(res), use.names=FALSE)
+        df <- data.frame( orig = elementMetadata(ord)$posIndx, final =seq_len(length(ord)))
+        indx <- with(df, order(orig, final))
+        ord <- ord[indx,]
+        elementMetadata(ord) <- emData
+        ord
+    })

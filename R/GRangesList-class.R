@@ -731,3 +731,10 @@ setMethod("reduce", "GRangesList",
     }
 )
 
+setMethod("restrict", "GRangesList",
+    function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
+    {
+        endoapply(x, restrict, start=start, end=end,keep.all.ranges=keep.all.ranges
+               , use.names=use.names )
+
+    })
