@@ -293,6 +293,19 @@ test_GRanges_Ranges <- function() {
                    GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
                            ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
                            strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
+
+    ## restrict
+    gr <-  make_test_GRanges()
+    st <- structure(c(4,5), names = c("chr1", "chr2"))
+    en <-  structure(c(8,9), names = c("chr2", "chr3"))
+    res <- restrict(gr, start = st, end = en)
+    checkIdentical(elementMetadata(gr), elementMetadata(res))
+    checkIdentical(seqnames(gr), seqnames(res))
+    checkIdentical(seqinfo(gr), seqinfo(res))
+    target <- IRanges(start=c(4, 5, 5, 5, 5, 6, 7, 8, 9, 10),
+                      end = c(10, 8, 8, 8, 10, 10, 9, 9, 9, 9),
+                      names=letters[1:10])
+    checkIdentical(ranges(res), target)
 }
 
 test_GRanges_Vector <- function() {
