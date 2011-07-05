@@ -299,12 +299,12 @@
      \item{}{
       \code{restrict(x,  start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)}:
       Returns a new GRanges object containing restricted ranges for distinct seqnames.
-      See \code{?\link[IRanges:RangesList-utils]{restrict}} for more information
+      The \code{start} and \code{end} arguments can be a named numeric vector of
+      seqnames for the ranges to be resticted or a numeric vector or length 1 if
+      the restriction operation is to be applied to all the sequences in
+      \code{x}. See \code{?\link[IRanges:RangesList-utils]{restrict}} for more information
       about range restriction and for a description of the optional arguments.
     }
-
-
-
   }
 }
 
