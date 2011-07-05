@@ -51,7 +51,7 @@
 % isomorphisms:
 \alias{range,GRangesList-method}
 \alias{reduce,GRangesList-method}
-
+\alias{restrict,GRangesList-method}
 
 \title{GRangesList objects}
 
@@ -398,7 +398,7 @@
   }
 }
 
-\section{The "range" and "reduce" methods}{
+\section{The "range", "reduce" and "restrict" methods}{
   In the code snippets below, \code{x} is a GRangesList object.
   The methods in this section are isomorphisms, that is, they are endomorphisms
   (i.e. they preserve the class of \code{x}) who also preserve the length &
@@ -417,6 +417,11 @@
       More precisely, it is equivalent to
       \code{endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
                       min.gapwidth=min.gapwidth)}.
+    }
+    \item{}{
+      \code{restrict(x, start = NA, end = NA, keep.all.ranges = FALSE, 
+          use.names = TRUE)}:
+      Applies \code{restrict} to each element in \code{x}.
     }
   }
 }
@@ -471,7 +476,7 @@ reduce(grl)  # Doesn't really reduce anything but note the reordering
              # ranges are reordered by sequence name first (the order of
              # the sequence names is dictated by the sequence levels),
              # and then by strand.
-
+restrict(grl, start=3)
 ## Coerce to IRangesList (seqnames and strand information is lost):
 as(grl, "IRangesList")
 

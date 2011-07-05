@@ -52,6 +52,7 @@
 \alias{precede,GenomicRanges,GenomicRanges-method}
 \alias{follow,GenomicRanges,GenomicRanges-method}
 \alias{isDisjoint,GenomicRanges-method}
+\alias{restrict,GenomicRanges-method}
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
@@ -295,6 +296,15 @@
       \code{?\link[IRanges:RangesList-utils]{reduce}} for more information
       about range reduction and for a description of the optional arguments.
     }
+     \item{}{
+      \code{restrict(x,  start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)}:
+      Returns a new GRanges object containing restricted ranges for distinct seqnames.
+      See \code{?\link[IRanges:RangesList-utils]{restrict}} for more information
+      about range restriction and for a description of the optional arguments.
+    }
+
+
+
   }
 }
 
@@ -480,6 +490,7 @@
   gaps(gr, start = 1, end = 10)
   range(gr)
   reduce(gr)
+  restrict(gr, start =3)
   
   # Combining objects
   gr2 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 3, 4)),
