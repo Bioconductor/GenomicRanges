@@ -1110,32 +1110,43 @@ setMethod("narrow", "GenomicRanges",
     temp
 }
 
+.restrictRngs <- function(x, start, end, keep.all.ranges, use.names)
+{
+    tmp <- names(x)
+    names(x) <-  seq_len(length(x))
+    rng <- ranges(x)
+    res <- restrict(ranges(x), start, end, keep.all.ranges,
+                    use.names=TRUE)
+    x <- x[as.numeric(names(res))]
+    ranges(x) <- res
+    if(!use.names)
+        names(x) <- NULL
+    else 
+        names(x) <- tmp[as.numeric(names(res))]
+    x
+}
 
 setMethod("restrict", "GenomicRanges",
     function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
     {
         if(is.null(names(start)) && is.null(names(end)))
         {
-            ranges(x) <- restrict(ranges(x), start, end, keep.all.ranges, use.names)
-            return(x)
+            return(.restrictRngs(x, start, end,keep.all.ranges, use.names))
         }
-        emData <- elementMetadata(x)
-        elementMetadata(x) <- DataFrame("posIndx" = seq_len(length(x)))
+        elementMetadata(x) <- cbind(elementMetadata(x),
+                                    DataFrame("posIndx" = seq_len(length(x))))
         splt <- split(x, seqnames(x))
-        
         start <- .checkParms(x, start)
         end <- .checkParms(x, end) 
         res <- lapply(names(splt), function(i) {
-                    rg <- splt[[i]]
-                    ranges(rg) <- restrict(ranges(rg), start = start[i], end = end[i],
-                                      keep.all.ranges, use.names)
-                    rg
+                    .restrictRngs(splt[[i]], start=start[i], end =end[i],
+                                  keep.all.ranges, use.names)
                 })
         names(res) <- names(splt)
         ord <- unlist(GRangesList(res), use.names=FALSE)
         df <- data.frame( orig = elementMetadata(ord)$posIndx, final =seq_len(length(ord)))
         indx <- with(df, order(orig, final))
         ord <- ord[indx,]
-        elementMetadata(ord) <- emData
+        elementMetadata(ord) <- subset(elementMetadata(ord), select=-c(posIndx))
         ord
     })
