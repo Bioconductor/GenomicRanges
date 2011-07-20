@@ -23,9 +23,11 @@
 ## obj.)
 .tabulateBamFiles <- function(x, annot, columnData, annotType=NULL,
                              strandAgnostic=TRUE){
-  ## TODO: better argument checking
+  ## TODO: better argument checking 
   ## check args
   annotType <- match.arg(annotType, c("exon_id","gene_id", "tx_id", NULL))
+  if(length(unique(values(annot)[[annotType]]))!=length(annot))
+    stop("You must select an 'annotType' value that matches the 'annot' used.")
   ## count
   cnt <- lapply(x, function(fl, annot) {
     print(fl)        
@@ -59,7 +61,7 @@
 
 
 ## TODO: move to allGenerics.R
-setGeneric("tabulateBamFiles",
+setGeneric("tabulateBamFiles", signature="x",
     function(x, annot, columnData,annotType,strandAgnostic){standardGeneric("tabulateBamFiles")})
 
 ## Define methods:
@@ -97,4 +99,5 @@ setMethod("tabulateBamFiles", "BamViews",
 
 
 ## TODO: get better smaller example for the manual page and describe all of the arguments properly.
+
 

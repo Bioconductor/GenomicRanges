@@ -1,12 +1,12 @@
-\name{utils}
+\name{tabulateBamFiles}
 \docType{methods}
-\alias{tabulateSummarizedExperiment}
-\alias{tabulateSummarizedExperiment,GenomicRanges,character-method}
-\alias{tabulateSummarizedExperiment,GenomicRanges,BamViews-method}
-\alias{tabulateSummarizedExperiment,GenomicRanges,BamFileList-method}
+\alias{tabulateBamFiles}
+\alias{tabulateBamFiles,character-method}
+\alias{tabulateBamFiles,BamViews-method}
+\alias{tabulateBamFiles,BamFileList-method}
 
 \title{
-  tabulateSummarizedExperiment helper methods
+  tabulateBamFiles helper methods
 }
 
 \description{
@@ -15,9 +15,9 @@
 }
 
 \usage{
-  \S4method{tabulateSummarizedExperiment}{GenomicRanges,character}(x, ...) 
-  \S4method{tabulateSummarizedExperiment}{GenomicRanges,BamViews}(x, ...) 
-  \S4method{tabulateSummarizedExperiment}{GenomicRanges,BamFileList}(x, ...) 
+  \S4method{tabulateBamFiles}{character}(x,annot,columnData,annotType,strandAgnostic) 
+  \S4method{tabulateBamFiles}{BamViews}(x,annot,columnData,annotType,strandAgnostic) 
+  \S4method{tabulateBamFiles}{BamFileList}(x,annot,columnData,annotType,strandAgnostic) 
 }
 
 \arguments{
@@ -26,7 +26,28 @@
     \code{BamViews} object. If the character vector is named, the names
     will be used as sample labels.
   }
-
+  \item{annot}{
+    An annotation object in the form of a GRanges object.  Counts will
+    be based on the individual elements of this element such that the
+    number of rows in the counts table will be equal to the length of the
+    GRanges object.
+  }
+  \item{columnData}{
+  A \code{data.frame} that contains columns describing the details of
+  the experiment. The rownames of this \code{data.frame} object must match the
+  names of x (or the values of x for the case where the names of x are null).
+  }
+  \item{annotType}{
+  This specifies the id type to use for uniquely labelling the rows of
+  the tabulated data.  Acceptable values can be "tx_id", "exon_id"
+  "gene_id" or  NULL.  The idea is that this is the id in your annot
+  object that you are using to count with, so if you a \code{GRanges}
+  object that has an element for each exon, then you will want to use
+  "exon_id" etc.
+  }
+  \item{strandAgnostic}{TRUE of FALSE value used to decide whether to
+  ignore strand information that is present in the .bam files when counting.
+  }
 }
 
 \value{
