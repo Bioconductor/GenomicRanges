@@ -58,6 +58,7 @@ exportMethods(
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,
     dimnames, "dimnames<-", precede, follow,
-    countGenomicOverlaps, keepSeqlevels, renameSeqlevels
+    countGenomicOverlaps, keepSeqlevels, renameSeqlevels,
+    tabulateBamFiles
 )
 
