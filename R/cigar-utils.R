@@ -7,7 +7,7 @@ validCigar <- function(cigar)
             stop("'cigar' must be a character vector/factor")
         cigar <- as.vector(cigar)
     }
-    .Call("valid_cigar", cigar, 0L, PACKAGE="GenomicRanges")
+    .Call2("valid_cigar", cigar, 0L, PACKAGE="GenomicRanges")
 }
 
 cigarOpTable <- function(cigar)
@@ -17,7 +17,7 @@ cigarOpTable <- function(cigar)
             stop("'cigar' must be a character vector/factor")
         cigar <- as.vector(cigar)
     }
-    .Call("cigar_op_table", cigar, PACKAGE="GenomicRanges")
+    .Call2("cigar_op_table", cigar, PACKAGE="GenomicRanges")
 }
 
 cigarToQWidth <- function(cigar, before.hard.clipping=FALSE)
@@ -29,7 +29,7 @@ cigarToQWidth <- function(cigar, before.hard.clipping=FALSE)
     }
     if (!isTRUEorFALSE(before.hard.clipping))
         stop("'before.hard.clipping' must be TRUE or FALSE")
-    .Call("cigar_to_qwidth",
+    .Call2("cigar_to_qwidth",
           cigar, before.hard.clipping,
           PACKAGE="GenomicRanges")
 }
@@ -41,14 +41,14 @@ cigarToWidth <- function(cigar)
             stop("'cigar' must be a character vector/factor")
         cigar <- as.vector(cigar)
     }
-    .Call("cigar_to_width", cigar, PACKAGE="GenomicRanges")
+    .Call2("cigar_to_width", cigar, PACKAGE="GenomicRanges")
 }
 
 cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
     threeranges <- threebands(successiveIRanges(cigarToQWidth(cigar)),
                               start=start, end=end, width=width)
-    C_ans <- .Call("cigar_qnarrow",
+    C_ans <- .Call2("cigar_qnarrow",
                    cigar, width(threeranges$left), width(threeranges$right),
                    PACKAGE="GenomicRanges")
     ans <- C_ans[[1L]]
@@ -60,7 +60,7 @@ cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
     threeranges <- threebands(successiveIRanges(cigarToWidth(cigar)),
                               start=start, end=end, width=width)
-    C_ans <- .Call("cigar_narrow",
+    C_ans <- .Call2("cigar_narrow",
                    cigar, width(threeranges$left), width(threeranges$right),
                    PACKAGE="GenomicRanges")
     ans <- C_ans[[1L]]
@@ -78,7 +78,7 @@ cigarToIRanges <- function(cigar, drop.D.ranges=FALSE, merge.ranges=TRUE)
         stop("'drop.D.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(merge.ranges))
         stop("'merge.ranges' must be TRUE or FALSE")
-    .Call("cigar_to_IRanges", cigar, drop.D.ranges, merge.ranges,
+    .Call2("cigar_to_IRanges", cigar, drop.D.ranges, merge.ranges,
           PACKAGE="GenomicRanges")
 }
 
@@ -106,7 +106,7 @@ function(cigar, pos, flag=NULL, drop.D.ranges=FALSE)
     }
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
-    .Call("cigar_to_list_of_IRanges_by_alignment",
+    .Call2("cigar_to_list_of_IRanges_by_alignment",
           cigar, pos, flag, drop.D.ranges, PACKAGE="GenomicRanges")
 }
 
@@ -141,7 +141,7 @@ function(cigar, rname, pos, flag=NULL, drop.D.ranges=FALSE, merge.ranges=TRUE)
         stop("'drop.D.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(merge.ranges))
         stop("'merge.ranges' must be TRUE or FALSE")
-    C_ans <- .Call("cigar_to_list_of_IRanges_by_rname",
+    C_ans <- .Call2("cigar_to_list_of_IRanges_by_rname",
                    cigar, rname, pos, flag, drop.D.ranges, merge.ranges,
                    PACKAGE="GenomicRanges")
     if (length(C_ans) < 200L)
@@ -167,7 +167,7 @@ splitCigar <- function(cigar)
             stop("'cigar' must be a character vector/factor")
         cigar <- as.vector(cigar)
     }
-    .Call("split_cigar", cigar, PACKAGE="GenomicRanges")
+    .Call2("split_cigar", cigar, PACKAGE="GenomicRanges")
 }
 
 cigarToRleList <- function(cigar)

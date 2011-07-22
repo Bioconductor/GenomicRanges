@@ -3,7 +3,7 @@
 ### represented as groups of exon ranges.
 ###
 ### These functions are implemented in C. This file only contains R wrappers
-### for the .Call entry points. Those wrappers are not doing any argument
+### for the .Call2 entry points. Those wrappers are not doing any argument
 ### checking and therefore are considered "unsafe". They are in turn called
 ### by "safe" and user-friendly higher level wrappers defined in
 ### GenomicFeatures. The reason why the "unsafe" wrappers are here and not in
@@ -20,7 +20,7 @@
 
 unsafe.transcriptWidths <- function(exonStarts, exonEnds)
 {
-    .Call("transcript_widths",
+    .Call2("transcript_widths",
           exonStarts, exonEnds,
           PACKAGE="GenomicRanges")
 }
@@ -31,7 +31,7 @@ unsafe.transcriptLocs2refLocs <- function(tlocs,
                 exonStarts, exonEnds, strand,
                 reorder.exons.on.minus.strand)
 {
-    .Call("tlocs2rlocs",
+    .Call2("tlocs2rlocs",
           tlocs,
           exonStarts, exonEnds, strand,
           reorder.exons.on.minus.strand,
@@ -42,7 +42,7 @@ unsafe.extractTranscripts <- function(classname, x,
                 exonStarts, exonEnds, strand,
                 reorder.exons.on.minus.strand, lkup)
 {
-    .Call("extract_transcripts",
+    .Call2("extract_transcripts",
           classname, x,
           exonStarts, exonEnds, strand,
           reorder.exons.on.minus.strand, lkup,
