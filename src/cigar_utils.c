@@ -519,8 +519,8 @@ static const char *split_cigar_string(SEXP cigar_string,
 	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
 		if (n == -1)
 			return errmsg_buf;
-		CharAE_insert_at(OPbuf, OPbuf->nelt, OP);
-		IntAE_insert_at(OPLbuf, OPLbuf->nelt, OPL);
+		CharAE_insert_at(OPbuf, CharAE_get_nelt(OPbuf), OP);
+		IntAE_insert_at(OPLbuf, IntAE_get_nelt(OPLbuf), OPL);
 		offset += n;
 	}
 	return NULL;
@@ -528,7 +528,7 @@ static const char *split_cigar_string(SEXP cigar_string,
 
 static void append_range(RangeAE *range_ae, int start, int width)
 {
-	RangeAE_insert_at(range_ae, range_ae->start.nelt, start, width);
+	RangeAE_insert_at(range_ae, RangeAE_get_nelt(range_ae), start, width);
 }
 
 static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
@@ -719,7 +719,8 @@ SEXP split_cigar(SEXP cigar)
 			UNPROTECT(1);
 			error("'cigar' contains NAs");
 		}
-		OPbuf.nelt = OPLbuf.nelt = 0;
+		CharAE_set_nelt(&OPbuf, 0);
+		IntAE_set_nelt(&OPLbuf, 0);
 		errmsg = split_cigar_string(cigar_string, &OPbuf, &OPLbuf);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
@@ -1042,7 +1043,7 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 			UNPROTECT(1);
 			error("in 'cigar' element %d: %s", i + 1, errmsg);
 		}
-		INTEGER(ans_partitioning_end)[i] = range_ae.start.nelt;
+		INTEGER(ans_partitioning_end)[i] = RangeAE_get_nelt(&range_ae);
 	}
 	PROTECT(ans_unlistData = new_IRanges_from_RangeAE(
 			"IRanges", &range_ae));
