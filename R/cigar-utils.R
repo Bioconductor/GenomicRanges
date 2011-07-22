@@ -160,6 +160,19 @@ queryLocs2refLocs <- function(qlocs, cigar, pos, flag=NULL)
     stop("NOT IMPLEMENTED YET, SORRY!")
 }
 
+globalToQuery <- function(global, ga) {
+  ga_grl <- grglist(ga, drop.D.ranges = TRUE)
+  global_ol <- findOverlaps(global, ga_grl, ignore.strand=TRUE, type = "within")
+  ga_hits <- ga[subjectHits(global_ol)]
+  starts <- .Call("ref_locs_to_query_locs", start(global)[queryHits(global_ol)],
+                  cigar(ga_hits), start(ga_hits), PACKAGE="GenomicRanges")
+  ends <- .Call("ref_locs_to_query_locs", end(global)[queryHits(global_ol)],
+                cigar(ga_hits), start(ga_hits), PACKAGE="GenomicRanges")  
+  DataFrame(global.ind = queryHits(global_ol),
+            query.ind = subjectHits(global_ol),
+            query.range = IRanges(starts, ends))
+}
+
 splitCigar <- function(cigar)
 {
     if (!is.character(cigar)) {
