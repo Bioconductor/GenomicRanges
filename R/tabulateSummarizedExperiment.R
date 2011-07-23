@@ -26,8 +26,10 @@
   ## TODO: better argument checking 
   ## check args
   annotType <- match.arg(annotType, c("exon_id","gene_id", "tx_id", NULL))
-  if(length(unique(values(annot)[[annotType]]))!=length(annot))
+  if(is(annot,"GRanges")){
+    if(length(unique(values(annot)[[annotType]]))!=length(annot))
     stop("You must select an 'annotType' value that matches the 'annot' used.")
+  }
   ## count
   cnt <- lapply(x, function(fl, annot) {
     print(fl)        
@@ -45,12 +47,17 @@
   }else{ ## name the files after the files I guess
     names(cnt) <- x
   }
-
   Cnt <- sapply(cnt, "[[", "region")
-  ## if there is an annotType, then get that too
-  if(!is.null(annotType)){ 
+
+  
+  ## if there is an annotType and it's a GRanges object then use that
+  if(!is.null(annotType) &&  is(annot,"GRanges")){ 
     rownames(Cnt) <- values(annot)[[annotType]] 
   }
+  ## if it is a GRangesList, then use the names for the row names
+  if(is(annot,"GRangesList")){ 
+    rownames(Cnt) <- names(annot)
+  }  
   ## Then assemble the object
   columnData <- as(columnData, "DataFrame")
   SummarizedExperiment(assays=SimpleList(counts = Cnt),

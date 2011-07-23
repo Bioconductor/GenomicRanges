@@ -97,6 +97,12 @@ rownames(expData) <- fileNames
 sx <- tabulateBamFiles(fls, annot=exons, columnData = expData,
                        annotType="exon_id", strandAgnostic=TRUE)
 
+## example with GRangesList
+txs <- transcriptsBy(txdb, by="gene")
+sx2 <- tabulateBamFiles(fls, annot=txs, columnData = expData,
+                       annotType="exon_id", strandAgnostic=TRUE)
+
+
 }
 }
 
