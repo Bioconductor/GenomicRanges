@@ -17,30 +17,34 @@
 
 
 
-
 ## For now inernal function will take a character vector of files and process
 ## those into a grid of numbers (then put that into a SummarizedExperiment
 ## obj.)
-.tabulateBamFiles <- function(x, annot, columnData, annotType=NULL,
-                             strandAgnostic=TRUE){
+.tabulateBamFiles <- function(x, rowData, colData,
+                              annotType=c("exon_id", "gene_id", "tx_id"),
+                             ignore.strand=TRUE, ...){
   ## TODO: better argument checking 
   ## check args
-  annotType <- match.arg(annotType, c("exon_id","gene_id", "tx_id", NULL))
-  if(is(annot,"GRanges")){
-    if(length(unique(values(annot)[[annotType]]))!=length(annot))
-    stop("You must select an 'annotType' value that matches the 'annot' used.")
+  annotType <- match.arg(annotType)
+  if(is(rowData,"GRanges")){
+    if(length(unique(values(rowData)[[annotType]]))!=length(rowData))
+    stop("You must select an 'annotType' value that matches the 'rowData' used.")
   }
+
+  len <- seqlengths(rowData)
+  ## TODO: also make sure that x is a list of open BamFiles?
+  #len <- len[names(len) %in% seqnames(x[[1]])]  ## requires that x be BamFileList???
+  which <- GRanges(names(len), IRanges(1, len))
   ## count
-  cnt <- lapply(x, function(fl, annot) {
-    print(fl)        
-    ga <- readGappedAlignments(fl)
-    if(strandAgnostic == TRUE){
+  cnt <- lapply(x, function(fl, rowData) {
+    message(fl)        
+    ga <- readGappedAlignments(fl, which=which)
+    if(ignore.strand == TRUE){
       strand(ga) <- "*"
     }
-    idx <- rname(ga) %in% names(seqlengths(annot))
-    ga <- ga[idx]
-    list(region = unlist(countOverlaps(annot, ga)) )
-  }, annot)
+    ## list(region = unlist(countGenomicOverlaps(rowData, ga, ...)) )
+    list(region = unlist(countOverlaps(rowData, ga)) )
+  }, rowData)
   ## If there are sample names, lets use them
   if(!is.null(names(x))){
     names(cnt) <- names(x)
@@ -51,42 +55,53 @@
 
   
   ## if there is an annotType and it's a GRanges object then use that
-  if(!is.null(annotType) &&  is(annot,"GRanges")){ 
-    rownames(Cnt) <- values(annot)[[annotType]] 
+  if(!is.null(annotType) &&  is(rowData,"GRanges")){ 
+    rownames(Cnt) <- values(rowData)[[annotType]] 
   }
   ## if it is a GRangesList, then use the names for the row names
-  if(is(annot,"GRangesList")){ 
-    rownames(Cnt) <- names(annot)
+  if(is(rowData,"GRangesList")){ 
+    rownames(Cnt) <- names(rowData)
   }  
   ## Then assemble the object
-  columnData <- as(columnData, "DataFrame")
+  colData <- as(colData, "DataFrame")
   SummarizedExperiment(assays=SimpleList(counts = Cnt),
-                       rowData=annot, colData=columnData)
+                       rowData=rowData, colData=colData)
 }
 
 
 
 
 ## TODO: move to allGenerics.R
+## change default arguments
+## change workhorse function
+## add ... to the generic etc.
+## add internal check for the BamFileList being open
+## rename???
+## move to Rsamtools?
 setGeneric("tabulateBamFiles", signature="x",
-    function(x, annot, columnData,annotType,strandAgnostic){standardGeneric("tabulateBamFiles")})
+    function(x, rowData, colData,annotType,ignore.strand){standardGeneric("tabulateBamFiles")})
+
+
+
+
+
 
 ## Define methods:
 ## for a named character vector (names/paths to files)
 setMethod("tabulateBamFiles", "character",
-    function(x, annot, columnData,annotType,strandAgnostic){
-      .tabulateBamFiles(x, annot, columnData, annotType=NULL,
-                                       strandAgnostic=TRUE)}
+    function(x, rowData, colData,annotType,ignore.strand){
+      .tabulateBamFiles(x, rowData, colData, annotType=NULL,
+                                       ignore.strand=TRUE)}
 )
 
 ## x <- BamFileList(fls)
 ## for a BamFileList
 setMethod("tabulateBamFiles", "BamFileList",
-    function(x, annot, columnData,annotType,strandAgnostic){
+    function(x, rowData, colData,annotType,ignore.strand){
       ## convert to character list
       x <- unlist(lapply(x,path))
-      .tabulateBamFiles(x, annot, columnData, annotType=NULL,
-                        strandAgnostic=TRUE)
+      .tabulateBamFiles(x, rowData, colData, annotType=NULL,
+                        ignore.strand=TRUE)
     }
 )
 
@@ -94,11 +109,11 @@ setMethod("tabulateBamFiles", "BamFileList",
 ## x <- BamViews(fls, bamRanges=rngs)
 ## for a BamViews
 setMethod("tabulateBamFiles", "BamViews",
-    function(x, annot, columnData,annotType,strandAgnostic){
+    function(x, rowData, colData,annotType,ignore.strand){
       ## convert to character list
       x <- bamPaths(x)
-      .tabulateBamFiles(x, annot, columnData, annotType=NULL,
-                        strandAgnostic=TRUE)
+      .tabulateBamFiles(x, rowData, colData, annotType=NULL,
+                        ignore.strand=TRUE)
     }
 )
 

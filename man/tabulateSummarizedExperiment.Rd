@@ -15,9 +15,9 @@
 }
 
 \usage{
-  \S4method{tabulateBamFiles}{character}(x,annot,columnData,annotType,strandAgnostic) 
-  \S4method{tabulateBamFiles}{BamViews}(x,annot,columnData,annotType,strandAgnostic) 
-  \S4method{tabulateBamFiles}{BamFileList}(x,annot,columnData,annotType,strandAgnostic) 
+  \S4method{tabulateBamFiles}{character}(x,rowData,colData,annotType,ignore.strand) 
+  \S4method{tabulateBamFiles}{BamViews}(x,rowData,colData,annotType,ignore.strand) 
+  \S4method{tabulateBamFiles}{BamFileList}(x,rowData,colData,annotType,ignore.strand) 
 }
 
 \arguments{
@@ -26,13 +26,13 @@
     \code{BamViews} object. If the character vector is named, the names
     will be used as sample labels.
   }
-  \item{annot}{
+  \item{rowData}{
     An annotation object in the form of a GRanges object.  Counts will
     be based on the individual elements of this element such that the
     number of rows in the counts table will be equal to the length of the
     GRanges object.
   }
-  \item{columnData}{
+  \item{colData}{
   A \code{data.frame} that contains columns describing the details of
   the experiment. The rownames of this \code{data.frame} object must match the
   names of x (or the values of x for the case where the names of x are null).
@@ -40,12 +40,12 @@
   \item{annotType}{
   This specifies the id type to use for uniquely labelling the rows of
   the tabulated data.  Acceptable values can be "tx_id", "exon_id"
-  "gene_id" or  NULL.  The idea is that this is the id in your annot
+  "gene_id" or  NULL.  The idea is that this is the id in your rowData
   object that you are using to count with, so if you a \code{GRanges}
   object that has an element for each exon, then you will want to use
   "exon_id" etc.
   }
-  \item{strandAgnostic}{TRUE of FALSE value used to decide whether to
+  \item{ignore.strand}{TRUE of FALSE value used to decide whether to
   ignore strand information that is present in the .bam files when counting.
   }
 }
@@ -62,7 +62,7 @@ library(TxDb.Hsapiens.UCSC.hg18.knownGene)
 library(GenomicFeatures)
 library(ShortRead)
 txdb <- Hsapiens_UCSC_hg18_knownGene_TxDb
-## and they can do whatever filtering is needed to produce the annot
+## and they can do whatever filtering is needed to produce the rowData
 keep <- c(paste("chr", c(1:22), sep=""), "chrX", "chrY")
 isActiveSeq(txdb)[seqlevels(txdb)] <- FALSE
 isActiveSeq(txdb)[keep] <- TRUE
@@ -83,8 +83,8 @@ fileNames = sub("tophat_", "", basename(dirname(fls)))
 names(fls) = fileNames
 
 ## fls: named character vector to specify the files (and sample names = names)
-## annot: GRanges Object to specify the annotations.
-## strandAgnostic: Ignore the strand of the data sequence?
+## rowData: GRanges Object to specify the annotations.
+## ignore.strand: Ignore the strand of the data sequence?
 ## annotType: type of annotation for the rows. (exon_id, tx_id, cds_id, null)
 
 ## Requirement #3 is a data.frame of the colData where the rownames are the
@@ -94,13 +94,13 @@ rownames(expData) <- fileNames
 
 
 ## the core function will take a bam file list 
-sx <- tabulateBamFiles(fls, annot=exons, columnData = expData,
-                       annotType="exon_id", strandAgnostic=TRUE)
+sx <- tabulateBamFiles(fls, rowData=exons, colData = expData,
+                       annotType="exon_id", ignore.strand=TRUE)
 
 ## example with GRangesList
 txs <- transcriptsBy(txdb, by="gene")
-sx2 <- tabulateBamFiles(fls, annot=txs, columnData = expData,
-                       annotType="exon_id", strandAgnostic=TRUE)
+sx2 <- tabulateBamFiles(fls, rowData=txs, colData = expData,
+                       annotType="exon_id", ignore.strand=TRUE)
 
 
 }
