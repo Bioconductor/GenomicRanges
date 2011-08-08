@@ -1179,6 +1179,8 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
         break;
         /* Insertion to the reference */
       case 'I':
+        /* Soft clip on the read */
+      case 'S':
         query_loc += OPL;
         query_consumed += OPL;
         break;
@@ -1187,8 +1189,7 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
       case 'N': /* Skipped region from the reference */
         query_loc -= OPL;
         break;
-        /* Soft/hard clip on the read */
-      case 'S':
+       /* Hard clip on the read */
       case 'H':
         break;
         /* Padding (silent deletion from the padded reference
