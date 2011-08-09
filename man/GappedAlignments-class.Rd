@@ -138,7 +138,7 @@
   }
 }
 
-\section{Constructor}{
+\section{Constructors}{
   \describe{
     \item{}{
       \code{readGappedAlignments(file, format="BAM", use.names=FALSE, ...)}:
@@ -158,6 +158,12 @@
       See \code{?\link[Rsamtools]{readBamGappedAlignments}} for
       more information (you might need to install and load the Rsamtools
       package first).
+    }
+    \item{}{
+      \code{GappedAlignments(rname = Rle(factor()), pos = integer(0),
+	cigar = character(0), strand = NULL, names = NULL, seqlengths =
+	NULL, ...)}: Create a GappedAlignments object. Named arguments
+      in \code{\ldots} are used as elementMetadata.
     }
   }
 }

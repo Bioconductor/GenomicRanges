@@ -382,7 +382,7 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
 
 GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
                              cigar=character(0), strand=NULL,
-                             names=NULL, seqlengths=NULL)
+                             names=NULL, seqlengths=NULL, ...)
 {
     ## Prepare the 'rname' slot.
     rname <- .asFactorRle(rname)
@@ -403,7 +403,12 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
         strand <- Rle(strand)
     }
     ## Prepare the 'elementMetadata' slot.
-    elementMetadata <- new("DataFrame", nrows=length(rname))
+    varlist <- list(...)
+    elementMetadata <- 
+        if (0L == length(varlist))
+            new("DataFrame", nrows=length(rname))
+        else
+            do.call(DataFrame, varlist)
     ## Prepare the 'seqinfo' slot.
     if (is.null(seqlengths)) {
         seqlengths <- rep(NA_integer_, length(levels(rname)))
@@ -548,6 +553,8 @@ setMethod("as.data.frame", "GappedAlignments",
                           check.rows=TRUE,
                           check.names=FALSE,
                           stringsAsFactors=FALSE)
+        if (ncol(elementMetadata(x)))
+            ans <- cbind(ans, as.data.frame(elementMetadata(x)))
         return(ans)
     }
 )
@@ -586,6 +593,9 @@ setMethod("show", "GappedAlignments",
                          check.rows=TRUE,
                          check.names=FALSE,
                          stringsAsFactors=FALSE)
+            if (ncol(elementMetadata(object)))
+                showme <-
+                    cbind(showme, lapply(elementMetadata(object), sketch))
         }
         show(showme)
         .showSeqlengths(object)
