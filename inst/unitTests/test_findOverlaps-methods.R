@@ -381,8 +381,8 @@ test_findOverlaps_with_circular_sequences <- function()
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=8, isCircular=TRUE)
     current1 <- findOverlaps(gr, gr)
     matchMatrix1 <- rbind(matchMatrix0, matrix(c(1L, 4L, 4L, 1L), ncol = 2))
-    o1 <- IRanges:::orderTwoIntegers(matchMatrix1[ , "query"],
-                                     matchMatrix1[ , "subject"])
+    o1 <- IRanges:::orderIntegerPairs(matchMatrix1[ , "query"],
+                                      matchMatrix1[ , "subject"])
     matchMatrix1 <- matchMatrix1[o1, ]
     target1 <- new("RangesMatching", matchMatrix = matchMatrix1,
                                      DIM = c(4L, 4L))
@@ -402,8 +402,8 @@ test_findOverlaps_with_circular_sequences <- function()
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=7, isCircular=TRUE)
     current3 <- findOverlaps(gr, gr, minoverlap=2)
     matchMatrix3 <- rbind(matchMatrix2, matrix(c(1L, 4L, 4L, 1L), ncol = 2))
-    o3 <- IRanges:::orderTwoIntegers(matchMatrix3[ , "query"],
-                                     matchMatrix3[ , "subject"])
+    o3 <- IRanges:::orderIntegerPairs(matchMatrix3[ , "query"],
+                                      matchMatrix3[ , "subject"])
     matchMatrix3 <- matchMatrix3[o3, ]
     target3 <- new("RangesMatching", matchMatrix = matchMatrix3,
                                      DIM = c(4L, 4L))

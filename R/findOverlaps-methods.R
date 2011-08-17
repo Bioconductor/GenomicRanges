@@ -129,8 +129,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                          dimnames = list(NULL, c("query", "subject")))
             }
             matchMatrix <-
-              matchMatrix[IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
-                                                     matchMatrix[ , 2L, drop=TRUE]), ,
+              matchMatrix[IRanges:::orderIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
+                                                      matchMatrix[ , 2L, drop=TRUE]), ,
                           drop=FALSE]
         }
         if (select == "all") {
@@ -149,15 +149,15 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 ### TODO: Make this a function of 2 integer vectors (of equal length) and
 ### move it to IRanges/R/int-utils.R
 ### TODO: Try to invert the order i.e. first extract unique rows with
-### IRanges:::duplicatedTwoIntegers() and then sort them. Could this be
+### IRanges:::duplicatedIntegerPairs() and then sort them. Could this be
 ### faster?
 .cleanMatchMatrix <- function(matchMatrix)
 {
     if (nrow(matchMatrix) <= 1L)
         return(matchMatrix)
     ## First sort the rows.
-    oo <- IRanges:::orderTwoIntegers(matchMatrix[ , 1L, drop=TRUE],
-                                     matchMatrix[ , 2L, drop=TRUE])
+    oo <- IRanges:::orderIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
+                                      matchMatrix[ , 2L, drop=TRUE])
     matchMatrix <- matchMatrix[oo, , drop=FALSE]
     ## Then keep the unique rows.
     keep <- IRanges:::runEndsOfIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
@@ -178,8 +178,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
 .updateMatchMatrix <- function(matchMatrix, intrsct, minoverlap) {
     widthSum <- .groupSums(width(intrsct), matchMatrix)
-    dups <- IRanges:::duplicatedTwoIntegers(matchMatrix[,"query"],
-        matchMatrix[,"subject"])
+    dups <- IRanges:::duplicatedIntegerPairs(matchMatrix[,"query"],
+                                             matchMatrix[,"subject"])
     indx <- (widthSum >= minoverlap)
     matchMatrix <- matchMatrix[!dups,  ,drop = FALSE]           
     matchMatrix <- matchMatrix[indx,  ,drop = FALSE]  
@@ -190,7 +190,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 {
     query0 <- unname(mm00[ , "query"])
     subject0 <- unname(mm00[ , "subject"])
-    oo <- IRanges:::orderTwoIntegers(subject0, query0)
+    oo <- IRanges:::orderIntegerPairs(subject0, query0)
     mm00 <- mm00[oo, , drop=FALSE]
 
     query1 <- togroup(qpartitioning, unname(mm00[ , "query"]))
@@ -300,7 +300,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 {
     query0 <- unname(mm00[ , "query"])
     subject1 <- togroup(spartitioning, unname(mm00[ , "subject"]))
-    oo <- IRanges:::orderTwoIntegers(subject1, query0)
+    oo <- IRanges:::orderIntegerPairs(subject1, query0)
     mm01 <- unique(cbind(query=query0, subject=subject1)[oo, , drop=FALSE])
 
     query1 <- togroup(qpartitioning, unname(mm01[ , "query"]))

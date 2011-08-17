@@ -632,12 +632,12 @@ deconstructGRLintoGR <- function(x, expand.levels=FALSE)
         i1 <- rep(seq_len(length(x)), each=x_nlev)
         i2 <- rep.int(seq_len(x_nlev), length(x))
     } else {
-        oo <- IRanges:::orderTwoIntegers(f1, f2)
+        oo <- IRanges:::orderIntegerPairs(f1, f2)
         of1 <- f1[oo]
         of2 <- f2[oo]
-        ## TODO: Add "presorted" method to IRanges:::duplicatedTwoIntegers()
+        ## TODO: Add "presorted" method to IRanges:::duplicatedIntegerPairs()
         ## for when the 2 input vectors are already sorted.
-        notdups <- !IRanges:::duplicatedTwoIntegers(of1, of2)
+        notdups <- !IRanges:::duplicatedIntegerPairs(of1, of2)
         i1 <- of1[notdups]
         i2 <- of2[notdups]
     }
