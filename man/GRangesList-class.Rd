@@ -52,7 +52,7 @@
 \alias{range,GRangesList-method}
 \alias{reduce,GRangesList-method}
 \alias{restrict,GRangesList-method}
-
+\alias{flank,GRangesList-method}
 \title{GRangesList objects}
 
 \description{
@@ -423,6 +423,11 @@
           use.names = TRUE)}:
       Applies \code{restrict} to each element in \code{x}.
     }
+    \item{}{
+      \code{flank(x, width, start = TRUE, end = NA, keep.all.ranges = FALSE,
+          use.names = TRUE, ignore.strand = FALSE)}:
+      Applies \code{flank} to each element in \code{x}.
+    }
   }
 }
 
@@ -477,6 +482,9 @@ reduce(grl)  # Doesn't really reduce anything but note the reordering
              # the sequence names is dictated by the sequence levels),
              # and then by strand.
 restrict(grl, start=3)
+### flank
+flank(grl, width =20)
+
 ## Coerce to IRangesList (seqnames and strand information is lost):
 as(grl, "IRangesList")
 

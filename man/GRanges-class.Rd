@@ -234,7 +234,8 @@
       Gets or sets \code{width(ranges(x))}.
     }
     \item{}{
-      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE)}:
+      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE,
+          ignore.strand=FALSE)}:
       Returns a new GRanges object containing intervals of width \code{width}
       that flank the intervals in \code{x}.
       The \code{start} argument takes a logical indicating whether \code{x}
