@@ -24,6 +24,7 @@ Collate: utils.R
 	strand.R
 	Seqinfo-class.R
 	GenomicRanges-class.R
+	GenomicRanges-comparison.R
 	GRanges-class.R
 	GRangesList-class.R
 	GappedAlignments-class.R
