@@ -742,8 +742,7 @@ setMethod("restrict", "GRangesList",
 setMethod("flank", "GRangesList",
     function(x, width, start=TRUE, both=FALSE, use.names=TRUE, ignore.strand=FALSE)
     {
-        gr <- deconstructGRLintoGR(x)
-        gr <- flank(gr, width=width, start=start, both=FALSE, use.names=TRUE,
+        x@unlistData <- flank(x@unlistData, width=width, start=start, both=FALSE, use.names=TRUE,
                     ignore.strand=ignore.strand)
-        reconstructGRLfromGR(gr, x)
+        x
     })
