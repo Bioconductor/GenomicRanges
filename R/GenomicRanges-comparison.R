@@ -1,24 +1,24 @@
 ### =========================================================================
-### Ordering and comparison of GenomicRanges objects
+### Ordering and comparing genomic ranges
 ### -------------------------------------------------------------------------
 ###
 ### I. UNIQUE AND DUPLICATED ELEMENTS WITHIN A GenomicRanges OBJECT
 ### ---------------------------------------------------------------
 ### Two elements of a GenomicRanges object (i.e. two genomic ranges) are
 ### considered equal iff they are on the same underlying sequence and strand,
-### and have the same start and end.
+### and have the same start and width.
 ### The "duplicated" and "unique" methods for GenomicRanges objects are
-### implementing this equality.
+### using this equality.
 ###
 ### II. ORDERING THE ELEMENTS OF A GenomicRanges OBJECT
 ### ---------------------------------------------------
 ### The "natural order" for the elements of a GenomicRanges object is to order
 ### them (a) first by sequence level, (b) then by strand, (c) then by start,
-### (d) and finally by end.
+### (d) and finally by width.
 ### This way, the space of genomic ranges is totally ordered.
-### Note that the "reduce" method for GenomicRanges already uses this "natural
-### order" implicitly. Also, note that, because we already do (c) and (d) for
-### regular ranges, genomic ranges that belong to the same underlying sequence
+### Note that the "reduce" method for GenomicRanges uses this "natural order"
+### implicitly. Also, note that, because we already do (c) and (d) for regular
+### ranges, genomic ranges that belong to the same underlying sequence
 ### and strand are ordered like regular ranges.
 ### The "order", "sort" and "rank" methods for GenomicRanges objects are using
 ### this "natural order".
@@ -100,7 +100,7 @@ setMethod("order", "GenomicRanges",
         order_args[idx - 2L] <- lapply(args,
                                        function(x) as.factor(strand(x)))
         order_args[idx - 1L] <- lapply(args, start)
-        order_args[idx] <- lapply(args, end)
+        order_args[idx] <- lapply(args, width)
         do.call(order, c(order_args, list(decreasing=decreasing)))
     }
 )
@@ -154,7 +154,7 @@ setMethod("rank", "GenomicRanges",
     a <- as.integer(seqnames(e1)) - as.integer(seqnames(e2))
     b <- as.integer(strand(e1)) - as.integer(strand(e2))
     c <- start(e1) - start(e2)
-    d <- width(e1) - width(e2)  # equivalent to (but faster than) using end()
+    d <- width(e1) - width(e2)
     ## Note that sign() always returns a numeric vector, even on an integer
     ## vector.
     as.integer(8L * sign(a) + 4L * sign(b) + 2L * sign(c) + sign(d))
