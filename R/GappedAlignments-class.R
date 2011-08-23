@@ -541,46 +541,113 @@ setMethod("as.data.frame", "GappedAlignments",
     }
 )
 
+.makeUglyMatrixFromGappedAlignments <- function(x)
+{
+    lx <- length(x)
+    nc <- ncol(elementMetadata(x))
+    ans <- cbind(seqnames=as.character(seqnames(x)),
+                 strand=as.character(strand(x)),
+                 cigar=cigar(x),
+                 qwidth=qwidth(x),
+                 start=start(x),
+                 end=end(x),
+                 width=width(x),
+                 ngap=ngap(x))
+    if (nc > 0L) {
+        tmp <- do.call(data.frame, lapply(elementMetadata(x),
+                                          IRanges:::showAsCell))
+        ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
+    }
+    ans
+}
+
+.makeClassinfoRowFromGappedAlignments <- function(x)
+{
+    .COL2CLASS <- c(
+        seqnames="Rle",
+        strand="Rle",
+        cigar="character",
+        qwidth="integer",
+        start="integer",
+        end="integer",
+        width="integer",
+        ngap="integer"
+    )
+    ans <- paste("<", .COL2CLASS, ">", sep="")
+    names(ans) <- names(.COL2CLASS)
+    if (ncol(elementMetadata(x)) > 0L) {
+        tmp <- sapply(elementMetadata(x),
+                      function(xx) paste("<", class(xx), ">", sep=""))
+        ans <- c(ans, `|`="|", tmp)
+    }
+    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
+}
+
+.makePrettyMatrixFromGappedAlignments <- function(x, with.classinfo=FALSE)
+{
+    lx <- length(x)
+    nms <- names(x)
+    if (lx < 20L) {
+        ans <- .makeUglyMatrixFromGappedAlignments(x)
+        if (!is.null(nms)) {
+            ans_rownames <- nms
+        } else if (lx == 0L) {
+            ans_rownames <- character(0)
+        } else {
+            ans_rownames <- paste("[", seq_len(lx), "]", sep="")
+        }
+    } else {
+        top <- x[1:9]
+        bottom <- x[(lx-8L):lx]
+        ans_top <- .makeUglyMatrixFromGappedAlignments(top)
+        ans_bottom <- .makeUglyMatrixFromGappedAlignments(bottom)
+        ans <- rbind(ans_top,
+                     matrix(rep.int("...", ncol(ans_top)), nrow=1L),
+                     ans_bottom)
+        if (!is.null(nms)) {
+            ans_rownames <- c(names(ans_top), "...", names(ans_bottom))
+        } else {
+            ans_rownames <- c(paste("[", 1:9, "]", sep=""),
+                              "...",
+                              paste("[", (lx-8L):lx, "]", sep=""))
+        }
+    }
+    rownames(ans) <- format(ans_rownames, justify="right")
+    if (with.classinfo) {
+        classinfo <- .makeClassinfoRowFromGappedAlignments(x)
+        ## A sanity check, but this should never happen!
+        stopifnot(identical(colnames(classinfo), colnames(ans)))
+        ans <- rbind(classinfo, ans)
+    }
+    ans
+}
+
+showGappedAlignments <- function(x, margin="",
+                                 with.classinfo=FALSE, print.seqlengths=FALSE)
+{
+    lx <- length(x)
+    nc <- ncol(elementMetadata(x))
+    cat(class(x), " with ",
+        lx, " ", ifelse(lx == 1L, "alignment", "alignments"),
+        " and ",
+        nc, " elementMetadata ", ifelse(nc == 1L, "value", "values"),
+        ":\n", sep="")
+    out <- .makePrettyMatrixFromGappedAlignments(x,
+                                                 with.classinfo=with.classinfo)
+    if (nrow(out) != 0L)
+        rownames(out) <- paste(margin, rownames(out), sep="")
+    print(out, quote=FALSE, right=TRUE)
+    if (print.seqlengths) {
+        cat(margin, "---\n", sep="")
+        showSeqlengths(x, margin=margin)
+    }
+}
+
 setMethod("show", "GappedAlignments",
     function(object)
     {
-        lo <- length(object)
-        cat(class(object), " of length ", lo, "\n", sep="")
-        if (lo == 0L) {
-            return(NULL)
-        } else if (lo < 20L) {
-            showme <-
-              as.data.frame(object,
-                            row.names=paste("[", seq_len(lo), "]", sep=""))
-        } else {
-            ## Use of as.vector() here is to prevent c() to do silly things
-            ## when 'x' is a factor! (Try 'c(factor(LETTERS))', yes it's
-            ## documented that c() will drop the attributes but still, this
-            ## doesn't make sense).
-            sketch <- function(x)
-                          c(as.vector(x[1:9]),
-                            "...",
-                            as.vector(x[(length(x)-8L):length(x)]))
-            showme <-
-              data.frame(rname=sketch(as.character(rname(object))),
-                         strand=sketch(as.character(strand(object))),
-                         cigar=sketch(cigar(object)),
-                         qwidth=sketch(qwidth(object)),
-                         start=sketch(start(object)),
-                         end=sketch(end(object)),
-                         width=sketch(width(object)),
-                         ngap=sketch(ngap(object)),
-                         row.names=c(paste("[", 1:9, "]", sep=""), "...",
-                                     paste("[", (lo-8L):lo, "]", sep="")),
-                         check.rows=TRUE,
-                         check.names=FALSE,
-                         stringsAsFactors=FALSE)
-            if (ncol(elementMetadata(object)))
-                showme <-
-                    cbind(showme, lapply(elementMetadata(object), sketch))
-        }
-        show(showme)
-        .showSeqlengths(object)
+        showGappedAlignments(object, margin="  ",
+                             with.classinfo=TRUE, print.seqlengths=TRUE)
     }
 )
 

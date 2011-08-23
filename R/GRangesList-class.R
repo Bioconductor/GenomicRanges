@@ -602,7 +602,7 @@ setMethod("show", "GRangesList",
                     sep="")
             }
         }
-        .showSeqlengths(object)
+        showSeqlengths(object)
     }
 )
 

@@ -355,9 +355,9 @@
 }
 
 \examples{
-library(Rsamtools)  # because file ex1.bam is in this package
+library(Rsamtools)  # for ScanBamParam() and the ex1.bam file
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(galn_file)
+galn <- readGappedAlignments(galn_file, param=ScanBamParam(what="flag"))
 galn
 
 ## ---------------------------------------------------------------------

@@ -777,8 +777,7 @@ setMethod("window", "GenomicRanges",
 ### show method.
 ###
 
-.showSeqlengths <-
-function(object)
+showSeqlengths <- function(object, margin="")
 {
     seqlens <- seqlengths(object)
     nseq <- length(seqlens)
@@ -795,15 +794,14 @@ function(object)
                       as.character(tail(seqlens, last))))
     }
     showMatrix <- format(showMatrix, justify = "right")
-    cat("\nseqlengths\n")
-    cat(IRanges:::labeledLine("", showMatrix[1L,], count = FALSE,
-        labelSep = ""))
-    cat(IRanges:::labeledLine("", showMatrix[2L,], count = FALSE,
-        labelSep = ""))
+    cat(margin, "seqlengths:\n", sep="")
+    cat(margin, IRanges:::labeledLine("", showMatrix[1L,], count = FALSE,
+                                      labelSep = ""), sep="")
+    cat(margin, IRanges:::labeledLine("", showMatrix[2L,], count = FALSE,
+                                      labelSep = ""), sep="")
 }
 
-showGenomicRanges <-
-function(object, print.seqlengths = FALSE)
+showGenomicRanges <- function(object, print.seqlengths = FALSE)
 {
     lo <- length(object)
     nc <- ncol(elementMetadata(object))
@@ -887,9 +885,8 @@ function(object, print.seqlengths = FALSE)
         out <- rbind(classinfo, out)
     }
     print(out, quote = FALSE, right = TRUE)
-    if (print.seqlengths) {
-        .showSeqlengths(object)
-    }
+    if (print.seqlengths)
+        showSeqlengths(object)
 }
 
 setMethod("show", "GenomicRanges",
