@@ -6,14 +6,14 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.5.28
+Version: 1.5.53
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.11.24)
 Imports: methods, IRanges
 LinkingTo: IRanges
-Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools (>= 1.5.27),
+Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools (>= 1.5.53),
 	EatonEtAlChIPseq (>= 0.0.2), leeBamViews,
 	org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2
 License: Artistic-2.0

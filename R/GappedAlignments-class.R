@@ -450,30 +450,12 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
         stop("'format' must be a single string")
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
-    dotargs <- list(...)
-    if (length(dotargs) != 0L && is.null(names(dotargs)))
-        stop("extra arguments must be named")
     if (format == "BAM") {
-        if ("index" %in% names(dotargs)) {
-            index <- dotargs$index
-            dotargs$index <- NULL
-        } else {
-            index <- file
-        }
-        if ("which" %in% names(dotargs)) {
-            which <- dotargs$which
-            dotargs$which <- NULL
-        } else {
-            which <- RangesList()
-        }
-        args <- c(list(file=file, index=index, use.names=use.names),
-                  dotargs,
-                  list(which=which))
         suppressMessages(library("Rsamtools"))
-        ans <- do.call(readBamGappedAlignments, args)
+        ans <- readBamGappedAlignments(file=file, use.names=use.names, ...)
         return(ans)
     }
-    stop("only BAM format is supported for now")
+    stop("only BAM format is supported at the moment")
 }
 
 
