@@ -31,14 +31,14 @@ setClass("GappedAlignments",
 ###   cigar(x)    - character vector of the same length as 'x'.
 ###   strand(x)   - 'factor' Rle of the same length as 'x' (levels: +, -, *).
 ###   qwidth(x)   - integer vector of the same length as 'x'.
+###   start(x), end(x), width(x) - integer vectors of the same length as 'x'.
+###   ngap(x)     - integer vector of the same length as 'x'.
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
 ###   granges(x)  - GRanges object of the same length as 'x'.
 ###   rglist(x)   - CompressedNormalIRangesList object of the same length as
 ###                 'x'.
 ###   ranges(x)   - IRanges object of the same length as 'x'.
-###   start(x), end(x), width(x) - integer vectors of the same length as 'x'.
-###   ngap(x)     - integer vector of the same length as 'x'.
-###   as.data.frame(x) - just a convenience used by show(x).
+###   as.data.frame(x) - data.frame with 1 row per alignment in 'x'.
 ###   show(x)     - compact display in a data.frame-like fashion.
 ###   GappedAlignments(x) - constructor.
 ###   x[i]        - GappedAlignments object of the same class as 'x'
@@ -74,19 +74,6 @@ setGeneric("cigar", function(x) standardGeneric("cigar"))
 
 setGeneric("qwidth", function(x) standardGeneric("qwidth"))
 
-setGeneric("grglist", function(x, ...) standardGeneric("grglist"))
-
-setGeneric("granges", function(x, ...) standardGeneric("granges"))
-
-### The old version of granges().
-grg <- function(x, ...)
-{
-    .Deprecated("granges")
-    granges(x, ...)
-}
-
-setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
-
 setGeneric("updateCigarAndStart",
     function(x, cigar=NULL, start=NULL) standardGeneric("updateCigarAndStart")
 )
@@ -94,41 +81,6 @@ setGeneric("updateCigarAndStart",
 setGeneric("qnarrow",
     function(x, start=NA, end=NA, width=NA) standardGeneric("qnarrow")
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Two central helper functions.
-###
-### Note that their arguments are the different components of a
-### GappedAlignments object instead of just the GappedAlignments object
-### itself (arg 'x'). This allows them to be used in many different contexts
-### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
-###
-
-.GappedAlignmentsAsGRanges <- function(rname, start, width, strand, seqinfo,
-                                       names=NULL)
-{
-    ranges <- IRanges(start=start, width=width, names=names)
-    ans <- GRanges(seqnames=rname, ranges=ranges, strand=strand)
-    seqinfo(ans) <- seqinfo
-    ans
-}
-
-### Names are taken from the 'rglist' arg (CompressedNormalIRangesList).
-.GappedAlignmentsAsGRangesList <- function(rname, rglist, strand, seqinfo)
-{
-    nrg_per_alignment <- elementLengths(rglist)
-    seqnames <- rep.int(rname, nrg_per_alignment)
-    strand <- rep.int(strand, nrg_per_alignment)
-    unlistData <- GRanges(seqnames=seqnames,
-                          ranges=rglist@unlistData,
-                          strand=strand)
-    seqinfo(unlistData) <- seqinfo
-    new("GRangesList",
-        unlistData=unlistData,
-        partitioning=rglist@partitioning,
-        elementMetadata=new("DataFrame", nrows=length(rglist@partitioning)))
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,32 +105,6 @@ setMethod("end", "GappedAlignments", function(x, ...) {x@start + width(x) - 1L})
 setMethod("strand", "GappedAlignments", function(x) x@strand)
 
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
-
-setMethod("grglist", "GappedAlignments",
-    function(x, drop.D.ranges = FALSE)
-          .GappedAlignmentsAsGRangesList(rname(x),
-                                         rglist(x, drop.D.ranges=drop.D.ranges),
-                                         strand(x), seqinfo(x))
-)
-setMethod("granges", "GappedAlignments",
-    function(x)
-        .GappedAlignmentsAsGRanges(rname(x), start(x), width(x),
-                                   strand(x), seqinfo(x), names(x))
-)
-
-setMethod("rglist", "GappedAlignments",
-    function(x, drop.D.ranges = FALSE)
-    {
-        ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
-                                             drop.D.ranges = drop.D.ranges)
-        names(ans) <- names(x)
-        ans
-    }
-)
-
-setMethod("ranges", "GappedAlignments",
-    function(x) IRanges(start=start(x), width=width(x), names=names(x))
-)
 
 setMethod("ngap", "GappedAlignments",
     function(x) {elementLengths(rglist(x)) - 1L}
@@ -460,13 +386,104 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Two helper functions used by higher level coercion functions.
+###
+### Note that their arguments are the different components of a
+### GappedAlignments object instead of just the GappedAlignments object
+### itself (arg 'x'). This allows them to be used in many different contexts
+### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
+###
+
+.GappedAlignmentsAsGRanges <- function(rname, start, width, strand, seqinfo,
+                                       names=NULL)
+{
+    ranges <- IRanges(start=start, width=width, names=names)
+    ans <- GRanges(seqnames=rname, ranges=ranges, strand=strand)
+    seqinfo(ans) <- seqinfo
+    ans
+}
+
+### Names are taken from the 'rglist' arg (CompressedNormalIRangesList).
+.GappedAlignmentsAsGRangesList <- function(rname, rglist, strand, seqinfo)
+{
+    nrg_per_alignment <- elementLengths(rglist)
+    seqnames <- rep.int(rname, nrg_per_alignment)
+    strand <- rep.int(strand, nrg_per_alignment)
+    unlistData <- GRanges(seqnames=seqnames,
+                          ranges=rglist@unlistData,
+                          strand=strand)
+    seqinfo(unlistData) <- seqinfo
+    new("GRangesList",
+        unlistData=unlistData,
+        partitioning=rglist@partitioning,
+        elementMetadata=new("DataFrame", nrows=length(rglist@partitioning)))
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###
+
+setGeneric("grglist", function(x, ...) standardGeneric("grglist"))
+setGeneric("granges", function(x, ...) standardGeneric("granges"))
+setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
+
+setMethod("grglist", "GappedAlignments",
+    function(x, drop.D.ranges = FALSE)
+        .GappedAlignmentsAsGRangesList(rname(x),
+                                       rglist(x, drop.D.ranges=drop.D.ranges),
+                                       strand(x), seqinfo(x))
+)
+
+setMethod("granges", "GappedAlignments",
+    function(x)
+        .GappedAlignmentsAsGRanges(rname(x), start(x), width(x),
+                                   strand(x), seqinfo(x), names(x))
+)
+
+setMethod("rglist", "GappedAlignments",
+    function(x, drop.D.ranges = FALSE)
+    {
+        ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
+                                             drop.D.ranges = drop.D.ranges)
+        names(ans) <- names(x)
+        ans
+    }
+)
+
+setMethod("ranges", "GappedAlignments",
+    function(x) IRanges(start=start(x), width=width(x), names=names(x))
+)
 
 setAs("GappedAlignments", "GRangesList", function(from) grglist(from))
 setAs("GappedAlignments", "GRanges", function(from) granges(from))
 setAs("GappedAlignments", "RangesList", function(from) rglist(from))
 setAs("GappedAlignments", "Ranges", function(from) ranges(from))
+
+setMethod("as.data.frame", "GappedAlignments",
+    function(x, row.names=NULL, optional=FALSE, ...)
+    {
+        if (is.null(row.names))
+            row.names <- names(x)
+        else if (!is.character(row.names))
+            stop("'row.names' must be NULL or a character vector")
+        ans <- data.frame(rname=as.character(rname(x)),
+                          strand=as.character(strand(x)),
+                          cigar=cigar(x),
+                          qwidth=qwidth(x),
+                          start=start(x),
+                          end=end(x),
+                          width=width(x),
+                          ngap=ngap(x),
+                          row.names=row.names,
+                          check.rows=TRUE,
+                          check.names=FALSE,
+                          stringsAsFactors=FALSE)
+        if (ncol(elementMetadata(x)))
+            ans <- cbind(ans, as.data.frame(elementMetadata(x)))
+        return(ans)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -513,35 +530,10 @@ setMethod("[", "GappedAlignments",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "as.data.frame" and "show" methods.
+### The "show" method.
 ###
 
-setMethod("as.data.frame", "GappedAlignments",
-    function(x, row.names=NULL, optional=FALSE, ...)
-    {
-        if (is.null(row.names))
-            row.names <- names(x)
-        else if (!is.character(row.names))
-            stop("'row.names' must be NULL or a character vector")
-        ans <- data.frame(rname=as.character(rname(x)),
-                          strand=as.character(strand(x)),
-                          cigar=cigar(x),
-                          qwidth=qwidth(x),
-                          start=start(x),
-                          end=end(x),
-                          width=width(x),
-                          ngap=ngap(x),
-                          row.names=row.names,
-                          check.rows=TRUE,
-                          check.names=FALSE,
-                          stringsAsFactors=FALSE)
-        if (ncol(elementMetadata(x)))
-            ans <- cbind(ans, as.data.frame(elementMetadata(x)))
-        return(ans)
-    }
-)
-
-.makeUglyMatrixFromGappedAlignments <- function(x)
+.makeNakedMatrixFromGappedAlignments <- function(x)
 {
     lx <- length(x)
     nc <- ncol(elementMetadata(x))
@@ -588,7 +580,7 @@ setMethod("as.data.frame", "GappedAlignments",
     lx <- length(x)
     nms <- names(x)
     if (lx < 20L) {
-        ans <- .makeUglyMatrixFromGappedAlignments(x)
+        ans <- .makeNakedMatrixFromGappedAlignments(x)
         if (!is.null(nms)) {
             ans_rownames <- nms
         } else if (lx == 0L) {
@@ -597,19 +589,21 @@ setMethod("as.data.frame", "GappedAlignments",
             ans_rownames <- paste("[", seq_len(lx), "]", sep="")
         }
     } else {
-        top <- x[1:9]
-        bottom <- x[(lx-8L):lx]
-        ans_top <- .makeUglyMatrixFromGappedAlignments(top)
-        ans_bottom <- .makeUglyMatrixFromGappedAlignments(bottom)
+        top_idx <- 1:9
+        bottom_idx <- (lx-8L):lx
+        top <- x[top_idx]
+        bottom <- x[bottom_idx]
+        ans_top <- .makeNakedMatrixFromGappedAlignments(top)
+        ans_bottom <- .makeNakedMatrixFromGappedAlignments(bottom)
         ans <- rbind(ans_top,
                      matrix(rep.int("...", ncol(ans_top)), nrow=1L),
                      ans_bottom)
         if (!is.null(nms)) {
-            ans_rownames <- c(names(ans_top), "...", names(ans_bottom))
+            ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
         } else {
-            ans_rownames <- c(paste("[", 1:9, "]", sep=""),
+            ans_rownames <- c(paste("[", top_idx, "]", sep=""),
                               "...",
-                              paste("[", (lx-8L):lx, "]", sep=""))
+                              paste("[", bottom_idx, "]", sep=""))
         }
     }
     rownames(ans) <- format(ans_rownames, justify="right")
@@ -645,14 +639,13 @@ showGappedAlignments <- function(x, margin="",
 
 setMethod("show", "GappedAlignments",
     function(object)
-    {
         showGappedAlignments(object, margin="  ",
                              with.classinfo=TRUE, print.seqlengths=TRUE)
-    }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining and concatenation
+### Combining and concatenation.
 ###
 
 setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
@@ -750,4 +743,15 @@ setMethod("narrow", "GappedAlignments",
         updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated or defunct).
+###
+
+grg <- function(x, ...)
+{
+    .Deprecated("granges")
+    granges(x, ...)
+}
 

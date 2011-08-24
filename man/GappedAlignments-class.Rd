@@ -25,14 +25,6 @@
 \alias{cigar,GappedAlignments-method}
 \alias{qwidth}
 \alias{qwidth,GappedAlignments-method}
-\alias{grglist}
-\alias{grglist,GappedAlignments-method}
-\alias{granges}
-\alias{granges,GappedAlignments-method}
-\alias{grg}
-\alias{rglist}
-\alias{rglist,GappedAlignments-method}
-\alias{ranges,GappedAlignments-method}
 \alias{start,GappedAlignments-method}
 \alias{end,GappedAlignments-method}
 \alias{width,GappedAlignments-method}
@@ -42,11 +34,18 @@
 \alias{seqinfo<-,GappedAlignments-method}
 
 % Coercion:
-\alias{as.data.frame,GappedAlignments-method}
+\alias{grglist}
+\alias{granges}
+\alias{rglist}
+\alias{grglist,GappedAlignments-method}
+\alias{granges,GappedAlignments-method}
+\alias{rglist,GappedAlignments-method}
+\alias{ranges,GappedAlignments-method}
 \alias{coerce,GappedAlignments,GRangesList-method}
 \alias{coerce,GappedAlignments,GRanges-method}
 \alias{coerce,GappedAlignments,RangesList-method}
 \alias{coerce,GappedAlignments,Ranges-method}
+\alias{as.data.frame,GappedAlignments-method}
 
 % Subsetting:
 \alias{[,GappedAlignments-method}
@@ -61,6 +60,9 @@
 \alias{qnarrow}
 \alias{qnarrow,GappedAlignments-method}
 \alias{narrow,GappedAlignments-method}
+
+% Old stuff (deprecated or defunct):
+\alias{grg}
 
 
 \title{GappedAlignments objects}
@@ -213,24 +215,6 @@
       the corresponding SAM/BAM record).
     }
     \item{}{
-      \code{grglist(x, drop.D.ranges = FALSE)}, \code{granges(x)},
-      \code{rglist(x, drop.D.ranges = FALSE)}, \code{ranges(x)}:
-      Returns either a \link{GRangesList} object, or a \link{GRanges} object,
-      or a \link[IRanges]{RangesList} object, or a \link[IRanges]{Ranges}
-      object of length \code{length(x)} where each element represents the
-      regions in the reference to which a query is
-      aligned. If \code{drop.D.ranges} is \code{TRUE} for
-      either \code{grglist} or \code{rglist}, the ranges corresponding
-      to deletions in the CIGAR string are dropped, i.e., they are not
-      considered part of the alignment but are treated like the N (intron)
-      CIGAR element.
-      See Details section above for more information.
-      More precisely, the \link[IRanges]{RangesList} object returned by
-      \code{rglist(x)} is a \link[IRanges]{CompressedNormalIRangesList} object,
-      and the \link[IRanges]{Ranges} object returned by \code{ranges(x)} is
-      an \link[IRanges]{IRanges} object.
-    }
-    \item{}{
       \code{start(x)}, \code{end(x)}:
       Returns an integer vector of length \code{length(x)}
       containing the "start" and "end" (respectively) of the query
@@ -280,6 +264,37 @@
       Gets or sets the circularity flags.
       \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
+    }
+  }
+}
+
+\section{Coercion}{
+  In the code snippets below, \code{x} is a GappedAlignments object.
+
+  \describe{
+    \item{}{
+      \code{grglist(x, drop.D.ranges=FALSE)}, \code{granges(x)},
+      \code{rglist(x, drop.D.ranges=FALSE)}, \code{ranges(x)}:
+      Returns either a \link{GRangesList} object, or a \link{GRanges} object,
+      or a \link[IRanges]{RangesList} object, or a \link[IRanges]{Ranges}
+      object of length \code{length(x)} where each element represents the
+      regions in the reference to which a query is
+      aligned. If \code{drop.D.ranges} is \code{TRUE} for
+      either \code{grglist} or \code{rglist}, the ranges corresponding
+      to deletions in the CIGAR string are dropped, i.e., they are not
+      considered part of the alignment but are treated like the N (intron)
+      CIGAR element.
+      See Details section above for more information.
+      More precisely, the \link[IRanges]{RangesList} object returned by
+      \code{rglist(x)} is a \link[IRanges]{CompressedNormalIRangesList} object,
+      and the \link[IRanges]{Ranges} object returned by \code{ranges(x)} is
+      an \link[IRanges]{IRanges} object.
+    }
+    \item{}{
+      \code{as(x, "GRangesList")}, \code{as(x, "GRanges")},
+      \code{as(x, "RangesList")}, \code{as(x, "Ranges")}:
+      An alternate way of doing \code{grglist(x)}, \code{granges(x)},
+      \code{rglist(x)}, \code{ranges(x)}, respectively.
     }
   }
 }
