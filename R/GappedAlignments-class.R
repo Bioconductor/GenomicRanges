@@ -84,12 +84,12 @@ setGeneric("qnarrow",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor-like methods.
+### Getters.
 ###
 
-setMethod("names", "GappedAlignments", function(x) x@NAMES)
-
 setMethod("length", "GappedAlignments", function(x) length(x@cigar))
+
+setMethod("names", "GappedAlignments", function(x) x@NAMES)
 
 setMethod("rname", "GappedAlignments", function(x) x@seqnames)
 
@@ -126,8 +126,19 @@ setMethod("seqinfo", "GappedAlignments", function(x) x@seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Slot setters.
+### Setters.
 ###
+
+setReplaceMethod("names", "GappedAlignments",
+    function(x, value)
+    {
+        if (!is.null(value))
+            value <- as.character(value)
+        x@NAMES <- value
+        validObject(x)
+        x
+    }
+)
 
 .normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
 {

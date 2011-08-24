@@ -17,6 +17,7 @@
 \alias{rname,GappedAlignments-method}
 \alias{seqnames,GappedAlignments-method}
 \alias{strand,GappedAlignments-method}
+\alias{names<-,GappedAlignments-method}
 \alias{rname<-}
 \alias{rname<-,GappedAlignments-method}
 \alias{seqnames<-,GappedAlignments-method}
@@ -179,9 +180,10 @@
       Returns the number of alignments in \code{x}.
     }
     \item{}{
-      \code{names(x)}:
-      Gets the names of \code{x}. See \code{readGappedAlignments} above
-      for how the names are set.
+      \code{names(x)}, \code{names(x) <- value}:
+      Gets or sets the names of \code{x}.
+      See \code{readGappedAlignments} above for how to automatically extract
+      and set the names from the file to read.
     }
     \item{}{
       \code{rname(x)}, \code{rname(x) <- value}:
