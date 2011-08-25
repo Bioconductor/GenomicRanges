@@ -777,6 +777,42 @@ setMethod("window", "GenomicRanges",
 ### show method.
 ###
 
+### 'makeNakedMat.FUN' must be a function returning a character matrix.
+makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
+{
+    lx <- length(x)
+    nms <- names(x)
+    if (lx < 20L) {
+        ans <- makeNakedMat.FUN(x)
+        if (!is.null(nms)) {
+            ans_rownames <- nms
+        } else if (lx == 0L) {
+            ans_rownames <- character(0)
+        } else {
+            ans_rownames <- paste("[", seq_len(lx), "]", sep="")
+        }
+    } else {
+        top_idx <- 1:9
+        bottom_idx <- (lx-8L):lx
+        top <- x[top_idx]
+        bottom <- x[bottom_idx]
+        ans_top <- makeNakedMat.FUN(top)
+        ans_bottom <- makeNakedMat.FUN(bottom)
+        ans <- rbind(ans_top,
+                     matrix(rep.int("...", ncol(ans_top)), nrow=1L),
+                     ans_bottom)
+        if (!is.null(nms)) {
+            ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
+        } else {
+            ans_rownames <- c(paste("[", top_idx, "]", sep=""),
+                              "...",
+                              paste("[", bottom_idx, "]", sep=""))
+        }
+    }
+    rownames(ans) <- format(ans_rownames, justify="right")
+    ans
+}
+
 showSeqlengths <- function(object, margin="")
 {
     seqlens <- seqlengths(object)
@@ -801,96 +837,70 @@ showSeqlengths <- function(object, margin="")
                                       labelSep = ""), sep="")
 }
 
-showGenomicRanges <- function(object, print.seqlengths = FALSE)
+.makeNakedMatFromGenomicRanges <- function(x)
 {
-    lo <- length(object)
-    nc <- ncol(elementMetadata(object))
-    cat(class(object), " with ",
-        lo, ifelse(lo == 1, " range and ", " ranges and "),
-        nc, ifelse(nc == 1, " elementMetadata value\n",
-                   " elementMetadata values\n"),
-            sep = "")
-    if (lo == 0) {
-        out <-
-          matrix(nrow = 0L, ncol = 4L + nc,
-                 dimnames = list(NULL,
-                                 c("seqnames", "ranges", "strand", "|",
-                                   colnames(elementMetadata(object)))))
-    } else {
-        nms <- names(object)
-        if (lo < 20) {
-            out <-
-              cbind(seqnames = as.character(seqnames(object)),
-                    ranges = IRanges:::showAsCell(ranges(object)),
-                    strand = as.character(strand(object)),
-                    "|" = rep.int("|", lo))
-            if (nc > 0)
-                out <-
-                  cbind(out,
-                        as.matrix(format(do.call(data.frame,
-                                                 lapply(elementMetadata(object),
-                                                        IRanges:::showAsCell)))))
-            if (is.null(nms))
-                rownames(out) <-
-                  format(paste("[", seq_len(lo), "]", sep = ""),
-                         justify = "right")
-            else
-                rownames(out) <- format(nms, justify = "right")
-            classinfo <-
-              matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                       unlist(lapply(elementMetadata(object), function(x)
-                                     paste("<", class(x), ">", sep = "")),
-                              use.names = FALSE)), nrow = 1,
-                     dimnames = list("", colnames(out)))
-        } else {
-            top <- object[1:9]
-            bottom <- object[(lo-8L):lo]
-            out <-
-              rbind(cbind(seqnames = as.character(seqnames(top)),
-                          ranges = IRanges:::showAsCell(ranges(top)),
-                          strand = as.character(strand(top)),
-                          "|" = rep.int("|", 9)),
-                    rbind(rep.int("...", 4)),
-                    cbind(seqnames = as.character(seqnames(bottom)),
-                          ranges = IRanges:::showAsCell(ranges(bottom)),
-                          strand = as.character(strand(bottom)),
-                          "|" = rep.int("|", 9)))
-            if (nc > 0)
-                out <-
-                  cbind(out,
-                        rbind(as.matrix(format(do.call(data.frame,
-                                                       lapply(elementMetadata(top),
-                                                              IRanges:::showAsCell)))),
-                                        rbind(rep.int("...", nc)),
-                                        rbind(as.matrix(format(do.call(data.frame,
-                                                                        lapply(elementMetadata(bottom),
-                                                                               IRanges:::showAsCell)))))))
-            if (is.null(nms)) {
-                rownames(out) <-
-                  format(c(paste("[", 1:9, "]", sep = ""), "...",
-                           paste("[", (lo-8L):lo, "]", sep = "")),
-                         justify = "right")
-            } else {
-                rownames(out) <-
-                  format(c(head(nms, 9), "...", tail(nms, 9)),
-                         justify = "right")
-            }
-            classinfo <-
-              matrix(c("<Rle>", "<IRanges>", "<Rle>", "|",
-                       unlist(lapply(elementMetadata(top), function(x)
-                                     paste("<", class(x), ">", sep = "")),
-                              use.names = FALSE)), nrow = 1,
-                     dimnames = list("", colnames(out)))
-        }
+    lx <- length(x)
+    nc <- ncol(elementMetadata(x))
+    ans <- cbind(seqnames=as.character(seqnames(x)),
+                 ranges=IRanges:::showAsCell(ranges(x)),
+                 strand=as.character(strand(x)))
+    if (nc > 0L) {
+        tmp <- do.call(data.frame, lapply(elementMetadata(x),
+                                          IRanges:::showAsCell))
+        ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
+    }
+    ans
+}
+
+.makeClassinfoRowFromGenomicRanges <- function(x)
+{
+    .COL2CLASS <- c(
+        seqnames="Rle",
+        ranges="IRanges",
+        strand="Rle"
+    )
+    ans <- paste("<", .COL2CLASS, ">", sep="")
+    names(ans) <- names(.COL2CLASS)
+    if (ncol(elementMetadata(x)) > 0L) {
+        tmp <- sapply(elementMetadata(x),
+                      function(xx) paste("<", class(xx), ">", sep=""))
+        ans <- c(ans, `|`="|", tmp)
+    }
+    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
+}
+
+showGenomicRanges <- function(x, margin="",
+                              with.classinfo=FALSE, print.seqlengths = FALSE)
+{
+    lx <- length(x)
+    nc <- ncol(elementMetadata(x))
+    cat(class(x), " with ",
+        lx, " ", ifelse(lx == 1L, "range", "ranges"),
+        " and ",
+        nc, " elementMetadata ", ifelse(nc == 1L, "value", "values"),
+        ":\n", sep="")
+    out <- makePrettyMatrixForCompactPrinting(x,
+               .makeNakedMatFromGenomicRanges)
+    if (with.classinfo) {
+        classinfo <- .makeClassinfoRowFromGenomicRanges(x)
+        ## A sanity check, but this should never happen!
+        stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
     }
-    print(out, quote = FALSE, right = TRUE)
-    if (print.seqlengths)
-        showSeqlengths(object)
+    if (nrow(out) != 0L)
+        rownames(out) <- paste(margin, rownames(out), sep="")
+    print(out, quote=FALSE, right=TRUE)
+    if (print.seqlengths) {
+        cat(margin, "---\n", sep="")
+        showSeqlengths(x, margin=margin)
+    }
 }
 
 setMethod("show", "GenomicRanges",
-          function(object) showGenomicRanges(object, print.seqlengths = TRUE))
+    function(object)
+        showGenomicRanges(object, margin="  ",
+                          with.classinfo=TRUE, print.seqlengths=TRUE)
+)
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
   function(x, subject, ignore.strand = FALSE, ...)

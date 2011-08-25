@@ -544,7 +544,7 @@ setMethod("[", "GappedAlignments",
 ### The "show" method.
 ###
 
-.makeNakedMatrixFromGappedAlignments <- function(x)
+.makeNakedMatFromGappedAlignments <- function(x)
 {
     lx <- length(x)
     nc <- ncol(elementMetadata(x))
@@ -586,47 +586,6 @@ setMethod("[", "GappedAlignments",
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
-.makePrettyMatrixFromGappedAlignments <- function(x, with.classinfo=FALSE)
-{
-    lx <- length(x)
-    nms <- names(x)
-    if (lx < 20L) {
-        ans <- .makeNakedMatrixFromGappedAlignments(x)
-        if (!is.null(nms)) {
-            ans_rownames <- nms
-        } else if (lx == 0L) {
-            ans_rownames <- character(0)
-        } else {
-            ans_rownames <- paste("[", seq_len(lx), "]", sep="")
-        }
-    } else {
-        top_idx <- 1:9
-        bottom_idx <- (lx-8L):lx
-        top <- x[top_idx]
-        bottom <- x[bottom_idx]
-        ans_top <- .makeNakedMatrixFromGappedAlignments(top)
-        ans_bottom <- .makeNakedMatrixFromGappedAlignments(bottom)
-        ans <- rbind(ans_top,
-                     matrix(rep.int("...", ncol(ans_top)), nrow=1L),
-                     ans_bottom)
-        if (!is.null(nms)) {
-            ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
-        } else {
-            ans_rownames <- c(paste("[", top_idx, "]", sep=""),
-                              "...",
-                              paste("[", bottom_idx, "]", sep=""))
-        }
-    }
-    rownames(ans) <- format(ans_rownames, justify="right")
-    if (with.classinfo) {
-        classinfo <- .makeClassinfoRowFromGappedAlignments(x)
-        ## A sanity check, but this should never happen!
-        stopifnot(identical(colnames(classinfo), colnames(ans)))
-        ans <- rbind(classinfo, ans)
-    }
-    ans
-}
-
 showGappedAlignments <- function(x, margin="",
                                  with.classinfo=FALSE, print.seqlengths=FALSE)
 {
@@ -637,8 +596,14 @@ showGappedAlignments <- function(x, margin="",
         " and ",
         nc, " elementMetadata ", ifelse(nc == 1L, "value", "values"),
         ":\n", sep="")
-    out <- .makePrettyMatrixFromGappedAlignments(x,
-                                                 with.classinfo=with.classinfo)
+    out <- makePrettyMatrixForCompactPrinting(x,
+               .makeNakedMatFromGappedAlignments)
+    if (with.classinfo) {
+        classinfo <- .makeClassinfoRowFromGappedAlignments(x)
+        ## A sanity check, but this should never happen!
+        stopifnot(identical(colnames(classinfo), colnames(out)))
+        out <- rbind(classinfo, out)
+    }
     if (nrow(out) != 0L)
         rownames(out) <- paste(margin, rownames(out), sep="")
     print(out, quote=FALSE, right=TRUE)
