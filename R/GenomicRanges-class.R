@@ -813,6 +813,18 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
     ans
 }
 
+makeClassinfoRowForCompactPrinting <- function(x, col2class)
+{
+    ans <- paste("<", col2class, ">", sep="")
+    names(ans) <- names(col2class)
+    if (ncol(elementMetadata(x)) > 0L) {
+        tmp <- sapply(elementMetadata(x),
+                      function(xx) paste("<", class(xx), ">", sep=""))
+        ans <- c(ans, `|`="|", tmp)
+    }
+    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
+}
+
 showSeqlengths <- function(object, margin="")
 {
     seqlens <- seqlengths(object)
@@ -852,23 +864,6 @@ showSeqlengths <- function(object, margin="")
     ans
 }
 
-.makeClassinfoRowFromGenomicRanges <- function(x)
-{
-    .COL2CLASS <- c(
-        seqnames="Rle",
-        ranges="IRanges",
-        strand="Rle"
-    )
-    ans <- paste("<", .COL2CLASS, ">", sep="")
-    names(ans) <- names(.COL2CLASS)
-    if (ncol(elementMetadata(x)) > 0L) {
-        tmp <- sapply(elementMetadata(x),
-                      function(xx) paste("<", class(xx), ">", sep=""))
-        ans <- c(ans, `|`="|", tmp)
-    }
-    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
-}
-
 showGenomicRanges <- function(x, margin="",
                               with.classinfo=FALSE, print.seqlengths = FALSE)
 {
@@ -882,7 +877,12 @@ showGenomicRanges <- function(x, margin="",
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
     if (with.classinfo) {
-        classinfo <- .makeClassinfoRowFromGenomicRanges(x)
+        .COL2CLASS <- c(
+            seqnames="Rle",
+            ranges="IRanges",
+            strand="Rle"
+        )
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)

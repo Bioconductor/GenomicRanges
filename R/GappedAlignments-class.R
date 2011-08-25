@@ -564,28 +564,6 @@ setMethod("[", "GappedAlignments",
     ans
 }
 
-.makeClassinfoRowFromGappedAlignments <- function(x)
-{
-    .COL2CLASS <- c(
-        seqnames="Rle",
-        strand="Rle",
-        cigar="character",
-        qwidth="integer",
-        start="integer",
-        end="integer",
-        width="integer",
-        ngap="integer"
-    )
-    ans <- paste("<", .COL2CLASS, ">", sep="")
-    names(ans) <- names(.COL2CLASS)
-    if (ncol(elementMetadata(x)) > 0L) {
-        tmp <- sapply(elementMetadata(x),
-                      function(xx) paste("<", class(xx), ">", sep=""))
-        ans <- c(ans, `|`="|", tmp)
-    }
-    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
-}
-
 showGappedAlignments <- function(x, margin="",
                                  with.classinfo=FALSE, print.seqlengths=FALSE)
 {
@@ -599,7 +577,17 @@ showGappedAlignments <- function(x, margin="",
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGappedAlignments)
     if (with.classinfo) {
-        classinfo <- .makeClassinfoRowFromGappedAlignments(x)
+        .COL2CLASS <- c(
+            seqnames="Rle",
+            strand="Rle",
+            cigar="character",
+            qwidth="integer",
+            start="integer",
+            end="integer",
+            width="integer",
+            ngap="integer"
+        )
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)

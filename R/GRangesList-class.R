@@ -555,7 +555,8 @@ setMethod("show", "GRangesList",
         k <- length(object)
         cumsumN <- cumsum(elementLengths(object))
         N <- tail(cumsumN, 1)
-        cat(class(object), " of length ", k, "\n", sep = "")
+        cat(class(object), " of length ", k, ":\n", sep = "")
+        with.classinfo <- TRUE
         if (k == 0L) {
             cat("<0 elements>\n\n")
         } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
@@ -570,7 +571,10 @@ setMethod("show", "GRangesList",
             }
             for (i in seq_len(k)) {
                 cat(nms[i], "\n")
-                showGenomicRanges(object[[i]])
+                showGenomicRanges(object[[i]], margin="  ",
+                                  with.classinfo=with.classinfo)
+                if (with.classinfo)
+                    with.classinfo <- FALSE
                 cat("\n")
             }
         } else {
@@ -593,15 +597,19 @@ setMethod("show", "GRangesList",
             }
             for (i in seq_len(showK)) {
                 cat(nms[i], "\n")
-                showGenomicRanges(object[[i]])
+                showGenomicRanges(object[[i]], margin="  ",
+                                  with.classinfo=with.classinfo)
+                if (with.classinfo)
+                    with.classinfo <- FALSE
                 cat("\n")
             }
             if (diffK > 0) {
                 cat("...\n<", k - showK,
-                    ifelse(diffK == 1, " more element>\n\n", " more elements>\n\n"),
+                    ifelse(diffK == 1, " more element>\n", " more elements>\n"),
                     sep="")
             }
         }
+        cat("---\n")
         showSeqlengths(object)
     }
 )
