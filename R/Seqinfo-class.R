@@ -288,6 +288,10 @@ setAs("Seqinfo", "GenomicRanges", function(from) {
   gr
 })
 
+setAs("Seqinfo", "RangesList", function(from) {
+  as(as(from, "GenomicRanges"), "RangesList")
+})
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
 ###
