@@ -285,6 +285,7 @@ setAs("Seqinfo", "GenomicRanges", function(from) {
   gr <- GRanges(seqnames(from), IRanges(1L, width = seqlengths(from)),
                 seqlengths = seqlengths(from))
   seqinfo(gr) <- from
+  names(gr) <- seqnames(gr)
   gr
 })
 
