@@ -8,6 +8,8 @@ setClass("GenomicRanges",
     representation("VIRTUAL")
 )
 
+setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
+
 ### The code in this file will work out-of-the-box on 'x' as long as
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),
 ### update(x) and clone(x) are defined.
@@ -235,6 +237,13 @@ setMethod("as.data.frame", "GenomicRanges",
     }
 )
 
+setAs("Seqinfo", "GenomicRanges", function(from) {
+  gr <- GRanges(seqnames(from), IRanges(1L, width = seqlengths(from)),
+                seqlengths = seqlengths(from))
+  seqinfo(gr) <- from
+  names(gr) <- seqnames(gr)
+  gr
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
@@ -659,7 +668,8 @@ setMethod("c", "GenomicRanges",
         if (.ignoreElementMetadata) {
           ans_elementMetadata <- new("DataFrame", nrows = length(ans_ranges))
         } else {
-          ans_elementMetadata <- do.call(rbind, lapply(args, elementMetadata, FALSE))
+          ans_elementMetadata <- do.call(rbind,
+                                         lapply(args, elementMetadata, FALSE))
         }
         
         ans_names <- names(ans_ranges)
@@ -1047,46 +1057,71 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
     })
 
 
-setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
+setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
     function(x, subject, ignore.strand = FALSE, ...)
     {
         if (ignore.strand)
-            strand(x) <- strand(subject) <- "+"
-
-        if (all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
-            strand(x) <- strand(subject) <- "+"
-         ## merge() also checks that 'query' and 'subject' are based on the
-        ## same reference genome.
-        sinfo <- merge(seqinfo(x), seqinfo(subject))
+            strand(x) <- "+"
+      
+        if (!missing(subject)) {
+            if (ignore.strand)
+                strand(subject) <- "+"
+            ## merge() also checks that 'query' and 'subject' are based on the
+            ## same reference genome.          
+            sinfo <- merge(seqinfo(x), seqinfo(subject))
+            elementMetadata(subject) <-
+                list("posIndx" = seq_len(length(subject)))
+        }
+        
         elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
-        elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
+        
         xLst <- split(x, seqnames(x), drop = FALSE)
         xLst <- xLst[sapply(xLst, length) > 0]
         xSeqNames <- names(xLst)
-        subjectLst <- split(subject, seqnames(subject), drop = FALSE)[xSeqNames]  
+
+        if (!missing(subject))
+            subjectLst <-
+                split(subject, seqnames(subject), drop = FALSE)[xSeqNames]
         matchPos <- rep.int(NA_integer_, length(x))
 
         for (sq in xSeqNames) {
             x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
             x1Split <- x1Split[lapply(x1Split, length) > 0]
-            s1 <- subjectLst[[sq]]
+            if (!missing(subject))
+                s1 <- subjectLst[[sq]]
             for (st in names(x1Split)) {
                 if ( st == "+" ){
-                    subSplit <- s1[strand(s1) != "-"]
-                    res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
-                    matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
-                    elementMetadata(subSplit)$posIndx[res]
-
-                }else if (st == "-"){
-                    subSplit <- s1[strand(s1) != "+"]
-                    res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
-                    matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
-                    elementMetadata(subSplit)$posIndx[res]
-
-                }else if (st == "*"){
-                    res <- nearest(ranges(x1Split[[st]]), ranges(s1))
-                    matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
-                        elementMetadata(s1)$posIndx[res]
+                    if (!missing(subject)) {
+                        subSplit <- s1[strand(s1) != "-"]
+                        res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
+                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                            elementMetadata(subSplit)$posIndx[res]
+                    } else {
+                        res <- nearest(ranges(x1Split[[st]]))
+                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                            elementMetadata(x1Split[[st]])$posIndx[res]
+                    }
+                } else if (st == "-"){
+                    if (!missing(subject)) {
+                        subSplit <- s1[strand(s1) != "+"]
+                        res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
+                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                            elementMetadata(subSplit)$posIndx[res]
+                    } else {
+                        res <- nearest(ranges(x1Split[[st]]))
+                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                            elementMetadata(x1Split[[st]])$posIndx[res]
+                    }
+                } else if (st == "*"){
+                    if (!missing(subject)) {
+                        res <- nearest(ranges(x1Split[[st]]), ranges(s1))
+                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                            elementMetadata(s1)$posIndx[res]    
+                    } else {
+                        res <- nearest(ranges(x1Split[[st]]))
+                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                            elementMetadata(x1Split[[st]])$posIndx[res]
+                    }
                 }
             }
         }              
@@ -1102,7 +1137,6 @@ setMethod("narrow", "GenomicRanges",
         ranges(x) <- rng
         x
     })
-
 
 
 .checkParms <- function(x, parm) {
@@ -1157,3 +1191,22 @@ setMethod("restrict", "GenomicRanges",
         elementMetadata(ord) <- subset(elementMetadata(ord), select=-c(posIndx))
         ord
     })
+
+setMethod("duplicated", "GenomicRanges",
+          function(x, incomparables = FALSE, ignore.strand = FALSE)
+          {
+            if (!identical(incomparables, FALSE))
+              stop("'incomparables' must be 'FALSE'")
+            duplicated(paste(seqnames(x), start(x), end(x),
+                             if (!ignore.strand) strand(x),
+                             sep = "\r"))
+          })
+
+setMethod("distance", c("GenomicRanges", "GenomicRanges"), function(x, y) {
+  if (length(x) != length(y))
+    stop("'x' and 'y' must have the same length")
+  d <- distance(ranges(x), ranges(y))
+  seqselect(d, seqnames(x) != seqnames(y)) <- NA
+  d
+})
+
