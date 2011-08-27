@@ -281,6 +281,12 @@ setMethod("as.data.frame", "Seqinfo",
     }
 )
 
+setAs("Seqinfo", "GenomicRanges", function(from) {
+  gr <- GRanges(seqnames(from), IRanges(1L, width = seqlengths(from)),
+                seqlengths = seqlengths(from))
+  seqinfo(gr) <- from
+  gr
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
