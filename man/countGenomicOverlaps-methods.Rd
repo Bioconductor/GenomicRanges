@@ -112,8 +112,10 @@
 }
 
 \value{
-  A \link{GRangesList} object with an
-  additional metadata column specifying the number of hits.
+  A \link{SummarizedExperiment} object. The counts are held in the \code{assays}
+  slot, the \code{subject} is in the \code{rowData} slot and the \code{colData}
+  slot will either be \code{NULL} or hold any metadata that was present in the
+  \code{query}.
 }
 
 \author{Valerie Obenchain and Martin Morgan}
@@ -148,9 +150,9 @@ none <- countGenomicOverlaps(query, subj, type="any", resolution="none")
 divide <- countGenomicOverlaps(query, subj, type="any", resolution="divide")
 uniqueDisjoint <- countGenomicOverlaps(query, subj, type="any", 
     resolution="uniqueDisjoint")
-data.frame(none = values(unlist(none))[["hits"]], 
-           divide = values(unlist(divide))[["hits"]],
-           uniqDisj = values(unlist(uniqueDisjoint))[["hits"]])
+data.frame(none = assays(none)$counts, 
+           divide = assays(divide)$counts,
+           uniqDisj = assays(uniqueDisjoint)$counts)
 
 ## Split read with 4 fragments where
 ## 2 fragments hit the same subject, 
@@ -161,8 +163,8 @@ split_none <- countGenomicOverlaps(splitreads, subj, type="any")
 split_divide <- countGenomicOverlaps(splitreads, subj, type="any", 
     resolution="divide")
 
-data.frame(none = values(unlist(split_none))[["hits"]],
-           divide = values(unlist(split_divide))[["hits"]])
+data.frame(none = assays(split_none)$counts,
+           divide = assays(split_divide)$counts)
 
 }
 

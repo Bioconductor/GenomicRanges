@@ -17,10 +17,8 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GenomicRanges"),
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listSubject <- split(subject, seq_len(length(subject))) 
-    ans <- callGeneric(query, listSubject, 
-        type = type, resolution = resolution, 
+    callGeneric(query, listSubject, type = type, resolution = resolution, 
         ignore.strand = ignore.strand, splitreads = TRUE, ...)
-    unlist(ans)
 })
 
 setMethod("countGenomicOverlaps", c("GenomicRanges", "GRangesList"),
@@ -30,9 +28,8 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GRangesList"),
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listQuery <- split(query, seq_len(length(query))) 
-    callGeneric(listQuery, subject, 
-                type = type, resolution = resolution, 
-                ignore.strand = ignore.strand, ...)
+    callGeneric(listQuery, subject, type = type, resolution = resolution, 
+        ignore.strand = ignore.strand, ...)
 })
 
 setMethod("countGenomicOverlaps", c("GenomicRanges", "GenomicRanges"),
@@ -43,10 +40,8 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GenomicRanges"),
 {
     listSubject <- split(subject, seq_len(length(subject))) 
     listQuery <- split(query, seq_len(length(query))) 
-    ans <- callGeneric(listQuery, listSubject, 
-        type = type, resolution = resolution, 
+    callGeneric(listQuery, listSubject, type = type, resolution = resolution, 
         ignore.strand = ignore.strand, ...)
-    unlist(ans)
 })
 
 setMethod("countGenomicOverlaps", c("GappedAlignments", "GRangesList"),
@@ -56,9 +51,8 @@ setMethod("countGenomicOverlaps", c("GappedAlignments", "GRangesList"),
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
     listQuery <- as(query, "GRangesList") 
-    callGeneric(listQuery, subject, 
-                type = type, resolution = resolution, 
-                ignore.strand = ignore.strand, splitreads = TRUE, ...)
+    callGeneric(listQuery, subject, type = type, resolution = resolution, 
+        ignore.strand = ignore.strand, splitreads = TRUE, ...)
 })
 
 setMethod("countGenomicOverlaps", c("GappedAlignments", "GenomicRanges"),
@@ -69,10 +63,8 @@ setMethod("countGenomicOverlaps", c("GappedAlignments", "GenomicRanges"),
 {
     listSubject <- split(subject, seq_len(length(subject))) 
     listQuery <- as(query, "GRangesList") 
-    ans <- callGeneric(listQuery, listSubject, 
-        type = type, resolution = resolution, 
+    callGeneric(listQuery, listSubject, type = type, resolution = resolution, 
         ignore.strand = ignore.strand, splitreads = TRUE, ...)
-    unlist(ans)
 })
 
 setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
@@ -83,6 +75,21 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
 {
     resolution <- match.arg(resolution)
     type <- match.arg(type)
+    counts <- .countGenomicOverlaps(query, subject, 
+        type = type, resolution = resolution, 
+        ignore.strand = ignore.strand, splitreads = splitreads, ...)
+    if (length(metadata(query)) > 0)
+        colData <- DataFrame(metaData = metadata(query))
+    else
+        colData <- DataFrame(metaData = character(1))
+    SummarizedExperiment(assays=SimpleList(counts=counts),
+                         ## FIXME : remove unlist when rowData can take GRList 
+                         rowData=unlist(subject), colData=colData)
+})
+
+.countGenomicOverlaps <- function(query, subject, type, resolution,
+    ignore.strand, splitreads)
+{
     if (ignore.strand)
         strand(subject@unlistData) <- "*"
     if (type == "within" && resolution == "uniqueDisjoint")
@@ -127,6 +134,6 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     } else {
         resolved <- double(length(usubject))
     }
-    values(subject@unlistData)[["hits"]] <- clean + resolved 
-    subject
-})
+
+    matrix(clean + resolved, ncol=1) 
+}

@@ -60,8 +60,7 @@ countsTable <-
         exon_id=values(unlist(ranges))[["exon_id"]],
         sapply(bamFiles, function(bamFile, ranges) {
             aln <- readGappedAlignments(bamFile)
-            res <- countGenomicOverlaps(aln, ranges)
-            values(unlist(res))[["hits"]] 
+            countGenomicOverlaps(aln, ranges)
         }, ranges))
 @
 \newpage
@@ -285,9 +284,9 @@ uniqueDisjoint <- countGenomicOverlaps(query, subj, type="any",
                                        resolution="uniqueDisjoint")
 
 res_any <- data.frame(
-               none = values(unlist(none))[["hits"]],
-               divide = round(values(unlist(divide))[["hits"]], 2),
-               uniqueDisjoint = values(unlist(uniqueDisjoint))[["hits"]])
+               none = assays(none)$counts,
+               divide = assays(divide)$counts,
+               uniqueDisjoint = assays(uniqueDisjoint)$counts)
 rownames(res_any) <- paste("F", seq_len(16), sep="")
 res_any
 @
@@ -307,8 +306,8 @@ not make sense to resolve \Rfunarg{type} ``within'' with
 <<typeWithin>>=
 none <- countGenomicOverlaps(query, subj, type="within", resolution="none")
 divide <- countGenomicOverlaps(query, subj, type="within", resolution="divide")
-res_within <- data.frame(none = values(unlist(none))[["hits"]],
-                         divide = values(unlist(divide))[["hits"]])
+res_within <- data.frame(none = assays(none)$counts,
+                         divide = assays(divide)$counts)
 rownames(res_within) <- paste("F", seq_len(16), sep="")
 res_within
 @
