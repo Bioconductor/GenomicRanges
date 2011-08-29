@@ -20,6 +20,8 @@
 \alias{isCircular<-,Seqinfo-method}
 \alias{isCircularWithKnownLength,Seqinfo-method}
 \alias{[,Seqinfo-method}
+\alias{coerce,Seqinfo,GenomicRanges-method}
+\alias{coerce,Seqinfo,RangesList-method}
 \alias{as.data.frame,Seqinfo-method}
 \alias{show,Seqinfo-method}
 \alias{merge,Seqinfo,missing-method}
@@ -147,6 +149,11 @@
     \item{}{
       \code{as.data.frame(x)}:
       Turns \code{x} into a data frame.
+    }
+    \item{}{
+      \code{as(x, "GenomicRanges")}, \code{as(x, "RangesList")}:
+      Turns \code{x} (with no \code{NA} lengths) into a GRanges or
+      RangesList.
     }
   }
 }
