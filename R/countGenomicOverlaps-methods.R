@@ -83,8 +83,7 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     else
         colData <- DataFrame(metaData = character(1))
     SummarizedExperiment(assays=SimpleList(counts=counts),
-                         ## FIXME : remove unlist when rowData can take GRList 
-                         rowData=unlist(query), colData=colData)
+                         rowData=query, colData=colData)
 })
 
 .countGenomicOverlaps <- function(query, subject, type, resolution,
