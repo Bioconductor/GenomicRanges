@@ -1,9 +1,11 @@
+setClassUnion("GenomicRangesORGRangesList", c("GenomicRanges", "GRangesList"))
+
 setClass("SummarizedExperiment",
     representation(
-        exptData="SimpleList",        # overall description
-        rowData="GenomicRanges",      # rows and their anntoations
-        colData="DataFrame",          # columns and their annotations
-        assays="SimpleList"),         # Data per-se -- e.g., list of matricies
+        exptData="SimpleList",                # overall description
+        rowData="GenomicRangesORGRangesList", # rows and their annotations
+        colData="DataFrame",                  # columns and their annotations
+        assays="SimpleList"),                 # Data -- e.g., list of matricies
     prototype(rowData=GRanges()))
 
 .valid.SummarizedExperiment <- function(x)
@@ -13,6 +15,7 @@ setClass("SummarizedExperiment",
         '\n    is(assays(<SummarizedExperiment>)[[%d]], "matrix") is not TRUE'
     msg2 <-
         "\n    dim(<SummarizedExperiment>) does not equal dim(assays(<SummarizedExperiment>)[[%d]])"
+
     xdim <- dim(x)
     assays <- assays(x)
     for (i in seq_len(length(assays))) {
@@ -123,6 +126,12 @@ setReplaceMethod("rowData", c("SummarizedExperiment", "GenomicRanges"),
     initialize(x, ..., rowData=value)
 })
 
+setReplaceMethod("rowData", c("SummarizedExperiment", "GRangesList"),
+    function(x, ..., value)
+{
+    initialize(x, ..., rowData=value)
+})
+
 setMethod(colData, "SummarizedExperiment",
     function(x, ...) slot(x, "colData"))
 
@@ -225,13 +234,20 @@ setReplaceMethod("assay",
 ## for consistency (if non-null) and stripped from assays on
 ## construction, or added from assays if row/col names are NULL in
 ## <SummarizedExperiment> but not assays. dimnames need to be added on
-## to assays whne assays() invoked
+## to assays when assays() invoked
 setMethod(dim, "SummarizedExperiment", function(x) {
-    c(length(rowData(x)), nrow(colData(x)))
+    if (class(rowData(x)) == "GRangesList")
+        c(length(unlist(rowData(x), use.names=FALSE)), nrow(colData(x)))
+    else
+        c(length(rowData(x)), nrow(colData(x)))
 })
 
 setMethod(dimnames, "SummarizedExperiment", function(x) {
-    list(names(rowData(x)), rownames(colData(x)))
+    if (class(rowData(x)) == "GRangesList")
+        list(names(unlist(rowData(x))), rownames(colData(x)))
+    else
+        list(names(rowData(x)), rownames(colData(x)))
+
 })
 
 setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),

@@ -33,6 +33,7 @@
 \alias{rowData,SummarizedExperiment-method}
 \alias{rowData<-}
 \alias{rowData<-,SummarizedExperiment,GenomicRanges-method}
+\alias{rowData<-,SummarizedExperiment,GRangesList-method}
 \alias{colData}
 \alias{colData,SummarizedExperiment-method}
 \alias{colData<-}
@@ -111,9 +112,11 @@ exptData(x, ...) <- value
     across elements and with the row names of \code{rowData},
     \code{colData}.}
 
-  \item{rowData}{A \code{GRanges} instance describing the ranges of
-    interest. Row names, if present, become the row names of the
-    \code{SummarizedExperiment}.}
+  \item{rowData}{A \code{GRanges} or \code{GRangesList} instance describing 
+    the ranges of interest. Row names, if present, become the row names of the
+    \code{SummarizedExperiment}. The length of the \code{GRanges} or of the
+    unlisted \code{GRangesList} must equal the number of rows of the 
+    matrices in \code{assays}.}
 
   \item{colData}{An optional \code{DataFrame} describing the
     samples. Row names, if present, become the column names of the
@@ -164,13 +167,14 @@ exptData(x, ...) <- value
 
   The rows of a \code{SummarizedExperiment} instance represent ranges
   (in genomic coordinates) of interest. The ranges of interest are
-  described by a \code{\linkS4class{GRanges}-class} instance, accessible
+  described by a \code{\linkS4class{GRanges}-class} or a 
+  \code{\linkS4class{GRangesList}-class} instance, accessible
   using the \code{rowData} function, described below. The \code{GRanges}
-  class contains sequence (e.g., chromosome) name, genomic coordinates,
-  and strand information. Each range can be annotated with additional
-  data; this data might be used to describe the range (analogous to
-  annotations associated with genes in a \code{eSet}) or to summarize
-  results (e.g., statistics of differential abundance) relevant to the
+  and \code{GRangesList} classes contains sequence (e.g., chromosome) name, 
+  genomic coordinates, and strand information. Each range can be annotated 
+  with additional data; this data might be used to describe the range 
+  (analogous to annotations associated with genes in a \code{eSet}) or to 
+  summarize results (e.g., statistics of differential abundance) relevant to the
   range. Rows may or may not have row names; they often will not.
 
   Each column of a \code{SummarizedExperiment} instance represents a
