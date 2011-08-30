@@ -5,7 +5,7 @@ GRanges(seq="chr2", IRanges(s, width=w), strand="+")
 rng3 <- function(s, w)
 GRanges(seq="chr2", IRanges(s, width=w), strand="-")
 
-make_subject <- function() 
+make_query <- function() 
 {
     GRangesList(
         A=rng1(1000, 500),
@@ -19,7 +19,7 @@ make_subject <- function()
         I=rng3(8000, 200))
 }
 
-make_GRquery <- function() 
+make_GRsubject <- function() 
 {
     GRangesList(
         a=rng1(1400, 500),
@@ -33,7 +33,7 @@ make_GRquery <- function()
         i=rng2(8000, 100))
 }
 
-make_GAquery <- function() 
+make_GAsubject <- function() 
 {
     GappedAlignments(
         rname=(c("chr1", "chr2", "chr1", "chr2", "chr1", "chr2", 
@@ -46,27 +46,27 @@ make_GAquery <- function()
 
 .getCounts <- function(res)
 {
-    as.vector(values(unlist(res))[["hits"]])
+    as.vector(assays(res)$counts)
 }
 
 test_input_type <- function()
 {
-    subject <- make_subject()
-    GRquery <- make_GRquery()
-    GAquery <- make_GAquery() 
-    GRq_GRLs <- countGenomicOverlaps(GRquery, subject)
-    GAq_GRLs <- countGenomicOverlaps(GAquery, subject)
-    GRq_GRs <- countGenomicOverlaps(GAquery, unlist(subject))
-    GAq_GRs <- countGenomicOverlaps(GAquery, unlist(subject))
+    query <- make_query()
+    GRsubject <- make_GRsubject()
+    GAsubject <- make_GAsubject() 
+    GRLq_GRs <- countGenomicOverlaps(query, GRsubject)
+    GRLq_GAs <- countGenomicOverlaps(query, GAsubject)
+    GRq_GRs <- countGenomicOverlaps(unlist(query), GRsubject)
+    GRq_GAs <- countGenomicOverlaps(unlist(query), GAsubject)
 
-    checkIdentical(GRq_GRLs, GAq_GRLs) 
-    checkIdentical(GRq_GRs, GAq_GRs) 
+    checkIdentical(GRLq_GRs, GRLq_GAs) 
+    checkIdentical(GRq_GRs, GRq_GAs) 
 }
 
 test_typeAny <- function(type="any", ...)
 {
-    subject <- make_subject()
-    query <- make_GRquery()
+    query <- make_query()
+    subject <- make_GRsubject()
 
     .ignoreStrandFalse <- function(ignore.strand=FALSE, ...)
     {
@@ -114,8 +114,8 @@ test_typeAny <- function(type="any", ...)
 
 test_typeWithin <- function(type="within", ignore.strand=FALSE, ...)
 {
-    subject <- make_subject()
-    query <- make_GRquery()
+    query <- make_query()
+    subject <- make_GRsubject()
  
     withinNone <- countGenomicOverlaps(query, subject, type=type, 
         resolution="none", ignore.strand=ignore.strand)

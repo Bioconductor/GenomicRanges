@@ -5,8 +5,8 @@
 \alias{countGenomicOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{countGenomicOverlaps,GenomicRanges,GRangesList-method}
 \alias{countGenomicOverlaps,GRangesList,GenomicRanges-method}
-\alias{countGenomicOverlaps,GappedAlignments,GenomicRanges-method}
-\alias{countGenomicOverlaps,GappedAlignments,GRangesList-method}
+\alias{countGenomicOverlaps,GenomicRanges,GappedAlignments-method}
+\alias{countGenomicOverlaps,GRangesList,GappedAlignments-method}
 
 
 \title{Count Read Hits in Genomic Features} 
@@ -25,27 +25,26 @@
 
 \arguments{
   \item{query}{
-    A \link{GRangesList}, \link{GRanges}, or \link{GappedAlignments}
-    object. The \code{query} is intended to be a
-    \link{GRangesList} where each list element is a read. When
-    the length of a list element is greater than 1, it is assumed to
-    represent a spliced read.  Both \link{GRanges} and
-    \link{GappedAlignments} are coerced to a \link{GRangesList} with
-    each row as a single list element. If the cigar in the
-    \link{GappedAlignments} has gaps, the read will be represented in
-    the corresponding \link{GRangesList} object as a split read (i.e.,
-    list element of length 2 or greater).
+    A \link{GRangesList}, or a \link{GRanges} of genomic features.
+    These are the annotations that define the genomic regions and will often 
+    be the result of calling "exonsBy" or "transcriptsBy" on a 
+    \link[GenomicFeatures]{TranscriptDb} object. If a \link{GRangesList} is 
+    provided, each top level of the list represents a "super" such as a gene 
+    and each row is a "sub" such as an exon or transcript.  When \code{query}
+    is a \link{GRanges} all rows are considered to be of the same level
+    (e.g., all genes, all exons or all transcripts).
   }
   \item{subject}{
-    A \link{GRangesList}, or a \link{GRanges} object. 
-    The subject is expected to be a list of genomic features, 
-    specifically genes, with each row representing a feature
-    where the feature could be an exon or transcript. If a 
-    \link{GRanges}
-    object is provided, it will be coerced to a 
-    \link{GRangesList} 
-    with each original range representing as a single list element
-    (i.e., as a single gene). 
+    A \link{GRangesList}, \link{GRanges}, or \link{GappedAlignments}
+    representing the data (e.g., reads). 
+
+    List structures as the \code{subject} are used to represent reads with multiple parts
+    (i.e., gaps in the CIGAR). When a \link{GappedAlignments} is provided 
+    it is coerced to a \link{GRangesList} object. If any of the reads in the
+    \link{GappedAlignments} have gaps, the corresponding 
+    \link{GRangesList} will have multiple elements for that top level list. When
+    \code{subject} is a \link{GRanges}, it is assumed that all reads are
+    simple and do not have multiple parts. 
   }
   \item{type}{
     See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
@@ -54,17 +53,17 @@
   \item{resolution}{
     A \code{character(1)} string of "none", "divide", or "uniqueDisjoint".
     These rule sets are used to distribute read hits when 
-    multiple subjects are hit by the same query.
+    multiple queries are hit by the same subject.
 
     \itemize{
-      \item "none" : No conflict resolution is performed. All queries that
-            hit more than 1 subject are dropped.
-      \item "divide" : The hit from a single query is divided equally among 
-            all subjects that were hit. If a query hit 4 subjects 
-            each subject is assigned 1/4 of a hit.
-      \item "uniqueDisjoint" : Subjects hit by a common query are 
+      \item "none" : No conflict resolution is performed. All subjects that
+            hit more than 1 query are dropped.
+      \item "divide" : The hit from a single subject is divided equally among 
+            all queries that were hit. If a subject hit 4 queries 
+            each query is assigned 1/4 of a hit.
+      \item "uniqueDisjoint" : Queries hit by a common subject are 
             partitioned into disjoint intervals. Any regions that are shared 
-            between the subjects are discarded. If the read overlaps one of 
+            between the queries are discarded. If the read overlaps one of 
             these remaining unique disjoint regions the hit is assigned to 
             that feature. If the read overlaps both or none of the regions, 
             no hit is assigned. Therefore, unlike the \code{divide} option, 
@@ -86,22 +85,22 @@
 \details{
   The \code{countGenomicOverlaps} methods use the \code{findOverlaps} 
   function in conjunction with a resolution method to identify overlaps
-  and resolve queries that match multiple subjects.
+  and resolve subjects (reads) that match multiple queries (annotation regions).
   The usual \code{type} argument of \code{findOverlaps}
   is used to specify the type of overlap. The \code{resolution}
   argument is used to select a method to resolve the conflict
-  when a query hits more than 1 subject. Here the
+  when a subject hits more than 1 query. Here the
   term `hit' means an overlap identified by \code{findOverlaps}.
  
   The primary difference in the handling of split reads vs
   simple reads (i.e., no gap in the CIGAR) is the portion of
   the read hit each split read fragment has to contribute.
   All reads, whether simple or split, have an overall value
-  of 1 to contribute to a subject they hit. In the case of the
+  of 1 to contribute to a query they hit. In the case of the
   split reads, this value is further divided by the number of
   fragments in the read. For example, if a split read has 3
   fragments (i.e., two gaps in the CIGAR) each
-  fragment has a value of 1/3 to contribute to the subject
+  fragment has a value of 1/3 to contribute to the query 
   they hit. As with the simple reads, depending upon the
   \code{resolution} chosen the value may be divided, fully 
   assigned or discarded.
@@ -127,7 +126,7 @@ GRanges(seq="chr1", IRanges(s, width=w), strand="+")
 rng2 <- function(s, w)
 GRanges(seq="chr2", IRanges(s, width=w), strand="+")
 
-subj <- GRangesList(A=rng1(1000, 500),
+query <- GRangesList(A=rng1(1000, 500),
                     B=rng2(2000, 900),
                     C=rng1(c(3000, 3600), c(500, 300)),
                     D=rng2(c(7000, 7500), c(600, 300)),
@@ -136,7 +135,7 @@ subj <- GRangesList(A=rng1(1000, 500),
                     G=rng1(c(5000, 5600), c(500, 300)),
                     H1=rng1(6000, 500), H2=rng1(6600, 400))
 
-query <- GRangesList(a=rng1(1400, 500),
+subj <- GRangesList(a=rng1(1400, 500),
                      b=rng2(2700, 100),
                      c=rng1(3400, 300),
                      d=rng2(7100, 600),
@@ -146,22 +145,38 @@ query <- GRangesList(a=rng1(1400, 500),
                      h=rng1(c(6400, 6600), 50))
 
 ## Overlap type = "any"
-none <- countGenomicOverlaps(query, subj, type="any", resolution="none")
-divide <- countGenomicOverlaps(query, subj, type="any", resolution="divide")
+none <- countGenomicOverlaps(query, subj, 
+                             type="any", resolution="none")
+divide <- countGenomicOverlaps(query, subj, 
+                               type="any", resolution="divide")
 uniqueDisjoint <- countGenomicOverlaps(query, subj, type="any", 
-    resolution="uniqueDisjoint")
+                                       resolution="uniqueDisjoint")
 data.frame(none = assays(none)$counts, 
            divide = assays(divide)$counts,
            uniqDisj = assays(uniqueDisjoint)$counts)
 
-## Split read with 4 fragments where
-## 2 fragments hit the same subject, 
-## 1 fragment hits two different subjects,
-## 1 fragment hits a single subject 
+
+## Split read with 4 fragments :
 splitreads <- GRangesList(c(rng1(c(3000, 3200, 4000), 100), rng1(5400, 300)))
-split_none <- countGenomicOverlaps(splitreads, subj, type="any")
-split_divide <- countGenomicOverlaps(splitreads, subj, type="any", 
-    resolution="divide")
+## Unlist both the splitreads and the query to see 
+## - read fragments 1 and 2 both hit query 3
+## - read fragment 3 hits query 7
+## - read fragment 4 hits query 11 and 12 
+findOverlaps(unlist(query), unlist(splitreads))
+
+## Use countGenomicOverlaps to avoid double counting.
+## Because this read has 4 parts each part contributes a count of 1/4.
+## When resolution="none" only reads that hit a single region are counted. 
+split_none <- countGenomicOverlaps(query, splitreads, type="any",
+                                   resolution="none")
+## When resolution="divide" all reads are counted by dividing their count 
+## evenly between the regions they hit. Region 3 of the query was hit
+## by two reads each contributing a count of 1/4. Region 7 was hit
+## by one read contributing a count of 1/4. Regions 11 and 12 were both
+## hit by the same read resulting in having to share (i.e., "divide") the 
+## single 1/4 hit read 4 had to contribute.
+split_divide <- countGenomicOverlaps(query, splitreads, 
+                                     type="any", resolution="divide")
 
 data.frame(none = assays(split_none)$counts,
            divide = assays(split_divide)$counts)

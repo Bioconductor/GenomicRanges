@@ -47,7 +47,7 @@ and \Rpackage{DESeq}.
 
 A feature that distinguishes \Rfunction{countGenomicOverlaps} from other counting
 functions is the ability to dictate how counts for reads that hit multiple 
-subjects are distributed. With this level of control, reads are not double counted. 
+regions are distributed. With this level of control, reads are not double counted. 
 
 <<firstExample, eval=FALSE, keep.source=TRUE>>=
 library(TxDb.Hsapiens.UCSC.hg18.knownGene)
@@ -60,7 +60,7 @@ countsTable <-
         exon_id=values(unlist(ranges))[["exon_id"]],
         sapply(bamFiles, function(bamFile, ranges) {
             aln <- readGappedAlignments(bamFile)
-            countGenomicOverlaps(aln, ranges)
+            countGenomicOverlaps(ranges, aln)
         }, ranges))
 @
 \newpage
@@ -80,7 +80,7 @@ countsTable <-
 
 To illustrate how \Rfunction{countGenomicOverlaps} counts various reads 
 and overlap situations, we create a \Rpackage{GRangesList} of regions of
-interest (\Robject{subj}) and reads (\Robject{query}), e.g., using short 
+interest (\Robject{query}) and reads (\Robject{subj}), using short 
 helper functions \Rfunction{rng1} and \Rfunction{rng2}.
 
 <<data>>=
@@ -91,35 +91,35 @@ GRanges(seq="chr1", IRanges(s, width=w), strand="+")
 rng2 <- function(s, w)
 GRanges(seq="chr2", IRanges(s, width=w), strand="+")
 
-subj <- GRangesList(G1=rng1(1000, 500),
-                    G2=rng2(2000, 900),
-                    G3=rng1(c(3000, 3600), c(500, 300)),
-                    G4=rng2(c(7000, 7500), c(600, 300)),
-                    G5=rng2(c(9000, 9000), c(300, 600)),
-                    G6=rng1(4000, 500),
-                    G7=rng1(c(4300, 4500), c(400, 400)),
-                    G8=rng2(3000, 500),
-                    G9=rng1(c(5000, 5600), c(500, 300)),
-                    G10=rng1(6000, 500),
-                    G11=rng1(6600, 400))
+query <- GRangesList(G1=rng1(1000, 500),
+                     G2=rng2(2000, 900),
+                     G3=rng1(c(3000, 3600), c(500, 300)),
+                     G4=rng2(c(7000, 7500), c(600, 300)),
+                     G5=rng2(c(9000, 9000), c(300, 600)),
+                     G6=rng1(4000, 500),
+                     G7=rng1(c(4300, 4500), c(400, 400)),
+                     G8=rng2(3000, 500),
+                     G9=rng1(c(5000, 5600), c(500, 300)),
+                     G10=rng1(6000, 500),
+                     G11=rng1(6600, 400))
 
-query <- GRangesList(read1=rng1(1400, 500),
-                     read2=rng2(2700, 100),
-                     read3=rng1(3400, 300),
-                     read4=rng2(7100, 600),
-                     read5=rng2(9000, 200),
-                     read6=rng1(4200, 500),
-                     read7=rng2(c(3100, 3300), 50),
-                     read8=rng1(c(5400, 5600), 50),
-                     read9=rng1(c(6400, 6600), 50))
+subj <- GRangesList(read1=rng1(1400, 500),
+                    read2=rng2(2700, 100),
+                    read3=rng1(3400, 300),
+                    read4=rng2(7100, 600),
+                    read5=rng2(9000, 200),
+                    read6=rng1(4200, 500),
+                    read7=rng2(c(3100, 3300), 50),
+                    read8=rng1(c(5400, 5600), 50),
+                    read9=rng1(c(6400, 6600), 50))
 @
 
-One might also create \Robject{subj} with \Rfunction{makeTranscriptDbFromUCSC},
+One might also create \Robject{query} with \Rfunction{makeTranscriptDbFromUCSC},
 \Rfunction{import} (for GFF-like) or other \Rpackage{rtracklayer}
 functionality, or from queries to \Rpackage{biomaRt} or using the
 \Rpackage{AnnotationDbi}, \Rpackage{*org}, and \Rpackage{BSgenome*}
 \Bioconductor{} annotation packages.
-\Robject{query} might normally come from BAM files (e.g.,
+\Robject{subj} might normally come from BAM files (e.g.,
 \Rfunction{readGappedAlignements} in \Rpackage{GenomicRanges} or
 \Rfunction{scanBam} in \Rpackage{Rsamtools}) or other aligned reads
 (using base \R{} functionality for pure text files, or perhaps
@@ -135,18 +135,18 @@ of the corresponding packages.
 \end{center}
 \end{figure}
 
-The \Robject{subj} and \Robject{query} objects contain the genes and reads
+The \Robject{query} and \Robject{subj} objects contain the genes and reads
 shown in Figure~\ref{fig-countGenomicOverlaps-genes}.
 The external boxes labeled with ``G'' represent the
 genes. The internal boxes labeled with ``F''
 represent a feature which may be either
 exons or transcripts. The unlabeled boxes are the reads.
-The \Robject{subj} contains 11 genes where
+The \Robject{query} contains 11 genes where
 G1, G2, G6, G8, G10 and G11 have a single feature.
 Genes G3, G4, G5, G7 and G9 have multiple features,
 some of which are overlapping.
 
-Our \Robject{query} contains a total of nine reads,
+Our \Robject{subj} contains a total of nine reads,
 where reads 7, 8 and 9 are split reads.
 BAM files may be read into a \Robject{GappedAlignments}
 object with \Rfunction{readGappedAlignments}. When a
@@ -165,9 +165,9 @@ to demonstrate how \Rfunction{countGenomicOverlaps} counts
 \section{\Rfunction{countGenomicOverlaps} Decision Logic}
 
 \Rfunction{countGenomicOverlaps} first identifies
-overlaps of a specific \Rfunarg{type} and reads that
-hit a single subject are recorded. Reads that hit
-multiple subjects are resolved with one of
+overlaps of a specific \Rfunarg{type} and reads (subj) that
+hit a single region (query) are recorded. Reads that hit
+multiple regions are resolved with one of
 \Rfunarg{resolve} methods. 
 
 The logic behind \Rfunction{countGenomicOverlaps}
@@ -190,7 +190,7 @@ Regions that are common to multiple
 features (i.e., overlapping) are  removed
 and only unique (i.e., non-overlapping) disjoint regions are left.
 If the read overlaps any of the remaining regions, the hit
-is assigned to the feature that the disjoint region
+is assigned to the feature the disjoint region
 originated from.
 
 The primary difference in the handling of split reads vs
@@ -201,7 +201,7 @@ of 1 to contribute to a subject they hit. In the case of the
 split reads, this value is further divided by the number of
 fragments in the read. For example, if a split read has 3 
 fragments (i.e., two gaps in the CIGAR) each
-fragment has a value of 1/3 to contribute to the subject
+fragment has a value of 1/3 to contribute to the region 
 they hit. As with the simple reads, depending upon the 
 \Rfunarg{resolution} chosen the 
 value may be divided, fully assigned or discarded. 
