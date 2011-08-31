@@ -274,3 +274,19 @@ setMethod("psetdiff", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("pgap", c("GRanges", "GRanges"),
+          function(x, y, ignore.strand = FALSE, ...)
+          {
+            values(x) <- NULL
+            seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+            if (length(x) != length(y)) 
+              stop("'x' and 'y' must have the same length")
+            if (ignore.strand) 
+              strand(y) <- strand(x) 
+            if (!all((seqnames(x) == seqnames(y)) & (strand(x) == strand(y))))
+              stop("'x' and 'y' elements must have compatible 'seqnames' ",
+                   "and 'strand' values")
+            ranges(x) <- pgap(ranges(x), ranges(y))
+            x
+          }
+          )

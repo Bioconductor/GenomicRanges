@@ -5,7 +5,7 @@ import(IRanges)
 
 exportClasses(
     Seqinfo,
-    GenomicRanges, GRanges, GRangesList,
+    GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
     GappedAlignments, SummarizedExperiment
 )
 
@@ -50,10 +50,11 @@ exportMethods(
     split, window,
     flank, resize, shift,
     disjoin, gaps, range, reduce, isDisjoint,
+    distance,
     duplicated, unique, order, sort, rank, "==", "<=", ">=", "<", ">",
     coverage,
     union, intersect, setdiff,
-    punion, pintersect, psetdiff,
+    punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, match, "%in%",
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
