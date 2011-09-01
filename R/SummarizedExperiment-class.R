@@ -345,7 +345,6 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
                    }
                    r
                }), colData=local({
-                   browser()
                    c <- colData(x)
                    c[j,] <- colData(value)
                    c
