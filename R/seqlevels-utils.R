@@ -65,7 +65,7 @@ setMethod("keepSeqlevels",  c("GRangesList", "character"),
             function(x, value, ...)
 {
     if (!any(value %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
+        stop("none of the values are present in 'x'")
 
     grlSeqnames <- seqnames(unlist(x))
     idx <- rep(runValue(grlSeqnames) %in% value, runLength(grlSeqnames))
@@ -137,4 +137,18 @@ setMethod("renameSeqlevels",  c("GRangesList", "list"),
 setMethod("renameSeqlevels",  c("GenomicRanges", "list"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
 )
+
+.SubsetGRListAtRangesLevel <- function(grl, idx, ...)
+{
+    if (is.character(idx)) {
+        orig <- idx
+        idx <- match(idx, names(grl@unlistData))
+    }
+    grReduced <-
+        GenomicRanges:::deconstructGRLintoGR(grl)[idx,,drop=FALSE]
+    grlReduced <-
+        GenomicRanges:::reconstructGRLfromGR(grReduced, grl)
+    grlReduced[elementLengths(grlReduced) != 0]
+}
+
 
