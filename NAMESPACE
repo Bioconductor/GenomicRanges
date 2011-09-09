@@ -6,7 +6,8 @@ import(IRanges)
 exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
-    GappedAlignments, SummarizedExperiment, GenomicRangesORGRangesList 
+    GappedAlignments, SummarizedExperiment, GenomicRangesORGRangesList,
+    GenomicRangesList
 )
 
 export(
@@ -24,7 +25,8 @@ export(
     isCircularWithKnownLength,
     Seqinfo,
     strand, "strand<-",
-    GRanges, GRangesList, makeGRangesListFromFeatureFragments,
+    GRanges, GRangesList, GenomicRangesList,
+    makeGRangesListFromFeatureFragments,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
     SummarizedExperiment,
