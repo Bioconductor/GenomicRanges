@@ -238,6 +238,8 @@ setMethod("as.data.frame", "GenomicRanges",
 )
 
 setAs("Seqinfo", "GenomicRanges", function(from) {
+  if (any(is.na(seqlengths(from))))
+    stop("Cannot create a GenomicRanges from a Seqinfo with NA seqlengths")
   gr <- GRanges(seqnames(from), IRanges(1L, width = seqlengths(from)),
                 seqlengths = seqlengths(from))
   seqinfo(gr) <- from
