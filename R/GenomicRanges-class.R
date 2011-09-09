@@ -340,6 +340,19 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
     }
 )
 
+setReplaceMethod("seqinfo", "GenomicRanges",
+                 function(x, new2old=NULL, value)
+                 {
+                   update(x, seqnames = makeNewSeqnames(x, new2old, value),
+                          seqinfo = value)
+                   ## The ranges in 'x' need to be validated against
+                   ## the new sequence information (e.g. the sequence
+                   ## lengths might have changed).
+                   validObject(x)
+                   x
+                 }
+                 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Updating and cloning.

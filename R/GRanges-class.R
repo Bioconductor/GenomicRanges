@@ -218,6 +218,10 @@ setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining and Splitting
+###
+
 setMethod("split", "GRanges",
     function(x, f, drop = FALSE, ...)
     {
@@ -235,18 +239,6 @@ setMethod("split", "GRanges",
                                     drop = drop,
                                     elementMetadata =
                                     new("DataFrame", nrows = nrows))
-    }
-)
-
-setReplaceMethod("seqinfo", "GRanges",
-    function(x, new2old=NULL, value)
-    {
-        x@seqnames <- makeNewSeqnames(x, new2old, value)
-        x@seqinfo <- value
-        ## The ranges in 'x' need to be validated against the new sequence
-        ## information (e.g. the sequence lengths might have changed).
-        validObject(x)
-        x
     }
 )
 
