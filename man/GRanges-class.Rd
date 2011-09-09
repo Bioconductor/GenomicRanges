@@ -8,6 +8,7 @@
 \alias{class:GRanges}
 \alias{GRanges-class}
 \alias{GRanges}
+\alias{GenomicRangesORGRangesList-class}
 
 % Constructors:
 \alias{GRanges}

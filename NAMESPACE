@@ -6,7 +6,7 @@ import(IRanges)
 exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
-    GappedAlignments, SummarizedExperiment
+    GappedAlignments, SummarizedExperiment, GenomicRangesORGRangesList 
 )
 
 export(
