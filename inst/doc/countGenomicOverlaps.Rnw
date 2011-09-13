@@ -284,9 +284,9 @@ uniqueDisjoint <- countGenomicOverlaps(query, subj, type="any",
                                        resolution="uniqueDisjoint")
 
 res_any <- data.frame(
-               none = assays(none)$counts,
-               divide = assays(divide)$counts,
-               uniqueDisjoint = assays(uniqueDisjoint)$counts)
+               none = none,
+               divide = divide,
+               uniqueDisjoint = uniqueDisjoint)
 rownames(res_any) <- paste("F", seq_len(16), sep="")
 res_any
 @
@@ -306,8 +306,8 @@ not make sense to resolve \Rfunarg{type} ``within'' with
 <<typeWithin>>=
 none <- countGenomicOverlaps(query, subj, type="within", resolution="none")
 divide <- countGenomicOverlaps(query, subj, type="within", resolution="divide")
-res_within <- data.frame(none = assays(none)$counts,
-                         divide = assays(divide)$counts)
+res_within <- data.frame(none = none,
+                         divide = divide)
 rownames(res_within) <- paste("F", seq_len(16), sep="")
 res_within
 @

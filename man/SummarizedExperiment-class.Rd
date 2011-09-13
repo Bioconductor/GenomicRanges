@@ -114,8 +114,8 @@ exptData(x, ...) <- value
 
   \item{rowData}{A \code{GRanges} or \code{GRangesList} instance describing 
     the ranges of interest. Row names, if present, become the row names of the
-    \code{SummarizedExperiment}. The length of the \code{GRanges} or of the
-    unlisted \code{GRangesList} must equal the number of rows of the 
+    \code{SummarizedExperiment}. The length of the \code{GRanges} or the
+    \code{GRangesList} must equal the number of rows of the 
     matrices in \code{assays}.}
 
   \item{colData}{An optional \code{DataFrame} describing the

@@ -1,12 +1,19 @@
 m <- matrix(1, 5, 3, dimnames=list(NULL, NULL))
-assays <- SimpleList(m=m)
+mlst <- matrix(1, 3, 3, dimnames=list(NULL, NULL))
+#assays <- SimpleList(m=m)
+#assayslst <- SimpleList(m=mlst)
 colData <- DataFrame(x=letters[1:3])
+mList <- list(m, mlst)
+assaysList <- list(gr=SimpleList(m=m), grl=SimpleList(m=mlst))
 rowDataList <- 
     list(gr=GRanges("chr1", IRanges(1:5, 10)), 
          grl=split(GRanges("chr1", IRanges(1:5, 10)), c(1,1,2,2,3)))
+names(rowDataList[["grl"]]) <- NULL
 ssetList <- 
-    list(SummarizedExperiment(assays, rowData=rowDataList[["gr"]], colData),
-         SummarizedExperiment(assays, rowData=rowDataList[["grl"]], colData))
+    list(SummarizedExperiment(assays=assaysList[["gr"]], 
+         rowData=rowDataList[["gr"]], colData),
+         SummarizedExperiment(assays=assaysList[["grl"]], 
+         rowData=rowDataList[["grl"]], colData))
 
 .SubsetGRListAtRangesLevel <- function(grl, idx, ...)
 {
@@ -43,9 +50,8 @@ test_SummarizedExperiment_construction <- function() {
     for (i in length(ssetList)) {
         sset <- ssetList[[i]] 
         checkTrue(validObject(sset))
-        checkIdentical(SimpleList(m=m), assays(sset))
-        if (class(rowData(sset)) == "GRanges") 
-            checkIdentical(GRanges("chr1", IRanges(1:5, 10)), rowData(sset))
+        checkIdentical(SimpleList(m=mList[[i]]), assays(sset))
+        checkIdentical(rowDataList[[i]], rowData(sset))
         checkIdentical(DataFrame(x=letters[1:3]), colData(sset))
     }
 }
@@ -55,10 +61,7 @@ test_SummarizedExperiment_getters <- function() {
         sset <- ssetList[[i]] 
         rowData <- rowDataList[[i]] 
         ## dim, dimnames
-        if (class(rowData) == "GRangesList")
-            checkIdentical(c(length(unlist(rowData)), nrow(colData)), dim(sset))
-        else
-            checkIdentical(c(length(rowData), nrow(colData)), dim(sset))
+        checkIdentical(c(length(rowData), nrow(colData)), dim(sset))
         checkIdentical(list(NULL, NULL), dimnames(sset))
 
         ## row / col / exptData
@@ -131,10 +134,7 @@ test_SummarizedExperiment_setters <- function()
         colnames(ss1) <- dimnames[[2]]
         checkIdentical(dimnames, dimnames(ss1))
         rowData1 <- rowData
-        if (class(rowData1) == "GRangesList") 
-            names(rowData1@unlistData) <- dimnames[[1]]
-        else
-            names(rowData1) <- dimnames[[1]]
+        names(rowData1) <- dimnames[[1]]
         checkIdentical(rowData1, rowData(ss1))
         colData1 <- colData
         row.names(colData1) <- dimnames[[2]]
@@ -155,11 +155,7 @@ test_SummarizedExperiment_subset <- function()
         ## numeric
         ss1 <- sset[2:3,]
         checkIdentical(c(2L, ncol(sset)), dim(ss1))
-        if (class(rowData(sset)) == "GRangesList") 
-            checkIdentical(rowData(ss1), 
-                .SubsetGRListAtRangesLevel(rowData(sset), 2:3))
-        else 
-            checkIdentical(rowData(ss1), rowData(sset)[2:3,])
+        checkIdentical(rowData(ss1), rowData(sset)[2:3,])
         checkIdentical(colData(ss1), colData(sset))
         ss1 <- sset[,2:3]
         checkIdentical(c(nrow(sset), 2L), dim(ss1))
@@ -167,11 +163,7 @@ test_SummarizedExperiment_subset <- function()
         checkIdentical(colData(ss1), colData(sset)[2:3,,drop=FALSE])
         ss1 <- sset[2:3, 2:3]
         checkIdentical(c(2L, 2L), dim(ss1))
-        if (class(rowData(sset)) == "GRangesList")
-            checkIdentical(rowData(ss1), 
-                .SubsetGRListAtRangesLevel(rowData(sset), 2:3))
-        else 
-            checkIdentical(rowData(ss1), rowData(sset)[2:3,,drop=FALSE])
+        checkIdentical(rowData(ss1), rowData(sset)[2:3,,drop=FALSE])
         checkIdentical(colData(ss1), colData(sset)[2:3,,drop=FALSE])
 
         ## character
@@ -179,15 +171,8 @@ test_SummarizedExperiment_subset <- function()
         dimnames(ss1) <- list(LETTERS[seq_len(nrow(ss1))],
                                letters[seq_len(ncol(ss1))])
         ridx <- c("B", "C")
-        if (class(rowData(ss1)) == "GRangesList") {
-            checkIdentical(rowData(ss1[ridx,]),
-                .SubsetGRListAtRangesLevel(rowData(ss1), ridx))
-            checkIdentical(rowData(ss1["D",]), 
-                .SubsetGRListAtRangesLevel(rowData(ss1), "D"))
-        } else { 
-            checkIdentical(rowData(ss1[ridx,]), rowData(ss1)[ridx,])
-            checkIdentical(rowData(ss1["D",]), rowData(ss1)["D",,drop=FALSE])
-        } 
+        checkIdentical(rowData(ss1[ridx,]), rowData(ss1)[ridx,])
+        checkIdentical(rowData(ss1["C",]), rowData(ss1)["C",,drop=FALSE])
         checkException(ss1[LETTERS,], "i-index out of bounds", TRUE)
         cidx <- c("b", "c")
         checkIdentical(colData(ss1[,cidx]), colData(ss1)[cidx,,drop=FALSE])
@@ -204,11 +189,7 @@ test_SummarizedExperiment_subset <- function()
         checkIdentical(c(nrow(ss1), 0L), dim(ss1[,FALSE]))
         idx <- c(TRUE, FALSE)               # recycling
         ss2 <- ss1[idx,]
-        if (class(rowData(ss1)) == "GRangesList")
-            checkIdentical(.SubsetGRListAtRangesLevel(rowData(ss1), idx),
-                rowData(ss2))
-        else 
-            checkIdentical(rowData(ss1)[idx,,drop=FALSE], rowData(ss2))
+        checkIdentical(rowData(ss1)[idx,,drop=FALSE], rowData(ss2))
         ss2 <- ss1[,idx]
         checkIdentical(colData(ss1)[idx,,drop=FALSE], colData(ss2))
     }
@@ -220,15 +201,8 @@ test_SummarizedExperiment_subsetassign <- function()
         sset <- ssetList[[i]] 
         ss1 <- sset
         ss1[1:2,] <- ss1[2:1,]
-        if (class(rowData(sset)) == "GRangesList") {
-            checkIdentical(.SubsetGRListAtRangesLevel(rowData(sset), 2:1), 
-                .SubsetGRListAtRangesLevel(rowData(ss1), 1:2))
-            checkIdentical(rowData(sset[-(1:2),]), 
-                .SubsetGRListAtRangesLevel(rowData(ss1), -(1:2)))
-        } else {
-            checkIdentical(rowData(sset)[2:1,], rowData(ss1)[1:2,])
-            checkIdentical(rowData(sset[-(1:2),]), rowData(ss1)[-(1:2),])
-        }
+        checkIdentical(rowData(sset)[2:1,], rowData(ss1)[1:2,])
+        checkIdentical(rowData(sset[-(1:2),]), rowData(ss1)[-(1:2),])
         checkIdentical(colData(sset), colData(ss1))
         checkIdentical(c(exptData(sset), exptData(sset)), exptData(ss1))
 

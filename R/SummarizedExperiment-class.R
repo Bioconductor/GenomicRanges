@@ -236,16 +236,10 @@ setReplaceMethod("assay",
 ## <SummarizedExperiment> but not assays. dimnames need to be added on
 ## to assays when assays() invoked
 setMethod(dim, "SummarizedExperiment", function(x) {
-    if (class(rowData(x)) == "GRangesList")
-        c(length(unlist(rowData(x), use.names=FALSE)), nrow(colData(x)))
-    else
         c(length(rowData(x)), nrow(colData(x)))
 })
 
 setMethod(dimnames, "SummarizedExperiment", function(x) {
-    if (class(rowData(x)) == "GRangesList")
-        list(names(rowData(x)@unlistData), rownames(colData(x)))
-    else
         list(names(rowData(x)), rownames(colData(x)))
 })
 
@@ -253,10 +247,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
     function(x, value) 
 {
     rowData <- rowData(x)
-    if (class(rowData) == "GRangesList")
-        names(rowData@unlistData) <- value[[1]]
-    else
-        names(rowData) <- value[[1]]
+    names(rowData) <- value[[1]]
     colData <- colData(x)
     rownames(colData) <- value[[2]]
     initialize(x, rowData=rowData, colData=colData)
@@ -293,12 +284,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
         msg <- "<SummarizedExperiment>[,j] index out of bounds: %s"
         j <- .SummarizedExperiment.charbound(j, colnames(x), msg)
     }
-    if (class(rowData(x)) == "GRangesList") {
-        rowData <- .SubsetGRListAtRangesLevel(rowData(x), i) 
-    } else {
-        rowData <- rowData(x)[i,,drop=FALSE]
-    }
-    initialize(x, rowData=rowData,
+    initialize(x, rowData=rowData(x)[i,,drop=FALSE],
                colData=colData(x)[j,,drop=FALSE],
                assays=endoapply(assays(x, withDimnames=FALSE),
                  "[", i, j, drop=FALSE))
@@ -334,15 +320,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
                exptData=c(exptData(x), exptData(value)),
                rowData=local({
                    r <- rowData(x)
-                   if (class(rowData(x)) == "GRangesList") {
-                       if (class(rowData(value)) == "GRangesList")
-                           r@unlistData[i,] <- unlist(rowData(value),
-                               use.names=FALSE)
-                       else
-                           r@unlistData[i,] <- rowData(value)
-                   } else {
-                       r[i,] <- rowData(value)
-                   }
+                   r[i,] <- rowData(value)
                    r
                }), colData=local({
                    c <- colData(x)

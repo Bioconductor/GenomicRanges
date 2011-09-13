@@ -111,10 +111,7 @@
 }
 
 \value{
-  A \link{SummarizedExperiment} object. The counts are held in the \code{assays}
-  slot, the \code{subject} is in the \code{rowData} slot and the \code{colData}
-  slot will either be \code{NULL} or hold any metadata that was present in the
-  \code{query}.
+ A vector of counts 
 }
 
 \author{Valerie Obenchain and Martin Morgan}
@@ -151,9 +148,9 @@ divide <- countGenomicOverlaps(query, subj,
                                type="any", resolution="divide")
 uniqueDisjoint <- countGenomicOverlaps(query, subj, type="any", 
                                        resolution="uniqueDisjoint")
-data.frame(none = assays(none)$counts, 
-           divide = assays(divide)$counts,
-           uniqDisj = assays(uniqueDisjoint)$counts)
+data.frame(none = none, 
+           divide = divide,
+           uniqDisj = uniqueDisjoint)
 
 
 ## Split read with 4 fragments :
@@ -178,8 +175,8 @@ split_none <- countGenomicOverlaps(query, splitreads, type="any",
 split_divide <- countGenomicOverlaps(query, splitreads, 
                                      type="any", resolution="divide")
 
-data.frame(none = assays(split_none)$counts,
-           divide = assays(split_divide)$counts)
+data.frame(none = split_none,
+           divide = split_divide)
 
 }
 

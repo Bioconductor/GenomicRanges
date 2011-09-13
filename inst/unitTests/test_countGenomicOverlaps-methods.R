@@ -46,7 +46,7 @@ make_GAsubject <- function()
 
 .getCounts <- function(res)
 {
-    as.vector(assays(res)$counts)
+    as.vector(res)
 }
 
 test_input_type <- function()

@@ -78,12 +78,12 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     counts <- .countGenomicOverlaps(query, subject, 
         type = type, resolution = resolution, 
         ignore.strand = ignore.strand, splitreads = splitreads, ...)
-    if (length(metadata(subject)) > 0)
-        colData <- DataFrame(metaData = metadata(subject))
-    else
-        colData <- DataFrame(metaData = character(1))
-    SummarizedExperiment(assays=SimpleList(counts=counts),
-                         rowData=query, colData=colData)
+#    if (length(metadata(subject)) > 0)
+#        colData <- DataFrame(metaData = metadata(subject))
+#    else
+#        colData <- DataFrame(metaData = character(1))
+#    SummarizedExperiment(assays=SimpleList(counts=counts),
+#                         rowData=query, colData=colData)
 })
 
 .countGenomicOverlaps <- function(query, subject, type, resolution,
@@ -116,7 +116,7 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
     ## read hit one subject
     if (any(co == 1)) {
         ## type="within" handle separately
-        ## findOverlaps is directional (i.e., query within subject)
+        ## findOverlaps type="within" is directional (i.e., query within subject)
         if (type == "within") {
             fo <- findOverlaps(usubject[co == 1], uquery, type=type,
                 ignore.strand=ignore.strand)
