@@ -277,12 +277,16 @@
           \code{x} are disjoint (i.e. non-overlapping).
     }
     \item{}{
-      \code{gaps(x, start = 1L, end = seqlengths(x))}:
-      Returns a new GRanges object containing complemented ranges for each
-      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
-      the columns in \code{x} are dropped. See
-      \code{?\link[IRanges:RangesList-utils]{gaps}} for more information
-      about range complements and for a description of the optional arguments.
+      \code{gaps(x, start = 1L, end = seqlengths(x))}: Returns a new
+      GRanges object containing complemented ranges for each distinct
+      (seqname, strand) pairing. The names (\code{names(x)}) and the
+      columns in \code{x} are dropped.  For the start and end
+      arguments of this gaps method, it is expected that the user will
+      supply a named integer vector (where the names correspond to the
+      appropriate seqlevels). See
+      \code{?\link[IRanges:RangesList-utils]{gaps}} for more
+      information about range complements and for a description of the
+      optional arguments.
     }
     \item{}{
       \code{range(x, ...)}:
