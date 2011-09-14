@@ -113,6 +113,8 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
 
 .renameSeqlevels <- function(x, value, ...)
 {
+    if (is.null(names(value)))
+        stop("elements in 'value' must be named")
     old <- names(value)
     new <- unlist(value, use.names=FALSE)
     if (!any(old %in% seqlevels(x)))
@@ -126,15 +128,15 @@ setGeneric("renameSeqlevels", signature = c("x", "value"),
     standardGeneric("renameSeqlevels")
 )
 
-setMethod("renameSeqlevels",  c(x="GappedAlignments", value="list"),
+setMethod("renameSeqlevels",  c(x="GappedAlignments", value="character"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
 )
 
-setMethod("renameSeqlevels",  c("GRangesList", "list"),
+setMethod("renameSeqlevels",  c("GRangesList", "character"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
 )
 
-setMethod("renameSeqlevels",  c("GenomicRanges", "list"),
+setMethod("renameSeqlevels",  c("GenomicRanges", "character"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
 )
 

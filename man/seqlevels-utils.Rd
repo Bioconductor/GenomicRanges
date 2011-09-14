@@ -15,9 +15,9 @@
 \alias{keepSeqlevels,GappedAlignments,character-method}
 
 \alias{renameSeqlevels}
-\alias{renameSeqlevels,GappedAlignments,list-method}
-\alias{renameSeqlevels,GRangesList,list-method}
-\alias{renameSeqlevels,GenomicRanges,list-method}
+\alias{renameSeqlevels,GappedAlignments,character-method}
+\alias{renameSeqlevels,GRangesList,character-method}
+\alias{renameSeqlevels,GenomicRanges,character-method}
 
 \title{
   seqlevels utility functions
@@ -42,9 +42,9 @@
   \S4method{keepSeqlevels}{GappedAlignments,GappedAlignments}(x, value, ...) 
   \S4method{keepSeqlevels}{GappedAlignments,character}(x, value, ...) 
 
-  \S4method{renameSeqlevels}{GenomicRanges,list}(x, value, ...) 
-  \S4method{renameSeqlevels}{GRangesList,list}(x, value, ...) 
-  \S4method{renameSeqlevels}{GappedAlignments,list}(x, value, ...) 
+  \S4method{renameSeqlevels}{GenomicRanges,character}(x, value, ...) 
+  \S4method{renameSeqlevels}{GRangesList,character}(x, value, ...) 
+  \S4method{renameSeqlevels}{GappedAlignments,character}(x, value, ...) 
 }
 
 \arguments{
@@ -58,8 +58,8 @@
     \code{value} object will be used to subset the seqlevels in the
     \code{x}. 
 
-    For \code{renameSeqlevels}, a named list where the list names are the 
-    'old' seqlevels and the list values are the 'new' seqlevels. seqlevels in 
+    For \code{renameSeqlevels}, a named character vector where the names are the 
+    'old' seqlevels and the values are the 'new' seqlevels. seqlevels in 
     the \code{x} will be renamed from the 'old' to the 'new'. 
   }
   \item{...}{
@@ -91,7 +91,7 @@
 
   \code{renameSeqlevels} renames the seqlevels in \code{x} based on
   those provided in \code{value}. \code{value} is a named
-  list where the list names should match existing seqlevels in
+  character vector where the names should match existing seqlevels in
   \code{x}. The matching seqlevels will be renamed to the corresponding
   list values. List names in \code{value} that are not in 
   \code{x} are ignored. An error is thrown if none of the list names in 
@@ -113,7 +113,7 @@ gr3 <- GRanges(seqnames = c("CHROM4", "CHROM4"),
                strand = "+", score = c(2L, 5L), GC = c(0.30, 0.45))
 
 ## GRanges :
-gr3_rename <- renameSeqlevels(gr3, list(CHROM4="chr4"))
+gr3_rename <- renameSeqlevels(gr3, c(CHROM4="chr4"))
 gr3_rename
 
 gr2_subset_chr <- keepSeqlevels(gr2, c("chr1", "chr2"))
@@ -123,7 +123,7 @@ identical(gr2_subset_chr, gr2_subset_gr)
 ## GRangesList :
 grl1 <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 grl2 <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3_rename)
-grl1_rename <- renameSeqlevels(grl1, list(CHROM4="chr4"))
+grl1_rename <- renameSeqlevels(grl1, c(CHROM4="chr4"))
 identical(grl1_rename, grl2)
 
 grl1_subset <- keepSeqlevels(grl1, "chr3")
@@ -133,7 +133,7 @@ library(Rsamtools)
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galn <- readGappedAlignments(galn_file)
 
-galn_rename <- renameSeqlevels(galn, list(seq2="chr2"))
+galn_rename <- renameSeqlevels(galn, c(seq2="chr2"))
 galn_subset <- keepSeqlevels(galn_rename, gr1)
 galn_subset
 }
