@@ -30,7 +30,7 @@ setMethod("countFeatures", c("BamFileList", "GRanges"),
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
     mode <- match.arg(mode)
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("BamFileList", "GRangesList"),
@@ -39,7 +39,7 @@ setMethod("countFeatures", c("BamFileList", "GRangesList"),
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
     mode <- match.arg(mode)
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("character", "GRanges"),
@@ -49,7 +49,7 @@ setMethod("countFeatures", c("character", "GRanges"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(reads)
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("character", "GRangesList"),
@@ -59,7 +59,7 @@ setMethod("countFeatures", c("character", "GRangesList"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(reads)
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("BamViews", "GRanges"),
@@ -69,7 +69,7 @@ setMethod("countFeatures", c("BamViews", "GRanges"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(bamPaths(reads))
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("BamViews", "GRangesList"),
@@ -79,7 +79,7 @@ setMethod("countFeatures", c("BamViews", "GRangesList"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(bamPaths(reads))
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 ## methods for GappedAlignments

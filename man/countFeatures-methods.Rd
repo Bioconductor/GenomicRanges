@@ -171,6 +171,31 @@ listAsFeatures <-
 #edger <- DGEList(counts=assays(counts)$counts, 
 #                 group= )
 #
+
+
+
+group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
+features <- GRanges(
+    seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R", 
+        "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
+    strand = strand(rep("+", length(group_id))),
+    ranges = IRanges(
+        start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
+        width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
+   DataFrame(group_id)
+)
+
+fls = list.files(system.file("extdata",package="GenomicRanges"),
+                 recursive=TRUE, pattern="*bam$", full=TRUE)
+require(Rsamtools)
+bfs <- BamFileList(fls)
+
+
+countFeatures(bfs, features, mode = "IntersectionNotEmpty",ignore.strand=TRUE)
+
+countFeatures(fls, features, mode = "IntersectionNotEmpty",ignore.strand=TRUE)
+
+
 }
 
 \keyword{methods}
