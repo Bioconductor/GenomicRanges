@@ -7,13 +7,15 @@ setGeneric("countFeatures", signature = c("reads", "features"),
 })
 
 
-.processBamFiles <- function(reads, features, mode, ignore.strand){
+## methods for BamFiles
+.processBamFiles <- function(reads, features, mode, ignore.strand, ..., param){
+    if("package:parallel" %in% search() ) lapply <- mclapply
     reads <- path(reads)
     lst <- lapply(reads,
                   function(bf) {
-                      x <- readGappedAlignments(bf, param=param)
-                      .dispatch(x, features, mode=mode, 
-                          ignore.strand=ignore.strand)
+                    x <- readGappedAlignments(bf, param=param)
+                    .dispatch(x, features, mode=mode, 
+                              ignore.strand=ignore.strand)
                   })
     counts <- do.call(cbind, lst)
     colData <- DataFrame(fileName = reads)
@@ -22,14 +24,13 @@ setGeneric("countFeatures", signature = c("reads", "features"),
                          rowData=features, colData=colData)
 }
 
-
 setMethod("countFeatures", c("BamFileList", "GRanges"),
     function(reads, features, 
              mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
     mode <- match.arg(mode)
-    .processBamFiles(reads, features, mode, ignore.strand)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
 })
 
 setMethod("countFeatures", c("BamFileList", "GRangesList"),
@@ -38,9 +39,8 @@ setMethod("countFeatures", c("BamFileList", "GRangesList"),
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
     mode <- match.arg(mode)
-    .processBamFiles(reads, features, mode, ignore.strand)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
 })
-
 
 setMethod("countFeatures", c("character", "GRanges"),
     function(reads, features, 
@@ -49,7 +49,7 @@ setMethod("countFeatures", c("character", "GRanges"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(reads)
-    .processBamFiles(reads, features, mode, ignore.strand)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
 })
 
 setMethod("countFeatures", c("character", "GRangesList"),
@@ -59,9 +59,8 @@ setMethod("countFeatures", c("character", "GRangesList"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(reads)
-    .processBamFiles(reads, features, mode, ignore.strand)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
 })
-
 
 setMethod("countFeatures", c("BamViews", "GRanges"),
     function(reads, features, 
@@ -70,7 +69,7 @@ setMethod("countFeatures", c("BamViews", "GRanges"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(bamPaths(reads))
-    .processBamFiles(reads, features, mode, ignore.strand)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
 })
 
 setMethod("countFeatures", c("BamViews", "GRangesList"),
@@ -80,12 +79,10 @@ setMethod("countFeatures", c("BamViews", "GRangesList"),
 {
     mode <- match.arg(mode)
     reads <- BamFileList(bamPaths(reads))
-    .processBamFiles(reads, features, mode, ignore.strand)
+    .processBamFiles(reads, features, mode, ignore.strand, ..., param)
 })
 
-
-
-
+## methods for GappedAlignments
 setMethod("countFeatures", c("GappedAlignments", "GRangesList"),
     function(reads, features, 
              mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
