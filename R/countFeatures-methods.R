@@ -16,7 +16,8 @@ setGeneric("countFeatures", signature = c("reads", "features"),
                           ignore.strand=ignore.strand)
                   })
     counts <- do.call(cbind, lst)
-    colData <- DataFrame(metaData = character(length(reads)))
+    colData <- DataFrame(fileName = reads)
+    rownames(colData) <- sub(".bai$", "", basename(reads))
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
                          rowData=features, colData=colData)
 }
