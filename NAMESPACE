@@ -31,7 +31,8 @@ export(
     readGappedAlignments, GappedAlignments,
     SummarizedExperiment,
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
-    colData, "colData<-", exptData, "exptData<-"
+    colData, "colData<-", exptData, "exptData<-",
+    Union, IntersectionNotEmpty, IntersectionStrict
 )
 
 exportMethods(

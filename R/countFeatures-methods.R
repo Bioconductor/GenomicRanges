@@ -1,6 +1,6 @@
 setGeneric("countFeatures", signature = c("reads", "features"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode = Union,
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
     standardGeneric("countFeatures")
@@ -9,6 +9,7 @@ setGeneric("countFeatures", signature = c("reads", "features"),
 
 ## methods for BamFiles
 .processBamFiles <- function(reads, features, mode, ignore.strand, ..., param){
+    mode <- match.fun(mode)
     if("package:parallel" %in% search() ) lapply <- mclapply
     reads <- path(reads)
     lst <- lapply(reads,
@@ -26,58 +27,35 @@ setGeneric("countFeatures", signature = c("reads", "features"),
 
 setMethod("countFeatures", c("BamFileList", "GRanges"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
-    mode <- match.arg(mode)
     .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("BamFileList", "GRangesList"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
-    mode <- match.arg(mode)
     .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
-setMethod("countFeatures", c("character", "GRanges"),
-    function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
-             ignore.strand = FALSE, ..., param = ScanBamParam())
-{
-    mode <- match.arg(mode)
-    reads <- BamFileList(reads)
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
-})
-
-setMethod("countFeatures", c("character", "GRangesList"),
-    function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
-             ignore.strand = FALSE, ..., param = ScanBamParam())
-{
-    mode <- match.arg(mode)
-    reads <- BamFileList(reads)
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
-})
 
 setMethod("countFeatures", c("BamViews", "GRanges"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
-    mode <- match.arg(mode)
     reads <- BamFileList(bamPaths(reads))
     .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
 setMethod("countFeatures", c("BamViews", "GRangesList"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
-    mode <- match.arg(mode)
     reads <- BamFileList(bamPaths(reads))
     .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
@@ -85,10 +63,10 @@ setMethod("countFeatures", c("BamViews", "GRangesList"),
 ## methods for GappedAlignments
 setMethod("countFeatures", c("GappedAlignments", "GRangesList"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode, 
              ignore.strand = FALSE, ...)
 {
-    mode <- match.arg(mode)
+    mode <- match.fun(mode)
     counts <- .dispatch(reads, features, mode, ignore.strand)
     if (length(metadata(reads)) > 0)
         colData <- DataFrame(metaData = metadata(reads))
@@ -100,10 +78,10 @@ setMethod("countFeatures", c("GappedAlignments", "GRangesList"),
 
 setMethod("countFeatures", c("GappedAlignments", "GRanges"),
     function(reads, features, 
-             mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"), 
+             mode, 
              ignore.strand = FALSE, ...)
 {
-    mode <- match.arg(mode)
+    mode <- match.fun(mode)
     counts <- .dispatch(reads, features, mode, ignore.strand)
     if (length(metadata(reads)) > 0)
         colData <- DataFrame(metaData = metadata(reads))
@@ -119,12 +97,7 @@ setMethod("countFeatures", c("GappedAlignments", "GRanges"),
 {
     if (ignore.strand)
            strand(reads) <- "*"
-    switch(mode,
-           Union =  Union(reads, features, ignore.strand),
-           IntersectionNotEmpty = IntersectionNotEmpty(reads, features, 
-               ignore.strand),
-           IntersectionStrict = IntersectionStrict(reads, features, 
-               ignore.strand))
+    mode(reads, features, ignore.strand)
 }
 
 Union <- function(reads, features, ignore.strand=FALSE, ...)

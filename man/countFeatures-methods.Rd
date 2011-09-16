@@ -191,9 +191,9 @@ require(Rsamtools)
 bfs <- BamFileList(fls)
 
 
-countFeatures(bfs, features, mode = "IntersectionNotEmpty",ignore.strand=TRUE)
+countFeatures(bfs, features, mode = Union, ignore.strand=TRUE)
 
-countFeatures(fls, features, mode = "IntersectionNotEmpty",ignore.strand=TRUE)
+
 
 
 }
