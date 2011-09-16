@@ -1,10 +1,15 @@
 \name{countFeatures}
 
 \alias{countFeatures}
-\alias{countFeatures,character,GRanges-method}
-\alias{countFeatures,character,GRangesList-method}
+\alias{countFeatures,BamFileList,GRanges-method}
+\alias{countFeatures,BamFileList,GRangesList-method}
+\alias{countFeatures,BamViews,GRanges-method}
+\alias{countFeatures,BamViews,GRangesList-method}
 \alias{countFeatures,GappedAlignments,GRanges-method}
 \alias{countFeatures,GappedAlignments,GRangesList-method}
+\alias{Union}
+\alias{IntersectionStrict}
+\alias{IntersectionNotEmpty}
 
 
 \title{Count reads that map to genomic features} 
@@ -16,15 +21,13 @@
 
 \usage{
   \S4method{countFeatures}{GappedAlignments,GRanges}(
-    reads, features, 
-    mode = c("Union", "IntersectionStrict", "IntersectionNotEmpty"),
-    ignore.strand = FALSE, ..., param = ScanBamParam()) 
+    reads, features, mode, ignore.strand = FALSE, ..., param = ScanBamParam()) 
 }
 
 \arguments{
   \item{reads}{
-    A character() vector with the name(s) of the BAM file(s) or a 
-    \link{GappedAlignments} object. 
+    Either a BamFileList, (or BamViews) object to indicate bam files to
+    process or a \link{GappedAlignments} object.
   }
   \item{features}{
     A \link{GRanges} or a \link{GRangesList} object of genomic regions of 
@@ -34,11 +37,11 @@
     between a read and a feature. See examples for details. 
   }
   \item{mode}{
-    A \code{character(1)} string indicating what resolution method should be
-    used when a read overlaps more than one feature. Options are "Union", 
-    "IntersectionStrict", or "IntersectionNotEmpty" and are designed after
-    the counting modes available in the HTSeq package by Simon Anders 
-    (see references).
+    A function that defines the method to be used when a read overlaps
+    more than one feature. Pre-defined options are "Union",
+    "IntersectionStrict", or "IntersectionNotEmpty" and are designed
+    after the counting modes available in the HTSeq package by Simon
+    Anders (see references).
 
     \itemize{
       \item "Union" : (Default) Reads that overlap any portion of exactly one 
@@ -63,7 +66,9 @@
   \item{ignore.strand}{
     A logical value indicating if strand should be considered when matching.
   }
-  \item{...}{Additional arguments for other methods
+  \item{...}{Additional arguments for other methods.  If using multiple
+    cores, you can pass arguments in here to be used by mclapply to
+    indicate the number of cores to use etc.
   }
 }
 
@@ -74,11 +79,14 @@
   When \code{features} is a \link{GRangesList} the highest list-levels define
   the features. 
 
-  \code{countFeatures} offers three modes to handle reads that overlap
-  multiple features: "Union", "IntersectionStrict", and "IntersectionNotEmpty".
-  These modes are patterned after the counting methods in the HTSeq package
-  (see references). Each mode follows rules that dictate how the read hit should 
-  be assigned. Reads are counted a maximum of once.
+  \code{countFeatures} comes with three mode functions to handle reads
+  that overlap multiple features: "Union", "IntersectionStrict", and
+  "IntersectionNotEmpty".  These modes are patterned after the counting
+  methods in the HTSeq package (see references). Each mode follows rules
+  that dictate how the read hit should be assigned. Reads are counted a
+  maximum of once.  Users can create their own additional counting
+  functions and pass them in if they want to take advantage of the
+  convenient data SummarizedExperiment objects produced etc.
 
   Currently reads must be input as either a BAM file or a
   \link{GappedAlignments} object. The information in the CIGAR field is used
