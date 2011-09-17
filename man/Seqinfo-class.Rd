@@ -6,6 +6,10 @@
 \alias{Seqinfo-class}
 \alias{Seqinfo}
 
+% Constructors:
+\alias{Seqinfo}
+\alias{updateObject,Seqinfo-method}
+
 % Methods:
 \alias{length,Seqinfo-method}
 \alias{seqnames,Seqinfo-method}
@@ -19,6 +23,8 @@
 \alias{isCircular,Seqinfo-method}
 \alias{isCircular<-,Seqinfo-method}
 \alias{isCircularWithKnownLength,Seqinfo-method}
+\alias{genome,Seqinfo-method}
+\alias{genome<-,Seqinfo-method}
 \alias{[,Seqinfo-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
 \alias{coerce,Seqinfo,RangesList-method}
@@ -36,9 +42,10 @@
 \description{
   A Seqinfo object is a table-like object that contains basic information
   about a set of genomic sequences. The table has 1 row per sequence and
-  1 column per sequence attribute. Currently the only attributes are the
-  length and circularity flag of the sequence but more attributes might
-  be added in the future.
+  1 column per sequence attribute.  Currently the only attributes are the
+  length, circularity flagi, and genome provenance (e.g. hg19) of the
+  sequence, but more attributes might be added in the future as the need
+  arises.
 }
 
 \details{
@@ -51,7 +58,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{Seqinfo(seqnames, seqlengths=NA, isCircular=NA)}:
+      \code{Seqinfo(seqnames, seqlengths=NA, isCircular=NA, genome=NA)}:
       Creates a Seqinfo object.
     }
   }
@@ -112,16 +119,21 @@
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets/sets the lengths of the sequences in \code{x}.
+      Gets/sets the length for each sequence in \code{x}.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Gets/sets the circularity flags of the sequences in \code{x}.
+      Gets/sets the circularity flag for each sequence in \code{x}.
     }
     \item{}{
       \code{isCircularWithKnownLength(x)}:
       Formally defined as
       \code{(isCircular(x) \%in\% TRUE) & !is.na(seqlengths(x))}.
+    }
+    \item{}{
+      \code{genome(x)}, \code{genome(x) <- value}:
+      Gets/sets the genome identifier or assembly name for each sequence
+      in \code{x}.
     }
   }
 }
@@ -177,8 +189,9 @@
       If a row in \code{y} has the same key as a row in \code{x}, and if
       the 2 rows contain compatible information (NA values are compatible
       with anything), then they are merged into a single row in the result.
-      If they cannot be merged (because they contain different seqlengths
-      and/or circularity flags), then an error is raised.
+      If they cannot be merged (because they contain different seqlengths,
+      and/or circularity flags, and/or genome identifiers), then an error
+      is raised.
       In addition to check for incompatible sequence information,
       \code{merge(x, y)} also compares \code{seqnames(x)} with
       \code{seqnames(y)} and issues a warning if each of them has names not

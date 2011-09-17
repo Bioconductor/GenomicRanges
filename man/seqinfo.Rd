@@ -18,6 +18,10 @@
 \alias{isCircular<-,ANY-method}
 \alias{isCircularWithKnownLength}
 \alias{isCircularWithKnownLength,ANY-method}
+\alias{genome}
+\alias{genome,ANY-method}
+\alias{genome<-}
+\alias{genome<-,ANY-method}
 
 
 \title{Accessing sequence information}
@@ -44,6 +48,9 @@ isCircular(x)
 isCircular(x) <- value
 
 isCircularWithKnownLength(x)
+
+genome(x)
+genome(x) <- value
 }
 
 \arguments{
@@ -89,18 +96,19 @@ isCircularWithKnownLength(x)
   \itemize{
   \item It implements methods for all the above generics except for
         \code{seqinfo}. That is, the \code{seqnames}, \code{seqlevels},
-        \code{seqlengths}, \code{isCircular} and
-        \code{isCircularWithKnownLength} getters are defined
-        for \link{Seqinfo} objects.
+        \code{seqlengths}, \code{isCircular}, \code{isCircularWithKnownLength}
+        and \code{genome} getters are defined for \link{Seqinfo} objects.
   \item Classes that implement the \code{seqinfo} getter are typically
         expected to return a \link{Seqinfo} object.
-  \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular}
-        and \code{isCircularWithKnownLength} getters and setters are provided.
+  \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular},
+        \code{isCircularWithKnownLength} and \code{genome} getters and
+        setters are provided.
         By default, \code{seqlevels(x)} does \code{seqlevels(seqinfo(x))},
         \code{seqlengths(x)} does \code{seqlengths(seqinfo(x))},
         \code{isCircular(x)} does \code{isCircular(seqinfo(x))},
-        and \code{isCircularWithKnownLength(x)} does
-        \code{isCircularWithKnownLength(seqinfo(x))}.
+        \code{isCircularWithKnownLength(x)} does
+        \code{isCircularWithKnownLength(seqinfo(x))},
+        and \code{genome(x)} does \code{genome(seqinfo(x))}.
         So any class with a \code{seqinfo} getter that returns a
         \link{Seqinfo} object also has all those getters working
         out-of-the-box.

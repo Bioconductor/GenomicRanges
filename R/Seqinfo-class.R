@@ -5,15 +5,17 @@
 ### A Seqinfo object is a table-like object that contains basic information
 ### about a set of genomic sequences. The table has 1 row per sequence and
 ### 1 column per sequence attribute. Currently the only attributes are the
-### length and circularity flag of the sequence but more attributes might
-### be added in the future.
+### length, circularity flag, and genome provenance (e.g. hg19) of the
+### sequence, but more attributes might be added in the future as the need
+### arises.
 ###
 
 setClass("Seqinfo",
     representation(
         seqnames="character",
         seqlengths="integer",
-        is_circular="logical"
+        is_circular="logical",
+        genome="character"
     )
 )
 
@@ -53,6 +55,15 @@ setMethod("isCircular", "Seqinfo",
 
 setMethod("isCircularWithKnownLength", "Seqinfo",
     function(x) ((isCircular(x) %in% TRUE) & !is.na(seqlengths(x)))
+)
+
+setMethod("genome", "Seqinfo",
+    function(x)
+    {
+        ans <- x@genome
+        names(ans) <- seqnames(x)
+        ans
+    }
 )
 
 
@@ -98,11 +109,24 @@ setMethod("isCircularWithKnownLength", "Seqinfo",
     NULL
 }
 
+### Not really checking the slot itself but the value returned by the
+### slot accessor.
+.valid.Seqinfo.genome <- function(x)
+{
+    x_genome <- genome(x)
+    if (!is.character(x_genome)
+     || length(x_genome) != length(x)
+     || !identical(names(x_genome), seqnames(x)))
+        return("'genome(x)' must be a character vector of the length of 'x' and with names 'seqnames(x)'")
+    NULL
+}
+
 .valid.Seqinfo <- function(x)
 {
     c(.valid.Seqinfo.seqnames(x),
       .valid.Seqinfo.seqlengths(x),
-      .valid.Seqinfo.isCircular(x))
+      .valid.Seqinfo.isCircular(x),
+      .valid.Seqinfo.genome(x))
 }
 
 setValidity2("Seqinfo", .valid.Seqinfo)
@@ -136,7 +160,7 @@ setValidity2("Seqinfo", .valid.Seqinfo)
              "the number of sequences")
     if (!is.null(names(seqlengths))
      && !identical(names(seqlengths), seqnames))
-        stop("when the supplied 'seqlengths' are named, ",
+        stop("when the supplied 'seqlengths' vector is named, ",
              "the names must match the seqnames")
     if (is.logical(seqlengths)) {
         if (all(is.na(seqlengths)))
@@ -167,15 +191,53 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     unname(isCircular)
 }
 
-Seqinfo <- function(seqnames=NULL, seqlengths=NA, isCircular=NA)
+### Make sure this always returns an *unnamed* character vector.
+.normargGenome <- function(genome, seqnames)
+{
+    if (identical(genome, NA))
+        return(rep.int(NA_character_, length(seqnames)))
+    if (length(genome) != length(seqnames))
+        stop("length of supplied 'genome' must equal ",
+             "the number of sequences")
+    if (!is.null(names(genome))
+     && !identical(names(genome), seqnames))
+        stop("when the supplied 'genome' vector is named, ",
+             "the names must match the seqnames")
+    if (is.logical(genome)) {
+        if (all(is.na(genome)))
+            return(as.character(genome))
+        stop("bad supplied 'genome' value")
+    }
+    if (!is.character(genome))
+        stop("bad supplied 'genome' value")
+    unname(genome)
+}
+
+Seqinfo <- function(seqnames=NULL, seqlengths=NA, isCircular=NA, genome=NA)
 {
     seqnames <- .normargSeqnames(seqnames)
     seqlengths <- .normargSeqlengths(seqlengths, seqnames)
     is_circular <- .normargIsCircular(isCircular, seqnames)
+    genome <- .normargGenome(genome, seqnames)
     new("Seqinfo", seqnames=seqnames,
                    seqlengths=seqlengths,
-                   is_circular=is_circular)
+                   is_circular=is_circular,
+                   genome=genome)
 }
+
+setMethod("updateObject", "Seqinfo",
+    function(object, ..., verbose=FALSE)
+    {
+        if (verbose)
+            message("updateObject(object = 'Seqinfo')")
+        if (!is(try(object@genome, silent=TRUE), "try-error"))
+            return(genome)
+        as(Seqinfo(seqnames=object@seqnames,
+                   seqlengths=object@seqlengths,
+                   isCircular=object@is_circular),
+           class(object))
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -199,7 +261,9 @@ setMethod("[", "Seqinfo",
         i2names <- match(i, x_names)
         new_seqlengths <- unname(seqlengths(x))[i2names]
         new_isCircular <- unname(isCircular(x))[i2names]
-        Seqinfo(i, seqlengths=new_seqlengths, isCircular=new_isCircular)
+        new_genome <- unname(genome(x))[i2names]
+        Seqinfo(seqnames=i, seqlengths=new_seqlengths,
+                isCircular=new_isCircular, genome=new_genome)
 
     }
 )
@@ -237,9 +301,9 @@ setReplaceMethod("seqlevels", "Seqinfo",
         }
         new_seqlengths <- unname(seqlengths(x))[mode]
         new_isCircular <- unname(isCircular(x))[mode]
-        Seqinfo(value,
-                seqlengths=new_seqlengths,
-                isCircular=new_isCircular)
+        new_genome <- unname(genome(x))[mode]
+        Seqinfo(seqnames=value, seqlengths=new_seqlengths,
+                isCircular=new_isCircular, genome=new_genome)
     }
 )
 
@@ -255,6 +319,14 @@ setReplaceMethod("isCircular", "Seqinfo",
     function(x, value)
     {
         x@is_circular <- .normargIsCircular(value, seqnames(x))
+        x
+    }
+)
+
+setReplaceMethod("genome", "Seqinfo",
+    function(x, value)
+    {
+        x@genome <- .normargGenome(value, seqnames(x))
         x
     }
 )
@@ -275,6 +347,7 @@ setMethod("as.data.frame", "Seqinfo",
             warning("extra arguments were ignored")
         data.frame(seqlengths=unname(seqlengths(x)),
                    isCircular=unname(isCircular(x)),
+                   genome=unname(genome(x)),
                    row.names=seqnames(x),
                    check.names=FALSE,
                    stringsAsFactors=FALSE)
@@ -373,12 +446,13 @@ setMethod("show", "Seqinfo",
     }
     ans_seqnames <- union(seqnames(x), seqnames(y))
     ans_seqlengths <- mergeNamedAtomicVectors(seqlengths(x), seqlengths(y),
-                          what=c("sequence", "seqlengths"))
+                        what=c("sequence", "seqlengths"))
     ans_is_circular <- mergeNamedAtomicVectors(isCircular(x), isCircular(y),
-                           what=c("sequence", "circularity flags"))
-    Seqinfo(seqnames=ans_seqnames,
-            seqlengths=ans_seqlengths,
-            isCircular=ans_is_circular)
+                        what=c("sequence", "circularity flags"))
+    ans_genome <- mergeNamedAtomicVectors(genome(x), genome(y),
+                        what=c("sequence", "genomes"))
+    Seqinfo(seqnames=ans_seqnames, seqlengths=ans_seqlengths,
+            isCircular=ans_is_circular, genome=ans_genome)
 }
 
 .Seqinfo.merge <- function(...)

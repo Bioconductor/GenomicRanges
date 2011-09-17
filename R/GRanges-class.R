@@ -133,17 +133,23 @@ setMethod("updateObject", "GRanges",
     {
         if (verbose)
             message("updateObject(object = 'GRanges')")
-        if (!is(try(object@seqinfo, silent=TRUE), "try-error"))
+        if (is(try(object@seqinfo, silent=TRUE), "try-error")) {
+            object <- new(class(object),
+                          seqnames = object@seqnames,
+                          ranges = object@ranges,
+                          strand = object@strand,
+                          elementMetadata = object@elementMetadata,
+                          metadata = object@metadata,
+                          seqinfo = Seqinfo(seqnames = names(object@seqlengths),
+                                            seqlengths = object@seqlengths))
             return(object)
-        new(class(object),
-            seqnames = object@seqnames,
-            ranges = object@ranges,
-            strand = object@strand,
-            seqinfo = Seqinfo(seqnames = names(object@seqlengths),
-                              seqlengths = object@seqlengths),
-            elementMetadata = object@elementMetadata,
-            metadata = object@metadata
-        )
+        }
+        if (is(try(validObject(object@seqinfo, complete=TRUE), silent=TRUE),
+               "try-error")) {
+            object@seqinfo <- updateObject(object@seqinfo)
+            return(object)
+        }
+        object
     }
 )
 

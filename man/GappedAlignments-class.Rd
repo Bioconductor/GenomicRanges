@@ -267,6 +267,12 @@
       \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
     }
+    \item{}{
+      \code{genome(x)}, \code{genome(x) <- value}:
+      Gets or sets the genome identifier or assembly name for each sequence.
+      \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
+      \code{value} must be a named character vector eventually with NAs.
+    }
   }
 }
 

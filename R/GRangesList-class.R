@@ -160,9 +160,11 @@ setMethod("updateObject", "GRangesList",
     {
         if (verbose)
             message("updateObject(object = 'GRangesList')")
-        if (!is(try(object@unlistData@seqinfo, silent=TRUE), "try-error"))
+        if (is(try(validObject(object@unlistData, complete=TRUE), silent=TRUE),
+               "try-error")) {
+            object@unlistData <- updateObject(object@unlistData)
             return(object)
-        object@unlistData <- updateObject(object@unlistData)
+        }
         object
     }
 )

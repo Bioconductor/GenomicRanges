@@ -199,3 +199,28 @@ setMethod("isCircularWithKnownLength", "ANY",
     function(x) isCircularWithKnownLength(seqinfo(x))
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### genome() getter and setter.
+###
+
+setGeneric("genome", function(x) standardGeneric("genome"))
+
+### Default "genome" method works on any object 'x' with a working
+### "seqinfo" method.
+setMethod("genome", "ANY", function(x) genome(seqinfo(x)))
+
+setGeneric("genome<-", signature="x",
+    function(x, value) standardGeneric("genome<-")
+)
+
+### Default "genome<-" method works on any object 'x' with working
+### "seqinfo" and "seqinfo<-" methods.
+setReplaceMethod("genome", "ANY",
+    function(x, value)
+    {
+        genome(seqinfo(x)) <- value
+        x
+    }
+)
+
