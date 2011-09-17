@@ -134,15 +134,16 @@
       \code{as(from, "RangedData")}:
       Creates a RangedData object from a GRanges
       object. The \code{strand} and the values become columns in the
-      result. The \code{seqlengths(from)} and \code{isCircular(from)}
-      vectors are stored in the element metadata of \code{ranges(rd)}.
+      result. The \code{seqlengths(from)}, \code{isCircular(from)},
+      and \code{genome(from)} vectors are stored in the element metadata
+      of \code{ranges(rd)}.
     }
     \item{}{
       \code{as(from, "RangesList")}:
       Creates a RangesList object from a GRanges
       object. The \code{strand} and values become element metadata on the
-      ranges. The \code{seqlengths(from)} and \code{isCircular(from)}
-      vectors are stored in the element metadata.
+      ranges. The \code{seqlengths(from)}, \code{isCircular(from)},
+      and \code{genome(from)} vectors are stored in the element metadata.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:

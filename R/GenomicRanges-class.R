@@ -195,7 +195,8 @@ setAs("GenomicRanges", "RangedData",
                          elementMetadata(from), space = seqnames(from))
         elementMetadata(ranges(rd)) <- DataFrame(
                                          seqlengths = seqlengths(from),
-                                         isCircular = isCircular(from))
+                                         isCircular = isCircular(from),
+                                         genome = genome(from))
         metadata(ranges(rd)) <- metadata(from)
         rd
       }
@@ -212,7 +213,8 @@ setAs("GenomicRanges", "RangesList",
           ranges
         }, rl, emd)
         elementMetadata(rl) <- DataFrame(seqlengths = seqlengths(from),
-                                         isCircular = isCircular(from))
+                                         isCircular = isCircular(from),
+                                         genome = genome(from))
         metadata(rl) <- metadata(from)
         rl
       }
