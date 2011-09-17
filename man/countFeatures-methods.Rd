@@ -199,7 +199,7 @@ require(Rsamtools)
 bfs <- BamFileList(fls)
 
 
-countFeatures(bfs, features, mode = Union, ignore.strand=TRUE)
+#countFeatures(bfs, features, mode = Union, ignore.strand=TRUE)
 
 
 
