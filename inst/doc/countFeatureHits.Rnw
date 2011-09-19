@@ -31,26 +31,21 @@
 \maketitle
 
 \section{Introduction}
-This vignette illustrates how to count reads mapped to a genome 
-feature with \Rfunction{countFeatureHits}. Different "modes" of
-counting are available to decide how reads that
-hit multiple features are counted. The count methods are 
-patterened after those found in the HTSeq package.
-\Rfunction{countFeatureHits} was designed to provide users
-with a counting method in \Rcode{R} that could prepare counts for
-analyses such as those found in \Rpackage{DESeq}, 
-\Rpackage{DEXSeq} or \Rpackage{edgeR}.
+This vignette illustrates how reads mapped to a genome
+can be counted with \Rfunction{countFeatureHits}. Different "modes" of
+counting are provided to resolve reads that overlap multiple features.
+The built-in count modes are patterned after the "Union", "IntersectionStrict",
+and "IntersectionNotEmpty" methods found in the HTSeq package by Simon
+Anders (see references). Alternatively, the user can provide their own count 
+function and make use of the \Rfunction{countFeatureHits} infrastructure for 
+reading multiple BAM files and parsing results into a 
+\Robject{SummarizedExperiment} object.
 
-\Rfunction{countFeatureHits} allows users to provide 
-their own counting functions while taking advantage of the
-infrastructure for multiple file management and parsing
-of results into a \Robject{SummarizedExperiment} object.
- 
 
 \section{A First Example}
 
-Reads are counted from a list of bam files and returned in
-a \Rcode{data.frame} ready for use in further analysis such as those 
+In this example reads are counted from a list of BAM files and returned in
+a \Rcode{data.frame} for use in further analysis such as those 
 offered in \Rpackage{edgeR} and \Rpackage{DESeq}. 
 
 <<firstExample, eval=FALSE, keep.source=TRUE>>=
@@ -62,11 +57,9 @@ bamFiles <- c("sample1.bam", "sample2.bam")
 countsTable <-
     as.data.frame(tx_id=rep(names(ranges), elementLengths(ranges)),
                   exon_id=values(unlist(ranges))[["exon_id"]],
-                  sapply(bamFile, function(bf, ranges) {
-                      assays(countFeatureHits(bamFiles, ranges))$counts}
-                  ))
+                  assays(countFeatureHits(bamFiles, ranges))$counts
+                  )
 @
-
 
 \begin{verbatim}
 > head(countsTable)
@@ -82,47 +75,43 @@ countsTable <-
 
 \section{Counting Modes}
 
-\Rfunction{countFeatureHits} has three built-in counting modes:
-"Union", "IntersectionStrict" and "IntersectionNotEmpty". These
-are patterened after the modes in the HTSeq package by
-Simon Anders. If desired, the user can supply their own
-counting function as the \Rcode{mode} argument and make use of
-the \Rfunction{countFeatureHits} infrastructure for reading files
-and parsing results.
+The modes of "Union", "IntersectionStrict" and "IntersectionNotEmpty" 
+provide different approaches to resolving reads that overlap multiple 
+features. Figure~\ref{fig-countFeatureHits-modes} illustrates how both simple and 
+gapped reads are handled by the modes. Note that a read is counted a
+maximum of once; there is no double counting. These methods do not 
+currently handle paired-end reads.
 
-The graphic below depicts how both simple and gapped reads are 
-handled by the different modes. Note that for all modes
-a read is counted a maximum of once (i.e., there is no double
-counting).
-%
-%\begin{figure}[!h]
-%\begin{center}
-%\includegraphics[angle=0,width= 0.75\columnwidth]{countFeatureHits.pdf}
-%\caption{\Rfunction{countFeatureHits} Counting Modes}
-%\label{fig-countingmodes}
-%\end{center}
-%\end{figure}
-%
+\begin{figure}[!h]
+\begin{center}
+\includegraphics{countFeatureHits-modes.pdf}
+\caption{Counting Modes}
+\label{fig-countFeatureHits-modes}
+\end{center}
+\end{figure}
+
+\newpage
 
 \section{Counting}
 
-\Rfunction{countFeatureHits} counts reads mapped to genomic features.
-When a \Robject{GRanges} is supplied as the \Rcode{features}
-argument, each row is considered a feature. When a \Robject{GRangesList}
-is supplied, each highest list-level is considered the feature. 
-The features themselves can be exons, transcripts, genes or any other region 
-of interest. For example, if \Rcode{features} is a \Robject{GRanges}
-of exons, the count results returned will be the same length as the
-\Robject{GRanges} with counts for each exon. If instead \Rcode{features}
-was a \Robject{GRangesList} of exons by gene, the count result would
-be the length of the \Robject{GRanges} object with counts for each gene.
+\Rfunction{countFeatureHits} counts reads mapped to features on a
+genome where the features can be exons, transcripts, genes or 
+any other region of interest. 
 
-As sample data for the \Rcode{features} we first use a \Robject{GRanges} 
-and then split it into a \Robject{GRangesList} to
-demonstrate how these objects define the feature for counting.
-There are a total of 7 reads, the last two of have gaps. A
-\Robject{GappedAlignments} object is used so the CIGAR information 
-is available. 
+When a \Robject{GRanges} is supplied as the \Robject{features}
+argument each row is considered a different feature. In contrast, when
+a \Robject{GRangesList} is supplied the highest list-levels
+are the different features and the elements of each list
+are parts of the same feature. As an example, if \Rcode{features} is 
+a \Robject{GRanges} of exons, counts will be returned for each exon. 
+If instead \Rcode{features} is a \Robject{GRangesList} of exons by gene, 
+the count result would be the length of the \Robject{GRangesList} object 
+with counts for each gene.
+
+As sample data for the \Robject{features}, we first use a \Robject{GRanges}
+and then split it into a \Robject{GRangesList} to demonstrate how these objects 
+allow the user to define features differently. We have a total of 7 reads, 
+5 are simple and 2 have gaps in the CIGAR. 
 
 <<data>>=
 library(GenomicRanges)
@@ -147,9 +136,10 @@ reads <- GappedAlignments(
 
 @
 
-First we count using the \Robject{GRanges} as the \Rcode{features}. Each
-row is considered a feature thus the count result is the same length 
-as the \Robject{GRanges}. 
+\newpage
+
+Using a \Robject{GRanges} as the \Rcode{features} we get counts
+for each row,
 <<GRanges>>=
 data.frame(union = assays(countFeatureHits(reads, features))$counts,
            intStrict = assays(countFeatureHits(reads, features,
@@ -158,10 +148,9 @@ data.frame(union = assays(countFeatureHits(reads, features))$counts,
                mode="IntersectionNotEmpty"))$counts)
 @
 
-When the \Robject{GRanges} is split by group to create a \Robject{GRangesList}
-the highest list-levels are considered the features. The multiple elements in
-a list level are now considered portions of the same feature. The count
-result is the length of the \Robject{GRangesList}.
+Working with the same data, we split by group to create a \Robject{GRangesList}. 
+The highest list-levels are now the different features and counts are
+returned for each group. 
 <<lst>>=
 lst <- split(features, values(features)[["group_id"]])
 length(lst)
@@ -171,16 +160,13 @@ data.frame(union = assays(countFeatureHits(reads, lst))$counts,
            intStrict = assays(countFeatureHits(reads, lst,
                mode="IntersectionStrict"))$counts,
            intNotEmpty = assays(countFeatureHits(reads, lst,
-               mode="IntersectionNotEmpty"))$counts,
-           countOverlaps = countOverlaps(lst, reads))
+               mode="IntersectionNotEmpty"))$counts)
 @
 
 \section{Refererences}
 
-HTSeq main page : 
 \url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html} 
 
-HTSeq-count : 
 \url{http://www-huber.embl.de/users/anders/HTSeq/doc/count.html}
 
 \end{document}

@@ -1,12 +1,12 @@
-\name{countFeatures}
+\name{countFeatureHits}
 
-\alias{countFeatures}
-\alias{countFeatures,BamFileList,GRanges-method}
-\alias{countFeatures,BamFileList,GRangesList-method}
-\alias{countFeatures,BamViews,GRanges-method}
-\alias{countFeatures,BamViews,GRangesList-method}
-\alias{countFeatures,GappedAlignments,GRanges-method}
-\alias{countFeatures,GappedAlignments,GRangesList-method}
+\alias{countFeatureHits}
+\alias{countFeatureHits,BamFileList,GRanges-method}
+\alias{countFeatureHits,BamFileList,GRangesList-method}
+\alias{countFeatureHits,BamViews,GRanges-method}
+\alias{countFeatureHits,BamViews,GRangesList-method}
+\alias{countFeatureHits,GappedAlignments,GRanges-method}
+\alias{countFeatureHits,GappedAlignments,GRangesList-method}
 \alias{Union}
 \alias{IntersectionStrict}
 \alias{IntersectionNotEmpty}
@@ -20,7 +20,7 @@
 }
 
 \usage{
-  \S4method{countFeatures}{GappedAlignments,GRanges}(
+  \S4method{countFeatureHits}{GappedAlignments,GRanges}(
     reads, features, mode, ignore.strand = FALSE, ..., param = ScanBamParam()) 
 }
 
@@ -73,13 +73,13 @@
 }
 
 \details{
-  In the context of \code{countFeatures} a "feature" can be any portion of a 
+  In the context of \code{countFeatureHits} a "feature" can be any portion of a 
   genomic region such as a gene, transcript, exon etc. When the \code{features} 
   argument is a \link{GRanges} the rows define the features to be overlapped.
   When \code{features} is a \link{GRangesList} the highest list-levels define
   the features. 
 
-  \code{countFeatures} comes with three mode functions to handle reads
+  \code{countFeatureHits} comes with three mode functions to handle reads
   that overlap multiple features: "Union", "IntersectionStrict", and
   "IntersectionNotEmpty".  These modes are patterned after the counting
   methods in the HTSeq package (see references). Each mode follows rules
@@ -93,14 +93,14 @@
   to determine if gapped reads are present. Gapped reads are counted with
   the same \code{mode} as the simple reads.
 
-  NOTE : \code{countFeatures} does not currently handle paired-end reads. 
+  NOTE : \code{countFeatureHits} does not currently handle paired-end reads. 
 }
 
 \value{
-    A \link{SummarizedExperiment} object. The \code{assays} slot holds the
-    counts, \code{rowData} holds the \code{features}, \code{colData}
-    will either be \code{NULL} or hold any metadata that was present in the
-    \code{reads}.
+  A \link{SummarizedExperiment} object. The \code{assays} slot holds the
+  counts, \code{rowData} holds the \code{features}, \code{colData}
+  will either be \code{NULL} or hold any metadata that was present in the
+  \code{reads}.
 }
 
 
@@ -108,7 +108,7 @@
   \url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html} 
   home page for HTSeq
 
- \url{http://www-huber.embl.de/users/anders/HTSeq/doc/count.html}
+  \url{http://www-huber.embl.de/users/anders/HTSeq/doc/count.html}
   counting with htseq-count
 }
 
@@ -120,87 +120,82 @@
 
 \examples{
 
-group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
-features <- GRanges(
-    seqnames = Rle(c("chr1", "chr2", "chr1", "chr1", "chr2", "chr2", 
-        "chr1", "chr1", "chr2", "chr1", "chr1")),
-    strand = strand(rep("+", length(group_id))),
-    ranges = IRanges(
-        start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
-        width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
-   DataFrame(group_id)
-)
+  group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
+  features <- GRanges(
+      seqnames = Rle(c("chr1", "chr2", "chr1", "chr1", "chr2", "chr2", 
+          "chr1", "chr1", "chr2", "chr1", "chr1")),
+      strand = strand(rep("+", length(group_id))),
+      ranges = IRanges(
+          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
+          width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
+     DataFrame(group_id)
+  )
  
-reads <- GappedAlignments(
-    names = c("a","b","c","d","e","f","g"),
-    rname = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
-    pos = as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
-    cigar = c("500M", "100M", "300M", "500M", "300M", "50M200N50M", "50M150N50M"),
-    strand = strand(rep.int("+", 7L)))
+  reads <- GappedAlignments(
+      names = c("a","b","c","d","e","f","g"),
+      rname = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
+      pos = as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
+      cigar = c("500M", "100M", "300M", "500M", "300M", "50M200N50M", "50M150N50M"),
+      strand = strand(rep.int("+", 7L)))
 
-## Results from countOverlaps are included in these
-## examples to highlight how the decision logic in 
-## countFeatures allows a read to be counted a maximum of once.
+  ## Results from countOverlaps are included in these
+  ## examples to highlight how the decision logic in 
+  ## countFeatureHits allows a read to be counted a maximum of once.
 
-## When the 'features' argument is a GRanges, each row 
-## is treated as feature. 
-rowsAsFeatures <- 
-    data.frame(union = assays(countFeatures(reads, features))$counts, 
-               intStrict = assays(countFeatures(reads, features, 
-                   mode="IntersectionStrict"))$counts,
-               intNotEmpty = assays(countFeatures(reads, features,
-                   mode="IntersectionNotEmpty"))$counts,
-               countOverlaps = countOverlaps(features, reads))
+  ## When the 'features' argument is a GRanges, each row 
+  ## is treated as a different feature. 
+  rowsAsFeatures <- 
+      data.frame(union = assays(countFeatureHits(reads, features))$counts, 
+                 intStrict = assays(countFeatureHits(reads, features, 
+                     mode="IntersectionStrict"))$counts,
+                 intNotEmpty = assays(countFeatureHits(reads, features,
+                     mode="IntersectionNotEmpty"))$counts,
+                 countOverlaps = countOverlaps(features, reads))
 
-## When the 'features' argument is a GRangesList, each
-## highest list-level is treated as a feature.
-lst <- split(features, values(features)[["group_id"]])
-listAsFeatures <- 
-    data.frame(union = assays(countFeatures(reads, lst))$counts, 
-               intStrict = assays(countFeatures(reads, lst, 
-                   mode="IntersectionStrict"))$counts,
-               intNotEmpty = assays(countFeatures(reads, lst,
-                   mode="IntersectionNotEmpty"))$counts,
-               countOverlaps = countOverlaps(lst, reads))
+  ## When the 'features' argument is a GRangesList, each
+  ## highest list-level is a different feature.
+  lst <- split(features, values(features)[["group_id"]])
+  listAsFeatures <- 
+      data.frame(union = assays(countFeatureHits(reads, lst))$counts, 
+                 intStrict = assays(countFeatureHits(reads, lst, 
+                     mode="IntersectionStrict"))$counts,
+                 intNotEmpty = assays(countFeatureHits(reads, lst,
+                     mode="IntersectionNotEmpty"))$counts,
+                 countOverlaps = countOverlaps(lst, reads))
 
-## FIXME : find sample data
-## Use params to subset reads, package output for input to DESeq or edgeR
-#seqs <- scanBamHeader(bamFile)[[1]]$targets
-#param <- ScanBamParam(which=GRanges(names(seqs)[1], IRanges(1, seqs[1])))
-#counts <- countFeatures(bamFile, features, param=param)
-#
-#library(DESeq)
-#deseq <- newCountDataSet(countData=assays(counts)$counts, 
-#                         conditions= ,
-#                         phenoData= ,
-#                         featureData=  )
-#
-#library(edgeR)
-#edger <- DGEList(counts=assays(counts)$counts, 
-#                 group= )
-#
+  ## FIXME : find sample data
+  ## Use params to subset reads, package output for input to DESeq or edgeR
+  #seqs <- scanBamHeader(bamFile)[[1]]$targets
+  #param <- ScanBamParam(which=GRanges(names(seqs)[1], IRanges(1, seqs[1])))
+  #counts <- countFeatureHits(bamFile, features, param=param)
+  #
+  #library(DESeq)
+  #deseq <- newCountDataSet(countData=assays(counts)$counts, 
+  #                         conditions= ,
+  #                         phenoData= ,
+  #                         featureData=  )
+  #
+  #library(edgeR)
+  #edger <- DGEList(counts=assays(counts)$counts, 
+  #                 group= )
+  #
 
-
-
-group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
-features <- GRanges(
-    seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R", 
-        "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
-    strand = strand(rep("+", length(group_id))),
-    ranges = IRanges(
-        start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
-        width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
-   DataFrame(group_id)
-)
-
-fls = list.files(system.file("extdata",package="GenomicRanges"),
-                 recursive=TRUE, pattern="*bam$", full=TRUE)
-require(Rsamtools)
-bfs <- BamFileList(fls)
-countFeatures(bfs, features, mode = Union, ignore.strand=TRUE)
-
-
-
+  group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
+  features <- GRanges(
+      seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R", 
+          "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
+      strand = strand(rep("+", length(group_id))),
+      ranges = IRanges(
+          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
+          width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
+     DataFrame(group_id)
+  )
+ 
+  fls = list.files(system.file("extdata",package="GenomicRanges"),
+                   recursive=TRUE, pattern="*bam$", full=TRUE)
+  require(Rsamtools)
+  bfs <- BamFileList(fls)
+  countFeatureHits(bfs, features, mode = Union, ignore.strand=TRUE)
 
 }
 
