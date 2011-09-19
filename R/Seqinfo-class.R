@@ -146,7 +146,7 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     if (is.null(seqnames))
         return(character(0))
     if (!is.character(seqnames))
-        stop("bad 'seqnames' value")
+        stop("bad supplied 'seqnames' vector")
     unname(seqnames)
 }
 
@@ -155,6 +155,8 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 {
     if (identical(seqlengths, NA))
         return(rep.int(NA_integer_, length(seqnames)))
+    if (!is.vector(seqlengths))
+        stop("supplied 'seqlengths' must be a vector")
     if (length(seqlengths) != length(seqnames))
         stop("length of supplied 'seqlengths' must equal ",
              "the number of sequences")
@@ -165,10 +167,10 @@ setValidity2("Seqinfo", .valid.Seqinfo)
     if (is.logical(seqlengths)) {
         if (all(is.na(seqlengths)))
             return(as.integer(seqlengths))
-        stop("bad supplied 'seqlengths' value")
+        stop("bad supplied 'seqlengths' vector")
     }
     if (!is.numeric(seqlengths))
-        stop("bad supplied 'seqlengths' value")
+        stop("bad supplied 'seqlengths' vector")
     if (!is.integer(seqlengths))
         return(as.integer(seqlengths))
     unname(seqlengths)
@@ -179,6 +181,8 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 {
     if (identical(isCircular, NA))
         return(rep.int(NA, length(seqnames)))
+    if (!is.vector(isCircular))
+        stop("supplied 'isCircular' must be a vector")
     if (length(isCircular) != length(seqnames))
         stop("length of supplied 'isCircular' must equal ",
              "the number of sequences")
@@ -187,7 +191,7 @@ setValidity2("Seqinfo", .valid.Seqinfo)
         stop("when the supplied circularity flags are named, ",
              "the names must match the seqnames")
     if (!is.logical(isCircular))
-        stop("bad supplied 'isCircular' value")
+        stop("bad supplied 'isCircular' vector")
     unname(isCircular)
 }
 
@@ -196,20 +200,33 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 {
     if (identical(genome, NA))
         return(rep.int(NA_character_, length(seqnames)))
-    if (length(genome) != length(seqnames))
-        stop("length of supplied 'genome' must equal ",
-             "the number of sequences")
-    if (!is.null(names(genome))
-     && !identical(names(genome), seqnames))
+    if (is.factor(genome))
+        genome <- as.character(genome)
+    else if (!is.vector(genome))
+        stop("supplied 'genome' must be a vector")
+    if (length(genome) != length(seqnames)) {
+        if (length(genome) != 1L)
+            stop("when length of supplied 'genome' vector is not 1, ",
+                 "then it must equal the number of sequences")
+        if (!is.null(names(genome)))
+            stop("when length of supplied 'genome' vector is 1 ",
+                 "and number of sequences is != 1, ",
+                 "then 'genome' cannot be named")
+        if (length(seqnames) == 0L)
+            warning("supplied 'genome' vector has length 1 ",
+                    "but number of sequences is 0")
+        genome <- rep.int(genome, length(seqnames))
+    } else if (!is.null(names(genome))
+            && !identical(names(genome), seqnames))
         stop("when the supplied 'genome' vector is named, ",
              "the names must match the seqnames")
     if (is.logical(genome)) {
         if (all(is.na(genome)))
             return(as.character(genome))
-        stop("bad supplied 'genome' value")
+        stop("bad supplied 'genome' vector")
     }
     if (!is.character(genome))
-        stop("bad supplied 'genome' value")
+        stop("bad supplied 'genome' vector")
     unname(genome)
 }
 
@@ -278,7 +295,7 @@ setReplaceMethod("seqnames", "Seqinfo",
     {
         value <- .normargSeqnames(value)
         if (length(value) != length(x))
-            stop("length of supplied 'seqnames' value must equal ",
+            stop("length of supplied 'seqnames' vector must equal ",
                  "the number of sequences")
         x@seqnames <- value
         x

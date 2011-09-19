@@ -209,9 +209,13 @@
 }
 
 \examples{
+  ## Note that all the arguments (except 'genome') must have the
+  ## same length. 'genome' can be of length 1, whatever the lengths
+  ## of the other arguments are.
   x <- Seqinfo(seqnames=c("chr1", "chr2", "chr3", "chrM"),
                seqlengths=c(100, 200, NA, 15),
-               isCircular=c(NA, FALSE, FALSE, TRUE))
+               isCircular=c(NA, FALSE, FALSE, TRUE),
+               genome="toy")
   x
 
   x[c("chrY", "chr3", "chr1")]  # subset by names
