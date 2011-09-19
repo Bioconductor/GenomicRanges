@@ -36,6 +36,6 @@ Collate: utils.R
 	countGenomicOverlaps-methods.R
 	seqlevels-utils.R
 	resolveHits-methods.R
-        countFeatures-methods.R
+        countFeatureHits-methods.R
 	test_GenomicRanges_package.R
 	zzz.R

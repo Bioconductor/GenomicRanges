@@ -1,9 +1,9 @@
-setGeneric("countFeatures", signature = c("reads", "features"),
+setGeneric("countFeatureHits", signature = c("reads", "features"),
     function(reads, features, 
              mode = Union,
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
-    standardGeneric("countFeatures")
+    standardGeneric("countFeatureHits")
 })
 
 
@@ -25,7 +25,7 @@ setGeneric("countFeatures", signature = c("reads", "features"),
                          rowData=features, colData=colData)
 }
 
-setMethod("countFeatures", c("BamFileList", "GRanges"),
+setMethod("countFeatureHits", c("BamFileList", "GRanges"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
@@ -33,7 +33,7 @@ setMethod("countFeatures", c("BamFileList", "GRanges"),
     .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
-setMethod("countFeatures", c("BamFileList", "GRangesList"),
+setMethod("countFeatureHits", c("BamFileList", "GRangesList"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
@@ -42,7 +42,7 @@ setMethod("countFeatures", c("BamFileList", "GRangesList"),
 })
 
 
-setMethod("countFeatures", c("BamViews", "GRanges"),
+setMethod("countFeatureHits", c("BamViews", "GRanges"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
@@ -51,7 +51,7 @@ setMethod("countFeatures", c("BamViews", "GRanges"),
     .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
 })
 
-setMethod("countFeatures", c("BamViews", "GRangesList"),
+setMethod("countFeatureHits", c("BamViews", "GRangesList"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ..., param = ScanBamParam())
@@ -61,7 +61,7 @@ setMethod("countFeatures", c("BamViews", "GRangesList"),
 })
 
 ## methods for GappedAlignments
-setMethod("countFeatures", c("GappedAlignments", "GRangesList"),
+setMethod("countFeatureHits", c("GappedAlignments", "GRangesList"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ...)
@@ -76,7 +76,7 @@ setMethod("countFeatures", c("GappedAlignments", "GRangesList"),
                          rowData=features, colData=colData)
 })
 
-setMethod("countFeatures", c("GappedAlignments", "GRanges"),
+setMethod("countFeatureHits", c("GappedAlignments", "GRanges"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ...)
@@ -90,7 +90,6 @@ setMethod("countFeatures", c("GappedAlignments", "GRanges"),
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
                          rowData=features, colData=colData)
 })
-
 
 
 .dispatch <- function(reads, features, mode, ignore.strand, ...)
@@ -210,33 +209,6 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     counts
 }
 
-#.countUniqueDisjoint <- function(reads, features, ignore.strand = FALSE, ...)
-#{
-#    ## disjoint regions
-#    if (class(features) == "GRangesList")
-#        d <- disjoin(features@unlistData)
-#    else
-#        d <- disjoin(features)
-#
-#    ## unique disjoint regions (ie, remove regions shared by multiple featurs)
-#    coUnq <- countOverlaps(d, features, ignore.strand=ignore.strand)
-#    ud <- d[coUnq == 1]
-#
-#    ## count reads that hit a unique disjoint region
-#    coUnqDisj <- countOverlaps(reads, ud, ignore.strand=ignore.strand)
-#    udHits <- countOverlaps(ud, reads[coUnqDisj == 1], ignore.strand=ignore.strand)
-#
-#    ## map unique disjoint regions back to original features
-#    backmap <- findOverlaps(features, ud, ignore.strand=ignore.strand)
-#    combine <- split(udHits[subjectHits(backmap)], queryHits(backmap))
-#    sums <- unlist(lapply(combine, sum), use.names=FALSE)
-#
-#    counts <- rep(0, length(features))
-#    counts[unique(queryHits(backmap))] <- sums
-#    names(counts) <- names(features) 
-#    counts
-#}
-
 .gappedUnion <- function(reads, features, ignore.strand=FALSE)
 {
     grl <- as(reads, "GRangesList")
@@ -254,16 +226,16 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
 .gappedIntersectionStrict <- function(reads, features, ignore.strand=FALSE)
 {
     grl <- as(reads, "GRangesList")
-    co <- countOverlaps(grl@unlistData, features, type="within",
+    co <- countOverlaps(grl, features, type="within",
         ignore.strand=ignore.strand)
 
-    ## if any portion of read is within > 1 feature, remove entire read
+    ## if any read is within > 1 feature, remove read 
     idx <- co != 1
-    map <- rep(seq_len(length(grl)), elementLengths(grl))
     if (any(idx))
-        clean <- grl[-map[idx]]
+        clean <- grl[-idx]
     else
         clean <- grl
+
     fo <- findOverlaps(clean, features, type="within",
         ignore.strand=ignore.strand)
     counts <- rep(0, length(features))
