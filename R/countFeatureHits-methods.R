@@ -7,58 +7,9 @@ setGeneric("countFeatureHits", signature = c("reads", "features"),
 })
 
 
-## methods for BamFiles
-.processBamFiles <- function(reads, features, mode, ignore.strand, ..., param){
-    mode <- match.fun(mode)
-    if("package:parallel" %in% search() ) lapply <- mclapply
-    reads <- path(reads)
-    lst <- lapply(reads,
-                  function(bf) {
-                    x <- readGappedAlignments(bf, param=param)
-                    .dispatch(x, features, mode=mode, 
-                              ignore.strand=ignore.strand)
-                  })
-    counts <- do.call(cbind, lst)
-    colData <- DataFrame(fileName = reads)
-    rownames(colData) <- sub(".bai$", "", basename(reads))
-    SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-                         rowData=features, colData=colData)
-}
+## countFeatureHits methods for BamFiles are found upstairs next to home
+## furnishings.  Actually that's not quite right, they are in Rsamtools.
 
-setMethod("countFeatureHits", c("BamFileList", "GRanges"),
-    function(reads, features, 
-             mode, 
-             ignore.strand = FALSE, ..., param = ScanBamParam())
-{
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
-})
-
-setMethod("countFeatureHits", c("BamFileList", "GRangesList"),
-    function(reads, features, 
-             mode, 
-             ignore.strand = FALSE, ..., param = ScanBamParam())
-{
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
-})
-
-
-setMethod("countFeatureHits", c("BamViews", "GRanges"),
-    function(reads, features, 
-             mode, 
-             ignore.strand = FALSE, ..., param = ScanBamParam())
-{
-    reads <- BamFileList(bamPaths(reads))
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
-})
-
-setMethod("countFeatureHits", c("BamViews", "GRangesList"),
-    function(reads, features, 
-             mode, 
-             ignore.strand = FALSE, ..., param = ScanBamParam())
-{
-    reads <- BamFileList(bamPaths(reads))
-    .processBamFiles(reads, features, mode, ignore.strand, ..., param=param)
-})
 
 ## methods for GappedAlignments
 setMethod("countFeatureHits", c("GappedAlignments", "GRangesList"),

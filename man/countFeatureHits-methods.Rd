@@ -1,10 +1,6 @@
 \name{countFeatureHits}
 
 \alias{countFeatureHits}
-\alias{countFeatureHits,BamFileList,GRanges-method}
-\alias{countFeatureHits,BamFileList,GRangesList-method}
-\alias{countFeatureHits,BamViews,GRanges-method}
-\alias{countFeatureHits,BamViews,GRangesList-method}
 \alias{countFeatureHits,GappedAlignments,GRanges-method}
 \alias{countFeatureHits,GappedAlignments,GRangesList-method}
 \alias{Union}
@@ -26,8 +22,9 @@
 
 \arguments{
   \item{reads}{
-    Either a BamFileList, (or BamViews) object to indicate bam files to
-    process or a \link{GappedAlignments} object.
+    A \link{GappedAlignments} object. Additional methods in Rsamtools
+    allow other important values for this argument such as BamFileLists
+    or BamViews objects.
   }
   \item{features}{
     A \link{GRanges} or a \link{GRangesList} object of genomic regions of 
@@ -116,6 +113,11 @@
 
 \seealso{
   \code{DESeq} and \code{edgeR} packages
+  
+  The \code{BamFileList} and \code{BamViews} objects from the
+  \code{Rsamtools} package, (for details on how you can used
+  \code{countFeatureHits} directly on bam files instead of just
+  \code{GappedAlignments} objects)
 }
 
 \examples{
@@ -180,22 +182,26 @@
   #                 group= )
   #
 
-  group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
-  features <- GRanges(
-      seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R", 
-          "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
-      strand = strand(rep("+", length(group_id))),
-      ranges = IRanges(
-          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
-          width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
-     DataFrame(group_id)
-  )
+  ## If you have a set of bam files you can use methods from Rsamtools
+  ## that will extend this kind of counting functionality in a
+  ## convenient way and allow you to pass in the 1st argument as a
+  ## BamFileList or a BamViews object
+#  group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
+#  features <- GRanges(
+#      seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R", 
+#          "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
+#      strand = strand(rep("+", length(group_id))),
+#      ranges = IRanges(
+#          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
+#          width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
+#     DataFrame(group_id)
+#  )
  
-  fls = list.files(system.file("extdata",package="GenomicRanges"),
-                   recursive=TRUE, pattern="*bam$", full=TRUE)
-  require(Rsamtools)
-  bfs <- BamFileList(fls)
-  countFeatureHits(bfs, features, mode = Union, ignore.strand=TRUE)
+#  fls = list.files(system.file("extdata",package="GenomicRanges"),
+#                   recursive=TRUE, pattern="*bam$", full=TRUE)
+#  require(Rsamtools)
+#  bfs <- BamFileList(fls)
+#  countFeatureHits(bfs, features, mode = Union, ignore.strand=TRUE)
 
 }
 
