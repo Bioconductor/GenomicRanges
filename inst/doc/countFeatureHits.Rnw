@@ -105,17 +105,54 @@ are the different features and the elements of each list
 are parts of the same feature. As an example, if \Rcode{features} is 
 a \Robject{GRanges} of exons, counts will be returned for each exon. 
 If instead \Rcode{features} is a \Robject{GRangesList} of exons by gene, 
-the count result would be the length of the \Robject{GRangesList} object 
+the count result will be the length of the \Robject{GRangesList} object 
 with counts for each gene.
 
-As sample data for the \Robject{features}, we first use a \Robject{GRanges}
-and then split it into a \Robject{GRangesList} to demonstrate how these objects 
-allow the user to define features differently. We have a total of 7 reads, 
-5 are simple and 2 have gaps in the CIGAR. 
+As a simple demonstation of this concept we use a single read that overlaps
+two features, gr1 and gr2.
+<<simple>>=
+library(GenomicRanges)
+rd <- GappedAlignments("a", rname = Rle("chr1"), pos = as.integer(100),
+    cigar = "300M", strand = strand("+"))
+
+gr1 <- GRanges("chr1", IRanges(start=50, width=150), strand="+")
+gr2 <- GRanges("chr1", IRanges(start=350, width=150), strand="+")
+gr <- c(gr1, gr2)
+grl <- GRangesList(c(gr1, gr2))
+@
+
+When the features are counted as a \Robject{GRanges} we see no overlap
+for any of the modes. \Rcode{Union} does not count the read because 
+it hit more than one feature, \Rcode{IntersectionStrict} requires that 
+that read fall completely within a feature and \Robject{IntersetctionNotEmpty} 
+does not count the read because a unique disjoint region is hit in more than 
+one feature.
+<<simpleGRanges>>=
+data.frame(union = assays(countFeatureHits(rd, gr))$counts,
+           intStrict = assays(countFeatureHits(rd, gr,
+               mode="IntersectionStrict"))$counts,
+           intNotEmpty = assays(countFeatureHits(rd, gr,
+               mode="IntersectionNotEmpty"))$counts)
+@
+
+When the features are counted as a \Robject{GRangesList} we see that modes
+\Rcode{Union} and \Rcode{IntersectionNotEmpty} both count the read as
+a hit for the single feature that is the single \Robject{GRangesList}.
+<<simpleGRangesList>>=
+data.frame(union = assays(countFeatureHits(rd, grl))$counts,
+           intStrict = assays(countFeatureHits(rd, grl,
+               mode="IntersectionStrict"))$counts,
+           intNotEmpty = assays(countFeatureHits(rd, grl,
+               mode="IntersectionNotEmpty"))$counts)
+@
+
+
+In this more complicated example we have 7 reads, 5 are simple and 
+2 have gaps in the CIGAR. There are 12 ranges that will serve as the
+\Rcode{features}. 
+
 
 <<data>>=
-library(GenomicRanges)
-
 group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "G", "H", "H")
 features <- GRanges(
     seqnames = Rle(c("chr1", "chr2", "chr1", "chr1", "chr2", "chr2",
@@ -137,8 +174,8 @@ reads <- GappedAlignments(
 @
 
 \newpage
-
-Using a \Robject{GRanges} as the \Rcode{features} we get counts
+Using a \Robject{GRanges} as the \Rcode{features} all 12 ranges
+are considered to be different features and counts are produced
 for each row,
 <<GRanges>>=
 data.frame(union = assays(countFeatureHits(reads, features))$counts,
@@ -148,9 +185,10 @@ data.frame(union = assays(countFeatureHits(reads, features))$counts,
                mode="IntersectionNotEmpty"))$counts)
 @
 
-Working with the same data, we split by group to create a \Robject{GRangesList}. 
-The highest list-levels are now the different features and counts are
-returned for each group. 
+When the data are split by group to create a \Robject{GRangesList} 
+the highest list-levels are treated as different features
+and the multiple list elements are considered part of the same 
+features. Counts are returned for each group. 
 <<lst>>=
 lst <- split(features, values(features)[["group_id"]])
 length(lst)
