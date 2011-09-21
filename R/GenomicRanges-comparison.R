@@ -50,20 +50,6 @@
 ### I. UNIQUE AND DUPLICATED ELEMENTS WITHIN A GenomicRanges OBJECT.
 ###
 
-setMethod("duplicated", "GenomicRanges",
-    function(x, incomparables=FALSE, fromLast=FALSE,
-             method=c("auto", "quick", "hash"), ...)
-    {
-        if (!identical(incomparables, FALSE))
-            stop("\"duplicated\" method for GenomicRanges objects ",
-                 "only accepts 'incomparables=FALSE'")
-        IRanges:::duplicatedIntegerQuads(as.factor(seqnames(x)),
-                                         as.factor(strand(x)),
-                                         start(x), width(x),
-                                         fromLast=fromLast, method=method)
-    }
-)
-
 ### Relies on a "[" method for 'x'.
 setMethod("unique", "GenomicRanges",
     function(x, incomparables=FALSE, fromLast=FALSE,
