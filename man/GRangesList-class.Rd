@@ -56,8 +56,8 @@
 \title{GRangesList objects}
 
 \description{
-  The GRangesList class is a container for storing a collection
-  of GRanges objects.
+  The GRangesList class is a container for storing a collection of
+  GRanges objects. It is derived from GenomicRangesList.
 }
 
 \section{Constructors}{

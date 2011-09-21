@@ -7,7 +7,7 @@ exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
     GappedAlignments, SummarizedExperiment, GenomicRangesORGRangesList,
-    GenomicRangesList
+    GenomicRangesList, SimpleGenomicRangesList
 )
 
 export(

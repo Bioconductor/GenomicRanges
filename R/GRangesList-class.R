@@ -4,7 +4,7 @@
 ###
 
 setClass("GRangesList",
-    contains="CompressedList",
+    contains = c("GenomicRangesList", "CompressedList"),
     prototype=prototype(
         elementType="GRanges",
         unlistData=new("GRanges"),

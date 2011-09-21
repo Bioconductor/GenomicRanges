@@ -14,9 +14,6 @@ setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),
 ### update(x) and clone(x) are defined.
 
-### TODO: a GenomicRangesList would be nice
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### 2 non-exported low-level helper functions.
 ###
