@@ -1209,16 +1209,6 @@ setMethod("restrict", "GenomicRanges",
         ord
     })
 
-setMethod("duplicated", "GenomicRanges",
-          function(x, incomparables = FALSE, ignore.strand = FALSE)
-          {
-            if (!identical(incomparables, FALSE))
-              stop("'incomparables' must be 'FALSE'")
-            duplicated(paste(seqnames(x), start(x), end(x),
-                             if (!ignore.strand) strand(x),
-                             sep = "\r"))
-          })
-
 setMethod("distance", c("GenomicRanges", "GenomicRanges"), function(x, y) {
   if (length(x) != length(y))
     stop("'x' and 'y' must have the same length")
