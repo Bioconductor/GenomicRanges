@@ -105,8 +105,8 @@ IntersectionStrict <- function(reads, features, ignore.strand = FALSE, ...)
 IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
 {
     co <- countOverlaps(reads, features, ignore.strand=ignore.strand)
-    idx <- co == 1
-    if (sum(co == 1) == 0)
+    #idx <- co == 1
+    if (sum(co) == 0)
         return(integer(length(features)))
     ngaps <- ngap(reads)
     if (sum(ngaps) == 0) {
@@ -115,7 +115,7 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
         gaps <- as(reads[ngaps != 0], "GRangesList")
         gapct <- .IntersectionNotEmpty(gaps, features, ignore.strand) 
         reads <- reads[ngaps == 0]
-        idx <- idx[ngaps == 0]
+    #    idx <- idx[ngaps == 0]
     }
 
     simplect <- .IntersectionNotEmpty(reads, features, ignore.strand)
