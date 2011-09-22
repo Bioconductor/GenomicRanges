@@ -1,18 +1,18 @@
-setGeneric("countFeatureHits", signature = c("reads", "features"),
+setGeneric("summarizeOverlaps", signature = c("reads", "features"),
     function(reads, features, 
              mode = Union,
              ignore.strand = FALSE, ..., param = ScanBamParam())
 {
-    standardGeneric("countFeatureHits")
+    standardGeneric("summarizeOverlaps")
 })
 
 
-## countFeatureHits methods for BamFiles are found upstairs next to home
+## summarizeOverlaps methods for BamFiles are found upstairs next to home
 ## furnishings.  Actually that's not quite right, they are in Rsamtools.
 
 
 ## methods for GappedAlignments
-setMethod("countFeatureHits", c("GappedAlignments", "GRangesList"),
+setMethod("summarizeOverlaps", c("GappedAlignments", "GRangesList"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ...)
@@ -27,7 +27,7 @@ setMethod("countFeatureHits", c("GappedAlignments", "GRangesList"),
                          rowData=features, colData=colData)
 })
 
-setMethod("countFeatureHits", c("GappedAlignments", "GRanges"),
+setMethod("summarizeOverlaps", c("GappedAlignments", "GRanges"),
     function(reads, features, 
              mode, 
              ignore.strand = FALSE, ...)

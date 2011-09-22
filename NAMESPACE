@@ -64,6 +64,6 @@ exportMethods(
     qnarrow,
     dimnames, "dimnames<-", precede, follow,
     countGenomicOverlaps, keepSeqlevels, renameSeqlevels,
-    countFeatureHits
+    summarizeOverlaps 
 )
 

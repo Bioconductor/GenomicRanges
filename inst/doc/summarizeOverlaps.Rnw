@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Overview of countFeatureHits}
+%\VignetteIndexEntry{Overview of summarizeOverlaps}
 %\VignetteDepends{}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
@@ -22,7 +22,7 @@
 
 \SweaveOpts{keep.source=TRUE}
 
-\title{Overview of \Rfunction{countFeatureHits}}
+\title{Overview of \Rfunction{summarizeOverlaps}}
 \author{Valerie Obenchain}
 \date{Edited: 18 September 2011; Compiled: \today}
 
@@ -32,12 +32,12 @@
 
 \section{Introduction}
 This vignette illustrates how reads mapped to a genome
-can be counted with \Rfunction{countFeatureHits}. Different "modes" of
+can be counted with \Rfunction{summarizeOverlaps}. Different "modes" of
 counting are provided to resolve reads that overlap multiple features.
 The built-in count modes are patterned after the "Union", "IntersectionStrict",
 and "IntersectionNotEmpty" methods found in the HTSeq package by Simon
 Anders (see references). Alternatively, the user can provide their own count 
-function and make use of the \Rfunction{countFeatureHits} infrastructure for 
+function and make use of the \Rfunction{summarizeOverlaps} infrastructure for 
 reading multiple BAM files and parsing results into a 
 \Robject{SummarizedExperiment} object.
 
@@ -57,7 +57,7 @@ bamFiles <- c("sample1.bam", "sample2.bam")
 countsTable <-
     as.data.frame(tx_id=rep(names(ranges), elementLengths(ranges)),
                   exon_id=values(unlist(ranges))[["exon_id"]],
-                  assays(countFeatureHits(bamFiles, ranges))$counts
+                  assays(summarizeOverlaps(bamFiles, ranges))$counts
                   )
 @
 
@@ -77,16 +77,16 @@ countsTable <-
 
 The modes of "Union", "IntersectionStrict" and "IntersectionNotEmpty" 
 provide different approaches to resolving reads that overlap multiple 
-features. Figure~\ref{fig-countFeatureHits-modes} illustrates how both simple and 
+features. Figure~\ref{fig-summarizeOverlaps-modes} illustrates how both simple and 
 gapped reads are handled by the modes. Note that a read is counted a
 maximum of once; there is no double counting. These methods do not 
 currently handle paired-end reads.
 
 \begin{figure}[!h]
 \begin{center}
-\includegraphics{countFeatureHits-modes.pdf}
+\includegraphics{summarizeOverlaps-modes.pdf}
 \caption{Counting Modes}
-\label{fig-countFeatureHits-modes}
+\label{fig-summarizeOverlaps-modes}
 \end{center}
 \end{figure}
 
@@ -94,7 +94,7 @@ currently handle paired-end reads.
 
 \section{Counting}
 
-\Rfunction{countFeatureHits} counts reads mapped to features on a
+\Rfunction{summarizeOverlaps} counts reads mapped to features on a
 genome where the features can be exons, transcripts, genes or 
 any other region of interest. 
 
@@ -128,10 +128,10 @@ that read fall completely within a feature and \Robject{IntersetctionNotEmpty}
 does not count the read because a unique disjoint region is hit in more than 
 one feature.
 <<simpleGRanges>>=
-data.frame(union = assays(countFeatureHits(rd, gr))$counts,
-           intStrict = assays(countFeatureHits(rd, gr,
+data.frame(union = assays(summarizeOverlaps(rd, gr))$counts,
+           intStrict = assays(summarizeOverlaps(rd, gr,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(countFeatureHits(rd, gr,
+           intNotEmpty = assays(summarizeOverlaps(rd, gr,
                mode="IntersectionNotEmpty"))$counts)
 @
 
@@ -139,10 +139,10 @@ When the features are counted as a \Robject{GRangesList} we see that modes
 \Rcode{Union} and \Rcode{IntersectionNotEmpty} both count the read as
 a hit for the single feature that is the single \Robject{GRangesList}.
 <<simpleGRangesList>>=
-data.frame(union = assays(countFeatureHits(rd, grl))$counts,
-           intStrict = assays(countFeatureHits(rd, grl,
+data.frame(union = assays(summarizeOverlaps(rd, grl))$counts,
+           intStrict = assays(summarizeOverlaps(rd, grl,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(countFeatureHits(rd, grl,
+           intNotEmpty = assays(summarizeOverlaps(rd, grl,
                mode="IntersectionNotEmpty"))$counts)
 @
 
@@ -178,10 +178,10 @@ Using a \Robject{GRanges} as the \Rcode{features} all 12 ranges
 are considered to be different features and counts are produced
 for each row,
 <<GRanges>>=
-data.frame(union = assays(countFeatureHits(reads, features))$counts,
-           intStrict = assays(countFeatureHits(reads, features,
+data.frame(union = assays(summarizeOverlaps(reads, features))$counts,
+           intStrict = assays(summarizeOverlaps(reads, features,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(countFeatureHits(reads, features,
+           intNotEmpty = assays(summarizeOverlaps(reads, features,
                mode="IntersectionNotEmpty"))$counts)
 @
 
@@ -194,10 +194,10 @@ lst <- split(features, values(features)[["group_id"]])
 length(lst)
 
 <<GRangesList>>=
-data.frame(union = assays(countFeatureHits(reads, lst))$counts,
-           intStrict = assays(countFeatureHits(reads, lst,
+data.frame(union = assays(summarizeOverlaps(reads, lst))$counts,
+           intStrict = assays(summarizeOverlaps(reads, lst,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(countFeatureHits(reads, lst,
+           intNotEmpty = assays(summarizeOverlaps(reads, lst,
                mode="IntersectionNotEmpty"))$counts)
 @
 

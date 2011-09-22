@@ -1,8 +1,8 @@
-\name{countFeatureHits}
+\name{summarizeOverlaps}
 
-\alias{countFeatureHits}
-\alias{countFeatureHits,GappedAlignments,GRanges-method}
-\alias{countFeatureHits,GappedAlignments,GRangesList-method}
+\alias{summarizeOverlaps}
+\alias{summarizeOverlaps,GappedAlignments,GRanges-method}
+\alias{summarizeOverlaps,GappedAlignments,GRangesList-method}
 \alias{Union}
 \alias{IntersectionStrict}
 \alias{IntersectionNotEmpty}
@@ -16,20 +16,19 @@
 }
 
 \usage{
-  \S4method{countFeatureHits}{GappedAlignments,GRanges}(
+  \S4method{summarizeOverlaps}{GappedAlignments,GRanges}(
     reads, features, mode, ignore.strand = FALSE, ..., param = ScanBamParam()) 
 }
 
 \arguments{
   \item{reads}{
-    A \link{GappedAlignments} object. Additional methods in Rsamtools
-    allow other important values for this argument such as BamFileLists
-    or BamViews objects.
+    A \linkS4class{GappedAlignments}, \link[Rsamtools]{BamFileList} or a
+    \link[Rsamtools]{BamViews} object. 
   }
   \item{features}{
-    A \link{GRanges} or a \link{GRangesList} object of genomic regions of 
-    interest. When a \link{GRanges} is supplied, each row is considered a 
-    feature. When a \link{GRangesList} is supplied, each higher list-level is
+    A \linkS4class{GRanges} or a \linkS4class{GRangesList} object of genomic regions of 
+    interest. When a \linkS4class{GRanges} is supplied, each row is considered a 
+    feature. When a \linkS4class{GRangesList} is supplied, each higher list-level is
     considered a feature. This distinction is important when defining an overlap
     between a read and a feature. See examples for details. 
   }
@@ -70,31 +69,32 @@
 }
 
 \details{
-  In the context of \code{countFeatureHits} a "feature" can be any portion of a 
+  In the context of \code{summarizeOverlaps} a "feature" can be any portion of a 
   genomic region such as a gene, transcript, exon etc. When the \code{features} 
-  argument is a \link{GRanges} the rows define the features to be overlapped.
-  When \code{features} is a \link{GRangesList} the highest list-levels define
+  argument is a \linkS4class{GRanges} the rows define the features to be overlapped.
+  When \code{features} is a \linkS4class{GRangesList} the highest list-levels define
   the features. 
 
-  \code{countFeatureHits} comes with three mode functions to handle reads
+  \code{summarizeOverlaps} offers three \code{mode} functions to handle reads
   that overlap multiple features: "Union", "IntersectionStrict", and
-  "IntersectionNotEmpty".  These modes are patterned after the counting
-  methods in the HTSeq package (see references). Each mode follows rules
-  that dictate how the read hit should be assigned. Reads are counted a
-  maximum of once.  Users can create their own additional counting
-  functions and pass them in if they want to take advantage of the
-  convenient data SummarizedExperiment objects produced etc.
+  "IntersectionNotEmpty".  These functions are patterned after the counting
+  methods in the HTSeq package (see references). Each mode has a set of rules
+  that dictate how a read is assigned. Reads are counted a maximum of once. 
+  Alternatively, users can provide their own counting function as the \code{mode} 
+  argument and take advantage of the infrastructure in \code{summarizeOverlaps}
+  to count across multiple files and parse the results into a 
+  \linkS4class{SummarizedExperiment} object.
 
-  Currently reads must be input as either a BAM file or a
-  \link{GappedAlignments} object. The information in the CIGAR field is used
-  to determine if gapped reads are present. Gapped reads are counted with
+  Currently reads must be input as either a BAM file or a 
+  \linkS4class{GappedAlignments} object. The information in the CIGAR field 
+  is used to determine if gapped reads are present. Gapped reads are counted with
   the same \code{mode} as the simple reads.
 
-  NOTE : \code{countFeatureHits} does not currently handle paired-end reads. 
+  NOTE : \code{summarizeOverlaps} does not currently handle paired-end reads. 
 }
 
 \value{
-  A \link{SummarizedExperiment} object. The \code{assays} slot holds the
+  A \linkS4class{SummarizedExperiment} object. The \code{assays} slot holds the
   counts, \code{rowData} holds the \code{features}, \code{colData}
   will either be \code{NULL} or hold any metadata that was present in the
   \code{reads}.
@@ -113,11 +113,8 @@
 
 \seealso{
   \code{DESeq} and \code{edgeR} packages
-  
-  The \code{BamFileList} and \code{BamViews} objects from the
-  \code{Rsamtools} package, (for details on how you can used
-  \code{countFeatureHits} directly on bam files instead of just
-  \code{GappedAlignments} objects)
+  \link[Rsamtools]{BamFileList} 
+  \link[Rsamtools]{BamViews} 
 }
 
 \examples{
@@ -142,15 +139,15 @@
 
   ## Results from countOverlaps are included in these
   ## examples to highlight how the decision logic in 
-  ## countFeatureHits allows a read to be counted a maximum of once.
+  ## summarizeOverlaps counts a read a maximum of once.
 
   ## When the 'features' argument is a GRanges, each row 
   ## is treated as a different feature. 
   rowsAsFeatures <- 
-      data.frame(union = assays(countFeatureHits(reads, features))$counts, 
-                 intStrict = assays(countFeatureHits(reads, features, 
+      data.frame(union = assays(summarizeOverlaps(reads, features))$counts, 
+                 intStrict = assays(summarizeOverlaps(reads, features, 
                      mode="IntersectionStrict"))$counts,
-                 intNotEmpty = assays(countFeatureHits(reads, features,
+                 intNotEmpty = assays(summarizeOverlaps(reads, features,
                      mode="IntersectionNotEmpty"))$counts,
                  countOverlaps = countOverlaps(features, reads))
 
@@ -158,10 +155,10 @@
   ## highest list-level is a different feature.
   lst <- split(features, values(features)[["group_id"]])
   listAsFeatures <- 
-      data.frame(union = assays(countFeatureHits(reads, lst))$counts, 
-                 intStrict = assays(countFeatureHits(reads, lst, 
+      data.frame(union = assays(summarizeOverlaps(reads, lst))$counts, 
+                 intStrict = assays(summarizeOverlaps(reads, lst, 
                      mode="IntersectionStrict"))$counts,
-                 intNotEmpty = assays(countFeatureHits(reads, lst,
+                 intNotEmpty = assays(summarizeOverlaps(reads, lst,
                      mode="IntersectionNotEmpty"))$counts,
                  countOverlaps = countOverlaps(lst, reads))
 
@@ -169,7 +166,7 @@
   ## Use params to subset reads, package output for input to DESeq or edgeR
   #seqs <- scanBamHeader(bamFile)[[1]]$targets
   #param <- ScanBamParam(which=GRanges(names(seqs)[1], IRanges(1, seqs[1])))
-  #counts <- countFeatureHits(bamFile, features, param=param)
+  #counts <- summarizeOverlaps(bamFile, features, param=param)
   #
   #library(DESeq)
   #deseq <- newCountDataSet(countData=assays(counts)$counts, 
@@ -201,7 +198,7 @@
 #                   recursive=TRUE, pattern="*bam$", full=TRUE)
 #  require(Rsamtools)
 #  bfs <- BamFileList(fls)
-#  countFeatureHits(bfs, features, mode = Union, ignore.strand=TRUE)
+#  summarizeOverlaps(bfs, features, mode = Union, ignore.strand=TRUE)
 
 }
 
