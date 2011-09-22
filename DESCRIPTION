@@ -24,7 +24,7 @@ Collate: utils.R
 	strand.R
 	Seqinfo-class.R
 	GenomicRanges-class.R
-        GenomicRangesList-class.R
+	GenomicRangesList-class.R
 	GenomicRanges-comparison.R
 	GRanges-class.R
 	GRangesList-class.R
@@ -36,6 +36,6 @@ Collate: utils.R
 	countGenomicOverlaps-methods.R
 	seqlevels-utils.R
 	resolveHits-methods.R
-        summarizeOverlaps-methods.R
+	summarizeOverlaps-methods.R
 	test_GenomicRanges_package.R
 	zzz.R
