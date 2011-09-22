@@ -122,7 +122,7 @@ static const char *cigar_string_to_qwidth(SEXP cigar_string, int clip_reads,
 			return errmsg_buf;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': *qwidth += OPL; break;
+		    case 'M': case '=': case 'X': *qwidth += OPL; break;
 		/* Insertion to the reference */
 		    case 'I': *qwidth += OPL; break;
 		/* Deletion (or skipped region) from the reference */
@@ -167,7 +167,7 @@ static const char *cigar_string_to_width(SEXP cigar_string, int *width)
 			return errmsg_buf;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': *width += OPL; break;
+		    case 'M': case '=': case 'X': *width += OPL; break;
 		/* Insertion to the reference */
 		    case 'I': break;
 		/* Deletion (or skipped region) from the reference */
@@ -211,7 +211,7 @@ static const char *Lqnarrow_cigar_string(SEXP cigar_string,
 			return errmsg_buf;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M':
+		    case 'M': case '=': case 'X':
 			if (*Lqwidth < OPL) {
 				*Loffset = offset;
 				*rshift += *Lqwidth;
@@ -271,8 +271,8 @@ static const char *Rqnarrow_cigar_string(SEXP cigar_string,
 			return errmsg_buf;
 		offset -= n;
 		switch (OP) {
-		/* M, I, S, H */
-		    case 'M': case 'I': case 'S': case 'H':
+		/* M, =, X, I, S, H */
+		    case 'M': case '=': case 'X': case 'I': case 'S': case 'H':
 			if (*Rqwidth < OPL) {
 				*Roffset = offset;
 				return NULL;
@@ -365,7 +365,7 @@ static const char *Lnarrow_cigar_string(SEXP cigar_string,
 			return errmsg_buf;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M':
+		    case 'M': case '=': case 'X':
 			if (*Lwidth < OPL) {
 				*Loffset = offset;
 				*rshift += *Lwidth;
@@ -425,7 +425,7 @@ static const char *Rnarrow_cigar_string(SEXP cigar_string,
 		offset -= n;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M':
+		    case 'M': case '=': case 'X':
 			if (*Rwidth < OPL) {
 				*Roffset = offset;
 				return NULL;
@@ -547,7 +547,7 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 		width = 0;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': width = OPL; break;
+		    case 'M': case '=': case 'X': width = OPL; break;
 		/* Insertion to the reference */
 		    case 'I': break;
 		/* Deletion from the reference */
@@ -602,7 +602,7 @@ static const char *cigar_string_to_ranges2(SEXP cigar_string, int pos_elt,
 			return errmsg_buf;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': width += OPL; break;
+		    case 'M': case '=': case 'X': width += OPL; break;
 		/* Insertion to the reference */
 		    case 'I': break;
 		/* Deletion from the reference */
@@ -996,8 +996,10 @@ SEXP cigar_to_IRanges(SEXP cigar, SEXP drop_D_ranges, SEXP merge_ranges)
  * 'cigar', 'pos' and 'flag' (when not NULL) are assumed to have the same
  * length (which is the number of aligned reads).
  *
- * Returns a CompressedNormalIRangesList object of the same length as the input.
- * NOTE: See note for cigar_to_list_of_IRanges_by_rname() below about the strand.
+ * Returns a CompressedNormalIRangesList object of the same length as the
+ * input.
+ * NOTE: See note for cigar_to_list_of_IRanges_by_rname() below about the
+ * strand.
  * TODO: Support character factor 'cigar' in addition to current character
  *       vector format.
  */
@@ -1145,6 +1147,7 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 	return ans;
 }
 
+
 /****************************************************************************
  * --- .Call ENTRY POINT ---
  * Args:
@@ -1174,7 +1177,7 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
     {
       switch (OP) {
         /* Alignment match (can be a sequence match or mismatch) */
-      case 'M':
+      case 'M': case '=': case 'X':
         query_consumed += OPL;
         break;
         /* Insertion to the reference */
