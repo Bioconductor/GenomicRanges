@@ -174,7 +174,6 @@ reads <- GappedAlignments(
 
 @
 
-\newpage
 Using a \Robject{GRanges} as the \Rcode{features} all 12 ranges
 are considered to be different features and counts are produced
 for each row,
@@ -205,7 +204,6 @@ data.frame(union = assays(summarizeOverlaps(reads, lst))$counts,
 \section{Refererences}
 
 \url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html} 
-
-\url{http://www-huber.embl.de/users/anders/HTSeq/doc/count.html}
+\noindent\url{http://www-huber.embl.de/users/anders/HTSeq/doc/count.html}
 
 \end{document}
