@@ -162,44 +162,29 @@
                      mode="IntersectionNotEmpty"))$counts,
                  countOverlaps = countOverlaps(lst, reads))
 
-  ## FIXME : find sample data
-  ## Use params to subset reads, package output for input to DESeq or edgeR
-  #seqs <- scanBamHeader(bamFile)[[1]]$targets
-  #param <- ScanBamParam(which=GRanges(names(seqs)[1], IRanges(1, seqs[1])))
-  #counts <- summarizeOverlaps(bamFile, features, param=param)
-  #
-  #library(DESeq)
-  #deseq <- newCountDataSet(countData=assays(counts)$counts, 
-  #                         conditions= ,
-  #                         phenoData= ,
-  #                         featureData=  )
-  #
-  #library(edgeR)
-  #edger <- DGEList(counts=assays(counts)$counts, 
-  #                 group= )
-  #
+  ## Read across BAM files and package output for DESeq or edgeR analysis
+  library(Rsamtools)
+  library(DESeq)
+  library(edgeR)
 
-  ## If you have a set of bam files you can use methods from Rsamtools
-  ## that will extend this kind of counting functionality in a
-  ## convenient way and allow you to pass in the 1st argument as a
-  ## BamFileList or a BamViews object
-#  group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
-#  features <- GRanges(
-#      seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R", 
-#          "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
-#      strand = strand(rep("+", length(group_id))),
-#      ranges = IRanges(
-#          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
-#          width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
-#     DataFrame(group_id)
-#  )
- 
-#  fls = list.files(system.file("extdata",package="GenomicRanges"),
-#                   recursive=TRUE, pattern="*bam$", full=TRUE)
-#  require(Rsamtools)
-#  bfs <- BamFileList(fls)
-#  summarizeOverlaps(bfs, features, mode = Union, ignore.strand=TRUE)
-
+  fls = list.files(system.file("extdata",package="GenomicRanges"),
+      recursive=TRUE, pattern="*bam$", full=TRUE)
+  bfl <- BamFileList(fls)
+  features <- GRanges(
+      seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R",
+          "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
+      strand = strand(rep("+", 11)),
+      ranges = IRanges(start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000,
+          3000, 5000, 5400), width=c(500, 900, 500, 300, 600, 300, 500, 900, 500,
+          500, 500))
+  )
+  
+  solap <- summarizeOverlaps(bfl, features)
+  
+  deseq <- newCountDataSet(countData=assays(solap)$counts, 
+                           conditions=rownames(colData(solap)))
+  
+  edger <- DGEList(counts=assays(solap)$counts, group=rownames(colData(solap)))
 }
 
 \keyword{methods}
