@@ -4,11 +4,13 @@
 ###
 
 setClass("GRangesList",
-    contains = c("GenomicRangesList", "CompressedList"),
-    prototype=prototype(
-        elementType="GRanges",
-        unlistData=new("GRanges"),
-        elementMetadata=DataFrame()
+    contains=c("CompressedList", "GenomicRangesList"),
+    representation(
+        unlistData="GRanges",
+        elementMetadata="DataFrame"
+    ),
+    prototype(
+        elementType="GRanges"
     )
 )
 
