@@ -1,8 +1,8 @@
 \name{summarizeOverlaps}
 
 \alias{summarizeOverlaps}
-\alias{summarizeOverlaps,GappedAlignments,GRanges-method}
-\alias{summarizeOverlaps,GappedAlignments,GRangesList-method}
+\alias{summarizeOverlaps,GRanges,GappedAlignments-method}
+\alias{summarizeOverlaps,GRangesList,GappedAlignments-method}
 \alias{Union}
 \alias{IntersectionStrict}
 \alias{IntersectionNotEmpty}
@@ -16,27 +16,26 @@
 }
 
 \usage{
-  \S4method{summarizeOverlaps}{GappedAlignments,GRanges}(
-    reads, features, mode, ignore.strand = FALSE, ..., param = ScanBamParam()) 
+  \S4method{summarizeOverlaps}{GRanges,GappedAlignments}(
+    features, reads, mode, ignore.strand = FALSE, ..., param = ScanBamParam()) 
 }
 
 \arguments{
+  \item{features}{
+    A \linkS4class{GRanges} or a \linkS4class{GRangesList} object of genomic 
+    regions of interest. When a \linkS4class{GRanges} is supplied, each row is 
+    considered a different feature. When a \linkS4class{GRangesList} is 
+    supplied, each highest list-level is considered a feature and the multiple 
+    elements are considered portions of the same feature. See examples for details. 
+  }
   \item{reads}{
     A \linkS4class{GappedAlignments}, \link[Rsamtools]{BamFileList} or a
     \link[Rsamtools]{BamViews} object. 
   }
-  \item{features}{
-    A \linkS4class{GRanges} or a \linkS4class{GRangesList} object of genomic regions of 
-    interest. When a \linkS4class{GRanges} is supplied, each row is considered a 
-    feature. When a \linkS4class{GRangesList} is supplied, each higher list-level is
-    considered a feature. This distinction is important when defining an overlap
-    between a read and a feature. See examples for details. 
-  }
   \item{mode}{
-    A function that defines the method to be used when a read overlaps
-    more than one feature. Pre-defined options are "Union",
-    "IntersectionStrict", or "IntersectionNotEmpty" and are designed
-    after the counting modes available in the HTSeq package by Simon
+    A character names of function that defines the counting method to be used. 
+    Pre-defined methods are "Union", "IntersectionStrict", or "IntersectionNotEmpty" 
+    and are designed after the counting modes available in the HTSeq package by Simon
     Anders (see references).
 
     \itemize{
@@ -71,24 +70,24 @@
 \details{
   In the context of \code{summarizeOverlaps} a "feature" can be any portion of a 
   genomic region such as a gene, transcript, exon etc. When the \code{features} 
-  argument is a \linkS4class{GRanges} the rows define the features to be overlapped.
-  When \code{features} is a \linkS4class{GRangesList} the highest list-levels define
-  the features. 
+  argument is a \linkS4class{GRanges} the rows define the features to be 
+  overlapped. When \code{features} is a \linkS4class{GRangesList} the highest 
+  list-levels define the features. 
 
   \code{summarizeOverlaps} offers three \code{mode} functions to handle reads
   that overlap multiple features: "Union", "IntersectionStrict", and
   "IntersectionNotEmpty".  These functions are patterned after the counting
   methods in the HTSeq package (see references). Each mode has a set of rules
   that dictate how a read is assigned. Reads are counted a maximum of once. 
-  Alternatively, users can provide their own counting function as the \code{mode} 
-  argument and take advantage of the infrastructure in \code{summarizeOverlaps}
-  to count across multiple files and parse the results into a 
-  \linkS4class{SummarizedExperiment} object.
+  Alternatively, users can provide their own counting function as the 
+  \code{mode} argument and take advantage of the infrastructure in 
+  \code{summarizeOverlaps} to count across multiple files and parse the results 
+  into a \linkS4class{SummarizedExperiment} object.
 
   Currently reads must be input as either a BAM file or a 
   \linkS4class{GappedAlignments} object. The information in the CIGAR field 
-  is used to determine if gapped reads are present. Gapped reads are counted with
-  the same \code{mode} as the simple reads.
+  is used to determine if gapped reads are present. Gapped reads are counted 
+  with the same \code{mode} as the simple reads.
 
   NOTE : \code{summarizeOverlaps} does not currently handle paired-end reads. 
 }
@@ -125,7 +124,8 @@
           "chr1", "chr1", "chr2", "chr1", "chr1")),
       strand = strand(rep("+", length(group_id))),
       ranges = IRanges(
-          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 5000, 5400),
+          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 
+              5000, 5400),
           width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
      DataFrame(group_id)
   )
@@ -134,20 +134,20 @@
       names = c("a","b","c","d","e","f","g"),
       rname = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
       pos = as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
-      cigar = c("500M", "100M", "300M", "500M", "300M", "50M200N50M", "50M150N50M"),
+      cigar = c("500M", "100M", "300M", "500M", "300M", 
+          "50M200N50M", "50M150N50M"),
       strand = strand(rep.int("+", 7L)))
 
-  ## Results from countOverlaps are included in these
-  ## examples to highlight how the decision logic in 
-  ## summarizeOverlaps counts a read a maximum of once.
+  ## Results from countOverlaps are included to highlight how the 
+  ## modes in summarizeOverlaps count a read a maximum of once.
 
   ## When the 'features' argument is a GRanges, each row 
   ## is treated as a different feature. 
   rowsAsFeatures <- 
-      data.frame(union = assays(summarizeOverlaps(reads, features))$counts, 
-                 intStrict = assays(summarizeOverlaps(reads, features, 
+      data.frame(union = assays(summarizeOverlaps(features, reads))$counts, 
+                 intStrict = assays(summarizeOverlaps(features, reads, 
                      mode="IntersectionStrict"))$counts,
-                 intNotEmpty = assays(summarizeOverlaps(reads, features,
+                 intNotEmpty = assays(summarizeOverlaps(features, reads,
                      mode="IntersectionNotEmpty"))$counts,
                  countOverlaps = countOverlaps(features, reads))
 
@@ -155,10 +155,10 @@
   ## highest list-level is a different feature.
   lst <- split(features, values(features)[["group_id"]])
   listAsFeatures <- 
-      data.frame(union = assays(summarizeOverlaps(reads, lst))$counts, 
-                 intStrict = assays(summarizeOverlaps(reads, lst, 
+      data.frame(union = assays(summarizeOverlaps(lst, reads))$counts, 
+                 intStrict = assays(summarizeOverlaps(lst, reads, 
                      mode="IntersectionStrict"))$counts,
-                 intNotEmpty = assays(summarizeOverlaps(reads, lst,
+                 intNotEmpty = assays(summarizeOverlaps(lst, reads,
                      mode="IntersectionNotEmpty"))$counts,
                  countOverlaps = countOverlaps(lst, reads))
 
@@ -175,15 +175,15 @@
           "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
       strand = strand(rep("+", 11)),
       ranges = IRanges(start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000,
-          3000, 5000, 5400), width=c(500, 900, 500, 300, 600, 300, 500, 900, 500,
-          500, 500))
+          3000, 5000, 5400), width=c(500, 900, 500, 300, 600, 300, 500, 900, 
+          500, 500, 500))
   )
-  
-  solap <- summarizeOverlaps(bfl, features)
-  
+
+  solap <- summarizeOverlaps(features, bfl)
+
   deseq <- newCountDataSet(countData=assays(solap)$counts, 
                            conditions=rownames(colData(solap)))
-  
+
   edger <- DGEList(counts=assays(solap)$counts, group=rownames(colData(solap)))
 }
 

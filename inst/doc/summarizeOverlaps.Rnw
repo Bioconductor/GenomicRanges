@@ -24,7 +24,7 @@
 
 \title{Overview of \Rfunction{summarizeOverlaps}}
 \author{Valerie Obenchain}
-\date{Edited: 22 September 2011; Compiled: \today}
+\date{Edited: 27 September 2011; Compiled: \today}
 
 \begin{document}
 
@@ -66,7 +66,7 @@ features <- GRanges(
         500, 500))
 )
 
-solap <- summarizeOverlaps(bfl, features)
+solap <- summarizeOverlaps(features, bfl)
 
 deseq <- newCountDataSet(countData=assays(solap)$counts,  
                            conditions=rownames(colData(solap)))
@@ -129,10 +129,10 @@ that read fall completely within a feature and \Robject{IntersetctionNotEmpty}
 does not count the read because a unique disjoint region is hit in more than 
 one feature.
 <<simpleGRanges>>=
-data.frame(union = assays(summarizeOverlaps(rd, gr))$counts,
-           intStrict = assays(summarizeOverlaps(rd, gr,
+data.frame(union = assays(summarizeOverlaps(gr, rd))$counts,
+           intStrict = assays(summarizeOverlaps(gr, rd,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(summarizeOverlaps(rd, gr,
+           intNotEmpty = assays(summarizeOverlaps(gr, rd,
                mode="IntersectionNotEmpty"))$counts)
 @
 
@@ -140,10 +140,10 @@ When the features are counted as a \Robject{GRangesList} we see that modes
 \Rcode{Union} and \Rcode{IntersectionNotEmpty} both count the read as
 a hit for the single feature that is the single \Robject{GRangesList}.
 <<simpleGRangesList>>=
-data.frame(union = assays(summarizeOverlaps(rd, grl))$counts,
-           intStrict = assays(summarizeOverlaps(rd, grl,
+data.frame(union = assays(summarizeOverlaps(grl, rd))$counts,
+           intStrict = assays(summarizeOverlaps(grl, rd,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(summarizeOverlaps(rd, grl,
+           intNotEmpty = assays(summarizeOverlaps(grl, rd,
                mode="IntersectionNotEmpty"))$counts)
 @
 
@@ -178,10 +178,10 @@ Using a \Robject{GRanges} as the \Rcode{features} all 12 ranges
 are considered to be different features and counts are produced
 for each row,
 <<GRanges>>=
-data.frame(union = assays(summarizeOverlaps(reads, features))$counts,
-           intStrict = assays(summarizeOverlaps(reads, features,
+data.frame(union = assays(summarizeOverlaps(features, reads))$counts,
+           intStrict = assays(summarizeOverlaps(features, reads,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(summarizeOverlaps(reads, features,
+           intNotEmpty = assays(summarizeOverlaps(features, reads,
                mode="IntersectionNotEmpty"))$counts)
 @
 
@@ -194,10 +194,10 @@ lst <- split(features, values(features)[["group_id"]])
 length(lst)
 
 <<GRangesList>>=
-data.frame(union = assays(summarizeOverlaps(reads, lst))$counts,
-           intStrict = assays(summarizeOverlaps(reads, lst,
+data.frame(union = assays(summarizeOverlaps(lst, reads))$counts,
+           intStrict = assays(summarizeOverlaps(lst, reads,
                mode="IntersectionStrict"))$counts,
-           intNotEmpty = assays(summarizeOverlaps(reads, lst,
+           intNotEmpty = assays(summarizeOverlaps(lst, reads,
                mode="IntersectionNotEmpty"))$counts)
 @
 
