@@ -26,7 +26,8 @@
     regions of interest. When a \linkS4class{GRanges} is supplied, each row is 
     considered a different feature. When a \linkS4class{GRangesList} is 
     supplied, each highest list-level is considered a feature and the multiple 
-    elements are considered portions of the same feature. See examples for details. 
+    elements are considered portions of the same feature. See examples for 
+    details. 
   }
   \item{reads}{
     A \linkS4class{GappedAlignments}, \link[Rsamtools]{BamFileList} or a
@@ -34,9 +35,9 @@
   }
   \item{mode}{
     A character names of function that defines the counting method to be used. 
-    Pre-defined methods are "Union", "IntersectionStrict", or "IntersectionNotEmpty" 
-    and are designed after the counting modes available in the HTSeq package by Simon
-    Anders (see references).
+    Pre-defined methods are "Union", "IntersectionStrict", or 
+    "IntersectionNotEmpty" and are designed after the counting modes available 
+    in the HTSeq package by Simon Anders (see references).
 
     \itemize{
       \item "Union" : (Default) Reads that overlap any portion of exactly one 
