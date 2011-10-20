@@ -9,6 +9,7 @@
 \alias{GRanges-class}
 \alias{GRanges}
 \alias{GenomicRangesORGRangesList-class}
+\alias{GenomicRangesORmissing-class}
 
 % Constructors:
 \alias{GRanges}
