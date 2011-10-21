@@ -56,18 +56,22 @@ Union <- function(reads, features, ignore.strand=FALSE, ...)
     idx <- co == 1
     if (sum(co == 1) == 0)
         return(integer(length(features)))
-    ngaps <- ngap(reads)
-    if (sum(ngaps) == 0) {
-        gapct <- integer(length(features))
-    } else {
-        gaps <- reads[ngaps != 0]
-        gapct <- .gappedUnion(gaps, features, ignore.strand) 
-        reads <- reads[ngaps == 0]
-        idx <- idx[ngaps == 0]
-    }
 
+    ## gapped reads are treated the same as simple reads for Union 
+    #ngaps <- ngap(reads)
+    #if (sum(ngaps) == 0) {
+    #    gapct <- integer(length(features))
+    #} else {
+    #    gaps <- reads[ngaps != 0]
+    #    gapct <- .gappedUnion(gaps, features, ignore.strand) 
+    #    reads <- reads[ngaps == 0]
+    #    idx <- idx[ngaps == 0]
+    #}
+
+    #simplect <- countOverlaps(features, reads[idx], ignore.strand=ignore.strand)
+    #counts <- simplect + gapct
     simplect <- countOverlaps(features, reads[idx], ignore.strand=ignore.strand)
-    counts <- simplect + gapct
+    counts <- simplect
     names(counts) <- names(features)
     counts 
 }
