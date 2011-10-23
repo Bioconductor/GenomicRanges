@@ -6,9 +6,9 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.5.53
+Version: 1.5.54
 Author: P. Aboyoun, H. Pages and M. Lawrence
-Maintainer: Biocore Team c/o BioC user list <bioconductor@stat.math.ethz.ch>
+Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.8.0), methods, IRanges (>= 1.11.26)
 Imports: methods, IRanges
