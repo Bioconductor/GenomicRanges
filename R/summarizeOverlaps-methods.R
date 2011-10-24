@@ -58,18 +58,6 @@ Union <- function(reads, features, ignore.strand=FALSE, ...)
         return(integer(length(features)))
 
     ## gapped reads are treated the same as simple reads for Union 
-    #ngaps <- ngap(reads)
-    #if (sum(ngaps) == 0) {
-    #    gapct <- integer(length(features))
-    #} else {
-    #    gaps <- reads[ngaps != 0]
-    #    gapct <- .gappedUnion(gaps, features, ignore.strand) 
-    #    reads <- reads[ngaps == 0]
-    #    idx <- idx[ngaps == 0]
-    #}
-
-    #simplect <- countOverlaps(features, reads[idx], ignore.strand=ignore.strand)
-    #counts <- simplect + gapct
     simplect <- countOverlaps(features, reads[idx], ignore.strand=ignore.strand)
     counts <- simplect
     names(counts) <- names(features)
@@ -94,9 +82,12 @@ IntersectionStrict <- function(reads, features, ignore.strand = FALSE, ...)
         idx <- idx[ngaps == 0]
     }
 
-    ct <- countOverlaps(reads, features, type="within",
-        ignore.strand=ignore.strand)
-    fo <- findOverlaps(reads[ct == 1], features, type="within",
+## less redundant way of filtering on idx
+    #ct <- countOverlaps(reads, features, type="within",
+    #    ignore.strand=ignore.strand)
+
+#    fo <- findOverlaps(reads[ct == 1], features, type="within",
+    fo <- findOverlaps(reads[idx], features, type="within",
         ignore.strand=ignore.strand)
     rle <- Rle(sort(subjectHits(fo)))
     simplect <- rep(0, length(features))
@@ -162,37 +153,23 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     counts
 }
 
-.gappedUnion <- function(reads, features, ignore.strand=FALSE)
-{
-    grl <- as(reads, "GRangesList")
-    co <- countOverlaps(grl@unlistData, features, ignore.strand=ignore.strand)
-    ## if any portion of the read hits > 1 feature, remove entire read
-    idx <- co != 1
-    map <- rep(seq_len(length(grl)), elementLengths(grl))
-    if (any(idx))
-        clean <- grl[-map[idx]]
-    else
-        clean <- grl
-    countOverlaps(features, clean, ignore.strand=ignore.strand)
-}
-
 .gappedIntersectionStrict <- function(reads, features, ignore.strand=FALSE)
 {
     grl <- as(reads, "GRangesList")
     co <- countOverlaps(grl, features, type="within",
         ignore.strand=ignore.strand)
 
-    ## if any read is within > 1 feature, remove read 
-    idx <- co != 1
-    if (any(idx))
-        clean <- grl[-idx]
-    else
-        clean <- grl
-
-    fo <- findOverlaps(clean, features, type="within",
-        ignore.strand=ignore.strand)
+    ## if all parts of gapped read fall within == 1 feature, keep 
+    keep <- co == 1
+    clean <- grl[keep]
     counts <- rep(0, length(features))
-    counts[subjectHits(fo)] <- 1 
+    if (length(grl) > 0) {
+        fo <- findOverlaps(clean, features, type="within",
+            ignore.strand=ignore.strand)
+        shits <- sort(subjectHits(fo))
+        rle <- Rle(shits)
+        counts[runValue(rle)] <- runLength(rle) 
+    } 
     counts
 }
 
@@ -201,3 +178,16 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     diff(range(x)) < .Machine$double.eps ^ 0.5
 }
 
+#.gappedUnion <- function(reads, features, ignore.strand=FALSE)
+#{
+#    grl <- as(reads, "GRangesList")
+#    co <- countOverlaps(grl@unlistData, features, ignore.strand=ignore.strand)
+#    ## if any portion of the read hits > 1 feature, remove entire read
+#    idx <- co != 1
+#    map <- rep(seq_len(length(grl)), elementLengths(grl))
+#    if (any(idx))
+#        clean <- grl[-map[idx]]
+#    else
+#        clean <- grl
+#    countOverlaps(features, clean, ignore.strand=ignore.strand)
+#}
