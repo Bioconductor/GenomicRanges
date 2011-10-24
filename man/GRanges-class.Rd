@@ -55,6 +55,7 @@
 \alias{follow,GenomicRanges,GenomicRanges-method}
 \alias{isDisjoint,GenomicRanges-method}
 \alias{restrict,GenomicRanges-method}
+\alias{distance,GenomicRanges,GenomicRanges-method}
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
@@ -319,6 +320,13 @@
       the restriction operation is to be applied to all the sequences in
       \code{x}. See \code{?\link[IRanges:RangesList-utils]{restrict}} for more information
       about range restriction and for a description of the optional arguments.
+    }
+    \item{}{
+      \code{distance(x, y, ignore.strand = FALSE)}: Calculate the number
+      of positions separating two features. The value is zero if the
+      features overlap and \code{NA} if the features are on different
+      sequences, or different strands (if \code{ignore.strand} is
+      \code{FALSE}).
     }
   }
 }
