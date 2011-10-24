@@ -1206,11 +1206,16 @@ setMethod("restrict", "GenomicRanges",
         ord
     })
 
-setMethod("distance", c("GenomicRanges", "GenomicRanges"), function(x, y) {
-  if (length(x) != length(y))
-    stop("'x' and 'y' must have the same length")
-  d <- distance(ranges(x), ranges(y))
-  seqselect(d, seqnames(x) != seqnames(y)) <- NA
-  d
-})
+setMethod("distance", c("GenomicRanges", "GenomicRanges"),
+          function(x, y, ignore.strand = FALSE) {
+            if (!isTRUEorFALSE(ignore.strand))
+              stop("'ignore.strand' must be TRUE or FALSE")
+            if (length(x) != length(y))
+              stop("'x' and 'y' must have the same length")
+            d <- distance(ranges(x), ranges(y))
+            seqselect(d, seqnames(x) != seqnames(y)) <- NA
+            if (!ignore.strand)
+              seqselect(d, strand(x) != strand(y)) <- NA
+            d
+          })
 
