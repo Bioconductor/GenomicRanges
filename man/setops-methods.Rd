@@ -19,6 +19,7 @@
 \alias{psetdiff,GRanges,GRangesList-method}
 \alias{psetdiff,GRangesList,GRangesList-method}
 
+\alias{pgap,GRanges,GRanges-method}
 
 \title{Set operations on GRanges/GRangesList/GappedAlignments objects}
 
@@ -41,8 +42,8 @@
 
 \arguments{
   \item{x, y}{
-    For \code{union}, \code{intersect}, \code{setdiff}: \code{x} and
-    \code{y} must both be \link{GRanges} objects.
+    For \code{union}, \code{intersect}, \code{setdiff}, \code{pgap}:
+    \code{x} and \code{y} must both be \link{GRanges} objects.
 
     For \code{punion}: one of \code{x} or \code{y} must be a \link{GRanges}
     object, the other one can be a \link{GRanges} or \link{GRangesList} object.
@@ -97,7 +98,8 @@
 }
 
 \value{
-  For \code{union}, \code{intersect}, and \code{setdiff}: a \link{GRanges}.
+  For \code{union}, \code{intersect}, \code{setdiff}, and \code{pgap}: a
+  \link{GRanges}.
 
   For \code{punion} and \code{pintersect}: when \code{x} or \code{y} is
   not a \link{GRanges} object, an object of the same class as this
