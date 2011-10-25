@@ -82,11 +82,6 @@ IntersectionStrict <- function(reads, features, ignore.strand = FALSE, ...)
         idx <- idx[ngaps == 0]
     }
 
-## less redundant way of filtering on idx
-    #ct <- countOverlaps(reads, features, type="within",
-    #    ignore.strand=ignore.strand)
-
-#    fo <- findOverlaps(reads[ct == 1], features, type="within",
     fo <- findOverlaps(reads[idx], features, type="within",
         ignore.strand=ignore.strand)
     rle <- Rle(sort(subjectHits(fo)))
@@ -104,7 +99,7 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
         return(integer(length(features)))
     ngaps <- ngap(reads)
     if (sum(ngaps) == 0) {
-        gapct <- integer(length(features))
+       gapct <- integer(length(features))
     } else {
         gaps <- as(reads[ngaps != 0], "GRangesList")
         gapct <- .IntersectionNotEmpty(gaps, features, ignore.strand) 
@@ -130,26 +125,43 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     ud <- d[coUnq == 1]
 
     ## count read if :
-    ## (i) exactly 1 part of the read olaps ud region
-    ## (ii) > 1 part of the read hits ud region AND 
-    ##    the ud regions are from the same feature
+    ## (i)  the read or exactly 1 of the read fragments (gapped reads) olaps 
+    ##      a ud region
+    ## (ii) the read or > 1 of the read fragments (gapped reads) olaps >1
+    ##      ud region AND the ud regions are from the same feature
+
+    ## overlap between reads and ud regions
+    ## create mapping of read fragments back to original reads
     if (class(reads) == "GRangesList") {
-        foUD <- findOverlaps(reads@unlistData, ud, ignore.strand=ignore.strand)
         readMap <- rep(seq_len(length(reads)), elementLengths(reads))
+        foUD <- findOverlaps(reads@unlistData, ud, ignore.strand=ignore.strand)
     } else {
         foUD <- findOverlaps(reads, ud, ignore.strand=ignore.strand)
-        readMap <- rep(seq_len(length(reads)))
+        readMap <- seq_len(length(reads))
     }
+
+    ## create mapping of ud regions back to original features
     foFeatures <- findOverlaps(features, ud, ignore.strand=ignore.strand)
     featuresMap <-
         matchMatrix(foFeatures)[order(subjectHits(foFeatures)),"query"]
+
+    ## map read fragments and ud regions back to original
     backMapReads <- readMap[queryHits(foUD)]
     backMapFeatures <- featuresMap[subjectHits(foUD)]
-    olapLst <- split(backMapFeatures, backMapReads)
-    sameRegion <- unlist(lapply(olapLst, .isEqual), use.names=FALSE)
-    idx <- unique(unlist(olapLst[sameRegion]), use.names=FALSE)
+
+    ## ud regions hit by read fragments must be from same feature
+    olaplst <- split(backMapFeatures, backMapReads)
     counts <- rep(0, length(features))
-    counts[idx] <- 1
+
+    unq <- lapply(olaplst, unique)
+    len <- lapply(unq, length)
+    regions <- unq[len == 1]
+    if (length(regions) == 0)
+        return(counts)
+
+    ## counts
+    rle <- Rle(sort(unlist(regions, use.names=FALSE)))
+    counts[runValue(rle)] <- runLength(rle) 
     counts
 }
 

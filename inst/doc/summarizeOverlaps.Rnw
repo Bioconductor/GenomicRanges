@@ -82,7 +82,8 @@ provide different approaches to resolving reads that overlap multiple
 features. Figure~\ref{fig-summarizeOverlaps-modes} illustrates how both simple and 
 gapped reads are handled by the modes. Note that a read is counted a
 maximum of once; there is no double counting. These methods do not 
-currently handle paired-end reads.
+currently handle paired-end reads. For additional detail on the
+counting modes see the \Rfunction{summarizeOverlaps} man page.
 
 \begin{figure}[!h]
 \begin{center}

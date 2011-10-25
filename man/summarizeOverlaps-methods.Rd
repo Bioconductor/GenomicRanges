@@ -26,34 +26,49 @@
     regions of interest. When a \linkS4class{GRanges} is supplied, each row is 
     considered a different feature. When a \linkS4class{GRangesList} is 
     supplied, each highest list-level is considered a feature and the multiple 
-    elements are considered portions of the same feature. See examples for 
-    details. 
+    elements are considered portions of the same feature. See examples or
+    vignette for details. 
   }
   \item{reads}{
     A \linkS4class{GappedAlignments}, \link[Rsamtools]{BamFileList} or a
     \link[Rsamtools]{BamViews} object. 
   }
   \item{mode}{
-    A character names of function that defines the counting method to be used. 
-    Pre-defined methods are "Union", "IntersectionStrict", or 
+    Character name of a function that defines the counting method to be used. 
+    Available counting modes include "Union", "IntersectionStrict", or 
     "IntersectionNotEmpty" and are designed after the counting modes available 
-    in the HTSeq package by Simon Anders (see references).
+    in the HTSeq package by Simon Anders (see references). A user provided
+    count function can be used as the \code{mode} with the \code{BamFileList} 
+    method for \code{summarizedOverlaps}.
 
     \itemize{
       \item "Union" : (Default) Reads that overlap any portion of exactly one 
             feature are counted. Reads that overlap multiple features are 
-            discarded. 
-      \item "IntersectionStrict" : A read must fall completely "within" the
-            feature to be counted. If a read overlaps multiple features but
-            falls "within" only one, the read is counted for that feature.
-            If the read is "within" multiple features, the read is discarded. 
-      \item "IntersectionNotEmpty" : A read must fall in a unique disjoint
-            region of a feature to be counted. When a read overlaps multiple
-            features, the features are partitioned into disjoint intervals. 
-            Regions that are shared between the features are discarded leaving
-            only the unique disjoint regions. If the read overlaps one of 
-            these remaining regions, it is assigned to the feature the
-            unique disjoint region came from.
+            discarded. For mode "Union" gapped reads are handled the same as 
+            simple reads. If any portion of the gapped read hits >1 feature 
+            the read is discarded. 
+
+      \item "IntersectionStrict" : The read must fall completely within a 
+            single feature to be counted. A read can overlap multiple 
+            features but must fall within only one. In the case of gapped reads, 
+            all portions of the read fragment must fall within the same 
+            feature for the read to be counted. The fragments can overlap 
+            multiple features but collectively they must fall within 
+            only one. 
+
+      \item "IntersectionNotEmpty" : For this counting mode, the features are
+            partitioned into unique disjoint regions. This is accomplished
+            by disjoining the feature ranges then removing ranges shared by
+            more than one feature. The result is a group of non-overlapping 
+            regions each of which belong to a single feature. 
+            Simple and gapped reads are counted if,
+
+            \itemize{
+            \item  the read or exactly 1 of the read fragments overlaps a unique
+                   disjoint region
+            \item the read or >1 read fragments overlap >1 unique disjoint
+                  region from the same feature
+            }
    }
   }
   \item{param}{An optional \link[Rsamtools]{ScanBamParam} instance to
@@ -87,8 +102,7 @@
 
   Currently reads must be input as either a BAM file or a 
   \linkS4class{GappedAlignments} object. The information in the CIGAR field 
-  is used to determine if gapped reads are present. Gapped reads are counted 
-  with the same \code{mode} as the simple reads.
+  is used to determine if gapped reads are present. 
 
   NOTE : \code{summarizeOverlaps} does not currently handle paired-end reads. 
 }
@@ -112,7 +126,7 @@
 \author{Valerie Obenchain <vobencha@fhcrc.org>}
 
 \seealso{
-  \code{DESeq} and \code{edgeR} packages
+  \code{DESeq}, \code{DEXSeq} and \code{edgeR} packages
   \link[Rsamtools]{BamFileList} 
   \link[Rsamtools]{BamViews} 
 }
