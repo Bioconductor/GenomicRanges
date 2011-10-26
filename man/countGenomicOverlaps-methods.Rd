@@ -117,6 +117,7 @@
 \author{Valerie Obenchain and Martin Morgan}
 
 \examples{
+\dontrun{
 rng1 <- function(s, w)
 GRanges(seq="chr1", IRanges(s, width=w), strand="+")
 
@@ -177,7 +178,7 @@ split_divide <- countGenomicOverlaps(query, splitreads,
 
 data.frame(none = split_none,
            divide = split_divide)
-
+}
 }
 
 \keyword{methods}

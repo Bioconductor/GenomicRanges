@@ -16,6 +16,9 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GenomicRanges"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
+    msg <- c(" countGenomicOverlaps is deprecated.\n Please use ",
+             "summarizeOverlaps instead.")
+    .Deprecated(msg=msg)
     listSubject <- split(subject, seq_len(length(subject))) 
     callGeneric(query, listSubject, type = type, resolution = resolution, 
         ignore.strand = ignore.strand, splitreads = TRUE, ...)
@@ -27,6 +30,9 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GRangesList"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
+    msg <- c(" countGenomicOverlaps is deprecated.\n Please use ",
+             "summarizeOverlaps instead.")
+    .Deprecated(msg=msg)
     listQuery <- split(query, seq_len(length(query))) 
     callGeneric(listQuery, subject, type = type, resolution = resolution, 
         ignore.strand = ignore.strand, ...)
@@ -38,6 +44,9 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GenomicRanges"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
+    msg <- c(" countGenomicOverlaps is deprecated.\n Please use ",
+             "summarizeOverlaps instead.")
+    .Deprecated(msg=msg)
     listSubject <- split(subject, seq_len(length(subject))) 
     listQuery <- split(query, seq_len(length(query))) 
     callGeneric(listQuery, listSubject, type = type, resolution = resolution, 
@@ -50,6 +59,9 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GappedAlignments"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
+    msg <- c(" countGenomicOverlaps is deprecated.\n Please use ",
+             "summarizeOverlaps instead.")
+    .Deprecated(msg=msg)
     listSubject <- as(subject, "GRangesList") 
     callGeneric(query, listSubject, type = type, resolution = resolution, 
         ignore.strand = ignore.strand, splitreads = TRUE, ...)
@@ -61,6 +73,9 @@ setMethod("countGenomicOverlaps", c("GenomicRanges", "GappedAlignments"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
+    msg <- c(" countGenomicOverlaps is deprecated.\n Please use ",
+             "summarizeOverlaps instead.")
+    .Deprecated(msg=msg)
     listQuery <- split(query, seq_len(length(query))) 
     listSubject <- as(subject, "GRangesList") 
     callGeneric(listQuery, listSubject, type = type, resolution = resolution, 
@@ -73,17 +88,14 @@ setMethod("countGenomicOverlaps", c("GRangesList", "GRangesList"),
              resolution = c("none", "divide", "uniqueDisjoint"), 
              ignore.strand = FALSE, splitreads = TRUE, ...)
 {
+    msg <- c(" countGenomicOverlaps is deprecated.\n Please use ",
+             "summarizeOverlaps instead.")
+    .Deprecated(msg=msg)
     resolution <- match.arg(resolution)
     type <- match.arg(type)
     counts <- .countGenomicOverlaps(query, subject, 
         type = type, resolution = resolution, 
         ignore.strand = ignore.strand, splitreads = splitreads, ...)
-#    if (length(metadata(subject)) > 0)
-#        colData <- DataFrame(metaData = metadata(subject))
-#    else
-#        colData <- DataFrame(metaData = character(1))
-#    SummarizedExperiment(assays=SimpleList(counts=counts),
-#                         rowData=query, colData=colData)
 })
 
 .countGenomicOverlaps <- function(query, subject, type, resolution,
