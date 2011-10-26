@@ -216,7 +216,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         type <- match.arg(type)
         select <- match.arg(select)
         unlistQuery <- unlist(query, use.names = FALSE)
-        queryGroups <- togroup(query@partitioning)
+        queryGroups <- togroup(query)
         ans <- findOverlaps(unlistQuery, subject,
                             maxgap = maxgap, type = type, select = "all",
                             ignore.strand = ignore.strand)
@@ -263,7 +263,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
         select <- match.arg(select)
 
         unlistSubject <- unlist(subject, use.names=FALSE)
-        subjectGroups <- togroup(subject@partitioning)
+        subjectGroups <- togroup(subject)
         if (type == "start") {
             keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
             unlistSubject <-  unlistSubject[keep]
@@ -301,7 +301,10 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     query0 <- unname(mm00[ , "query"])
     subject1 <- togroup(spartitioning, unname(mm00[ , "subject"]))
     oo <- IRanges:::orderIntegerPairs(subject1, query0)
-    mm01 <- unique(cbind(query=query0, subject=subject1)[oo, , drop=FALSE])
+    mm01 <- cbind(query=query0, subject=subject1)[oo, , drop=FALSE]
+    is_dup <- IRanges:::duplicatedIntegerPairs(mm01[ , "query"],
+                                               mm01[ , "subject"])
+    mm01 <- mm01[!is_dup, , drop=FALSE]
 
     query1 <- togroup(qpartitioning, unname(mm01[ , "query"]))
     subject1 <- unname(mm01[ , "subject"])
@@ -327,9 +330,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         select <- match.arg(select)
 
         unlistSubject <- unlist(subject, use.names=FALSE)
-        subjectGroups <- togroup(subject@partitioning)
+        subjectGroups <- togroup(subject)
         unlistQuery <- unlist(query, use.names = FALSE)
-        queryGroups <- togroup(query@partitioning)
+        queryGroups <- togroup(query)
        
         if (type == "start") {
             keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
@@ -362,7 +365,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             mm11 <- .makeGRL2GRLmatchMatrix(mm00,
                                             query@partitioning,
                                             subject@partitioning,
-                                            type == "within")
+                                            type.is.within = type == "within")
         }
         ## Only for sorting, rows are already unique.
         ## TODO: Optimize this (.cleanMatchMatrix is also extracting unique
