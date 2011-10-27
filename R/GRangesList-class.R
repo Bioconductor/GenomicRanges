@@ -353,8 +353,18 @@ setReplaceMethod("elementMetadata", "GRangesList",
 )
 
 setReplaceMethod("seqinfo", "GRangesList",
-    function(x, new2old=NULL, value)
+    function(x, new2old=NULL, force=FALSE, value)
     {
+        if (!is(value, "Seqinfo"))
+            stop("the supplied 'seqinfo' must be a Seqinfo object")
+        unlisted <- x@unlistData
+        dangling_seqlevels <- getDanglingSeqlevels(unlisted,
+                                  new2old=new2old, force=force,
+                                  seqlevels(value))
+        if (length(dangling_seqlevels) != 0L) {
+            dropme <- which(seqnames(unlisted) %in% dangling_seqlevels)
+            x <- x[-unique(togroup(x, j=dropme))]
+        }
         seqinfo(x@unlistData, new2old=new2old) <- value
         x
     }

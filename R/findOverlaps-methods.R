@@ -193,7 +193,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     oo <- IRanges:::orderIntegerPairs(subject0, query0)
     mm00 <- mm00[oo, , drop=FALSE]
 
-    query1 <- togroup(qpartitioning, unname(mm00[ , "query"]))
+    query1 <- togroup(qpartitioning, j=unname(mm00[ , "query"]))
     subject0 <- unname(mm00[ , "subject"])
     runend <- IRanges:::runEndsOfIntegerPairs(query1, subject0)
     mm10 <- cbind(query=query1, subject=subject0)[runend, , drop=FALSE]
@@ -299,14 +299,14 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
                                     type.is.within)
 {
     query0 <- unname(mm00[ , "query"])
-    subject1 <- togroup(spartitioning, unname(mm00[ , "subject"]))
+    subject1 <- togroup(spartitioning, j=unname(mm00[ , "subject"]))
     oo <- IRanges:::orderIntegerPairs(subject1, query0)
     mm01 <- cbind(query=query0, subject=subject1)[oo, , drop=FALSE]
     is_dup <- IRanges:::duplicatedIntegerPairs(mm01[ , "query"],
                                                mm01[ , "subject"])
     mm01 <- mm01[!is_dup, , drop=FALSE]
 
-    query1 <- togroup(qpartitioning, unname(mm01[ , "query"]))
+    query1 <- togroup(qpartitioning, j=unname(mm01[ , "query"]))
     subject1 <- unname(mm01[ , "subject"])
     runend <- IRanges:::runEndsOfIntegerPairs(query1, subject1)
     mm11 <- cbind(query=query1, subject=subject1)[runend, , drop=FALSE]

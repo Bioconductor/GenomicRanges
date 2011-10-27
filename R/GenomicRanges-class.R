@@ -340,17 +340,24 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
 )
 
 setReplaceMethod("seqinfo", "GenomicRanges",
-                 function(x, new2old=NULL, value)
-                 {
-                   x <- update(x, seqnames = makeNewSeqnames(x, new2old, value),
-                               seqinfo = value)
-                   ## The ranges in 'x' need to be validated against
-                   ## the new sequence information (e.g. the sequence
-                   ## lengths might have changed).
-                   validObject(x)
-                   x
-                 }
-                 )
+    function(x, new2old=NULL, force=FALSE, value)
+    {
+        if (!is(value, "Seqinfo"))
+            stop("the supplied 'seqinfo' must be a Seqinfo object")
+        dangling_seqlevels <- getDanglingSeqlevels(x,
+                                  new2old=new2old, force=force,
+                                  seqlevels(value))
+        if (length(dangling_seqlevels) != 0L)
+            x <- x[!(seqnames(x) %in% dangling_seqlevels)]
+        x <- update(x, seqnames = makeNewSeqnames(x, new2old, seqlevels(value)),
+                       seqinfo = value)
+        ## The ranges in 'x' need to be validated against
+        ## the new sequence information (e.g. the sequence
+        ## lengths might have changed).
+        validObject(x)
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

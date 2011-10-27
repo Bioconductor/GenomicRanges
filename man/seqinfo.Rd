@@ -33,13 +33,13 @@
 
 \usage{
 seqinfo(x)
-seqinfo(x, new2old=NULL) <- value
+seqinfo(x, new2old=NULL, force=FALSE) <- value
 
 seqnames(x)
 seqnames(x) <- value
 
 seqlevels(x)
-seqlevels(x) <- value
+seqlevels(x, force=FALSE) <- value
 
 seqlengths(x)
 seqlengths(x) <- value
@@ -70,13 +70,19 @@ genome(x) <- value
     \code{NA}s are allowed and indicate sequence levels that are being added.
     Old sequence levels that are not represented in \code{new2old} will be
     dropped, but this will fail if those levels are in use (e.g. if \code{x}
-    is a \link{GRanges} object with ranges defined on those sequence levels).
+    is a \link{GRanges} object with ranges defined on those sequence levels)
+    unless \code{force=TRUE} is used (see below).
 
     If \code{new2old=NULL}, then sequence levels can only be added to the
     existing ones, that is, \code{value} must have at least as many rows
     as \code{seqinfo(x)} (i.e. \code{length(values) >= length(seqinfo(x))})
     and also \code{seqlevels(values)[seq_len(length(seqlevels(x)))]} must be
     identical to \code{seqlevels(x)}.
+  }
+  \item{force}{
+    Force dropping sequence levels currently in use. This is achieved by
+    dropping the elements in \code{x} where those levels are used (hence
+    typically reducing the length of \code{x}).
   }
   \item{value}{
     Typically a \link{Seqinfo} object for the \code{seqinfo} setter.

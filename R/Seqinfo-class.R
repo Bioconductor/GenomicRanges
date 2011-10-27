@@ -307,8 +307,11 @@ setReplaceMethod("names", "Seqinfo",
 )
 
 setReplaceMethod("seqlevels", "Seqinfo",
-    function(x, value)
+    function(x, force=FALSE, value)
     {
+        if (!identical(force, FALSE))
+            warning("'force' is ignored in \"seqlevels<-\" method ",
+                    "for Seqinfo objects")
         mode <- getSeqlevelsReplacementMode(value, seqlevels(x))
         if (identical(mode, -2L))
             return(x[value])

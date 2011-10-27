@@ -2,6 +2,104 @@
 ### The seqinfo() (and releated) generic getters and setters
 ### -------------------------------------------------------------------------
 
+.reverseNew2old <- function(new2old, new_N, old_N)
+{
+    if (is.null(new2old))
+        return(NULL)
+    if (!is.integer(new2old) || length(new2old) != new_N)
+        stop("when 'new2old' is not NULL, it must be an integer ",
+             "vector of the\n  same length as the supplied 'seqlevels'")
+    min_new2old <- suppressWarnings(min(new2old, na.rm=TRUE))
+    if (min_new2old != Inf) {
+        if (min_new2old < 1L || max(new2old, na.rm=TRUE) > old_N)
+            stop("non-NA values in 'new2old' must be >= 1 and <= N, ",
+                 "where N is the\n  nb of sequence levels in 'x'")
+    }
+    if (any(duplicated(new2old) & !is.na(new2old)))
+        stop("duplicates are not allowed among non-NA values in 'new2old'")
+    IRanges:::reverseIntegerInjection(new2old, old_N)
+}
+
+### The dangling seqlevels in 'x' are those seqlevels that the user wants to
+### drop but they are in use.
+getDanglingSeqlevels <- function(x, new2old=NULL, force=FALSE, new_seqlevels)
+{
+    if (!is.character(new_seqlevels) || any(is.na(new_seqlevels)))
+        stop("the supplied 'seqlevels' must be a character vector with no NAs")
+    if (!isTRUEorFALSE(force))
+        stop("'force' must be TRUE or FALSE")
+    if (is.null(new2old))
+        return(character(0))
+    new_N <- length(new_seqlevels)
+    old_N <- length(seqlevels(x))
+    old2new <- .reverseNew2old(new2old, new_N, old_N)
+    dangling_seqlevels <- intersect(unique(seqnames(x)),
+                                    seqlevels(x)[is.na(old2new)])
+    if (!force && length(dangling_seqlevels) != 0L)
+        stop("won't drop seqlevels currently in use (",
+             paste(dangling_seqlevels, collapse = ", "),
+             "), unless you\n",
+             "  use 'force=TRUE' to also drop elements in 'x' ",
+             "where those seqlevels are used\n",
+             "  (e.g. with 'seqlevels(x, force=TRUE) <- new_seqlevels').\n",
+             "  Alternatively, you can also subset 'x' first.")
+    dangling_seqlevels
+}
+
+### Compute the new seqnames resulting from new seqlevels.
+### Assumes that 'seqnames(x)' is a 'factor' Rle (which is true if 'x' is a
+### GRanges or GappedAlignments object, but not if it's a GRangesList object),
+### and returns a 'factor' Rle of the same length (and same runLength vector).
+makeNewSeqnames <- function(x, new2old=NULL, new_seqlevels)
+{
+    if (!is.character(new_seqlevels) || any(is.na(new_seqlevels)))
+        stop("the supplied 'seqlevels' must be a character vector with no NAs")
+    new_N <- length(new_seqlevels)
+    old_N <- length(seqlevels(x))
+    x_seqnames <- seqnames(x)
+    if (is.null(new2old)) {
+        if (new_N < old_N ||
+            !identical(new_seqlevels[seq_len(old_N)], seqlevels(x)))
+            stop("when 'new2old' is NULL, the first elements in the\n",
+                 "  supplied 'seqlevels' must be indentical to 'seqlevels(x)'")
+        levels(x_seqnames) <- new_seqlevels
+        return(x_seqnames)
+    }
+    old2new <- .reverseNew2old(new2old, new_N, old_N)
+    tmp <- runValue(x_seqnames)
+    levels(tmp) <- new_seqlevels[old2new]
+    runValue(x_seqnames) <- factor(as.character(tmp), levels=new_seqlevels)
+    return(x_seqnames)
+}
+
+### Returns -2 for "subsetting" mode, -1 for "renaming" mode, or an integer
+### vector containing the mapping from the new to the old levels for "general"
+### mode (i.e. a combination of renaming and/or subsetting). Note that this
+### integer vector is guaranteed to contain no negative values.
+getSeqlevelsReplacementMode <- function(new_seqlevels, old_seqlevels)
+{
+    ## Only check for NAs. Duplicated or zero-length values will be rejected
+    ## later by the Seqinfo() constructor.
+    if (!is.character(new_seqlevels) || any(is.na(new_seqlevels)))
+        stop("the supplied 'seqlevels' must be a character vector with no NAs")
+    nsl_names <- names(new_seqlevels)
+    if (!is.null(nsl_names)) {
+        nonempty_names <- nsl_names[!(nsl_names %in% c(NA, ""))]
+        if (any(duplicated(nonempty_names)) ||
+            length(setdiff(nonempty_names, old_seqlevels)) != 0L)
+            stop("the names of the supplied 'seqlevels' contain duplicates ",
+                 "or invalid sequence levels")
+        return(match(nsl_names, old_seqlevels))
+    }
+    if (length(new_seqlevels) != length(old_seqlevels))
+        return(-2L)
+    is_renamed <- new_seqlevels != old_seqlevels
+    tmp <- intersect(new_seqlevels[is_renamed], old_seqlevels[is_renamed])
+    if (length(tmp) != 0L)
+        return(-2L)
+    return(-1L)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### seqinfo() getter and setter.
@@ -10,52 +108,8 @@
 setGeneric("seqinfo", function(x) standardGeneric("seqinfo"))
 
 setGeneric("seqinfo<-", signature="x",
-    function(x, new2old=NULL, value) standardGeneric("seqinfo<-")
+    function(x, new2old=NULL, force=FALSE, value) standardGeneric("seqinfo<-")
 )
-
-### Compute the new seqnames associated with a seqinfo replacement.
-### Assumes that 'seqnames(x)' is a 'factor' Rle (which is true if 'x' is a
-### GRanges or GappedAlignments object, but not if it's a GRangesList object),
-### and returns a 'factor' Rle of the same length (and same runLength vector).
-makeNewSeqnames <- function(x, new2old=NULL, new_seqinfo)
-{
-    if (!is(new_seqinfo, "Seqinfo"))
-        stop("supplied 'seqinfo' must be a Seqinfo object")
-    x_seqnames <- seqnames(x)
-    M <- length(new_seqinfo)
-    N <- length(seqlevels(x))
-    if (is.null(new2old)) {
-        if (M < N ||
-            !identical(seqlevels(new_seqinfo)[seq_len(N)], seqlevels(x)))
-            stop("when 'new2old' is NULL, the first sequence levels in the ",
-                 "supplied 'seqinfo' must be indentical to 'seqlevels(x)'")
-        levels(x_seqnames) <- seqlevels(new_seqinfo)
-        return(x_seqnames)
-    }
-    if (!is.integer(new2old) || length(new2old) != M)
-        stop("when 'new2old' is not NULL, it must be an integer ",
-             "vector of the same length as the supplied 'seqinfo'")
-    min_new2old <- suppressWarnings(min(new2old, na.rm=TRUE))
-    if (min_new2old != Inf) {
-        if (min_new2old < 1L || max(new2old, na.rm=TRUE) > N)
-            stop("non-NA values in 'new2old' must be >= 1 and <= N, ",
-                 "where N is the nb of sequence levels in 'x'")
-    }
-    if (any(duplicated(new2old) & !is.na(new2old)))
-        stop("duplicates are not allowed among non-NA values in 'new2old'")
-    old2new <- IRanges:::reverseIntegerInjection(new2old, N)
-    dangling_seqlevels <- intersect(unique(x_seqnames),
-                                    seqlevels(x)[is.na(old2new)])
-    if (length(dangling_seqlevels) != 0L)
-        stop("cannot drop levels currently in use: ",
-             paste(dangling_seqlevels, collapse = ", "),
-             ". Please consider subsetting 'x' first.")
-    tmp <- runValue(x_seqnames)
-    levels(tmp) <- seqlevels(new_seqinfo)[old2new]
-    runValue(x_seqnames) <- factor(as.character(tmp),
-                                   levels=seqlevels(new_seqinfo))
-    return(x_seqnames)
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,41 +134,13 @@ setGeneric("seqlevels", function(x) standardGeneric("seqlevels"))
 setMethod("seqlevels", "ANY", function(x) seqlevels(seqinfo(x)))
 
 setGeneric("seqlevels<-", signature="x",
-    function(x, value) standardGeneric("seqlevels<-")
+    function(x, force=FALSE, value) standardGeneric("seqlevels<-")
 )
-
-### Returns -2 for "subsetting" mode, -1 for "renaming" mode, or an integer
-### vector containing the mapping from the new to the old levels for "general"
-### mode (i.e. a combination of renaming and/or subsetting). Note that this
-### integer vector is guaranteed to contain no negative values.
-getSeqlevelsReplacementMode <- function(new_seqlevels, old_seqlevels)
-{
-    ## Does NOT check for NA, duplicated or zero-length values since this will
-    ## typically be done later by the Seqinfo() constructor.
-    if (!is.character(new_seqlevels))
-        stop("supplied 'seqlevels' must be a character vector")
-    nsl_names <- names(new_seqlevels)
-    if (!is.null(nsl_names)) {
-        nonempty_names <- nsl_names[!(nsl_names %in% c(NA, ""))]
-        if (any(duplicated(nonempty_names)) ||
-            length(setdiff(nonempty_names, old_seqlevels)) != 0L)
-            stop("names of supplied 'seqlevels' contain duplicates ",
-                 "or invalid sequence levels")
-        return(match(nsl_names, old_seqlevels))
-    }
-    if (length(new_seqlevels) != length(old_seqlevels))
-        return(-2L)
-    is_renamed <- new_seqlevels != old_seqlevels
-    tmp <- intersect(new_seqlevels[is_renamed], old_seqlevels[is_renamed])
-    if (length(tmp) != 0L)
-        return(-2L)
-    return(-1L)
-}
 
 ### Default "seqlevels<-" method works on any object 'x' with working
 ### "seqinfo" and "seqinfo<-" methods.
 setReplaceMethod("seqlevels", "ANY",
-    function(x, value)
+    function(x, force=FALSE, value)
     {
         ## Make the new Seqinfo object.
         x_seqinfo <- seqinfo(x)
@@ -127,7 +153,7 @@ setReplaceMethod("seqlevels", "ANY",
             new2old <- seq_len(length(value))
         }
         ## Do the replacement.
-        seqinfo(x, new2old=new2old) <- x_seqinfo
+        seqinfo(x, new2old=new2old, force=force) <- x_seqinfo
         x
     }
 )

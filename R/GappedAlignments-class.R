@@ -211,9 +211,16 @@ setReplaceMethod("strand", "GappedAlignments",
 )
 
 setReplaceMethod("seqinfo", "GappedAlignments",
-    function(x, new2old=NULL, value)
+    function(x, new2old=NULL, force=FALSE, value)
     {
-        x@seqnames <- makeNewSeqnames(x, new2old, value)
+        if (!is(value, "Seqinfo"))
+            stop("the supplied 'seqinfo' must be a Seqinfo object")
+        dangling_seqlevels <- getDanglingSeqlevels(x,
+                                  new2old=new2old, force=force,
+                                  seqlevels(value))
+        if (length(dangling_seqlevels) != 0L)
+            x <- x[!(seqnames(x) %in% dangling_seqlevels)]
+        x@seqnames <- makeNewSeqnames(x, new2old, seqlevels(value))
         x@seqinfo <- value
         validObject(x)
         x
