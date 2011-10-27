@@ -251,8 +251,9 @@
       Gets or sets the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(rname(x))}, those 2 expressions being
-      guaranteed to return indentical character vectors on a GappedAlignments
+      guaranteed to return identical character vectors on a GappedAlignments
       object. \code{value} must be a character vector with no NAs.
+      See \code{?\link{seqlevels}} for more information.
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:

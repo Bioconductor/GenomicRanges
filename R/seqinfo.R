@@ -61,7 +61,7 @@ makeNewSeqnames <- function(x, new2old=NULL, new_seqlevels)
         if (new_N < old_N ||
             !identical(new_seqlevels[seq_len(old_N)], seqlevels(x)))
             stop("when 'new2old' is NULL, the first elements in the\n",
-                 "  supplied 'seqlevels' must be indentical to 'seqlevels(x)'")
+                 "  supplied 'seqlevels' must be identical to 'seqlevels(x)'")
         levels(x_seqnames) <- new_seqlevels
         return(x_seqnames)
     }

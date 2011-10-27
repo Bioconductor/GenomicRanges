@@ -199,12 +199,13 @@
       \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
-      \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
+      \code{seqlevels(x)}, \code{seqlevels(x, force=FALSE) <- value}:
       Gets or sets the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being
-      guaranteed to return indentical character vectors on a GRanges object.
+      guaranteed to return identical character vectors on a GRanges object.
       \code{value} must be a character vector with no NAs.
+      See \code{?\link{seqlevels}} for more information.
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
