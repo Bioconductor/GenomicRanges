@@ -493,7 +493,7 @@ setMethod("resize", "GenomicRanges",
           )
 
 setMethod("shift", "GenomicRanges",
-          function(x, shift, use.names = TRUE)
+          function(x, shift=0L, use.names = TRUE)
           {
             ranges <- shift(ranges(x), shift, use.names = use.names)
             if (!IRanges:::anyMissing(seqlengths(x))) {

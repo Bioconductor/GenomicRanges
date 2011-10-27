@@ -423,7 +423,7 @@ setReplaceMethod("width", "GRangesList",
 )
 
 setMethod("shift", "GRangesList",
-    function(x, shift, use.names=TRUE)
+    function(x, shift=0L, use.names=TRUE)
     {
         if (is(shift, "IntegerList")) {
             if (length(shift) != length(x) ||
