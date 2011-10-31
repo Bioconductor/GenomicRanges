@@ -1,0 +1,63 @@
+CHANGES IN VERSION 1.6.0
+------------------------
+
+NEW FEATURES
+
+    o seqlevels() and seqinfo() setters have a new arg ('force', default is
+      FALSE) to force dropping sequence levels currently in use.
+
+    o Seqinfo objects now have a genome column that can be accessed with
+      genome() getter/setter.
+
+    o "pgap" method for c(x="GRanges", y="GRanges").
+
+    o Add comparison (==, <=, duplicated, unique, etc...) and ordering
+      (order, sort, rank) methods for GenomicRanges objects.
+
+    o Add "flank" method for GRangesList objects.
+
+    o Add "isDisjoint" and "restrict" methods for GRanges and GRangesList
+      objects.
+
+    o Add GRangesList constructor makeGRangesListFromFeatureFragments().
+
+    o Add "names" and "names<-" methods for GappedAlignments objects.
+
+    o Add 'ignore.strand' arg to a number of methods:
+        - findOverlaps,GRangesList,RangesList
+        - findOverlaps,GappedAlignments,ANY
+        - findOverlaps,ANY,GappedAlignments
+
+    o 'shift' and 'weight' arguments of "coverage" method for GenomicRanges
+      objects now can be numeric vectors in addition to lists.
+
+    o Add "c" method for GappedAlignments objects.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o readGappedAlignments() supports 2 new arguments: (1) 'use.names' (default
+      is FALSE) for using the query template names (QNAME field in a SAM/BAM
+      file) to set the names of the returned object, and (2) 'param' (default
+      is NULL, otherwise a ScanBamParam object) for controlling what fields and
+      which records are imported. readGappedAlignments() doesn't support
+      the 'which' arg anymore.
+
+    o The names of a GRanges/GRangesList/GappedAlignments object are not
+      required to be unique anymore.
+
+    o By default, the rownames are not set anymore on the DataFrame returned
+      by elementMetadata() on a GRanges/GRangesList/GappedAlignments object.
+
+    o 'width' arg of "coverage" method for GenomicRanges objects now must be
+      NULL or numeric vector (instead of NULL or list).
+
+DEPRECATED AND DEFUNCT
+
+    o Deprecate countGenomicOverlaps() in favor of summarizeOverlaps().
+
+    o Deprecate grg() in favor of granges().
+
+BUG FIXES
+
+    o Fix bug in "pintersect" methods operating on GappedAlignments objects.
+
