@@ -24,3 +24,12 @@ GenomicRangesList <- function(...) {
   IRanges:::newSimpleList("SimpleGenomicRangesList", args)
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Utilities.
+###
+
+setMethod("stack", "GenomicRangesList", function(x, indName = "sample") {
+  x_flat <- unlist(x, use.names = FALSE)
+  values(x_flat) <- cbind(IRanges:::.stack.ind(x, indName), values(x_flat))
+  x_flat
+})
