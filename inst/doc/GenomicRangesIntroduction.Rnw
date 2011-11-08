@@ -664,9 +664,8 @@ length(aln1)
 3271 `BAM' records were loaded into the object.
 
 Note that \Rfunction{readGappedAlignments} would have discarded
-any `BAM' record describing an unaligned query or a query that is
-a PCR or optical duplicate (see description of the <flag> field
-in the SAM Format Specification
+any `BAM' record describing an unaligned query (see description
+of the <flag> field in the SAM Format Specification
 \footnote{\url{http://samtools.sourceforge.net/SAM1.pdf}}
 for more information).
 The reader interested in tracking down these events can always

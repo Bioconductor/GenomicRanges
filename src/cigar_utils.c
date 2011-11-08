@@ -1024,7 +1024,7 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 				UNPROTECT(1);
 				error("'flag' contains NAs");
 			}
-			if (flag_elt & 0x404)
+			if (flag_elt & 0x004)
 				continue;
 		}
 		cigar_string = STRING_ELT(cigar, i);
@@ -1116,7 +1116,7 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 			flag_elt = INTEGER(flag)[i];
 			if (flag_elt == NA_INTEGER)
 				error("'flag' contains NAs");
-			if (flag_elt & 0x404)
+			if (flag_elt & 0x004)
 				continue;
 		}
 		cigar_string = STRING_ELT(cigar, i);

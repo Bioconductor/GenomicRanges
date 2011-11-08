@@ -94,10 +94,9 @@ summarizeCigarTable(x)
   \item{flag}{
     \code{NULL} or an integer vector containing the SAM flag for
     each read.
-    According to the SAM specs, flag bits 0x004 and 0x400 have
-    the following meaning: when bit 0x004 is ON then "the query
-    sequence itself is unmapped" and when bit 0x400 is ON then
-    "the read is either a PCR duplicate or an optical duplicate".
+    According to the SAM specs, flag bit 0x004 has the following
+    meaning: when bit 0x004 is ON then "the query sequence itself
+    is unmapped".
     When \code{flag} is provided,
     \code{cigarToIRangesListByAlignment} and
     \code{cigarToIRangesListByRName} ignore these reads.
