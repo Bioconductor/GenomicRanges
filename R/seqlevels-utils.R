@@ -56,8 +56,7 @@ setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
 {
     if (!any(value %in% seqlevels(x)))
         stop("none of the values in 'value' are present in 'x'")
-    x <- x[seqnames(x) %in% value]
-    seqlevels(x) <- seqlevels(x)[seqlevels(x) %in% value]
+    suppressWarnings(seqlevels(x, force=TRUE) <- value) 
     x
 })
 
@@ -73,6 +72,7 @@ setMethod("keepSeqlevels",  c("GRangesList", "character"),
     grlReduced <- GenomicRanges:::reconstructGRLfromGR(grReduced, x)
 
     seqlevels(grlReduced) <- seqlevels(x)[seqlevels(x) %in% value]
+    metadata(grlReduced) <- metadata(x)
     grlReduced[elementLengths(grlReduced) != 0] 
 })
 
@@ -102,11 +102,9 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
 {
     if (!any(value %in% seqlevels(x)))
         stop("none of the values in 'value' are present in 'x'")
-    x <- x[seqnames(x) %in% value]
-    seqlevels(x) <- seqlevels(x)[seqlevels(x) %in% value]
+    suppressWarnings(seqlevels(x, force=TRUE) <- value) 
     x
 })
-
 
 
 ## renameSeqlevels : 
@@ -119,7 +117,7 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
     new <- unlist(value, use.names=FALSE)
     if (!any(old %in% seqlevels(x)))
         stop("none of the values in 'value' are present in 'x'")
-    seqlevels(x)[seqlevels(x) %in% old] <- new
+    seqlevels(x)[seqlevels(x) == old] <- new
     x 
 }
 
@@ -139,18 +137,4 @@ setMethod("renameSeqlevels",  c("GRangesList", "character"),
 setMethod("renameSeqlevels",  c("GenomicRanges", "character"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
 )
-
-.SubsetGRListAtRangesLevel <- function(grl, idx, ...)
-{
-    if (is.character(idx)) {
-        orig <- idx
-        idx <- match(idx, names(grl@unlistData))
-    }
-    grReduced <-
-        GenomicRanges:::deconstructGRLintoGR(grl)[idx,,drop=FALSE]
-    grlReduced <-
-        GenomicRanges:::reconstructGRLfromGR(grReduced, grl)
-    grlReduced[elementLengths(grlReduced) != 0]
-}
-
 
