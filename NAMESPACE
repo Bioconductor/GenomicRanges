@@ -1,7 +1,17 @@
 useDynLib(GenomicRanges)
 
 import(methods)
-importFrom(BiocGenerics, updateObject)
+
+importFrom(BiocGenerics,
+    cbind, rbind,
+    order,
+    paste,
+    rep.int,
+    table,
+    union, intersect, setdiff,
+    updateObject
+)
+
 import(IRanges)
 
 exportClasses(
