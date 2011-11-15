@@ -363,6 +363,10 @@ setMethod(show, "SummarizedExperiment",
     }
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
+    expt <- names(exptData(object))
+    if (is.null(expt))
+        expt <- character(length(exptData(object)))
+    scat("exptData(%d): %s\n", expt)
     nms <- names(assays(object, withDimnames=FALSE))
     if (is.null(nms))
         nms <- character(length(assays(object, withDimnames=FALSE)))
