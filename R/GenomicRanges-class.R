@@ -505,7 +505,7 @@ setMethod("Ops", c("GenomicRanges", "numeric"),
           {
             if (IRanges:::anyMissing(e2))
               stop("NA not allowed as zoom factor")
-            e2 <- recycleNumericArg(e2)
+            e2 <- recycleNumericArg(e2, "e2", length(e1))
             if (.Generic == "*") {
               e2 <- ifelse(e2 < 0, abs(1/e2), e2)
               resize(e1, width(e1) / e2, fix = "center")
