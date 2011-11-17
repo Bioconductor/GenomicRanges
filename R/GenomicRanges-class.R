@@ -972,7 +972,11 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
       xLst <- split(x, seqnames(x), drop = FALSE)
       xLst <- xLst[sapply(xLst, length) > 0]
       xSeqNames <- names(xLst)
-      subjectLst <- split(subject, seqnames(subject), drop = FALSE)[xSeqNames]  
+      if(!missing(subject)) {
+        f <- seqnames(subject)
+        levels(f) <- union(seqlevels(x), seqlevels(subject))
+        subjectLst <- split(subject, f, drop = FALSE)[xSeqNames]
+      }
       matchPos <- rep.int(NA_integer_, length(x))
 
       for (sq in xSeqNames) {
@@ -1044,7 +1048,12 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
         xLst <- split(x, seqnames(x), drop = FALSE)
         xLst <- xLst[sapply(xLst, length) > 0]
         xSeqNames <- names(xLst)
-        subjectLst <- split(subject, seqnames(subject), drop = FALSE)[xSeqNames]  
+        if(!missing(subject)) {
+            f <- seqnames(subject)
+            levels(f) <- union(seqlevels(x), seqlevels(subject))
+            subjectLst <- split(subject, f, drop = FALSE)[xSeqNames]
+        }
+
         matchPos <- rep.int(NA_integer_, length(x))
 
         for (sq in xSeqNames) {
@@ -1123,10 +1132,11 @@ setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
         xLst <- split(x, seqnames(x), drop = FALSE)
         xLst <- xLst[sapply(xLst, length) > 0]
         xSeqNames <- names(xLst)
-
-        if (!missing(subject))
-            subjectLst <-
-                split(subject, seqnames(subject), drop = FALSE)[xSeqNames]
+        if (!missing(subject)) {
+            f <- seqnames(subject)
+            levels(f) <- union(seqlevels(x), seqlevels(subject))
+            subjectLst <- split(subject, f, drop = FALSE)[xSeqNames]
+        }
         matchPos <- rep.int(NA_integer_, length(x))
 
         for (sq in xSeqNames) {
