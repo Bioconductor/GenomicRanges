@@ -6,11 +6,11 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.7.4
+Version: 1.7.5
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
-Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.1.0), IRanges (>= 1.13.4)
+Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.1.2), IRanges (>= 1.13.6)
 Imports: methods, BiocGenerics, IRanges
 LinkingTo: IRanges
 Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools (>= 1.5.66),
