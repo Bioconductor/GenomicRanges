@@ -334,12 +334,10 @@ test_GRanges_Vector <- function() {
     names(gr2) <- NULL
     checkException(c(GRanges(), RangedData()), silent = TRUE)
     checkException(c(gr, gr[,-1]), silent = TRUE)
-    checkIdentical(as.data.frame(c(gr, gr)),
-                   as.data.frame(gr)[rep(seq_len(length(gr)), 2),])
-    checkIdentical(as.data.frame(c(gr, gr2)),
-                   rbind(as.data.frame(gr), as.data.frame(gr2)))
-    checkIdentical(as.data.frame(c(gr2, gr)),
-                   rbind(as.data.frame(gr2), as.data.frame(gr)))
+    checkIdentical(as.data.frame(c(gr, gr2), row.names=NULL),
+                   rbind(as.data.frame(gr, row.names=NULL), as.data.frame(gr2, row.names=NULL)))
+    checkIdentical(as.data.frame(c(gr2, gr), row.names=NULL),
+                   rbind(as.data.frame(gr2, row.names=NULL), as.data.frame(gr, row.names=NULL)))
 
     ## length
     checkIdentical(length(gr), length(gr@seqnames))

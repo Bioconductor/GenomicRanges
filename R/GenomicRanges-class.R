@@ -718,13 +718,6 @@ setMethod("c", "GenomicRanges",
         }
         
         ans_names <- names(ans_ranges)
-        if (!is.null(ans_names)) {
-            whichEmpty <- which(ans_names == "")
-            ans_names[whichEmpty] <- as.character(whichEmpty)
-            ans_names2 <- make.unique(ans_names)
-            if (length(whichEmpty) > 0 || !identical(ans_names, ans_names2))
-                names(ans_ranges) <- ans_names2
-        }
         clone(x,
               seqnames = ans_seqnames,
               ranges = ans_ranges,
