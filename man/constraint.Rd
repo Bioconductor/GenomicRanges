@@ -110,6 +110,7 @@
 \seealso{
   \code{\link{setClass}},
   \code{\link{setMethod}},
+  \code{\link{showMethods}},
   \code{\link{validObject}},
   \link{GenomicRanges-class}
 }
@@ -308,6 +309,9 @@ constraint(gr) <- "HighGCGeneRanges"  # OK
 ## See how all the individual constraints are checked (from less
 ## specific to more specific constraints):
 checkConstraint(gr, constraint(gr), verbose=TRUE)
+
+## See all the "checkConstraint" methods:
+showMethods("checkConstraint")
 }
 
 \keyword{methods}
