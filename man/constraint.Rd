@@ -109,6 +109,7 @@
 
 \seealso{
   \code{\link{setClass}},
+  \code{\link{is}},
   \code{\link{setMethod}},
   \code{\link{showMethods}},
   \code{\link{validObject}},
@@ -187,6 +188,9 @@ levels <- c("gene", "transcript", "exon", "cds", "5utr", "3utr")
 rangeType <- Rle(factor(c("cds", "gene"), levels=levels), c(8, 2))
 elementMetadata(gr)$rangeType <- rangeType
 constraint(gr) <- "HasRangeTypeCol"  # OK
+
+## Use is() to check whether the object has a given constraint or not:
+is(constraint(gr), "HasRangeTypeCol")  # TRUE
 \dontrun{
 elementMetadata(gr)$rangeType[3] <- NA  # will fail
 }
@@ -220,7 +224,14 @@ setMethod("checkConstraint", c("GenomicRanges", "GeneRanges"),
 constraint(gr) <- "GeneRanges"  # will fail
 }
 elementMetadata(gr)$rangeType[] <- "gene"
+## This replace the previous constraint (HasRangeTypeCol):
 constraint(gr) <- "GeneRanges"  # OK
+
+is(constraint(gr), "GeneRanges")  # TRUE
+## However, 'gr' still indirectly has the HasRangeTypeCol constraint
+## (because the GeneRanges constraint extends the HasRangeTypeCol
+## constraint):
+is(constraint(gr), "HasRangeTypeCol")  # TRUE
 \dontrun{
 elementMetadata(gr)$rangeType[] <- "exon"  # will fail
 }
@@ -261,6 +272,10 @@ setMethod("checkConstraint", c("GenomicRanges", "HasGCCol"),
 ## This replace the previous constraint (GeneRanges):
 constraint(gr) <- "HasGCCol"  # OK
 
+is(constraint(gr), "HasGCCol")  # TRUE
+is(constraint(gr), "GeneRanges")  # FALSE
+is(constraint(gr), "HasRangeTypeCol")  # FALSE
+
 ## ---------------------------------------------------------------------
 ## EXAMPLE 4: The HighGCRanges constraint.
 ## ---------------------------------------------------------------------
@@ -292,6 +307,9 @@ constraint(gr) <- "HighGCRanges"  # will fail
 elementMetadata(gr)$GC[6:10] <- 0.5
 constraint(gr) <- "HighGCRanges"  # OK
 
+is(constraint(gr), "HighGCRanges")  # TRUE
+is(constraint(gr), "HasGCCol")  # TRUE
+
 ## ---------------------------------------------------------------------
 ## EXAMPLE 5: The HighGCGeneRanges constraint.
 ## ---------------------------------------------------------------------
@@ -305,6 +323,12 @@ setClass("HighGCGeneRanges", contains=c("GeneRanges", "HighGCRanges"))
 ## constraints.
 
 constraint(gr) <- "HighGCGeneRanges"  # OK
+
+is(constraint(gr), "HighGCGeneRanges")  # TRUE
+is(constraint(gr), "HighGCRanges")  # TRUE
+is(constraint(gr), "HasGCCol")  # TRUE
+is(constraint(gr), "GeneRanges")  # TRUE
+is(constraint(gr), "HasRangeTypeCol")  # TRUE
 
 ## See how all the individual constraints are checked (from less
 ## specific to more specific constraints):
