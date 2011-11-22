@@ -108,6 +108,8 @@
 \author{H. Pages}
 
 \seealso{
+  \code{\link{setClass}},
+  \code{\link{setMethod}},
   \code{\link{validObject}},
   \link{GenomicRanges-class}
 }
