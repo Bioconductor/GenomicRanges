@@ -38,7 +38,7 @@
   }
 
   All constraints are implemented as concrete subclasses of the Constraint
-  virtual class, which is a virtual class with no slots.
+  class, which is a virtual class with no slots.
   Like the Constraint virtual class itself, concrete Constraint subclasses
   cannot have slots.
 
@@ -114,7 +114,25 @@
 
 \examples{
 ## The examples below show how to define and set constraints on
-## GenomicRanges objects.
+## GenomicRanges objects. Note that this is how the constraint()
+## setter is defined for GenomicRanges objects:
+setReplaceMethod("constraint", "GenomicRanges",
+    function(x, value)
+    {
+        if (isSingleString(value))
+            value <- new(value)
+        if (!is(value, "ConstraintORNULL"))
+            stop("the supplied 'constraint' must be a ",
+                 "Constraint object, a single string, or NULL")
+        x@constraint <- value
+        validObject(x)
+        x
+    }
+)
+
+selectMethod("constraint", "GenomicRanges")  # the getter
+selectMethod("constraint<-", "GenomicRanges")  # the setter
+
 ## We'll use the GRanges instance 'gr' created in the GRanges examples
 ## to test our constraints:
 example(GRanges, echo=FALSE)

@@ -375,8 +375,8 @@ setReplaceMethod("constraint", "GenomicRanges",
         if (isSingleString(value))
             value <- new(value)
         if (!is(value, "ConstraintORNULL"))
-            stop("the supplied 'constraint' must be a Constraint object, ",
-                 "a single string or NULL")
+            stop("the supplied 'constraint' must be a ",
+                 "Constraint object, a single string, or NULL")
         x@constraint <- value
         validObject(x)
         x
