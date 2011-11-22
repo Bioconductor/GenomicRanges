@@ -21,6 +21,7 @@ License: Artistic-2.0
 Collate: utils.R
 	cigar-utils.R
 	transcript-utils.R
+	constraint.R
 	seqinfo.R
 	strand.R
 	Seqinfo-class.R
