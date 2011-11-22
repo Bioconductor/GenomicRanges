@@ -3,9 +3,123 @@
 ### -------------------------------------------------------------------------
 ###
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constraint objects.
+###
+### Attaching a Constraint object to a GenomicRanges object is meant to be
+### a convenient/reusable/extensible way to enforce constraints on an object
+### without the need to create GenomicRanges subclasses and implement
+### validity methods for each of them, which would rapidly tend to require a
+### proliferation of such subclasses.
+### Concrete Constraint subclasses cannot have slots. GenomicRanges objects
+### can store a Constraint object (or NULL is no constraints) in their
+### 'constraint' slot.
+### TODO: There is nothing specific to GenomicRanges objects about the way
+### constraints work so this could be generalized to any Vector object (e.g.
+### by having the 'constraint' slot in the Vector class).
+
+### Virtual class with no slots.
+setClass("Constraint", representation("VIRTUAL"))
+
+setClassUnion("ConstraintORNULL", c("Constraint", "NULL"))
+
+### Concrete constraint subclasses cannot have slots. A Constraint object
+### doesn't need to contain anything anyway so by enforcing this we make
+### sure that "combining" constraints (i.e. creating a Constraint subclass
+### that extends more than one concrete Constraint subclass) always work
+### smoothly (no slot clashes).
+setValidity2("Constraint",
+    function(x)
+    {
+        if (length(slotNames(x)) != 0L)
+            return("Constraint objects cannot have slots")
+        NULL
+    }
+)
+
+### constraint() getter and setter.
+setGeneric("constraint", function(x) standardGeneric("constraint"))
+
+setGeneric("constraint<-", signature="x",
+    function(x, value) standardGeneric("constraint<-")
+)
+
+### Signatures are returned from less specific to more specific.
+.nextCheckConstraintSignatures <- function(xClass, constraintClass)
+{
+    ## Loosely inspired by validObject().
+    xClassDef <- getClassDef(xClass)
+    xAncestors <- sapply(xClassDef@contains,
+                         slot, "superClass")
+    xAncestors <- c("ANY", rev(xAncestors), xClass)
+    constraintClassDef <- getClassDef(constraintClass)
+    constraintAncestors <- sapply(constraintClassDef@contains,
+                                  slot, "superClass")
+    constraintAncestors <- c("ANY", rev(constraintAncestors), constraintClass)
+    signatures <- NULL
+    for (class1 in xAncestors) {
+        for (class2 in constraintAncestors) {
+            methodDef <- selectMethod("checkConstraint",
+                                      c(class1, class2),
+                                      optional=TRUE,
+                                      doCache=TRUE)
+            if (!is.null(methodDef))
+                signatures <- rbind(signatures, methodDef@defined)
+        }
+    }
+    unique(signatures)
+}
+
+### The checkConstraint() generic function implements its own dispatch
+### algorithm. Like validity methods, "checkConstraint" methods must return
+### NULL or a character vector describing the problems found.
+suppressWarnings(
+  setGeneric("checkConstraint", signature=c("x", "constraint"),
+    function(x, constraint, verbose=FALSE)
+    {
+        errors <- NULL
+        signatures <- .nextCheckConstraintSignatures(class(x),
+                                                     class(constraint))
+        if (is.null(signatures))
+            return(errors)
+        ## We check from less specific to more specific constraints.
+        for (i in seq_len(nrow(signatures))) {
+            sig <- signatures[i, ]
+            sigString <- paste(names(sig),
+                               paste("\"", sig, "\"", sep=""),
+                               sep="=", collapse=", ")
+            if (verbose)
+                message("Calling \"checkConstraint\" method for\n",
+                        "    ", sigString)
+            method <- getMethod("checkConstraint", sig)
+            errors <- method(x, constraint)
+            if (length(errors) != 0L) {
+                errors <- paste("from \"checkConstraint\" method for c(",
+                                sigString, "): ", errors, sep="")
+                ## If a constraint is not satisfied, we don't check the
+                ## remaining constraints (so when implementing a constraint
+                ## a developper can assume that the less specific constraints
+                ## are satisfied).
+                break
+            }
+        }
+        errors
+    }
+  )
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### GenomicRanges objects.
+###
+
 setClass("GenomicRanges",
     contains="Vector",
-    representation("VIRTUAL")
+    representation(
+        "VIRTUAL",
+        constraint="ConstraintORNULL"
+    )
 )
 
 setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
@@ -13,6 +127,7 @@ setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
 ### The code in this file will work out-of-the-box on 'x' as long as
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),
 ### update(x) and clone(x) are defined.
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### 2 non-exported low-level helper functions.
@@ -66,6 +181,8 @@ setMethod("elementMetadata", "GenomicRanges",
         ans
     }
 )
+
+setMethod("constraint", "GenomicRanges", function(x) x@constraint)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,7 +292,8 @@ valid.GenomicRanges.seqinfo <- function(x)
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.elementMetadata(x),
-      valid.GenomicRanges.seqinfo(x))
+      valid.GenomicRanges.seqinfo(x),
+      checkConstraint(x, constraint(x)))
 }
 
 setValidity2("GenomicRanges", .valid.GenomicRanges)
@@ -245,6 +363,7 @@ setAs("Seqinfo", "GenomicRanges", function(from) {
   names(gr) <- seqnames(gr)
   gr
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
@@ -354,6 +473,20 @@ setReplaceMethod("seqinfo", "GenomicRanges",
         ## The ranges in 'x' need to be validated against
         ## the new sequence information (e.g. the sequence
         ## lengths might have changed).
+        validObject(x)
+        x
+    }
+)
+
+setReplaceMethod("constraint", "GenomicRanges",
+    function(x, value)
+    {
+        if (isSingleString(value))
+            value <- new(value)
+        if (!is(value, "ConstraintORNULL"))
+            stop("the supplied 'constraint' must be a Constraint object, ",
+                 "a single string or NULL")
+        x@constraint <- value
         validObject(x)
         x
     }

@@ -8,7 +8,9 @@ import(IRanges)
 
 exportClasses(
     Seqinfo,
+    Constraint, ConstraintORNULL,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
+    HasRangeTypeCol, GeneRanges, HasGCCol, HighGCRanges, HighGCGeneRanges,
     GappedAlignments, SummarizedExperiment, GenomicRangesORGRangesList,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -28,6 +30,8 @@ export(
     genome, "genome<-",
     Seqinfo,
     strand, "strand<-",
+
+    constraint, "constraint<-", checkConstraint,
     GRanges, GRangesList, GenomicRangesList,
     makeGRangesListFromFeatureFragments,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
@@ -47,10 +51,12 @@ exportMethods(
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-", isCircularWithKnownLength,
     genome, "genome<-",
+    strand, "strand<-",
+    constraint, "constraint<-", checkConstraint,
     merge,
     coerce, as.data.frame, unlist,
-    ranges, strand, elementMetadata,
-    "ranges<-", "strand<-", "elementMetadata<-",
+    ranges, elementMetadata,
+    "ranges<-", "elementMetadata<-",
     start, end, width, "start<-", "end<-", "width<-",
     "[", "[<-", c, seqselect, "seqselect<-",
     split, window,
