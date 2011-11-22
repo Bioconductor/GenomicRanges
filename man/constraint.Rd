@@ -115,6 +115,11 @@
 \examples{
 ## The examples below show how to define and set constraints on
 ## GenomicRanges objects.
+## We'll use the GRanges instance 'gr' created in the GRanges examples
+## to test our constraints:
+example(GRanges, echo=FALSE)
+gr
+constraint(gr)
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 1: The HasRangeTypeCol constraint.
@@ -154,6 +159,17 @@ setMethod("checkConstraint", c("GenomicRanges", "HasRangeTypeCol"),
     }
 )
 
+\dontrun{
+constraint(gr) <- "HasRangeTypeCol"  # will fail
+}
+levels <- c("gene", "transcript", "exon", "cds", "5utr", "3utr")
+rangeType <- Rle(factor(c("cds", "gene"), levels=levels), c(8, 2))
+elementMetadata(gr)$rangeType <- rangeType
+constraint(gr) <- "HasRangeTypeCol"  # OK
+\dontrun{
+elementMetadata(gr)$rangeType[3] <- NA  # will fail
+}
+
 ## ---------------------------------------------------------------------
 ## EXAMPLE 2: The GeneRanges constraint.
 ## ---------------------------------------------------------------------
@@ -178,6 +194,15 @@ setMethod("checkConstraint", c("GenomicRanges", "GeneRanges"),
         NULL
     }
 )
+
+\dontrun{
+constraint(gr) <- "GeneRanges"  # will fail
+}
+elementMetadata(gr)$rangeType[] <- "gene"
+constraint(gr) <- "GeneRanges"  # OK
+\dontrun{
+elementMetadata(gr)$rangeType[] <- "exon"  # will fail
+}
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 3: The HasGCCol constraint.
@@ -212,6 +237,9 @@ setMethod("checkConstraint", c("GenomicRanges", "HasGCCol"),
     }
 )
 
+## This replace the previous constraint (GeneRanges):
+constraint(gr) <- "HasGCCol"  # OK
+
 ## ---------------------------------------------------------------------
 ## EXAMPLE 4: The HighGCRanges constraint.
 ## ---------------------------------------------------------------------
@@ -237,6 +265,12 @@ setMethod("checkConstraint", c("GenomicRanges", "HighGCRanges"),
     }
 )
 
+\dontrun{
+constraint(gr) <- "HighGCRanges"  # will fail
+}
+elementMetadata(gr)$GC[6:10] <- 0.5
+constraint(gr) <- "HighGCRanges"  # OK
+
 ## ---------------------------------------------------------------------
 ## EXAMPLE 5: The HighGCGeneRanges constraint.
 ## ---------------------------------------------------------------------
@@ -249,6 +283,11 @@ setClass("HighGCGeneRanges", contains=c("GeneRanges", "HighGCRanges"))
 ## generic will automatically check the GeneRanges and HighGCRanges
 ## constraints.
 
+constraint(gr) <- "HighGCGeneRanges"  # OK
+
+## See how all the individual constraints are checked (from less
+## specific to more specific constraints):
+checkConstraint(gr, constraint(gr), verbose=TRUE)
 }
 
 \keyword{methods}
