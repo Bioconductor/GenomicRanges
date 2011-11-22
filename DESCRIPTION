@@ -27,7 +27,6 @@ Collate: utils.R
 	Seqinfo-class.R
 	GenomicRanges-class.R
 	GenomicRangesList-class.R
-	constraint_examples.R
 	GenomicRanges-comparison.R
 	GRanges-class.R
 	GRangesList-class.R
