@@ -768,3 +768,45 @@ setMethod("flank", "GRangesList",
                     ignore.strand=ignore.strand)
         x
     })
+
+
+.listCumsum <- function(x) {
+  x_unlisted <- unlist(x, use.names=FALSE)
+  x_cumsum <- cumsum(x_unlisted)
+  x_part <- PartitioningByWidth(elementLengths(x))
+  x_cumsum - rep(x_cumsum[start(x_part)] - x_unlisted[start(x_part)],
+                 width(x_part))
+}
+
+.listCumsumShifted <- function(x) {
+  cs <- .listCumsum(x)
+  shifted <- c(0L, head(cs, -1))
+  shifted[start(PartitioningByWidth(elementLengths(x)))] <- 0L
+  shifted
+}
+
+setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
+  gr <- unlist(to, use.names=FALSE)
+  ol <- findOverlaps(from, gr, type = "within")
+  shits <- subjectHits(ol)
+  qhits <- queryHits(ol)
+  local <- ranges(from)[qhits]
+  bounds <- ranges(gr)[shits]
+  
+  ## location wrt start of coding region 
+  neg <- as.vector(strand(gr)[shits] == "-")
+  local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
+  local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
+                        width = width(local)[neg])
+  
+  ## location wrt transcript 
+  cumsums <- .listCumsumShifted(width(to))
+  local <- shift(local, 1L + cumsums[shits])
+  
+  toInd <- rep(seq(length(to)), elementLengths(to))[shits]
+  matching <- new("RangesMatching",
+                  matchMatrix = cbind(query = qhits, subject = toInd),
+                  DIM = c(length(from), length(to)))
+  new("RangesMapping", matching = matching, ranges = local,
+      space = seqnames(from)[qhits])
+})
