@@ -39,5 +39,6 @@ Collate: utils.R
 	seqlevels-utils.R
 	resolveHits-methods.R
 	summarizeOverlaps-methods.R
+        RangesMapping-methods.R
 	test_GenomicRanges_package.R
 	zzz.R
