@@ -192,15 +192,6 @@ setMethod("as.data.frame", "GRangesList",
     }
 )
 
-setMethod("unlist", "GRangesList",
-    function(x, recursive = TRUE, use.names = TRUE)
-    {
-        if (use.names && is.null(names(x@unlistData)))
-            names(x@unlistData) <- seq_len(length(x@unlistData))
-        callNextMethod()
-    }
-)
-
 .GRangesListAsCompressedIRangesList <- function(from)
 {
     ans_ranges <- from@unlistData@ranges

@@ -13,7 +13,6 @@
 
 % Coercion methods:
 \alias{as.data.frame,GRangesList-method}
-\alias{unlist,GRangesList-method}
 \alias{coerce,GRangesList,CompressedIRangesList-method}
 \alias{coerce,GRangesList,IRangesList-method}
 \alias{coerce,RangedDataList,GRangesList-method}
