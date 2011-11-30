@@ -21,7 +21,8 @@ export(
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
 
-    constraint, "constraint<-", checkConstraint,
+    constraint, "constraint<-",
+    checkConstraint,
 
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
@@ -45,7 +46,8 @@ export(
 exportMethods(
     length,
     names, "names<-",
-    constraint, "constraint<-", checkConstraint,
+    #constraint, "constraint<-",
+    checkConstraint,
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlevels, "seqlevels<-",

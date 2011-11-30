@@ -20,7 +20,7 @@
   object) is meant to be a convenient/reusable/extensible way to enforce
   a particular set of constraints on particular instances of A.
 
-  THIS IS A WORK-IN-PROGRESS!
+  THIS IS AN EXPERIMENTAL FEATURE AND STILL VERY MUCH A WORK-IN-PROGRESS!
 }
 
 \details{
@@ -43,8 +43,7 @@
   cannot have slots.
 
   Here are the 7 steps typically involved in the process of putting
-  constraints on objects of class A (note that the first 4 steps are
-  already done for \link{GenomicRanges} objects):
+  constraints on objects of class A:
   \enumerate{
     \item Add a slot named \code{constraint} to the definition of class A.
           The type of this slot must be ConstraintORNULL. Note that
@@ -93,6 +92,10 @@
 }
 
 \note{
+  WARNING: This note is not true anymore as the \code{constraint} slot has
+  been temporarily removed from \link{GenomicRanges} objects (starting with
+  package GenomicRanges >= 1.7.9).
+
   Currently, only \link{GenomicRanges} objects can be constrained, that is:
   \itemize{
     \item they have a \code{constraint} slot;
@@ -120,28 +123,28 @@
 ## The examples below show how to define and set constraints on
 ## GenomicRanges objects. Note that this is how the constraint()
 ## setter is defined for GenomicRanges objects:
-setReplaceMethod("constraint", "GenomicRanges",
-    function(x, value)
-    {
-        if (isSingleString(value))
-            value <- new(value)
-        if (!is(value, "ConstraintORNULL"))
-            stop("the supplied 'constraint' must be a ",
-                 "Constraint object, a single string, or NULL")
-        x@constraint <- value
-        validObject(x)
-        x
-    }
-)
+#setReplaceMethod("constraint", "GenomicRanges",
+#    function(x, value)
+#    {
+#        if (isSingleString(value))
+#            value <- new(value)
+#        if (!is(value, "ConstraintORNULL"))
+#            stop("the supplied 'constraint' must be a ",
+#                 "Constraint object, a single string, or NULL")
+#        x@constraint <- value
+#        validObject(x)
+#        x
+#    }
+#)
 
-selectMethod("constraint", "GenomicRanges")  # the getter
-selectMethod("constraint<-", "GenomicRanges")  # the setter
+#selectMethod("constraint", "GenomicRanges")  # the getter
+#selectMethod("constraint<-", "GenomicRanges")  # the setter
 
 ## We'll use the GRanges instance 'gr' created in the GRanges examples
 ## to test our constraints:
 example(GRanges, echo=FALSE)
 gr
-constraint(gr)
+#constraint(gr)
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 1: The HasRangeTypeCol constraint.
@@ -181,19 +184,24 @@ setMethod("checkConstraint", c("GenomicRanges", "HasRangeTypeCol"),
     }
 )
 
-\dontrun{
-constraint(gr) <- "HasRangeTypeCol"  # will fail
-}
+#\dontrun{
+#constraint(gr) <- "HasRangeTypeCol"  # will fail
+#}
+checkConstraint(gr, new("HasRangeTypeCol"))  # with GenomicRanges >= 1.7.9
+
 levels <- c("gene", "transcript", "exon", "cds", "5utr", "3utr")
 rangeType <- Rle(factor(c("cds", "gene"), levels=levels), c(8, 2))
 elementMetadata(gr)$rangeType <- rangeType
-constraint(gr) <- "HasRangeTypeCol"  # OK
+#constraint(gr) <- "HasRangeTypeCol"  # OK
+checkConstraint(gr, new("HasRangeTypeCol"))  # with GenomicRanges >= 1.7.9
 
 ## Use is() to check whether the object has a given constraint or not:
-is(constraint(gr), "HasRangeTypeCol")  # TRUE
-\dontrun{
-elementMetadata(gr)$rangeType[3] <- NA  # will fail
-}
+#is(constraint(gr), "HasRangeTypeCol")  # TRUE
+#\dontrun{
+#elementMetadata(gr)$rangeType[3] <- NA  # will fail
+#}
+elementMetadata(gr)$rangeType[3] <- NA
+checkConstraint(gr, new("HasRangeTypeCol"))  # with GenomicRanges >= 1.7.9
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 2: The GeneRanges constraint.
@@ -220,21 +228,26 @@ setMethod("checkConstraint", c("GenomicRanges", "GeneRanges"),
     }
 )
 
-\dontrun{
-constraint(gr) <- "GeneRanges"  # will fail
-}
+#\dontrun{
+#constraint(gr) <- "GeneRanges"  # will fail
+#}
+checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
+
 elementMetadata(gr)$rangeType[] <- "gene"
 ## This replace the previous constraint (HasRangeTypeCol):
-constraint(gr) <- "GeneRanges"  # OK
+#constraint(gr) <- "GeneRanges"  # OK
+checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
 
-is(constraint(gr), "GeneRanges")  # TRUE
+#is(constraint(gr), "GeneRanges")  # TRUE
 ## However, 'gr' still indirectly has the HasRangeTypeCol constraint
 ## (because the GeneRanges constraint extends the HasRangeTypeCol
 ## constraint):
-is(constraint(gr), "HasRangeTypeCol")  # TRUE
-\dontrun{
-elementMetadata(gr)$rangeType[] <- "exon"  # will fail
-}
+#is(constraint(gr), "HasRangeTypeCol")  # TRUE
+#\dontrun{
+#elementMetadata(gr)$rangeType[] <- "exon"  # will fail
+#}
+elementMetadata(gr)$rangeType[] <- "exon"
+checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 3: The HasGCCol constraint.
@@ -270,11 +283,12 @@ setMethod("checkConstraint", c("GenomicRanges", "HasGCCol"),
 )
 
 ## This replace the previous constraint (GeneRanges):
-constraint(gr) <- "HasGCCol"  # OK
+#constraint(gr) <- "HasGCCol"  # OK
+checkConstraint(gr, new("HasGCCol"))  # with GenomicRanges >= 1.7.9
 
-is(constraint(gr), "HasGCCol")  # TRUE
-is(constraint(gr), "GeneRanges")  # FALSE
-is(constraint(gr), "HasRangeTypeCol")  # FALSE
+#is(constraint(gr), "HasGCCol")  # TRUE
+#is(constraint(gr), "GeneRanges")  # FALSE
+#is(constraint(gr), "HasRangeTypeCol")  # FALSE
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 4: The HighGCRanges constraint.
@@ -301,14 +315,16 @@ setMethod("checkConstraint", c("GenomicRanges", "HighGCRanges"),
     }
 )
 
-\dontrun{
-constraint(gr) <- "HighGCRanges"  # will fail
-}
+#\dontrun{
+#constraint(gr) <- "HighGCRanges"  # will fail
+#}
+checkConstraint(gr, new("HighGCRanges"))  # with GenomicRanges >= 1.7.9
 elementMetadata(gr)$GC[6:10] <- 0.5
-constraint(gr) <- "HighGCRanges"  # OK
+#constraint(gr) <- "HighGCRanges"  # OK
+checkConstraint(gr, new("HighGCRanges"))  # with GenomicRanges >= 1.7.9
 
-is(constraint(gr), "HighGCRanges")  # TRUE
-is(constraint(gr), "HasGCCol")  # TRUE
+#is(constraint(gr), "HighGCRanges")  # TRUE
+#is(constraint(gr), "HasGCCol")  # TRUE
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 5: The HighGCGeneRanges constraint.
@@ -322,17 +338,21 @@ setClass("HighGCGeneRanges", contains=c("GeneRanges", "HighGCRanges"))
 ## generic will automatically check the GeneRanges and HighGCRanges
 ## constraints.
 
-constraint(gr) <- "HighGCGeneRanges"  # OK
+#constraint(gr) <- "HighGCGeneRanges"  # OK
+checkConstraint(gr, new("HighGCGeneRanges"))  # with GenomicRanges >= 1.7.9
 
-is(constraint(gr), "HighGCGeneRanges")  # TRUE
-is(constraint(gr), "HighGCRanges")  # TRUE
-is(constraint(gr), "HasGCCol")  # TRUE
-is(constraint(gr), "GeneRanges")  # TRUE
-is(constraint(gr), "HasRangeTypeCol")  # TRUE
+#is(constraint(gr), "HighGCGeneRanges")  # TRUE
+#is(constraint(gr), "HighGCRanges")  # TRUE
+#is(constraint(gr), "HasGCCol")  # TRUE
+#is(constraint(gr), "GeneRanges")  # TRUE
+#is(constraint(gr), "HasRangeTypeCol")  # TRUE
 
 ## See how all the individual constraints are checked (from less
 ## specific to more specific constraints):
-checkConstraint(gr, constraint(gr), verbose=TRUE)
+#checkConstraint(gr, constraint(gr), verbose=TRUE)
+checkConstraint(gr, new("HighGCGeneRanges"), verbose=TRUE)  # with
+                                                            # GenomicRanges
+                                                            # >= 1.7.9
 
 ## See all the "checkConstraint" methods:
 showMethods("checkConstraint")

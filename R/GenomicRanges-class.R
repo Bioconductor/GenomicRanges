@@ -8,8 +8,9 @@
 setClass("GenomicRanges",
     contains="Vector",
     representation(
-        "VIRTUAL",
-        constraint="ConstraintORNULL"
+        "VIRTUAL"#,
+        #No more constraint slot for now...
+        #constraint="ConstraintORNULL"
     )
 )
 
@@ -73,7 +74,7 @@ setMethod("elementMetadata", "GenomicRanges",
     }
 )
 
-setMethod("constraint", "GenomicRanges", function(x) x@constraint)
+#setMethod("constraint", "GenomicRanges", function(x) x@constraint)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -183,8 +184,8 @@ valid.GenomicRanges.seqinfo <- function(x)
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.elementMetadata(x),
-      valid.GenomicRanges.seqinfo(x),
-      checkConstraint(x, constraint(x)))
+      valid.GenomicRanges.seqinfo(x))
+      #checkConstraint(x, constraint(x)))
 }
 
 setValidity2("GenomicRanges", .valid.GenomicRanges)
@@ -369,19 +370,19 @@ setReplaceMethod("seqinfo", "GenomicRanges",
     }
 )
 
-setReplaceMethod("constraint", "GenomicRanges",
-    function(x, value)
-    {
-        if (isSingleString(value))
-            value <- new(value)
-        if (!is(value, "ConstraintORNULL"))
-            stop("the supplied 'constraint' must be a ",
-                 "Constraint object, a single string, or NULL")
-        x@constraint <- value
-        validObject(x)
-        x
-    }
-)
+#setReplaceMethod("constraint", "GenomicRanges",
+#    function(x, value)
+#    {
+#        if (isSingleString(value))
+#            value <- new(value)
+#        if (!is(value, "ConstraintORNULL"))
+#            stop("the supplied 'constraint' must be a ",
+#                 "Constraint object, a single string, or NULL")
+#        x@constraint <- value
+#        validObject(x)
+#        x
+#    }
+#)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
