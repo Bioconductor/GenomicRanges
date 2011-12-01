@@ -36,7 +36,9 @@ test_findOverlaps_no_overlaps_returns_empty_matches <- function()
         checkIdentical(expect, ans)
 
         ans <- countOverlaps(query, subject, type = type)
-        checkIdentical(c(0L, 0L, 0L), ans)
+        checkIdentical(structure(c(0L, 0L, 0L),
+                                 names=c("nomatch", "onematch", "twomatch")),
+                                 ans)
 
         ans <- subsetByOverlaps(query, subject, type = type)
         checkIdentical(query[integer(0)], ans)
@@ -96,7 +98,9 @@ test_findOverlaps_empty_subject <- function()
         checkIdentical(expect, ans)
 
         ans <- countOverlaps(query, subject, type = type)
-        checkIdentical(c(0L, 0L, 0L), ans)
+        checkIdentical(structure(c(0L, 0L, 0L),
+                                 names=c("nomatch", "onematch", "twomatch")),
+                       ans)
 
         ans <- subsetByOverlaps(query, subject, type = type)
         checkIdentical(query[integer(0)], ans)
@@ -142,9 +146,15 @@ test_findOverlaps_zero_one_two_matches <- function()
     countsAny <- countOverlaps(query, subject, type = "any")
     countsStart <- countOverlaps(query, subject, type = "start")
     countsEnd <- countOverlaps(query, subject, type = "end")
-    checkIdentical(tabulate(queryHits(expectAny), 3), countsAny)
-    checkIdentical(tabulate(queryHits(expectStart), 3), countsStart)
-    checkIdentical(tabulate(queryHits(expectEnd), 3), countsEnd)
+    checkIdentical(structure(tabulate(queryHits(expectAny), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsAny)
+    checkIdentical(structure(tabulate(queryHits(expectStart), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsStart)
+    checkIdentical(structure(tabulate(queryHits(expectEnd), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsEnd)
 
     subsetAny <- subsetByOverlaps(query, subject, type = "any")
     subsetStart <- subsetByOverlaps(query, subject, type = "start")
@@ -199,9 +209,15 @@ test_findOverlaps_multimatch_within_one_query <- function()
     countsAny <- countOverlaps(query, subject, type = "any")
     countsStart <- countOverlaps(query, subject, type = "start")
     countsEnd <- countOverlaps(query, subject, type = "end")
-    checkIdentical(tabulate(queryHits(expectAny), 3), countsAny)
-    checkIdentical(tabulate(queryHits(expectStart), 3), countsStart)
-    checkIdentical(tabulate(queryHits(expectEnd), 3), countsEnd)
+    checkIdentical(structure(tabulate(queryHits(expectAny), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsAny)
+    checkIdentical(structure(tabulate(queryHits(expectStart), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsStart)
+    checkIdentical(structure(tabulate(queryHits(expectEnd), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsEnd)
 
     subsetAny <- subsetByOverlaps(query, subject, type = "any")
     subsetStart <- subsetByOverlaps(query, subject, type = "start")
@@ -258,9 +274,15 @@ test_findOverlaps_either_strand <- function()
     countsAny <- countOverlaps(query, subject, type = "any")
     countsStart <- countOverlaps(query, subject, type = "start")
     countsEnd <- countOverlaps(query, subject, type = "end")
-    checkIdentical(tabulate(queryHits(expectAny), 3), countsAny)
-    checkIdentical(tabulate(queryHits(expectStart), 3), countsStart)
-    checkIdentical(tabulate(queryHits(expectEnd), 3), countsEnd)
+    checkIdentical(structure(tabulate(queryHits(expectAny), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsAny)
+    checkIdentical(structure(tabulate(queryHits(expectStart), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsStart)
+    checkIdentical(structure(tabulate(queryHits(expectEnd), 3),
+                             names=c("nomatch", "onematch", "twomatch")),
+                   countsEnd)
 
     subsetAny <- subsetByOverlaps(query, subject, type = "any")
     subsetStart <- subsetByOverlaps(query, subject, type = "start")

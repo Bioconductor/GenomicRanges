@@ -537,11 +537,11 @@ setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
         type = c("any", "start", "end", "within", "equal"),
         ignore.strand = FALSE)
 {
-    tabulate(queryHits(findOverlaps(query, subject, maxgap = maxgap,
-                                    minoverlap = minoverlap,
-                                    type = match.arg(type),
-                                    ignore.strand = ignore.strand)),
-             NROW(query))
+    counts <- queryHits(findOverlaps(query, subject, maxgap = maxgap,
+                                     minoverlap = minoverlap,
+                                     type = match.arg(type),
+                                     ignore.strand = ignore.strand))
+    structure(tabulate(counts, NROW(query)), names=names(query))
 }
 
 .subsetByOverlaps.default <- function(query, subject,
