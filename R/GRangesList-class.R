@@ -696,6 +696,7 @@ reconstructGRLfromGR <- function(gr, x)
     f1 <- m12[ , 1L]
     ans <- split(gr, factor(f1, levels=seq_len(length(x))))
     names(ans) <- names(x)
+    metadata(ans) <- metadata(x)
     elementMetadata(ans) <- elementMetadata(x)
     ans
 }

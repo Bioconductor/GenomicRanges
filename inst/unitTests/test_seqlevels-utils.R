@@ -20,7 +20,7 @@ test_keepSeqlevels <- function()
                              pos = as.integer(c(10, 100)), cigar = c("50M", "50M"),
                              strand=strand(c("*", "*")))
     metadata(galn) <- list(x=1)
-    checkIdentical(metadata(galn), metadata(keepSeqlevels(galn, c("chr1", "chr2")))) 
+    checkIdentical(metadata(galn), metadata(keepSeqlevels(galn, "chr1"))) 
 }
 
 test_renameSeqlevels <- function()
