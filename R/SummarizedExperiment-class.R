@@ -12,18 +12,18 @@ setClass("SummarizedExperiment",
 {
     msg <- NULL
     msg1 <-
-        '\n    is(assays(<SummarizedExperiment>)[[%d]], "matrix") is not TRUE'
+        "\n   assays(<SummarizedExperiment>)[[%d]] must be a matrix or array" 
     msg2 <-
-        "\n    dim(<SummarizedExperiment>) does not equal dim(assays(<SummarizedExperiment>)[[%d]])"
+        "\n   dim(<SummarizedExperiment>) does not equal dim(assays(<SummarizedExperiment>)[[%d]])"
 
     xdim <- dim(x)
     assays <- assays(x)
     for (i in seq_len(length(assays))) {
-        if (!is(assays[[i]], "matrix")) {
+        if (!is(assays[[i]], "matrix") & !is(assays[[i]], "array")) {
             msg <- c(msg, sprintf(msg1, i))
             next
         }
-        edim <- dim(assays[[i]])
+        edim <- dim(assays[[i]])[1:2]
         if (is.null(edim) || !all(xdim == edim))
             msg <- c(msg, sprintf(msg2, i))
     }
@@ -284,10 +284,16 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
         msg <- "<SummarizedExperiment>[,j] index out of bounds: %s"
         j <- .SummarizedExperiment.charbound(j, colnames(x), msg)
     }
+
+    assays <- endoapply(assays(x, withDimnames=FALSE), function(elt) {
+                  if (class(elt) == "array")
+                     elt[i, j, , drop=FALSE]
+                  else
+                     elt[i, j, drop=FALSE]
+              })
     initialize(x, rowData=rowData(x)[i,,drop=FALSE],
                colData=colData(x)[j,,drop=FALSE],
-               assays=endoapply(assays(x, withDimnames=FALSE),
-                 "[", i, j, drop=FALSE))
+               assays=assays)
 }
 
 setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),

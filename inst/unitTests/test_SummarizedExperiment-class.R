@@ -1,32 +1,23 @@
 m <- matrix(1, 5, 3, dimnames=list(NULL, NULL))
 mlst <- matrix(1, 3, 3, dimnames=list(NULL, NULL))
-#assays <- SimpleList(m=m)
-#assayslst <- SimpleList(m=mlst)
-colData <- DataFrame(x=letters[1:3])
 mList <- list(m, mlst)
 assaysList <- list(gr=SimpleList(m=m), grl=SimpleList(m=mlst))
 rowDataList <- 
     list(gr=GRanges("chr1", IRanges(1:5, 10)), 
          grl=split(GRanges("chr1", IRanges(1:5, 10)), c(1,1,2,2,3)))
 names(rowDataList[["grl"]]) <- NULL
-ssetList <- 
-    list(SummarizedExperiment(assays=assaysList[["gr"]], 
-         rowData=rowDataList[["gr"]], colData),
-         SummarizedExperiment(assays=assaysList[["grl"]], 
-         rowData=rowDataList[["grl"]], colData))
+colData <- DataFrame(x=letters[1:3])
 
-.SubsetGRListAtRangesLevel <- function(grl, idx, ...)
-{
-    if (is.character(idx)) {
-        orig <- idx
-        idx <- match(idx, names(grl@unlistData))
-    }
-    grReduced <-
-        GenomicRanges:::deconstructGRLintoGR(grl)[idx,,drop=FALSE]
-    grlReduced <-
-        GenomicRanges:::reconstructGRLfromGR(grReduced, grl)
-    grlReduced[elementLengths(grlReduced) != 0]
-}
+## a list of one SE with GRanges and one with GRangesList
+ssetList <- 
+    list(SummarizedExperiment(
+           assays=assaysList[["gr"]], 
+           rowData=rowDataList[["gr"]], 
+           colData=colData),
+         SummarizedExperiment(
+           assays=assaysList[["grl"]], 
+           rowData=rowDataList[["grl"]], 
+           colData=colData))
 
 
 test_SummarizedExperiment_construction <- function() {
@@ -54,6 +45,12 @@ test_SummarizedExperiment_construction <- function() {
         checkIdentical(rowDataList[[i]], rowData(sset))
         checkIdentical(DataFrame(x=letters[1:3]), colData(sset))
     }
+
+    ## array in assays slot
+    ss <- ssetList[[1]]
+    assays(ss) <- SimpleList(array(1:5, c(5,3,2)))
+    checkTrue(validObject(ss))
+    checkTrue(all(dim(assays(ss[1:3,1:2])[[1]]) == c(3, 2, 2)))
 }
 
 test_SummarizedExperiment_getters <- function() {
