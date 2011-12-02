@@ -151,7 +151,7 @@
       pos = as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
       cigar = c("500M", "100M", "300M", "500M", "300M", 
           "50M200N50M", "50M150N50M"),
-      strand = strand(rep.int("+", 7L)))
+      strand = strand(rep("+", 7)))
 
   ## Results from countOverlaps are included to highlight how the 
   ## modes in summarizeOverlaps count a read a maximum of once.
