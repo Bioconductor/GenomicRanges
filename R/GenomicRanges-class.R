@@ -577,11 +577,10 @@ setMethod("shift", "GenomicRanges",
     }
     ansIRangesList <- FUN(xIRangesList, ...)
     k <- elementLengths(ansIRangesList)
-    splitListNames <- strsplit(names(ansIRangesList), split = "\r")
-    ansSeqnames <-
-      Rle(factor(unlist(lapply(splitListNames, "[[", 1L)),
-                 levels = seqlevels(x)), k)
-    ansStrand <- Rle(strand(unlist(lapply(splitListNames, "[[", 2L))), k)
+    splitListNames <- strsplit(names(ansIRangesList), split = "\r", fixed=TRUE)
+    listNameMatrix <- matrix(unlist(splitListNames), nrow = 2)
+    ansSeqnames <- Rle(factor(listNameMatrix[1,], levels = seqlevels(x)), k)
+    ansStrand <- Rle(strand(listNameMatrix[2,]), k)
     update(x, seqnames = ansSeqnames,
            ranges = unlist(ansIRangesList, use.names=FALSE),
            strand = ansStrand,
