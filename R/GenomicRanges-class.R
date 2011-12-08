@@ -405,7 +405,9 @@ setGeneric("clone", function(x, ...) standardGeneric("clone"))
 setMethod("clone", "ANY",
           function(x, ...)
           {
-            initialize(x, ...)
+            if (nargs() > 1)
+              initialize(x, ...)
+            else x
           })
 
 
