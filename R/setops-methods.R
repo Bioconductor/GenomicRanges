@@ -202,6 +202,20 @@ setMethod("pintersect", c("GRanges", "GappedAlignments"),
     }
 )
 
+setMethod("pintersect", c("GRangesList", "GRangesList"),
+          function(x, y, ...)
+          {
+            if (length(x) != length(y))
+              stop("'x' and 'y' must have the same length")
+            seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+            seqlevels(y) <- seqlevels(x)
+            xgr <- deconstructGRLintoGR(x)
+            ygr <- deconstructGRLintoGR(y)
+            gr <- intersect(xgr, ygr, ...)
+            reconstructGRLfromGR(gr, x)
+          }
+          )
+
 setMethod("psetdiff", c("GRanges", "GRanges"),
     function(x, y, ignore.strand = FALSE, ...)
     {
