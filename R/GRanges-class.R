@@ -214,6 +214,9 @@ setAs("RleList", "GRanges", function(from) {
   gr
 })
 
+setAs("RleViewsList", "GRanges", function(from) {
+  as(as(from, "RangedData"), "GRanges")
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Slot getters and setters.
