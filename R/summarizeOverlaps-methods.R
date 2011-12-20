@@ -7,9 +7,7 @@ setGeneric("summarizeOverlaps", signature = c("features", "reads"),
 })
 
 
-## summarizeOverlaps methods for BamFiles are found upstairs next to home
-## furnishings.  Actually that's not quite right, they are in Rsamtools.
-
+## summarizeOverlaps methods for BamFiles are found in Rsamtools.
 
 ## methods for GappedAlignments
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
