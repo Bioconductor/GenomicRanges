@@ -123,7 +123,9 @@ test_pintersect <- function()
     gr <- make_test_GRanges()
     grlist <- make_test_GRangesList()
 
-    checkException(pintersect(grlist, grlist), silent = TRUE)
+    expect <- reduce(grlist) 
+    elementMetadata(expect) <- NULL
+    checkIdentical(pintersect(grlist, grlist), expect)
 
     expect <- gr
     elementMetadata(expect) <- NULL
