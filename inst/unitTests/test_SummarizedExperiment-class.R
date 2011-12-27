@@ -196,6 +196,8 @@ test_SummarizedExperiment_subsetassign <- function()
 {
     for (i in length(ssetList)) {
         sset <- ssetList[[i]] 
+        dimnames(sset) <- list(LETTERS[seq_len(nrow(sset))],
+                               letters[seq_len(ncol(sset))])
         ss1 <- sset
         ss1[1:2,] <- ss1[2:1,]
         checkIdentical(rowData(sset)[2:1,], rowData(ss1)[1:2,])

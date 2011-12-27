@@ -142,7 +142,7 @@ setReplaceMethod("colData", c("SummarizedExperiment", "DataFrame"),
 })
 
 setMethod(assays, "SummarizedExperiment",
-    function(x, ..., withDimnames=TRUE) 
+function(x, ..., withDimnames=TRUE) 
 {
     if (withDimnames)
         endoapply(slot(x, "assays"), "dimnames<-", dimnames(x))
@@ -327,10 +327,14 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
                rowData=local({
                    r <- rowData(x)
                    r[i,] <- rowData(value)
+                   nms <- names(r)
+                   nms[i] <- names(rowData(value))
+                   names(r) <- nms
                    r
                }), colData=local({
                    c <- colData(x)
                    c[j,] <- colData(value)
+                   rownames(c)[j] <- rownames(colData(value))
                    c
                }), assays=local({
                    a <- assays(x, withDimnames=FALSE)

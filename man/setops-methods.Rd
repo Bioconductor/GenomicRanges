@@ -12,6 +12,7 @@
 \alias{pintersect,GRanges,GRanges-method}
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
+\alias{pintersect,GRangesList,GRangesList-method}
 \alias{pintersect,GappedAlignments,GRanges-method}
 \alias{pintersect,GRanges,GappedAlignments-method}
 
