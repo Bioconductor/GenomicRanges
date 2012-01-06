@@ -653,7 +653,7 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges"),
 {
         x_seqnames <- seqnames(x)
         x_strand <- strand(x)
-	seqnames <- as.integer(unlist(x_seqnames, use.names=FALSE))
+        seqnames <- as.integer(unlist(x_seqnames, use.names=FALSE))
         strand <- as.integer(unlist(x_strand, use.names=FALSE))
         as.list(relist(seqnames * 3L + strand, x_seqnames))
 }
