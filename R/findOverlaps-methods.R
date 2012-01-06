@@ -672,3 +672,27 @@ setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some convenience wrappers.
+###
+
+readIsCompatibleWithSplicing <- function(x)
+{
+    if (!is(x, "OverlapEncodings"))
+        stop("'x' must be an OverlapEncodings object")
+    if (length(x) == 0L)
+        return(logical(0))
+    ngap <- as.integer(sub(":.*", "", levels(encoding(x)))) - 1L
+    if (max(ngap) > 2)
+        stop("don't support reads with more than 2 gaps for now, sorry")
+    ## Regex to use for reads with 1 range (no gaps):
+    pattern1 <- ":[fgij]:"
+    ## Regex to use for reads with 2 ranges (1 gap):
+    pattern2 <- ":[jg].:.[gf]:"
+    ## Regex to use for reads with 3 ranges (2 gaps):
+    pattern3 <- ":[jg]..:.g.:..[gf]:"
+    pattern123 <- ":([fgij]|[jg].:.[gf]|[jg]..:.g.:..[gf]):"
+    as.integer(encoding(x)) %in% grep(pattern123, levels(encoding(x)))
+}
+

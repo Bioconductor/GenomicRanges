@@ -37,9 +37,18 @@ export(
     makeGRangesListFromFeatureFragments,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     readGappedAlignments, GappedAlignments,
+
     SummarizedExperiment,
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
     colData, "colData<-", exptData, "exptData<-",
+
+    readIsCompatibleWithSplicing,
+
+    countGenomicOverlaps,
+
+    keepSeqlevels, renameSeqlevels,
+
+    summarizeOverlaps,
     Union, IntersectionNotEmpty, IntersectionStrict
 )
 
@@ -74,7 +83,8 @@ exportMethods(
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,
     dimnames, "dimnames<-", precede, follow,
-    countGenomicOverlaps, keepSeqlevels, renameSeqlevels,
+    countGenomicOverlaps,
+    keepSeqlevels, renameSeqlevels,
     summarizeOverlaps 
 )
 
