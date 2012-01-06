@@ -69,7 +69,7 @@ exportMethods(
     coverage,
     union, intersect, setdiff,
     punion, pintersect, psetdiff, pgap,
-    findOverlaps, countOverlaps, match, "%in%",
+    findOverlaps, countOverlaps, match, "%in%", encodeOverlaps,
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,

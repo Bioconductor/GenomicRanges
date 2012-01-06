@@ -150,7 +150,7 @@ setMethod("rank", "GenomicRanges",
         stop("the 2 objects to compare have seqlevels in incompatible orders")
     ## This should only insert new seqlevels in the existing ones i.e. it
     ## should NEVER drop or reorder existing levels
-    seqlevels(e1) <- seqlevels(e2) <- seqlevels(seqinfo)
+    seqlevels(e1) <- seqlevels(e2) <- seqlevels
     a <- as.integer(seqnames(e1)) - as.integer(seqnames(e2))
     b <- as.integer(strand(e1)) - as.integer(strand(e2))
     c <- start(e1) - start(e2)

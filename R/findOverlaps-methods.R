@@ -622,3 +622,53 @@ for (sig in .signatures) {
     setMethod("%in%", sig, function(x, table) !is.na(match(x, table)))
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### encodeOverlaps() methods
+###
+
+if (FALSE) {
+### Not sure we need to bother with methods that do 1-to-1 range overlap
+### encodings. What would be the use cases?
+setMethod("encodeOverlaps", c("GRanges", "GRanges"),
+    function(query, subject)
+    {
+        seqinfo <- merge(seqinfo(query), seqinfo(subject))
+        seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
+        query.space <- as.integer(seqnames(query)) * 3L +
+                       as.integer(strand(query))
+        subject.space <- as.integer(seqnames(subject)) * 3L +
+                         as.integer(strand(subject))
+        same_space <- query.space == subject.space
+        ans <- character(length(same_space))
+        ans[!same_space] <- "X"
+        ans[same_space] <- encodeOverlaps(ranges(query)[same_space],
+                                          ranges(subject)[same_space])
+        ans
+    }
+)
+}
+
+.get_GRangesList_space <- function(x)
+{
+        x_seqnames <- seqnames(x)
+        x_strand <- strand(x)
+	seqnames <- as.integer(unlist(x_seqnames, use.names=FALSE))
+        strand <- as.integer(unlist(x_strand, use.names=FALSE))
+        as.list(relist(seqnames * 3L + strand, x_seqnames))
+}
+
+setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
+    function(query, subject)
+    {
+        seqinfo <- merge(seqinfo(query), seqinfo(subject))
+        seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
+        RangesList_encodeOverlaps(as.list(start(query)),
+                                  as.list(width(query)),
+                                  as.list(start(subject)),
+                                  as.list(width(subject)),
+                                  query.space=.get_GRangesList_space(query),
+                                  subject.space=.get_GRangesList_space(subject))
+    }
+)
+

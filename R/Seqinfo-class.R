@@ -374,9 +374,10 @@ setMethod("as.data.frame", "Seqinfo",
     }
 )
 
-setAs("Seqinfo", "RangesList", function(from) {
-  as(as(from, "GenomicRanges"), "RangesList")
-})
+setAs("Seqinfo", "RangesList",
+    function(from) as(as(from, "GenomicRanges"), "RangesList")
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
