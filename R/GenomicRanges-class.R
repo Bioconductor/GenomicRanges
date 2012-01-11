@@ -205,6 +205,7 @@ setAs("GenomicRanges", "RangedData",
                                          isCircular = isCircular(from),
                                          genome = genome(from))
         metadata(ranges(rd)) <- metadata(from)
+        metadata(ranges(rd))$seqinfo <- seqinfo(from)
         rd
       }
 )
@@ -369,6 +370,10 @@ setReplaceMethod("seqinfo", "GenomicRanges",
         x
     }
 )
+
+setMethod("score", "GenomicRanges", function(x) {
+  values(x)$score
+})
 
 #setReplaceMethod("constraint", "GenomicRanges",
 #    function(x, value)
