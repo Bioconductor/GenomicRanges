@@ -52,9 +52,29 @@ setMethod("setdiff", c("GRanges", "GRanges"),
 ### Parallel set operations
 ### -------------------------------------------------------------------------
 
-### FIXME: Why aren't all the parallel set operations using the same code
-### for checking strand compatibility? E.g. "pintersect" and "psetdiff" use
-### compatibleStrand() for this but not "punion".
+## check for equality without requiring identical level sets
+## instead, one level set must be subset of the other, like merge,Seqinfo
+compatibleSeqnames <- function(x, y) {
+  if (length(x) != length(y))
+    stop("'x' and 'y' must be of equal length")
+  if (!is(x, "Rle") || !is(y, "Rle"))
+    stop("'x' and 'y' must be Rle objects")
+  xLevels <- levels(x)
+  yLevels <- levels(y)
+  if (length(xLevels) > length(yLevels))
+    diffLevels <- setdiff(yLevels, xLevels)
+  else diffLevels <- setdiff(xLevels, yLevels)
+  if (length(diffLevels))
+    stop("Level set of 'x' must be subset of that of 'y', or vice versa")
+  runValue(x) <- as.character(runValue(x))
+  runValue(y) <- as.character(runValue(y))
+  x == y
+}
+
+allCompatibleSeqnamesAndStrand <- function(x, y) {
+  !all(compatibleSeqnames(seqnames(x), seqnames(y)) &
+       compatibleStrand(strand(x), strand(y)))
+}
 
 setMethod("punion", c("GRanges", "GRanges"),
     function(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
@@ -64,10 +84,10 @@ setMethod("punion", c("GRanges", "GRanges"),
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
         if (ignore.strand) 
-           strand(y) <- strand(x) 
-        if (!all((seqnames(x) == seqnames(y)) & (strand(x) == strand(y))))
-                stop("'x' and 'y' elements must have compatible 'seqnames' ",
-            "and 'strand' values")
+           strand(y) <- strand(x)
+        if (!allCompatibleSeqnamesAndStrand(x, y))
+          stop("'x' and 'y' elements must have compatible 'seqnames' ",
+               "and 'strand' values")
         ranges(x) <- punion(ranges(x), ranges(y), fill.gap = fill.gap)
         x
     }
@@ -116,8 +136,7 @@ setMethod("pintersect", c("GRanges", "GRanges"),
             stop("'x' and 'y' must have the same length")
         if(ignore.strand)
             strand(y) <- strand(x)
-        if (!all((seqnames(x) == seqnames(y)) &
-                  compatibleStrand(strand(x), strand(y))))
+        if (!allCompatibleSeqnamesAndStrand(x, y))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",
                  "and 'strand' values")
         ## Update the ranges.
@@ -148,16 +167,19 @@ setMethod("pintersect", c("GRanges", "GRanges"),
 ### strand value in 'y'.
 ### FIXME: 'resolve.empty' is silently ignored.
 setMethod("pintersect", c("GRangesList", "GRanges"),
-    function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
+    function(x, y, resolve.empty = c("none", "max.start", "start.x"),
+             ignore.strand = FALSE, ...)
     {
         ## TODO: Use "seqinfo<-" method for GRangesList objects when it
         ## becomes available.
         seqinfo(x@unlistData) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        ok <- (seqnames(x@unlistData) == rep(seqnames(y), elementLengths(x))) &
-              compatibleStrand(strand(x@unlistData),
-                               rep(strand(y), elementLengths(x)))
+        ok <- compatibleSeqnames(seqnames(x@unlistData),
+                                 rep(seqnames(y), elementLengths(x)))
+        if (!ignore.strand)
+          ok <- ok & compatibleStrand(strand(x@unlistData),
+                                      rep(strand(y), elementLengths(x)))
         ok <-
           new2("CompressedLogicalList", unlistData = as.vector(ok),
                partitioning = x@partitioning)
@@ -225,7 +247,7 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
             stop("'x' and 'y' must have the same length")
         if(ignore.strand)
             strand(y) <- strand(x)
-        ok <- (seqnames(x) == seqnames(y)) &
+        ok <- compatibleSeqnames(seqnames(x), seqnames(y)) &
               compatibleStrand(strand(x), strand(y))
         ## Update the ranges.
         ansRanges <- ranges(x)
@@ -246,14 +268,16 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
 ### TODO: Review the semantic of this method (see previous TODO's for
 ### "punion" and "pintersect" methods for GRanges,GRangesList).
 setMethod("psetdiff", c("GRanges", "GRangesList"),
-    function(x, y, ...)
+    function(x, y, ignore.strand = FALSE, ...)
     {
         ansSeqinfo <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        ok <- (rep(seqnames(x), elementLengths(y)) == seqnames(y@unlistData)) &
-              compatibleStrand(rep(strand(x), elementLengths(y)),
-                               strand(y@unlistData))
+        ok <- compatibleSeqnames(rep(seqnames(x), elementLengths(y)),
+                                 seqnames(y@unlistData))
+        if (!ignore.strand)
+          ok <- ok & compatibleStrand(rep(strand(x), elementLengths(y)),
+                                      strand(y@unlistData))
         if (!all(ok)) {
             ok <-
               new2("CompressedLogicalList", unlistData = as.vector(ok),
@@ -297,7 +321,7 @@ setMethod("pgap", c("GRanges", "GRanges"),
               stop("'x' and 'y' must have the same length")
             if (ignore.strand) 
               strand(y) <- strand(x) 
-            if (!all((seqnames(x) == seqnames(y)) & (strand(x) == strand(y))))
+            if (!allCompatibleSeqnamesAndStrand(x, y))
               stop("'x' and 'y' elements must have compatible 'seqnames' ",
                    "and 'strand' values")
             ranges(x) <- pgap(ranges(x), ranges(y))
