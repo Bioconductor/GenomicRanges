@@ -72,8 +72,8 @@ compatibleSeqnames <- function(x, y) {
 }
 
 allCompatibleSeqnamesAndStrand <- function(x, y) {
-  !all(compatibleSeqnames(seqnames(x), seqnames(y)) &
-       compatibleStrand(strand(x), strand(y)))
+  all(compatibleSeqnames(seqnames(x), seqnames(y)) &
+      compatibleStrand(strand(x), strand(y)))
 }
 
 setMethod("punion", c("GRanges", "GRanges"),
