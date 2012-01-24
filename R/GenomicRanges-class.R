@@ -646,10 +646,13 @@ setMethod("reduce", "GenomicRanges",
         if (!identical(with.inframe.attrib, FALSE))
             stop("'with.inframe.attrib' argument not supported ",
                  "when reducing a GenomicRanges object")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand)
+            strand(x) <- "*"
         .interIntervalGenomicRanges(x, reduce,
                                     drop.empty.ranges=drop.empty.ranges,
-                                    min.gapwidth=min.gapwidth, 
-                                    ignore.strand=ignore.strand)
+                                    min.gapwidth=min.gapwidth)
     }
 )
 

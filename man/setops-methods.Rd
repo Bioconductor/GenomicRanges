@@ -30,15 +30,15 @@
 
 \usage{
 ## Set operations
-\S4method{union}{GRanges,GRanges}(x, y, ignore.strand = FALSE,...)
-\S4method{intersect}{GRanges,GRanges}(x, y, ignore.strand = FALSE,...)
-\S4method{setdiff}{GRanges,GRanges}(x, y, ignore.strand = FALSE,...)
+\S4method{union}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
+\S4method{intersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
+\S4method{setdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 
 ## Parallel set operations
-\S4method{punion}{GRanges,GRanges}(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
-\S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty = c("none", "max.start", "start.x"), ignore.strand = FALSE, ...)
+\S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
+\S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ignore.strand=FALSE, ...)
 \S4method{pintersect}{GappedAlignments,GRanges}(x, y, ...)
-\S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand = FALSE, ...)
+\S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 }
 
 \arguments{
@@ -76,8 +76,12 @@
     range.)
   }
   \item{ignore.strand}{
-    If set to TRUE, the strand information is ignored in the computation and the 
-    result has the strand information of x.
+    For set operations: If set to TRUE, then the strand of \code{x} and
+    \code{y} is set to \code{"*"} prior to any computation.
+
+    For parallel set operations: If set to TRUE, the strand information is
+    ignored in the computation and the result has the strand information of
+    \code{x}.
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
@@ -122,6 +126,43 @@
 }
 
 \examples{
+## ---------------------------------------------------------------------
+## A. SET OPERATIONS
+## ---------------------------------------------------------------------
+
+x <- GRanges("chr1", IRanges(c(2, 9) , c(7, 19)), strand=c("+", "-"))
+y <- GRanges("chr1", IRanges(5, 10), strand="-") 
+
+union(x, y)
+union(x, y, ignore.strand=TRUE)
+
+intersect(x, y)
+intersect(x, y, ignore.strand=TRUE)
+
+setdiff(x, y)
+setdiff(x, y, ignore.strand=TRUE)
+
+## ---------------------------------------------------------------------
+## B. PARALLEL SET OPERATIONS
+## ---------------------------------------------------------------------
+
+\dontrun{
+punion(x, shift(x, 7))  # will fail
+}
+punion(x, shift(x, 7), fill.gap=TRUE)
+
+pintersect(x, shift(x, 6))
+\dontrun{
+pintersect(x, shift(x, 7))  # will fail
+}
+pintersect(x, shift(x, 7), resolve.empty="max.start")
+
+psetdiff(x, shift(x, 7))
+
+## ---------------------------------------------------------------------
+## C. MORE EXAMPLES
+## ---------------------------------------------------------------------
+
 ## GRanges object:
 gr <- GRanges(seqnames=c("chr2", "chr1", "chr1"),
               ranges=IRanges(1:3, width = 12),
@@ -138,14 +179,6 @@ gr3 <- GRanges(seqnames=c("chr1", "chr2"),
                strand=c("-", "-"))
 grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 
-## Union, intersection, and set difference of two GRanges objects
-union(gr2, gr3)
-intersect(gr2, gr3)
-setdiff(gr2, gr3)
-
-## Parallel intersection of two GRanges objects
-pintersect(gr2, shift(gr2, 3))
-
 ## Parallel intersection of a GRanges and a GRangesList object
 pintersect(gr, grlist)
 pintersect(grlist, gr)
@@ -155,9 +188,6 @@ library(Rsamtools)  # because file ex1.bam is in this package
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galn <- readGappedAlignments(galn_file)
 pintersect(galn, shift(as(galn, "GRanges"), 6L))
-
-## Parallel set difference of two GRanges objects
-psetdiff(gr2, shift(gr2, 3))
 
 ## Parallel set difference of a GRanges and a GRangesList object
 psetdiff(gr, grlist)

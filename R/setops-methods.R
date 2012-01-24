@@ -5,16 +5,24 @@
 ### TODO: What's the impact of circularity on the set operations?
 
 setMethod("union", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand = FALSE, ...)
+    function(x, y, ignore.strand=FALSE, ...)
     {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand)
+            strand(x) <- strand(y) <- "*"
         values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
-        reduce(c(x, y), drop.empty.ranges=TRUE, ignore.strand = ignore.strand)
+        reduce(c(x, y), drop.empty.ranges=TRUE)
     }
 )
 
 setMethod("intersect", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand = FALSE, ...)
+    function(x, y, ignore.strand=FALSE, ...)
     {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand)
+            strand(x) <- strand(y) <- "*"
         values(x) <- values(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
@@ -25,13 +33,17 @@ setMethod("intersect", c("GRanges", "GRanges"),
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
             maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
-        setdiff(x, gaps(y, end = seqlengths), ignore.strand = ignore.strand)
+        setdiff(x, gaps(y, end=seqlengths))
     }
 )
 
 setMethod("setdiff", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand = FALSE, ...)
+    function(x, y, ignore.strand=FALSE, ...)
     {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand)
+            strand(x) <- strand(y) <- "*"
         values(x) <- values(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
@@ -42,8 +54,7 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
             maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
-        gaps(union(gaps(x, end = seqlengths), y, ignore.strand = ignore.strand),
-            end = seqlengths)
+        gaps(union(gaps(x, end=seqlengths), y), end=seqlengths)
     }
 )
 
@@ -77,18 +88,20 @@ allCompatibleSeqnamesAndStrand <- function(x, y) {
 }
 
 setMethod("punion", c("GRanges", "GRanges"),
-    function(x, y, fill.gap = FALSE, ignore.strand = FALSE, ...)
+    function(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
     {
-        values(x) <- NULL
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand) 
-           strand(y) <- strand(x)
+            strand(y) <- strand(x)
+        values(x) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (!allCompatibleSeqnamesAndStrand(x, y))
-          stop("'x' and 'y' elements must have compatible 'seqnames' ",
-               "and 'strand' values")
-        ranges(x) <- punion(ranges(x), ranges(y), fill.gap = fill.gap)
+            stop("'x' and 'y' elements must have compatible 'seqnames' ",
+                 "and 'strand' values")
+        ranges(x) <- punion(ranges(x), ranges(y), fill.gap=fill.gap)
         x
     }
 )
@@ -103,7 +116,7 @@ setMethod("punion", c("GRanges", "GRanges"),
 ### Note that behaviour (b) could also be considered a valid candidate for
 ### a union,GRangesList,GRanges method (which we don't have at the moment).
 setMethod("punion", c("GRangesList", "GRanges"),
-    function(x, y, fill.gap = FALSE, ...)
+    function(x, y, fill.gap=FALSE, ...)
     {
         n <- length(x)
         if (n != length(y)) 
@@ -119,33 +132,35 @@ setMethod("punion", c("GRangesList", "GRanges"),
 )
 
 setMethod("punion", c("GRanges", "GRangesList"),
-    function(x, y, fill.gap = FALSE, ...)
+    function(x, y, fill.gap=FALSE, ...)
     {
         callGeneric(y, x)
     }
 )
 
 setMethod("pintersect", c("GRanges", "GRanges"),
-    function(x, y, resolve.empty = c("none", "max.start", "start.x"),
-        ignore.strand = FALSE, ...)
+    function(x, y, resolve.empty=c("none", "max.start", "start.x"),
+             ignore.strand=FALSE, ...)
     {
+        if (length(x) != length(y)) 
+            stop("'x' and 'y' must have the same length")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand)
+            strand(y) <- strand(x)
         resolve.empty <- match.arg(resolve.empty)
         values(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        if (length(x) != length(y)) 
-            stop("'x' and 'y' must have the same length")
-        if(ignore.strand)
-            strand(y) <- strand(x)
         if (!allCompatibleSeqnamesAndStrand(x, y))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",
                  "and 'strand' values")
         ## Update the ranges.
         ranges(x) <- pintersect(ranges(x), ranges(y),
-                                resolve.empty = resolve.empty)
+                                resolve.empty=resolve.empty)
         ## Update the strand.
         ansStrand <- strand(x)
         resolveStrand <- as(ansStrand == "*", "IRanges")
-        if (length(resolveStrand) > 0)
+        if (length(resolveStrand) > 0L)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
         strand(x) <- ansStrand
@@ -167,8 +182,8 @@ setMethod("pintersect", c("GRanges", "GRanges"),
 ### strand value in 'y'.
 ### FIXME: 'resolve.empty' is silently ignored.
 setMethod("pintersect", c("GRangesList", "GRanges"),
-    function(x, y, resolve.empty = c("none", "max.start", "start.x"),
-             ignore.strand = FALSE, ...)
+    function(x, y, resolve.empty=c("none", "max.start", "start.x"),
+             ignore.strand=FALSE, ...)
     {
         ## TODO: Use "seqinfo<-" method for GRangesList objects when it
         ## becomes available.
@@ -181,22 +196,22 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
           ok <- ok & compatibleStrand(strand(x@unlistData),
                                       rep(strand(y), elementLengths(x)))
         ok <-
-          new2("CompressedLogicalList", unlistData = as.vector(ok),
-               partitioning = x@partitioning)
-        if (ncol(elementMetadata(x@unlistData)) > 0)
+          new2("CompressedLogicalList", unlistData=as.vector(ok),
+               partitioning=x@partitioning)
+        if (ncol(elementMetadata(x@unlistData)) > 0L)
             elementMetadata(x@unlistData) <- NULL
-        if (ncol(elementMetadata(y)) > 0)
+        if (ncol(elementMetadata(y)) > 0L)
             elementMetadata(y) <- NULL
         x <- x[ok]
         y <- rep(y, sum(ok))
         x@unlistData@ranges <-
-          pintersect(x@unlistData@ranges, y@ranges, resolve.empty = "start.x")
+          pintersect(x@unlistData@ranges, y@ranges, resolve.empty="start.x")
         x[width(x) > 0L]
     }
 )
 
 setMethod("pintersect", c("GRanges", "GRangesList"),
-    function(x, y, resolve.empty = c("none", "max.start", "start.x"), ...)
+    function(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
     {
         callGeneric(y, x)
     }
@@ -206,7 +221,7 @@ setMethod("pintersect", c("GRanges", "GRangesList"),
 setMethod("pintersect", c("GappedAlignments", "GRanges"),
     function(x, y, ...)
     {
-        bounds <- try(callGeneric(granges(x), y), silent = TRUE)
+        bounds <- try(callGeneric(granges(x), y), silent=TRUE)
         if (inherits(bounds, "try-error"))
             stop("CIGAR is empty after intersection")
         start <- start(bounds) - start(x) + 1L
@@ -239,14 +254,16 @@ setMethod("pintersect", c("GRangesList", "GRangesList"),
           )
 
 setMethod("psetdiff", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand = FALSE, ...)
+    function(x, y, ignore.strand=FALSE, ...)
     {
-        values(x) <- NULL
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        if(ignore.strand)
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand)
             strand(y) <- strand(x)
+        values(x) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ok <- compatibleSeqnames(seqnames(x), seqnames(y)) &
               compatibleStrand(strand(x), strand(y))
         ## Update the ranges.
@@ -257,7 +274,7 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
         ## Update the strand.
         ansStrand <- strand(x)
         resolveStrand <- as(ansStrand == "*", "IRanges")
-        if (length(resolveStrand) > 0)
+        if (length(resolveStrand) > 0L)
             ansStrand[as.integer(resolveStrand)] <-
               seqselect(strand(y), resolveStrand)
         strand(x) <- ansStrand
@@ -280,19 +297,19 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
                                       strand(y@unlistData))
         if (!all(ok)) {
             ok <-
-              new2("CompressedLogicalList", unlistData = as.vector(ok),
-                   partitioning = y@partitioning)
+              new2("CompressedLogicalList", unlistData=as.vector(ok),
+                   partitioning=y@partitioning)
             y <- y[ok]
         }
-        ansRanges <- gaps(ranges(y), start = start(x), end = end(x))
+        ansRanges <- gaps(ranges(y), start=start(x), end=end(x))
         ansSeqnames <- rep(seqnames(x), elementLengths(ansRanges))
         ansStrand <- rep(strand(x), elementLengths(ansRanges))
         ansGRanges <-
-          GRanges(ansSeqnames, unlist(ansRanges, use.names = FALSE), ansStrand)
+          GRanges(ansSeqnames, unlist(ansRanges, use.names=FALSE), ansStrand)
         seqinfo(ansGRanges) <- ansSeqinfo
         new2("GRangesList",
-             elementMetadata = new("DataFrame", nrows = length(x)),
-             unlistData = ansGRanges, partitioning = ansRanges@partitioning,
+             elementMetadata=new("DataFrame", nrows=length(x)),
+             unlistData=ansGRanges, partitioning=ansRanges@partitioning,
              check=FALSE)
     }
 )
@@ -313,18 +330,21 @@ setMethod("psetdiff", c("GRangesList", "GRangesList"),
 )
 
 setMethod("pgap", c("GRanges", "GRanges"),
-          function(x, y, ignore.strand = FALSE, ...)
-          {
-            values(x) <- NULL
-            seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-            if (length(x) != length(y)) 
-              stop("'x' and 'y' must have the same length")
-            if (ignore.strand) 
-              strand(y) <- strand(x) 
-            if (!allCompatibleSeqnamesAndStrand(x, y))
-              stop("'x' and 'y' elements must have compatible 'seqnames' ",
-                   "and 'strand' values")
-            ranges(x) <- pgap(ranges(x), ranges(y))
-            x
-          }
-          )
+    function(x, y, ignore.strand=FALSE, ...)
+    {
+        if (length(x) != length(y)) 
+            stop("'x' and 'y' must have the same length")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand) 
+            strand(y) <- strand(x) 
+        values(x) <- NULL
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        if (!allCompatibleSeqnamesAndStrand(x, y))
+            stop("'x' and 'y' elements must have compatible 'seqnames' ",
+                 "and 'strand' values")
+        ranges(x) <- pgap(ranges(x), ranges(y))
+        x
+    }
+)
+
