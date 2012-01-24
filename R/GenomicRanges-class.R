@@ -494,9 +494,11 @@ setReplaceMethod("width", "GenomicRanges",
 setMethod("flank", "GenomicRanges",
     function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
              ignore.strand=FALSE)
-    { 
+    {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
-            start <- rep(TRUE, length(x))
+            start <- rep.int(TRUE, length(x))
         else 
             start <- as.vector(start == (strand(x) != "-"))
         ranges <-
@@ -518,11 +520,14 @@ setMethod("resize", "GenomicRanges",
         if (!missing(fix) &&
             (length(fix) > length(x) || length(x) %% length(fix) > 0L))
             stop("'x' is not a multiple of 'fix' length")
-        revFix <- c(start="end", end="start", center="center")       
-        if (ignore.strand)
-            fix <- Rle(rep(fix ,length(x)))
-        else 
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand) {
+            fix <- Rle(rep.int(fix, length(x)))
+        } else {
+            revFix <- c(start="end", end="start", center="center")       
             fix <- ifelse(strand(x) == "-", revFix[fix], fix)
+        }
         ranges <-
             resize(ranges(x), width=width, fix=fix, use.names=use.names)
         if (!IRanges:::anyMissing(seqlengths(x))) {
@@ -578,13 +583,11 @@ setMethod("shift", "GenomicRanges",
 {
     x <- clone(x)
     elementMetadata(x) <- NULL
-    if (ignore.strand) {
-       xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
-                            Rle(factor(rep("+", length(x)))), sep="\r"))
-    } else {
-       xIRangesList <-
-        split(unname(ranges(x)), paste(seqnames(x), strand(x), sep="\r"))
-    }
+    if (ignore.strand)
+       f <- paste(seqnames(x), Rle(factor("*"), length(x)), sep="\r")
+    else
+       f <- paste(seqnames(x), strand(x), sep="\r")
+    xIRangesList <- split(unname(ranges(x)), f)
     ansIRangesList <- FUN(xIRangesList, ...)
     k <- elementLengths(ansIRangesList)
     splitListNames <- strsplit(names(ansIRangesList), split="\r", fixed=TRUE)
@@ -605,15 +608,12 @@ setMethod("disjoin", "GenomicRanges",
 setMethod("isDisjoint", "GenomicRanges",
     function(x, ignore.strand=FALSE)
     {
-        if (ignore.strand) 
-            xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
-                           Rle(factor(rep("+", length(x)))), sep="\r"))
-        else 
-            xIRangesList <- split(unname(ranges(x)),
-                                  paste(seqnames(x), strand(x), sep="\r"))
-         
+        if (ignore.strand)
+            f <- seqnames(x)
+        else
+            f <- paste(seqnames(x), strand(x), sep="\r")
+        xIRangesList <- split(unname(ranges(x)), f)
         all(isDisjoint(xIRangesList))
-
     }
 )
 
@@ -991,6 +991,8 @@ setMethod("show", "GenomicRanges",
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
     {   
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- strand(subject) <- "+"
         if (all(as.character(strand(x)) == "*")
@@ -1066,6 +1068,8 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- strand(subject) <- "+"
         if (all(as.character(strand(x)) == "*")
@@ -1141,6 +1145,8 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
 setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- "+"
         if (!missing(subject)) {
