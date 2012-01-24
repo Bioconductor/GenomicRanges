@@ -119,7 +119,7 @@ setMethod("elementMetadata", "GenomicRanges",
         !identical(levels(runValue(strand(x))), levels(strand())))
     {
         msg <- c("'strand' should be a 'factor' Rle with levels c(",
-                 paste('"', levels(strand()), '"', sep = "", collapse = ", "),
+                 paste('"', levels(strand()), '"', sep="", collapse=", "),
                  ")")
         return(paste(msg, collapse=""))
     }
@@ -157,7 +157,7 @@ valid.GenomicRanges.seqinfo <- function(x)
     seqs_with_known_length <- names(x_seqlengths)[!is.na(x_seqlengths)]
     if (length(seqs_with_known_length) == 0L)
         return(NULL)
-    if (any(x_seqlengths < 0L, na.rm = TRUE))
+    if (any(x_seqlengths < 0L, na.rm=TRUE))
         return("'seqlengths(x)' contains negative values")
     ## We check only the ranges that are on a non-circular sequence with
     ## a known length.
@@ -170,9 +170,9 @@ valid.GenomicRanges.seqinfo <- function(x)
     runValue(x_seqnames) <- runValue(x_seqnames)[drop=TRUE]
     minStarts <- minStartPerGRangesSequence(x)
     maxEnds <- maxEndPerGRangesSequence(x)
-    if (any(minStarts[ncswkl] < 1L, na.rm = TRUE)
+    if (any(minStarts[ncswkl] < 1L, na.rm=TRUE)
      || any(maxEnds[ncswkl] >
-            seqlengths(x)[ncswkl], na.rm = TRUE))
+            seqlengths(x)[ncswkl], na.rm=TRUE))
         return("'ranges' contains values outside of sequence bounds")
     NULL
 }
@@ -196,37 +196,37 @@ setValidity2("GenomicRanges", .valid.GenomicRanges)
 ###
 
 setAs("GenomicRanges", "RangedData",
-      function(from)
-      {
-        rd <- RangedData(ranges(from), strand = strand(from),
-                         elementMetadata(from), space = seqnames(from))
+    function(from)
+    {
+        rd <- RangedData(ranges(from), strand=strand(from),
+                         elementMetadata(from), space=seqnames(from))
         elementMetadata(ranges(rd)) <- DataFrame(
-                                         seqlengths = seqlengths(from),
-                                         isCircular = isCircular(from),
-                                         genome = genome(from))
+                                         seqlengths=seqlengths(from),
+                                         isCircular=isCircular(from),
+                                         genome=genome(from))
         metadata(ranges(rd)) <- metadata(from)
         metadata(ranges(rd))$seqinfo <- seqinfo(from)
         rd
-      }
+    }
 )
 
 setAs("GenomicRanges", "RangesList",
-      function(from)
-      {
+    function(from)
+    {
         rl <- split(ranges(from), seqnames(from))
-        emd <- split(DataFrame(strand = strand(from), elementMetadata(from)),
+        emd <- split(DataFrame(strand=strand(from), elementMetadata(from)),
                      seqnames(from))
         rl <- mseqapply(function(ranges, metadata) {
           elementMetadata(ranges) <- metadata
           ranges
         }, rl, emd)
-        elementMetadata(rl) <- DataFrame(seqlengths = seqlengths(from),
-                                         isCircular = isCircular(from),
-                                         genome = genome(from))
+        elementMetadata(rl) <- DataFrame(seqlengths=seqlengths(from),
+                                         isCircular=isCircular(from),
+                                         genome=genome(from))
         metadata(rl) <- metadata(from)
         rl
-      }
-      )
+    }
+)
 
 setMethod("as.data.frame", "GenomicRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
@@ -236,26 +236,31 @@ setMethod("as.data.frame", "GenomicRanges",
             row.names <- names(x)
         if (!is.null(names(x)))
             names(x) <- NULL
-        data.frame(seqnames = as.factor(seqnames(x)),
-                   start = start(x),
-                   end = end(x),
-                   width = width(x),
-                   strand = as.factor(strand(x)),
+        data.frame(seqnames=as.factor(seqnames(x)),
+                   start=start(x),
+                   end=end(x),
+                   width=width(x),
+                   strand=as.factor(strand(x)),
                    as.data.frame(elementMetadata(x)),
-                   row.names = row.names,
-                   stringsAsFactors = FALSE)
+                   row.names=row.names,
+                   stringsAsFactors=FALSE)
     }
 )
 
-setAs("Seqinfo", "GenomicRanges", function(from) {
-  if (any(is.na(seqlengths(from))))
-    stop("Cannot create a GenomicRanges from a Seqinfo with NA seqlengths")
-  gr <- GRanges(seqnames(from), IRanges(1L, width = seqlengths(from)),
-                seqlengths = seqlengths(from))
-  seqinfo(gr) <- from
-  names(gr) <- seqnames(gr)
-  gr
-})
+setAs("Seqinfo", "GenomicRanges",
+    function(from)
+    {
+        if (any(is.na(seqlengths(from))))
+            stop("cannot create a GenomicRanges from a Seqinfo ",
+                 "with NA seqlengths")
+        gr <- GRanges(seqnames(from),
+                      IRanges(1L, width=seqlengths(from)),
+                      seqlengths=seqlengths(from))
+        seqinfo(gr) <- from
+        names(gr) <- seqnames(gr)
+        gr
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -283,11 +288,11 @@ setReplaceMethod("seqnames", "GenomicRanges",
         n <- length(x)
         k <- length(value)
         if (k != n) {
-            if ((k == 0) || (k > n) || (n %% k != 0))
+            if ((k == 0L) || (k > n) || (n %% k != 0L))
                 stop(k, " elements in value to replace ", n, " elements")
-            value <- rep(value, length.out = n)
+            value <- rep(value, length.out=n)
         }
-        update(x, seqnames = value)
+        update(x, seqnames=value)
     }
 )
 
@@ -299,11 +304,11 @@ setReplaceMethod("ranges", "GenomicRanges",
         n <- length(x)
         k <- length(value)
         if (k != n) {
-            if ((k == 0) || (k > n) || (n %% k != 0))
+            if ((k == 0L) || (k > n) || (n %% k != 0L))
                 stop(k, " elements in value to replace ", n, "elements")
-            value <- rep(value, length.out = n)
+            value <- rep(value, length.out=n)
         }
-        update(x, ranges = value)
+        update(x, ranges=value)
     }
 )
 
@@ -318,7 +323,7 @@ normargGenomicRangesStrand <- function(strand, n)
     if (k != n) {
         if (k != 1L && (k == 0L || k > n || n %% k != 0L))
             stop("supplied 'strand' has ", k, " elements (", n, " expected)")
-        strand <- rep(strand, length.out = n)
+        strand <- rep(strand, length.out=n)
     }
     strand
 }
@@ -327,7 +332,7 @@ setReplaceMethod("strand", "GenomicRanges",
     function(x, value) 
     {
         value <- normargGenomicRangesStrand(value, length(x))
-        update(x, strand = value)
+        update(x, strand=value)
     }
 )
 
@@ -335,7 +340,7 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
     function(x, ..., value)
     {
         if (is.null(value))
-            value <- new("DataFrame", nrows = length(x))
+            value <- new("DataFrame", nrows=length(x))
         else if (!is(value, "DataFrame"))
             value <- DataFrame(value)
         if (!is.null(rownames(value)))
@@ -345,9 +350,9 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
         if (k != n) {
             if ((k == 0L) || (k > n) || (n %% k != 0L))
                 stop(k, " rows in value to replace ", n, "rows")
-            value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
+            value <- value[rep(seq_len(k), length.out=n), , drop=FALSE]
         }
-        update(x, elementMetadata = value)
+        update(x, elementMetadata=value)
     }
 )
 
@@ -361,8 +366,8 @@ setReplaceMethod("seqinfo", "GenomicRanges",
                                   seqlevels(value))
         if (length(dangling_seqlevels) != 0L)
             x <- x[!(seqnames(x) %in% dangling_seqlevels)]
-        x <- update(x, seqnames = makeNewSeqnames(x, new2old, seqlevels(value)),
-                       seqinfo = value)
+        x <- update(x, seqnames=makeNewSeqnames(x, new2old, seqlevels(value)),
+                       seqinfo=value)
         ## The ranges in 'x' need to be validated against
         ## the new sequence information (e.g. the sequence
         ## lengths might have changed).
@@ -371,9 +376,7 @@ setReplaceMethod("seqinfo", "GenomicRanges",
     }
 )
 
-setMethod("score", "GenomicRanges", function(x) {
-  values(x)$score
-})
+setMethod("score", "GenomicRanges", function(x) values(x)$score)
 
 #setReplaceMethod("constraint", "GenomicRanges",
 #    function(x, value)
@@ -401,19 +404,23 @@ setMethod("score", "GenomicRanges", function(x) {
 ### external representations need further customization.
 
 setMethod("update", "GenomicRanges",
-          function(object, ...)
-          {
-            initialize(object, ...)
-          })
+    function(object, ...)
+    {
+        initialize(object, ...)
+    }
+)
 
 setGeneric("clone", function(x, ...) standardGeneric("clone"))
+
 setMethod("clone", "ANY",
-          function(x, ...)
-          {
-            if (nargs() > 1)
-              initialize(x, ...)
-            else x
-          })
+    function(x, ...)
+    {
+        if (nargs() > 1L)
+            initialize(x, ...)
+        else
+            x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -425,187 +432,185 @@ setMethod("end", "GenomicRanges", function(x, ...) end(ranges(x)))
 setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 
 setReplaceMethod("start", "GenomicRanges",
-                 function(x, check = TRUE, value)
-                 {
-                   if (!is.integer(value))
-                     value <- as.integer(value)
-                   ranges <- ranges(x)
-                   starts <- start(ranges)
-                   starts[] <- value
-                   ## TODO: Revisit this to handle circularity (maybe).
-                   if (!IRanges:::anyMissing(seqlengths(x))) {
-                     if (IRanges:::anyMissingOrOutside(starts, 1L)) {
-                       warning("trimmed start values to be positive")
-                       starts[starts < 1L] <- 1L
-                     }
-                   }
-                   start(ranges, check = check) <- starts
-                   update(x, ranges = ranges)
-                 }
-                 )
+    function(x, check=TRUE, value)
+    {
+        if (!is.integer(value))
+            value <- as.integer(value)
+        ranges <- ranges(x)
+        starts <- start(ranges)
+        starts[] <- value
+        ## TODO: Revisit this to handle circularity (maybe).
+        if (!IRanges:::anyMissing(seqlengths(x))) {
+            if (IRanges:::anyMissingOrOutside(starts, 1L)) {
+                warning("trimmed start values to be positive")
+                starts[starts < 1L] <- 1L
+            }
+        }
+        start(ranges, check=check) <- starts
+        update(x, ranges=ranges)
+    }
+)
 
 setReplaceMethod("end", "GenomicRanges",
-                 function(x, check = TRUE, value)
-                 {
-                   if (!is.integer(value))
-                     value <- as.integer(value)
-                   ranges <- ranges(x)
-                   ends <- end(ranges)
-                   ends[] <- value
-                   seqlengths <- seqlengths(x)
-                   ## TODO: Revisit this to handle circularity.
-                   if (!IRanges:::anyMissing(seqlengths)) {
-                     seqlengths <- seqlengths[seqlevels(x)]
-                     maxEnds <- seqlengths[as.integer(seqnames(x))]
-                     trim <- which(ends > maxEnds)
-                     if (length(trim) > 0) {
-                       warning("trimmed end values to be <= seqlengths")
-                       ends[trim] <- maxEnds[trim]
-                     }
-                   }
-                   end(ranges, check = check) <- ends
-                   update(x, ranges = ranges)
-                 }
-                 )
+    function(x, check=TRUE, value)
+    {
+        if (!is.integer(value))
+            value <- as.integer(value)
+        ranges <- ranges(x)
+        ends <- end(ranges)
+        ends[] <- value
+        seqlengths <- seqlengths(x)
+        ## TODO: Revisit this to handle circularity.
+        if (!IRanges:::anyMissing(seqlengths)) {
+            seqlengths <- seqlengths[seqlevels(x)]
+            maxEnds <- seqlengths[as.integer(seqnames(x))]
+            trim <- which(ends > maxEnds)
+            if (length(trim) > 0L) {
+                warning("trimmed end values to be <= seqlengths")
+                ends[trim] <- maxEnds[trim]
+            }
+        }
+        end(ranges, check=check) <- ends
+        update(x, ranges=ranges)
+    }
+)
 
 setReplaceMethod("width", "GenomicRanges",
-                 function(x, check = TRUE, value)
-                 {
-                   if (!is.integer(value))
-                     value <- as.integer(value)
-                   if (!IRanges:::anyMissing(seqlengths(x))) {
-                     end(x) <- start(x) + (value - 1L)
-                   } else {
-                     ranges <- ranges(x)
-                     width(ranges, check = check) <- value
-                     x <- update(x, ranges = ranges)
-                   }
-                   x
-                 }
-                 )
+    function(x, check=TRUE, value)
+    {
+        if (!is.integer(value))
+            value <- as.integer(value)
+        if (!IRanges:::anyMissing(seqlengths(x))) {
+            end(x) <- start(x) + (value - 1L)
+        } else {
+            ranges <- ranges(x)
+            width(ranges, check=check) <- value
+            x <- update(x, ranges=ranges)
+        }
+        x
+    }
+)
 
 setMethod("flank", "GenomicRanges",
-          function(x, width, start = TRUE, both = FALSE, use.names = TRUE,
-              ignore.strand = FALSE)
-          { 
-            if(ignore.strand)
-                start <- rep(TRUE, length(x))
-            else 
-                start <- as.vector(start == (strand(x) != "-"))
-
-            ranges <-
-              flank(ranges(x), width = width, start = start, both = both,
-                    use.names = use.names)
-            if (!IRanges:::anyMissing(seqlengths(x))) {
-              start(x) <- start(ranges)
-              end(x) <- end(ranges)
-            } else {
-              x <- clone(x, ranges = ranges)
-            }
-            x
-          }
-          )
+    function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
+             ignore.strand=FALSE)
+    { 
+        if (ignore.strand)
+            start <- rep(TRUE, length(x))
+        else 
+            start <- as.vector(start == (strand(x) != "-"))
+        ranges <-
+            flank(ranges(x), width=width, start=start, both=both,
+                  use.names=use.names)
+        if (!IRanges:::anyMissing(seqlengths(x))) {
+            start(x) <- start(ranges)
+            end(x) <- end(ranges)
+        } else {
+            x <- clone(x, ranges=ranges)
+        }
+        x
+    }
+)
 
 setMethod("resize", "GenomicRanges",
-          function(x, width, fix = "start", use.names = TRUE, ignore.strand = FALSE)
-          {
-
-            if (!missing(fix) &&
-                (length(fix) > length(x) || length(x) %% length(fix) > 0))
-              stop("'x' is not a multiple of 'fix' length")
-            revFix <- c(start = "end", end = "start", center = "center")
-               
-            if(ignore.strand)
-                fix <- Rle(rep(fix ,length(x)))
-            else 
-                fix <- ifelse(strand(x) == "-", revFix[fix], fix)
-            ranges <-
-              resize(ranges(x), width = width, fix = fix, use.names = use.names)
-            if (!IRanges:::anyMissing(seqlengths(x))) {
-              start(x) <- start(ranges)
-              end(x) <- end(ranges)
-            } else {
-              x <- clone(x, ranges = ranges)
-            }
-            x
-          }
-          )
+    function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
+    {
+        if (!missing(fix) &&
+            (length(fix) > length(x) || length(x) %% length(fix) > 0L))
+            stop("'x' is not a multiple of 'fix' length")
+        revFix <- c(start="end", end="start", center="center")       
+        if (ignore.strand)
+            fix <- Rle(rep(fix ,length(x)))
+        else 
+            fix <- ifelse(strand(x) == "-", revFix[fix], fix)
+        ranges <-
+            resize(ranges(x), width=width, fix=fix, use.names=use.names)
+        if (!IRanges:::anyMissing(seqlengths(x))) {
+            start(x) <- start(ranges)
+            end(x) <- end(ranges)
+        } else {
+            x <- clone(x, ranges=ranges)
+        }
+        x
+    }
+)
 
 ## zooming (symmetrically scales the width)
 setMethod("Ops", c("GenomicRanges", "numeric"),
-          function(e1, e2)
-          {
-            if (IRanges:::anyMissing(e2))
-              stop("NA not allowed as zoom factor")
-            e2 <- recycleNumericArg(e2, "e2", length(e1))
-            if (.Generic == "*") {
-              e2 <- ifelse(e2 < 0, abs(1/e2), e2)
-              resize(e1, width(e1) / e2, fix = "center")
-            } else {
-              if (.Generic == "-") {
+    function(e1, e2)
+    {
+        if (IRanges:::anyMissing(e2))
+            stop("NA not allowed as zoom factor")
+        e2 <- recycleNumericArg(e2, "e2", length(e1))
+        if (.Generic == "*") {
+            e2 <- ifelse(e2 < 0, abs(1/e2), e2)
+            resize(e1, width(e1) / e2, fix="center")
+        } else {
+            if (.Generic == "-") {
                 e2 <- -e2
                 .Generic <- "+"
-              }
-              if (.Generic == "+") {
-                if (any(-e2*2 > width(e1)))
-                  stop("adjustment would result in ranges with negative widths")
-                resize(e1, width(e1) + e2*2, fix = "center")
-              }
             }
-          }
-          )
+            if (.Generic == "+") {
+                if (any(-e2*2 > width(e1)))
+                    stop("adjustment would result in ranges ",
+                         "with negative widths")
+                resize(e1, width(e1) + e2*2, fix="center")
+            }
+        }
+    }
+)
 
 setMethod("shift", "GenomicRanges",
-          function(x, shift=0L, use.names = TRUE)
-          {
-            ranges <- shift(ranges(x), shift, use.names = use.names)
-            if (!IRanges:::anyMissing(seqlengths(x))) {
-              end(x, check=FALSE) <- end(ranges)
-              start(x) <- pmin.int(start(ranges), end(x))
-            } else {
-              x <- clone(x, ranges = ranges)
-            }
-            x
-          }
-          )
+    function(x, shift=0L, use.names=TRUE)
+    {
+        ranges <- shift(ranges(x), shift, use.names=use.names)
+        if (!IRanges:::anyMissing(seqlengths(x))) {
+            end(x, check=FALSE) <- end(ranges)
+            start(x) <- pmin.int(start(ranges), end(x))
+        } else {
+            x <- clone(x, ranges=ranges)
+        }
+        x
+    }
+)
 
-.interIntervalGenomicRanges <- function(x, FUN, ignore.strand = FALSE, ...)
+.interIntervalGenomicRanges <- function(x, FUN, ignore.strand=FALSE, ...)
 {
     x <- clone(x)
     elementMetadata(x) <- NULL
     if (ignore.strand) {
        xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
-                            Rle(factor(rep("+", length(x)))), sep = "\r"))
+                            Rle(factor(rep("+", length(x)))), sep="\r"))
     } else {
        xIRangesList <-
-        split(unname(ranges(x)), paste(seqnames(x), strand(x), sep = "\r"))
+        split(unname(ranges(x)), paste(seqnames(x), strand(x), sep="\r"))
     }
     ansIRangesList <- FUN(xIRangesList, ...)
     k <- elementLengths(ansIRangesList)
-    splitListNames <- strsplit(names(ansIRangesList), split = "\r", fixed=TRUE)
-    listNameMatrix <- matrix(as.character(unlist(splitListNames)), nrow = 2)
-    ansSeqnames <- Rle(factor(listNameMatrix[1,], levels = seqlevels(x)), k)
-    ansStrand <- Rle(strand(listNameMatrix[2,]), k)
-    update(x, seqnames = ansSeqnames,
-           ranges = unlist(ansIRangesList, use.names=FALSE),
-           strand = ansStrand,
-           elementMetadata = new("DataFrame", nrows = length(ansSeqnames)))
+    splitListNames <- strsplit(names(ansIRangesList), split="\r", fixed=TRUE)
+    listNameMatrix <- matrix(as.character(unlist(splitListNames)), nrow=2L)
+    ansSeqnames <- Rle(factor(listNameMatrix[1L, ], levels=seqlevels(x)), k)
+    ansStrand <- Rle(strand(listNameMatrix[2L, ]), k)
+    update(x, seqnames=ansSeqnames,
+           ranges=unlist(ansIRangesList, use.names=FALSE),
+           strand=ansStrand,
+           elementMetadata=new("DataFrame", nrows=length(ansSeqnames)))
 }
 
 setMethod("disjoin", "GenomicRanges",
-    function(x, ignore.strand = FALSE)
-        .interIntervalGenomicRanges(x, disjoin, ignore.strand = ignore.strand)
+    function(x, ignore.strand=FALSE)
+        .interIntervalGenomicRanges(x, disjoin, ignore.strand=ignore.strand)
 )
 
 setMethod("isDisjoint", "GenomicRanges",
-    function(x, ignore.strand = FALSE)
+    function(x, ignore.strand=FALSE)
     {
         if (ignore.strand) 
             xIRangesList <- split(unname(ranges(x)), paste(seqnames(x),
-                           Rle(factor(rep("+", length(x)))), sep = "\r"))
+                           Rle(factor(rep("+", length(x)))), sep="\r"))
         else 
             xIRangesList <- split(unname(ranges(x)),
-                                  paste(seqnames(x), strand(x), sep = "\r"))
+                                  paste(seqnames(x), strand(x), sep="\r"))
          
         all(isDisjoint(xIRangesList))
 
@@ -613,7 +618,7 @@ setMethod("isDisjoint", "GenomicRanges",
 )
 
 setMethod("gaps", "GenomicRanges",
-    function(x, start = 1L, end = seqlengths(x))
+    function(x, start=1L, end=seqlengths(x))
     {
         seqlevels <- seqlevels(x)
         if (!is.null(names(start)))
@@ -621,76 +626,75 @@ setMethod("gaps", "GenomicRanges",
         if (!is.null(names(end)))
             end <- end[seqlevels]
         start <- IRanges:::recycleVector(start, length(seqlevels))
-        start <- rep(start, each = 3)
+        start <- rep(start, each=3L)
         end <- IRanges:::recycleVector(end, length(seqlevels))
-        end <- rep(end, each = 3)
-        .interIntervalGenomicRanges(x, gaps, start = start, end = end)
+        end <- rep(end, each=3L)
+        .interIntervalGenomicRanges(x, gaps, start=start, end=end)
     }
 )
 
 setMethod("range", "GenomicRanges",
-    function(x, ..., ignore.strand = FALSE, na.rm = FALSE)
+    function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
         .interIntervalGenomicRanges(unname(c(x, ...)), range, 
-         ignore.strand = ignore.strand)
+                                    ignore.strand=ignore.strand)
 )
 
 setMethod("reduce", "GenomicRanges",
-    function(x, drop.empty.ranges = FALSE, min.gapwidth = 1L,
-             with.inframe.attrib = FALSE, ignore.strand = FALSE)
+    function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
+             with.inframe.attrib=FALSE, ignore.strand=FALSE)
     {
         if (!identical(with.inframe.attrib, FALSE))
             stop("'with.inframe.attrib' argument not supported ",
                  "when reducing a GenomicRanges object")
         .interIntervalGenomicRanges(x, reduce,
-                                    drop.empty.ranges = drop.empty.ranges,
-                                    min.gapwidth = min.gapwidth, 
-                                    ignore.strand = ignore.strand)
+                                    drop.empty.ranges=drop.empty.ranges,
+                                    min.gapwidth=min.gapwidth, 
+                                    ignore.strand=ignore.strand)
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Vector methods.
+### Subsetting and combining.
 ###
 
 setMethod("[", "GenomicRanges",
-          function(x, i, j, ..., drop)
-          {
-            if (!missing(i)) {
-              iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
-              if (!is.null(iInfo[["msg"]]))
+    function(x, i, j, ..., drop)
+    {
+        if (!missing(i)) {
+            iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
+            if (!is.null(iInfo[["msg"]]))
                 stop(iInfo[["msg"]])
+        }
+        if (missing(i) || !iInfo[["useIdx"]]) {
+            if (!missing(j)) {
+                elementMetadata <- elementMetadata(x, FALSE)[ , j, drop=FALSE]
+                x <- clone(x, elementMetadata=elementMetadata)
             }
-            if (missing(i) || !iInfo[["useIdx"]]) {
-              if (!missing(j))
-                x <-
-                  clone(x,
-                         elementMetadata =
-                         elementMetadata(x, FALSE)[, j, drop=FALSE])
-            } else {
-              i <- iInfo[["idx"]]
-              if (missing(j))
+        } else {
+            i <- iInfo[["idx"]]
+            if (missing(j))
                 elementMetadata <- elementMetadata(x, FALSE)[i, , drop=FALSE]
-              else
+            else
                 elementMetadata <- elementMetadata(x, FALSE)[i, j, drop=FALSE]
-              ranges <- ranges(x)[i]
-              nms <- names(ranges)
-              if (!is.null(nms)) {
+            ranges <- ranges(x)[i]
+            nms <- names(ranges)
+            if (!is.null(nms)) {
                 whichEmpty <- which(nms == "")
                 nms[whichEmpty] <- as.character(whichEmpty)
                 nms2 <- make.unique(nms)
-                if (length(whichEmpty) > 0 || !identical(nms, nms2))
-                  names(ranges) <- nms2
-              }
-              x <-
-                clone(x,
-                      seqnames = seqnames(x)[i],
-                      ranges = ranges,
-                      strand = strand(x)[i],
-                      elementMetadata = elementMetadata)
+                if (length(whichEmpty) > 0L || !identical(nms, nms2))
+                    names(ranges) <- nms2
             }
-            x
-          })
+            x <- clone(x,
+                       seqnames=seqnames(x)[i],
+                       ranges=ranges,
+                       strand=strand(x)[i],
+                       elementMetadata=elementMetadata)
+        }
+        x
+    }
+)
 
 setReplaceMethod("[", "GenomicRanges",
     function(x, i, j, ..., value)
@@ -712,26 +716,26 @@ setReplaceMethod("[", "GenomicRanges",
             ranges[] <- ranges(value)
             strand[] <- strand(value)
             if (missing(j))
-                elementMetadata[,] <- elementMetadata(value, FALSE)
+                elementMetadata[ , ] <- elementMetadata(value, FALSE)
             else
-                elementMetadata[,j] <- elementMetadata(value, FALSE)
+                elementMetadata[ , j] <- elementMetadata(value, FALSE)
         } else {
             i <- iInfo[["idx"]]
             seqnames[i] <- seqnames(value)
             ranges[i] <- ranges(value)
             strand[i] <- strand(value)
             if (missing(j))
-                elementMetadata[i,] <- elementMetadata(value, FALSE)
+                elementMetadata[i, ] <- elementMetadata(value, FALSE)
             else
-                elementMetadata[i,j] <- elementMetadata(value, FALSE)
+                elementMetadata[i, j] <- elementMetadata(value, FALSE)
         }
-        update(x, seqnames = seqnames, ranges = ranges,
-               strand = strand, elementMetadata = elementMetadata)
+        update(x, seqnames=seqnames, ranges=ranges,
+               strand=strand, elementMetadata=elementMetadata)
     }
 )
 
 setMethod("c", "GenomicRanges",
-    function(x, ..., .ignoreElementMetadata = FALSE, recursive = FALSE)
+    function(x, ..., .ignoreElementMetadata=FALSE, recursive=FALSE)
     {
         if (recursive)
             stop("'recursive' mode not supported")
@@ -742,7 +746,7 @@ setMethod("c", "GenomicRanges",
         ans_strand <- do.call(c, lapply(args, strand))
         
         if (.ignoreElementMetadata) {
-          ans_elementMetadata <- new("DataFrame", nrows = length(ans_ranges))
+          ans_elementMetadata <- new("DataFrame", nrows=length(ans_ranges))
         } else {
           ans_elementMetadata <- do.call(rbind,
                                          lapply(args, elementMetadata, FALSE))
@@ -750,66 +754,64 @@ setMethod("c", "GenomicRanges",
         
         ans_names <- names(ans_ranges)
         clone(x,
-              seqnames = ans_seqnames,
-              ranges = ans_ranges,
-              strand = ans_strand,
-              seqinfo = ans_seqinfo,
-              elementMetadata = ans_elementMetadata)
+              seqnames=ans_seqnames,
+              ranges=ans_ranges,
+              strand=ans_strand,
+              seqinfo=ans_seqinfo,
+              elementMetadata=ans_elementMetadata)
     }
 )
 
 setMethod("seqselect", "GenomicRanges",
-    function(x, start = NULL, end = NULL, width = NULL)
+    function(x, start=NULL, end=NULL, width=NULL)
     {
         if (!is.null(end) || !is.null(width))
-            start <- IRanges(start = start, end = end, width = width)
+            start <- IRanges(start=start, end=end, width=width)
         irInfo <- IRanges:::.bracket.Index(start, length(x), names(x),
-                                           asRanges = TRUE)
+                                           asRanges=TRUE)
         if (!is.null(irInfo[["msg"]]))
             stop(irInfo[["msg"]])
-        if (irInfo[["useIdx"]]) {
-            ir <- irInfo[["idx"]]
-            ranges <- seqselect(ranges(x), ir)
-            nms <- names(ranges)
-            if (!is.null(nms)) {
-                whichEmpty <- which(nms == "")
-                nms[whichEmpty] <- as.character(whichEmpty)
-                nms2 <- make.unique(nms)
-                if (length(whichEmpty) > 0L || !identical(nms, nms2))
-                    names(ranges) <- nms2
-            }
-            x <- clone(x,
-                       seqnames = seqselect(seqnames(x), ir),
-                       ranges = ranges,
-                       strand = seqselect(strand(x), ir),
-                       elementMetadata =
-                       seqselect(elementMetadata(x, FALSE), ir))
+        if (!irInfo[["useIdx"]])
+            return(x)
+        ir <- irInfo[["idx"]]
+        ranges <- seqselect(ranges(x), ir)
+        nms <- names(ranges)
+        if (!is.null(nms)) {
+            whichEmpty <- which(nms == "")
+            nms[whichEmpty] <- as.character(whichEmpty)
+            nms2 <- make.unique(nms)
+            if (length(whichEmpty) > 0L || !identical(nms, nms2))
+                names(ranges) <- nms2
         }
-        x
+        clone(x,
+              seqnames=seqselect(seqnames(x), ir),
+              ranges=ranges,
+              strand=seqselect(strand(x), ir),
+              elementMetadata=seqselect(elementMetadata(x, FALSE), ir))
     }
 )
 
 setReplaceMethod("seqselect", "GenomicRanges",
-    function(x, start = NULL, end = NULL, width = NULL, value)
+    function(x, start=NULL, end=NULL, width=NULL, value)
     {
         if (!is(value, "GenomicRanges"))
             stop("replacement value must be a GenomicRanges object")
         seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
         if (is.null(end) && is.null(width)) {
             if (is.null(start))
-                ir <- IRanges(start = 1, width = length(x))
+                ir <- IRanges(start=1L, width=length(x))
             else if (is(start, "Ranges"))
                 ir <- start
             else {
                 if (is.logical(start) && length(start) != length(x))
-                    start <- rep(start, length.out = length(x))
+                    start <- rep(start, length.out=length(x))
                 ir <- as(start, "IRanges")
             }
         } else {
-            ir <- IRanges(start = start, end = end, width = width, names = NULL)
+            ir <- IRanges(start=start, end=end, width=width, names=NULL)
         }
         ir <- reduce(ir)
-        if (length(ir) == 0) {
+        if (length(ir) == 0L) {
             x
         } else {
             seqnames <- as.factor(seqnames(x))
@@ -820,34 +822,31 @@ setReplaceMethod("seqselect", "GenomicRanges",
             seqselect(ranges, ir) <- ranges(value)
             seqselect(strand, ir) <- as.factor(strand(value))
             seqselect(elementMetadata, ir) <- elementMetadata(value)
-            update(x, seqnames = Rle(seqnames), ranges = ranges, 
-                   strand = Rle(strand),
-                   elementMetadata = elementMetadata)
+            update(x, seqnames=Rle(seqnames), ranges=ranges, 
+                   strand=Rle(strand),
+                   elementMetadata=elementMetadata)
         }
     }
 )
 
 setMethod("window", "GenomicRanges",
-    function(x, start = NA, end = NA, width = NA,
-             frequency = NULL, delta = NULL, ...)
+    function(x, start=NA, end=NA, width=NA,
+             frequency=NULL, delta=NULL, ...)
     {
         update(x,
-               seqnames =
-               window(seqnames(x), start = start, end = end,
-                      width = width, frequency = frequency,
-                      delta = delta),
-               ranges =
-               window(ranges(x), start = start, end = end,
-                      width = width, frequency = frequency,
-                      delta = delta),
-               strand =
-               window(strand(x), start = start, end = end,
-                      width = width, frequency = frequency,
-                      delta = delta),
-               elementMetadata =
-               window(elementMetadata(x, FALSE), start = start, end = end,
-                      width = width, frequency = frequency,
-                      delta = delta))
+               seqnames=window(seqnames(x), start=start, end=end,
+                               width=width, frequency=frequency,
+                               delta=delta),
+               ranges=window(ranges(x), start=start, end=end,
+                             width=width, frequency=frequency,
+                             delta=delta),
+               strand=window(strand(x), start=start, end=end,
+                             width=width, frequency=frequency,
+                             delta=delta),
+               elementMetadata=window(elementMetadata(x, FALSE),
+                                      start=start, end=end,
+                                      width=width, frequency=frequency,
+                                      delta=delta))
     }
 )
 
@@ -920,12 +919,12 @@ showSeqlengths <- function(object, margin="")
                 rbind(as.character(tail(names(seqlens), last)),
                       as.character(tail(seqlens, last))))
     }
-    showMatrix <- format(showMatrix, justify = "right")
+    showMatrix <- format(showMatrix, justify="right")
     cat(margin, "seqlengths:\n", sep="")
-    cat(margin, IRanges:::labeledLine("", showMatrix[1L,], count = FALSE,
-                                      labelSep = ""), sep="")
-    cat(margin, IRanges:::labeledLine("", showMatrix[2L,], count = FALSE,
-                                      labelSep = ""), sep="")
+    cat(margin, IRanges:::labeledLine("", showMatrix[1L, ], count=FALSE,
+                                      labelSep=""), sep="")
+    cat(margin, IRanges:::labeledLine("", showMatrix[2L, ], count=FALSE,
+                                      labelSep=""), sep="")
 }
 
 .makeNakedMatFromGenomicRanges <- function(x)
@@ -944,7 +943,7 @@ showSeqlengths <- function(object, margin="")
 }
 
 showGenomicRanges <- function(x, margin="",
-                              with.classinfo=FALSE, print.seqlengths = FALSE)
+                              with.classinfo=FALSE, print.seqlengths=FALSE)
 {
     lx <- length(x)
     nc <- ncol(elementMetadata(x))
@@ -981,166 +980,166 @@ setMethod("show", "GenomicRanges",
                           with.classinfo=TRUE, print.seqlengths=TRUE)
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other ranges utils.
+###
+
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-  function(x, subject, ignore.strand = FALSE, ...)
-  {   
-      if (ignore.strand)
-        strand(x) <- strand(subject) <- "+"
-
-      if (all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
-        strand(x) <- strand(subject) <- "+"
-      
-      sinfo <- merge(seqinfo(x), seqinfo(subject))
-      elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
-      elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
-      xLst <- split(x, seqnames(x), drop = FALSE)
-      xLst <- xLst[sapply(xLst, length) > 0]
-      xSeqNames <- names(xLst)
-      if(!missing(subject)) {
-        subjectLst <- split(subject, seqnames(subject),  drop = FALSE)
-      }
-      matchPos <- rep.int(NA_integer_, length(x))
-
-      for (sq in xSeqNames) {
-          x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
-          x1Split <- x1Split[lapply(x1Split, length) > 0]
-          if(!sq %in% names(subjectLst))
-              break;
-          s1 <- subjectLst[[sq]]
-          for (st in names(x1Split)) {
-              if ( st == "+" ){
-                  subSplit <- unlist(split(s1, strand(s1))[c("+", "*")])
-                  ## call precede
-                  res <- precede(ranges(x1Split[[st]]), ranges(subSplit))
-                  indx <- !is.na(res)
-                  res <- res[indx]
-                  matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
-                  elementMetadata(subSplit)$posIndx[res]
-
-              }else if (st == "-"){
-                  subSplit <- unlist(split(s1, strand(s1))[c("-", "*")])
-                  ## call follow
-                  res <- follow(ranges(x1Split[[st]]), ranges(subSplit))
-                  indx <- !is.na(res)
-                  res <- res[indx]
-                  matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
-                  elementMetadata(subSplit)$posIndx[res]
-              }else if (st == "*"){
-                  subSplit1 <- unlist(split(s1, strand(s1))[c("+")])
-                  ## call precede
-                  res1 <- precede(ranges(x1Split[[st]]), ranges(subSplit1))
-                  indx1 <- !is.na(res1)
-                  res1 <- res1[indx1]
-                  k1 <- elementMetadata(x1Split[[st]])$posIndx[indx1]
-                  matchPos[k1] <- elementMetadata(subSplit1)$posIndx[res1]
-
-                  subSplit2 <- unlist(split(s1, strand(s1))[c("-")])
-                  ## call follow
-                  res2 <- follow(ranges(x1Split[[st]]), ranges(subSplit2))
-                  indx2 <- !is.na(res2)
-                  res2 <- res2[indx2]
-                  k2 <- elementMetadata(x1Split[[st]])$posIndx[indx2]
-                  matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
-                  
-                  mt <- k1[k1==k2]
-                  for (p in mt) {
-                       mn <- which.min( c(start(subSplit1[indx1])-end(ranges(x1Split[[st]])), 
-                           start(ranges(x1Split[[st]])) - end(subSplit2[indx2])))
-                       if(mn==1){
-                           matchPos[p] <- elementMetadata(subSplit1)$posIndx[res1]
-                       }
-                  }
-              }
-          }
-      }              
-      matchPos
-  })
-
-
-setMethod("follow", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, ignore.strand = FALSE, ...)
-    {
+    function(x, subject, ignore.strand=FALSE, ...)
+    {   
         if (ignore.strand)
             strand(x) <- strand(subject) <- "+"
-
-        if (all(as.character(strand(x)) == "*") && all(as.character(strand(subject)) == "*"))
+        if (all(as.character(strand(x)) == "*")
+         && all(as.character(strand(subject)) == "*"))
             strand(x) <- strand(subject) <- "+"
-        
         sinfo <- merge(seqinfo(x), seqinfo(subject))
-        elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
-        elementMetadata(subject) <- list("posIndx" = seq_len(length(subject)))
-        xLst <- split(x, seqnames(x), drop = FALSE)
-        xLst <- xLst[sapply(xLst, length) > 0]
+        elementMetadata(x) <- list(posIndx=seq_len(length(x)))
+        elementMetadata(subject) <- list(posIndx=seq_len(length(subject)))
+        xLst <- split(x, seqnames(x), drop=FALSE)
+        xLst <- xLst[elementLengths(xLst) > 0L]
         xSeqNames <- names(xLst)
-        if(!missing(subject)) {
-            subjectLst <- split(subject, seqnames(subject), drop = FALSE)
-        }
-
-        matchPos <- rep.int(NA_integer_, length(x))
-
+        if (!missing(subject))
+            subjectLst <- split(subject, seqnames(subject), drop=FALSE)
+        ans <- rep.int(NA_integer_, length(x))
         for (sq in xSeqNames) {
+            if (!(sq %in% names(subjectLst)))
+                break
             x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
-            x1Split <- x1Split[lapply(x1Split, length) > 0]
-            if(!sq %in% names(subjectLst))
-                break;
+            x1Split <- x1Split[elementLengths(x1Split) > 0L]
             s1 <- subjectLst[[sq]]
+            ss1 <- split(s1, strand(s1))
             for (st in names(x1Split)) {
-                if ( st == "+" ){
-                    subSplit <- unlist(split(s1, strand(s1))[c("+", "*")])
-                    ## call follow
-                    res <- follow(ranges(x1Split[[st]]), ranges(subSplit))
-                    indx <- !is.na(res)
-                    res <- res[indx]
-                    matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
-                    elementMetadata(subSplit)$posIndx[res]
-
-                }else if (st == "-"){
-                    subSplit <- unlist(split(s1, strand(s1))[c("-", "*")])
+                x1Split_elt <- x1Split[[st]]
+                x1Split_elt_posIndx <- elementMetadata(x1Split_elt)$posIndx
+                if (st == "+") {
+                    subSplit <- unlist(ss1[c("+", "*")])
                     ## call precede
-                    res <- precede(ranges(x1Split[[st]]), ranges(subSplit))
+                    res <- precede(ranges(x1Split_elt), ranges(subSplit))
                     indx <- !is.na(res)
+                    k <- x1Split_elt_posIndx[indx]
                     res <- res[indx]
-                    matchPos[elementMetadata(x1Split[[st]])$posIndx[indx]] <-
-                    elementMetadata(subSplit)$posIndx[res]
-
-                }else if (st == "*"){
-                    subSplit1 <- unlist(split(s1, strand(s1))[c("+")])
+                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
+                } else if (st == "-") {
+                    subSplit <- unlist(ss1[c("-", "*")])
                     ## call follow
-                    res1 <- follow(ranges(x1Split[[st]]), ranges(subSplit1))
+                    res <- follow(ranges(x1Split_elt), ranges(subSplit))
+                    indx <- !is.na(res)
+                    k <- x1Split_elt_posIndx[indx]
+                    res <- res[indx]
+                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
+                } else if (st == "*") {
+                    subSplit1 <- unlist(ss1[c("+")])
+                    ## call precede
+                    res1 <- precede(ranges(x1Split_elt), ranges(subSplit1))
                     indx1 <- !is.na(res1)
+                    k1 <- x1Split_elt_posIndx[indx1]
                     res1 <- res1[indx1]
-                    k1 <- elementMetadata(x1Split[[st]])$posIndx[indx1]
-                    matchPos[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+                    ans[k1] <- elementMetadata(subSplit1)$posIndx[res1]
 
-                    subSplit2 <- unlist(split(s1, strand(s1))[c("-")])
-                    ## call precede
-                    res2 <- precede(ranges(x1Split[[st]]), ranges(subSplit2))
+                    subSplit2 <- unlist(ss1[c("-")])
+                    ## call follow
+                    res2 <- follow(ranges(x1Split_elt), ranges(subSplit2))
                     indx2 <- !is.na(res2)
+                    k2 <- x1Split_elt_posIndx[indx2]
                     res2 <- res2[indx2]
-                    k2 <- elementMetadata(x1Split[[st]])$posIndx[indx2]
-                    matchPos[k2] <- elementMetadata(subSplit2)$posIndx[res2]
-
-                    mt <- k1[k1==k2]
+                    ans[k2] <- elementMetadata(subSplit2)$posIndx[res2]
+                    mt <- k1[k1 == k2]
                     for (p in mt) {
-                       mn <- which.min( c(start(subSplit1[indx1])-end(ranges(x1Split[[st]])), 
-                           start(ranges(x1Split[[st]])) - end(subSplit2[indx2])))
-                       if(mn==1){
-                           matchPos[p] <- elementMetadata(subSplit1)$posIndx[res1]
-                       }
+                        mn <- which.min(c(start(subSplit1[indx1]) -
+                                          end(ranges(x1Split_elt)), 
+                                          start(ranges(x1Split_elt)) -
+                                          end(subSplit2[indx2])))
+                        if (mn == 1L)
+                            ans[p] <- elementMetadata(subSplit1)$posIndx[res1]
                     }
                 }
             }
-        }              
-        matchPos
-    })
+        }
+        ans
+    }
+)
 
+setMethod("follow", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        if (ignore.strand)
+            strand(x) <- strand(subject) <- "+"
+        if (all(as.character(strand(x)) == "*")
+         && all(as.character(strand(subject)) == "*"))
+            strand(x) <- strand(subject) <- "+"
+        sinfo <- merge(seqinfo(x), seqinfo(subject))
+        elementMetadata(x) <- list(posIndx=seq_len(length(x)))
+        elementMetadata(subject) <- list(posIndx=seq_len(length(subject)))
+        xLst <- split(x, seqnames(x), drop=FALSE)
+        xLst <- xLst[elementLengths(xLst) > 0L]
+        xSeqNames <- names(xLst)
+        if (!missing(subject))
+            subjectLst <- split(subject, seqnames(subject), drop=FALSE)
+        ans <- rep.int(NA_integer_, length(x))
+        for (sq in xSeqNames) {
+            if (!(sq %in% names(subjectLst)))
+                break
+            x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
+            x1Split <- x1Split[elementLengths(x1Split) > 0L]
+            s1 <- subjectLst[[sq]]
+            ss1 <- split(s1, strand(s1))
+            for (st in names(x1Split)) {
+                x1Split_elt <- x1Split[[st]]
+                x1Split_elt_posIndx <- elementMetadata(x1Split_elt)$posIndx
+                if (st == "+") {
+                    subSplit <- unlist(ss1[c("+", "*")])
+                    ## call follow
+                    res <- follow(ranges(x1Split_elt), ranges(subSplit))
+                    indx <- !is.na(res)
+                    k <- x1Split_elt_posIndx[indx]
+                    res <- res[indx]
+                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
+                } else if (st == "-") {
+                    subSplit <- unlist(ss1[c("-", "*")])
+                    ## call precede
+                    res <- precede(ranges(x1Split_elt), ranges(subSplit))
+                    indx <- !is.na(res)
+                    k <- x1Split_elt_posIndx[indx]
+                    res <- res[indx]
+                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
+                } else if (st == "*") {
+                    subSplit1 <- unlist(ss1[c("+")])
+                    ## call follow
+                    res1 <- follow(ranges(x1Split_elt), ranges(subSplit1))
+                    indx1 <- !is.na(res1)
+                    k1 <- elementMetadata(x1Split_elt)$posIndx[indx1]
+                    res1 <- res1[indx1]
+                    ans[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+
+                    subSplit2 <- unlist(ss1[c("-")])
+                    ## call precede
+                    res2 <- precede(ranges(x1Split_elt), ranges(subSplit2))
+                    indx2 <- !is.na(res2)
+                    k2 <- elementMetadata(x1Split_elt)$posIndx[indx2]
+                    res2 <- res2[indx2]
+                    ans[k2] <- elementMetadata(subSplit2)$posIndx[res2]
+                    mt <- k1[k1 == k2]
+                    for (p in mt) {
+                        mn <- which.min(c(start(subSplit1[indx1]) -
+                                          end(ranges(x1Split_elt)), 
+                                          start(ranges(x1Split_elt)) -
+                                          end(subSplit2[indx2])))
+                        if (mn == 1L)
+                            ans[p] <- elementMetadata(subSplit1)$posIndx[res1]
+                    }
+                }
+            }
+        }       
+        ans
+    }
+)
 
 setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
-    function(x, subject, ignore.strand = FALSE, ...)
+    function(x, subject, ignore.strand=FALSE, ...)
     {
         if (ignore.strand)
             strand(x) <- "+"
-    
         if (!missing(subject)) {
             if (ignore.strand)
                 strand(subject) <- "+"
@@ -1148,83 +1147,80 @@ setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
             ## same reference genome.          
             sinfo <- merge(seqinfo(x), seqinfo(subject))
             elementMetadata(subject) <-
-                list("posIndx" = seq_len(length(subject)))
+                list(posIndx=seq_len(length(subject)))
         }
-        
-        elementMetadata(x) <- list("posIndx" = seq_len(length(x)))
-        
-        xLst <- split(x, seqnames(x), drop = FALSE)
-        xLst <- xLst[sapply(xLst, length) > 0]
+        elementMetadata(x) <- list(posIndx=seq_len(length(x)))
+        xLst <- split(x, seqnames(x), drop=FALSE)
+        xLst <- xLst[elementLengths(xLst) > 0L]
         xSeqNames <- names(xLst)
-        if (!missing(subject)) {
-            subjectLst <- split(subject, seqnames(subject), drop = FALSE)
-        }
-        matchPos <- rep.int(NA_integer_, length(x))
-
+        if (!missing(subject))
+            subjectLst <- split(subject, seqnames(subject), drop=FALSE)
+        ans <- rep.int(NA_integer_, length(x))
         for (sq in xSeqNames) {
             x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
-            x1Split <- x1Split[lapply(x1Split, length) > 0]
-            if(!sq %in% names(subjectLst))
-                break;
+            x1Split <- x1Split[elementLengths(x1Split) > 0L]
+            if (!sq %in% names(subjectLst))
+                break
             s1 <- subjectLst[[sq]]
             for (st in names(x1Split)) {
-                if ( st == "+" ){
+                if (st == "+") {
                     if (!missing(subject)) {
                         subSplit <- s1[strand(s1) != "-"]
                         res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
-                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
                             elementMetadata(subSplit)$posIndx[res]
                     } else {
                         res <- nearest(ranges(x1Split[[st]]))
-                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
                             elementMetadata(x1Split[[st]])$posIndx[res]
                     }
-                } else if (st == "-"){
+                } else if (st == "-") {
                     if (!missing(subject)) {
                         subSplit <- s1[strand(s1) != "+"]
                         res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
-                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
                             elementMetadata(subSplit)$posIndx[res]
                     } else {
                         res <- nearest(ranges(x1Split[[st]]))
-                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
                             elementMetadata(x1Split[[st]])$posIndx[res]
                     }
-                } else if (st == "*"){
+                } else if (st == "*") {
                     if (!missing(subject)) {
                         res <- nearest(ranges(x1Split[[st]]), ranges(s1))
-                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
                             elementMetadata(s1)$posIndx[res]    
                     } else {
                         res <- nearest(ranges(x1Split[[st]]))
-                        matchPos[elementMetadata(x1Split[[st]])$posIndx] <-
+                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
                             elementMetadata(x1Split[[st]])$posIndx[res]
                     }
                 }
             }
         }              
-        matchPos
-    })
-
+        ans
+    }
+)
 
 setMethod("narrow", "GenomicRanges",
-    function(x, start = NA, end = NA, width = NA, use.names = TRUE)
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        rng <- narrow(ranges(x), start = start, end = end , width = width,
-            use.names =  TRUE)
+        rng <- narrow(ranges(x), start=start, end=end, width=width,
+                      use.names=TRUE)
         ranges(x) <- rng
         x
-    })
-
-
-.checkParms <- function(x, parm) {
-
-    if(!all(is.na(parm))) {
-        if(!all(names(parm) %in% levels(seqnames(x))))
-            stop("start should be a named numeric vector corresponding to seqnames")
     }
-    temp <- structure(rep(NA_integer_,  length(levels(seqnames(x)))), 
-                    names = levels(seqnames(x)))
+)
+
+.checkParms <- function(x, parm)
+{
+    if (!all(is.na(parm))) {
+        if (!all(names(parm) %in% levels(seqnames(x))))
+            stop("start should be a named numeric vector ",
+                 "corresponding to seqnames")
+    }
+    temp <- structure(rep(NA_integer_, length(levels(seqnames(x)))), 
+                      names=levels(seqnames(x)))
     temp[names(parm)] <- parm
     temp
 }
@@ -1232,13 +1228,12 @@ setMethod("narrow", "GenomicRanges",
 .restrictRngs <- function(x, start, end, keep.all.ranges, use.names)
 {
     tmp <- names(x)
-    names(x) <-  seq_len(length(x))
+    names(x) <- seq_len(length(x))
     rng <- ranges(x)
-    res <- restrict(ranges(x), start, end, keep.all.ranges,
-                    use.names=TRUE)
+    res <- restrict(ranges(x), start, end, keep.all.ranges, use.names=TRUE)
     x <- x[as.numeric(names(res))]
     ranges(x) <- res
-    if(!use.names)
+    if (!use.names)
         names(x) <- NULL
     else 
         names(x) <- tmp[as.numeric(names(res))]
@@ -1246,40 +1241,43 @@ setMethod("narrow", "GenomicRanges",
 }
 
 setMethod("restrict", "GenomicRanges",
-    function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
+    function(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
     {
-        if(is.null(names(start)) && is.null(names(end)))
-        {
+        if (is.null(names(start)) && is.null(names(end)))
             return(.restrictRngs(x, start, end,keep.all.ranges, use.names))
-        }
         elementMetadata(x) <- cbind(elementMetadata(x),
-                                    DataFrame("posIndx" = seq_len(length(x))))
+                                    DataFrame(posIndx=seq_len(length(x))))
         splt <- split(x, seqnames(x))
         start <- .checkParms(x, start)
         end <- .checkParms(x, end) 
-        res <- lapply(names(splt), function(i) {
-                    .restrictRngs(splt[[i]], start=start[i], end =end[i],
-                                  keep.all.ranges, use.names)
-                })
+        res <- lapply(names(splt),
+                      function(i) {
+                          .restrictRngs(splt[[i]], start=start[i], end=end[i],
+                                        keep.all.ranges, use.names)
+                      })
         names(res) <- names(splt)
         ord <- unlist(GRangesList(res), use.names=FALSE)
-        df <- data.frame( orig = elementMetadata(ord)$posIndx, final =seq_len(length(ord)))
+        df <- data.frame(orig=elementMetadata(ord)$posIndx,
+                         final=seq_len(length(ord)))
         indx <- with(df, order(orig, final))
-        ord <- ord[indx,]
+        ord <- ord[indx, ]
         elementMetadata(ord) <- subset(elementMetadata(ord), select=-c(posIndx))
         ord
-    })
+    }
+)
 
 setMethod("distance", c("GenomicRanges", "GenomicRanges"),
-          function(x, y, ignore.strand = FALSE) {
-            if (!isTRUEorFALSE(ignore.strand))
-              stop("'ignore.strand' must be TRUE or FALSE")
-            if (length(x) != length(y))
-              stop("'x' and 'y' must have the same length")
-            d <- distance(ranges(x), ranges(y))
-            seqselect(d, seqnames(x) != seqnames(y)) <- NA
-            if (!ignore.strand)
-              seqselect(d, strand(x) != strand(y)) <- NA
-            d
-          })
+    function(x, y, ignore.strand=FALSE)
+    {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (length(x) != length(y))
+            stop("'x' and 'y' must have the same length")
+        d <- distance(ranges(x), ranges(y))
+        seqselect(d, seqnames(x) != seqnames(y)) <- NA
+        if (!ignore.strand)
+            seqselect(d, strand(x) != strand(y)) <- NA
+        d
+    }
+)
 
