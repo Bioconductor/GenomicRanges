@@ -16,7 +16,7 @@
 ###     elementLengths() returns identical vectors on them;
 ###   o 'strand' is assumed to be a character vector with allowed values
 ###     "+" and "-" only;
-###   o 'reorder.exons.on.minus.strand' is assumed to be TRUE or FALSE.
+###   o 'decreasing.rank.on.minus.strand' is assumed to be TRUE or FALSE.
 
 unsafe.transcriptWidths <- function(exonStarts, exonEnds)
 {
@@ -29,23 +29,23 @@ unsafe.transcriptWidths <- function(exonStarts, exonEnds)
 ### not necessarily the "same shape") as 'exonStarts' and 'exonEnds'.
 unsafe.transcriptLocs2refLocs <- function(tlocs,
                 exonStarts, exonEnds, strand,
-                reorder.exons.on.minus.strand)
+                decreasing.rank.on.minus.strand)
 {
     .Call2("tlocs2rlocs",
           tlocs,
           exonStarts, exonEnds, strand,
-          reorder.exons.on.minus.strand,
+          decreasing.rank.on.minus.strand,
           PACKAGE="GenomicRanges")
 }
 
 unsafe.extractTranscripts <- function(classname, x,
                 exonStarts, exonEnds, strand,
-                reorder.exons.on.minus.strand, lkup)
+                decreasing.rank.on.minus.strand, lkup)
 {
     .Call2("extract_transcripts",
           classname, x,
           exonStarts, exonEnds, strand,
-          reorder.exons.on.minus.strand, lkup,
+          decreasing.rank.on.minus.strand, lkup,
           PACKAGE="GenomicRanges")
 }
 

@@ -114,12 +114,12 @@ static int strand_is_minus(SEXP strand, int i)
 
 static int tloc2rloc(int tloc,
 		SEXP starts, SEXP ends,
-		int on_minus_strand, int reorder_minus_exons)
+		int on_minus_strand, int decreasing_rank_on_minus_strand)
 {
 	int nexons, j, start, end, width;
 
 	nexons = LENGTH(starts);
-	if (on_minus_strand && reorder_minus_exons) {
+	if (on_minus_strand && decreasing_rank_on_minus_strand) {
 		for (j = nexons - 1; j >= 0; j--) {
 			start = INTEGER(starts)[j];
 			end = INTEGER(ends)[j];
@@ -166,12 +166,13 @@ static int copy_exon(char * out, const cachedCharSeq *in,
 
 static void copy_transcript(char * out, const cachedCharSeq *in,
 		SEXP starts, SEXP ends,
-		int on_minus_strand, int reorder_minus_exons, SEXP lkup)
+		int on_minus_strand, int decreasing_rank_on_minus_strand,
+		SEXP lkup)
 {
 	int nexons, j, start, end;
 
 	nexons = LENGTH(starts);
-	if (on_minus_strand && reorder_minus_exons) {
+	if (on_minus_strand && decreasing_rank_on_minus_strand) {
 		for (j = nexons - 1; j >= 0; j--) {
 			start = INTEGER(starts)[j];
 			end = INTEGER(ends)[j];
@@ -200,13 +201,14 @@ SEXP transcript_widths(SEXP exonStarts, SEXP exonEnds)
 }
 
 SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
-		SEXP strand, SEXP reorder_exons_on_minus_strand)
+		SEXP strand, SEXP decreasing_rank_on_minus_strand)
 {
 	SEXP ans, starts, ends, ans_elt;
-	int reorder_minus_exons, ans_length,
+	int decreasing_rank_on_minus_strand0, ans_length,
 	    i, transcript_width, on_minus_strand, nlocs, j, tloc;
 
-	reorder_minus_exons = LOGICAL(reorder_exons_on_minus_strand)[0];
+	decreasing_rank_on_minus_strand0 =
+		LOGICAL(decreasing_rank_on_minus_strand)[0];
 	ans_length = LENGTH(tlocs);
 	PROTECT(ans = duplicate(tlocs));
 	for (i = 0; i < ans_length; i++) {
@@ -242,8 +244,9 @@ SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 				      "transcript is %d)", j + 1, transcript_width);
 			}
 			INTEGER(ans_elt)[j] = tloc2rloc(tloc,
-					starts, ends,
-					on_minus_strand, reorder_minus_exons);
+				starts, ends,
+				on_minus_strand,
+				decreasing_rank_on_minus_strand0);
 		}
 	}
 	UNPROTECT(1);
@@ -252,16 +255,17 @@ SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 
 SEXP extract_transcripts(SEXP classname, SEXP x,
 		SEXP exonStarts, SEXP exonEnds, SEXP strand,
-		SEXP reorder_exons_on_minus_strand, SEXP lkup)
+		SEXP decreasing_rank_on_minus_strand, SEXP lkup)
 {
 	cachedCharSeq X, Y;
 	SEXP ans_width, ans, starts, ends;
 	cachedXVectorList cached_ans;
-	int reorder_minus_exons, ans_length,
+	int decreasing_rank_on_minus_strand0, ans_length,
 	    i, on_minus_strand;
 
 	X = cache_XRaw(x);
-	reorder_minus_exons = LOGICAL(reorder_exons_on_minus_strand)[0];
+	decreasing_rank_on_minus_strand0 =
+		LOGICAL(decreasing_rank_on_minus_strand)[0];
 	PROTECT(ans_width = mk_transcript_widths(exonStarts,
 					exonEnds, X.length));
 	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
@@ -283,7 +287,8 @@ SEXP extract_transcripts(SEXP classname, SEXP x,
 		   char * before we can write to it */
 		copy_transcript((char *) Y.seq, &X,
 			starts, ends,
-			on_minus_strand, reorder_minus_exons, lkup);
+			on_minus_strand, decreasing_rank_on_minus_strand0,
+			lkup);
 	}
 	UNPROTECT(2);
 	return ans;

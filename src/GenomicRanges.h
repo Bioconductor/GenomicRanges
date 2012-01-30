@@ -53,7 +53,7 @@ SEXP tlocs2rlocs(
 	SEXP exonStarts,
 	SEXP exonEnds,
 	SEXP strand,
-	SEXP reorder_exons_on_minus_strand
+	SEXP decreasing_rank_on_minus_strand
 );
 
 SEXP extract_transcripts(
@@ -62,7 +62,7 @@ SEXP extract_transcripts(
 	SEXP exonStarts,
 	SEXP exonEnds,
 	SEXP strand,
-	SEXP reorder_exons_on_minus_strand,
+	SEXP decreasing_rank_on_minus_strand,
 	SEXP lkup
 );
 
