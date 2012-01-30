@@ -17,8 +17,15 @@ data(galn4)
 \details{
   See the pasilla data package for details about the Pasilla experiment
   and data (RNA-seq, Fly).
-  The \code{galn4} data set was obtained by extracting records from
-  the untreated1.bam file that are on chr4.
+  See the "Overview of summarizeOverlaps" vignette in the GenomicRanges
+  package for details about the BAM files located at
+  \url{http://www.embl.de/~reyes/Graveley/bam}.
+  Files treated1.bam, untreated1.bam and untreated2.bam contain reads
+  aligned to reference genome \emph{BDGP Release 5} (aka the \emph{dm3}
+  genome on the UCSC Genome Browser).
+
+  The \code{galn4} data set was obtained by extracting the records from
+  untreated1.bam that are located on chr4.
 }
 
 \seealso{
