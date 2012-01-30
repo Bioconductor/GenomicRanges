@@ -3,6 +3,10 @@
 ### -------------------------------------------------------------------------
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### "encodeOverlaps" methods.
+###
+
 if (FALSE) {
 ### Not sure we need to bother with methods that do 1-to-1 range overlap
 ### encodings. What would be the use cases?
@@ -50,36 +54,42 @@ setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Related utilities.
+### isCompatibleWithSplicing().
 ###
 
 setGeneric("isCompatibleWithSplicing",
     function(x) standardGeneric("isCompatibleWithSplicing")
 )
 
-.whichCompatibleWithSplicing <- function(x)
+.check_ngap_max <- function(x)
 {
     ngap <- as.integer(sub(":.*", "", x)) - 1L
-    if (max(ngap) > 3)
-        stop("don't support reads with more than 3 gaps for now, sorry")
-    ## Regex to use for reads with 1 range (no gaps):
-    pattern1 <- ":[fgij]:"
-    ## Regex to use for reads with 2 ranges (1 gap):
-    pattern2 <- ":[jg].:.[gf]:"
-    ## Regex to use for reads with 3 ranges (2 gaps):
-    pattern3 <- ":[jg]..:.g.:..[gf]:"
-    ## Regex to use for reads with 4 ranges (3 gaps):
-    pattern4 <- ":[jg]...:.g..:..g.:...[gf]:"
-    pattern1234 <- ":([fgij]|[jg].:.[gf]|[jg]..:.g.:..[gf]|[jg]...:.g..:..g.:...[gf]):"
-    grep(pattern1234, x)
+    if (max(ngap) > 3L)
+        stop("reads with more than 3 gaps are not supported yet, sorry")
 }
 
-setMethod("isCompatibleWithSplicing", "character",
-    function(x)
-    {
-        stop("IMPLEMENT ME")
-    }
-)
+.get_CompatibleWithSplicing_regex <- function()
+{
+    part1 <- "[fgij]"                     # reads with 1 range (0 gap)
+    part2 <- "[jg].:.[gf]"                # reads with 2 ranges (1 gap)
+    part3 <- "[jg]..:.g.:..[gf]"          # reads with 3 ranges (2 gaps)
+    part4 <- "[jg]...:.g..:..g.:...[gf]"  # reads with 4 ranges (3 gaps)
+    paste0(":(", paste(part1, part2, part3, part4, sep="|"), "):")
+}
+
+.isCompatibleWithSplicing <- function(x)
+{
+    .check_ngap_max(x)
+    grepl(.get_CompatibleWithSplicing_regex(), x)
+}
+
+.whichCompatibleWithSplicing <- function(x)
+{
+    .check_ngap_max(x)
+    grep(.get_CompatibleWithSplicing_regex(), x)
+}
+
+setMethod("isCompatibleWithSplicing", "character", .isCompatibleWithSplicing)
 
 setMethod("isCompatibleWithSplicing", "factor",
     function(x)
