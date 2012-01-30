@@ -35,6 +35,7 @@ Collate: utils.R
 	coverage-methods.R
 	setops-methods.R
 	findOverlaps-methods.R
+	encodeOverlaps-methods.R
 	countGenomicOverlaps-methods.R
 	seqlevels-utils.R
 	resolveHits-methods.R
