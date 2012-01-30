@@ -13,11 +13,13 @@
 \alias{keepSeqlevels,GappedAlignments,GRangesList-method}
 \alias{keepSeqlevels,GappedAlignments,GappedAlignments-method}
 \alias{keepSeqlevels,GappedAlignments,character-method}
+\alias{keepSeqlevels,VCF,character-method}
 
 \alias{renameSeqlevels}
 \alias{renameSeqlevels,GappedAlignments,character-method}
 \alias{renameSeqlevels,GRangesList,character-method}
 \alias{renameSeqlevels,GenomicRanges,character-method}
+\alias{renameSeqlevels,VCF,character-method}
 
 \title{
   seqlevels utility functions
@@ -41,10 +43,12 @@
   \S4method{keepSeqlevels}{GappedAlignments,GRangesList}(x, value, ...) 
   \S4method{keepSeqlevels}{GappedAlignments,GappedAlignments}(x, value, ...) 
   \S4method{keepSeqlevels}{GappedAlignments,character}(x, value, ...) 
+  \S4method{keepSeqlevels}{VCF,character}(x, value, ...) 
 
   \S4method{renameSeqlevels}{GenomicRanges,character}(x, value, ...) 
   \S4method{renameSeqlevels}{GRangesList,character}(x, value, ...) 
   \S4method{renameSeqlevels}{GappedAlignments,character}(x, value, ...) 
+  \S4method{renameSeqlevels}{VCF,character}(x, value, ...) 
 }
 
 \arguments{

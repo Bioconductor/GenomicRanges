@@ -1,19 +1,15 @@
 setGeneric("summarizeOverlaps", signature = c("features", "reads"),
-    function(features, reads, 
-             mode = Union,
-             ignore.strand = FALSE, ..., param = ScanBamParam())
+    function(features, reads, mode = Union, ignore.strand = FALSE, 
+             ..., param = ScanBamParam())
 {
     standardGeneric("summarizeOverlaps")
 })
 
-
-## summarizeOverlaps methods for BamFiles are found in Rsamtools.
+## methods for BamFiles and BamViews are in Rsamtools
 
 ## methods for GappedAlignments
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
-    function(features, reads, 
-             mode, 
-             ignore.strand = FALSE, ...)
+    function(features, reads, mode, ignore.strand = FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatch(reads, features, mode, ignore.strand)
@@ -26,9 +22,7 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
 })
 
 setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
-    function(features, reads, 
-             mode, 
-             ignore.strand = FALSE, ...)
+    function(features, reads, mode, ignore.strand = FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatch(reads, features, mode, ignore.strand)

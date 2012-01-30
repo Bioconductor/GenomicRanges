@@ -327,9 +327,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
                rowData=local({
                    r <- rowData(x)
                    r[i,] <- rowData(value)
-                   nms <- names(r)
-                   nms[i] <- names(rowData(value))
-                   names(r) <- nms
+                   names(r)[i] <- names(rowData(value))
                    r
                }), colData=local({
                    c <- colData(x)
