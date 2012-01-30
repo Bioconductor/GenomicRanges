@@ -42,7 +42,7 @@ export(
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
     colData, "colData<-", exptData, "exptData<-",
 
-    readIsCompatibleWithSplicing,
+    isCompatibleWithSplicing,
 
     countGenomicOverlaps,
 
@@ -79,7 +79,7 @@ exportMethods(
     union, intersect, setdiff,
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, match, "%in%",
-    encodeOverlaps,
+    encodeOverlaps, isCompatibleWithSplicing,
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,

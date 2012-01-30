@@ -2,7 +2,10 @@
 \alias{encodeOverlaps-methods}
 
 \alias{encodeOverlaps}
-\alias{readIsCompatibleWithSplicing}
+\alias{isCompatibleWithSplicing}
+\alias{isCompatibleWithSplicing,character-method}
+\alias{isCompatibleWithSplicing,factor-method}
+\alias{isCompatibleWithSplicing,OverlapEncodings-method}
 
 \title{encodeOverlaps methods and related utilities}
 
@@ -14,7 +17,7 @@
 
 \usage{
 encodeOverlaps(query, subject)
-readIsCompatibleWithSplicing(x)
+isCompatibleWithSplicing(x)
 }
 
 \arguments{
@@ -62,7 +65,7 @@ overlaps <- findOverlaps(reads4, exbytx)
 ## Compute the overlap encodings:
 ovenc <- encodeOverlapsFromRangesMatching(overlaps, reads4, exbytx)
 table(encoding(ovenc))
-table(readIsCompatibleWithSplicing(ovenc))
+table(isCompatibleWithSplicing(ovenc))
 }
 
 \keyword{methods}

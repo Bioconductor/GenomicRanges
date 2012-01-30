@@ -30,7 +30,7 @@ data(galn4)
 
 \seealso{
   \link{GappedAlignments-class},
-  \code{\link{readIsCompatibleWithSplicing}}
+  \code{\link{isCompatibleWithSplicing}}
 }
 
 \examples{
