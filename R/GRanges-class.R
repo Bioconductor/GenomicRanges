@@ -172,6 +172,7 @@ setAs("RangedData", "GRanges",
                       ranges = ranges,
                       strand = Rle(strand(from)),
                       values)
+        seqinfo(gr) <- seqinfo(from)
         metadata(gr) <- metadata(from)
         gr
     }
@@ -184,24 +185,13 @@ setAs("RangesList", "GRanges",
       {
         if (!length(from))
           return(GRanges())
-        ## unlist() doesn't work properly on a SimpleRleViewsList object (not
-        ## sure it does even make sense to unlist a SimpleRangesList object
-        ## in general e.g. what to do if the elements are Views objects with
-        ## different subjects?). So for SimpleRangesList objects we don't use
-        ## unlist().
-        if (is(from, "SimpleRangesList")) {
-            ranges <- do.call(c, lapply(unname(from),
-                                   function(xx)
-                                     IRanges(start=start(xx),
-                                             width=width(xx))))
-        } else {
-            ranges <- unlist(from, use.names=FALSE)
-            ranges <- IRanges(start=start(ranges), width=width(ranges))
-        }
+        ranges <- unlist(from, use.names=FALSE)
+        ranges <- IRanges(start=start(ranges), width=width(ranges))
         ## From now, ranges is guaranteed to be an IRanges *instance*.
         gr <- GRanges(seqnames = space(from),
                       ranges = ranges,
                       strand = Rle("*", length(ranges)))
+        seqinfo(gr) <- seqinfo(from)
         metadata(gr) <- metadata(from)
         gr
       })
