@@ -60,8 +60,8 @@ isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
 ## A. ENCODE THE OVERLAPS RETURNED BY findOverlaps()
 ## ---------------------------------------------------------------------
 
-## Load some aligned reads (RNA-seq reads aligned against the dm3
-## genome, see '?galn4' for more information):
+## Load some aligned reads (RNA-seq single-end reads aligned against the
+## dm3 genome, see '?galn4' for more information):
 data(galn4)
 reads4 <- as(galn4, "GRangesList")
 table(elementLengths(reads4))  # 20316 alignments with 1 gap or more
@@ -75,7 +75,7 @@ txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
 exbytx0 <- exonsBy(txdb, by="tx")
 
 ## IMPORTANT: Before 'encodeOverlapsFromRangesMatching()' or
-## 'encodeOverlaps()' and related utilities can be used, exons in
+## 'encodeOverlaps()' or related utilities can be used, exons in
 ## transcripts located on the minus strand *must* be reordered by
 ## decreasing rank.
 exbytx <- sortExonsByRank(exbytx0, decreasing.rank.on.minus.strand=TRUE)
@@ -99,9 +99,9 @@ table(encoding(ovenc))
 ## B. isCompatibleWithSplicing()
 ## ---------------------------------------------------------------------
 ## We are interested in a particular type of overlap where the read
-## overlaps the transcript in a "compatible" way, that is, in a way that
-## is compatible with the splicing of the transcript. We call this
-## an overlap of type COMPATIBLE_WITH_SPLICING.
+## overlaps the transcript in a "compatible" way, that is, in a way
+## compatible with the splicing of the transcript. We call this an
+## overlap of type COMPATIBLE_WITH_SPLICING.
 ## Use 'isCompatibleWithSplicing()' on the OverlapEncodings object to
 ## detect overlaps of type COMPATIBLE_WITH_SPLICING.
 ## 'isCompatibleWithSplicing()' can also be used on the character vector
@@ -111,6 +111,26 @@ table(encoding(ovenc))
 
 ## 7 unique encodings are of type COMPATIBLE_WITH_SPLICING:
 table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
+
+## Encodings "1:i:" (204386 occurences in 'ovenc'), "2:jm:af:" (35236
+## occurences) and "3:jmm:agm:aaf:" (267 occurences) correspond to the
+## following overlaps:
+##
+## "1:i:"
+##     read (no gap):            oooooo
+##        transcript:   ...  oooooooooooo ...
+##
+## "2:jm:af:"
+##      read (1 gap):              oooo------oo
+##        transcript:   ...  oooooooooo      ooooooo ...
+##
+## "3:jmm:agm:aaf:"
+##     read (2 gaps):            ooo-----oo---------ooo
+##        transcript:   ...  ooooooo     oo         oooooooooo ...
+##
+## Note that the exons represented in the 2nd and 3rd drawings are
+## consecutive in the transcript. The transcript can have more exons,
+## which is denoted by the ... on each side of the drawings.
 
 is_compat <- isCompatibleWithSplicing(ovenc)
 table(is_compat)  # 241237 overlaps of type COMPATIBLE_WITH_SPLICING
@@ -161,8 +181,6 @@ table(encoding(ovenc))[isCompatibleWithSkippedExons(unique_ovenc)]
 ##
 ##   read (1 gap):          ooooo------------ooo
 ##     transcript:   ...  ooooooo    oooo    oooooooo ...
-## Note that the transcript can have more than the 3 exons represented
-## here (hence the ... on each side of the 3 exons).
 
 is_compat2 <- isCompatibleWithSkippedExons(ovenc)
 table(is_compat2)  # 484 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
@@ -182,6 +200,21 @@ exbytx_compat2_nhits <- tabulate(subjectHits(overlaps)[is_compat2],
                                  nbins=length(exbytx))
 names(exbytx_compat2_nhits) <- names(exbytx)
 table(exbytx_compat2_nhits)
+
+## ---------------------------------------------------------------------
+## D. COMBINING RESULTS OF isCompatibleWithSplicing() AND
+##    isCompatibleWithSkippedExons() TO DETECT NOVEL SPLICINGS
+## ---------------------------------------------------------------------
+## An alignment in 'galn4' with hits of type
+## COMPATIBLE_WITH_SKIPPED_EXONS but no hits of type
+## COMPATIBLE_WITH_SPLICING suggests the presence of a transcript that
+## is not in our annotations.
+
+## First we extract the index of those alignments:
+is_novel_splicing <- which(galn4_compat2_nhits != 0L &
+                           galn4_compat_nhits == 0L)
+
+## MORE COMING SOON...
 }
 
 \keyword{methods}

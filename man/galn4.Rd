@@ -24,8 +24,8 @@ data(galn4)
   aligned to reference genome \emph{BDGP Release 5} (aka the \emph{dm3}
   genome on the UCSC Genome Browser).
 
-  The \code{galn4} data set was obtained by extracting the records from
-  untreated1.bam that are located on chr4.
+  The \code{galn4} data set was obtained by extracting from untreated1.bam
+  (single-end reads) the records located on chr4.
 }
 
 \seealso{
