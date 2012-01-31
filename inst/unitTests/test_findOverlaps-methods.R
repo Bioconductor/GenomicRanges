@@ -30,7 +30,7 @@ test_findOverlaps_no_overlaps_returns_empty_matches <- function()
       new("RangesMatching",
           matchMatrix = matrix(integer(),  byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     for (type in c("any", "start", "end")) {
         ans <- findOverlaps(query, subject, type = type, select = "all")
         checkIdentical(expect, ans)
@@ -62,7 +62,7 @@ test_findOverlaps_empty_query <- function()
       new("RangesMatching",
           matchMatrix = matrix(integer(), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-            DIM = c(0L, 10L))
+            queryLength = 0L, subjectLength = 10L)
     for (type in c("any", "start", "end")) {
         ans <- findOverlaps(query, subject, type = type, select = "all")
         checkIdentical(expect, ans)
@@ -92,7 +92,7 @@ test_findOverlaps_empty_subject <- function()
       new("RangesMatching",
           matchMatrix = matrix(integer(), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 0L))
+          queryLength = 3L, subjectLength = 0L))
     for (type in c("any", "start", "end")) {
         ans <- findOverlaps(query, subject, type = type, select = "all")
         checkIdentical(expect, ans)
@@ -125,17 +125,17 @@ test_findOverlaps_zero_one_two_matches <- function()
           matchMatrix = matrix(c(2L, 7L, 3L, 1L, 3L, 5L),
                                byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     expectStart <- 
       new("RangesMatching",
           matchMatrix = matrix(c(3L, 1L), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     expectEnd <- 
       new("RangesMatching",
           matchMatrix = matrix(integer(), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     ansAny <- findOverlaps(query, subject, select = "all", type = "any")
     ansStart <- findOverlaps(query, subject, select = "all", type = "start")
     ansEnd <- findOverlaps(query, subject, select = "all", type = "end")
@@ -188,17 +188,17 @@ test_findOverlaps_multimatch_within_one_query <- function()
           matchMatrix = matrix(c(2L, 7L, 3L, 1L, 3L, 5L),
                                byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     expectStart <- 
       new("RangesMatching",
           matchMatrix = matrix(c(3L, 1L), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     expectEnd <- 
       new("RangesMatching",
           matchMatrix = matrix(integer(), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     ansAny <- findOverlaps(query, subject, select = "all", type = "any")
     ansStart <- findOverlaps(query, subject, select = "all", type = "start")
     ansEnd <- findOverlaps(query, subject, select = "all", type = "end")
@@ -252,18 +252,18 @@ test_findOverlaps_either_strand <- function()
           matchMatrix = matrix(c(1L, 1L, 1L, 5L, 1L, 6L, 2L, 7L, 3L, 1L, 3L, 5L),
                                byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     expectStart <-
       new("RangesMatching",
           matchMatrix = matrix(c(1L, 5L, 3L, 1L), byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     expectEnd <-
       new("RangesMatching",
           matchMatrix = matrix(c(1L, 1L, 1L, 5L, 1L, 6L),
                                byrow = TRUE, ncol = 2L,
                                dimnames = list(NULL, c("query", "subject"))),
-          DIM = c(3L, 10L))
+          queryLength = 3L, subjectLength = 10L)
     ansAny <- findOverlaps(query, subject, type = "any", select = "all")
     ansStart <- findOverlaps(query, subject, type = "start", select = "all")
     ansEnd <- findOverlaps(query, subject, type = "end", select = "all")
@@ -312,14 +312,14 @@ test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
      target <-  new("RangesMatching", matchMatrix = matrix(c(1L, 3L), 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(10L, 3L))
+                    queryLength = 10L, subjectLength = 3L)
      checkIdentical(target, current)
 
      current <- findOverlaps(query, subject, minoverlap = 6)
      target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(10L, 3L))
+                    queryLength = 10L, subjectLength = 3L)
      checkIdentical(target, current)
 }
 
@@ -332,14 +332,14 @@ test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
      target <-  new("RangesMatching", matchMatrix = matrix(c(3L, 1L), 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(3L, 10L))
+                    queryLength = 3L, subjectLength = 10L)
      checkIdentical(target, current)
 
      current <- findOverlaps(query, subject, minoverlap = 6)
      target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(3L, 10L))
+                    queryLength = 3L, subjectLength = 10L)
      checkIdentical(target, current)
 }
 
@@ -352,7 +352,7 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
      target <- new("RangesMatching", matchMatrix = matrix(c(2L, 1L, 3L, 1L), 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(3L, 1L))
+                   queryLength = 3L, subjectLength = 1L)
      checkIdentical(target, current)
      
      query <- make_query()
@@ -361,7 +361,7 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
      target <- new("RangesMatching", matchMatrix = matrix(c(3L, 1L), 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(3L, 1L))
+                   queryLength = 3L, subjectLength = 1L)
      checkIdentical(target, current)
 
      query <- make_query()
@@ -370,14 +370,14 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
      target <-  new("RangesMatching", matchMatrix = matrix( integer() , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(3L, 1L))
+                    queryLength = 3L, subjectLength = 1L)
      checkIdentical(target, current)
 
      current <- findOverlaps(subject, query, minoverlap = 6)
      target <-  new("RangesMatching", matchMatrix = matrix( c(1L, 3L) , 
                      byrow = TRUE, ncol = 2L, 
                      dimnames = list(NULL, c("query", "subject"))),
-                     DIM = c(1L, 3L))
+                    queryLength = 1L, subjectLength = 3L)
      checkIdentical(target, current)
 
 }
@@ -396,7 +396,7 @@ test_findOverlaps_with_circular_sequences <- function()
                         ncol = 2,
                         dimnames = list(NULL, c("query", "subject")))
     target0 <-  new("RangesMatching", matchMatrix = matchMatrix0,
-                                      DIM = c(4L, 4L))
+                    queryLength = 4L, subjectLength = 4L)
     checkIdentical(target0, current0)
 
     ## With A of length 8 --> last and first ranges do overlap.
@@ -407,7 +407,7 @@ test_findOverlaps_with_circular_sequences <- function()
                                       matchMatrix1[ , "subject"])
     matchMatrix1 <- matchMatrix1[o1, ]
     target1 <- new("RangesMatching", matchMatrix = matchMatrix1,
-                                     DIM = c(4L, 4L))
+                   queryLength = 4L, subjectLength = 4L)
     checkIdentical(target1, current1)
 
     ## With A of length 8 and minoverlap=2 --> no overlap between last
@@ -416,7 +416,7 @@ test_findOverlaps_with_circular_sequences <- function()
     matchMatrix2 <- matrix(c(1:4, 1:4), ncol = 2,
                            dimnames = list(NULL, c("query", "subject")))
     target2 <- new("RangesMatching", matchMatrix = matchMatrix2,
-                                     DIM = c(4L, 4L))
+                   queryLength = 4L, subjectLength = 4L)
     checkIdentical(target2, current2)
 
     ## With A of length 7 and minoverlap=2 --> last and first ranges
@@ -428,7 +428,7 @@ test_findOverlaps_with_circular_sequences <- function()
                                       matchMatrix3[ , "subject"])
     matchMatrix3 <- matchMatrix3[o3, ]
     target3 <- new("RangesMatching", matchMatrix = matchMatrix3,
-                                     DIM = c(4L, 4L))
+                   queryLength = 4L, subjectLength = 4L)
     checkIdentical(target3, current3)
 }
 

@@ -45,7 +45,8 @@
     matchDataFrame <- matchDataFrame[!duplicated(matchDataFrame), , drop=FALSE]
     row.names(matchDataFrame) <- NULL
     new("RangesMatching", matchMatrix = as.matrix(matchDataFrame),
-                          DIM = overlaps00@DIM)
+        queryLength = overlaps00@queryLength,
+        subjectLength = overlaps00@subjectLength)
 }
 
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
@@ -134,7 +135,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                           drop=FALSE]
         }
         if (select == "all") {
-            new("RangesMatching", matchMatrix = matchMatrix, DIM = DIM)
+            new("RangesMatching", matchMatrix = matchMatrix,
+                queryLength = DIM[1], subjectLength = DIM[2])
         } else {
             IRanges:::.matchMatrixToVector(matchMatrix, length(query))
         }
@@ -244,8 +246,8 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         ## rows but this is not necessary since they are already unique).
         mm10 <- .cleanMatchMatrix(mm10)
         if (select == "all") {
-            DIM <- c(length(query), length(subject))
-            initialize(ans, matchMatrix = mm10, DIM = DIM)
+            initialize(ans, matchMatrix = mm10, queryLength = length(query),
+                       subjectLength = length(subject))
         } else {
             IRanges:::.matchMatrixToVector(mm10, length(query))
         }
@@ -287,8 +289,9 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
             matchMatrix <- .cleanMatchMatrix(matchMatrix)
         }
         if (select == "all") {
-            DIM <- c(length(query), length(subject))
-            initialize(ans, matchMatrix = matchMatrix, DIM = DIM)
+            initialize(ans, matchMatrix = matchMatrix,
+                       queryLength = length(query),
+                       subjectLength = length(subject))
         } else {
             IRanges:::.matchMatrixToVector(matchMatrix, length(query))
         }
@@ -372,8 +375,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         ## rows but this is not necessary since they are already unique).
         mm11 <- .cleanMatchMatrix(mm11)
         if (select == "all") {
-            DIM <- c(length(query), length(subject))
-            initialize(ans, matchMatrix = mm11, DIM = DIM)
+            initialize(ans, matchMatrix = mm11,
+                       queryLength = length(query),
+                       subjectLength = length(subject))
         } else {
             IRanges:::.matchMatrixToVector(mm11, length(query))
         }
