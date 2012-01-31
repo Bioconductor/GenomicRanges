@@ -9,6 +9,11 @@
 \alias{isCompatibleWithSplicing,factor-method}
 \alias{isCompatibleWithSplicing,OverlapEncodings-method}
 
+\alias{isCompatibleWithSkippedExons}
+\alias{isCompatibleWithSkippedExons,character-method}
+\alias{isCompatibleWithSkippedExons,factor-method}
+\alias{isCompatibleWithSkippedExons,OverlapEncodings-method}
+
 \title{encodeOverlaps methods and related utilities}
 
 \description{
@@ -20,6 +25,7 @@
 \usage{
 encodeOverlaps(query, subject)
 isCompatibleWithSplicing(x)
+isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
 }
 
 \arguments{
@@ -30,6 +36,14 @@ isCompatibleWithSplicing(x)
   \item{x}{
     An \link[IRanges]{OverlapEncodings} object.
   }
+  \item{max.skipped.exons}{
+    Not supported yet. If \code{NA} (the default), the number of skipped
+    exons must be 1 or more (there is no max).
+  }
+}
+
+\author{
+  H. Pages
 }
 
 \seealso{
@@ -84,27 +98,31 @@ table(encoding(ovenc))
 ## ---------------------------------------------------------------------
 ## B. isCompatibleWithSplicing()
 ## ---------------------------------------------------------------------
+## We are interested in a particular type of overlap where the read
+## overlaps the transcript in a "compatible" way, that is, in a way that
+## is compatible with the splicing of the transcript. We call this
+## an overlap of type COMPATIBLE_WITH_SPLICING.
 ## Use 'isCompatibleWithSplicing()' on the OverlapEncodings object to
-## detect reads that overlap the transcript in a compatible way (i.e.
-## in a way that is compatible with the splicing of the transcript).
+## detect overlaps of type COMPATIBLE_WITH_SPLICING.
 ## 'isCompatibleWithSplicing()' can also be used on the character vector
-## containing the unique encodings to see those encodings that are
-## considered compatible with the transcript.
+## containing the unique encodings to find those of type
+## COMPATIBLE_WITH_SPLICING i.e. those corresponding to overlaps of this
+## type.
 
-## 7 unique encodings are compatible with the transcript:
-unique_ovenc[isCompatibleWithSplicing(unique_ovenc)]
+## 7 unique encodings are of type COMPATIBLE_WITH_SPLICING:
+table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
 
 is_compat <- isCompatibleWithSplicing(ovenc)
-table(is_compat)  # 241237 "compatible overlaps"
+table(is_compat)  # 241237 overlaps of type COMPATIBLE_WITH_SPLICING
 
-## For each alignment in 'galn4', compute the number of "compatible
-## hits" i.e. the nb of transcripts with a compatible overlap:
+## For each alignment in 'galn4', compute the number of hits (i.e.
+## overlaps) of type COMPATIBLE_WITH_SPLICING:
 galn4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
                                nbins=length(galn4))
 names(galn4_compat_nhits) <- names(galn4)
 table(galn4_compat_nhits)
-sum(galn4_compat_nhits != 0)  # 73973 alignments with at least one
-                              # compatible hit
+sum(galn4_compat_nhits != 0)  # 73973 alignments with at least one hit
+                              # of type COMPATIBLE_WITH_SPLICING
 
 ## 'galn4_compat_nhits != 0' can be used to subset either 'galn4'
 ## or 'reads4':
@@ -112,8 +130,7 @@ galn4[galn4_compat_nhits != 0]
 reads4[galn4_compat_nhits != 0]
 
 ## For each transcript in 'exbytx' (or 'exbytx0'), compute the number
-## of "compatible hits" i.e. the nb of alignments in 'galn4' (or
-## 'reads4') with a compatible overlap:
+## of hits of type COMPATIBLE_WITH_SPLICING:
 exbytx_compat_nhits <- tabulate(subjectHits(overlaps)[is_compat],
                                 nbins=length(exbytx))
 names(exbytx_compat_nhits) <- names(exbytx)
@@ -122,7 +139,49 @@ table(exbytx_compat_nhits)
 ## ---------------------------------------------------------------------
 ## C. isCompatibleWithSkippedExons()
 ## ---------------------------------------------------------------------
-## Coming soon...
+## In many aspects, overlaps of type COMPATIBLE_WITH_SPLICING correspond
+## to an ideal situation but in practise many reads don't fall into that
+## category.
+## Here we are interested in a "less perfect" type of overlap where the
+## read overlaps the transcript in a way that *would* be compatible if 1
+## or more exons were removed from the transcript. We call this an
+## overlap of type COMPATIBLE_WITH_SKIPPED_EXONS.
+## Use 'isCompatibleWithSkippedExons()' on the OverlapEncodings object
+## to detect overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS.
+## 'isCompatibleWithSkippedExons()' can also be used on the character
+## vector containing the unique encodings to find those of type
+## COMPATIBLE_WITH_SKIPPED_EXONS i.e. those corresponding to overlaps of
+## this type.
+
+## 8 unique encodings are of type COMPATIBLE_WITH_SKIPPED_EXONS:
+table(encoding(ovenc))[isCompatibleWithSkippedExons(unique_ovenc)]
+
+## Encoding "2:jm:am:af:" (398 occurences in 'ovenc') corresponds to the
+## following overlap:
+##
+##   read (1 gap):          ooooo------------ooo
+##     transcript:   ...  ooooooo    oooo    oooooooo ...
+## Note that the transcript can have more than the 3 exons represented
+## here (hence the ... on each side of the 3 exons).
+
+is_compat2 <- isCompatibleWithSkippedExons(ovenc)
+table(is_compat2)  # 484 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
+
+## For each alignment in 'galn4', compute the number of hits (i.e.
+## overlaps) of type COMPATIBLE_WITH_SKIPPED_EXONS:
+galn4_compat2_nhits <- tabulate(queryHits(overlaps)[is_compat2],
+                                nbins=length(galn4))
+names(galn4_compat2_nhits) <- names(galn4)
+table(galn4_compat2_nhits)
+sum(galn4_compat2_nhits != 0)  # 216 alignments with at least one hit
+                               # of type COMPATIBLE_WITH_SKIPPED_EXONS
+
+## For each transcript in 'exbytx' (or 'exbytx0'), compute the number
+## of hits of type COMPATIBLE_WITH_SKIPPED_EXONS:
+exbytx_compat2_nhits <- tabulate(subjectHits(overlaps)[is_compat2],
+                                 nbins=length(exbytx))
+names(exbytx_compat2_nhits) <- names(exbytx)
+table(exbytx_compat2_nhits)
 }
 
 \keyword{methods}

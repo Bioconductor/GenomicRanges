@@ -57,10 +57,6 @@ setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
 ### isCompatibleWithSplicing().
 ###
 
-setGeneric("isCompatibleWithSplicing",
-    function(x) standardGeneric("isCompatibleWithSplicing")
-)
-
 .check_ngap_max <- function(x)
 {
     ngap <- as.integer(sub(":.*", "", x)) - 1L
@@ -68,13 +64,19 @@ setGeneric("isCompatibleWithSplicing",
         stop("reads with more than 3 gaps are not supported yet, sorry")
 }
 
+setGeneric("isCompatibleWithSplicing",
+    function(x) standardGeneric("isCompatibleWithSplicing")
+)
+
 .get_CompatibleWithSplicing_regex <- function()
 {
-    part1 <- "[fgij]"                     # reads with 1 range (0 gap)
-    part2 <- "[jg].:.[gf]"                # reads with 2 ranges (1 gap)
-    part3 <- "[jg]..:.g.:..[gf]"          # reads with 3 ranges (2 gaps)
-    part4 <- "[jg]...:.g..:..g.:...[gf]"  # reads with 4 ranges (3 gaps)
-    paste0(":(", paste(part1, part2, part3, part4, sep="|"), "):")
+    subregex1 <- "[fgij]"                     # reads with 1 range (0 gap)
+    subregex2 <- "[jg].:.[gf]"                # reads with 2 ranges (1 gap)
+    subregex3 <- "[jg]..:.g.:..[gf]"          # reads with 3 ranges (2 gaps)
+    subregex4 <- "[jg]...:.g..:..g.:...[gf]"  # reads with 4 ranges (3 gaps)
+    paste0(":(",
+           paste(subregex1, subregex2, subregex3, subregex4, sep="|"),
+           "):")
 }
 
 .isCompatibleWithSplicing <- function(x)
@@ -102,7 +104,62 @@ setMethod("isCompatibleWithSplicing", "factor",
 )
 
 setMethod("isCompatibleWithSplicing", "OverlapEncodings",
-    function(x)
-        isCompatibleWithSplicing(encoding(x))
+    function(x) isCompatibleWithSplicing(encoding(x))
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### isCompatibleWithSkippedExons().
+###
+
+setGeneric("isCompatibleWithSkippedExons", signature="x",
+    function(x, max.skipped.exons=NA)
+        standardGeneric("isCompatibleWithSkippedExons")
+)
+
+.get_CompatibleWithSkippedExons_regex <- function(max.skipped.exons)
+{
+    ## Reads with 2 ranges (1 gap):
+    subregex2 <- "[jg].:(..:)+.[gf]"
+    ## Reads with 3 ranges (2 gaps):
+    subregex3 <- "[jg]..:((...:)+.g.:(...:)*|(...:)*.g.:(...:)+)..[gf]"
+    ## Reads with 4 ranges (3 gaps):
+    subregex4 <- "[jg]...:((....:)+.g..:(....:)*..g.:(....:)*|(....:)*.g..:(....:)+..g.:(....:)*|(....:)*.g..:(....:)*..g.:(....:)+)...[gf]"
+    paste0(":(",
+           paste(subregex2, subregex3, subregex4, sep="|"),
+           "):")
+}
+
+.isCompatibleWithSkippedExons <- function(x, max.skipped.exons=NA)
+{
+    .check_ngap_max(x)
+    grepl(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x)
+}
+
+.whichCompatibleWithSkippedExons <- function(x, max.skipped.exons=NA)
+{
+    .check_ngap_max(x)
+    grep(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x)
+}
+
+setMethod("isCompatibleWithSkippedExons", "character",
+    .isCompatibleWithSkippedExons
+)
+
+setMethod("isCompatibleWithSkippedExons", "factor",
+    function(x, max.skipped.exons=NA)
+    {
+        if (length(x) == 0L)
+            return(logical(0))
+        idx <- .whichCompatibleWithSkippedExons(levels(x),
+                        max.skipped.exons=max.skipped.exons)
+        as.integer(x) %in% idx
+    }
+)
+
+setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
+    function(x, max.skipped.exons=NA)
+        isCompatibleWithSkippedExons(encoding(x),
+                        max.skipped.exons=max.skipped.exons)
 )
 
