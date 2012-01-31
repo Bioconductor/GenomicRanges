@@ -9,16 +9,6 @@ setGeneric("keepSeqlevels", signature = c("x", "value"),
            standardGeneric("keepSeqlevels")
 )
 
-setMethod("keepSeqlevels",  c("VCF", "character"),
-            function(x, value, ...)
-{
-    rd <- keepSeqlevels(rowData(x), value) 
-    idx <- as.vector(seqnames(rowData(x))) %in% value
-    vcf <- x[idx, ]
-    rowData(vcf) <- rd
-    vcf
-})
-
 setMethod("keepSeqlevels",  c("GenomicRanges", "GenomicRanges"),
             function(x, value, ...)
 {
@@ -134,14 +124,6 @@ setGeneric("renameSeqlevels", signature = c("x", "value"),
     function(x, value, ...)
     standardGeneric("renameSeqlevels")
 )
-
-setMethod("renameSeqlevels",  c("VCF", "character"),
-            function(x, value, ...)
-{
-    rd <- renameSeqlevels(rowData(x), value) 
-    rowData(vcf) <- rd 
-    vcf
-})
 
 setMethod("renameSeqlevels",  c(x="GappedAlignments", value="character"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
