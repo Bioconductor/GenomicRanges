@@ -14,6 +14,11 @@
 \alias{isCompatibleWithSkippedExons,factor-method}
 \alias{isCompatibleWithSkippedExons,OverlapEncodings-method}
 
+\alias{extractSkippedExonRanks}
+\alias{extractSkippedExonRanks,character-method}
+\alias{extractSkippedExonRanks,factor-method}
+\alias{extractSkippedExonRanks,OverlapEncodings-method}
+
 \title{encodeOverlaps methods and related utilities}
 
 \description{
@@ -26,6 +31,7 @@
 encodeOverlaps(query, subject)
 isCompatibleWithSplicing(x)
 isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
+extractSkippedExonRanks(x)
 }
 
 \arguments{
@@ -34,7 +40,8 @@ isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
     objects.
   }
   \item{x}{
-    An \link[IRanges]{OverlapEncodings} object.
+    An \link[IRanges]{OverlapEncodings} object, a factor or a character
+    vector.
   }
   \item{max.skipped.exons}{
     Not supported yet. If \code{NA} (the default), the number of skipped
@@ -211,10 +218,48 @@ table(exbytx_compat2_nhits)
 ## is not in our annotations.
 
 ## First we extract the index of those alignments:
-is_novel_splicing <- which(galn4_compat2_nhits != 0L &
-                           galn4_compat_nhits == 0L)
+aln_shows_nov_splicing <- galn4_compat2_nhits != 0L &
+                          galn4_compat_nhits == 0L
+which(aln_shows_nov_splicing)
 
-## MORE COMING SOON...
+## We make this an index into 'overlaps' (RangesMatching object):
+is_nov_splicing <- queryHits(overlaps) %in%
+                       which(aln_shows_nov_splicing)
+
+## We intersect with 'is_compat2' to keep only the overlaps of interest:
+is_nov_splicing <- is_nov_splicing & is_compat2
+
+## For each overlap of interest, we extract the ranks of the skipped
+## exons (we use a list for this as there might be more than 1 skipped
+## exon per overlap):
+skippedexrk <- extractSkippedExonRanks(ovenc)[is_nov_splicing]
+table(elementLengths(skippedexrk))
+
+## Finally, we split 'skippedexrk' by transcript TxDb internal id.
+names(skippedexrk) <- queryHits(overlaps)[is_nov_splicing]
+f <- names(exbytx)[subjectHits(overlaps)[is_nov_splicing]]
+tx2skippedexrk <- split(skippedexrk, f)
+
+## 'tx2skippedexrk' is a named list of named lists of integer vectors.
+## The first level of names (outer names) are transcript TxDb internal
+## ids and the second level of names (inner names) are alignment
+## indices into 'galn4':
+names(tx2skippedexrk)  # transcript TxDb internal ids
+
+## Transcript "10" has 4 hits that skip exons 9 and 10:
+tx2skippedexrk[["10"]]
+
+## Let's be cautious about the interpretation of this result. Because
+## of how we've conducted this analysis, the aligments reported in
+## 'tx2skippedexrk' are guaranteed to NOT have COMPATIBLE_WITH_SPLICING
+## overlaps with other known transcripts. All it means is that, for
+## example, in the case of transcript "10", the 4 reported hits show
+## evidence of one or more unknown transcripts where exons 8 and 11
+## would be consecutive. But without further analysis, we can't make
+## any assumption about what other exons belong to those unknown
+## transcripts. In particular, we cannot claim that we have evidence of
+## an unknown transcript made of the same exons as transcript "10"
+## minus exons 9 and 10!
 }
 
 \keyword{methods}

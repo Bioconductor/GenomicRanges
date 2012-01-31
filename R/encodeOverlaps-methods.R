@@ -165,3 +165,84 @@ setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
                         max.skipped.exons=max.skipped.exons)
 )
 
+setGeneric("extractSkippedExonRanks",
+    function(x) standardGeneric("extractSkippedExonRanks")
+)
+
+setMethod("extractSkippedExonRanks", "character",
+    function(x)
+    {
+        xx <- strsplit(x, ":", fixed=TRUE)
+        lapply(xx,
+               function(s0) {
+                   ngap <- as.integer(s0[1L]) - 1L
+                   ans <- integer(0)
+                   if (ngap <= 0L)
+                       return(ans)
+                   s1 <- s0[-1L]
+                   if (length(s1) < ngap + 2L)
+                       return(ans)
+                   if (ngap == 1L) {
+                       if (grepl("^[jg].$", s1[1L])
+                        && grepl("^.[gf]$", s1[length(s1)])) {
+                           ans <- 2L:(length(s1)-1L)
+                       }
+                   } else if (ngap == 2L) {
+                       if (grepl("^[jg]..$", s1[1L])
+                        && grepl("^..[gf]$", s1[length(s1)])) {
+                           s2 <- s1[-c(1L, length(s1))]
+                           i <- grep("^.g.$", s2)
+                           if (length(i) == 0L)
+                               return(ans)
+                           if (length(i) != 1L)
+                               stop("unexpected/unsupported overlap ",
+                                    "situation: length(i) > 1L")
+                           ans <- (2:(length(s1)-1L))[-i]
+                       }
+                   } else if (ngap == 3L) {
+                       if (grepl("^[jg]...$", s1[1L])
+                        && grepl("^...[gf]$", s1[length(s1)])) {
+                           s2 <- s1[-c(1L, length(s1))]
+                           i <- grep("^.g..$", s2)
+                           j <- grep("^..g.$", s2)
+                           if (length(i) == 0L || length(j) == 0L)
+                               return(ans)
+                           if (length(i) != 1L || length(j) != 1L)
+                               stop("unexpected/unsupported overlap ",
+                                    "situation: length(i) or length(j) > 1L")
+                           if (j <= i)
+                               return(ans)
+                           ans <- (2:(length(s1)-1L))[-c(i,j)]
+                       }
+                   } else {
+                       stop("reads with more than 3 gaps ",
+                            "are not supported yet, sorry")
+                   }
+                   ans
+               })
+    }
+)
+
+setMethod("extractSkippedExonRanks", "factor",
+    function(x)
+    {
+        if (length(x) == 0L)
+            return(list())
+        skipped_ranks <- extractSkippedExonRanks(levels(x))
+        skipped_ranks[as.integer(x)]
+    }
+)
+
+setMethod("extractSkippedExonRanks", "OverlapEncodings",
+    function(x)
+    {
+        skipped_ranks <- extractSkippedExonRanks(encoding(x))
+        tmp <- unlist(skipped_ranks, use.names=FALSE)
+        tmp <- tmp + rep.int(Loffset(x), elementLengths(skipped_ranks))
+        flevels <- seq_len(length(skipped_ranks))
+        f <- factor(rep.int(flevels, elementLengths(skipped_ranks)),
+                    levels=flevels)
+        unname(split(tmp, f))
+    }
+)
+

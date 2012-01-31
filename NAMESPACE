@@ -42,7 +42,8 @@ export(
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
     colData, "colData<-", exptData, "exptData<-",
 
-    isCompatibleWithSplicing, isCompatibleWithSkippedExons,
+    isCompatibleWithSplicing,
+    isCompatibleWithSkippedExons, extractSkippedExonRanks,
 
     countGenomicOverlaps,
 
@@ -79,7 +80,8 @@ exportMethods(
     union, intersect, setdiff,
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, match, "%in%",
-    encodeOverlaps, isCompatibleWithSplicing, isCompatibleWithSkippedExons,
+    encodeOverlaps, isCompatibleWithSplicing,
+    isCompatibleWithSkippedExons, extractSkippedExonRanks,
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,
