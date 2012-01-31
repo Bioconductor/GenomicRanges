@@ -224,6 +224,7 @@ setAs("GenomicRanges", "RangesList",
                                          isCircular=isCircular(from),
                                          genome=genome(from))
         metadata(rl) <- metadata(from)
+        metadata(rl)$seqinfo <- seqinfo(from)
         rl
     }
 )
