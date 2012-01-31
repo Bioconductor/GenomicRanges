@@ -119,6 +119,8 @@ setGeneric("isCompatibleWithSkippedExons", signature="x",
 
 .get_CompatibleWithSkippedExons_regex <- function(max.skipped.exons)
 {
+    if (!identical(max.skipped.exons, NA))
+        stop("only 'max.skipped.exons=NA' is supported for now, sorry")
     ## Reads with 2 ranges (1 gap):
     subregex2 <- "[jg].:(..:)+.[gf]"
     ## Reads with 3 ranges (2 gaps):
