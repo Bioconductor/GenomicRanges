@@ -361,6 +361,9 @@ setReplaceMethod("seqinfo", "GRangesList",
     }
 )
 
+setMethod("score", "GRangesList", function(x) {
+  values(x)$score
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### RangesList methods.
@@ -798,7 +801,8 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   toInd <- rep(seq(length(to)), elementLengths(to))[shits]
   matching <- new("RangesMatching",
                   matchMatrix = cbind(query = qhits, subject = toInd),
-                  DIM = c(length(from), length(to)))
+                  queryLength = length(from),
+                  subjectLength = length(to))
   new("RangesMapping", matching = matching, ranges = local,
       space = seqnames(from)[qhits])
 })

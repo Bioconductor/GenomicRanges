@@ -65,6 +65,7 @@ exportMethods(
     isCircular, "isCircular<-", isCircularWithKnownLength,
     genome, "genome<-",
     strand, "strand<-",
+    score,
     merge,
     coerce, as.data.frame, unlist,
     ranges, elementMetadata,
