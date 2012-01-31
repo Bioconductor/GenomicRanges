@@ -75,20 +75,22 @@ setMethod("coverage", "GenomicRanges",
         seqlevels <- seqlevels(x)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
-        IRanges:::newSimpleList("SimpleRleList",
-              lapply(structure(seqlevels, names = seqlevels),
-                     function(i) {
-                         rg <- seqselect(xRanges, xSplitRanges[[i]])
-                         if (isCircular(x)[i] %in% TRUE)
-                             circle.length <- seqlengths(x)[i]
-                         else
-                             circle.length <- NA
-                         width_i <- width[[i]]
-                         if (is.na(width_i))
-                             width_i <- NULL
-                         .coverage.circle(circle.length, rg,
-                                          shift[[i]], width_i, weight[[i]])
-                     }))
+        ans <- IRanges:::newSimpleList("SimpleRleList",
+                 lapply(structure(seqlevels, names = seqlevels),
+                        function(i) {
+                          rg <- seqselect(xRanges, xSplitRanges[[i]])
+                          if (isCircular(x)[i] %in% TRUE)
+                            circle.length <- seqlengths(x)[i]
+                          else
+                            circle.length <- NA
+                          width_i <- width[[i]]
+                          if (is.na(width_i))
+                            width_i <- NULL
+                          .coverage.circle(circle.length, rg,
+                                           shift[[i]], width_i, weight[[i]])
+                        }))
+        metadata(ans)$seqinfo <- seqinfo(x)
+        ans
     }
 )
 
