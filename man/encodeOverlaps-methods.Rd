@@ -251,15 +251,16 @@ tx2skippedexrk[["10"]]
 
 ## Let's be cautious about the interpretation of this result. Because
 ## of how we've conducted this analysis, the aligments reported in
-## 'tx2skippedexrk' are guaranteed to NOT have COMPATIBLE_WITH_SPLICING
-## overlaps with other known transcripts. All it means is that, for
-## example, in the case of transcript "10", the 4 reported hits show
-## evidence of one or more unknown transcripts where exons 8 and 11
-## would be consecutive. But without further analysis, we can't make
-## any assumption about what other exons belong to those unknown
-## transcripts. In particular, we cannot claim that we have evidence of
-## an unknown transcript made of the same exons as transcript "10"
-## minus exons 9 and 10!
+## 'tx2skippedexrk' are guaranteed to NOT have any overlaps of type
+## COMPATIBLE_WITH_SPLICING with other known transcripts.
+## All we can say is, for example in the case of transcript "10", that
+## the 4 reported hits show evidence of one or more unknown transcripts
+## with a splice junction that corresponds to the gap between exons 8
+## and 11. But without further analysis, we can't make any assumption
+## about the exons structure of those unknown transcripts. In
+## particular, we cannot claim that we have evidence of an unknown
+## transcript made of the same exons as transcript "10" minus exons 9
+## and 10!
 }
 
 \keyword{methods}
