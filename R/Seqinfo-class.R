@@ -53,10 +53,6 @@ setMethod("isCircular", "Seqinfo",
     }
 )
 
-setMethod("isCircularWithKnownLength", "Seqinfo",
-    function(x) ((isCircular(x) %in% TRUE) & !is.na(seqlengths(x)))
-)
-
 setMethod("genome", "Seqinfo",
     function(x)
     {

@@ -22,7 +22,6 @@
 \alias{seqlengths<-,Seqinfo-method}
 \alias{isCircular,Seqinfo-method}
 \alias{isCircular<-,Seqinfo-method}
-\alias{isCircularWithKnownLength,Seqinfo-method}
 \alias{genome,Seqinfo-method}
 \alias{genome<-,Seqinfo-method}
 \alias{[,Seqinfo-method}
@@ -124,11 +123,6 @@
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
       Gets/sets the circularity flag for each sequence in \code{x}.
-    }
-    \item{}{
-      \code{isCircularWithKnownLength(x)}:
-      Formally defined as
-      \code{(isCircular(x) \%in\% TRUE) & !is.na(seqlengths(x))}.
     }
     \item{}{
       \code{genome(x)}, \code{genome(x) <- value}:

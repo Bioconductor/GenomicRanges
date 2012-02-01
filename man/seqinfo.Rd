@@ -16,8 +16,6 @@
 \alias{isCircular,ANY-method}
 \alias{isCircular<-}
 \alias{isCircular<-,ANY-method}
-\alias{isCircularWithKnownLength}
-\alias{isCircularWithKnownLength,ANY-method}
 \alias{genome}
 \alias{genome,ANY-method}
 \alias{genome<-}
@@ -46,8 +44,6 @@ seqlengths(x) <- value
 
 isCircular(x)
 isCircular(x) <- value
-
-isCircularWithKnownLength(x)
 
 genome(x)
 genome(x) <- value
@@ -99,28 +95,34 @@ genome(x) <- value
   Various classes implement methods for those generic functions.
 
   The \link{Seqinfo} class plays a central role for those generics because:
+
   \itemize{
-  \item It implements methods for all the above generics except for
-        \code{seqinfo}. That is, the \code{seqnames}, \code{seqlevels},
-        \code{seqlengths}, \code{isCircular}, \code{isCircularWithKnownLength}
-        and \code{genome} getters are defined for \link{Seqinfo} objects.
+  \item It has methods for all those generics (except \code{seqinfo}).
+        That is, the \code{seqnames}, \code{seqlevels}, \code{seqlengths},
+        \code{isCircular} and \code{genome} getters and setters are
+        defined for \link{Seqinfo} objects.
+
   \item Classes that implement the \code{seqinfo} getter are typically
         expected to return a \link{Seqinfo} object.
-  \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular},
-        \code{isCircularWithKnownLength} and \code{genome} getters and
-        setters are provided.
+
+  \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular}
+        and \code{genome} getters and setters are provided.
         By default, \code{seqlevels(x)} does \code{seqlevels(seqinfo(x))},
         \code{seqlengths(x)} does \code{seqlengths(seqinfo(x))},
         \code{isCircular(x)} does \code{isCircular(seqinfo(x))},
-        \code{isCircularWithKnownLength(x)} does
-        \code{isCircularWithKnownLength(seqinfo(x))},
         and \code{genome(x)} does \code{genome(seqinfo(x))}.
         So any class with a \code{seqinfo} getter that returns a
-        \link{Seqinfo} object also has all those getters working
-        out-of-the-box.
+        \link{Seqinfo} object will have all those getters work
+        out-of-the-box. If, in addition, the class defines a \code{seqinfo}
+        setter, then all the related setters will also work out-of-the-box.
+
         See the \link{GRanges}, \link{GRangesList} and \link{GappedAlignments}
-        classes as examples of such classes (those 3 classes are defined
-        in the GenomicRanges package).
+        classes for examples of classes that define the \code{seqinfo} getter
+        and setter (those 3 classes are defined in the GenomicRanges package).
+
+        See the \link[GenomicFeatures]{TranscriptDb} class (defined in the
+        GenomicFeatures package) for an example of a class that defines only
+        the \code{seqinfo} getter (no setter).
   }
 }
 
@@ -138,7 +140,8 @@ genome(x) <- value
   \link{Seqinfo-class},
   \link{GRanges-class},
   \link{GRangesList-class},
-  \link{GappedAlignments-class}
+  \link{GappedAlignments-class},
+  \link[GenomicFeatures]{TranscriptDb-class}
 }
 
 \examples{

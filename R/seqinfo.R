@@ -210,23 +210,6 @@ setReplaceMethod("isCircular", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### isCircularWithKnownLength() getter.
-###
-### TODO: Do we really need this?
-###
-
-setGeneric("isCircularWithKnownLength",
-    function(x) standardGeneric("isCircularWithKnownLength")
-)
-
-### Default "isCircularWithKnownLength" method works on any object 'x' with
-### a working "seqinfo" method.
-setMethod("isCircularWithKnownLength", "ANY",
-    function(x) isCircularWithKnownLength(seqinfo(x))
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### genome() getter and setter.
 ###
 
