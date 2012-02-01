@@ -146,7 +146,6 @@ table(is_compat)  # 241237 overlaps of type COMPATIBLE_WITH_SPLICING
 ## overlaps) of type COMPATIBLE_WITH_SPLICING:
 galn4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
                                nbins=length(galn4))
-names(galn4_compat_nhits) <- names(galn4)
 table(galn4_compat_nhits)
 sum(galn4_compat_nhits != 0)  # 73973 alignments with at least one hit
                               # of type COMPATIBLE_WITH_SPLICING
@@ -196,7 +195,6 @@ table(is_compat2)  # 484 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
 ## overlaps) of type COMPATIBLE_WITH_SKIPPED_EXONS:
 galn4_compat2_nhits <- tabulate(queryHits(overlaps)[is_compat2],
                                 nbins=length(galn4))
-names(galn4_compat2_nhits) <- names(galn4)
 table(galn4_compat2_nhits)
 sum(galn4_compat2_nhits != 0)  # 216 alignments with at least one hit
                                # of type COMPATIBLE_WITH_SKIPPED_EXONS
@@ -210,7 +208,7 @@ table(exbytx_compat2_nhits)
 
 ## ---------------------------------------------------------------------
 ## D. COMBINING RESULTS OF isCompatibleWithSplicing() AND
-##    isCompatibleWithSkippedExons() TO DETECT NOVEL SPLICINGS
+##    isCompatibleWithSkippedExons() TO DETECT NOVEL SPLICE JUNCTIONS
 ## ---------------------------------------------------------------------
 ## An alignment in 'galn4' with hits of type
 ## COMPATIBLE_WITH_SKIPPED_EXONS but no hits of type
@@ -218,49 +216,65 @@ table(exbytx_compat2_nhits)
 ## is not in our annotations.
 
 ## First we extract the index of those alignments:
-aln_shows_nov_splicing <- galn4_compat2_nhits != 0L &
-                          galn4_compat_nhits == 0L
-which(aln_shows_nov_splicing)
+aln_shows_nov_splice_jct <- galn4_compat2_nhits != 0L &
+                            galn4_compat_nhits == 0L
+which(aln_shows_nov_splice_jct)
 
 ## We make this an index into 'overlaps' (RangesMatching object):
-is_nov_splicing <- queryHits(overlaps) %in%
-                       which(aln_shows_nov_splicing)
+is_nov_splice_jct <- queryHits(overlaps) %in%
+                         which(aln_shows_nov_splice_jct)
 
 ## We intersect with 'is_compat2' to keep only the overlaps of interest:
-is_nov_splicing <- is_nov_splicing & is_compat2
+is_nov_splice_jct <- is_nov_splice_jct & is_compat2
 
 ## For each overlap of interest, we extract the ranks of the skipped
 ## exons (we use a list for this as there might be more than 1 skipped
 ## exon per overlap):
-skippedexrk <- extractSkippedExonRanks(ovenc)[is_nov_splicing]
-table(elementLengths(skippedexrk))
+skpexrk <- extractSkippedExonRanks(ovenc)[is_nov_splice_jct]
+table(elementLengths(skpexrk))
 
-## Finally, we split 'skippedexrk' by transcript TxDb internal id.
-names(skippedexrk) <- queryHits(overlaps)[is_nov_splicing]
-f <- names(exbytx)[subjectHits(overlaps)[is_nov_splicing]]
-tx2skippedexrk <- split(skippedexrk, f)
+## Finally, we split 'skpexrk' by transcript TxDb internal id.
+names(skpexrk) <- queryHits(overlaps)[is_nov_splice_jct]
+f <- names(exbytx)[subjectHits(overlaps)[is_nov_splice_jct]]
+tx2skpexrk <- split(skpexrk, f)
 
-## 'tx2skippedexrk' is a named list of named lists of integer vectors.
+## 'tx2skpexrk' is a named list of named lists of integer vectors.
 ## The first level of names (outer names) are transcript TxDb internal
 ## ids and the second level of names (inner names) are alignment
 ## indices into 'galn4':
-names(tx2skippedexrk)  # transcript TxDb internal ids
+names(tx2skpexrk)  # transcript TxDb internal ids
 
 ## Transcript "10" has 4 hits that skip exons 9 and 10:
-tx2skippedexrk[["10"]]
+tx2skpexrk[["10"]]
+## Transcript "58" has 7 hits. One hit skips exons 6 to 10, five hits
+## skip exons 9 and 10, and one hit skips exon 10 only:
+tx2skpexrk[["58"]]
 
-## Let's be cautious about the interpretation of this result. Because
-## of how we've conducted this analysis, the aligments reported in
-## 'tx2skippedexrk' are guaranteed to NOT have any overlaps of type
-## COMPATIBLE_WITH_SPLICING with other known transcripts.
-## All we can say is, for example in the case of transcript "10", that
-## the 4 reported hits show evidence of one or more unknown transcripts
-## with a splice junction that corresponds to the gap between exons 8
-## and 11. But without further analysis, we can't make any assumption
-## about the exons structure of those unknown transcripts. In
-## particular, we cannot claim that we have evidence of an unknown
-## transcript made of the same exons as transcript "10" minus exons 9
-## and 10!
+
+## FINAL NOTES:
+##
+## (1) The exon ranks returned by extractSkippedExonRanks() are exon
+##     positions within 'exbytx', not 'exbytx0'. For exons on the plus
+##     strand, it makes no difference i.e. the "real" exon ranks are
+##     returned. But for exons on the minus strand, we get the
+##     "anti-rank" i.e. N + 1 - rk where N is the total nb of exons in
+##     the transcript and rk the "real" exon rank. So for example in
+##     the case of transcript "58" (located on the minus strand, see
+##     'exbytx[["58"]]'), exon with "anti-rank" 10 is actually at rank
+##     2 (the transcript has 11 exons).
+##
+## (2) Let's be cautious about the interpretation of 'tx2skpexrk'.
+##     Because of how we've conducted this analysis, the aligments
+##     reported in 'tx2skpexrk' are guaranteed to NOT have any overlaps
+##     of type COMPATIBLE_WITH_SPLICING with other known transcripts.
+##     All we can say, for example in the case of transcript "10", is
+##     that the 4 reported hits show evidence of one or more unknown
+##     transcripts with a splice junction that corresponds to the gap
+##     between exons 8 and 11. But without further analysis, we can't
+##     make any assumption about the exons structure of those unknown
+##     transcripts. In particular, we cannot assume the existence of an
+##     unknown transcript made of the same exons as transcript "10"
+##     minus exons 9 and 10!
 }
 
 \keyword{methods}
