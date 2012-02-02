@@ -81,7 +81,7 @@ library(GenomicFeatures)
 txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
 exbytx0 <- exonsBy(txdb, by="tx")
 
-## IMPORTANT: Before 'encodeOverlapsFromRangesMatching()' or
+## IMPORTANT: Before 'encodeOverlapsFromHits()' or
 ## 'encodeOverlaps()' or related utilities can be used, exons in
 ## transcripts located on the minus strand *must* be reordered by
 ## decreasing rank.
@@ -93,7 +93,7 @@ exbytx[[20]]
 overlaps <- findOverlaps(reads4, exbytx)
 
 ## Encode the overlaps:
-ovenc <- encodeOverlapsFromRangesMatching(overlaps, reads4, exbytx)
+ovenc <- encodeOverlapsFromHits(overlaps, reads4, exbytx)
 ovenc
 unique_ovenc <- levels(encoding(ovenc))
 unique_ovenc  # 104 unique encodings
@@ -220,7 +220,7 @@ aln_shows_nov_splice_jct <- galn4_compat2_nhits != 0L &
                             galn4_compat_nhits == 0L
 which(aln_shows_nov_splice_jct)
 
-## We make this an index into 'overlaps' (RangesMatching object):
+## We make this an index into 'overlaps' (Hits object):
 is_nov_splice_jct <- queryHits(overlaps) %in%
                          which(aln_shows_nov_splice_jct)
 

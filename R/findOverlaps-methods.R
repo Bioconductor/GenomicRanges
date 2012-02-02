@@ -41,10 +41,10 @@
     sHits <- c(subjectHits(overlaps00),
                subjectHits(overlaps10),
                subjectHits(overlaps01))
-    matchDataFrame <- data.frame(query = qHits, subject = sHits)
-    matchDataFrame <- matchDataFrame[!duplicated(matchDataFrame), , drop=FALSE]
-    row.names(matchDataFrame) <- NULL
-    new("RangesMatching", matchMatrix = as.matrix(matchDataFrame),
+    is_dup <- IRanges:::duplicatedIntegerPairs(qHits, sHits)
+    new("Hits",
+        queryHits = qHits[!is_dup],
+        subjectHits = sHits[!is_dup],
         queryLength = overlaps00@queryLength,
         subjectLength = overlaps00@subjectLength)
 }
@@ -67,8 +67,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         DIM <- c(length(query), length(subject))
         if (min(DIM) == 0L) {
             matchMatrix <-
-              matrix(integer(), ncol = 2,
-                     dimnames = list(NULL, c("query", "subject")))
+              matrix(integer(0), nrow = 0L, ncol = 2L,
+                     dimnames = list(NULL, c("queryHits", "subjectHits")))
         } else {
             querySeqnames <- seqnames(query)
             querySplitRanges <- splitRanges(querySeqnames)
@@ -118,27 +118,29 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                           qHits <- queryHits(overlaps)
                           sHits <- subjectHits(overlaps)
                           matches <-
-                            cbind(query = as.integer(qIdxs)[qHits],
-                                  subject = as.integer(sIdxs)[sHits])
+                            cbind(queryHits = as.integer(qIdxs)[qHits],
+                                  subjectHits = as.integer(sIdxs)[sHits])
                           matches[which(seqselect(queryStrand, qIdxs)[qHits] *
                                         seqselect(subjectStrand, sIdxs)[sHits] != -1L), ,
                                   drop=FALSE]
                       }))
             if (is.null(matchMatrix)) {
                 matchMatrix <-
-                  matrix(integer(0), nrow = 0, ncol = 2,
-                         dimnames = list(NULL, c("query", "subject")))
+                  matrix(integer(0), nrow = 0L, ncol = 2L,
+                         dimnames = list(NULL, c("queryHits", "subjectHits")))
             }
             matchMatrix <-
-              matchMatrix[IRanges:::orderIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
-                                                      matchMatrix[ , 2L, drop=TRUE]), ,
+              matchMatrix[IRanges:::orderIntegerPairs(matchMatrix[ , 1L],
+                                                      matchMatrix[ , 2L]), ,
                           drop=FALSE]
         }
         if (select == "all") {
-            new("RangesMatching", matchMatrix = matchMatrix,
+            new("Hits",
+                queryHits = unname(matchMatrix[ , 1L]),
+                subjectHits = unname(matchMatrix[ , 2L]), 
                 queryLength = DIM[1], subjectLength = DIM[2])
         } else {
-            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.hitsMatrixToVector(matchMatrix, length(query))
         }
     }
 )
@@ -158,12 +160,12 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     if (nrow(matchMatrix) <= 1L)
         return(matchMatrix)
     ## First sort the rows.
-    oo <- IRanges:::orderIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
-                                      matchMatrix[ , 2L, drop=TRUE])
+    oo <- IRanges:::orderIntegerPairs(matchMatrix[ , 1L],
+                                      matchMatrix[ , 2L])
     matchMatrix <- matchMatrix[oo, , drop=FALSE]
     ## Then keep the unique rows.
-    keep <- IRanges:::runEndsOfIntegerPairs(matchMatrix[ , 1L, drop=TRUE],
-                                            matchMatrix[ , 2L, drop=TRUE])
+    keep <- IRanges:::runEndsOfIntegerPairs(matchMatrix[ , 1L],
+                                            matchMatrix[ , 2L])
     matchMatrix[keep, , drop=FALSE]
 }
 
@@ -180,29 +182,29 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
 .updateMatchMatrix <- function(matchMatrix, intrsct, minoverlap) {
     widthSum <- .groupSums(width(intrsct), matchMatrix)
-    dups <- IRanges:::duplicatedIntegerPairs(matchMatrix[,"query"],
-                                             matchMatrix[,"subject"])
+    is_dup <- IRanges:::duplicatedIntegerPairs(matchMatrix[ , 1L],
+                                               matchMatrix[ , 2L])
     indx <- (widthSum >= minoverlap)
-    matchMatrix <- matchMatrix[!dups,  ,drop = FALSE]           
-    matchMatrix <- matchMatrix[indx,  ,drop = FALSE]  
+    matchMatrix <- matchMatrix[!is_dup,  , drop=FALSE]           
+    matchMatrix <- matchMatrix[indx,  , drop=FALSE]  
 }
 
 .makeGRL2GRmatchMatrix <- function(mm00, qpartitioning,
                                    type.is.within)
 {
-    query0 <- unname(mm00[ , "query"])
-    subject0 <- unname(mm00[ , "subject"])
+    query0 <- unname(mm00[ , 1L])
+    subject0 <- unname(mm00[ , 2L])
     oo <- IRanges:::orderIntegerPairs(subject0, query0)
     mm00 <- mm00[oo, , drop=FALSE]
 
-    query1 <- togroup(qpartitioning, j=unname(mm00[ , "query"]))
-    subject0 <- unname(mm00[ , "subject"])
+    query1 <- togroup(qpartitioning, j=unname(mm00[ , 1L]))
+    subject0 <- unname(mm00[ , 2L])
     runend <- IRanges:::runEndsOfIntegerPairs(query1, subject0)
-    mm10 <- cbind(query=query1, subject=subject0)[runend, , drop=FALSE]
+    mm10 <- cbind(queryHits=query1, subjectHits=subject0)[runend, , drop=FALSE]
 
     if (type.is.within) {
         runlen <- IRanges:::diffWithInitialZero(runend)
-        keep <- width(qpartitioning)[mm10[ , "query"]] == runlen
+        keep <- width(qpartitioning)[mm10[ , 1L]] == runlen
         mm10 <- mm10[keep, , drop=FALSE]
     }
     mm10
@@ -222,11 +224,11 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         ans <- findOverlaps(unlistQuery, subject,
                             maxgap = maxgap, type = type, select = "all",
                             ignore.strand = ignore.strand)
-        mm00 <- ans@matchMatrix
+        mm00 <- as.matrix(ans)
         if (minoverlap > 1L && nrow(mm00) > 0L) {
             query1 <- queryGroups[queryHits(ans)]
-            subject0 <- unname(mm00[ , "subject"])
-            mm10 <- cbind(query=query1, subject=subject0)
+            subject0 <- unname(mm00[ , 2L])
+            mm10 <- cbind(queryHits=query1, subjectHits=subject0)
             intrsct <- pintersect(ranges(unlistQuery)[queryHits(ans)],
                                   ranges(subject)[subjectHits(ans)])
             mm10 <- .updateMatchMatrix(mm10, intrsct, minoverlap)
@@ -246,10 +248,13 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         ## rows but this is not necessary since they are already unique).
         mm10 <- .cleanMatchMatrix(mm10)
         if (select == "all") {
-            initialize(ans, matchMatrix = mm10, queryLength = length(query),
+            initialize(ans,
+                       queryHits = unname(mm10[ , 1L]),
+                       subjectHits = unname(mm10[ , 2L]),
+                       queryLength = length(query),
                        subjectLength = length(subject))
         } else {
-            IRanges:::.matchMatrixToVector(mm10, length(query))
+            IRanges:::.hitsMatrixToVector(mm10, length(query))
         }
     }
 )
@@ -278,22 +283,24 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
         ans <- findOverlaps(query, unlistSubject,
                             maxgap = maxgap, type = type, select = "all",
                             ignore.strand = ignore.strand)
-        matchMatrix <- ans@matchMatrix
-        if(minoverlap > 1L && nrow(ans@matchMatrix) > 0) {    
-            matchMatrix[,"subject"] <-  subjectGroups[subjectHits(ans)]
+        matchMatrix <- as.matrix(ans)
+        if(minoverlap > 1L && nrow(matchMatrix) > 0) {
+            matchMatrix[ , 2L] <-  subjectGroups[subjectHits(ans)]
             intrsct <- pintersect(ranges(query)[queryHits(ans)],
                         ranges(unlistSubject[subjectHits(ans)]))
             matchMatrix <- .updateMatchMatrix(matchMatrix, intrsct, minoverlap)
         } else{
-            matchMatrix[, 2L] <- subjectGroups[matchMatrix[, 2L, drop=TRUE]]
+            matchMatrix[ , 2L] <- subjectGroups[matchMatrix[ , 2L]]
             matchMatrix <- .cleanMatchMatrix(matchMatrix)
         }
         if (select == "all") {
-            initialize(ans, matchMatrix = matchMatrix,
+            initialize(ans,
+                       queryHits = unname(matchMatrix[ , 1L]),
+                       subjectHits = unname(matchMatrix[ , 2L]),
                        queryLength = length(query),
                        subjectLength = length(subject))
         } else {
-            IRanges:::.matchMatrixToVector(matchMatrix, length(query))
+            IRanges:::.hitsMatrixToVector(matchMatrix, length(query))
         }
     }
 )
@@ -301,22 +308,22 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 .makeGRL2GRLmatchMatrix <- function(mm00, qpartitioning, spartitioning,
                                     type.is.within)
 {
-    query0 <- unname(mm00[ , "query"])
-    subject1 <- togroup(spartitioning, j=unname(mm00[ , "subject"]))
+    query0 <- unname(mm00[ , 1L])
+    subject1 <- togroup(spartitioning, j=unname(mm00[ , 2L]))
     oo <- IRanges:::orderIntegerPairs(subject1, query0)
-    mm01 <- cbind(query=query0, subject=subject1)[oo, , drop=FALSE]
-    is_dup <- IRanges:::duplicatedIntegerPairs(mm01[ , "query"],
-                                               mm01[ , "subject"])
+    mm01 <- cbind(queryHits=query0, subjectHits=subject1)[oo, , drop=FALSE]
+    is_dup <- IRanges:::duplicatedIntegerPairs(mm01[ , 1L],
+                                               mm01[ , 2L])
     mm01 <- mm01[!is_dup, , drop=FALSE]
 
-    query1 <- togroup(qpartitioning, j=unname(mm01[ , "query"]))
-    subject1 <- unname(mm01[ , "subject"])
+    query1 <- togroup(qpartitioning, j=unname(mm01[ , 1L]))
+    subject1 <- unname(mm01[ , 2L])
     runend <- IRanges:::runEndsOfIntegerPairs(query1, subject1)
-    mm11 <- cbind(query=query1, subject=subject1)[runend, , drop=FALSE]
+    mm11 <- cbind(queryHits=query1, subjectHits=subject1)[runend, , drop=FALSE]
 
     if (type.is.within) {
         runlen <- IRanges:::diffWithInitialZero(runend)
-        keep <- width(qpartitioning)[mm11[ , "query"]] == runlen
+        keep <- width(qpartitioning)[mm11[ , 1L]] == runlen
         mm11 <- mm11[keep, , drop=FALSE]
     }
     mm11
@@ -350,11 +357,11 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         ans <- findOverlaps(unlistQuery, unlistSubject,
                             maxgap = maxgap, type = type, select = "all",
                             ignore.strand = ignore.strand)
-        mm00 <- ans@matchMatrix
+        mm00 <- as.matrix(ans)
         if (minoverlap > 1L && nrow(mm00) > 0L) {
             query1 <- queryGroups[queryHits(ans)]
             subject1 <- subjectGroups[subjectHits(ans)]
-            mm11 <- cbind(query=query1, subject=subject1)
+            mm11 <- cbind(queryHits=query1, subjectHits=subject1)
             intrsct <- pintersect(ranges(unlistQuery)[queryHits(ans)],
                                   ranges(unlistSubject)[subjectHits(ans)])
             mm11 <- .updateMatchMatrix(mm11, intrsct, minoverlap)
@@ -375,11 +382,13 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         ## rows but this is not necessary since they are already unique).
         mm11 <- .cleanMatchMatrix(mm11)
         if (select == "all") {
-            initialize(ans, matchMatrix = mm11,
+            initialize(ans,
+                       queryHits = unname(mm11[ , 1L]),
+                       subjectHits = unname(mm11[ , 2L]),
                        queryLength = length(query),
                        subjectLength = length(subject))
         } else {
-            IRanges:::.matchMatrixToVector(mm11, length(query))
+            IRanges:::.hitsMatrixToVector(mm11, length(query))
         }
     }
 )

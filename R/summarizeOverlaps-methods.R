@@ -101,7 +101,7 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     ## map ud regions back to original features
     foFeatures <- findOverlaps(features, ud, ignore.strand=ignore.strand)
     featuresMap <-
-        matchMatrix(foFeatures)[order(subjectHits(foFeatures)),"query"]
+        as.matrix(foFeatures)[order(subjectHits(foFeatures)), 1L]
     backMapFeatures <- featuresMap[subjectHits(foUD)]
     mm <- data.frame(query=queryHits(foUD), subject=backMapFeatures)
 

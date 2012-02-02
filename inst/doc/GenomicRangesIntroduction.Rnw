@@ -574,18 +574,18 @@ the most common operation performed on \Rclass{GRanges} and
 \Rclass{GRangesList} objects. To this end, the \Rpackage{GenomicRanges}
 package provides a family of interval overlap functions. The most general
 of these functions is \Rfunction{findOverlaps}, which takes a query and a
-subject as inputs and returns an \Rclass{RangesMatching} object containing
+subject as inputs and returns a \Rclass{Hits} object containing
 the index pairings for the overlapping elements.
 
 <<findOverlaps>>=
 mtch <- findOverlaps(gr, grl)
-matchMatrix(mtch)
+as.matrix(mtch)
 @
 
 \noindent
 As suggested in the sections discussing the nature of the
 \Rclass{GRanges} and \Rclass{GRangesList} classes, the index in the
-\Robject{matchMatrix} for a \Rclass{GRanges} object is a single range
+above matrix of hits for a \Rclass{GRanges} object is a single range
 while for a \Rclass{GRangesList} object it is the set of ranges that
 define a "feature".
 

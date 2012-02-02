@@ -159,7 +159,7 @@
 }
 
 \value{
-  For \code{findOverlaps} either a RangesMatching object when
+  For \code{findOverlaps} either a \link[IRanges]{Hits} object when
   \code{select = "all"} or an integer vector when \code{select = "first"}. 
 
   For \code{countOverlaps} an integer vector containing the tabulated
@@ -184,7 +184,7 @@
 
 \seealso{
   \code{\link[IRanges]{findOverlaps}},
-  \link[IRanges]{RangesMatching-class},
+  \link[IRanges]{Hits-class},
   \link{GRanges-class},
   \link{GRangesList-class},
   \link{GappedAlignments-class}

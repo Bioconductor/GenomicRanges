@@ -799,10 +799,9 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   local <- shift(local, 1L + cumsums[shits])
   
   toInd <- rep(seq(length(to)), elementLengths(to))[shits]
-  matching <- new("RangesMatching",
-                  matchMatrix = cbind(query = qhits, subject = toInd),
-                  queryLength = length(from),
-                  subjectLength = length(to))
+  matching <- new("Hits",
+                  queryHits = qhits, subjectHits = toInd,
+                  queryLength = length(from), subjectLength = length(to))
   new("RangesMapping", matching = matching, ranges = local,
       space = seqnames(from)[qhits])
 })
