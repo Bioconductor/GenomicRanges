@@ -606,17 +606,30 @@ setMethod("disjoin", "GenomicRanges",
         .interIntervalGenomicRanges(x, disjoin, ignore.strand=ignore.strand)
 )
 
+applyOnRangesBySpace <- function(x, FUN, ..., ignore.strand = FALSE) {
+  if (ignore.strand)
+    f <- seqnames(x)
+  else
+    f <- paste(seqnames(x), strand(x), sep = "\r")
+  xIRangesList <- split(unname(ranges(x)), f)
+  ans <- FUN(xIRangesList, ...)
+  if (is(ans, "List")) # values per range, otherwise assumed to be per-space
+    ans <- unsplit(ans, f)
+  ans
+}
+
 setMethod("isDisjoint", "GenomicRanges",
     function(x, ignore.strand=FALSE)
     {
-        if (ignore.strand)
-            f <- seqnames(x)
-        else
-            f <- paste(seqnames(x), strand(x), sep="\r")
-        xIRangesList <- split(unname(ranges(x)), f)
-        all(isDisjoint(xIRangesList))
+        all(applyOnRangesBySpace(x, isDisjoint, ignore.strand = ignore.strand))
     }
 )
+
+setMethod("disjointBins", "GenomicRanges",
+          function(x, ignore.strand = FALSE) {
+            applyOnRangesBySpace(x, disjointBins,
+                                 ignore.strand = ignore.strand)
+          })
 
 setMethod("gaps", "GenomicRanges",
     function(x, start=1L, end=seqlengths(x))
