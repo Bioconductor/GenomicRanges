@@ -89,7 +89,6 @@ setMethod("coverage", "GenomicRanges",
                           .coverage.circle(circle.length, rg,
                                            shift[[i]], width_i, weight[[i]])
                         }))
-        metadata(ans)$seqinfo <- seqinfo(x)
         ans
     }
 )
