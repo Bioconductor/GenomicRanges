@@ -46,8 +46,10 @@ cigarToWidth <- function(cigar)
 
 cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
-    threeranges <- threebands(successiveIRanges(cigarToQWidth(cigar)),
-                              start=start, end=end, width=width)
+    cigar_qwidth <- cigarToQWidth(cigar)
+    cigar_qranges <- IRanges(start=rep.int(1L, length(cigar_qwidth)),
+                             width=cigar_qwidth)
+    threeranges <- threebands(cigar_qranges, start=start, end=end, width=width)
     C_ans <- .Call2("cigar_qnarrow",
                    cigar, width(threeranges$left), width(threeranges$right),
                    PACKAGE="GenomicRanges")
@@ -58,8 +60,10 @@ cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
 
 cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
-    threeranges <- threebands(successiveIRanges(cigarToWidth(cigar)),
-                              start=start, end=end, width=width)
+    cigar_width <- cigarToWidth(cigar)
+    cigar_ranges <- IRanges(start=rep.int(1L, length(cigar_width)),
+                            width=cigar_width)
+    threeranges <- threebands(cigar_ranges, start=start, end=end, width=width)
     C_ans <- .Call2("cigar_narrow",
                    cigar, width(threeranges$left), width(threeranges$right),
                    PACKAGE="GenomicRanges")
