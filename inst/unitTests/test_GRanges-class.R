@@ -391,6 +391,77 @@ test_GRanges_precede_follow <- function() {
     current <- follow(g1, g2)
     target  <- c(6, tmp ,tmp, 2, 2, 3, tmp, 1)
     checkEquals(target, current)
+
+    ## With all ranges in 'x' and 'subject' on the same chromosome:
+    x <- GRanges("chr1", IRanges(c(10, 15), width=1))
+    subject <- GRanges("chr1", IRanges(10:15, width=1))
+    current <- precede(x, subject)
+    target <- c(2L, NA_integer_)
+    checkIdentical(target, current)
+    current <- follow(x, subject)
+    target <- c(NA_integer_, 5L)
+    checkIdentical(target, current)
+
+    strand(x) <- "-"
+    current <- precede(x, subject)
+    target <- c(NA_integer_, 5L)
+    checkIdentical(target, current)
+    current <- follow(x, subject)
+    target <- c(2L, NA_integer_)
+    checkIdentical(target, current)
+    
+    ## Not all ranges in 'x' and 'subject' on the same chromosome:
+    x <- GRanges(c("chr1", "chr2", "chr1"), IRanges(c(10, 12, 15), width=1))
+    subject <- GRanges("chr1", IRanges(10:15, width=1))
+    current <- precede(x, subject)
+    target <- c(2L, NA_integer_, NA_integer_)
+    checkIdentical(target, current)
+    current <- follow(x, subject)
+    target <- c(NA_integer_, NA_integer_, 5L)
+    checkIdentical(target, current)
+
+    strand(x) <- "-"
+    current <- precede(x, subject)
+    target <- c(NA_integer_, NA_integer_, 5L)
+    checkIdentical(target, current)
+    current <- follow(x, subject)
+    target <- c(2L, NA_integer_, NA_integer_)
+    checkIdentical(target, current)
+
+    ## With ranges in 'x' on the * strand and ranges in 'subject' on the +
+    ## and - strands:
+    x <- GRanges("chr1", IRanges(10:16, width=1))
+    subject <- GRanges("chr1", IRanges(c(11, 15), width=1), strand=c("+", "-"))
+    current <- precede(x, subject)
+    target <- c(1L, NA, NA, NA, NA, NA, 2L)
+    checkIdentical(target, current)
+    current <- follow(x, subject)  # tie between x[4] and the
+                                   # 2 ranges in 'subject'
+    target <- c(2L, 2L, 1L, 1L, 2L, 1L, 1L)
+    checkIdentical(target, current)
+    current <- precede(x, rev(subject))
+    target <- c(2L, NA, NA, NA, NA, NA, 1L)
+    checkIdentical(target, current)
+    current <- follow(x, rev(subject))  # tie between x[4] and the
+                                        # 2 ranges in 'subject'
+    target <- c(1L, 1L, 2L, 1L, 1L, 2L, 2L)
+    checkIdentical(target, current)
+
+    subject <- GRanges("chr1", IRanges(c(15, 11), width=1), strand=c("+", "-"))
+    current <- precede(x, subject)  # tie between x[4] and the
+                                    # 2 ranges in 'subject'
+    target <- c(1L, 1L, 2L, 1L, 1L, 2L, 2L)
+    checkIdentical(target, current)
+    current <- follow(x, subject)
+    target <- c(2L, NA, NA, NA, NA, NA, 1L)
+    checkIdentical(target, current)
+    current <- precede(x, rev(subject))  # tie between x[4] and the
+                                         # 2 ranges in 'subject'
+    target <- c(2L, 2L, 1L, 1L, 2L, 1L, 1L)
+    checkIdentical(target, current)
+    current <- follow(x, rev(subject))
+    target <- c(1L, NA, NA, NA, NA, NA, 2L)
+    checkIdentical(target, current)
 }
 
 test_GRanges_nearest <- function() {
