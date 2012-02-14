@@ -1174,12 +1174,12 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
                         mindist <- mt[dist1[mt] < dist2[mt]]
                         minidx <- map1$sposidx[map1$k1 %in% mindist]
                         ans[mindist] <- minidx
-                        ## if equidistant, choose subject with lowest index
+                        ## if equidistant, choose subject with highest index
                         if (any(mt[dist1[mt] == dist2[mt]])) {
                             eqdist <- mt[dist1[mt] == dist2[mt]]
                             eq1 <- map1$sposidx[map1$k1 %in% eqdist]
                             eq2 <- map2$sposidx[map2$k2 %in% eqdist]
-                            eqidx <- min(c(eq1, eq2))    
+                            eqidx <- max(c(eq1, eq2)) 
                             ans[eqdist] <- eqidx
                         }
                     }
