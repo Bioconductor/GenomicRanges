@@ -1004,7 +1004,7 @@ setMethod("show", "GenomicRanges",
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
-    {   
+    { 
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
@@ -1020,7 +1020,7 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
         xSeqNames <- names(xLst)
         if (!missing(subject))
             subjectLst <- split(subject, seqnames(subject), drop=FALSE)
-        ans <- rep.int(NA_integer_, length(x))
+        ans <- dist1 <- dist2 <- rep.int(NA_integer_, length(x))
         for (sq in xSeqNames) {
             if (!(sq %in% names(subjectLst)))
                 break
@@ -1055,6 +1055,8 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
                     k1 <- x1Split_elt_posIndx[indx1]
                     res1 <- res1[indx1]
                     ans[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+                    dist1[k1] <- 
+                        start(subSplit1[res1]) - end(x1Split_elt[indx1])
 
                     subSplit2 <- unlist(ss1[c("-")])
                     ## call follow
@@ -1063,14 +1065,29 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
                     k2 <- x1Split_elt_posIndx[indx2]
                     res2 <- res2[indx2]
                     ans[k2] <- elementMetadata(subSplit2)$posIndx[res2]
-                    mt <- k1[k1 == k2]
-                    for (p in mt) {
-                        mn <- which.min(c(start(subSplit1[indx1]) -
-                                          end(ranges(x1Split_elt)), 
-                                          start(ranges(x1Split_elt)) -
-                                          end(subSplit2[indx2])))
-                        if (mn == 1L)
-                            ans[p] <- elementMetadata(subSplit1)$posIndx[res1]
+                    dist2[k2] <- 
+                        start(x1Split_elt[indx2]) - end(subSplit2[res2])
+
+                    ##  queries matching both "+" and "-" subject 
+                    if (!identical(integer(0), k1) &&
+                        !identical(integer(0), k2)) {
+                        mt <- k1[k1 %in% k2]
+                        map1 <- data.frame(k1, res1,
+                            sposidx=values(subSplit1)[["posIndx"]][res1])
+                        map2 <- data.frame(k2, res2,
+                            sposidx=values(subSplit2)[["posIndx"]][res2])
+                        ## choose subject with minimum distance
+                        mindist <- mt[dist1[mt] < dist2[mt]]
+                        minidx <- map1$sposidx[map1$k1 %in% mindist]
+                        ans[mindist] <- minidx 
+                        ## if equidistant, choose subject with lowest index
+                        if (any(mt[dist1[mt] == dist2[mt]])) {
+                            eqdist <- mt[dist1[mt] == dist2[mt]]
+                            eq1 <- map1$sposidx[map1$k1 %in% eqdist]
+                            eq2 <- map2$sposidx[map2$k2 %in% eqdist]
+                            eqidx <- min(c(eq1, eq2)) 
+                            ans[eqdist] <- eqidx 
+                        }
                     }
                 }
             }
@@ -1097,7 +1114,7 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
         xSeqNames <- names(xLst)
         if (!missing(subject))
             subjectLst <- split(subject, seqnames(subject), drop=FALSE)
-        ans <- rep.int(NA_integer_, length(x))
+        ans <- dist1 <- dist2 <- rep.int(NA_integer_, length(x))
         for (sq in xSeqNames) {
             if (!(sq %in% names(subjectLst)))
                 break
@@ -1132,6 +1149,8 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
                     k1 <- elementMetadata(x1Split_elt)$posIndx[indx1]
                     res1 <- res1[indx1]
                     ans[k1] <- elementMetadata(subSplit1)$posIndx[res1]
+                    dist1[k1] <- 
+                        start(x1Split_elt[indx1]) - end(subSplit1[res1])
 
                     subSplit2 <- unlist(ss1[c("-")])
                     ## call precede
@@ -1140,18 +1159,33 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
                     k2 <- elementMetadata(x1Split_elt)$posIndx[indx2]
                     res2 <- res2[indx2]
                     ans[k2] <- elementMetadata(subSplit2)$posIndx[res2]
-                    mt <- k1[k1 == k2]
-                    for (p in mt) {
-                        mn <- which.min(c(start(subSplit1[indx1]) -
-                                          end(ranges(x1Split_elt)), 
-                                          start(ranges(x1Split_elt)) -
-                                          end(subSplit2[indx2])))
-                        if (mn == 1L)
-                            ans[p] <- elementMetadata(subSplit1)$posIndx[res1]
+                    dist2[k2] <- 
+                        start(subSplit2[res2]) - end(x1Split_elt[indx2])
+
+                    ##  queries matching both "+" and "-" subject 
+                    if (!identical(integer(0), k1) &&
+                        !identical(integer(0), k2)) {
+                        mt <- k1[k1 %in% k2]
+                        map1 <- data.frame(k1, res1, 
+                            sposidx=values(subSplit1)[["posIndx"]][res1])
+                        map2 <- data.frame(k2, res2,
+                            sposidx=values(subSplit2)[["posIndx"]][res2])
+                        ## choose subject with minimum distance
+                        mindist <- mt[dist1[mt] < dist2[mt]]
+                        minidx <- map1$sposidx[map1$k1 %in% mindist]
+                        ans[mindist] <- minidx
+                        ## if equidistant, choose subject with lowest index
+                        if (any(mt[dist1[mt] == dist2[mt]])) {
+                            eqdist <- mt[dist1[mt] == dist2[mt]]
+                            eq1 <- map1$sposidx[map1$k1 %in% eqdist]
+                            eq2 <- map2$sposidx[map2$k2 %in% eqdist]
+                            eqidx <- min(c(eq1, eq2))    
+                            ans[eqdist] <- eqidx
+                        }
                     }
                 }
             }
-        }       
+        } 
         ans
     }
 )
