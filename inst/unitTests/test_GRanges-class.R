@@ -437,14 +437,14 @@ test_GRanges_precede_follow <- function() {
     checkIdentical(target, current)
     current <- follow(x, subject)  # tie between x[4] and the
                                    # 2 ranges in 'subject'
-    target <- c(2L, 2L, 1L, 1L, 2L, 1L, 1L)
+    target <- c(2L, 2L, 1L, 2L, 2L, 1L, 1L)
     checkIdentical(target, current)
     current <- precede(x, rev(subject))
     target <- c(2L, NA, NA, NA, NA, NA, 1L)
     checkIdentical(target, current)
     current <- follow(x, rev(subject))  # tie between x[4] and the
                                         # 2 ranges in 'subject'
-    target <- c(1L, 1L, 2L, 1L, 1L, 2L, 2L)
+    target <- c(1L, 1L, 2L, 2L, 1L, 2L, 2L)
     checkIdentical(target, current)
 
     subject <- GRanges("chr1", IRanges(c(15, 11), width=1), strand=c("+", "-"))
