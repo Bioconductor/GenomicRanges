@@ -10,7 +10,8 @@ exportClasses(
     Constraint, ConstraintORNULL,
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
-    GappedAlignments, SummarizedExperiment, GenomicRangesORGRangesList,
+    GappedAlignments, GappedAlignmentPairs,
+    SummarizedExperiment, GenomicRangesORGRangesList,
     GenomicRangesList, SimpleGenomicRangesList
 )
 
@@ -36,7 +37,9 @@ export(
     GRanges, GRangesList, GenomicRangesList,
     makeGRangesListFromFeatureFragments,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
-    readGappedAlignments, GappedAlignments,
+    GappedAlignments, readGappedAlignments,
+    first, last, isProperPair,
+    GappedAlignmentPairs, readGappedAlignmentPairs,
 
     SummarizedExperiment,
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
@@ -86,6 +89,7 @@ exportMethods(
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,
+    first, last, isProperPair,
     dimnames, "dimnames<-", precede, follow,
     countGenomicOverlaps,
     keepSeqlevels, renameSeqlevels,

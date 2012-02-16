@@ -31,6 +31,7 @@ Collate: utils.R
 	GRanges-class.R
 	GRangesList-class.R
 	GappedAlignments-class.R
+	GappedAlignmentPairs-class.R
 	SummarizedExperiment-class.R
 	coverage-methods.R
 	setops-methods.R
