@@ -910,8 +910,14 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 
 makeClassinfoRowForCompactPrinting <- function(x, col2class)
 {
-    ans <- paste("<", col2class, ">", sep="")
-    names(ans) <- names(col2class)
+    ans_names <- names(col2class)
+    no_bracket_idx <- which(ans_names == "")
+    ans_names[no_bracket_idx] <- col2class[no_bracket_idx]
+    left_brackets <- right_brackets <- character(length(col2class))
+    left_brackets[-no_bracket_idx] <- "<"
+    right_brackets[-no_bracket_idx] <- ">"
+    ans <- paste(left_brackets, col2class, right_brackets, sep="")
+    names(ans) <- ans_names
     if (ncol(elementMetadata(x)) > 0L) {
         tmp <- sapply(elementMetadata(x),
                       function(xx) paste("<", class(xx), ">", sep=""))

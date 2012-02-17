@@ -251,23 +251,22 @@ setMethod("[", "GappedAlignmentPairs",
 .makeNakedMatFromGappedAlignmentPairs <- function(x)
 {
     lx <- length(x)
+    nc <- ncol(elementMetadata(x))
     x_first <- first(x)
     first <- cbind(seqnames=as.character(seqnames(x_first)),
                    strand=as.character(strand(x_first)),
-                   qwidth=qwidth(x_first),
-                   start=start(x_first),
-                   end=end(x_first),
-                   width=width(x_first),
-                   ngap=ngap(x_first))
+                   ranges=IRanges:::showAsCell(ranges(x_first)))
     x_last <- last(x)
     last <- cbind(seqnames=as.character(seqnames(x_last)),
                    strand=as.character(strand(x_last)),
-                   qwidth=qwidth(x_last),
-                   start=start(x_last),
-                   end=end(x_last),
-                   width=width(x_last),
-                   ngap=ngap(x_last))
-    cbind(first, `|`=rep.int("|", lx), last)
+                   ranges=IRanges:::showAsCell(ranges(x_last)))
+    ans <- cbind(first, `:`=rep.int(":", lx), last)
+    if (nc > 0L) {
+        tmp <- do.call(data.frame, lapply(elementMetadata(x),
+                                          IRanges:::showAsCell))
+        ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
+    }
+    ans
 }
 
 showGappedAlignmentPairs <- function(x, margin="",
@@ -287,14 +286,10 @@ showGappedAlignmentPairs <- function(x, margin="",
         .COL2CLASS <- c(
             seqnames="Rle",
             strand="Rle",
-            qwidth="integer",
-            start="integer",
-            end="integer",
-            width="integer",
-            ngap="integer"
+            ranges="IRanges"
         )
+        .COL2CLASS <- c(.COL2CLASS, ":", .COL2CLASS)
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
-        classinfo <- cbind(classinfo, `|`="|", classinfo)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
@@ -310,7 +305,7 @@ showGappedAlignmentPairs <- function(x, margin="",
 
 setMethod("show", "GappedAlignmentPairs",
     function(object)
-        showGappedAlignmentPairs(object, margin="  ",
+        showGappedAlignmentPairs(object,
                                  with.classinfo=TRUE, print.seqlengths=TRUE)
 )
 
