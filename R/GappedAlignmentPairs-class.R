@@ -20,6 +20,8 @@ setClass("GappedAlignmentPairs",
 ###   length(x)   - single integer N. Nb of pairs in 'x'.
 ###   first(x)    - returns "first" slot.
 ###   last(x)     - returns "last" slot.
+###   seqnames(x) - same as 'seqnames(first(x))' or 'seqnames(last(x))'.
+###   strand(x)   - same as 'strand(first(x))' (opposite of 'strand(last(x))').
 ###   isProperPair(x) - returns "isProperPair" slot.
 ###   seqinfo(x)  - returns 'seqinfo(first(x))' (same as 'seqinfo(last(x))').
 ###   show(x)     - compact display in a data.frame-like fashion.
@@ -51,6 +53,14 @@ setMethod("first", "GappedAlignmentPairs",
 
 setMethod("last", "GappedAlignmentPairs",
     function(x) setNames(x@last, names(x))
+)
+
+setMethod("seqnames", "GappedAlignmentPairs",
+    function(x) seqnames(first(x))
+)
+
+setMethod("strand", "GappedAlignmentPairs",
+    function(x) strand(first(x))
 )
 
 setMethod("isProperPair", "GappedAlignmentPairs",
@@ -260,15 +270,19 @@ setMethod("[", "GappedAlignmentPairs",
 {
     lx <- length(x)
     nc <- ncol(elementMetadata(x))
+    ans_template <- cbind(seqnames=as.character(seqnames(x)),
+                          strand=as.character(strand(x)))
     x_first <- first(x)
-    first <- cbind(seqnames=as.character(seqnames(x_first)),
-                   strand=as.character(strand(x_first)),
-                   ranges=IRanges:::showAsCell(ranges(x_first)))
+    ans_first <- cbind(ranges=IRanges:::showAsCell(ranges(x_first)),
+                       ngap=ngap(x_first))
     x_last <- last(x)
-    last <- cbind(seqnames=as.character(seqnames(x_last)),
-                   strand=as.character(strand(x_last)),
-                   ranges=IRanges:::showAsCell(ranges(x_last)))
-    ans <- cbind(first, `:`=rep.int(":", lx), last)
+    ans_last <- cbind(ranges=IRanges:::showAsCell(ranges(x_last)),
+                      ngap=ngap(x_last))
+    ans <- cbind(ans_template,
+                 `:`=rep.int(":", lx),
+                 ans_first,
+                 `:`=rep.int(":", lx),
+                 ans_last)
     if (nc > 0L) {
         tmp <- do.call(data.frame, lapply(elementMetadata(x),
                                           IRanges:::showAsCell))
@@ -291,12 +305,19 @@ showGappedAlignmentPairs <- function(x, margin="",
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGappedAlignmentPairs)
     if (with.classinfo) {
-        .COL2CLASS <- c(
+        .TEMPLATE_COL2CLASS <- c(
             seqnames="Rle",
-            strand="Rle",
-            ranges="IRanges"
+            strand="int"
         )
-        .COL2CLASS <- c(.COL2CLASS, ":", .COL2CLASS)
+        .HALVES_COL2CLASS <- c(
+            ranges="IRanges",
+            ngap="int"
+        )
+        .COL2CLASS <- c(.TEMPLATE_COL2CLASS,
+                        ":",
+                        .HALVES_COL2CLASS,
+                        ":",
+                        .HALVES_COL2CLASS)
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
