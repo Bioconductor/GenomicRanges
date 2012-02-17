@@ -376,7 +376,7 @@ setAs("Seqinfo", "RangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### "show" method.
 ###
 
 ### cat(.showOutputAsCharacter(x), sep="\n") is equivalent to show(x).

@@ -89,6 +89,14 @@ setReplaceMethod("names", "GappedAlignmentPairs",
     }
 )
 
+setReplaceMethod("elementMetadata", "GappedAlignmentPairs",
+    function(x, ..., value)
+    {
+        x@elementMetadata <- mk_elementMetadataReplacementValue(x, value)
+        x
+    }
+)
+
 setReplaceMethod("seqinfo", "GappedAlignmentPairs",
     function(x, new2old=NULL, force=FALSE, value)
     {
@@ -245,7 +253,7 @@ setMethod("[", "GappedAlignmentPairs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### "show" method.
 ###
 
 .makeNakedMatFromGappedAlignmentPairs <- function(x)
@@ -276,9 +284,9 @@ showGappedAlignmentPairs <- function(x, margin="",
     lx <- length(x)
     nc <- ncol(elementMetadata(x))
     cat(class(x), " with ",
-        lx, " alignment ", ifelse(lx == 1L, "pairs", "pairs"),
+        lx, " alignment ", ifelse(lx == 1L, "pair", "pairs"),
         " and ",
-        nc, " elementMetadata ", ifelse(nc == 1L, "value", "values"),
+        nc, " elementMetadata ", ifelse(nc == 1L, "col", "cols"),
         ":\n", sep="")
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGappedAlignmentPairs)

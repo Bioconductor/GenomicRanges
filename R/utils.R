@@ -1,5 +1,116 @@
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### =========================================================================
 ### Some low-level (non exported) utility functions.
+### -------------------------------------------------------------------------
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Used by "show" methods.
+###
+
+### 'makeNakedMat.FUN' must be a function returning a character matrix.
+makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
+{
+    lx <- length(x)
+    nms <- names(x)
+    if (lx < 20L) {
+        ans <- makeNakedMat.FUN(x)
+        if (!is.null(nms)) {
+            ans_rownames <- nms
+        } else if (lx == 0L) {
+            ans_rownames <- character(0)
+        } else {
+            ans_rownames <- paste("[", seq_len(lx), "]", sep="")
+        }
+    } else {
+        top_idx <- 1:9
+        bottom_idx <- (lx-8L):lx
+        top <- x[top_idx]
+        bottom <- x[bottom_idx]
+        ans_top <- makeNakedMat.FUN(top)
+        ans_bottom <- makeNakedMat.FUN(bottom)
+        ans <- rbind(ans_top,
+                     matrix(rep.int("...", ncol(ans_top)), nrow=1L),
+                     ans_bottom)
+        if (!is.null(nms)) {
+            ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
+        } else {
+            ans_rownames <- c(paste("[", top_idx, "]", sep=""),
+                              "...",
+                              paste("[", bottom_idx, "]", sep=""))
+        }
+    }
+    rownames(ans) <- format(ans_rownames, justify="right")
+    ans
+}
+
+makeClassinfoRowForCompactPrinting <- function(x, col2class)
+{
+    ans_names <- names(col2class)
+    no_bracket_idx <- which(ans_names == "")
+    ans_names[no_bracket_idx] <- col2class[no_bracket_idx]
+    left_brackets <- right_brackets <- character(length(col2class))
+    left_brackets[-no_bracket_idx] <- "<"
+    right_brackets[-no_bracket_idx] <- ">"
+    ans <- paste(left_brackets, col2class, right_brackets, sep="")
+    names(ans) <- ans_names
+    if (ncol(elementMetadata(x)) > 0L) {
+        tmp <- sapply(elementMetadata(x),
+                      function(xx) paste("<", class(xx), ">", sep=""))
+        ans <- c(ans, `|`="|", tmp)
+    }
+    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
+}
+
+showSeqlengths <- function(object, margin="")
+{
+    seqlens <- seqlengths(object)
+    nseq <- length(seqlens)
+    halfWidth <- getOption("width") %/% 2L
+    first <- max(1L, halfWidth)
+    showMatrix <-
+      rbind(as.character(head(names(seqlens), first)),
+            as.character(head(seqlens, first)))
+    if (nseq > first) {
+        last <- min(nseq - first, halfWidth)
+        showMatrix <-
+          cbind(showMatrix,
+                rbind(as.character(tail(names(seqlens), last)),
+                      as.character(tail(seqlens, last))))
+    }
+    showMatrix <- format(showMatrix, justify="right")
+    cat(margin, "seqlengths:\n", sep="")
+    cat(margin, IRanges:::labeledLine("", showMatrix[1L, ], count=FALSE,
+                                      labelSep=""), sep="")
+    cat(margin, IRanges:::labeledLine("", showMatrix[2L, ], count=FALSE,
+                                      labelSep=""), sep="")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Used by "elementMetadata<-" methods.
+###
+
+### Try to turn 'value' into a DataFrame compatible with 'x'.
+mk_elementMetadataReplacementValue <- function(x, value)
+{
+    if (is.null(value))
+        return(new("DataFrame", nrows=length(x)))
+    if (!is(value, "DataFrame"))
+        value <- DataFrame(value)
+    if (!is.null(rownames(value)))
+        rownames(value) <- NULL
+    n <- length(x)
+    k <- nrow(value)
+    if (k == n)
+        return(value)
+    if ((k == 0L) || (k > n) || (n %% k != 0L))
+        stop(k, " rows in value to replace ", n, " rows")
+    value[rep(seq_len(k), length.out=n), , drop=FALSE]
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other stuff...
 ###
 
 ### Note that, strictly speaking, mergeNamedAtomicVectors() is not
