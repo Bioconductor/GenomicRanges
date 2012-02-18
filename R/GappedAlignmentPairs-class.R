@@ -270,19 +270,17 @@ setMethod("[", "GappedAlignmentPairs",
 {
     lx <- length(x)
     nc <- ncol(elementMetadata(x))
-    ans_template <- cbind(seqnames=as.character(seqnames(x)),
-                          strand=as.character(strand(x)))
+    pair_cols <- cbind(seqnames=as.character(seqnames(x)),
+                       strand=as.character(strand(x)))
     x_first <- first(x)
-    ans_first <- cbind(ranges=IRanges:::showAsCell(ranges(x_first)),
-                       ngap=ngap(x_first))
+    first_cols <- cbind(ranges=IRanges:::showAsCell(ranges(x_first)))
     x_last <- last(x)
-    ans_last <- cbind(ranges=IRanges:::showAsCell(ranges(x_last)),
-                      ngap=ngap(x_last))
-    ans <- cbind(ans_template,
+    last_cols <- cbind(ranges=IRanges:::showAsCell(ranges(x_last)))
+    ans <- cbind(pair_cols,
                  `:`=rep.int(":", lx),
-                 ans_first,
+                 first_cols,
                  `:`=rep.int(":", lx),
-                 ans_last)
+                 last_cols)
     if (nc > 0L) {
         tmp <- do.call(data.frame, lapply(elementMetadata(x),
                                           IRanges:::showAsCell))
@@ -305,15 +303,14 @@ showGappedAlignmentPairs <- function(x, margin="",
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGappedAlignmentPairs)
     if (with.classinfo) {
-        .TEMPLATE_COL2CLASS <- c(
+        .PAIR_COL2CLASS <- c(
             seqnames="Rle",
-            strand="int"
+            strand="Rle"
         )
         .HALVES_COL2CLASS <- c(
-            ranges="IRanges",
-            ngap="int"
+            ranges="IRanges"
         )
-        .COL2CLASS <- c(.TEMPLATE_COL2CLASS,
+        .COL2CLASS <- c(.PAIR_COL2CLASS,
                         ":",
                         .HALVES_COL2CLASS,
                         ":",
