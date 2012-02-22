@@ -449,7 +449,7 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
     new("GRangesList",
         unlistData=unlistData,
         partitioning=rglist@partitioning,
-        elementMetadata=new("DataFrame", nrows=length(rglist@partitioning)))
+        elementMetadata=rglist@elementMetadata)
 }
 
 
@@ -480,6 +480,7 @@ setMethod("rglist", "GappedAlignments",
         ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
                                              drop.D.ranges = drop.D.ranges)
         names(ans) <- names(x)
+        elementMetadata(ans) <- elementMetadata(x)
         ans
     }
 )
