@@ -46,11 +46,11 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 makeClassinfoRowForCompactPrinting <- function(x, col2class)
 {
     ans_names <- names(col2class)
-    no_bracket_idx <- which(ans_names == "")
-    ans_names[no_bracket_idx] <- col2class[no_bracket_idx]
+    no_bracket <- ans_names == ""
+    ans_names[no_bracket] <- col2class[no_bracket]
     left_brackets <- right_brackets <- character(length(col2class))
-    left_brackets[-no_bracket_idx] <- "<"
-    right_brackets[-no_bracket_idx] <- ">"
+    left_brackets[!no_bracket] <- "<"
+    right_brackets[!no_bracket] <- ">"
     ans <- paste(left_brackets, col2class, right_brackets, sep="")
     names(ans) <- ans_names
     if (ncol(elementMetadata(x)) > 0L) {
