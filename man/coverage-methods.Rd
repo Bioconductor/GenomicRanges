@@ -41,6 +41,10 @@
         into a list with \code{split(shift, as.factor(seqnames(x)))},
         and finally the elements of this list are passed into the
         \code{coverage} method for \link[IRanges]{IRanges} objects.
+        Finally, if \code{x} is a \link{GRanges} object, then \code{weight}
+        can also be a single string naming a column in
+        \code{elementMetadata(x)} to be used as the weights.
+
   \item \code{width}: can be either \code{NULL} or a numeric vector.
         If a numeric vector, then it should be named by the sequence
         levels in \code{x}. If \code{NULL} (the default), then it is

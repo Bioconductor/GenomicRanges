@@ -71,6 +71,14 @@ setMethod("coverage", "GenomicRanges",
                  "coverage() currently doesn't support this.")
         shift <- .coverage.normargShiftOrWeight(shift, "shift", x)
         width <- .coverage.normargWidth(width, x)
+        if (isSingleString(weight)) {
+            x_elementMetadata <- elementMetadata(x)
+            if (!is(x_elementMetadata, "DataTable")
+             || sum(colnames(x_elementMetadata) == weight) != 1L)
+                stop("'elementMetadata(x)' has 0 or more than 1 \"",
+                     weight, "\" columns")
+            weight <- x_elementMetadata[[weight]]
+        }
         weight <- .coverage.normargShiftOrWeight(weight, "weight", x)
         seqlevels <- seqlevels(x)
         xSplitRanges <- splitRanges(seqnames(x))
