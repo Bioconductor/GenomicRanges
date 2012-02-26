@@ -54,25 +54,46 @@ setMethod("keepSeqlevels",  c("GRangesList", "GappedAlignments"),
 setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
             function(x, value, ...)
 {
-    if (!any(value %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
-    suppressWarnings(seqlevels(x, force=TRUE) <- value) 
-    x
+    if (!identical(character(0), seqlevels(x)) &&
+        !identical(character(0), value)) {
+        str <- !value %in% seqlevels(x)
+        if (any(str))
+            warning("seqlevels ", paste(value[str], collapse=", "),
+                    " not found in 'x'")
+        if (all(str)) {
+            x
+        } else {
+            suppressWarnings(seqlevels(x, force=TRUE) <- value[str == FALSE])
+            x
+        }
+    } else {
+        x
+    }
 })
 
 setMethod("keepSeqlevels",  c("GRangesList", "character"),
             function(x, value, ...)
 {
-    if (!any(value %in% seqlevels(x)))
-        stop("none of the values are present in 'x'")
+    if (!identical(character(0), seqlevels(x)) &&
+        !identical(character(0), value)) {
+        str <- !value %in% seqlevels(x)
+        if (any(str))
+            warning("seqlevels ", paste(value[str], collapse=", "),
+                    " not found in 'x'")
+        if (all(str)) {
+            x
+        } else {
+            grlSeqnames <- unlist(seqnames(x), use.names=FALSE)
+            idx <- rep(runValue(grlSeqnames) %in% value, runLength(grlSeqnames))
+            grReduced <- deconstructGRLintoGR(x)[idx]
+            grlReduced <- reconstructGRLfromGR(grReduced, x)
 
-    grlSeqnames <- unlist(seqnames(x), use.names=FALSE)
-    idx <- rep(runValue(grlSeqnames) %in% value, runLength(grlSeqnames))
-    grReduced <- deconstructGRLintoGR(x)[idx]
-    grlReduced <- reconstructGRLfromGR(grReduced, x)
-
-    seqlevels(grlReduced) <- seqlevels(x)[seqlevels(x) %in% value]
-    grlReduced[elementLengths(grlReduced) != 0] 
+            seqlevels(grlReduced) <- seqlevels(x)[seqlevels(x) %in% value]
+            grlReduced[elementLengths(grlReduced) != 0] 
+        }
+    } else {
+        x
+    }
 })
 
 setMethod("keepSeqlevels",  c("GappedAlignments", "GenomicRanges"),
@@ -99,10 +120,21 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "GappedAlignments"),
 setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
             function(x, value, ...)
 {
-    if (!any(value %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
-    suppressWarnings(seqlevels(x, force=TRUE) <- value) 
-    x
+    if (!identical(character(0), seqlevels(x)) &&
+        !identical(character(0), value)) {
+        str <- !value %in% seqlevels(x)
+        if (any(str))
+            warning("seqlevels ", paste(value[str], collapse=", "), 
+                    " not found in 'x'")
+        if (all(str)) {
+            x
+        } else {
+            suppressWarnings(seqlevels(x, force=TRUE) <- value[str == FALSE])
+            x
+        } 
+    } else { 
+        x
+    }
 })
 
 
@@ -110,13 +142,18 @@ setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
 
 .renameSeqlevels <- function(x, value, ...)
 {
-    if (is.null(names(value)))
-        stop("elements in 'value' must be named")
-    old <- names(value)
+    if (identical(character(0), seqlevels(x)))
+        return(x)
+    if (is.null(old <- names(value)))
+        stop("'value' must be a named character vector")
     new <- unlist(value, use.names=FALSE)
-    if (!any(old %in% seqlevels(x)))
-        stop("none of the values in 'value' are present in 'x'")
-    seqlevels(x)[seqlevels(x) == old] <- new
+
+    str <- !old %in% seqlevels(x)
+    if (any(str)) {
+        warning("seqlevels ", paste(old[str], collapse=", "), 
+                " not found in 'x'")
+    }
+    seqlevels(x)[seqlevels(x) %in% old[str == FALSE]] <- new[str == FALSE]
     x 
 }
 
