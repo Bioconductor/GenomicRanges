@@ -1,7 +1,4 @@
-### The strand() generic and methods.
-
-setGeneric("strand", function(x) standardGeneric("strand"))
-setGeneric("strand<-", function(x, value) standardGeneric("strand<-"))
+### Strand utilities.
 
 setMethod("strand", "missing", function(x) factor(levels=c("+","-","*")))
 

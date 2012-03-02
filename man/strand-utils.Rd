@@ -1,24 +1,23 @@
-\name{strand}
-\docType{methods}
-\alias{strand-methods}
+\name{strand-utils}
 
-\alias{strand}
+\alias{strand-utils}
+
 \alias{strand,missing-method}
 \alias{strand,character-method}
 \alias{strand,factor-method}
 \alias{strand,integer-method}
 \alias{strand,logical-method}
 \alias{strand,DataTable-method}
-\alias{strand<-}
 
-\title{Accessing strand information}
+\title{Strand utilities}
 
-\description{The \code{strand} generic is meant as an accessor for
-  strand information. Four methods are defined by the GenomicRanges
-  package, described below.
+\description{
+  Five useful \code{strand} methods.
 }
 
-\usage{strand(x)}
+\usage{
+strand(x)
+}
 
 \arguments{
   \item{x}{The object from which to obtain a strand factor, can be
@@ -28,7 +27,7 @@
 \details{
   If \code{x} is missing, returns an empty factor with the
   standard levels that any strand factor should have: \code{+},
-  \code{-}, and \code{*} (for either).
+  \code{-}, and \code{*}.
 
   If \code{x} is a character vector or factor, it is coerced to a factor
   with the levels listed above.
@@ -52,6 +51,10 @@
 }
 
 \author{ Michael Lawrence }
+
+\seealso{
+  \code{\link[BiocGenerics]{strand}}
+}
 
 \examples{
 strand()
