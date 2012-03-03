@@ -216,7 +216,7 @@ setAs("GenomicRanges", "RangesList",
         rl <- split(ranges(from), seqnames(from))
         emd <- split(DataFrame(strand=strand(from), elementMetadata(from)),
                      seqnames(from))
-        rl <- mseqapply(function(ranges, metadata) {
+        rl <- mendoapply(function(ranges, metadata) {
           elementMetadata(ranges) <- metadata
           ranges
         }, rl, emd)
@@ -360,7 +360,8 @@ setReplaceMethod("seqinfo", "GenomicRanges",
         ## The ranges in 'x' need to be validated against
         ## the new sequence information (e.g. the sequence
         ## lengths might have changed).
-        validObject(x)
+        if (is.character(msg <- valid.GenomicRanges.seqinfo(x)))
+          stop(msg)
         x
     }
 )
