@@ -1,3 +1,11 @@
+CHANGES IN VERSION 1.8.0
+------------------------
+
+NEW FEATURES
+
+    o SummarizedExperiment gains direct access to colData columns with
+      $, $<-, [[, and [[<- methods
+
 CHANGES IN VERSION 1.6.0
 ------------------------
 

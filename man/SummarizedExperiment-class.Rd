@@ -51,6 +51,10 @@
 % Subset methods
 \alias{[,SummarizedExperiment-method}
 \alias{[<-,SummarizedExperiment,ANY,ANY,SummarizedExperiment-method}
+\alias{$,SummarizedExperiment-method}
+\alias{$<-,SummarizedExperiment,ANY-method}
+\alias{[[,SummarizedExperiment,ANY,missing-method}
+\alias{[[<-,SummarizedExperiment,ANY,missing,ANY-method}
 
 % show method:
 \alias{show,SummarizedExperiment-method}
@@ -102,6 +106,13 @@ exptData(x, ...) <- value
 \S4method{[}{SummarizedExperiment}(x, i, j, ..., drop=TRUE)
 \S4method{[}{SummarizedExperiment,ANY,ANY,SummarizedExperiment}(x, i, j) <- value
 
+## colData access
+
+\S4method{$}{SummarizedExperiment}(x, name)
+\S4method{$}{SummarizedExperiment,ANY}(x, name) <- value
+\S4method{[[}{SummarizedExperiment,ANY,missing}(x, i, j, ...)
+\S4method{[[}{SummarizedExperiment,ANY,missing,ANY}(x, i, j, ...) <- value
+
 }
 
 \arguments{
@@ -144,10 +155,20 @@ exptData(x, ...) <- value
   \item{i, j}{For \code{assay}, \code{assay<-}, \code{i} is a integer or
     numeric scalar; see \sQuote{Details} for additional constraints.
 
-    For \code{SummarizedExperiment}, \code{SummarizedExperiment<-},
+    For \code{[,SummarizedExperiment}, \code{[,SummarizedExperiment<-},
     \code{i}, \code{j} are instances that can act to subset the
     underlying \code{rowData}, \code{colData}, and \code{matrix}
-    elements of \code{assays}.}
+    elements of \code{assays}.
+
+    For \code{[[,SummarizedExperiment},
+    \code{[[<-,SummarizedExperiment}, \code{i} is a scalar index (e.g.,
+    \code{character(1)} or \code{integer(1)}) into a column of
+    \code{colData}.
+
+  }
+
+  \item{name}{A symbol representing the name of a column of
+  \code{colData}.}
 
   \item{withDimnames}{A \code{logical(1)}, indicating whether dimnames
     should be applied to extracted assay elements.}
@@ -294,6 +315,20 @@ exptData(x, ...) <- value
       \code{x[i,j]} being replaced.}
 
   }
+
+  Additional subsetting accessors provide convenient access to
+  \code{colData} columns
+
+  \describe{
+
+    \item{\code{x$name}, \code{x$name <- value}}{Access or replace
+    column \code{name} in \code{x}.}
+
+    \item{\code{x[[i, ...]]}, \code{x[[i, ...]] <- value}}{Access or
+    replace column \code{i} in \code{x}.}
+
+  }
+
 }
 
 \author{Martin Morgan, \url{mtmorgan@fhcrc.org}}
@@ -317,4 +352,6 @@ exptData(x, ...) <- value
   sset
   assays(sset) <- endoapply(assays(sset), asinh)
   head(assay(sset))
+
+  sset[, sset$Treatment == "ChIP"]
 }

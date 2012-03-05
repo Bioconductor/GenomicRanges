@@ -259,7 +259,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     callNextMethod(x, value=list(NULL, NULL))
 })
 
-## Subset -- array-like; [[, $ not defined
+## Subset -- array-like
 
 .SummarizedExperiment.charbound <-
     function(idx, txt, fmt)
@@ -267,7 +267,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     orig <- idx
     idx <- match(idx, txt)
     if (any(bad <- is.na(idx))) {
-        msg <- paste(selectSome(orig[bad]), collapse=" ")
+        msg <- paste(IRanges:::selectSome(orig[bad]), collapse=" ")
         stop(sprintf(fmt, msg))
     }
     idx
@@ -357,7 +357,38 @@ setReplaceMethod("[",
     else
         .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
 })
- 
+
+## $, $<-, [[, [[<- for colData access
+
+setMethod("[[", c("SummarizedExperiment", "ANY", "missing"),
+    function(x, i, j, ...)
+{
+    colData(x)[[i, ...]]
+})
+
+setReplaceMethod("[[",
+    c("SummarizedExperiment", "ANY", "missing", "ANY"),
+    function(x, i, j, ..., value)
+{
+    colData(x)[[i, ...]] <- value
+    x
+})
+
+setMethod("$", "SummarizedExperiment",
+    function(x, name)
+{
+    colData(x)[[name]]
+})
+
+setReplaceMethod("$", c("SummarizedExperiment", "ANY"),
+    function(x, name, value)
+{
+    colData(x)[[name]] <- value
+    x
+})
+
+## show
+
 setMethod(show, "SummarizedExperiment",
     function(object)
 {
@@ -365,7 +396,7 @@ setMethod(show, "SummarizedExperiment",
     scat <- function(fmt, vals=character(), exdent=2, ...)
     {
         vals <- ifelse(nzchar(vals), vals, "''")
-        lbls <- paste(selectSome(vals), collapse=" ")
+        lbls <- paste(IRanges:::selectSome(vals), collapse=" ")
         txt <- sprintf(fmt, length(vals), lbls)
         cat(strwrap(txt, exdent=exdent, ...), sep="\n")
     }

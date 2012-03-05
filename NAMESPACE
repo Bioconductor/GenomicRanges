@@ -73,7 +73,7 @@ exportMethods(
     ranges, elementMetadata,
     "ranges<-", "elementMetadata<-",
     start, end, width, "start<-", "end<-", "width<-",
-    "[", "[<-", c, seqselect, "seqselect<-",
+    "[", "[<-", c, seqselect, "seqselect<-", "$", "$<-", "[[", "[[<-",
     split, window,
     flank, resize, shift,
     disjoin, disjointBins, gaps, range, reduce, isDisjoint,
