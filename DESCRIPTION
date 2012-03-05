@@ -10,7 +10,7 @@ Version: 1.7.31
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
-Depends: R (>= 2.8.0), methods, BiocGenerics (>= 0.1.10), IRanges (>= 1.13.23)
+Depends: R (>= 2.10), methods, BiocGenerics (>= 0.1.10), IRanges (>= 1.13.23)
 Imports: methods, BiocGenerics, IRanges
 LinkingTo: IRanges
 Suggests: RUnit, BSgenome, GenomicFeatures, Rsamtools (>= 1.5.66),
