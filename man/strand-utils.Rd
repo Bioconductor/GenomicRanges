@@ -12,11 +12,16 @@
 \title{Strand utilities}
 
 \description{
-  Five useful \code{strand} methods.
+  Some useful \code{strand} methods.
 }
 
 \usage{
-strand(x)
+\S4method{strand}{missing}(x)
+\S4method{strand}{character}(x)
+\S4method{strand}{factor}(x)
+\S4method{strand}{integer}(x)
+\S4method{strand}{logical}(x)
+\S4method{strand}{DataTable}(x)
 }
 
 \arguments{
