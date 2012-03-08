@@ -260,11 +260,10 @@ static const char *Rqnarrow_cigar_string(SEXP cigar_string,
 			}
 			*Rqwidth -= OPL;
 		    break;
-		/* Deletion (or skipped region) from the reference */
-		    case 'D': case 'N':
+		/* Deletion (or skipped region) from the reference,
+		   or silent deletion from the padded reference */
+		    case 'D': case 'N': case 'P':
 		    break;
-		/* Silent deletion from the padded reference */
-		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
