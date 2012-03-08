@@ -125,20 +125,13 @@ static const char *cigar_string_to_qwidth(SEXP cigar_string, int clip_reads,
 		    case 'M': case '=': case 'X': *qwidth += OPL; break;
 		/* Insertion to the reference */
 		    case 'I': *qwidth += OPL; break;
-		/* Deletion (or skipped region) from the reference */
-		    case 'D': case 'N': break;
+		/* Deletion (or skipped region) from the reference,
+		   or silent deletion from the padded reference */
+		    case 'D': case 'N': case 'P': break;
 		/* Soft clip on the read */
 		    case 'S': *qwidth += OPL; break;
 		/* Hard clip on the read */
 		    case 'H': if (!clip_reads) *qwidth += OPL; break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -174,14 +167,8 @@ static const char *cigar_string_to_width(SEXP cigar_string, int *width)
 		    case 'D': case 'N': *width += OPL; break;
 		/* Soft/Hard clip on the read */
 		    case 'S': case 'H': break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -232,14 +219,8 @@ static const char *Lqnarrow_cigar_string(SEXP cigar_string,
 		    case 'D': case 'N':
 			*rshift += OPL;
 		    break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -282,14 +263,8 @@ static const char *Rqnarrow_cigar_string(SEXP cigar_string,
 		/* Deletion (or skipped region) from the reference */
 		    case 'D': case 'N':
 		    break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -385,14 +360,8 @@ static const char *Lnarrow_cigar_string(SEXP cigar_string,
 				*Lwidth -= OPL;
 			*rshift += OPL;
 		    break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -442,14 +411,8 @@ static const char *Rnarrow_cigar_string(SEXP cigar_string,
 			else
 				*Rwidth -= OPL;
 		    break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -561,14 +524,8 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 		    case 'N': start += OPL; break;
 		/* Soft/hard clip on the read */
 		    case 'S': case 'H': break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -625,14 +582,8 @@ static const char *cigar_string_to_ranges2(SEXP cigar_string, int pos_elt,
 		    break;
 		/* Soft/hard clip on the read */
 		    case 'S': case 'H': break;
-		/* Padding (silent deletion from the padded reference
-		   sequence) */
-		    case 'P':
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR operation '%c' (at char %d) is not "
-				 "supported yet, sorry!", OP, offset + 1);
-			return errmsg_buf;
-		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
 		    default:
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
 				 "unknown CIGAR operation '%c' at char %d",
@@ -1195,8 +1146,7 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
        /* Hard clip on the read */
       case 'H':
         break;
-        /* Padding (silent deletion from the padded reference
-           sequence) */
+        /* Silent deletion from the padded reference */
       case 'P':
         break;
       default:
