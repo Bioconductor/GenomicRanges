@@ -540,6 +540,18 @@ setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
     }
 )
 
+setMethod("findOverlaps", c("GappedAlignmentPairs", "ANY"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(as(query, "GRangesList"), subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
 
 ### =========================================================================
 ### findOverlaps-based methods
@@ -620,7 +632,8 @@ setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
     c("GRangesList", "RangedData"),
     c("GappedAlignments", "ANY"),
     c("ANY", "GappedAlignments"),
-    c("GappedAlignments", "GappedAlignments")
+    c("GappedAlignments", "GappedAlignments"),
+    c("GappedAlignmentPairs", "ANY")
 )
 
 for (sig in .signatures) {
