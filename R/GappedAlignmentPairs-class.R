@@ -3,15 +3,21 @@
 ### -------------------------------------------------------------------------
 ###
 
+### TODO: Implement a GappedAlignmentList class (CompressedList subclass)
+### and derive GappedAlignmentPairs from it.
+
 ### "first" and "last" GappedAlignments must have identical seqinfo.
 setClass("GappedAlignmentPairs",
-    contains="Vector",
+    contains="List",
     representation(
         NAMES="characterORNULL",      # R doesn't like @names !!
         first="GappedAlignments",     # of length N, no names, no elt metadata
         last="GappedAlignments",      # of length N, no names, no elt metadata
         isProperPair="logical",       # of length N
         elementMetadata="DataFrame"   # N rows
+    ),
+    prototype(
+        elementType="GappedAlignments"
     )
 )
 
@@ -234,16 +240,9 @@ readGappedAlignmentPairs <- function(file, format="BAM", use.names=FALSE, ...)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Vector methods.
 ###
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-### TODO: Support subsetting by names.
 setMethod("[", "GappedAlignmentPairs",
     function(x, i, j, ... , drop=TRUE)
     {
@@ -258,6 +257,74 @@ setMethod("[", "GappedAlignmentPairs",
         x@isProperPair <- x@isProperPair[i]
         x@elementMetadata <- x@elementMetadata[i, , drop=FALSE]
         x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### List methods.
+###
+
+### TODO: Remove the "[[" method below after the definition of the
+### GappedAlignmentPairs class is changed to derive from CompressedList.
+### (The "[[" method for CompressedList objects should do just fine i.e. it
+### should do something like x@unlistData[x@partitioning[[i]]] and that
+### should be optimal.)
+.GappedAlignmentPairs.getElement <- function(x, i)
+{
+    c(first(x)[i], last(x)[i])
+}
+
+setMethod("[[", "GappedAlignmentPairs",
+    function(x, i, j, ... , drop=TRUE)
+    {
+        if (missing(i) || !missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
+        .GappedAlignmentPairs.getElement(x, i)
+    }
+)
+
+### TODO: Remove this method after the definition of the GappedAlignmentPairs
+### class is changed to derive from CompressedList.
+setMethod("unlist", "GappedAlignmentPairs",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
+        x_first <- unname(first(x))
+        x_last <- unname(last(x))
+        first_last <- c(x_first, x_last)
+        idx <- rep(seq_len(length(x)), each=2L)
+        idx[c(FALSE, TRUE)] <- idx[c(FALSE, TRUE)] + length(x)
+        ans <- first_last[idx]
+        if (use.names)
+            names(ans) <- rep(names(x), each=2L)
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+### FIXME: as(galp[FALSE], "GRangesList") is broken!
+### TODO: Invert the strand of the ranges coming from the last end.
+setAs("GappedAlignmentPairs", "GRangesList",
+    function(from)
+    {
+        unlisted <- unlist(from, use.names=FALSE)
+        grl <- as(unlisted, "GRangesList")
+        grl_elt_lens <- elementLengths(grl)
+        ans_elt_lens <- grl_elt_lens[c(TRUE, FALSE)] +
+                        grl_elt_lens[c(FALSE, TRUE)]
+        grl_unlisted <- unlist(grl, use.names=FALSE)
+        skeleton <- PartitioningByWidth(ans_elt_lens)
+        ans <- relist(grl_unlisted, skeleton=skeleton)
+        names(ans) <- names(from)
+        elementMetadata(ans) <- elementMetadata(from)
+        ans
     }
 )
 
