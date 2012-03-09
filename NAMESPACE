@@ -37,7 +37,7 @@ export(
     makeGRangesListFromFeatureFragments,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     GappedAlignments, readGappedAlignments,
-    first, last, isProperPair,
+    first, last, left, right, isProperPair,
     GappedAlignmentPairs, readGappedAlignmentPairs,
 
     SummarizedExperiment,
@@ -88,7 +88,7 @@ exportMethods(
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,
-    first, last, isProperPair,
+    first, last, left, right, isProperPair,
     dimnames, "dimnames<-", precede, follow,
     countGenomicOverlaps,
     keepSeqlevels, renameSeqlevels,

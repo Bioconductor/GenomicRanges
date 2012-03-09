@@ -52,6 +52,17 @@ setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList"),
+    function(query, subject)
+        encodeOverlaps(as(query, "GRangesList"), subject)
+)
+
+setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList"),
+    function(query, subject)
+    {
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isCompatibleWithSplicing().

@@ -26,6 +26,14 @@ setClass("GappedAlignmentPairs",
 ###   length(x)   - single integer N. Nb of pairs in 'x'.
 ###   first(x)    - returns "first" slot.
 ###   last(x)     - returns "last" slot.
+###   left(x)     - GappedAlignments made of the "left alignments" (if first
+###                 alignment is on + strand then it's considered to be the
+###                 "left alignment", otherwise, it's considered the "right
+###                 alignment").
+###   right(x)    - GappedAlignments made of the "right alignments".
+###                 The strand of the last alignments is inverted before they
+###                 are stored in the GappedAlignments returned by left(x) or
+###                 right(x).
 ###   seqnames(x) - same as 'seqnames(first(x))' or 'seqnames(last(x))'.
 ###   strand(x)   - same as 'strand(first(x))' (opposite of 'strand(last(x))').
 ###   isProperPair(x) - returns "isProperPair" slot.
@@ -38,6 +46,8 @@ setClass("GappedAlignmentPairs",
 
 setGeneric("first", function(x) standardGeneric("first"))
 setGeneric("last", function(x) standardGeneric("last"))
+setGeneric("left", function(x) standardGeneric("left"))
+setGeneric("right", function(x) standardGeneric("right"))
 setGeneric("isProperPair", function(x) standardGeneric("isProperPair"))
 
 
@@ -59,6 +69,46 @@ setMethod("first", "GappedAlignmentPairs",
 
 setMethod("last", "GappedAlignmentPairs",
     function(x) setNames(x@last, names(x))
+)
+
+setMethod("left", "GappedAlignmentPairs",
+    function(x)
+    {
+        x_first <- x@first
+        x_last <- x@last
+
+        ## Invert 'x_last' strand.
+        last_strand <- strand(x_last)
+        runValue(last_strand) <- strand(runValue(last_strand) == "+")
+        strand(x_last) <- last_strand
+
+        left_is_last <- which(strand(x_first) == "-")
+        idx <- seq_len(length(x))
+        idx[left_is_last] <- idx[left_is_last] + length(x)
+
+        ans <- c(x_first, x_last)[idx]
+        setNames(ans, names(x))
+    }
+)
+
+setMethod("right", "GappedAlignmentPairs",
+    function(x)
+    {
+        x_first <- x@first
+        x_last <- x@last
+
+        ## Invert 'x_last' strand.
+        last_strand <- strand(x_last)
+        runValue(last_strand) <- strand(runValue(last_strand) == "+")
+        strand(x_last) <- last_strand
+
+        right_is_first <- which(strand(x_first) == "-")
+        idx <- seq_len(length(x))
+        idx[right_is_first] <- idx[right_is_first] + length(x)
+
+        ans <- c(x_last, x_first)[idx]
+        setNames(ans, names(x))
+    }
 )
 
 setMethod("seqnames", "GappedAlignmentPairs",
@@ -285,6 +335,13 @@ setMethod("[[", "GappedAlignmentPairs",
     }
 )
 
+.makePickupIndex <- function(N)
+{
+    ans <- rep(seq_len(N), each=2L)
+    ans[c(FALSE, TRUE)] <- ans[c(FALSE, TRUE)] + N
+    ans
+}
+
 ### TODO: Remove this method after the definition of the GappedAlignmentPairs
 ### class is changed to derive from CompressedList.
 setMethod("unlist", "GappedAlignmentPairs",
@@ -292,12 +349,9 @@ setMethod("unlist", "GappedAlignmentPairs",
     {
         if (!isTRUEorFALSE(use.names))
             stop("'use.names' must be TRUE or FALSE")
-        x_first <- unname(first(x))
-        x_last <- unname(last(x))
-        first_last <- c(x_first, x_last)
-        idx <- rep(seq_len(length(x)), each=2L)
-        idx[c(FALSE, TRUE)] <- idx[c(FALSE, TRUE)] + length(x)
-        ans <- first_last[idx]
+        x_first <- x@first
+        x_last <- x@last
+        ans <- c(x_first, x_last)[.makePickupIndex(length(x))]
         if (use.names)
             names(ans) <- rep(names(x), each=2L)
         ans
@@ -314,7 +368,10 @@ setMethod("unlist", "GappedAlignmentPairs",
 setAs("GappedAlignmentPairs", "GRangesList",
     function(from)
     {
-        unlisted <- unlist(from, use.names=FALSE)
+        Lfrom <- unname(left(from))
+        Rfrom <- unname(right(from))
+        ## Not the same as doing 'unlist(from, use.names=FALSE)'.
+        unlisted <- c(Lfrom, Rfrom)[.makePickupIndex(length(from))]
         grl <- as(unlisted, "GRangesList")
         grl_elt_lens <- elementLengths(grl)
         ans_elt_lens <- grl_elt_lens[c(TRUE, FALSE)] +
