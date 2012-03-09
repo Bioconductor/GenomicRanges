@@ -60,6 +60,17 @@ setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList"),
 setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList"),
     function(query, subject)
     {
+        seqinfo <- merge(seqinfo(query), seqinfo(subject))
+        seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
+        query_grl <- as(query, "GRangesList")
+        Lquery.lengths <- ngap(left(query)) + 1L
+        RangesList_encodeOverlaps(as.list(start(query_grl)),
+                                  as.list(width(query_grl)),
+                                  as.list(start(subject)),
+                                  as.list(width(subject)),
+                                  query.space=.get_GRangesList_space(query_grl),
+                                  subject.space=.get_GRangesList_space(subject),
+                                  Lquery.lengths=Lquery.lengths)
     }
 )
 
