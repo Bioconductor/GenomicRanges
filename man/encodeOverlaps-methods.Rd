@@ -81,9 +81,8 @@ library(GenomicFeatures)
 txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
 exbytx0 <- exonsBy(txdb, by="tx")
 
-## IMPORTANT: Before 'encodeOverlapsFromHits()' or
-## 'encodeOverlaps()' or related utilities can be used, exons in
-## transcripts located on the minus strand *must* be reordered by
+## IMPORTANT: Before 'encodeOverlaps()' or related utilities can be used,
+## exons in transcripts located on the minus strand *must* be reordered by
 ## decreasing rank.
 exbytx <- sortExonsByRank(exbytx0, decreasing.rank.on.minus.strand=TRUE)
 exbytx0[[20]]
@@ -93,7 +92,7 @@ exbytx[[20]]
 overlaps <- findOverlaps(reads4, exbytx)
 
 ## Encode the overlaps:
-ovenc <- encodeOverlapsFromHits(overlaps, reads4, exbytx)
+ovenc <- encodeOverlaps(reads4, exbytx, overlaps)
 ovenc
 unique_ovenc <- levels(encoding(ovenc))
 unique_ovenc  # 104 unique encodings

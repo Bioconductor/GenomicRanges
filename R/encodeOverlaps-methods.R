@@ -10,8 +10,8 @@
 if (FALSE) {
 ### Not sure we need to bother with methods that do 1-to-1 range overlap
 ### encodings. What would be the use cases?
-setMethod("encodeOverlaps", c("GRanges", "GRanges"),
-    function(query, subject)
+setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
+    function(query, subject, hits=NULL)
     {
         seqinfo <- merge(seqinfo(query), seqinfo(subject))
         seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
@@ -38,39 +38,35 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges"),
         as.list(relist(seqnames * 3L + strand, x_seqnames))
 }
 
-setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
-    function(query, subject)
-    {
-        seqinfo <- merge(seqinfo(query), seqinfo(subject))
-        seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
-        RangesList_encodeOverlaps(as.list(start(query)),
-                                  as.list(width(query)),
-                                  as.list(start(subject)),
-                                  as.list(width(subject)),
-                                  query.space=.get_GRangesList_space(query),
-                                  subject.space=.get_GRangesList_space(subject))
-    }
+GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL)
+{
+    seqinfo <- merge(seqinfo(query), seqinfo(subject))
+    seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
+    RangesList_encodeOverlaps(as.list(start(query)),
+                              as.list(width(query)),
+                              as.list(start(subject)),
+                              as.list(width(subject)),
+                              query.space=.get_GRangesList_space(query),
+                              subject.space=.get_GRangesList_space(subject),
+                              Lquery.lengths=Lquery.lengths)
+}
+
+setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
+    function(query, subject, hits=NULL)
+        GRangesList_encodeOverlaps(query, subject)
 )
 
-setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList"),
-    function(query, subject)
-        encodeOverlaps(as(query, "GRangesList"), subject)
+setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
+    function(query, subject, hits=NULL)
+        GRangesList_encodeOverlaps(as(query, "GRangesList"), subject)
 )
 
-setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList"),
-    function(query, subject)
+setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
+    function(query, subject, hits=NULL)
     {
-        seqinfo <- merge(seqinfo(query), seqinfo(subject))
-        seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
-        query_grl <- as(query, "GRangesList")
-        Lquery.lengths <- ngap(left(query)) + 1L
-        RangesList_encodeOverlaps(as.list(start(query_grl)),
-                                  as.list(width(query_grl)),
-                                  as.list(start(subject)),
-                                  as.list(width(subject)),
-                                  query.space=.get_GRangesList_space(query_grl),
-                                  subject.space=.get_GRangesList_space(subject),
-                                  Lquery.lengths=Lquery.lengths)
+        Lquery.lengths <- 1L + ngap(left(query))
+        GRangesList_encodeOverlaps(as(query, "GRangesList"), subject,
+                                      Lquery.lengths=Lquery.lengths)
     }
 )
 
@@ -81,7 +77,8 @@ setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList"),
 
 .check_ngap_max <- function(x)
 {
-    ngap <- as.integer(sub(":.*", "", x)) - 1L
+    ngap <- as.integer(unlist(strsplit(sub(":.*", "", x), "--", fixed=TRUE),
+                              use.names=FALSE)) - 1L
     if (max(ngap) > 3L)
         stop("reads with more than 3 gaps are not supported yet, sorry")
 }
@@ -92,13 +89,37 @@ setGeneric("isCompatibleWithSplicing",
 
 .get_CompatibleWithSplicing_regex <- function()
 {
-    subregex1 <- "[fgij]"                     # reads with 1 range (0 gap)
-    subregex2 <- "[jg].:.[gf]"                # reads with 2 ranges (1 gap)
-    subregex3 <- "[jg]..:.g.:..[gf]"          # reads with 3 ranges (2 gaps)
-    subregex4 <- "[jg]...:.g..:..g.:...[gf]"  # reads with 4 ranges (3 gaps)
-    paste0(":(",
-           paste(subregex1, subregex2, subregex3, subregex4, sep="|"),
-           "):")
+    subregex1 <- "[fgij]"
+    subregex2 <- c("[jg].", ".[gf]")
+    subregex3 <- c("[jg]..", ".g.", "..[gf]")
+    subregex4 <- c("[jg]...", ".g..", "..g.", "...[gf]")
+
+    Ssubregex1 <- paste0(subregex1, collapse=":")
+    Ssubregex2 <- paste0(subregex2, collapse=":")
+    Ssubregex3 <- paste0(subregex3, collapse=":")
+    Ssubregex4 <- paste0(subregex4, collapse=":")
+    Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
+    Ssubregex <- paste0(":(", Ssubregex, "):")
+
+    Rencoding <- "-[^-:]*" 
+    Lsubregex1 <- paste0(":", subregex1, "-", collapse=Rencoding)
+    Lsubregex2 <- paste0(":", subregex2, "-", collapse=Rencoding)
+    Lsubregex3 <- paste0(":", subregex3, "-", collapse=Rencoding)
+    Lsubregex4 <- paste0(":", subregex4, "-", collapse=Rencoding)
+    Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
+    Lsubregex <- paste0("(", Lsubregex, ")")
+
+    Lencoding <- "[^-:]*-" 
+    Rsubregex1 <- paste0("-", subregex1, ":", collapse=Lencoding)
+    Rsubregex2 <- paste0("-", subregex2, ":", collapse=Lencoding)
+    Rsubregex3 <- paste0("-", subregex3, ":", collapse=Lencoding)
+    Rsubregex4 <- paste0("-", subregex4, ":", collapse=Lencoding)
+    Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
+    Rsubregex <- paste0("(", Rsubregex, ")")
+
+    LRsubregex <- paste0(Lsubregex, ".*", Rsubregex)
+
+    paste0("(", Ssubregex, "|", LRsubregex, ")")
 }
 
 .isCompatibleWithSplicing <- function(x)
@@ -132,6 +153,8 @@ setMethod("isCompatibleWithSplicing", "OverlapEncodings",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isCompatibleWithSkippedExons().
+###
+### FIXME: This currently does NOT work with paired-end encodings!
 ###
 
 setGeneric("isCompatibleWithSkippedExons", signature="x",
