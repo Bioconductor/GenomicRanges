@@ -921,191 +921,158 @@ setMethod("show", "GenomicRanges",
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
-    { 
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE or FALSE")
-        if (ignore.strand)
-            strand(x) <- strand(subject) <- "+"
-        if (all(as.character(strand(x)) == "*")
-         && all(as.character(strand(subject)) == "*"))
-            strand(x) <- strand(subject) <- "+"
-        sinfo <- merge(seqinfo(x), seqinfo(subject))
-        elementMetadata(x) <- list(posIndx=seq_len(length(x)))
-        elementMetadata(subject) <- list(posIndx=seq_len(length(subject)))
-        xLst <- split(x, seqnames(x), drop=FALSE)
-        xLst <- xLst[elementLengths(xLst) > 0L]
-        xSeqNames <- names(xLst)
-        if (!missing(subject))
-            subjectLst <- split(subject, seqnames(subject), drop=FALSE)
-        ans <- dist1 <- dist2 <- rep.int(NA_integer_, length(x))
-        for (sq in xSeqNames) {
-            if (!(sq %in% names(subjectLst)))
-                break
-            x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
-            x1Split <- x1Split[elementLengths(x1Split) > 0L]
-            s1 <- subjectLst[[sq]]
-            ss1 <- split(s1, strand(s1))
-            for (st in names(x1Split)) {
-                x1Split_elt <- x1Split[[st]]
-                x1Split_elt_posIndx <- elementMetadata(x1Split_elt)$posIndx
-                if (st == "+") {
-                    subSplit <- unlist(ss1[c("+", "*")])
-                    ## call precede
-                    res <- precede(ranges(x1Split_elt), ranges(subSplit))
-                    indx <- !is.na(res)
-                    k <- x1Split_elt_posIndx[indx]
-                    res <- res[indx]
-                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
-                } else if (st == "-") {
-                    subSplit <- unlist(ss1[c("-", "*")])
-                    ## call follow
-                    res <- follow(ranges(x1Split_elt), ranges(subSplit))
-                    indx <- !is.na(res)
-                    k <- x1Split_elt_posIndx[indx]
-                    res <- res[indx]
-                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
-                } else if (st == "*") {
-                    subSplit1 <- unlist(ss1[c("+")])
-                    ## call precede
-                    res1 <- precede(ranges(x1Split_elt), ranges(subSplit1))
-                    indx1 <- !is.na(res1)
-                    k1 <- x1Split_elt_posIndx[indx1]
-                    res1 <- res1[indx1]
-                    ans[k1] <- elementMetadata(subSplit1)$posIndx[res1]
-                    dist1[k1] <- 
-                        start(subSplit1[res1]) - end(x1Split_elt[indx1])
+    {
+        .findRanges(x, subject, ignore.strand, type="precede", ...) 
+    }
+)
 
-                    subSplit2 <- unlist(ss1[c("-")])
-                    ## call follow
-                    res2 <- follow(ranges(x1Split_elt), ranges(subSplit2))
-                    indx2 <- !is.na(res2)
-                    k2 <- x1Split_elt_posIndx[indx2]
-                    res2 <- res2[indx2]
-                    ans[k2] <- elementMetadata(subSplit2)$posIndx[res2]
-                    dist2[k2] <- 
-                        start(x1Split_elt[indx2]) - end(subSplit2[res2])
-
-                    ##  queries matching both "+" and "-" subject 
-                    if (!identical(integer(0), k1) &&
-                        !identical(integer(0), k2)) {
-                        mt <- k1[k1 %in% k2]
-                        map1 <- data.frame(k1, res1,
-                            sposidx=values(subSplit1)[["posIndx"]][res1])
-                        map2 <- data.frame(k2, res2,
-                            sposidx=values(subSplit2)[["posIndx"]][res2])
-                        ## choose subject with minimum distance
-                        mindist <- mt[dist1[mt] < dist2[mt]]
-                        minidx <- map1$sposidx[map1$k1 %in% mindist]
-                        ans[mindist] <- minidx 
-                        ## if equidistant, choose subject with lowest index
-                        if (any(mt[dist1[mt] == dist2[mt]])) {
-                            eqdist <- mt[dist1[mt] == dist2[mt]]
-                            eq1 <- map1$sposidx[map1$k1 %in% eqdist]
-                            eq2 <- map2$sposidx[map2$k2 %in% eqdist]
-                            eqidx <- min(c(eq1, eq2)) 
-                            ans[eqdist] <- eqidx 
-                        }
-                    }
-                }
-            }
-        }
-        ans
+setMethod("precede", c("GenomicRanges", "missing"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...) 
     }
 )
 
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE or FALSE")
-        if (ignore.strand)
-            strand(x) <- strand(subject) <- "+"
-        if (all(as.character(strand(x)) == "*")
-         && all(as.character(strand(subject)) == "*"))
-            strand(x) <- strand(subject) <- "+"
-        sinfo <- merge(seqinfo(x), seqinfo(subject))
-        elementMetadata(x) <- list(posIndx=seq_len(length(x)))
-        elementMetadata(subject) <- list(posIndx=seq_len(length(subject)))
-        xLst <- split(x, seqnames(x), drop=FALSE)
-        xLst <- xLst[elementLengths(xLst) > 0L]
-        xSeqNames <- names(xLst)
-        if (!missing(subject))
-            subjectLst <- split(subject, seqnames(subject), drop=FALSE)
-        ans <- dist1 <- dist2 <- rep.int(NA_integer_, length(x))
-        for (sq in xSeqNames) {
-            if (!(sq %in% names(subjectLst)))
-                break
-            x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
-            x1Split <- x1Split[elementLengths(x1Split) > 0L]
-            s1 <- subjectLst[[sq]]
-            ss1 <- split(s1, strand(s1))
-            for (st in names(x1Split)) {
-                x1Split_elt <- x1Split[[st]]
-                x1Split_elt_posIndx <- elementMetadata(x1Split_elt)$posIndx
-                if (st == "+") {
-                    subSplit <- unlist(ss1[c("+", "*")])
-                    ## call follow
-                    res <- follow(ranges(x1Split_elt), ranges(subSplit))
-                    indx <- !is.na(res)
-                    k <- x1Split_elt_posIndx[indx]
-                    res <- res[indx]
-                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
-                } else if (st == "-") {
-                    subSplit <- unlist(ss1[c("-", "*")])
-                    ## call precede
-                    res <- precede(ranges(x1Split_elt), ranges(subSplit))
-                    indx <- !is.na(res)
-                    k <- x1Split_elt_posIndx[indx]
-                    res <- res[indx]
-                    ans[k] <- elementMetadata(subSplit)$posIndx[res]
-                } else if (st == "*") {
-                    subSplit1 <- unlist(ss1[c("+")])
-                    ## call follow
-                    res1 <- follow(ranges(x1Split_elt), ranges(subSplit1))
-                    indx1 <- !is.na(res1)
-                    k1 <- elementMetadata(x1Split_elt)$posIndx[indx1]
-                    res1 <- res1[indx1]
-                    ans[k1] <- elementMetadata(subSplit1)$posIndx[res1]
-                    dist1[k1] <- 
-                        start(x1Split_elt[indx1]) - end(subSplit1[res1])
-
-                    subSplit2 <- unlist(ss1[c("-")])
-                    ## call precede
-                    res2 <- precede(ranges(x1Split_elt), ranges(subSplit2))
-                    indx2 <- !is.na(res2)
-                    k2 <- elementMetadata(x1Split_elt)$posIndx[indx2]
-                    res2 <- res2[indx2]
-                    ans[k2] <- elementMetadata(subSplit2)$posIndx[res2]
-                    dist2[k2] <- 
-                        start(subSplit2[res2]) - end(x1Split_elt[indx2])
-
-                    ##  queries matching both "+" and "-" subject 
-                    if (!identical(integer(0), k1) &&
-                        !identical(integer(0), k2)) {
-                        mt <- k1[k1 %in% k2]
-                        map1 <- data.frame(k1, res1, 
-                            sposidx=values(subSplit1)[["posIndx"]][res1])
-                        map2 <- data.frame(k2, res2,
-                            sposidx=values(subSplit2)[["posIndx"]][res2])
-                        ## choose subject with minimum distance
-                        mindist <- mt[dist1[mt] < dist2[mt]]
-                        minidx <- map1$sposidx[map1$k1 %in% mindist]
-                        ans[mindist] <- minidx
-                        ## if equidistant, choose subject with highest index
-                        if (any(mt[dist1[mt] == dist2[mt]])) {
-                            eqdist <- mt[dist1[mt] == dist2[mt]]
-                            eq1 <- map1$sposidx[map1$k1 %in% eqdist]
-                            eq2 <- map2$sposidx[map2$k2 %in% eqdist]
-                            eqidx <- max(c(eq1, eq2)) 
-                            ans[eqdist] <- eqidx
-                        }
-                    }
-                }
-            }
-        } 
-        ans
+        .findRanges(x, subject, ignore.strand, type="follow", ...) 
     }
 )
+
+setMethod("follow", c("GenomicRanges", "missing"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...) 
+    }
+)
+
+.findRanges <- function(x, subject, ignore.strand, type, ...)
+{
+    x <- .checkStrand(x, subject, ignore.strand)
+    sinfo <- merge(seqinfo(x), seqinfo(subject))
+    values(x) <- list(posIndx=seq_len(length(x)))
+    values(subject) <- list(posIndx=seq_len(length(subject)))
+    xLst <- split(x, seqnames(x), drop=FALSE)
+    xLst <- xLst[elementLengths(xLst) > 0L]
+    subjectLst <- split(subject, seqnames(subject), drop=FALSE)
+    ans <- dist1 <- dist2 <- rep.int(NA_integer_, length(x))
+
+    for (sq in names(xLst)) {
+        if (!(sq %in% names(subjectLst)))
+           break
+        x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
+        x1Split <- x1Split[elementLengths(x1Split) > 0L]
+        s1 <- subjectLst[[sq]]
+        ss1 <- split(s1, strand(s1))
+        for (st in names(x1Split)) {
+            xelt <- x1Split[[st]]
+            if (st == "+") {
+                subPos <- unlist(ss1[c("+", "*")])
+                res <- .posStrand(xelt, subPos, type)
+                k <- values(xelt)[["posIndx"]][!is.na(res)]
+                ans[k] <- values(subPos)[["posIndx"]][na.omit(res)]
+            } else if (st == "-") {
+                subNeg <- unlist(ss1[c("-", "*")])
+                res <- .negStrand(xelt, subNeg, type)
+                k <- values(xelt)[["posIndx"]][!is.na(res)]
+                ans[k] <- values(subNeg)[["posIndx"]][na.omit(res)]
+            } else if (st == "*") {
+                ## FIXME : why not "*" too?
+                sub1 <- unlist(ss1["+"])
+                res1 <- .posStrand(xelt, sub1, type)
+                k1 <- values(xelt)[["posIndx"]][!is.na(res1)]
+                dist1[k1] <- .distance(xelt, sub1, res1, "+", type) 
+                ans[k1] <- values(sub1)[["posIndx"]][na.omit(res1)]
+
+                ## FIXME : why not "*" too?
+                sub2 <- unlist(ss1["-"])
+                res2 <- .negStrand(xelt, sub2, type)
+                k2 <- values(xelt)[["posIndx"]][!is.na(res2)]
+                dist2[k2] <- .distance(xelt, sub2, res2, "-", type) 
+                ans[k2] <- values(sub2)[["posIndx"]][na.omit(res2)]
+
+                ##  resolve queries matching both "+" and "-" 
+                if (!identical(integer(0), k1) && !identical(integer(0), k2)) {
+                    tie <- .breakTie(sub1, res1, k1, dist1, sub2, res2, k2, 
+                                     dist2, type)
+                    ans[tie[["idx"]]] <- tie[["value"]]
+                }
+            }
+        }
+    }
+    ans
+}
+
+.checkStrand <- function(x, subject, ignore.strand)
+{
+    if (!isTRUEorFALSE(ignore.strand))
+        stop("'ignore.strand' must be TRUE or FALSE")
+    if (ignore.strand)
+        strand(x) <- strand(subject) <- "+"
+    if (all(as.character(strand(x)) == "*") && 
+        all(as.character(strand(subject)) == "*"))
+        strand(x) <- strand(subject) <- "+"
+    x
+}
+
+.distance <- function(xelt, sub, res, strand, type)
+{
+    sidx <- na.omit(res)
+    eidx <- !is.na(res)
+    if (strand == "+")
+        switch(type,
+           precede=start(sub[sidx]) - end(xelt[eidx]),
+           follow=start(xelt[eidx]) - end(sub[sidx]))
+    else if (strand == "-") 
+        switch(type,
+           precede=start(xelt[eidx]) - end(sub[sidx]),
+           follow=start(sub[sidx]) - end(xelt[eidx]))
+}
+
+.breakTie <- function(sub1, res1, k1, dist1, 
+                      sub2, res2, k2, dist2, type)
+{
+    mt <- k1[k1 %in% k2]
+    if (identical(integer(0), mt))
+        return(DataFrame(idx=integer(), value=integer()))
+
+    ## if tie, choose subject with minimum distance
+    map1 <- data.frame(k1, spi=values(sub1)[["posIndx"]][na.omit(res1)])
+    map2 <- data.frame(k2, spi=values(sub2)[["posIndx"]][na.omit(res2)])
+    mindist <- mt[dist1[mt] < dist2[mt]]
+    minvalue <- map1$spi[map1$k1 %in% mindist]
+
+    ## if equidistant 
+    ## precede -> choose subject with lowest index
+    ## follow -> choose subject with highest index
+    eqidist <- eqivalue <- integer()
+    if (any(mt[dist1[mt] == dist2[mt]])) {
+        eqidist <- mt[dist1[mt] == dist2[mt]]
+        eq1 <- map1$spi[map1$k1 %in% eqidist]
+        eq2 <- map2$spi[map2$k2 %in% eqidist]
+        if (type == "precede")
+            eqivalue <- min(c(eq1, eq2))
+        if (type == "follow")
+            eqivalue <- max(c(eq1, eq2))
+    }
+    DataFrame(idx=c(mindist, eqidist), value=c(minvalue, eqivalue)) 
+}
+
+.posStrand <- function(query, subject, type)
+{
+    switch(type,
+           precede=precede(ranges(query), ranges(subject)),
+           follow=follow(ranges(query), ranges(subject)))
+}
+
+.negStrand <- function(query, subject, type)
+{
+    switch(type,
+           precede=follow(ranges(query), ranges(subject)),
+           follow=precede(ranges(query), ranges(subject)))
+}
+
 
 setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
     function(x, subject, ignore.strand=FALSE, ...)
