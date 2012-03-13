@@ -947,6 +947,20 @@ setMethod("follow", c("GenomicRanges", "missing"),
     }
 )
 
+setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        .findRanges(x, subject, ignore.strand, type="nearest", ...) 
+    }
+)
+
+setMethod("nearest", c("GenomicRanges", "missing"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...)
+    }
+)
+
 .findRanges <- function(x, subject, ignore.strand, type, ...)
 {
     x <- .checkStrand(x, subject, ignore.strand)
@@ -969,34 +983,40 @@ setMethod("follow", c("GenomicRanges", "missing"),
             xelt <- x1Split[[st]]
             if (st == "+") {
                 subPos <- unlist(ss1[c("+", "*")])
-                res <- .posStrand(xelt, subPos, type)
+                res <- .findRangesPos(xelt, subPos, type, ...)
                 k <- values(xelt)[["posIndx"]][!is.na(res)]
                 ans[k] <- values(subPos)[["posIndx"]][na.omit(res)]
             } else if (st == "-") {
                 subNeg <- unlist(ss1[c("-", "*")])
-                res <- .negStrand(xelt, subNeg, type)
+                res <- .findRangesNeg(xelt, subNeg, type, ...)
                 k <- values(xelt)[["posIndx"]][!is.na(res)]
                 ans[k] <- values(subNeg)[["posIndx"]][na.omit(res)]
             } else if (st == "*") {
-                ## FIXME : why not "*" too?
-                sub1 <- unlist(ss1["+"])
-                res1 <- .posStrand(xelt, sub1, type)
-                k1 <- values(xelt)[["posIndx"]][!is.na(res1)]
-                dist1[k1] <- .distance(xelt, sub1, res1, "+", type) 
-                ans[k1] <- values(sub1)[["posIndx"]][na.omit(res1)]
+                if (type == "nearest") {
+                    res <- nearest(ranges(xelt), ranges(s1))
+                    k <- values(xelt)[["posIndx"]][!is.na(res)]
+                    ans[k] <- values(s1)[["posIndx"]][na.omit(res)]
+                } else { 
+                    ## FIXME : include "*"?
+                    sub1 <- unlist(ss1["+"])
+                    res1 <- .findRangesPos(xelt, sub1, type, ...)
+                    k1 <- values(xelt)[["posIndx"]][!is.na(res1)]
+                    dist1[k1] <- .distance(xelt, sub1, res1, "+", type) 
+                    ans[k1] <- values(sub1)[["posIndx"]][na.omit(res1)]
 
-                ## FIXME : why not "*" too?
-                sub2 <- unlist(ss1["-"])
-                res2 <- .negStrand(xelt, sub2, type)
-                k2 <- values(xelt)[["posIndx"]][!is.na(res2)]
-                dist2[k2] <- .distance(xelt, sub2, res2, "-", type) 
-                ans[k2] <- values(sub2)[["posIndx"]][na.omit(res2)]
+                    ## FIXME : include "*"?
+                    sub2 <- unlist(ss1["-"])
+                    res2 <- .findRangesNeg(xelt, sub2, type, ...)
+                    k2 <- values(xelt)[["posIndx"]][!is.na(res2)]
+                    dist2[k2] <- .distance(xelt, sub2, res2, "-", type) 
+                    ans[k2] <- values(sub2)[["posIndx"]][na.omit(res2)]
 
-                ##  resolve queries matching both "+" and "-" 
-                if (!identical(integer(0), k1) && !identical(integer(0), k2)) {
-                    tie <- .breakTie(sub1, res1, k1, dist1, sub2, res2, k2, 
-                                     dist2, type)
-                    ans[tie[["idx"]]] <- tie[["value"]]
+                    ##  resolve queries matching both "+" and "-" 
+                    if (!identical(integer(0), k1) && !identical(integer(0), k2)) {
+                        tie <- .breakTie(sub1, res1, k1, dist1, sub2, res2, k2, 
+                                         dist2, type)
+                        ans[tie[["idx"]]] <- tie[["value"]]
+                    }
                 }
             }
         }
@@ -1059,89 +1079,21 @@ setMethod("follow", c("GenomicRanges", "missing"),
     DataFrame(idx=c(mindist, eqidist), value=c(minvalue, eqivalue)) 
 }
 
-.posStrand <- function(query, subject, type)
+.findRangesPos <- function(query, subject, type, ...)
 {
     switch(type,
-           precede=precede(ranges(query), ranges(subject)),
-           follow=follow(ranges(query), ranges(subject)))
+           precede=precede(ranges(query), ranges(subject), ...),
+           follow=follow(ranges(query), ranges(subject), ...),
+           nearest=nearest(ranges(query), ranges(subject), ...))
 }
 
-.negStrand <- function(query, subject, type)
+.findRangesNeg <- function(query, subject, type, ...)
 {
     switch(type,
-           precede=follow(ranges(query), ranges(subject)),
-           follow=precede(ranges(query), ranges(subject)))
+           precede=follow(ranges(query), ranges(subject), ...),
+           follow=precede(ranges(query), ranges(subject), ...),
+           nearest=nearest(ranges(query), ranges(subject), ...))
 }
-
-
-setMethod("nearest", c("GenomicRanges", "GenomicRangesORmissing"),
-    function(x, subject, ignore.strand=FALSE, ...)
-    {
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE or FALSE")
-        if (ignore.strand)
-            strand(x) <- "+"
-        if (!missing(subject)) {
-            if (ignore.strand)
-                strand(subject) <- "+"
-            ## merge() also checks that 'query' and 'subject' are based on the
-            ## same reference genome.          
-            sinfo <- merge(seqinfo(x), seqinfo(subject))
-            elementMetadata(subject) <-
-                list(posIndx=seq_len(length(subject)))
-        }
-        elementMetadata(x) <- list(posIndx=seq_len(length(x)))
-        xLst <- split(x, seqnames(x), drop=FALSE)
-        xLst <- xLst[elementLengths(xLst) > 0L]
-        xSeqNames <- names(xLst)
-        if (!missing(subject))
-            subjectLst <- split(subject, seqnames(subject), drop=FALSE)
-        ans <- rep.int(NA_integer_, length(x))
-        for (sq in xSeqNames) {
-            x1Split <- split(xLst[[sq]], strand(xLst[[sq]]))
-            x1Split <- x1Split[elementLengths(x1Split) > 0L]
-            if (!sq %in% names(subjectLst))
-                break
-            s1 <- subjectLst[[sq]]
-            for (st in names(x1Split)) {
-                if (st == "+") {
-                    if (!missing(subject)) {
-                        subSplit <- s1[strand(s1) != "-"]
-                        res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
-                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
-                            elementMetadata(subSplit)$posIndx[res]
-                    } else {
-                        res <- nearest(ranges(x1Split[[st]]))
-                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
-                            elementMetadata(x1Split[[st]])$posIndx[res]
-                    }
-                } else if (st == "-") {
-                    if (!missing(subject)) {
-                        subSplit <- s1[strand(s1) != "+"]
-                        res <- nearest(ranges(x1Split[[st]]), ranges(subSplit))
-                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
-                            elementMetadata(subSplit)$posIndx[res]
-                    } else {
-                        res <- nearest(ranges(x1Split[[st]]))
-                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
-                            elementMetadata(x1Split[[st]])$posIndx[res]
-                    }
-                } else if (st == "*") {
-                    if (!missing(subject)) {
-                        res <- nearest(ranges(x1Split[[st]]), ranges(s1))
-                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
-                            elementMetadata(s1)$posIndx[res]    
-                    } else {
-                        res <- nearest(ranges(x1Split[[st]]))
-                        ans[elementMetadata(x1Split[[st]])$posIndx] <-
-                            elementMetadata(x1Split[[st]])$posIndx[res]
-                    }
-                }
-            }
-        }              
-        ans
-    }
-)
 
 setMethod("narrow", "GenomicRanges",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
