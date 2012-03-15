@@ -2,22 +2,25 @@
 
 \alias{GenomicRanges-comparison}
 
+\alias{==,GenomicRanges,GenomicRanges-method}
 \alias{duplicated,GenomicRanges-method}
 \alias{unique,GenomicRanges-method}
-\alias{order,GenomicRanges-method}
-\alias{sort,GenomicRanges-method}
-\alias{rank,GenomicRanges-method}
-\alias{==,GenomicRanges,GenomicRanges-method}
+
 \alias{<=,GenomicRanges,GenomicRanges-method}
 \alias{>=,GenomicRanges,GenomicRanges-method}
 \alias{<,GenomicRanges,GenomicRanges-method}
 \alias{>,GenomicRanges,GenomicRanges-method}
+\alias{order,GenomicRanges-method}
+\alias{sort,GenomicRanges-method}
+\alias{rank,GenomicRanges-method}
+
+\alias{compare,GenomicRanges,GenomicRanges-method}
 
 
-\title{Ordering and comparing genomic ranges}
+\title{Comparing and ordering genomic ranges}
 
 \description{
-  Methods for ordering and comparing the elements in one or more
+  Methods for comparing and ordering the elements in one or more
   \link{GenomicRanges} objects.
 }
 
@@ -69,6 +72,8 @@ gr[2] == gr[2]  # TRUE
 gr[2] == gr[5]  # FALSE
 gr == gr[4]
 gr >= gr[3]
+compare(gr, gr[3])
+rangeComparisonCodeToLetter(compare(gr, gr[3]))
 }
 
 \keyword{methods}

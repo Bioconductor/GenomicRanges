@@ -1,5 +1,5 @@
 ### =========================================================================
-### Ordering and comparing genomic ranges
+### Comparing and ordering genomic ranges
 ### -------------------------------------------------------------------------
 ###
 ### I. UNIQUE AND DUPLICATED ELEMENTS WITHIN A GenomicRanges OBJECT
@@ -134,39 +134,43 @@ setMethod("rank", "GenomicRanges",
 ### III. ELEMENT-WISE (AKA "PARALLEL") COMPARISON OF 2 GenomicRanges OBJECTS.
 ###
 
-### This is the core function for parallel comparison of 2 GenomicRanges
-### objects. It returns a numeric vector of the length of the longest
-### GenomicRanges where the i-th value is less than, equal to, or greater than
-### zero if the i-th element in 'e1' is respectively less than, equal to, or
-### greater than the i-th element in 'e2'.
-.GenomicRanges.pcompar <- function(e1, e2)
+### Generalized range-wise comparison of 2 GenomicRanges objects.
+### Produces a predefined code (i.e. >= -6 and <= 6) when 'x[i]' and 'y[i]'
+### are on the same space (i.e. on the same underlying sequence and strand).
+### Otherwise, returns a code that is < -6 if 'x[i] < y[i]', and > 6 if
+### 'x[i] > y[i]'. See '?compare' (in IRanges) for the 13 predefined codes.
+.GenomicRanges.compare <- function(x, y)
 {
     ## Pre-comparison step (see above for details).
-    ## merge() will fail if 'e1' and 'e2' don't have compatible
-    ## underlying sequences.
-    seqinfo <- merge(seqinfo(e1), seqinfo(e2))
+    ## merge() will fail if 'x' and 'y' don't have compatible underlying
+    ## sequences.
+    seqinfo <- merge(seqinfo(x), seqinfo(y))
     seqlevels <- seqlevels(seqinfo)
-    if (any(diff(match(seqlevels(e2), seqlevels)) < 0L))
+    if (any(diff(match(seqlevels(y), seqlevels)) < 0L))
         stop("the 2 objects to compare have seqlevels in incompatible orders")
     ## This should only insert new seqlevels in the existing ones i.e. it
     ## should NEVER drop or reorder existing levels
-    seqlevels(e1) <- seqlevels(e2) <- seqlevels
-    a <- as.integer(seqnames(e1)) - as.integer(seqnames(e2))
-    b <- as.integer(strand(e1)) - as.integer(strand(e2))
-    c <- start(e1) - start(e2)
-    d <- width(e1) - width(e2)
+    seqlevels(x) <- seqlevels(y) <- seqlevels
+    a <- compare(ranges(x), ranges(y))
+    b <- as.integer(strand(x)) - as.integer(strand(y))
+    c <- as.integer(seqnames(x)) - as.integer(seqnames(y))
     ## Note that sign() always returns a numeric vector, even on an integer
     ## vector.
-    as.integer(8L * sign(a) + 4L * sign(b) + 2L * sign(c) + sign(d))
+    a + 13L * as.integer(sign(b) + 3L * sign(c))
 }
+
+### The "compare" method.
+setMethod("compare", c("GenomicRanges", "GenomicRanges"),
+    function(x, y) .GenomicRanges.compare(x, y)
+)
 
 ### There is a "!=" method for ANY,ANY defined in IRanges.
 setMethod("==", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { .GenomicRanges.pcompar(e1, e2) == 0L }
+    function(e1, e2) { .GenomicRanges.compare(e1, e2) == 0L }
 )
 
 setMethod("<=", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { .GenomicRanges.pcompar(e1, e2) <= 0L }
+    function(e1, e2) { .GenomicRanges.compare(e1, e2) <= 0L }
 )
 
 ### TODO: Define methods for ANY,ANY (in IRanges) instead of the 3 following

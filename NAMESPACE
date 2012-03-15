@@ -35,6 +35,7 @@ export(
 
     GRanges, GRangesList, GenomicRangesList,
     makeGRangesListFromFeatureFragments,
+    compare,
     rname, "rname<-", cigar, qwidth, grglist, granges, grg, rglist, qnarrow,
     GappedAlignments, readGappedAlignments,
     first, last, left, right, isProperPair,
