@@ -4,9 +4,9 @@
 % Class:
 \alias{class:GappedAlignments}
 \alias{GappedAlignments-class}
-\alias{GappedAlignments}
 
 % Constructors:
+\alias{GappedAlignments}
 \alias{updateObject,GappedAlignments-method}
 \alias{readGappedAlignments}
 
@@ -80,7 +80,7 @@
   or "read", typically short) aligns to a reference sequence (typically
   long).
 
-  Most of the time, a GappedAlignments object will be created by loading
+  Typically, a GappedAlignments object will be created by loading
   records from a BAM (or SAM) file and each element in the resulting
   object will correspond to a record. BAM/SAM records generally contain
   a lot of information but only part of that information is loaded
@@ -145,7 +145,7 @@
   \describe{
     \item{}{
       \code{readGappedAlignments(file, format="BAM", use.names=FALSE, ...)}:
-      Read a file as a GappedAlignments object.
+      Read a file containing aligned reads as a GappedAlignments object.
       By default (i.e. \code{use.names=FALSE}), the resulting object has no
       names. If \code{use.names} is \code{TRUE}, then the names are
       constructed from the query template names (QNAME field in a SAM/BAM
@@ -380,68 +380,68 @@
 
 \examples{
 library(Rsamtools)  # for ScanBamParam() and the ex1.bam file
-galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(galn_file, param=ScanBamParam(what="flag"))
-galn
+gal_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+gal <- readGappedAlignments(gal_file, param=ScanBamParam(what="flag"))
+gal
 
 ## ---------------------------------------------------------------------
 ## A. BASIC MANIPULATION
 ## ---------------------------------------------------------------------
-length(galn)
-head(galn)
-names(galn)  # no names by default
-head(rname(galn))
-seqlevels(galn)
+length(gal)
+head(gal)
+names(gal)  # no names by default
+head(rname(gal))
+seqlevels(gal)
 
 ## Rename the reference sequences:
-seqlevels(galn) <- sub("seq", "chr", seqlevels(galn))
-seqlevels(galn)
+seqlevels(gal) <- sub("seq", "chr", seqlevels(gal))
+seqlevels(gal)
 
-head(strand(galn))
-head(cigar(galn))
-head(qwidth(galn))
-table(qwidth(galn))
+head(strand(gal))
+head(cigar(gal))
+head(qwidth(gal))
+table(qwidth(gal))
 
-grglist(galn)  # a GRangesList object
-granges(galn)  # a GRanges object
-rglist(galn)   # a CompressedNormalIRangesList object
-ranges(galn)   # an IRanges object
-stopifnot(identical(elementLengths(grglist(galn)), elementLengths(rglist(galn))))
+grglist(gal)  # a GRangesList object
+granges(gal)  # a GRanges object
+rglist(gal)   # a CompressedNormalIRangesList object
+ranges(gal)   # an IRanges object
+stopifnot(identical(elementLengths(grglist(gal)), elementLengths(rglist(gal))))
 
-head(start(galn))
-head(end(galn))
-head(width(galn))
-head(ngap(galn))
+head(start(gal))
+head(end(gal))
+head(width(gal))
+head(ngap(gal))
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING
 ## ---------------------------------------------------------------------
-galn[strand(galn) == "-"]
-galn[grep("I", cigar(galn), fixed=TRUE)]
-galn[grep("N", cigar(galn), fixed=TRUE)]  # no gaps
+gal[strand(gal) == "-"]
+gal[grep("I", cigar(gal), fixed=TRUE)]
+gal[grep("N", cigar(gal), fixed=TRUE)]  # no gaps
 
 ## A confirmation that all the queries map to the reference with no
 ## gaps:
-stopifnot(all(ngap(galn) == 0))
+stopifnot(all(ngap(gal) == 0))
 
 ## Different ways to subset:
-galn[6]             # a GappedAlignments object of length 1
-grglist(galn)[[6]]  # a GRanges object of length 1
-rglist(galn)[[6]]   # a NormalIRanges object of length 1
+gal[6]             # a GappedAlignments object of length 1
+grglist(gal)[[6]]  # a GRanges object of length 1
+rglist(gal)[[6]]   # a NormalIRanges object of length 1
 
 ## Ds are NOT gaps:
-ii <- grep("D", cigar(galn), fixed=TRUE)
-galn[ii]
-ngap(galn[ii])
-grglist(galn[ii])
+ii <- grep("D", cigar(gal), fixed=TRUE)
+gal[ii]
+ngap(gal[ii])
+grglist(gal[ii])
 
 ## qwidth() vs width():
-galn[qwidth(galn) != width(galn)]
+gal[qwidth(gal) != width(gal)]
 
 ## This MUST return an empty object:
-galn[cigar(galn) == "35M" & qwidth(galn) != 35]
+gal[cigar(gal) == "35M" & qwidth(gal) != 35]
 ## but this doesn't have too:
-galn[cigar(galn) != "35M" & qwidth(galn) == 35]
+gal[cigar(gal) != "35M" & qwidth(gal) == 35]
 
 ## ---------------------------------------------------------------------
 ## C. qnarrow()/narrow()
@@ -451,14 +451,14 @@ galn[cigar(galn) != "35M" & qwidth(galn) == 35]
 
 ## This trims 3 nucleotides on the left and 5 nucleotides on the right
 ## of each alignment:
-qnarrow(galn, start=4, end=-6)
+qnarrow(gal, start=4, end=-6)
 ## Note that the 'start' and 'end' arguments specify what part of each
 ## query sequence should be kept (negative values being relative to the
 ## right end of the query sequence), not what part should be trimmed.
 
 ## Trimming on the left doesn't change the "end" of the queries.
-qnarrow(galn, start=21)
-stopifnot(identical(end(qnarrow(galn, start=21)), end(galn)))
+qnarrow(gal, start=21)
+stopifnot(identical(end(qnarrow(gal, start=21)), end(gal)))
 }
 
 \keyword{methods}
