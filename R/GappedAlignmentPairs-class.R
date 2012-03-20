@@ -22,8 +22,8 @@ setClass("GappedAlignmentPairs",
 )
 
 ### Formal API:
-###   names(x)    - NULL or character vector.
 ###   length(x)   - single integer N. Nb of pairs in 'x'.
+###   names(x)    - NULL or character vector.
 ###   first(x)    - returns "first" slot.
 ###   last(x)     - returns "last" slot.
 ###   left(x)     - GappedAlignments made of the "left alignments" (if first
