@@ -12,7 +12,10 @@
 \title{Count Read Hits in Genomic Features} 
 
 \description{
-  Count read hits per exon or transcript and resolve multi-hit reads. 
+  Count read hits per exon or transcript and resolve multi-hit reads.
+
+  WARNING: \code{countGenomicOverlaps} is deprecated in favor of
+  \code{summarizeOverlaps}.
 }
 
 \usage{

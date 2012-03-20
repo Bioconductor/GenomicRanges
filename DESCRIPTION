@@ -37,10 +37,10 @@ Collate: utils.R
 	setops-methods.R
 	findOverlaps-methods.R
 	encodeOverlaps-methods.R
-	countGenomicOverlaps-methods.R
+	countGenomicOverlaps.R
 	seqlevels-utils.R
 	resolveHits-methods.R
-	summarizeOverlaps-methods.R
+	summarizeOverlaps.R
 	RangesMapping-methods.R
 	RangedData-methods.R
 	test_GenomicRanges_package.R

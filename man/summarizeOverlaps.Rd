@@ -12,7 +12,7 @@
 
 \description{
   Count reads that map to genomic features with options to resolve reads that
-  overlap multiple features 
+  overlap multiple features.
 }
 
 \usage{
