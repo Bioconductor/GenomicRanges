@@ -15,10 +15,6 @@
 \alias{names<-,GappedAlignmentPairs-method}
 \alias{seqnames,GappedAlignmentPairs-method}
 \alias{strand,GappedAlignmentPairs-method}
-\alias{elementMetadata,GappedAlignmentPairs-method}
-\alias{elementMetadata<-,GappedAlignmentPairs-method}
-\alias{seqinfo,GappedAlignmentPairs-method}
-\alias{seqinfo<-,GappedAlignmentPairs-method}
 \alias{first}
 \alias{first,GappedAlignmentPairs-method}
 \alias{last}
@@ -29,12 +25,16 @@
 \alias{right,GappedAlignmentPairs-method}
 \alias{isProperPair}
 \alias{isProperPair,GappedAlignmentPairs-method}
+\alias{elementMetadata,GappedAlignmentPairs-method}
+\alias{elementMetadata<-,GappedAlignmentPairs-method}
+\alias{seqinfo,GappedAlignmentPairs-method}
+\alias{seqinfo<-,GappedAlignmentPairs-method}
 
 % Vector methods:
 \alias{[,GappedAlignmentPairs-method}
 
 % List methods:
-\alias{[[,GappedAlignmentPairs-method}
+\alias{[[,GappedAlignmentPairs,ANY,ANY-method}
 \alias{unlist,GappedAlignmentPairs-method}
 
 % Coercion:
@@ -48,21 +48,27 @@
 
 \description{
   The GappedAlignmentPairs class is a container for "alignment pairs".
-  All "alignment pairs" are made of a "first" alignment and a "last" alignment,
-  and are typically representing the hits of a set of paired-end reads to
-  a reference genome. In a given pair, the "first" alignment represents the
-  hit of the first end of the read (aka "first segment in the template", using
-  SAM Spec terminology), and the "last" alignment represents the hit of the
-  second end of the read (aka "last segment in the template", using SAM Spec
-  terminology).
 }
 
 \details{
-  Typically, a GappedAlignmentPairs object will be created by loading
-  records from a BAM (or SAM) file containing aligned paired-end reads.
-  Each element in the resulting object will be obtained by pairing 2
-  records. See the \code{GappedAlignmentPairs} function below for more
-  information.
+  A GappedAlignmentPairs object is a list-like object where each element
+  describes an "alignment pair".
+
+  An "alignment pair" is made of a "first" and a "last" alignment,
+  and is formally represented by a \link{GappedAlignments} object of
+  length 2. It is typically representing the hit of a paired-end read to
+  the reference genome that was used by the aligner. More precisely,
+  in a given pair, the "first" alignment represents the hit of the first
+  end of the read (aka "first segment in the template", using SAM Spec
+  terminology), and the "last" alignment represents the hit of the second
+  end of the read (aka "last segment in the template", using SAM Spec
+  terminology).
+
+  In general, a GappedAlignmentPairs object will be created by loading
+  records from a BAM (or SAM) file containing aligned paired-end reads,
+  using the \code{readGappedAlignmentPairs} function (see below).
+  Each element in the returned object will be obtained by pairing 2
+  records.
 }
 
 \section{Constructors}{
@@ -88,7 +94,8 @@
       package first).
     }
     \item{}{
-      \code{GappedAlignmentPairs(first, last, isProperPair, names = NULL)}:
+      \code{GappedAlignmentPairs(first, last, isProperPair, names=NULL)}:
+      Low-level GappedAlignmentPairs constructor. Generally not used directly.
     }
   }
 }
@@ -103,12 +110,57 @@
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
+      Gets or sets the names of \code{x}.
+      See \code{readGappedAlignmentPairs} above for how to automatically
+      extract and set the names from the file to read.
     }
     \item{}{
-      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+      \code{seqnames(x)}:
+      Gets the name of the reference sequence for each alignment pair
+      in \code{x}. This comes from the RNAME field of the BAM file and
+      has the same value for the 2 records in a pair
+      (\code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
+      used by \code{\link[Rsamtools]{readBamGappedAlignmentPairs}} for
+      doing the pairing, rejects pairs with incompatible RNAME values).
     }
     \item{}{
-      \code{strand(x)}, \code{strand(x) <- value}:
+      \code{strand(x)}:
+      Gets the strand for each alignment pair in \code{x}. By definition
+      the strand of an alignment pair is the strand of the \emph{first}
+      alignment in the pair. In a GappedAlignmentPairs object, the strand
+      of the last alignment in a pair is \emph{always} the opposite of the
+      strand of the first alignment
+      (\code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
+      used by \code{\link[Rsamtools]{readBamGappedAlignmentPairs}} for
+      doing the pairing, rejects pairs where the first and last alignments
+      are on the same strand).
+    }
+    \item{}{
+      \code{first(x)}, \code{last(x)}:
+      Gets the first or last alignment for each alignment pair in \code{x}.
+      The result is a \link{GappedAlignments} object of the same length
+      as \code{x}.
+    }
+    \item{}{
+      \code{left(x)}:
+      Gets the "left alignment" for each alignment pair in \code{x}.
+      By definition, the "left alignment" in a pair is the alignment that
+      is on the + strand. If this is the first alignment, then it's returned
+      as-is by \code{left(x)}, but if this is the last alignment, then it's
+      returned by \code{left(x)} with the strand inverted.
+    }
+    \item{}{
+      \code{right(x)}:
+      Gets the "right alignment" for each alignment pair in \code{x}.
+      By definition, the "right alignment" in a pair is the alignment that
+      is on the - strand. If this is the first alignment, then it's returned
+      as-is by \code{right(x)}, but if this is the last alignment, then it's
+      returned by \code{right(x)} with the strand inverted.
+    }
+    \item{}{
+      \code{isProperPair(x)}:
+      Gets the "isProperPair" flag bit (bit 0x2 in SAM Spec) set by
+      the aligner for each alignment pair in \code{x}.
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
@@ -119,7 +171,7 @@
       \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
       Gets or sets the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
-      or to \code{levels(rname(x))}, those 2 expressions being
+      or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a
       GappedAlignmentPairs object. \code{value} must be a character vector
       with no NAs.
@@ -147,22 +199,47 @@
   }
 }
 
+\section{Vector methods}{
+  In the code snippets below, \code{x} is a GappedAlignmentPairs object.
+
+  \describe{
+    \item{}{
+      \code{x[i]}:
+      Returns a new GappedAlignmentPairs object made of the selected
+      alignment pairs. 
+    }
+  }
+}
+
+\section{List methods}{
+  In the code snippets below, \code{x} is a GappedAlignmentPairs object.
+
+  \describe{
+    \item{}{
+      \code{x[[i]]}:
+      Extract the i-th alignment pair as a \link{GappedAlignments} object
+      of length 2. As expected \code{x[[i]][1]} and \code{x[[i]][2]} are
+      respectively the first and last alignments in the pair.
+    }
+    \item{}{
+      \code{unlist(x, use.names=TRUE)}:
+      Returns the \link{GappedAlignments} object conceptually defined
+      by \code{c(x[[1]], x[[2]], ..., x[[length(x)]])}.
+      \code{use.names} determines whether \code{x} names should be
+      propagated to the result or not.
+    }
+  }
+}
+
 \section{Coercion}{
   In the code snippets below, \code{x} is a GappedAlignmentPairs object.
 
   \describe{
     \item{}{
       \code{as(x, "GRangesList")}:
-    }
-  }
-}
-
-\section{Subsetting and related operations}{
-  In the code snippets below, \code{x} is a GappedAlignmentPairs object.
-
-  \describe{
-    \item{}{
-      \code{x[i]}:
+      Returns the \link{GRangesList} object of same length as \code{x}
+      where the i-th element is the \link{GRanges} object conceptually
+      defined by \code{unlist(grglist(c(left(x)[i], right(x)[i])))}.
     }
   }
 }
@@ -172,9 +249,41 @@
 }
 
 \seealso{
+  \link{GappedAlignments-class},
+  \code{\link[Rsamtools]{readBamGappedAlignmentPairs}},
+  \code{\link[Rsamtools]{makeGappedAlignmentPairs}},
+  \link{Seqinfo-class},
+  \link{GRangesList-class},
+  \link{GRanges-class}
 }
 
 \examples{
+galp_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galp <- readGappedAlignmentPairs(galp_file, use.names=TRUE)
+galp
+
+length(galp)
+head(galp)
+head(names(galp))
+seqnames(galp)
+seqlevels(galp)
+
+## Rename the reference sequences:
+seqlevels(galp) <- sub("seq", "chr", seqlevels(galp))
+seqlevels(galp)
+
+strand(galp)
+
+first(galp)
+last(galp)
+left(galp)
+right(galp)
+table(isProperPair(galp))
+
+galp[[1]]
+unlist(galp)
+
+as(galp, "GRangesList")
 }
 
 \keyword{methods}

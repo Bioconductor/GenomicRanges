@@ -29,7 +29,7 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 )
 }
 
-.get_GRangesList_space <- function(x)
+.get_GRangesList_spaces <- function(x)
 {
         x_seqnames <- seqnames(x)
         x_strand <- strand(x)
@@ -46,8 +46,8 @@ GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL)
                               as.list(width(query)),
                               as.list(start(subject)),
                               as.list(width(subject)),
-                              query.space=.get_GRangesList_space(query),
-                              subject.space=.get_GRangesList_space(subject),
+                              query.spaces=.get_GRangesList_spaces(query),
+                              subject.spaces=.get_GRangesList_spaces(subject),
                               Lquery.lengths=Lquery.lengths)
 }
 

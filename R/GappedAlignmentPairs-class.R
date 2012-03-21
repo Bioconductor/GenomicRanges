@@ -364,7 +364,6 @@ setMethod("unlist", "GappedAlignmentPairs",
 ###
 
 ### FIXME: as(galp[FALSE], "GRangesList") is broken!
-### TODO: Invert the strand of the ranges coming from the last end.
 setAs("GappedAlignmentPairs", "GRangesList",
     function(from)
     {

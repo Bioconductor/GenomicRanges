@@ -163,10 +163,11 @@
       package first).
     }
     \item{}{
-      \code{GappedAlignments(rname = Rle(factor()), pos = integer(0),
-	cigar = character(0), strand = NULL, names = NULL, seqlengths =
-	NULL, ...)}: Create a GappedAlignments object. Named arguments
-      in \code{\ldots} are used as elementMetadata.
+      \code{GappedAlignments(rname=Rle(factor()), pos=integer(0),
+                             cigar=character(0),
+                             strand=NULL, names=NULL, seqlengths=NULL, ...)}:
+      Low-level GappedAlignments constructor. Generally not used directly.
+      Named arguments in \code{...} are used as elementMetadata.
     }
   }
 }
@@ -250,7 +251,7 @@
       \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
       Gets or sets the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
-      or to \code{levels(rname(x))}, those 2 expressions being
+      or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a GappedAlignments
       object. \code{value} must be a character vector with no NAs.
       See \code{?\link{seqlevels}} for more information.
@@ -390,14 +391,14 @@ gal
 length(gal)
 head(gal)
 names(gal)  # no names by default
-head(rname(gal))
+seqnames(gal)
 seqlevels(gal)
 
 ## Rename the reference sequences:
 seqlevels(gal) <- sub("seq", "chr", seqlevels(gal))
 seqlevels(gal)
 
-head(strand(gal))
+strand(gal)
 head(cigar(gal))
 head(qwidth(gal))
 table(qwidth(gal))
