@@ -6,7 +6,7 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.7.36
+Version: 1.7.37
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
@@ -16,7 +16,7 @@ LinkingTo: IRanges
 Suggests: Rsamtools (>= 1.5.66), BSgenome, rtracklayer, GenomicFeatures,
 	EatonEtAlChIPseq (>= 0.0.3), leeBamViews, edgeR, DESeq,
 	rtracklayer, org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2,
-	DEXSeq, pasilla, VariantAnnotation, RUnit
+	DEXSeq, pasilla, pasillaBamSubset, VariantAnnotation, RUnit
 License: Artistic-2.0
 Collate: utils.R
 	cigar-utils.R

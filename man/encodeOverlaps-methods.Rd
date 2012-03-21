@@ -1,7 +1,6 @@
 \name{encodeOverlaps-methods}
 \alias{encodeOverlaps-methods}
 
-\alias{encodeOverlaps}
 \alias{encodeOverlaps,GRangesList,GRangesList-method}
 
 \alias{isCompatibleWithSplicing}
@@ -28,7 +27,7 @@
 }
 
 \usage{
-encodeOverlaps(query, subject)
+\S4method{encodeOverlaps}{GRangesList,GRangesList}(query, subject)
 isCompatibleWithSplicing(x)
 isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
 extractSkippedExonRanks(x)
@@ -54,7 +53,7 @@ extractSkippedExonRanks(x)
 }
 
 \seealso{
-  \link{galn4},
+  \code{\link[pasillaBamSubset]{untreated1_chr4}},
   \code{\link[GenomicFeatures]{sortExonsByRank}},
   \code{\link[GenomicFeatures]{makeTranscriptDbFromUCSC}},
   \code{\link[IRanges]{findOverlaps}},
@@ -68,9 +67,11 @@ extractSkippedExonRanks(x)
 ## ---------------------------------------------------------------------
 
 ## Load some aligned reads (RNA-seq single-end reads aligned against the
-## dm3 genome, see '?galn4' for more information):
-data(galn4)
-reads4 <- as(galn4, "GRangesList")
+## dm3 genome, see '?untreated1_chr4' in the pasillaBamSubset data
+## package for more information):
+library(pasillaBamSubset)
+gal4 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE)
+reads4 <- as(gal4, "GRangesList")
 table(elementLengths(reads4))  # 20316 alignments with 1 gap or more
 
 ## Retrieve transcripts and their exons from UCSC and extract the
@@ -141,18 +142,18 @@ table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
 is_compat <- isCompatibleWithSplicing(ovenc)
 table(is_compat)  # 241237 overlaps of type COMPATIBLE_WITH_SPLICING
 
-## For each alignment in 'galn4', compute the number of hits (i.e.
+## For each alignment in 'gal4', compute the number of hits (i.e.
 ## overlaps) of type COMPATIBLE_WITH_SPLICING:
-galn4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
-                               nbins=length(galn4))
-table(galn4_compat_nhits)
-sum(galn4_compat_nhits != 0)  # 73973 alignments with at least one hit
-                              # of type COMPATIBLE_WITH_SPLICING
+gal4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
+                              nbins=length(gal4))
+table(gal4_compat_nhits)
+sum(gal4_compat_nhits != 0)  # 73973 alignments with at least one hit
+                             # of type COMPATIBLE_WITH_SPLICING
 
-## 'galn4_compat_nhits != 0' can be used to subset either 'galn4'
+## 'gal4_compat_nhits != 0' can be used to subset either 'gal4'
 ## or 'reads4':
-galn4[galn4_compat_nhits != 0]
-reads4[galn4_compat_nhits != 0]
+gal4[gal4_compat_nhits != 0]
+reads4[gal4_compat_nhits != 0]
 
 ## For each transcript in 'exbytx' (or 'exbytx0'), compute the number
 ## of hits of type COMPATIBLE_WITH_SPLICING:
@@ -190,13 +191,13 @@ table(encoding(ovenc))[isCompatibleWithSkippedExons(unique_ovenc)]
 is_compat2 <- isCompatibleWithSkippedExons(ovenc)
 table(is_compat2)  # 484 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
 
-## For each alignment in 'galn4', compute the number of hits (i.e.
+## For each alignment in 'gal4', compute the number of hits (i.e.
 ## overlaps) of type COMPATIBLE_WITH_SKIPPED_EXONS:
-galn4_compat2_nhits <- tabulate(queryHits(overlaps)[is_compat2],
-                                nbins=length(galn4))
-table(galn4_compat2_nhits)
-sum(galn4_compat2_nhits != 0)  # 216 alignments with at least one hit
-                               # of type COMPATIBLE_WITH_SKIPPED_EXONS
+gal4_compat2_nhits <- tabulate(queryHits(overlaps)[is_compat2],
+                               nbins=length(gal4))
+table(gal4_compat2_nhits)
+sum(gal4_compat2_nhits != 0)  # 216 alignments with at least one hit
+                              # of type COMPATIBLE_WITH_SKIPPED_EXONS
 
 ## For each transcript in 'exbytx' (or 'exbytx0'), compute the number
 ## of hits of type COMPATIBLE_WITH_SKIPPED_EXONS:
@@ -209,14 +210,14 @@ table(exbytx_compat2_nhits)
 ## D. COMBINING RESULTS OF isCompatibleWithSplicing() AND
 ##    isCompatibleWithSkippedExons() TO DETECT NOVEL SPLICE JUNCTIONS
 ## ---------------------------------------------------------------------
-## An alignment in 'galn4' with hits of type
+## An alignment in 'gal4' with hits of type
 ## COMPATIBLE_WITH_SKIPPED_EXONS but no hits of type
 ## COMPATIBLE_WITH_SPLICING suggests the presence of a transcript that
 ## is not in our annotations.
 
 ## First we extract the index of those alignments:
-aln_shows_nov_splice_jct <- galn4_compat2_nhits != 0L &
-                            galn4_compat_nhits == 0L
+aln_shows_nov_splice_jct <- gal4_compat2_nhits != 0L &
+                            gal4_compat_nhits == 0L
 which(aln_shows_nov_splice_jct)
 
 ## We make this an index into 'overlaps' (Hits object):
@@ -240,7 +241,7 @@ tx2skpexrk <- split(skpexrk, f)
 ## 'tx2skpexrk' is a named list of named lists of integer vectors.
 ## The first level of names (outer names) are transcript TxDb internal
 ## ids and the second level of names (inner names) are alignment
-## indices into 'galn4':
+## indices into 'gal4':
 names(tx2skpexrk)  # transcript TxDb internal ids
 
 ## Transcript "10" has 4 hits that skip exons 9 and 10:
