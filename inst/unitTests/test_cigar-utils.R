@@ -81,32 +81,38 @@ test_cigarToIRangesListByRName <- function()
     rname <- c("chr6", "chr6", "chr2", "chr6", "chr2")
     pos <- c(101, 201, 1001,  301, 2001)
 
+    ## When 'reduce.ranges=FALSE', we expect 1 range per CIGAR operation.
     ans <- as.list(cigarToIRangesListByRName(cigar, rname, pos,
-                                             merge.ranges=FALSE))
-    ir2 <- IRanges(start=c(1001, 1091, 1101, 1151, 1161),
-                   end=c(1090, 1100, 1150, 1160, 1200))
-    ir6 <- IRanges(start=c(101, 5131, 201, 301, 319),
-                   end=c(130, 5140, 250, 318, 340))
+                                             drop.D.ranges=FALSE,
+                                             reduce.ranges=FALSE))
+    ir2 <- IRanges(start=c(1001, 1091, 1101, 1101, 1151, 1161, 2001),
+                   end=c(1090, 1100, 1100, 1150, 1160, 1200, 2000))
+    ir6 <- IRanges(start=c(101, 5131, 5131, 201, 301, 319, 319),
+                   end=c(130, 5130, 5140, 250, 318, 318, 340))
+    ans0 <- list(chr2=ir2, chr6=ir6)
+    checkIdentical(ans, ans0)
+
+    ans <- as.list(cigarToIRangesListByRName(cigar, rname, pos,
+                                             drop.D.ranges=FALSE,
+                                             reduce.ranges=TRUE))
+    ir2b <- c(reduce(ir2[1:6]), reduce(ir2[7]))
+    ir6b <- c(reduce(ir6[1:3]), reduce(ir6[4]), reduce(ir6[5:7]))
+    ans0 <- list(chr2=ir2b, chr6=ir6b)
+    checkIdentical(ans, ans0)
+
+    ans <- as.list(cigarToIRangesListByRName(cigar, rname, pos,
+                                             drop.D.ranges=TRUE,
+                                             reduce.ranges=FALSE))
+    start(ir2)[5] <- end(ir2)[5] + 1
     ans0 <- list(chr2=ir2, chr6=ir6)
     checkIdentical(ans, ans0)
 
     ans <- as.list(cigarToIRangesListByRName(cigar, rname, pos,
                                              drop.D.ranges=TRUE,
-                                             merge.ranges=FALSE))
-    ans0 <- list(chr2=ir2[-4], chr6=ir6)
-    checkIdentical(ans, ans0)
-
-    ans <- as.list(cigarToIRangesListByRName(cigar, rname, pos,
-                                             drop.D.ranges=TRUE))
-    ir6 <- IRanges(start=c(101, 5131, 201, 301),
-                   end=c(130, 5140, 250, 340))
-    ans0 <- list(chr2=reduce(ir2[-4]), chr6=ir6)
-    checkIdentical(ans, ans0)
-
-    ans <- as.list(cigarToIRangesListByRName(cigar, rname, pos))
-    ir6 <- IRanges(start=c(101, 5131, 201, 301),
-                   end=c(130, 5140, 250, 340))
-    ans0 <- list(chr2=reduce(ir2), chr6=ir6)
+                                             reduce.ranges=TRUE))
+    ir2 <- c(reduce(ir2[1:6]), reduce(ir2[7]))
+    ir6 <- c(reduce(ir6[1:3]), reduce(ir6[4]), reduce(ir6[5:7]))
+    ans0 <- list(chr2=ir2, chr6=ir6)
     checkIdentical(ans, ans0)
 }
 

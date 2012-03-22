@@ -72,7 +72,8 @@ cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
     ans
 }
 
-cigarToIRanges <- function(cigar, drop.D.ranges=FALSE, merge.ranges=TRUE)
+cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
+                           drop.empty.ranges=FALSE, reduce.ranges=TRUE)
 {
     if (is.factor(cigar) && is.character(levels(cigar)))
         cigar <- as.vector(cigar)
@@ -80,14 +81,17 @@ cigarToIRanges <- function(cigar, drop.D.ranges=FALSE, merge.ranges=TRUE)
         stop("'cigar' must be a single string")
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(merge.ranges))
-        stop("'merge.ranges' must be TRUE or FALSE")
-    .Call2("cigar_to_IRanges", cigar, drop.D.ranges, merge.ranges,
-          PACKAGE="GenomicRanges")
+    if (!isTRUEorFALSE(drop.empty.ranges))
+        stop("'drop.empty.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(reduce.ranges))
+        stop("'reduce.ranges' must be TRUE or FALSE")
+    .Call2("cigar_to_IRanges",
+           cigar, drop.D.ranges, drop.empty.ranges, reduce.ranges,
+           PACKAGE="GenomicRanges")
 }
 
 cigarToIRangesListByAlignment <-
-function(cigar, pos, flag=NULL, drop.D.ranges=FALSE)
+function(cigar, pos, flag=NULL, drop.D.ranges=FALSE, drop.empty.ranges=FALSE)
 {
     if (!is.character(cigar)) {
         if (!is.factor(cigar) || !is.character(levels(cigar)))
@@ -110,12 +114,17 @@ function(cigar, pos, flag=NULL, drop.D.ranges=FALSE)
     }
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(drop.empty.ranges))
+        stop("'drop.empty.ranges' must be TRUE or FALSE")
     .Call2("cigar_to_list_of_IRanges_by_alignment",
-          cigar, pos, flag, drop.D.ranges, PACKAGE="GenomicRanges")
+           cigar, pos, flag, drop.D.ranges, drop.empty.ranges,
+           PACKAGE="GenomicRanges")
 }
 
-cigarToIRangesListByRName <-
-function(cigar, rname, pos, flag=NULL, drop.D.ranges=FALSE, merge.ranges=TRUE)
+cigarToIRangesListByRName <- function(cigar, rname, pos, flag=NULL,
+                                      drop.D.ranges=FALSE,
+                                      drop.empty.ranges=FALSE,
+                                      reduce.ranges=TRUE)
 {
     if (!is.character(cigar)) {
         if (!is.factor(cigar) || !is.character(levels(cigar)))
@@ -143,11 +152,14 @@ function(cigar, rname, pos, flag=NULL, drop.D.ranges=FALSE, merge.ranges=TRUE)
     }
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(merge.ranges))
-        stop("'merge.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(drop.empty.ranges))
+        stop("'drop.empty.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(reduce.ranges))
+        stop("'reduce.ranges' must be TRUE or FALSE")
     C_ans <- .Call2("cigar_to_list_of_IRanges_by_rname",
-                   cigar, rname, pos, flag, drop.D.ranges, merge.ranges,
-                   PACKAGE="GenomicRanges")
+                    cigar, rname, pos, flag,
+                    drop.D.ranges, drop.empty.ranges, reduce.ranges,
+                    PACKAGE="GenomicRanges")
     if (length(C_ans) < 200L)
         IRangesList(C_ans, compress=FALSE)
     else

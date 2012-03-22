@@ -36,10 +36,16 @@ cigarToWidth(cigar)
 cigarQNarrow(cigar, start=NA, end=NA, width=NA)
 cigarNarrow(cigar, start=NA, end=NA, width=NA)
 
-cigarToIRanges(cigar, drop.D.ranges=FALSE, merge.ranges=TRUE)
-cigarToIRangesListByAlignment(cigar, pos, flag=NULL, drop.D.ranges=FALSE)
-cigarToIRangesListByRName(cigar, rname, pos, flag=NULL, drop.D.ranges=FALSE,
-                          merge.ranges=TRUE)
+cigarToIRanges(cigar,
+               drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
+               reduce.ranges=TRUE)
+
+cigarToIRangesListByAlignment(cigar, pos, flag=NULL,
+                              drop.D.ranges=FALSE, drop.empty.ranges=FALSE)
+
+cigarToIRangesListByRName(cigar, rname, pos, flag=NULL,
+                          drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
+                          reduce.ranges=TRUE)
 
 queryLoc2refLoc(qloc, cigar, pos=1)
 queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
@@ -81,7 +87,10 @@ summarizeCigarTable(x)
     Note that, when \code{drop.D.ranges} is \code{TRUE}, then Ds
     and Ns in the CIGAR are equivalent.
   }
-  \item{merge.ranges}{
+  \item{drop.empty.ranges}{
+    Should empty ranges be dropped?
+  }
+  \item{reduce.ranges}{
     Should adjacent ranges coming from the same cigar be merged or not?
     Using \code{TRUE} (the default) can significantly reduce the
     size of the returned object.
@@ -234,7 +243,7 @@ cigarNarrow(cigar1, start=75)
 
 ## cigarToIRanges():
 cigarToIRanges(cigar1)
-cigarToIRanges(cigar1, merge.ranges=FALSE)
+cigarToIRanges(cigar1, reduce.ranges=FALSE)
 cigarToIRanges(cigar1, drop.D.ranges=TRUE)
 
 ## With a cigar vector of length 4:

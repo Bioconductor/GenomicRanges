@@ -488,13 +488,32 @@ static const char *split_cigar_string(SEXP cigar_string,
 	return NULL;
 }
 
-static void append_range(RangeAE *range_ae, int start, int width)
+static void drop_append_or_merge_range(RangeAE *range_ae, int start, int width,
+		int drop_empty_range, int merge_range)
 {
+	int nelt, prev_end_plus_1;
+
+	if (drop_empty_range && width == 0)
+		return;
+	if (merge_range && (nelt = RangeAE_get_nelt(range_ae)) != 0) {
+		/* The incoming range should never overlap with the previous
+		   incoming range i.e. 'start' should always be > the end of
+		   the previous incoming range. */
+		nelt--;
+		prev_end_plus_1 = range_ae->start.elts[nelt] +
+				  range_ae->width.elts[nelt];
+		if (start == prev_end_plus_1) {
+			range_ae->width.elts[nelt] += width;
+			return;
+		}
+	}
 	RangeAE_insert_at(range_ae, RangeAE_get_nelt(range_ae), start, width);
+	return;
 }
 
 static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
-		int Ds_as_Ns, RangeAE *range_ae)
+		int Ds_as_Ns, int drop_empty_ranges, int reduce_ranges,
+		RangeAE *range_ae)
 {
 	const char *cig0;
 	int offset, n, OPL /* Operation Length */, start, width;
@@ -531,68 +550,11 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 				 OP, offset + 1);
 			return errmsg_buf;
 		}
-		if (width) {
-			append_range(range_ae, start, width);
-			start += width;
-		}
+		drop_append_or_merge_range(range_ae, start, width,
+					   drop_empty_ranges, reduce_ranges);
+		start += width;
 		offset += n;
 	}
-	return NULL;
-}
-
-/* Unlike cigar_string_to_ranges(), cigar_string_to_ranges2() merges adjacent
-   ranges. */
-static const char *cigar_string_to_ranges2(SEXP cigar_string, int pos_elt,
-		int Ds_as_Ns, RangeAE *range_ae)
-{
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */, start, width;
-	char OP /* Operation */;
-
-	cig0 = CHAR(cigar_string);
-	offset = 0;
-	start = pos_elt;
-	width = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
-		if (n == -1)
-			return errmsg_buf;
-		switch (OP) {
-		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': case '=': case 'X': width += OPL; break;
-		/* Insertion to the reference */
-		    case 'I': break;
-		/* Deletion from the reference */
-		    case 'D':
-			if (Ds_as_Ns) {
-				if (width)
-					append_range(range_ae, start, width);
-				start += width + OPL;
-				width = 0;
-			} else {
-				width += OPL;
-			}
-		    break;
-		/* Skipped region from the reference */
-		    case 'N':
-			if (width)
-				append_range(range_ae, start, width);
-			start += width + OPL;
-			width = 0;
-		    break;
-		/* Soft/hard clip on the read */
-		    case 'S': case 'H': break;
-		/* Silent deletion from the padded reference */
-		    case 'P': break;
-		    default:
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-		offset += n;
-	}
-	if (width)
-		append_range(range_ae, start, width);
 	return NULL;
 }
 
@@ -904,28 +866,28 @@ SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width)
  *   cigar: character string containing the extended CIGAR;
  *   drop_D_ranges: TRUE or FALSE indicating whether Ds should be treated
  *          like Ns or not;
- *   merge_ranges: TRUE or FALSE indicating whether adjacent ranges coming
+ *   reduce_ranges: TRUE or FALSE indicating whether adjacent ranges coming
  *          from the same cigar should be merged or not.
  * Return an IRanges object describing the alignment.
  */
-SEXP cigar_to_IRanges(SEXP cigar, SEXP drop_D_ranges, SEXP merge_ranges)
+SEXP cigar_to_IRanges(SEXP cigar,
+		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
 {
 	RangeAE range_ae;
 	SEXP cigar_string;
-	int Ds_as_Ns, merge_ranges0;
+	int Ds_as_Ns, drop_empty_ranges0, reduce_ranges0;
 	const char *errmsg;
 
 	cigar_string = STRING_ELT(cigar, 0);
 	if (cigar_string == NA_STRING)
 		error("'cigar' is NA");
 	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
-	merge_ranges0 = LOGICAL(merge_ranges)[0];
+	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
+	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
 	range_ae = new_RangeAE(0, 0);
-	errmsg = merge_ranges0 ?
-			cigar_string_to_ranges2(cigar_string, 1,
-				Ds_as_Ns, &range_ae) :
-			cigar_string_to_ranges(cigar_string, 1,
-				Ds_as_Ns, &range_ae);
+	errmsg = cigar_string_to_ranges(cigar_string, 1,
+			Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
+			&range_ae);
 	if (errmsg != NULL)
 		error("%s", errmsg);
 	return new_IRanges_from_RangeAE("IRanges", &range_ae);
@@ -954,16 +916,17 @@ SEXP cigar_to_IRanges(SEXP cigar, SEXP drop_D_ranges, SEXP merge_ranges)
  *       vector format.
  */
 SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
-		SEXP drop_D_ranges)
+		SEXP drop_D_ranges, SEXP drop_empty_ranges)
 {
 	SEXP cigar_string;
 	SEXP ans, ans_unlistData, ans_partitioning, ans_partitioning_end;
-	int cigar_length, Ds_as_Ns, i, pos_elt, flag_elt;
+	int cigar_length, Ds_as_Ns, drop_empty_ranges0, i, pos_elt, flag_elt;
 	RangeAE range_ae;
 	const char *errmsg;
 
 	cigar_length = LENGTH(cigar);
 	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
+	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
 	/* we will generate at least 'cigar_length' ranges, and possibly more */
 	range_ae = new_RangeAE(cigar_length, 0);
 	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_length));
@@ -989,8 +952,8 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 			error("'pos' contains %sNAs",
 			      flag != R_NilValue ? "unexpected " : "");
 		}
-		errmsg = cigar_string_to_ranges2(cigar_string, pos_elt,
-				Ds_as_Ns, &range_ae);
+		errmsg = cigar_string_to_ranges(cigar_string, pos_elt,
+				Ds_as_Ns, drop_empty_ranges0, 1, &range_ae);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
 			error("in 'cigar' element %d: %s", i + 1, errmsg);
@@ -1024,7 +987,7 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
  *          read;
  *   drop_D_ranges: TRUE or FALSE indicating whether Ds should be treated
  *          like Ns or not;
- *   merge_ranges: TRUE or FALSE indicating whether adjacent ranges coming
+ *   reduce_ranges: TRUE or FALSE indicating whether adjacent ranges coming
  *          from the same cigar should be merged or not.
  * 'cigar', 'rname', 'pos' and 'flag' (when not NULL) are assumed to have
  * the same length (which is the number of aligned reads).
@@ -1047,10 +1010,11 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
  *   format.
  */
 SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
-		SEXP flag, SEXP drop_D_ranges, SEXP merge_ranges)
+		SEXP flag,
+		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
 {
 	SEXP rname_levels, cigar_string, ans, ans_names;
-	int ans_length, nreads, Ds_as_Ns, merge_ranges0,
+	int ans_length, nreads, Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
 	    i, level, pos_elt, flag_elt;
 	RangeAEAE range_aeae;
 	const char *errmsg;
@@ -1060,7 +1024,8 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 	range_aeae = new_RangeAEAE(ans_length, ans_length);
 	nreads = LENGTH(pos);
 	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
-	merge_ranges0 = LOGICAL(merge_ranges)[0];
+	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
+	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
 	for (i = 0; i < nreads; i++) {
 		if (flag != R_NilValue) {
 			flag_elt = INTEGER(flag)[i];
@@ -1081,11 +1046,9 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 		if (pos_elt == NA_INTEGER)
 			error("'pos' contains %sNAs",
 			      flag != R_NilValue ? "unexpected " : "");
-		errmsg = merge_ranges0 ?
-			cigar_string_to_ranges2(cigar_string, pos_elt,
-				Ds_as_Ns, range_aeae.elts + level - 1) :
-			cigar_string_to_ranges(cigar_string, pos_elt,
-				Ds_as_Ns, range_aeae.elts + level - 1);
+		errmsg = cigar_string_to_ranges(cigar_string, pos_elt,
+				Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
+				range_aeae.elts + level - 1);
 		if (errmsg != NULL)
 			error("in 'cigar' element %d: %s", i + 1, errmsg);
 	}
