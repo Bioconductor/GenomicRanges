@@ -511,6 +511,11 @@ static void drop_append_or_merge_range(RangeAE *range_ae, int start, int width,
 	return;
 }
 
+/*
+ * Only the M, =, X, I, and D CIGAR operations produce ranges (1 range per
+ * operation). The I operation always produces an empty range. The D operation
+ * only produces a range if Ds_as_Ns is FALSE.
+ */
 static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 		int Ds_as_Ns, int drop_empty_ranges, int reduce_ranges,
 		RangeAE *out)
@@ -526,12 +531,12 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
 		if (n == -1)
 			return errmsg_buf;
-		width = 0;
+		width = -1;
 		switch (OP) {
 		/* Alignment match (can be a sequence match or mismatch) */
 		    case 'M': case '=': case 'X': width = OPL; break;
 		/* Insertion to the reference */
-		    case 'I': break;
+		    case 'I': width = 0; break;
 		/* Deletion from the reference */
 		    case 'D':
 			if (Ds_as_Ns)
@@ -551,10 +556,12 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 				 OP, offset + 1);
 			return errmsg_buf;
 		}
-		drop_append_or_merge_range(out, start, width,
-					   drop_empty_ranges,
-					   reduce_ranges, out_nelt0);
-		start += width;
+		if (width != -1) {
+			drop_append_or_merge_range(out, start, width,
+						   drop_empty_ranges,
+						   reduce_ranges, out_nelt0);
+			start += width;
+		}
 		offset += n;
 	}
 	return NULL;
