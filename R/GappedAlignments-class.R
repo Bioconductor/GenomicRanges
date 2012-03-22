@@ -35,8 +35,7 @@ setClass("GappedAlignments",
 ###   ngap(x)     - integer vector of the same length as 'x'.
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
 ###   granges(x)  - GRanges object of the same length as 'x'.
-###   rglist(x)   - CompressedNormalIRangesList object of the same length as
-###                 'x'.
+###   rglist(x)   - CompressedIRangesList object of the same length as 'x'.
 ###   ranges(x)   - IRanges object of the same length as 'x'.
 ###   as.data.frame(x) - data.frame with 1 row per alignment in 'x'.
 ###   show(x)     - compact display in a data.frame-like fashion.
@@ -436,7 +435,7 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
     ans
 }
 
-### Names are taken from the 'rglist' arg (CompressedNormalIRangesList).
+### Names are taken from the 'rglist' arg (CompressedIRangesList).
 .GappedAlignmentsAsGRangesList <- function(rname, rglist, strand, seqinfo)
 {
     nrg_per_alignment <- elementLengths(rglist)
@@ -475,10 +474,10 @@ setMethod("granges", "GappedAlignments",
 )
 
 setMethod("rglist", "GappedAlignments",
-    function(x, drop.D.ranges = FALSE)
+    function(x, drop.D.ranges=FALSE)
     {
         ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
-                                             drop.D.ranges = drop.D.ranges)
+                                             drop.D.ranges=drop.D.ranges)
         names(ans) <- names(x)
         elementMetadata(ans) <- elementMetadata(x)
         ans

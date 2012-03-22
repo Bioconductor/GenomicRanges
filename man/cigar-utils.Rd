@@ -41,7 +41,8 @@ cigarToIRanges(cigar,
                reduce.ranges=TRUE)
 
 cigarToIRangesListByAlignment(cigar, pos, flag=NULL,
-                              drop.D.ranges=FALSE, drop.empty.ranges=FALSE)
+                              drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
+                              reduce.ranges=TRUE)
 
 cigarToIRangesListByRName(cigar, rname, pos, flag=NULL,
                           drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
@@ -162,7 +163,7 @@ summarizeCigarTable(x)
   first position).
 
   For \code{cigarToIRangesListByAlignment}: A
-  \link[IRanges]{CompressedNormalIRangesList} object of the same length
+  \link[IRanges]{CompressedIRangesList} object of the same length
   as \code{cigar}.
 
   For \code{cigarToIRangesListByRName}: A named \link[IRanges]{IRangesList}

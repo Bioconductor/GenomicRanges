@@ -29,7 +29,8 @@ SEXP cigar_to_list_of_IRanges_by_alignment(
 	SEXP pos,
 	SEXP flag,
 	SEXP drop_D_ranges,
-	SEXP drop_empty_ranges
+	SEXP drop_empty_ranges,
+	SEXP reduce_ranges
 );
 
 SEXP cigar_to_list_of_IRanges_by_rname(

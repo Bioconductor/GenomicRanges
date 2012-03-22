@@ -296,7 +296,7 @@
       CIGAR element.
       See Details section above for more information.
       More precisely, the \link[IRanges]{RangesList} object returned by
-      \code{rglist(x)} is a \link[IRanges]{CompressedNormalIRangesList} object,
+      \code{rglist(x)} is a \link[IRanges]{CompressedIRangesList} object,
       and the \link[IRanges]{Ranges} object returned by \code{ranges(x)} is
       an \link[IRanges]{IRanges} object.
     }
@@ -372,7 +372,7 @@
   \link{GRangesList-class},
   \link{GRanges-class},
   \code{\link{seqinfo}},
-  \link[IRanges]{CompressedNormalIRangesList-class},
+  \link[IRanges]{CompressedIRangesList-class},
   \link[IRanges]{IRanges-class},
   \link{coverage-methods},
   \link{setops-methods},
@@ -405,7 +405,7 @@ table(qwidth(gal))
 
 grglist(gal)  # a GRangesList object
 granges(gal)  # a GRanges object
-rglist(gal)   # a CompressedNormalIRangesList object
+rglist(gal)   # a CompressedIRangesList object
 ranges(gal)   # an IRanges object
 stopifnot(identical(elementLengths(grglist(gal)), elementLengths(rglist(gal))))
 

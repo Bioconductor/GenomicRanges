@@ -239,7 +239,8 @@
       \code{as(x, "GRangesList")}:
       Returns the \link{GRangesList} object of same length as \code{x}
       where the i-th element is the \link{GRanges} object conceptually
-      defined by \code{unlist(grglist(c(left(x)[i], right(x)[i])))}.
+      defined by \code{c(as(left(x), "GRangesList")[[i]],
+                         as(right(x), "GRangesList")[[i]])}.
     }
   }
 }

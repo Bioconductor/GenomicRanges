@@ -90,8 +90,10 @@ cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
            PACKAGE="GenomicRanges")
 }
 
-cigarToIRangesListByAlignment <-
-function(cigar, pos, flag=NULL, drop.D.ranges=FALSE, drop.empty.ranges=FALSE)
+cigarToIRangesListByAlignment <- function(cigar, pos, flag=NULL,
+                                          drop.D.ranges=FALSE,
+                                          drop.empty.ranges=FALSE,
+                                          reduce.ranges=TRUE)
 {
     if (!is.character(cigar)) {
         if (!is.factor(cigar) || !is.character(levels(cigar)))
@@ -116,8 +118,11 @@ function(cigar, pos, flag=NULL, drop.D.ranges=FALSE, drop.empty.ranges=FALSE)
         stop("'drop.D.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(drop.empty.ranges))
         stop("'drop.empty.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(reduce.ranges))
+        stop("'reduce.ranges' must be TRUE or FALSE")
     .Call2("cigar_to_list_of_IRanges_by_alignment",
-           cigar, pos, flag, drop.D.ranges, drop.empty.ranges,
+           cigar, pos, flag,
+           drop.D.ranges, drop.empty.ranges, reduce.ranges,
            PACKAGE="GenomicRanges")
 }
 

@@ -489,13 +489,13 @@ static const char *split_cigar_string(SEXP cigar_string,
 }
 
 static void drop_append_or_merge_range(RangeAE *range_ae, int start, int width,
-		int drop_empty_range, int merge_range)
+		int drop_empty_range, int merge_range, int nelt0)
 {
 	int nelt, prev_end_plus_1;
 
 	if (drop_empty_range && width == 0)
 		return;
-	if (merge_range && (nelt = RangeAE_get_nelt(range_ae)) != 0) {
+	if (merge_range && (nelt = RangeAE_get_nelt(range_ae)) > nelt0) {
 		/* The incoming range should never overlap with the previous
 		   incoming range i.e. 'start' should always be > the end of
 		   the previous incoming range. */
@@ -513,13 +513,14 @@ static void drop_append_or_merge_range(RangeAE *range_ae, int start, int width,
 
 static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 		int Ds_as_Ns, int drop_empty_ranges, int reduce_ranges,
-		RangeAE *range_ae)
+		RangeAE *out)
 {
 	const char *cig0;
-	int offset, n, OPL /* Operation Length */, start, width;
+	int out_nelt0, offset, n, OPL /* Operation Length */, start, width;
 	char OP /* Operation */;
 
 	cig0 = CHAR(cigar_string);
+	out_nelt0 = RangeAE_get_nelt(out);
 	offset = 0;
 	start = pos_elt;
 	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
@@ -550,8 +551,9 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 				 OP, offset + 1);
 			return errmsg_buf;
 		}
-		drop_append_or_merge_range(range_ae, start, width,
-					   drop_empty_ranges, reduce_ranges);
+		drop_append_or_merge_range(out, start, width,
+					   drop_empty_ranges,
+					   reduce_ranges, out_nelt0);
 		start += width;
 		offset += n;
 	}
@@ -908,26 +910,27 @@ SEXP cigar_to_IRanges(SEXP cigar,
  * 'cigar', 'pos' and 'flag' (when not NULL) are assumed to have the same
  * length (which is the number of aligned reads).
  *
- * Returns a CompressedNormalIRangesList object of the same length as the
- * input.
+ * Returns a CompressedIRangesList object of the same length as the input.
  * NOTE: See note for cigar_to_list_of_IRanges_by_rname() below about the
  * strand.
  * TODO: Support character factor 'cigar' in addition to current character
  *       vector format.
  */
 SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
-		SEXP drop_D_ranges, SEXP drop_empty_ranges)
+		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
 {
 	SEXP cigar_string;
 	SEXP ans, ans_unlistData, ans_partitioning, ans_partitioning_end;
-	int cigar_length, Ds_as_Ns, drop_empty_ranges0, i, pos_elt, flag_elt;
+	int cigar_length, Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
+	    i, pos_elt, flag_elt;
 	RangeAE range_ae;
 	const char *errmsg;
 
 	cigar_length = LENGTH(cigar);
 	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
 	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
-	/* we will generate at least 'cigar_length' ranges, and possibly more */
+	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
+	/* We will generate at least 'cigar_length' ranges. */
 	range_ae = new_RangeAE(cigar_length, 0);
 	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_length));
 	for (i = 0; i < cigar_length; i++) {
@@ -953,7 +956,8 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 			      flag != R_NilValue ? "unexpected " : "");
 		}
 		errmsg = cigar_string_to_ranges(cigar_string, pos_elt,
-				Ds_as_Ns, drop_empty_ranges0, 1, &range_ae);
+				Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
+				&range_ae);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
 			error("in 'cigar' element %d: %s", i + 1, errmsg);
@@ -966,7 +970,7 @@ SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 			"PartitioningByEnd",
 			ans_partitioning_end, NULL));
 	PROTECT(ans = new_CompressedList(
-			"CompressedNormalIRangesList",
+			"CompressedIRangesList",
 			ans_unlistData, ans_partitioning));
 	UNPROTECT(4);
 	return ans;
