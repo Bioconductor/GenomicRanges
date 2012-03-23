@@ -742,7 +742,10 @@ setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
                   cigar(to_hits), start(to_hits), PACKAGE="GenomicRanges")
   ends <- .Call("ref_locs_to_query_locs", end(from)[queryHits(from_ol)],
                 cigar(to_hits), start(to_hits), PACKAGE="GenomicRanges")
-  new("RangesMapping", matching = from_ol, space = seqnames(to_hits),
+  space <- names(to_hits)
+  if (is.null(space))
+    space <- as.character(seq_len(length(to))[subjectHits(from_ol)])
+  new("RangesMapping", matching = from_ol, space = Rle(space),
       ranges = IRanges(starts, ends))
 })
 
