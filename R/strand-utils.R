@@ -51,6 +51,10 @@ setMethod("strand", "DataTable",
         ans
     })
 
+setReplaceMethod("strand", "DataTable", function(x, value) {
+  x$strand <- normargGenomicRangesStrand(value, nrow(x))
+  x
+})
 
 setGeneric("compatibleStrand", signature=c("x","y"),
     function(x, y) standardGeneric("compatibleStrand")
