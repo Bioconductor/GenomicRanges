@@ -802,6 +802,9 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   matching <- new("Hits",
                   queryHits = qhits, subjectHits = toInd,
                   queryLength = length(from), subjectLength = length(to))
+  space <- names(to)[shits]
+  if (is.null(space))
+    space <- as.character(seq_len(length(to))[subjectHits(ol)])
   new("RangesMapping", matching = matching, ranges = local,
-      space = seqnames(from)[qhits])
+      space = Rle(space))
 })
