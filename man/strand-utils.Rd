@@ -8,6 +8,7 @@
 \alias{strand,integer-method}
 \alias{strand,logical-method}
 \alias{strand,DataTable-method}
+\alias{strand<-,DataTable-method}
 
 \title{Strand utilities}
 
@@ -22,11 +23,13 @@
 \S4method{strand}{integer}(x)
 \S4method{strand}{logical}(x)
 \S4method{strand}{DataTable}(x)
+\S4method{strand}{DataTable}(x) <- value
 }
 
 \arguments{
   \item{x}{The object from which to obtain a strand factor, can be
     missing.}
+  \item{value}{Replacement value for the strand.}
 }
 
 \details{

@@ -77,7 +77,7 @@ exportMethods(
     "[", "[<-", c, seqselect, "seqselect<-", "$", "$<-", "[[", "[[<-",
     split, window,
     flank, resize, shift,
-    disjoin, disjointBins, gaps, range, reduce, isDisjoint,
+    disjoin, disjointBins, gaps, range, reduce, isDisjoint, map,
     distance,
     duplicated, unique, order, sort, rank, "==", "<=", ">=", "<", ">",
     coverage,

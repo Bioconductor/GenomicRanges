@@ -28,6 +28,7 @@
 \alias{elementMetadata<-,GRangesList-method}
 \alias{seqinfo,GRangesList-method}
 \alias{seqinfo<-,GRangesList-method}
+\alias{score,GRangesList-method}
 
 % RangesList methods:
 \alias{start,GRangesList-method}
@@ -162,6 +163,10 @@
       Gets or sets the genome identifier or assembly name for each sequence.
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
+    }
+    \item{}{
+      \code{score(x)}: Gets the \dQuote{score} column from the element
+      metadata, if any.
     }
   }
 }

@@ -21,6 +21,7 @@
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
 \alias{coerce,RleList,GRanges-method}
+\alias{coerce,RleViewsList,GRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
 
 % Accessors:
@@ -36,6 +37,7 @@
 \alias{names<-,GenomicRanges-method}
 \alias{seqinfo,GRanges-method}
 \alias{seqinfo<-,GenomicRanges-method}
+\alias{score,GenomicRanges-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
@@ -53,7 +55,10 @@
 \alias{reduce,GenomicRanges-method}
 \alias{precede,GenomicRanges,GenomicRanges-method}
 \alias{follow,GenomicRanges,GenomicRanges-method}
+\alias{precede,GenomicRanges,missing-method}
+\alias{follow,GenomicRanges,missing-method}
 \alias{isDisjoint,GenomicRanges-method}
+\alias{disjointBins,GenomicRanges-method}
 \alias{restrict,GenomicRanges-method}
 \alias{distance,GenomicRanges,GenomicRanges-method}
 
@@ -130,7 +135,7 @@
   \describe{
     \item{}{
       \code{as(from, "GRanges")}: Creates a GRanges object from a
-      RangedData, RangesList or RleList object.
+      RangedData, RangesList, RleList or RleViewsList object.
     }
     \item{}{
       \code{as(from, "RangedData")}:
@@ -226,6 +231,10 @@
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
     }
+    \item{}{
+      \code{score(x)}: Gets the \dQuote{score} column from the element
+      metadata, if any.
+    }
   }
 }
 
@@ -285,7 +294,13 @@
     \item{}{
       \code{isDisjoint(x)}:
       Return a logical value indicating whether the ranges
-          \code{x} are disjoint (i.e. non-overlapping).
+      \code{x} are disjoint (i.e. non-overlapping).
+    }
+    \item{}{
+      \code{disjointBins(x, ignore.strand = FALSE)}:
+      Returns bin indexes for the ranges in \code{x}, such that ranges
+      in the same bin do not overlap. If \code{ignore.strand = FALSE},
+      the two features cannot overlap if they are on different strands.
     }
     \item{}{
       \code{gaps(x, start = 1L, end = seqlengths(x))}: Returns a new
