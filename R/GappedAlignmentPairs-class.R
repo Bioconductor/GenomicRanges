@@ -46,8 +46,8 @@ setClass("GappedAlignmentPairs",
 
 setGeneric("first", function(x) standardGeneric("first"))
 setGeneric("last", function(x) standardGeneric("last"))
-setGeneric("left", function(x) standardGeneric("left"))
-setGeneric("right", function(x) standardGeneric("right"))
+setGeneric("left", function(x, ...) standardGeneric("left"))
+setGeneric("right", function(x, ...) standardGeneric("right"))
 setGeneric("isProperPair", function(x) standardGeneric("isProperPair"))
 
 
@@ -72,7 +72,7 @@ setMethod("last", "GappedAlignmentPairs",
 )
 
 setMethod("left", "GappedAlignmentPairs",
-    function(x)
+    function(x, ...)
     {
         x_first <- x@first
         x_last <- x@last
@@ -92,7 +92,7 @@ setMethod("left", "GappedAlignmentPairs",
 )
 
 setMethod("right", "GappedAlignmentPairs",
-    function(x)
+    function(x, ...)
     {
         x_first <- x@first
         x_last <- x@last
