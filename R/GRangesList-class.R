@@ -757,10 +757,12 @@ setMethod("restrict", "GRangesList",
     })
 
 setMethod("flank", "GRangesList",
-    function(x, width, start=TRUE, both=FALSE, use.names=TRUE, ignore.strand=FALSE)
+    function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
+             ignore.strand=FALSE)
     {
-        x@unlistData <- flank(x@unlistData, width=width, start=start, both=FALSE, use.names=TRUE,
-                    ignore.strand=ignore.strand)
+        x@unlistData <- flank(x@unlistData, width = width, start = start,
+                              both = both, use.names = use.names,
+                              ignore.strand = ignore.strand)
         x
     })
 
