@@ -7,7 +7,7 @@
 \usepackage{times}
 \usepackage{hyperref}
 
-\usepackage[margin=0.7in]{geometry}
+\usepackage[margin=0.65in]{geometry}
 
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
@@ -32,7 +32,7 @@
 \maketitle
 
 <<options,echo=FALSE>>=
-options(width=95)
+options(width=100)
 @
 \tableofcontents
 
