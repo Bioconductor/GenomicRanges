@@ -47,11 +47,11 @@ options(width=100)
 In the context of an RNA-seq experiment, encoding the overlaps
 between 2 \Rclass{GRangesList} objects, one containing the reads (the query),
 and one containing the transcripts (the subject), can be used for
-detecting hits between reads and transcripts that are compatible
+detecting hits between reads and transcripts that are ``compatible''
 with the splicing of the transcript.
 
 Various tools are provided in the \Rpackage{IRanges} and
-\Rpackage{GenomicRanges} packages for dealing with overlap encodings.
+\Rpackage{GenomicRanges} packages for working with overlap encodings.
 In this vignette, we illustrate how to use those tools.
 
 
@@ -128,14 +128,14 @@ tail(sort(table(encoding(ovenc))))
 
 Encodings are sort of cryptic but utilities are provided to extract
 specific meaning from them. Use of these utilities is covered in the
-next subsections.
+next three subsections.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Detect overlaps showing ``compatibility'' with the transcript}
 
 We are interested in a particular type of overlap where the read
-overlaps the transcript in a "compatible" way, that is, in a way
+overlaps the transcript in a ``compatible'' way, that is, in a way
 compatible with the splicing of the transcript. We call this an
 overlap of type COMPATIBLE\_WITH\_SPLICING.
 Use \Rcode{isCompatibleWithSplicing()} on the \Rclass{OverlapEncodings}
@@ -151,6 +151,32 @@ type.
 table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
 @
 
+Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{ovenc}),
+\Rcode{"2:jm:af:"} (68914 occurences in \Rcode{ovenc}),
+and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{ovenc}),
+correspond to the following overlaps:
+\begin{itemize}
+  \item \Rcode{"1:i:"}
+\begin{verbatim}
+       read (no gap):            oooooo
+          transcript:   ...  oooooooooooo ...
+\end{verbatim}
+  \item \Rcode{"2:jm:af:"}
+\begin{verbatim}
+        read (1 gap):              oooo------oo
+          transcript:   ...  oooooooooo      ooooooo ...
+\end{verbatim}
+  \item \Rcode{"3:jmm:agm:aaf:"}
+\begin{verbatim}
+       read (2 gaps):            ooo-----oo---------ooo
+          transcript:   ...  ooooooo     oo         oooooooooo ...
+\end{verbatim}
+\end{itemize}
+
+Note that the exons represented in the 2nd and 3rd drawings are
+consecutive in the transcript. The transcript can have more exons,
+which is denoted by the ... on each side of the drawings.
+
 <<>>=
 is_compat <- isCompatibleWithSplicing(ovenc)
 table(is_compat)  # 476124 overlaps of type COMPATIBLE_WITH_SPLICING
@@ -162,8 +188,12 @@ overlaps) of type COMPATIBLE\_WITH\_SPLICING:
 gal4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
                               nbins=length(gal4))
 table(gal4_compat_nhits)
-sum(gal4_compat_nhits != 0)  # 146012 alignments with at least one hit
-                             # of type COMPATIBLE_WITH_SPLICING
+@
+
+Number of alignments with at least 1 hit of type COMPATIBLE\_WITH\_SPLICING:
+
+<<>>=
+sum(gal4_compat_nhits != 0)
 @
 
 \Rcode{gal4\_compat\_nhits != 0} can be used to subset \Rcode{gal4}:
@@ -180,6 +210,171 @@ exbytx_compat_nhits <- tabulate(subjectHits(overlaps)[is_compat],
 names(exbytx_compat_nhits) <- names(exbytx)
 table(exbytx_compat_nhits)
 @
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Detect overlaps showing ``almost compatibility'' with the
+            transcript}
+
+In many aspects, overlaps of type COMPATIBLE\_WITH\_SPLICING correspond
+to an ideal situation but in practise many reads don't fall into that
+category.
+Here we are interested in a less perfect type of overlap where the
+read overlaps the transcript in a way that {\it would} be compatible
+if 1 or more exons were removed from the transcript. We call this an
+overlap of type COMPATIBLE\_WITH\_SKIPPED\_EXONS.
+
+We can use \Rcode{isCompatibleWithSkippedExons()} on the
+\Rclass{OverlapEncodings} object to detect overlaps of type
+COMPATIBLE\_WITH\_SKIPPED\_EXONS.
+\Rcode{isCompatibleWithSkippedExons()} can also be used on the character
+vector containing the unique encodings to find those of type
+COMPATIBLE\_WITH\_SKIPPED\_EXONS i.e. those corresponding to overlaps of
+this type.
+
+8 unique encodings are of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
+<<>>=
+table(encoding(ovenc))[isCompatibleWithSkippedExons(unique_ovenc)]
+@
+
+Encoding \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc}) corresponds
+to the following overlap:
+
+\begin{itemize}
+  \item \Rcode{"2:jm:am:af:"}
+\begin{verbatim}
+        read (1 gap):          ooooo------------ooo
+          transcript:   ...  ooooooo    oooo    oooooooo ...
+\end{verbatim}
+\end{itemize}
+
+<<>>=
+is_almost_compat <- isCompatibleWithSkippedExons(ovenc)
+table(is_almost_compat)  # 837 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
+@
+
+For each alignment in \Rcode{gal4}, compute the number of hits (i.e.
+overlaps) of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
+
+<<>>=
+gal4_almost_compat_nhits <- tabulate(queryHits(overlaps)[is_almost_compat],
+                                     nbins=length(gal4))
+table(gal4_almost_compat_nhits)
+@
+
+Number of alignments with at least 1 hit of type
+COMPATIBLE\_WITH\_SKIPPED\_EXONS:
+
+<<>>=
+sum(gal4_almost_compat_nhits != 0) 
+@
+
+For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute
+the number of hits of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
+
+<<>>=
+exbytx_almost_compat_nhits <- tabulate(subjectHits(overlaps)[is_almost_compat],
+                                       nbins=length(exbytx))
+names(exbytx_almost_compat_nhits) <- names(exbytx)
+table(exbytx_almost_compat_nhits)
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Combining results of \Rcode{isCompatibleWithSplicing()} and
+            \Rcode{isCompatibleWithSkippedExons()} to detect novel splice
+            junctions}
+
+An alignment in \Rcode{gal4} with hits of type COMPATIBLE\_WITH\_SKIPPED\_EXONS
+but no hits of type COMPATIBLE\_WITH\_SPLICING suggests the presence of a
+transcript that is not in our annotations.
+
+First we extract the index of those alignments:
+
+<<>>=
+aln_shows_nov_splice_jct <- gal4_almost_compat_nhits != 0L &
+                            gal4_compat_nhits == 0L
+which(aln_shows_nov_splice_jct)
+@
+
+We make this an index into \Rcode{overlaps} (Hits object):
+
+<<>>=
+is_nov_splice_jct <- queryHits(overlaps) %in%
+                         which(aln_shows_nov_splice_jct)
+@
+
+We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
+of interest:
+
+<<>>=
+is_nov_splice_jct <- is_nov_splice_jct & is_almost_compat
+@
+
+For each overlap of interest, we extract the ranks of the skipped
+exons (we use a list for this as there might be more than 1 skipped
+exon per overlap):
+
+<<>>=
+skpexrk <- extractSkippedExonRanks(ovenc)[is_nov_splice_jct]
+table(elementLengths(skpexrk))
+@
+
+Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
+
+<<>>=
+names(skpexrk) <- queryHits(overlaps)[is_nov_splice_jct]
+f <- names(exbytx)[subjectHits(overlaps)[is_nov_splice_jct]]
+tx2skpexrk <- split(skpexrk, f)
+@
+
+\Rcode{tx2skpexrk} is a named list of named lists of integer vectors.
+The first level of names (outer names) are transcript TxDb internal
+ids and the second level of names (inner names) are alignment
+indices into \Rcode{gal4}:
+
+<<>>=
+names(tx2skpexrk)  # transcript TxDb internal ids
+@
+
+Transcript \Rcode{"10"} has 7 hits, all of them skip exons 9 and 10:
+
+<<>>=
+tx2skpexrk[["10"]]
+@
+
+Transcript \Rcode{"58"} has 4 hits. One hit skips exon 2, one hit skips
+exons 6 to 10, and two hits skip exon 10:
+
+<<>>=
+tx2skpexrk[["58"]]
+@
+
+Final remarks:
+
+\begin{itemize}
+  \item The exon ranks returned by \Rcode{extractSkippedExonRanks()} are exon
+        positions within \Rcode{exbytx}, not \Rcode{exbytx0}. For exons on the
+        plus strand, it makes no difference i.e. the ``real'' exon ranks are
+        returned. But for exons on the minus strand, we get the ``anti-rank''
+        i.e. $N + 1 - rk$ where $N$ is the total nb of exons in the transcript
+        and $rk$ the ``real'' exon rank. So for example in the case of
+        transcript \Rcode{"58"} (located on the minus strand, see
+        \Rcode{exbytx[["58"]]}), exon with ``anti-rank'' 10 is actually at
+        rank 2 (the transcript has 11 exons).
+  \item Let's be cautious about the interpretation of \Rcode{tx2skpexrk}.
+        Because of how we've conducted this analysis, the aligments
+        reported in \Rcode{tx2skpexrk} are guaranteed to NOT have any overlaps
+        of type COMPATIBLE\_WITH\_SPLICING with other known transcripts.
+        All we can say, for example in the case of transcript \Rcode{"10"},
+        is that the 4 reported hits show evidence of one or more unknown
+        transcripts with a splice junction that corresponds to the gap
+        between exons 8 and 11. But without further analysis, we can't
+        make any assumption about the exons structure of those unknown
+        transcripts. In particular, we cannot assume the existence of an
+        unknown transcript made of the same exons as transcript \Rcode{"10"}
+        minus exons 9 and 10!
+\end{itemize}
 
 
 
@@ -210,15 +405,15 @@ enc_table2 <- table(encoding(ovenc2))
 tail(sort(enc_table2))
 @
 
-Unique encodings compatible with the splicing of the transcript:
+Unique encodings ``compatible'' with the splicing of the transcript:
 
 <<>>=
 tail(sort(enc_table2[isCompatibleWithSplicing(unique_ovenc2)]))
 is_compat2 <- isCompatibleWithSplicing(ovenc2)
-table(is_compat2)  # 175225 overlaps are compatible with the splicing
+table(is_compat2)  # 175225 overlaps are "compatible" with the splicing
 @
 
-Nb of compatible overlaps per alignment pair in \Rcode{galp4}:
+Nb of ``compatible'' overlaps per alignment pair in \Rcode{galp4}:
 
 <<>>=
 galp4_ncompat <- tabulate(queryHits(overlaps2)[is_compat2],
@@ -227,11 +422,17 @@ elementMetadata(galp4)$ncompat <- galp4_ncompat
 galp4
 
 table(galp4_ncompat)
-sum(galp4_ncompat != 0)  # 53315 alignment pairs with at least 1 compatible
-                         # overlap
+@
+
+Number of alignment pairs with at least 1 ``compatible'' overlap with a
+transcript:
+
+<<>>=
+sum(galp4_ncompat != 0)
 @
 
 Nb of compatible overlaps per transcript in \Rcode{exbytx}:
+
 <<>>=
 exbytx_ncompat2 <- tabulate(subjectHits(overlaps2)[is_compat2],
                             nbins=length(exbytx))
