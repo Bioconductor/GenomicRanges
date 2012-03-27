@@ -1,0 +1,163 @@
+%\VignetteIndexEntry{Overlap encodings}
+%\VignetteDepends{}
+%\VignetteKeywords{sequence, sequencing, alignments}
+%\VignettePackage{GenomicRanges}
+\documentclass[10pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textsf{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+\newcommand{\Bioconductor}{\software{Bioconductor}}
+
+\SweaveOpts{keep.source=TRUE}
+
+\title{Overlap encodings}
+\author{Herv\'e Pag\`es}
+\date{Last modified: March 2012; Compiled: \today}
+
+\begin{document}
+
+\maketitle
+
+<<options,echo=FALSE>>=
+options(width=72)
+@
+\tableofcontents
+
+\section{Introduction}
+
+In the context of an RNA-seq experiment, encoding the overlaps
+between 2 \Rclass{GRangesList} objects, one containing the reads (the query),
+and one containing the transcripts (the subject), can be used for
+detecting hits between reads and transcripts that are compatible
+with the splicing of the transcript.
+
+Various tools are provided in the \Rpackage{IRanges} and
+\Rpackage{GenomicRanges} packages for dealing with overlap encodings.
+In this vignette, we illustrate how to use those tools.
+
+\section{Example 1: With single-end reads}
+
+\subsection{Load the reads and transcripts}
+
+We start by loading some aligned reads (RNA-seq single-end reads aligned
+against the dm3 genome, see \Rcode{?untreated1\_chr4} in the
+\Rpackage{pasillaBamSubset} data package for more information):
+
+<<untreated1_chr4>>=
+library(pasillaBamSubset)
+untreated1_chr4()
+library(GenomicRanges)
+gal4 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE)
+reads4 <- as(gal4, "GRangesList")
+table(elementLengths(reads4))
+@
+
+We also need to retrieve the dm3 transcripts and their exons from UCSC
+and extract the exons grouped by transcript in a \Rclass{GRangesList}
+object. IMPORTANT: The reference genome of the transcripts must be
+\bf{exactly} the same as the reference genome used to align the reads:
+
+<<makeTranscriptDbFromUCSC>>=
+library(GenomicFeatures)
+txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
+exbytx0 <- exonsBy(txdb, by="tx")
+@
+
+Before \Rcode{encodeOverlaps()} or related utilities can be used,
+exons in transcripts located on the minus strand \bf{must} be reordered by
+decreasing rank:
+
+<<sortExonsByRank>>=
+exbytx <- sortExonsByRank(exbytx0, decreasing.rank.on.minus.strand=TRUE)
+exbytx0[[20]]
+exbytx[[20]]
+@
+
+\subsection{Find and encode the overlaps}
+
+We are ready to compute the overlaps:
+
+<<findOverlaps>>=
+overlaps <- findOverlaps(reads4, exbytx)
+@
+
+and to encode them:
+
+<<encodeOverlaps>>=
+ovenc <- encodeOverlaps(reads4, exbytx, overlaps)
+ovenc
+unique_ovenc <- levels(encoding(ovenc))
+length(unique_ovenc)
+head(unique_ovenc)
+table(encoding(ovenc))
+@
+
+Encodings are sort of cryptic but utilities are provided to extract
+specific meaning from them. Use of these utilities is covered in the
+next subsections.
+
+\subsection{Detect overlaps showing "compatibility" with the transcript}
+
+We are interested in a particular type of overlap where the read
+overlaps the transcript in a "compatible" way, that is, in a way
+compatible with the splicing of the transcript. We call this an
+overlap of type COMPATIBLE\_WITH\_SPLICING.
+Use \Rcode{isCompatibleWithSplicing()} on the \Rclass{OverlapEncodings}
+object to detect overlaps of type COMPATIBLE\_WITH\_SPLICING.
+\Rcode{isCompatibleWithSplicing()} can also be used on the character vector
+containing the unique encodings to find those of type
+COMPATIBLE\_WITH\_SPLICING i.e. those corresponding to overlaps of this
+type.
+
+7 unique encodings are of type COMPATIBLE\_WITH\_SPLICING:
+
+<<compatible_encodings_in_table>>=
+table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
+@
+
+<<>>=
+is_compat <- isCompatibleWithSplicing(ovenc)
+table(is_compat)  # 241237 overlaps of type COMPATIBLE_WITH_SPLICING
+@
+
+For each alignment in \Rcode{gal4}, compute the number of hits (i.e.
+overlaps) of type COMPATIBLE\_WITH\_SPLICING:
+<<>>=
+gal4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
+                              nbins=length(gal4))
+table(gal4_compat_nhits)
+sum(gal4_compat_nhits != 0)  # 73973 alignments with at least one hit
+                             # of type COMPATIBLE_WITH_SPLICING
+@
+
+\Rcode{gal4\_compat\_nhits != 0} can be used to subset either \Rcode{gal4}
+or \Rcode{reads4}:
+
+<<>>=
+gal4[gal4_compat_nhits != 0]
+reads4[gal4_compat_nhits != 0]
+@
+
+For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute the number
+of hits of type COMPATIBLE\_WITH\_SPLICING:
+<<>>=
+exbytx_compat_nhits <- tabulate(subjectHits(overlaps)[is_compat],
+                                nbins=length(exbytx))
+names(exbytx_compat_nhits) <- names(exbytx)
+table(exbytx_compat_nhits)
+@
+
+\section{Example 2: With paired-end reads}
+
+\end{document}
