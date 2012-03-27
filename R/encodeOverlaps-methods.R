@@ -4,6 +4,32 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Should we use a generic + methods for this?
+###
+
+.get_GRanges_spaces <- function(x, ignore.strand=FALSE)
+{
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        ans <- as.integer(seqnames(x))
+        if (!ignore.strand) {
+            strand <- as.integer(strand(x))
+            ans <- ans * 3L + strand
+        }
+        ans
+}
+
+.get_GRangesList_spaces <- function(x, ignore.strand=FALSE)
+{
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        unlisted_ans <- .get_GRanges_spaces(x@unlistData,
+                                            ignore.strand=ignore.strand)
+        as.list(relist(unlisted_ans, x))
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### "encodeOverlaps" methods.
 ###
 
@@ -11,8 +37,10 @@ if (FALSE) {
 ### Not sure we need to bother with methods that do 1-to-1 range overlap
 ### encodings. What would be the use cases?
 setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
-    function(query, subject, hits=NULL)
+    function(query, subject, hits=NULL, ignore.strand=FALSE)
     {
+        if (!identical(ignore.strand, FALSE))
+            stop("'ignore.strand' not supported yet, sorry")
         seqinfo <- merge(seqinfo(query), seqinfo(subject))
         seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
         query.space <- as.integer(seqnames(query)) * 3L +
@@ -29,16 +57,8 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 )
 }
 
-.get_GRangesList_spaces <- function(x)
-{
-        x_seqnames <- seqnames(x)
-        x_strand <- strand(x)
-        seqnames <- as.integer(unlist(x_seqnames, use.names=FALSE))
-        strand <- as.integer(unlist(x_strand, use.names=FALSE))
-        as.list(relist(seqnames * 3L + strand, x_seqnames))
-}
-
-GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL)
+GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL,
+                                       ignore.strand=FALSE)
 {
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
     seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
@@ -46,27 +66,32 @@ GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL)
                               as.list(width(query)),
                               as.list(start(subject)),
                               as.list(width(subject)),
-                              query.spaces=.get_GRangesList_spaces(query),
-                              subject.spaces=.get_GRangesList_spaces(subject),
+                              query.spaces=.get_GRangesList_spaces(query,
+                                      ignore.strand=ignore.strand),
+                              subject.spaces=.get_GRangesList_spaces(subject,
+                                      ignore.strand=ignore.strand),
                               Lquery.lengths=Lquery.lengths)
 }
 
 setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
-    function(query, subject, hits=NULL)
-        GRangesList_encodeOverlaps(query, subject)
+    function(query, subject, hits=NULL, ignore.strand=FALSE)
+        GRangesList_encodeOverlaps(query, subject,
+                                   ignore.strand=ignore.strand)
 )
 
 setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
-    function(query, subject, hits=NULL)
-        GRangesList_encodeOverlaps(as(query, "GRangesList"), subject)
+    function(query, subject, hits=NULL, ignore.strand=FALSE)
+        GRangesList_encodeOverlaps(as(query, "GRangesList"), subject,
+                                   ignore.strand=ignore.strand)
 )
 
 setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
-    function(query, subject, hits=NULL)
+    function(query, subject, hits=NULL, ignore.strand=FALSE)
     {
         Lquery.lengths <- 1L + ngap(left(query))
         GRangesList_encodeOverlaps(as(query, "GRangesList"), subject,
-                                      Lquery.lengths=Lquery.lengths)
+                                   Lquery.lengths=Lquery.lengths,
+                                   ignore.strand=ignore.strand)
     }
 )
 

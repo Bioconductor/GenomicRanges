@@ -66,7 +66,7 @@ table(elementLengths(reads4))
 We also need to retrieve the dm3 transcripts and their exons from UCSC
 and extract the exons grouped by transcript in a \Rclass{GRangesList}
 object. IMPORTANT: The reference genome of the transcripts must be
-\bf{exactly} the same as the reference genome used to align the reads:
+{\bf exactly} the same as the reference genome used to align the reads:
 
 <<makeTranscriptDbFromUCSC>>=
 library(GenomicFeatures)
@@ -89,18 +89,18 @@ exbytx[[20]]
 We are ready to compute the overlaps:
 
 <<findOverlaps>>=
-overlaps <- findOverlaps(reads4, exbytx)
+overlaps <- findOverlaps(reads4, exbytx, ignore.strand=TRUE)
 @
 
 and to encode them:
 
 <<encodeOverlaps>>=
-ovenc <- encodeOverlaps(reads4, exbytx, overlaps)
+ovenc <- encodeOverlaps(reads4, exbytx, hits=overlaps, ignore.strand=TRUE)
 ovenc
 unique_ovenc <- levels(encoding(ovenc))
 length(unique_ovenc)
 head(unique_ovenc)
-table(encoding(ovenc))
+tail(sort(table(encoding(ovenc))))
 @
 
 Encodings are sort of cryptic but utilities are provided to extract
