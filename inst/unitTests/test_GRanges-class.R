@@ -462,6 +462,18 @@ test_GRanges_precede_follow <- function() {
     current <- follow(x, rev(subject))
     target <- c(1L, NA, NA, NA, NA, NA, 2L)
     checkIdentical(target, current)
+
+    query <- GRanges("chr1", IRanges(c(20, 50), width=1)) 
+    subject <- GRanges("chr1", IRanges(c(15, 25, 45, 55), width=1), 
+        strand=c("+", "-", "+", "-"))    # both query ranges tie
+    current <- follow(query, subject)    # 2 ranges in 'subject'
+    target <- c(2L, 4L)
+    checkIdentical(target, current)
+
+    strand(subject) <- c("-", "+", "-", "+")
+    current <- precede(query, subject)   # both query ranges tie)
+    target <- c(1L, 3L)                  # 2 ranges in 'subject' 
+    checkIdentical(target, current)
 }
 
 test_GRanges_nearest <- function() {

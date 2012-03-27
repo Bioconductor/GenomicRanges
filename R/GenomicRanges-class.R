@@ -1012,7 +1012,8 @@ setMethod("nearest", c("GenomicRanges", "missing"),
                     ans[k2] <- values(sub2)[["posIndx"]][na.omit(res2)]
 
                     ##  resolve queries matching both "+" and "-" 
-                    if (!identical(integer(0), k1) && !identical(integer(0), k2)) {
+                    if (!identical(integer(0), k1) && 
+                        !identical(integer(0), k2)) {
                         tie <- .breakTie(sub1, res1, k1, dist1, sub2, res2, k2, 
                                          dist2, type)
                         ans[tie[["idx"]]] <- tie[["value"]]
@@ -1072,9 +1073,9 @@ setMethod("nearest", c("GenomicRanges", "missing"),
         eq1 <- map1$spi[map1$k1 %in% eqidist]
         eq2 <- map2$spi[map2$k2 %in% eqidist]
         if (type == "precede")
-            eqivalue <- min(c(eq1, eq2))
+            eqivalue <- pmin(eq1, eq2)
         if (type == "follow")
-            eqivalue <- max(c(eq1, eq2))
+            eqivalue <- pmax(eq1, eq2)
     }
     DataFrame(idx=c(mindist, eqidist), value=c(minvalue, eqivalue)) 
 }
