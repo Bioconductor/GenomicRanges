@@ -128,7 +128,7 @@ table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
 
 <<>>=
 is_compat <- isCompatibleWithSplicing(ovenc)
-table(is_compat)  # 241237 overlaps of type COMPATIBLE_WITH_SPLICING
+table(is_compat)  # 476124 overlaps of type COMPATIBLE_WITH_SPLICING
 @
 
 For each alignment in \Rcode{gal4}, compute the number of hits (i.e.
@@ -137,7 +137,7 @@ overlaps) of type COMPATIBLE\_WITH\_SPLICING:
 gal4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
                               nbins=length(gal4))
 table(gal4_compat_nhits)
-sum(gal4_compat_nhits != 0)  # 73973 alignments with at least one hit
+sum(gal4_compat_nhits != 0)  # 146012 alignments with at least one hit
                              # of type COMPATIBLE_WITH_SPLICING
 @
 
@@ -159,5 +159,53 @@ table(exbytx_compat_nhits)
 @
 
 \section{Example 2: With paired-end reads}
+
+Load the paired-end reads:
+
+<<readBamGappedAlignmentPairs>>=
+untreated3_chr4()
+galp4 <- readBamGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE)
+@
+
+Find and encode the overlaps:
+
+<<>>=
+overlaps2 <- findOverlaps(galp4, exbytx, ignore.strand=TRUE)
+ovenc2 <- encodeOverlaps(galp4, exbytx, overlaps2, ignore.strand=TRUE)
+ovenc2
+unique_ovenc2 <- levels(encoding(ovenc2))
+unique_ovenc2  # 275 unique encodings
+enc_table2 <- table(encoding(ovenc2))
+tail(sort(enc_table2))
+@
+
+Unique encodings compatible with the splicing of the transcript:
+
+<<>>=
+tail(sort(enc_table2[isCompatibleWithSplicing(unique_ovenc2)]))
+is_compat2 <- isCompatibleWithSplicing(ovenc2)
+table(is_compat2)  # 175225 overlaps are compatible with the splicing
+@
+
+Nb of compatible overlaps per alignment pair in \Rcode{galp4}:
+
+<<>>=
+galp4_ncompat <- tabulate(queryHits(overlaps2)[is_compat2],
+                          nbins=length(galp4))
+elementMetadata(galp4)$ncompat <- galp4_ncompat
+galp4
+
+table(galp4_ncompat)
+sum(galp4_ncompat != 0)  # 53315 alignment pairs with at least 1 compatible
+                         # overlap
+@
+
+Nb of compatible overlaps per transcript in \Rcode{exbytx}:
+<<>>=
+exbytx_ncompat2 <- tabulate(subjectHits(overlaps2)[is_compat2],
+                            nbins=length(exbytx))
+names(exbytx_ncompat2) <- names(exbytx)
+table(exbytx_ncompat2)
+@
 
 \end{document}
