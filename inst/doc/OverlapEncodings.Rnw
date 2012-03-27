@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Overlap encodings}
-%\VignetteDepends{}
+%\VignetteDepends{pasillaBamSubset, GenomicRanges, Rsamtools, GenomicFeatures}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 \documentclass[10pt]{article}
