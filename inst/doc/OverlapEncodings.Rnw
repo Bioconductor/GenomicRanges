@@ -7,6 +7,8 @@
 \usepackage{times}
 \usepackage{hyperref}
 
+\usepackage[margin=0.7in]{geometry}
+
 \newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textsf{#1}}}
@@ -30,11 +32,17 @@
 \maketitle
 
 <<options,echo=FALSE>>=
-options(width=72)
+options(width=95)
 @
 \tableofcontents
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 In the context of an RNA-seq experiment, encoding the overlaps
 between 2 \Rclass{GRangesList} objects, one containing the reads (the query),
@@ -46,27 +54,40 @@ Various tools are provided in the \Rpackage{IRanges} and
 \Rpackage{GenomicRanges} packages for dealing with overlap encodings.
 In this vignette, we illustrate how to use those tools.
 
-\section{Example 1: With single-end reads}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Example 1: With single-end reads}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Load the reads and transcripts}
 
-We start by loading some aligned reads (RNA-seq single-end reads aligned
-against the dm3 genome, see \Rcode{?untreated1\_chr4} in the
-\Rpackage{pasillaBamSubset} data package for more information):
+We start by loading some aligned reads into a \Rclass{GappedAlignments} object.
+The reads are stored in a BAM file ({\tt untreated1\_chr4.bam}) that is located
+in the \Rpackage{pasillaBamSubset} data package. This file contains single-end
+reads from an RNA-seq experiment and aligned against the dm3 genome (see
+\Rcode{?untreated1\_chr4} in the \Rpackage{pasillaBamSubset} package for more
+information about those reads):
 
 <<untreated1_chr4>>=
 library(pasillaBamSubset)
 untreated1_chr4()
 library(GenomicRanges)
 gal4 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE)
-reads4 <- as(gal4, "GRangesList")
-table(elementLengths(reads4))
+gal4
+table(ngap(gal4))
 @
 
-We also need to retrieve the dm3 transcripts and their exons from UCSC
+We also need to retrieve the dm3 transcripts and their exons from UCSC,
 and extract the exons grouped by transcript in a \Rclass{GRangesList}
 object. IMPORTANT: The reference genome of the transcripts must be
-{\bf exactly} the same as the reference genome used to align the reads:
+{\bf exactly} the same as the reference genome used to align the reads
+(note that this is a general rule, not only when working with overlap
+encodings):
 
 <<makeTranscriptDbFromUCSC>>=
 library(GenomicFeatures)
@@ -75,7 +96,7 @@ exbytx0 <- exonsBy(txdb, by="tx")
 @
 
 Before \Rcode{encodeOverlaps()} or related utilities can be used,
-exons in transcripts located on the minus strand \bf{must} be reordered by
+exons in transcripts located on the minus strand must be reordered by
 decreasing rank:
 
 <<sortExonsByRank>>=
@@ -84,18 +105,20 @@ exbytx0[[20]]
 exbytx[[20]]
 @
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Find and encode the overlaps}
 
 We are ready to compute the overlaps:
 
 <<findOverlaps>>=
-overlaps <- findOverlaps(reads4, exbytx, ignore.strand=TRUE)
+overlaps <- findOverlaps(gal4, exbytx, ignore.strand=TRUE)
 @
 
 and to encode them:
 
 <<encodeOverlaps>>=
-ovenc <- encodeOverlaps(reads4, exbytx, hits=overlaps, ignore.strand=TRUE)
+ovenc <- encodeOverlaps(gal4, exbytx, hits=overlaps, ignore.strand=TRUE)
 ovenc
 unique_ovenc <- levels(encoding(ovenc))
 length(unique_ovenc)
@@ -107,7 +130,9 @@ Encodings are sort of cryptic but utilities are provided to extract
 specific meaning from them. Use of these utilities is covered in the
 next subsections.
 
-\subsection{Detect overlaps showing "compatibility" with the transcript}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Detect overlaps showing ``compatibility'' with the transcript}
 
 We are interested in a particular type of overlap where the read
 overlaps the transcript in a "compatible" way, that is, in a way
@@ -141,12 +166,10 @@ sum(gal4_compat_nhits != 0)  # 146012 alignments with at least one hit
                              # of type COMPATIBLE_WITH_SPLICING
 @
 
-\Rcode{gal4\_compat\_nhits != 0} can be used to subset either \Rcode{gal4}
-or \Rcode{reads4}:
+\Rcode{gal4\_compat\_nhits != 0} can be used to subset \Rcode{gal4}:
 
 <<>>=
 gal4[gal4_compat_nhits != 0]
-reads4[gal4_compat_nhits != 0]
 @
 
 For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute the number
@@ -158,13 +181,20 @@ names(exbytx_compat_nhits) <- names(exbytx)
 table(exbytx_compat_nhits)
 @
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example 2: With paired-end reads}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Load the paired-end reads:
 
 <<readBamGappedAlignmentPairs>>=
 untreated3_chr4()
 galp4 <- readBamGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE)
+galp4
 @
 
 Find and encode the overlaps:
@@ -174,7 +204,8 @@ overlaps2 <- findOverlaps(galp4, exbytx, ignore.strand=TRUE)
 ovenc2 <- encodeOverlaps(galp4, exbytx, overlaps2, ignore.strand=TRUE)
 ovenc2
 unique_ovenc2 <- levels(encoding(ovenc2))
-unique_ovenc2  # 275 unique encodings
+length(unique_ovenc2)  # 275 unique encodings
+head(unique_ovenc2)
 enc_table2 <- table(encoding(ovenc2))
 tail(sort(enc_table2))
 @
@@ -206,6 +237,18 @@ exbytx_ncompat2 <- tabulate(subjectHits(overlaps2)[is_compat2],
                             nbins=length(exbytx))
 names(exbytx_ncompat2) <- names(exbytx)
 table(exbytx_ncompat2)
+@
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\Rcode{sessionInfo()}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+<<sessionInfo>>=
+sessionInfo()
 @
 
 \end{document}
