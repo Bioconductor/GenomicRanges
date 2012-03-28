@@ -52,7 +52,8 @@ with the splicing of the transcript.
 
 Various tools are provided in the \Rpackage{IRanges} and
 \Rpackage{GenomicRanges} packages for working with overlap encodings.
-In this vignette, we illustrate how to use those tools.
+In this vignette, we illustrate the use of these tools on real RNA-seq
+data.
 
 
 
@@ -184,6 +185,7 @@ table(is_compat)  # 476124 overlaps of type COMPATIBLE_WITH_SPLICING
 
 For each alignment in \Rcode{gal4}, compute the number of hits (i.e.
 overlaps) of type COMPATIBLE\_WITH\_SPLICING:
+
 <<>>=
 gal4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
                               nbins=length(gal4))

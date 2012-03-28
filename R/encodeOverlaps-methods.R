@@ -112,49 +112,62 @@ setGeneric("isCompatibleWithSplicing",
     function(x) standardGeneric("isCompatibleWithSplicing")
 )
 
+.SUBREGEX1 <- "[fgij]"
+.SUBREGEX2 <- c("[jg][^:-]",
+                "[^:-][gf]")
+.SUBREGEX3 <- c("[jg][^:-][^:-]",
+                "[^:-]g[^:-]",
+                "[^:-][^:-][gf]")
+.SUBREGEX4 <- c("[jg][^:-][^:-][^:-]",
+                "[^:-]g[^:-][^:-]",
+                "[^:-][^:-]g[^:-]",
+                "[^:-][^:-][^:-][gf]")
+
 .get_CompatibleWithSplicing_regex <- function()
 {
-    subregex1 <- "[fgij]"
-    subregex2 <- c("[jg].", ".[gf]")
-    subregex3 <- c("[jg]..", ".g.", "..[gf]")
-    subregex4 <- c("[jg]...", ".g..", "..g.", "...[gf]")
-
-    Ssubregex1 <- paste0(subregex1, collapse=":")
-    Ssubregex2 <- paste0(subregex2, collapse=":")
-    Ssubregex3 <- paste0(subregex3, collapse=":")
-    Ssubregex4 <- paste0(subregex4, collapse=":")
+    ## Sub-regex for single-end reads.
+    Ssubregex1 <- .SUBREGEX1
+    Ssubregex2 <- paste0(.SUBREGEX2, collapse=":")
+    Ssubregex3 <- paste0(.SUBREGEX3, collapse=":")
+    Ssubregex4 <- paste0(.SUBREGEX4, collapse=":")
     Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
     Ssubregex <- paste0(":(", Ssubregex, "):")
 
-    Rencoding <- "-[^-:]*" 
-    Lsubregex1 <- paste0(":", subregex1, "-", collapse=Rencoding)
-    Lsubregex2 <- paste0(":", subregex2, "-", collapse=Rencoding)
-    Lsubregex3 <- paste0(":", subregex3, "-", collapse=Rencoding)
-    Lsubregex4 <- paste0(":", subregex4, "-", collapse=Rencoding)
+    ## Sub-regex for paired-end reads.
+    Rencoding <- "-[^:-]*" 
+    Lsubregex1 <- paste0(":", .SUBREGEX1, "-")
+    Lsubregex2 <- paste0(":", .SUBREGEX2, "-", collapse=Rencoding)
+    Lsubregex3 <- paste0(":", .SUBREGEX3, "-", collapse=Rencoding)
+    Lsubregex4 <- paste0(":", .SUBREGEX4, "-", collapse=Rencoding)
     Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
     Lsubregex <- paste0("(", Lsubregex, ")")
 
-    Lencoding <- "[^-:]*-" 
-    Rsubregex1 <- paste0("-", subregex1, ":", collapse=Lencoding)
-    Rsubregex2 <- paste0("-", subregex2, ":", collapse=Lencoding)
-    Rsubregex3 <- paste0("-", subregex3, ":", collapse=Lencoding)
-    Rsubregex4 <- paste0("-", subregex4, ":", collapse=Lencoding)
+    Lencoding <- "[^:-]*-" 
+    Rsubregex1 <- paste0("-", .SUBREGEX1, ":")
+    Rsubregex2 <- paste0("-", .SUBREGEX2, ":", collapse=Lencoding)
+    Rsubregex3 <- paste0("-", .SUBREGEX3, ":", collapse=Lencoding)
+    Rsubregex4 <- paste0("-", .SUBREGEX4, ":", collapse=Lencoding)
     Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
     Rsubregex <- paste0("(", Rsubregex, ")")
 
     LRsubregex <- paste0(Lsubregex, ".*", Rsubregex)
 
+    ## Final regex.
     paste0("(", Ssubregex, "|", LRsubregex, ")")
 }
 
 .isCompatibleWithSplicing <- function(x)
 {
+    if (!is.character(x))
+        stop("'x' must be a character vector")
     .check_ngap_max(x)
     grepl(.get_CompatibleWithSplicing_regex(), x)
 }
 
 .whichCompatibleWithSplicing <- function(x)
 {
+    if (!is.character(x))
+        stop("'x' must be a character vector")
     .check_ngap_max(x)
     grep(.get_CompatibleWithSplicing_regex(), x)
 }
@@ -179,39 +192,62 @@ setMethod("isCompatibleWithSplicing", "OverlapEncodings",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isCompatibleWithSkippedExons().
 ###
-### FIXME: This currently does NOT work with paired-end encodings!
-###
 
 setGeneric("isCompatibleWithSkippedExons", signature="x",
     function(x, max.skipped.exons=NA)
         standardGeneric("isCompatibleWithSkippedExons")
 )
 
-.get_CompatibleWithSkippedExons_regex <- function(max.skipped.exons)
+.get_CompatibleWithSkippedExons_regex <- function(max.skipped.exons=NA)
 {
     if (!identical(max.skipped.exons, NA))
         stop("only 'max.skipped.exons=NA' is supported for now, sorry")
-    ## Reads with 2 ranges (1 gap):
-    subregex2 <- "[jg].:(..:)+.[gf]"
-    ## Reads with 3 ranges (2 gaps):
-    subregex3 <- "[jg]..:((...:)+.g.:(...:)*|(...:)*.g.:(...:)+)..[gf]"
-    ## Reads with 4 ranges (3 gaps):
-    subregex4 <- "[jg]...:((....:)+.g..:(....:)*..g.:(....:)*|(....:)*.g..:(....:)+..g.:(....:)*|(....:)*.g..:(....:)*..g.:(....:)+)...[gf]"
-    paste0(":(",
-           paste(subregex2, subregex3, subregex4, sep="|"),
-           "):")
+
+    ## Sub-regex for single-end reads.
+    Ssubregex1 <- .SUBREGEX1
+    Ssubregex2 <- paste0(.SUBREGEX2, collapse=":(..:)*")
+    Ssubregex3 <- paste0(.SUBREGEX3, collapse=":(...:)*")
+    Ssubregex4 <- paste0(.SUBREGEX4, collapse=":(....:)*")
+    Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
+    Ssubregex <- paste0(":(", Ssubregex, "):")
+
+    ## Sub-regex for paired-end reads.
+    Lsubregex1 <- paste0(":", .SUBREGEX1, "-")
+    Lsubregex2 <- paste0(":", .SUBREGEX2, "-", collapse=".*")
+    Lsubregex3 <- paste0(":", .SUBREGEX3, "-", collapse=".*")
+    Lsubregex4 <- paste0(":", .SUBREGEX4, "-", collapse=".*")
+    Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
+    Lsubregex <- paste0("(", Lsubregex, ")")
+
+    Rsubregex1 <- paste0("-", .SUBREGEX1, ":")
+    Rsubregex2 <- paste0("-", .SUBREGEX2, ":", collapse=".*")
+    Rsubregex3 <- paste0("-", .SUBREGEX3, ":", collapse=".*")
+    Rsubregex4 <- paste0("-", .SUBREGEX4, ":", collapse=".*")
+    Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
+    Rsubregex <- paste0("(", Rsubregex, ")")
+
+    LRsubregex <- paste0(Lsubregex, ".*", Rsubregex)
+
+    ## Final regex.
+    paste0("(", Ssubregex, "|", LRsubregex, ")")
 }
 
 .isCompatibleWithSkippedExons <- function(x, max.skipped.exons=NA)
 {
+    if (!is.character(x))
+        stop("'x' must be a character vector")
     .check_ngap_max(x)
-    grepl(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x)
+    grepl(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x) &
+    !grepl(.get_CompatibleWithSplicing_regex(), x)
 }
 
 .whichCompatibleWithSkippedExons <- function(x, max.skipped.exons=NA)
 {
+    if (!is.character(x))
+        stop("'x' must be a character vector")
     .check_ngap_max(x)
-    grep(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x)
+    setdiff(grep(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x),
+            grep(.get_CompatibleWithSplicing_regex(), x))
 }
 
 setMethod("isCompatibleWithSkippedExons", "character",
