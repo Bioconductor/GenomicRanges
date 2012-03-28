@@ -1,7 +1,9 @@
 \name{encodeOverlaps-methods}
 \alias{encodeOverlaps-methods}
 
-\alias{encodeOverlaps,GRangesList,GRangesList-method}
+\alias{encodeOverlaps,GRangesList,GRangesList,missing-method}
+\alias{encodeOverlaps,GappedAlignments,GRangesList,missing-method}
+\alias{encodeOverlaps,GappedAlignmentPairs,GRangesList,missing-method}
 
 \alias{isCompatibleWithSplicing}
 \alias{isCompatibleWithSplicing,character-method}
