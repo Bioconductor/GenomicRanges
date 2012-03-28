@@ -155,27 +155,50 @@ Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{ovenc14}),
 \Rcode{"2:jm:af:"} (68914 occurences in \Rcode{ovenc14}),
 and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{ovenc14}),
 correspond to the following overlaps:
+
 \begin{itemize}
   \item \Rcode{"1:i:"}
 \begin{verbatim}
-       read (no gap):            oooooo
-          transcript:   ...  oooooooooooo ...
+  - read (no gap):           oooooo
+  - transcript:     ...  oooooooooooo  ...
 \end{verbatim}
+
   \item \Rcode{"2:jm:af:"}
 \begin{verbatim}
-        read (1 gap):              oooo------oo
-          transcript:   ...  oooooooooo      ooooooo ...
+  - read (1 gap):              oooo------oo
+  - transcript:     ...  oooooooooo      ooooooo  ...
 \end{verbatim}
+
   \item \Rcode{"3:jmm:agm:aaf:"}
 \begin{verbatim}
-       read (2 gaps):            ooo-----oo---------ooo
-          transcript:   ...  ooooooo     oo         oooooooooo ...
+  - read (2 gaps):           ooo-----oo---------oooo
+  - transcript:     ...  ooooooo     oo         oooooooooo  ...
 \end{verbatim}
 \end{itemize}
 
 Note that the exons represented in the 2nd and 3rd drawings are
 consecutive in the transcript. The transcript can have more exons,
 which is denoted by the ... on each side of the drawings.
+
+Encodings \Rcode{"1:f:"} and \Rcode{"1:j:"} are variations of the situation
+described by encoding \Rcode{"1:i:"}. For \Rcode{"1:f:"}, the leftmost
+aligned base of the read is aligned with the leftmost base of the exon.
+For \Rcode{"1:j:"}, the rightmost aligned base of the read is aligned
+with the rightmost base of the exon:
+
+\begin{itemize}
+  \item \Rcode{"1:f:"}
+\begin{verbatim}
+  - read (no gap):       oooooo
+  - transcript:     ...  oooooooooooo  ...
+\end{verbatim}
+
+  \item \Rcode{"1:j:"}
+\begin{verbatim}
+  - read (no gap):             oooooo
+  - transcript:     ...  oooooooooooo  ...
+\end{verbatim}
+\end{itemize}
 
 <<ov14_is_compat>>=
 ov14_is_compat <- isCompatibleWithSplicing(ovenc14)
@@ -236,14 +259,28 @@ this type.
 tail(sort(ovenc14_table[isCompatibleWithSkippedExons(unique_ovenc14)]))
 @
 
-Encoding \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc14}) corresponds
-to the following overlap:
+Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc14}),
+\Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{ovenc14}),
+and \Rcode{"3:jmm:amm:agm:aaf:"} (11 occurences in \Rcode{ovenc14}),
+correspond to the following overlaps:
 
 \begin{itemize}
   \item \Rcode{"2:jm:am:af:"}
 \begin{verbatim}
-        read (1 gap):          ooooo------------ooo
-          transcript:   ...  ooooooo    oooo    oooooooo ...
+  - read (1 gap):          ooooo------------ooo
+  - transcript:     ...  ooooooo    oooo    oooooooo  ...
+\end{verbatim}
+
+  \item \Rcode{"2:jm:am:am:af:"}
+\begin{verbatim}
+  - read (1 gap):          ooooo------------------ooo
+  - transcript:     ...  ooooooo   ooooo   oooo   oooooooo  ...
+\end{verbatim}
+
+  \item \Rcode{"3:jmm:amm:agm:aaf:"}
+\begin{verbatim}
+  - read (2 gaps):         ooooo-----------oooo---ooo
+  - transcript:     ...  ooooooo   ooooo   oooo   oooooooo  ...
 \end{verbatim}
 \end{itemize}
 
@@ -434,6 +471,42 @@ Unique encodings ``compatible'' with the splicing of the transcript:
 <<compatible_unique_ovenc34>>=
 tail(sort(ovenc34_table[isCompatibleWithSplicing(unique_ovenc34)]))
 @
+
+Encodings \Rcode{"1--1:i--i:"} (118898 occurences in \Rcode{ovenc34}),
+\Rcode{"1--1:i--m:a--i:"} (42107 occurences in \Rcode{ovenc34}),
+\Rcode{"1--2:i--jm:a--af:"} (3579 occurences in \Rcode{ovenc34}),
+and \Rcode{"1--1:i--m:a--m:a--i:"} (2104 occurences in \Rcode{ovenc34}),
+correspond to the following overlaps:
+
+\begin{itemize}
+  \item \Rcode{"1{-}{-}1:i{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (no gap on the left end, no gap on the
+    right end):            ooo   oooo
+  - transcript:   ...  oooooooooooooooo  ...
+\end{verbatim}
+
+  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (no gap on the left end, no gap on the
+    right end):           ooo           oooo
+  - transcript:   ...  oooooooooo      ooooooo  ...
+\end{verbatim}
+
+  \item \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"}
+\begin{verbatim}
+  - paired-end read (no gap on the left end, 1 gap on the
+    right end):          ooooo      oo-------oooo
+  - transcript:   ...  ooooooooooooooo       ooooooooo  ...
+\end{verbatim}
+
+  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}m:a{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (no gap on the left end, no gap on the
+    right end):          ooooo                   oooo
+  - transcript:   ...  ooooooooooo   oooooo    ooooooooo  ...
+\end{verbatim}
+\end{itemize}
 
 <<ov34_is_compat>>=
 ov34_is_compat <- isCompatibleWithSplicing(ovenc34)
