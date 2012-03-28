@@ -110,6 +110,13 @@ setMethod("coverage", "GRangesList",
 
 setMethod("coverage", "GappedAlignments",
     function(x, shift=0L, width=NULL, weight=1L, ...)
-        coverage(grglist(x), shift=shift, width=width, weight=weight, ...)
+        coverage(grglist(x),
+                 shift=shift, width=width, weight=weight, ...)
+)
+
+setMethod("coverage", "GappedAlignmentPairs",
+    function(x, shift=0L, width=NULL, weight=1L, ...)
+        coverage(as(x, "GRangesList"),
+                 shift=shift, width=width, weight=weight, ...)
 )
 

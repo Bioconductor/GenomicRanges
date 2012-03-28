@@ -95,7 +95,8 @@
   records corresponding to a multi-read will show up in the GappedAlignments
   object as if they were coming from different/unrelated queries.
   Also paired-end reads will be treated as single-end reads and the
-  pairing information will be lost.
+  pairing information will be lost (see \code{?\link{GappedAlignmentPairs}}
+  for how to handle aligned paired-end reads).
 
   Each element of a GappedAlignments object consists of:
   \itemize{
@@ -369,21 +370,23 @@
 }
 
 \seealso{
-  \code{\link[Rsamtools]{readBamGappedAlignments}},
-  \link{GRangesList-class},
-  \link{GRanges-class},
-  \code{\link{seqinfo}},
-  \link[IRanges]{CompressedIRangesList-class},
-  \link[IRanges]{IRanges-class},
-  \link{coverage-methods},
-  \link{setops-methods},
-  \link{findOverlaps-methods}
+  \itemize{
+    \item \link{GappedAlignmentPairs-class}.
+    \item \code{\link[Rsamtools]{readBamGappedAlignments}}.
+    \item \link{GRangesList-class}.
+    \item \link{GRanges-class}.
+    \item \link{findOverlaps-methods}.
+    \item \link{coverage-methods}.
+    \item \code{\link{seqinfo}}.
+    \item \link[IRanges]{CompressedIRangesList-class}.
+    \item \link{setops-methods}.
+  }
 }
 
 \examples{
 library(Rsamtools)  # for ScanBamParam() and the ex1.bam file
-gal_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-gal <- readGappedAlignments(gal_file, param=ScanBamParam(what="flag"))
+ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+gal <- readGappedAlignments(ex1_file, param=ScanBamParam(what="flag"))
 gal
 
 ## ---------------------------------------------------------------------

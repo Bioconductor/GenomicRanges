@@ -4,13 +4,16 @@
 \alias{coverage,GenomicRanges-method}
 \alias{coverage,GRangesList-method}
 \alias{coverage,GappedAlignments-method}
+\alias{coverage,GappedAlignmentPairs-method}
 
 
-\title{GRanges, GRangesList and GappedAlignments coverage}
+\title{Coverage of a GRanges, GRangesList, GappedAlignments, or
+       GappedAlignmentPairs object}
 
 \description{
   \code{\link[IRanges]{coverage}} methods for \link{GRanges},
-  \link{GRangesList} and \link{GappedAlignments} objects.
+  \link{GRangesList}, \link{GappedAlignments}, and \link{GappedAlignmentPairs}
+  objects.
 }
 
 \usage{
@@ -19,8 +22,8 @@
 
 \arguments{
   \item{x}{
-    A \link{GRanges}, \link{GRangesList} or \link{GappedAlignments}
-    object.
+    A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
+    or \link{GappedAlignmentPairs} object.
   }
   \item{shift, width, weight, ...}{
     See \code{\link[IRanges]{coverage}} in the IRanges package for
@@ -57,8 +60,9 @@
   When \code{x} is a \link{GRangesList} object, \code{coverage(x, ...)}
   is equivalent to \code{coverage(unlist(x), ...)}.
 
-  When \code{x} is a \link{GappedAlignments} object, \code{coverage(x, ...)}
-  is equivalent to \code{coverage(as(x, "GRangesList"), ...)}.
+  When \code{x} is a \link{GappedAlignments} or \link{GappedAlignmentPairs}
+  object, \code{coverage(x, ...)} is equivalent to
+  \code{coverage(as(x, "GRangesList"), ...)}.
 }
 
 \value{
@@ -71,11 +75,14 @@
 \author{P. Aboyoun and H. Pages}
 
 \seealso{
-  \code{\link[IRanges]{coverage}},
-  \link[IRanges]{RleList-class},
-  \link{GRanges-class},
-  \link{GRangesList-class},
-  \link{GappedAlignments-class}
+  \itemize{
+    \item \code{\link[IRanges]{coverage}}.
+    \item \link[IRanges]{RleList-class}.
+    \item \link{GRanges-class}.
+    \item \link{GRangesList-class}.
+    \item \link{GappedAlignments-class}.
+    \item \link{GappedAlignmentPairs-class}.
+  }
 }
 
 \examples{
@@ -104,11 +111,13 @@ gr3 <- GRanges(seqnames=c("chr1", "chr2"),
 grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 stopifnot(identical(coverage(grl), coverage(unlist(grl))))
 
-## Coverage of a GappedAlignments object:
+## Coverage of a GappedAlignments or GappedAlignmentPairs object:
 library(Rsamtools)  # because file ex1.bam is in this package
-galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(galn_file)
+ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galn <- readGappedAlignments(ex1_file)
 stopifnot(identical(coverage(galn), coverage(as(galn, "GRangesList"))))
+galp <- readGappedAlignmentPairs(ex1_file)
+stopifnot(identical(coverage(galp), coverage(as(galp, "GRangesList"))))
 }
 
 \keyword{methods}

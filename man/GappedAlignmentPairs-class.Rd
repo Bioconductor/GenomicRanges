@@ -250,17 +250,21 @@
 }
 
 \seealso{
-  \link{GappedAlignments-class},
-  \code{\link[Rsamtools]{readBamGappedAlignmentPairs}},
-  \code{\link[Rsamtools]{makeGappedAlignmentPairs}},
-  \link{Seqinfo-class},
-  \link{GRangesList-class},
-  \link{GRanges-class}
+  \itemize{
+    \item \link{GappedAlignments-class}.
+    \item \code{\link[Rsamtools]{readBamGappedAlignmentPairs}}.
+    \item \code{\link[Rsamtools]{makeGappedAlignmentPairs}}.
+    \item \link{GRangesList-class}.
+    \item \link{GRanges-class}.
+    \item \link{findOverlaps-methods}.
+    \item \link{coverage-methods}.
+    \item \code{\link{seqinfo}}.
+  }
 }
 
 \examples{
-galp_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galp <- readGappedAlignmentPairs(galp_file, use.names=TRUE)
+ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galp <- readGappedAlignmentPairs(ex1_file, use.names=TRUE)
 galp
 
 length(galp)
