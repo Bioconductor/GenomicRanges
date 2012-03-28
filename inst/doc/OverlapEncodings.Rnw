@@ -44,14 +44,12 @@ options(width=100)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In the context of an RNA-seq experiment, encoding the overlaps
-between 2 \Rclass{GRangesList} objects, one containing the reads (the query),
-and one containing the transcripts (the subject), can be used for
-detecting hits between reads and transcripts that are ``compatible''
-with the splicing of the transcript.
+In the context of an RNA-seq experiment, encoding the overlaps between
+the aligned reads and the transcripts can be used for detecting those
+overlaps that are ``compatible'' with the splicing of the transcript.
 
 Various tools are provided in the \Rpackage{IRanges} and
-\Rpackage{GenomicRanges} packages for working with overlap encodings.
+\Rpackage{GenomicRanges} packages for working with {\it overlap encodings}.
 In this vignette, we illustrate the use of these tools on real RNA-seq
 data.
 
@@ -68,7 +66,7 @@ data.
 \subsection{Load the reads and transcripts}
 
 We start by loading some aligned reads into a \Rclass{GappedAlignments} object.
-The reads are stored in a BAM file ({\tt untreated1\_chr4.bam}) that is located
+The reads are stored in a BAM file ({\tt untreated1\_chr4.bam}) located
 in the \Rpackage{pasillaBamSubset} data package. This file contains single-end
 reads from an RNA-seq experiment and aligned against the dm3 genome (see
 \Rcode{?untreated1\_chr4} in the \Rpackage{pasillaBamSubset} package for more
@@ -78,9 +76,9 @@ information about those reads):
 library(pasillaBamSubset)
 untreated1_chr4()
 library(GenomicRanges)
-gal4 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE)
-gal4
-table(ngap(gal4))
+gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE)
+head(gal14)
+table(ngap(gal14))
 @
 
 We also need to retrieve the dm3 transcripts and their exons from UCSC,
@@ -112,19 +110,20 @@ exbytx[[20]]
 
 We are ready to compute the overlaps:
 
-<<findOverlaps>>=
-overlaps <- findOverlaps(gal4, exbytx, ignore.strand=TRUE)
+<<ov14>>=
+ov14 <- findOverlaps(gal14, exbytx, ignore.strand=TRUE)
 @
 
 and to encode them:
 
-<<encodeOverlaps>>=
-ovenc <- encodeOverlaps(gal4, exbytx, hits=overlaps, ignore.strand=TRUE)
-ovenc
-unique_ovenc <- levels(encoding(ovenc))
-length(unique_ovenc)
-head(unique_ovenc)
-tail(sort(table(encoding(ovenc))))
+<<ovenc14>>=
+ovenc14 <- encodeOverlaps(gal14, exbytx, hits=ov14, ignore.strand=TRUE)
+ovenc14
+unique_ovenc14 <- levels(encoding(ovenc14))
+length(unique_ovenc14)
+head(unique_ovenc14)
+ovenc14_table <- table(encoding(ovenc14))
+tail(sort(ovenc14_table))
 @
 
 Encodings are sort of cryptic but utilities are provided to extract
@@ -148,13 +147,13 @@ type.
 
 7 unique encodings are of type COMPATIBLE\_WITH\_SPLICING:
 
-<<compatible_encodings_in_table>>=
-table(encoding(ovenc))[isCompatibleWithSplicing(unique_ovenc)]
+<<compatible_unique_ovenc14>>=
+tail(sort(ovenc14_table[isCompatibleWithSplicing(unique_ovenc14)]))
 @
 
-Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{ovenc}),
-\Rcode{"2:jm:af:"} (68914 occurences in \Rcode{ovenc}),
-and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{ovenc}),
+Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{ovenc14}),
+\Rcode{"2:jm:af:"} (68914 occurences in \Rcode{ovenc14}),
+and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{ovenc14}),
 correspond to the following overlaps:
 \begin{itemize}
   \item \Rcode{"1:i:"}
@@ -178,39 +177,36 @@ Note that the exons represented in the 2nd and 3rd drawings are
 consecutive in the transcript. The transcript can have more exons,
 which is denoted by the ... on each side of the drawings.
 
-<<>>=
-is_compat <- isCompatibleWithSplicing(ovenc)
-table(is_compat)  # 476124 overlaps of type COMPATIBLE_WITH_SPLICING
+<<ov14_is_compat>>=
+ov14_is_compat <- isCompatibleWithSplicing(ovenc14)
+table(ov14_is_compat)  # 476124 overlaps of type COMPATIBLE_WITH_SPLICING
 @
 
-For each alignment in \Rcode{gal4}, compute the number of hits (i.e.
+For each alignment in \Rcode{gal14}, compute the number of hits (i.e.
 overlaps) of type COMPATIBLE\_WITH\_SPLICING:
 
-<<>>=
-gal4_compat_nhits <- tabulate(queryHits(overlaps)[is_compat],
-                              nbins=length(gal4))
-table(gal4_compat_nhits)
+<<gal14_ncompat>>=
+gal14_ncompat <- tabulate(queryHits(ov14)[ov14_is_compat],
+                          nbins=length(gal14))
+elementMetadata(gal14)$ncompat <- gal14_ncompat
+head(gal14)
+table(gal14_ncompat)
 @
 
 Number of alignments with at least 1 hit of type COMPATIBLE\_WITH\_SPLICING:
 
-<<>>=
-sum(gal4_compat_nhits != 0)
-@
-
-\Rcode{gal4\_compat\_nhits != 0} can be used to subset \Rcode{gal4}:
-
-<<>>=
-gal4[gal4_compat_nhits != 0]
+<<nb_non_zero_gal14_ncompat>>=
+sum(gal14_ncompat != 0)
 @
 
 For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute the number
 of hits of type COMPATIBLE\_WITH\_SPLICING:
-<<>>=
-exbytx_compat_nhits <- tabulate(subjectHits(overlaps)[is_compat],
-                                nbins=length(exbytx))
-names(exbytx_compat_nhits) <- names(exbytx)
-table(exbytx_compat_nhits)
+
+<<exbytx_ncompat14>>=
+exbytx_ncompat14 <- tabulate(subjectHits(ov14)[ov14_is_compat],
+                             nbins=length(exbytx))
+names(exbytx_ncompat14) <- names(exbytx)
+tail(table(exbytx_ncompat14))
 @
 
 
@@ -235,11 +231,12 @@ COMPATIBLE\_WITH\_SKIPPED\_EXONS i.e. those corresponding to overlaps of
 this type.
 
 8 unique encodings are of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
-<<>>=
-table(encoding(ovenc))[isCompatibleWithSkippedExons(unique_ovenc)]
+
+<<almost_compatible_unique_ovenc14>>=
+tail(sort(ovenc14_table[isCompatibleWithSkippedExons(unique_ovenc14)]))
 @
 
-Encoding \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc}) corresponds
+Encoding \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc14}) corresponds
 to the following overlap:
 
 \begin{itemize}
@@ -250,35 +247,35 @@ to the following overlap:
 \end{verbatim}
 \end{itemize}
 
-<<>>=
-is_almost_compat <- isCompatibleWithSkippedExons(ovenc)
-table(is_almost_compat)  # 837 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
+<<ov14_is_almost_compat>>=
+ov14_is_almost_compat <- isCompatibleWithSkippedExons(ovenc14)
+table(ov14_is_almostcompat)  # 837 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
 @
 
-For each alignment in \Rcode{gal4}, compute the number of hits (i.e.
+For each alignment in \Rcode{gal14}, compute the number of hits (i.e.
 overlaps) of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 
-<<>>=
-gal4_almost_compat_nhits <- tabulate(queryHits(overlaps)[is_almost_compat],
-                                     nbins=length(gal4))
-table(gal4_almost_compat_nhits)
+<<gal14_nalmostcompat>>=
+gal14_nalmostcompat <- tabulate(queryHits(ov14)[ov14_is_almostcompat],
+                                nbins=length(gal14))
+table(gal14_nalmostcompat)
 @
 
 Number of alignments with at least 1 hit of type
 COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 
-<<>>=
-sum(gal4_almost_compat_nhits != 0) 
+<<nb_non_zero_gal14_nalmostcompat>>=
+sum(gal14_nalmostcompat != 0) 
 @
 
 For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute
 the number of hits of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 
-<<>>=
-exbytx_almost_compat_nhits <- tabulate(subjectHits(overlaps)[is_almost_compat],
-                                       nbins=length(exbytx))
-names(exbytx_almost_compat_nhits) <- names(exbytx)
-table(exbytx_almost_compat_nhits)
+<<exbytx_nalmostcompat14>>=
+exbytx_nalmostcompat14 <- tabulate(subjectHits(ov14)[ov14_is_almostcompat],
+                                   nbins=length(exbytx))
+names(exbytx_nalmostcompat14) <- names(exbytx)
+table(exbytx_nalmostcompat14)
 @
 
 
@@ -287,68 +284,67 @@ table(exbytx_almost_compat_nhits)
             \Rcode{isCompatibleWithSkippedExons()} to detect novel splice
             junctions}
 
-An alignment in \Rcode{gal4} with hits of type COMPATIBLE\_WITH\_SKIPPED\_EXONS
+An alignment in \Rcode{gal14} with hits of type COMPATIBLE\_WITH\_SKIPPED\_EXONS
 but no hits of type COMPATIBLE\_WITH\_SPLICING suggests the presence of a
 transcript that is not in our annotations.
 
 First we extract the index of those alignments:
 
-<<>>=
-aln_shows_nov_splice_jct <- gal4_almost_compat_nhits != 0L &
-                            gal4_compat_nhits == 0L
+<<aln_shows_nov_splice_jct>>=
+aln_shows_nov_splice_jct <- gal14_nalmostcompat != 0L &
+                            gal14_ncompat == 0L
 which(aln_shows_nov_splice_jct)
 @
 
-We make this an index into \Rcode{overlaps} (Hits object):
+We make this an index into \Rcode{ov14} (Hits object):
 
-<<>>=
-is_nov_splice_jct <- queryHits(overlaps) %in%
-                         which(aln_shows_nov_splice_jct)
+<<is_nov_splice_jct>>=
+is_nov_splice_jct <- queryHits(ov14) %in% which(aln_shows_nov_splice_jct)
 @
 
 We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
 of interest:
 
-<<>>=
-is_nov_splice_jct <- is_nov_splice_jct & is_almost_compat
+<<narrow_is_nov_splice_jct>>=
+is_nov_splice_jct <- is_nov_splice_jct & ov14_is_almostcompat
 @
 
 For each overlap of interest, we extract the ranks of the skipped
 exons (we use a list for this as there might be more than 1 skipped
 exon per overlap):
 
-<<>>=
-skpexrk <- extractSkippedExonRanks(ovenc)[is_nov_splice_jct]
+<<skpexrk>>=
+skpexrk <- extractSkippedExonRanks(ovenc14)[is_nov_splice_jct]
 table(elementLengths(skpexrk))
 @
 
 Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
 
-<<>>=
-names(skpexrk) <- queryHits(overlaps)[is_nov_splice_jct]
-f <- names(exbytx)[subjectHits(overlaps)[is_nov_splice_jct]]
+<<tx2skpexrk>>=
+names(skpexrk) <- queryHits(ov14)[is_nov_splice_jct]
+f <- names(exbytx)[subjectHits(ov14)[is_nov_splice_jct]]
 tx2skpexrk <- split(skpexrk, f)
 @
 
 \Rcode{tx2skpexrk} is a named list of named lists of integer vectors.
 The first level of names (outer names) are transcript TxDb internal
 ids and the second level of names (inner names) are alignment
-indices into \Rcode{gal4}:
+indices into \Rcode{gal14}:
 
-<<>>=
+<<tx2skpexrk_names>>=
 names(tx2skpexrk)  # transcript TxDb internal ids
 @
 
 Transcript \Rcode{"10"} has 7 hits, all of them skip exons 9 and 10:
 
-<<>>=
+<<tx10_details>>=
 tx2skpexrk[["10"]]
 @
 
 Transcript \Rcode{"58"} has 4 hits. One hit skips exon 2, one hit skips
 exons 6 to 10, and two hits skip exon 10:
 
-<<>>=
+<<tx58_details>>=
 tx2skpexrk[["58"]]
 @
 
@@ -386,60 +382,88 @@ Final remarks:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Load the paired-end reads:
 
-<<readBamGappedAlignmentPairs>>=
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Load the reads and transcripts}
+
+We start by loading some aligned paired-end reads into a
+\Rclass{GappedAlignmentPairs} object.
+The reads are stored in a BAM file ({\tt untreated3\_chr4.bam}) located
+in the \Rpackage{pasillaBamSubset} data package. This file contains paired-end
+reads from an RNA-seq experiment and aligned against the dm3 genome (see
+\Rcode{?untreated3\_chr4} in the \Rpackage{pasillaBamSubset} package for more
+information about those reads):
+
+<<readGappedAlignmentPairs>>=
 untreated3_chr4()
-galp4 <- readBamGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE)
-galp4
+galp34 <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE)
+head(galp34)
 @
 
-Find and encode the overlaps:
+For the transcript, we'll reuse the \Rcode{exbytx} object obtained
+previously.
 
-<<>>=
-overlaps2 <- findOverlaps(galp4, exbytx, ignore.strand=TRUE)
-ovenc2 <- encodeOverlaps(galp4, exbytx, overlaps2, ignore.strand=TRUE)
-ovenc2
-unique_ovenc2 <- levels(encoding(ovenc2))
-length(unique_ovenc2)  # 275 unique encodings
-head(unique_ovenc2)
-enc_table2 <- table(encoding(ovenc2))
-tail(sort(enc_table2))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Find and encode the overlaps}
+
+Let's compute the overlaps:
+
+<<ov34>>=
+ov34 <- findOverlaps(galp34, exbytx, ignore.strand=TRUE)
 @
+
+and encode them:
+
+<<ovenc34>>=
+ovenc34 <- encodeOverlaps(galp34, exbytx, hits=ov34, ignore.strand=TRUE)
+ovenc34
+unique_ovenc34 <- levels(encoding(ovenc34))
+length(unique_ovenc34)
+head(unique_ovenc34)
+ovenc34_table <- table(encoding(ovenc34))
+tail(sort(ovenc34_table))
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Detect overlaps showing ``compatibility'' with the transcript}
 
 Unique encodings ``compatible'' with the splicing of the transcript:
 
-<<>>=
-tail(sort(enc_table2[isCompatibleWithSplicing(unique_ovenc2)]))
-is_compat2 <- isCompatibleWithSplicing(ovenc2)
-table(is_compat2)  # 175225 overlaps are "compatible" with the splicing
+<<compatible_unique_ovenc34>>=
+tail(sort(ovenc34_table[isCompatibleWithSplicing(unique_ovenc34)]))
 @
 
-Nb of ``compatible'' overlaps per alignment pair in \Rcode{galp4}:
+<<ov34_is_compat>>=
+ov34_is_compat <- isCompatibleWithSplicing(ovenc34)
+table(ov34_is_compat)  # 175225 overlaps are "compatible" with the splicing
+@
 
-<<>>=
-galp4_ncompat <- tabulate(queryHits(overlaps2)[is_compat2],
-                          nbins=length(galp4))
-elementMetadata(galp4)$ncompat <- galp4_ncompat
-galp4
+Nb of ``compatible'' overlaps per alignment pair in \Rcode{galp34}:
 
-table(galp4_ncompat)
+<<galp34_ncompat>>=
+galp34_ncompat <- tabulate(queryHits(ov34)[ov34_is_compat],
+                           nbins=length(galp34))
+elementMetadata(galp34)$ncompat <- galp34_ncompat
+head(galp34)
+table(galp34_ncompat)
 @
 
 Number of alignment pairs with at least 1 ``compatible'' overlap with a
 transcript:
 
-<<>>=
-sum(galp4_ncompat != 0)
+<<nb_non_zero_galp34_ncompat>>=
+sum(galp34_ncompat != 0)
 @
 
-Nb of compatible overlaps per transcript in \Rcode{exbytx}:
+Nb of ``compatible'' overlaps per transcript in \Rcode{exbytx}:
 
-<<>>=
-exbytx_ncompat2 <- tabulate(subjectHits(overlaps2)[is_compat2],
-                            nbins=length(exbytx))
-names(exbytx_ncompat2) <- names(exbytx)
-table(exbytx_ncompat2)
+<<exbytx_ncompat34>>=
+exbytx_ncompat34 <- tabulate(subjectHits(ov34)[ov34_is_compat],
+                             nbins=length(exbytx))
+names(exbytx_ncompat34) <- names(exbytx)
+tail(table(exbytx_ncompat34))
 @
 
 
