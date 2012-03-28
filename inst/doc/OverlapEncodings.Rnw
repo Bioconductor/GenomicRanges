@@ -247,8 +247,8 @@ to the following overlap:
 \end{verbatim}
 \end{itemize}
 
-<<ov14_is_almost_compat>>=
-ov14_is_almost_compat <- isCompatibleWithSkippedExons(ovenc14)
+<<ov14_is_almostcompat>>=
+ov14_is_almostcompat <- isCompatibleWithSkippedExons(ovenc14)
 table(ov14_is_almostcompat)  # 837 overlaps of type COMPATIBLE_WITH_SKIPPED_EXONS
 @
 
