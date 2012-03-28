@@ -123,9 +123,10 @@ genome(x) <- value
         out-of-the-box. If, in addition, the class defines a \code{seqinfo}
         setter, then all the related setters will also work out-of-the-box.
 
-        See the \link{GRanges}, \link{GRangesList} and \link{GappedAlignments}
-        classes for examples of classes that define the \code{seqinfo} getter
-        and setter (those 3 classes are defined in the GenomicRanges package).
+        See the \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
+        and \link{GappedAlignmentPairs} classes for examples of classes that
+        define the \code{seqinfo} getter and setter (those 4 classes are
+        defined in the GenomicRanges package).
 
         See the \link[GenomicFeatures]{TranscriptDb} class (defined in the
         GenomicFeatures package) for an example of a class that defines only
@@ -156,11 +157,14 @@ genome(x) <- value
 }
 
 \seealso{
-  \link{Seqinfo-class},
-  \link{GRanges-class},
-  \link{GRangesList-class},
-  \link{GappedAlignments-class},
-  \link[GenomicFeatures]{TranscriptDb-class}
+  \itemize{
+    \item \link{Seqinfo-class}.
+    \item \link{GRanges-class}.
+    \item \link{GRangesList-class}.
+    \item \link{GappedAlignments-class}.
+    \item \link{GappedAlignmentPairs-class}.
+    \item \link[GenomicFeatures]{TranscriptDb-class}.
+  }
 }
 
 \examples{

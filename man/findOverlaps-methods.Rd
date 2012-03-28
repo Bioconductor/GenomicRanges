@@ -16,6 +16,7 @@
 \alias{findOverlaps,GappedAlignments,ANY-method}
 \alias{findOverlaps,ANY,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{findOverlaps,GappedAlignmentPairs,ANY-method}
 
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{countOverlaps,GRangesList,GenomicRanges-method}
@@ -32,6 +33,7 @@
 \alias{countOverlaps,GappedAlignments,ANY-method}
 \alias{countOverlaps,ANY,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{countOverlaps,GappedAlignmentPairs,ANY-method}
 
 \alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
@@ -48,6 +50,7 @@
 \alias{subsetByOverlaps,GappedAlignments,ANY-method}
 \alias{subsetByOverlaps,ANY,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignmentPairs,ANY-method}
 
 \alias{match,GenomicRanges,GenomicRanges-method}
 \alias{match,GRangesList,GenomicRanges-method}
@@ -64,6 +67,7 @@
 \alias{match,GappedAlignments,ANY-method}
 \alias{match,ANY,GappedAlignments-method}
 \alias{match,GappedAlignments,GappedAlignments-method}
+\alias{match,GappedAlignmentPairs,ANY-method}
 
 \alias{\%in\%,GenomicRanges,GenomicRanges-method}
 \alias{\%in\%,GRangesList,GenomicRanges-method}
@@ -80,13 +84,15 @@
 \alias{\%in\%,GappedAlignments,ANY-method}
 \alias{\%in\%,ANY,GappedAlignments-method}
 \alias{\%in\%,GappedAlignments,GappedAlignments-method}
+\alias{\%in\%,GappedAlignmentPairs,ANY-method}
 
 
-\title{GRanges, GRangesList and GappedAlignments Interval Overlaps}
+\title{GRanges, GRangesList, GappedAlignments and GappedAlignmentPairs
+       Interval Overlaps}
 
 \description{
-  Finds interval overlaps between a GRanges, GRangesList or GappedAlignments
-  object and another object containing ranges.
+  Finds interval overlaps between a GRanges, GRangesList, GappedAlignments
+  or GappedAlignmentPairs object and another object containing ranges.
 }
 
 \usage{
@@ -109,10 +115,10 @@
 
 \arguments{
   \item{query, subject, x, table}{
-    A \link{GRanges}, \link{GRangesList} or \link{GappedAlignments}
-    object. \link[IRanges]{RangesList} and \link[IRanges]{RangedData}
-    are also accepted for one of \code{query} or \code{subject}
-    (\code{x} or \code{table} for \code{match}).
+    A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments} or
+    \link{GappedAlignmentPairs} object. \link[IRanges]{RangesList}
+    and \link[IRanges]{RangedData} are also accepted for one of \code{query}
+    or \code{subject} (\code{x} or \code{table} for \code{match}).
   }
   \item{maxgap, minoverlap, type, select}{
     See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
@@ -156,6 +162,10 @@
   object, it is first turned into a \link{GRangesList} object (with
   \code{as( , "GRangesList")}) and then the rules described previously
   apply.
+
+  When the query is a \link{GappedAlignmentPairs} object, it is first
+  turned into a \link{GRangesList} object (with \code{as( , "GRangesList")})
+  and then the rules described previously apply.
 }
 
 \value{
@@ -183,11 +193,14 @@
 \author{P. Aboyoun, S. Falcon, M. Lawrence, N. Gopalakrishnan and H. Pages}
 
 \seealso{
-  \code{\link[IRanges]{findOverlaps}},
-  \link[IRanges]{Hits-class},
-  \link{GRanges-class},
-  \link{GRangesList-class},
-  \link{GappedAlignments-class}
+  \itemize{
+    \item \code{\link[IRanges]{findOverlaps}}.
+    \item \link[IRanges]{Hits-class}.
+    \item \link{GRanges-class}.
+    \item \link{GRangesList-class}.
+    \item \link{GappedAlignments-class}.
+    \item \link{GappedAlignmentPairs-class}.
+  }
 }
 
 \examples{
@@ -258,8 +271,8 @@ subsetByOverlaps(grlist, rev(grlist))
 ## WITH A GappedAlignments OBJECT
 ## ---------------------------------------------------------------------
 library(Rsamtools)  # because file ex1.bam is in this package
-galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(galn_file)
+ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
+galn <- readGappedAlignments(ex1_file)
 
 subject <- granges(galn)[1]
 
