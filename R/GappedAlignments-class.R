@@ -745,7 +745,7 @@ setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
   space <- names(to_hits)
   if (is.null(space))
     space <- as.character(seq_len(length(to))[subjectHits(from_ol)])
-  new("RangesMapping", matching = from_ol, space = Rle(space),
+  new("RangesMapping", hits = from_ol, space = Rle(space),
       ranges = IRanges(starts, ends))
 })
 
