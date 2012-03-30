@@ -255,8 +255,8 @@ library(pasilla)
 library(rtracklayer)
 library(Rsamtools)
 
-gff <- import(paste("file:///", system.file("extdata", "Dmel.BDGP5.25.62.DEXSeq.chr.gff",
-    package = "pasilla"), sep=""), "gff1")
+gff <- import(system.file("extdata", "Dmel.BDGP5.25.62.DEXSeq.chr.gff",
+    package = "pasilla"), "gff1")
 features <- as(gff, "GRanges")
 head(features[,1])
 @
