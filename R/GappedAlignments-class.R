@@ -414,7 +414,7 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Two helper functions used by higher level coercion functions.
+### Three helper functions used by higher level coercion functions.
 ###
 ### Note that their arguments are the different components of a
 ### GappedAlignments object instead of just the GappedAlignments object
@@ -431,22 +431,33 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
     ans
 }
 
-### Names are propagated via 'rglist@partitioning' ('rglist' is a 
-### CompressedIRangesList).
-.CompressedIRangesListToGRangesList <- function(rglist, seqnames, strand,
-                                                seqinfo)
+### Names are propagated via 'x@partitioning' ('x' is a CompressedIRangesList).
+.CompressedIRangesListToGRangesList <- function(x, seqnames, strand, seqinfo)
 {
-    nrg_per_alignment <- elementLengths(rglist)
-    seqnames <- rep.int(seqnames, nrg_per_alignment)
-    strand <- rep.int(strand, nrg_per_alignment)
+    elt_len <- elementLengths(x)
+    seqnames <- rep.int(seqnames, elt_len)
+    strand <- rep.int(strand, elt_len)
     unlistData <- GRanges(seqnames=seqnames,
-                          ranges=rglist@unlistData,
+                          ranges=x@unlistData,
                           strand=strand)
     seqinfo(unlistData) <- seqinfo
     new("GRangesList",
         unlistData=unlistData,
-        partitioning=rglist@partitioning,
-        elementMetadata=rglist@elementMetadata)
+        partitioning=x@partitioning,
+        elementMetadata=x@elementMetadata)
+}
+
+### 'x' must be a CompressedList object.
+.reorderRangesFrom5To3prime <- function(x, strand)
+{
+    if (length(x) == 0L)
+        return(x)
+    elt_len <- elementLengths(x)
+    offset <- cumsum(c(0L, elt_len[-length(elt_len)]))
+    must_reorder <- as.logical(strand == "-") & elt_len >= 2L
+    i <- IRanges:::fancy_mseq(elt_len, offset=offset, rev=must_reorder)
+    x@unlistData <- x@unlistData[i]
+    x
 }
 
 
@@ -459,10 +470,12 @@ setGeneric("granges", function(x, ...) standardGeneric("granges"))
 setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
 setMethod("grglist", "GappedAlignments",
-    function(x, drop.D.ranges = FALSE)
+    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges = FALSE)
     {
-        rglist <- rglist(x, drop.D.ranges=drop.D.ranges)
-        .CompressedIRangesListToGRangesList(rglist, seqnames(x), strand(x),
+        rgl <- rglist(x,
+                   reorder.ranges.from5to3prime=reorder.ranges.from5to3prime,
+                   drop.D.ranges=drop.D.ranges)
+        .CompressedIRangesListToGRangesList(rgl, seqnames(x), strand(x),
                                             seqinfo(x))
     }
 )
@@ -474,10 +487,14 @@ setMethod("granges", "GappedAlignments",
 )
 
 setMethod("rglist", "GappedAlignments",
-    function(x, drop.D.ranges=FALSE)
+    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges=FALSE)
     {
+        if (!isTRUEorFALSE(reorder.ranges.from5to3prime))
+            stop("'reorder.ranges.from5to3' must be TRUE or FALSE")
         ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
                                              drop.D.ranges=drop.D.ranges)
+        if (reorder.ranges.from5to3prime)
+            ans <- .reorderRangesFrom5To3prime(ans, strand(x))
         names(ans) <- names(x)
         elementMetadata(ans) <- elementMetadata(x)
         ans
