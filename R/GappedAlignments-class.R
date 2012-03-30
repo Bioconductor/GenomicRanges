@@ -24,10 +24,10 @@ setClass("GappedAlignments",
 ### Formal API:
 ###   names(x)    - NULL or character vector.
 ###   length(x)   - single integer. Nb of alignments in 'x'.
-###   rname(x)    - 'factor' Rle of the same length as 'x'.
-###   seqnames(x) - same as 'rname(x)'.
-###   rname(x) <- value - replacement form of 'rname(x)'.
-###   seqnames(x) <- value - same as 'rname(x) <- value'.
+###   seqnames(x) - 'factor' Rle of the same length as 'x'.
+###   rname(x)    - same as 'seqnames(x)'.
+###   seqnames(x) <- value - replacement form of 'seqnames(x)'.
+###   rname(x) <- value - same as 'seqnames(x) <- value'.
 ###   cigar(x)    - character vector of the same length as 'x'.
 ###   strand(x)   - 'factor' Rle of the same length as 'x' (levels: +, -, *).
 ###   qwidth(x)   - integer vector of the same length as 'x'.
@@ -66,7 +66,6 @@ setClass("GappedAlignments",
 ###
 
 setGeneric("rname", function(x) standardGeneric("rname"))
-
 setGeneric("rname<-", function(x, value) standardGeneric("rname<-"))
 
 setGeneric("cigar", function(x) standardGeneric("cigar"))
@@ -90,10 +89,8 @@ setMethod("length", "GappedAlignments", function(x) length(x@cigar))
 
 setMethod("names", "GappedAlignments", function(x) x@NAMES)
 
-setMethod("rname", "GappedAlignments", function(x) x@seqnames)
-
-### To make GappedAlignments/GRanges more interchangeable.
-setMethod("seqnames", "GappedAlignments", function(x) rname(x))
+setMethod("seqnames", "GappedAlignments", function(x) x@seqnames)
+setMethod("rname", "GappedAlignments", function(x) seqnames(x))
 
 setMethod("cigar", "GappedAlignments", function(x) x@cigar)
 
@@ -139,14 +136,14 @@ setReplaceMethod("names", "GappedAlignments",
     }
 )
 
-.normargRNameReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
+.normargSeqnamesReplaceValue <- function(x, value, ans.type=c("factor", "Rle"))
 {
     ans.type <- match.arg(ans.type)
     if (!is.factor(value)
      && !is.character(value)
      && (!is(value, "Rle") || !is.character(runValue(value))
                               && !is.factor(runValue(value))))
-        stop("'rname' value must be a character factor/vector, ",
+        stop("'seqnames' value must be a character factor/vector, ",
              "or a 'character' Rle, or a 'factor' Rle")
     if (ans.type == "factor") {
         if (!is.factor(value))
@@ -162,19 +159,19 @@ setReplaceMethod("names", "GappedAlignments",
         }
     }
     if (length(value) != length(x))
-        stop("'rname' value must be the same length as the object")
+        stop("'seqnames' value must be the same length as the object")
     value
 }
 
-### 'old_rname' and 'new_rname' must be 'factor' Rle.
-.getRNameTranslationTable <- function(old_rname, new_rname)
+### 'old_seqnames' and 'new_seqnames' must be 'factor' Rle.
+.getSeqnamesTranslationTable <- function(old_seqnames, new_seqnames)
 {
-    old <- runValue(old_rname)
-    new <- runValue(new_rname)
+    old <- runValue(old_seqnames)
+    new <- runValue(new_seqnames)
     tmp <- unique(data.frame(old=old, new=new))
-    if (!identical(runLength(old_rname), runLength(new_rname)) ||
+    if (!identical(runLength(old_seqnames), runLength(new_seqnames)) ||
         anyDuplicated(tmp$old) || anyDuplicated(tmp$new))
-        stop("mapping between old an new 'rname' values is not one-to-one")
+        stop("mapping between old an new 'seqnames' values is not one-to-one")
     if (isTRUE(all.equal(as.integer(tmp$old), as.integer(tmp$new)))) {
         tr_table <- levels(new)
         names(tr_table) <- levels(old)
@@ -185,20 +182,19 @@ setReplaceMethod("names", "GappedAlignments",
     tr_table
 }
 
-setReplaceMethod("rname", "GappedAlignments",
+setReplaceMethod("seqnames", "GappedAlignments",
     function(x, value)
     {
-        value <- .normargRNameReplaceValue(x, value, ans.type="Rle")
-        tr_table <- .getRNameTranslationTable(rname(x), value)
+        value <- .normargSeqnamesReplaceValue(x, value, ans.type="Rle")
+        tr_table <- .getSeqnamesTranslationTable(seqnames(x), value)
         x@seqnames <- value
         seqnames(x@seqinfo) <- tr_table[seqlevels(x)]
         x
     }
 )
 
-### To make GappedAlignments/GRanges more interchangeable.
-setReplaceMethod("seqnames", "GappedAlignments",
-    function(x, value) `rname<-`(x, value)
+setReplaceMethod("rname", "GappedAlignments",
+    function(x, value) `seqnames<-`(x, value)
 )
 
 setReplaceMethod("strand", "GappedAlignments",
@@ -254,14 +250,14 @@ setReplaceMethod("seqinfo", "GappedAlignments",
     NULL
 }
 
-.valid.GappedAlignments.rname <- function(x)
+.valid.GappedAlignments.seqnames <- function(x)
 {
-    x_rname <- rname(x)
-    if (!is(x_rname, "Rle") || !is.factor(runValue(x_rname))
-     || !is.null(names(x_rname)) || any(is.na(x_rname)))
-        return("'rname(x)' must be an unnamed 'factor' Rle with no NAs")
-    if (length(x_rname) != length(cigar(x)))
-        return("'rname(x)' and 'cigar(x)' must have the same length")
+    x_seqnames <- seqnames(x)
+    if (!is(x_seqnames, "Rle") || !is.factor(runValue(x_seqnames))
+     || !is.null(names(x_seqnames)) || any(is.na(x_seqnames)))
+        return("'seqnames(x)' must be an unnamed 'factor' Rle with no NAs")
+    if (length(x_seqnames) != length(cigar(x)))
+        return("'seqnames(x)' and 'cigar(x)' must have the same length")
     NULL
 }
 
@@ -301,7 +297,7 @@ setReplaceMethod("seqinfo", "GappedAlignments",
 .valid.GappedAlignments <- function(x)
 {
     c(.valid.GappedAlignments.names(x),
-      .valid.GappedAlignments.rname(x),
+      .valid.GappedAlignments.seqnames(x),
       .valid.GappedAlignments.start(x),
       .valid.GappedAlignments.cigar(x),
       .valid.GappedAlignments.strand(x),
@@ -331,14 +327,14 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
     x
 }
 
-GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
+GappedAlignments <- function(seqnames=Rle(factor()), pos=integer(0),
                              cigar=character(0), strand=NULL,
                              names=NULL, seqlengths=NULL, ...)
 {
-    ## Prepare the 'rname' slot.
-    rname <- .asFactorRle(rname)
-    if (any(is.na(rname)))
-        stop("'rname' cannot have NAs")
+    ## Prepare the 'seqnames' slot.
+    seqnames <- .asFactorRle(seqnames)
+    if (any(is.na(seqnames)))
+        stop("'seqnames' cannot have NAs")
     ## Prepare the 'pos' slot.
     if (!is.integer(pos) || any(is.na(pos)))
         stop("'pos' must be an integer vector with no NAs")
@@ -347,8 +343,8 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
         stop("'cigar' must be a character vector with no NAs")
     ## Prepare the 'strand' slot.
     if (is.null(strand)) {
-        if (length(rname) != 0L)
-            stop("'strand' must be specified when 'rname' is not empty")
+        if (length(seqnames) != 0L)
+            stop("'strand' must be specified when 'seqnames' is not empty")
         strand <- Rle(strand())
     } else if (is.factor(strand)) {
         strand <- Rle(strand)
@@ -357,26 +353,26 @@ GappedAlignments <- function(rname=Rle(factor()), pos=integer(0),
     varlist <- list(...)
     elementMetadata <- 
         if (0L == length(varlist))
-            new("DataFrame", nrows=length(rname))
+            new("DataFrame", nrows=length(seqnames))
         else
             do.call(DataFrame, varlist)
     ## Prepare the 'seqinfo' slot.
     if (is.null(seqlengths)) {
-        seqlengths <- rep(NA_integer_, length(levels(rname)))
-        names(seqlengths) <- levels(rname)
+        seqlengths <- rep(NA_integer_, length(levels(seqnames)))
+        names(seqlengths) <- levels(seqnames)
     } else if (!is.numeric(seqlengths)
             || is.null(names(seqlengths))
             || any(duplicated(names(seqlengths)))) {
         stop("'seqlengths' must be an integer vector with unique names")
-    } else if (!setequal(names(seqlengths), levels(rname))) {
-        stop("'names(seqlengths)' incompatible with 'levels(rname)'")
+    } else if (!setequal(names(seqlengths), levels(seqnames))) {
+        stop("'names(seqlengths)' incompatible with 'levels(seqnames)'")
     } else if (!is.integer(seqlengths)) { 
         storage.mode(seqlengths) <- "integer"
     }
     seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
     ## Create and return the GappedAlignments instance.
     new("GappedAlignments", NAMES=names,
-                            seqnames=rname, start=pos, cigar=cigar,
+                            seqnames=seqnames, start=pos, cigar=cigar,
                             strand=strand,
                             elementMetadata=elementMetadata,
                             seqinfo=seqinfo)
@@ -426,20 +422,22 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 ### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
 ###
 
-.GappedAlignmentsAsGRanges <- function(rname, start, width, strand, seqinfo,
+.GappedAlignmentsToGRanges <- function(seqnames, start, width, strand, seqinfo,
                                        names=NULL)
 {
     ranges <- IRanges(start=start, width=width, names=names)
-    ans <- GRanges(seqnames=rname, ranges=ranges, strand=strand)
+    ans <- GRanges(seqnames=seqnames, ranges=ranges, strand=strand)
     seqinfo(ans) <- seqinfo
     ans
 }
 
-### Names are taken from the 'rglist' arg (CompressedIRangesList).
-.GappedAlignmentsAsGRangesList <- function(rname, rglist, strand, seqinfo)
+### Names are propagated via 'rglist@partitioning' ('rglist' is a 
+### CompressedIRangesList).
+.CompressedIRangesListToGRangesList <- function(rglist, seqnames, strand,
+                                                seqinfo)
 {
     nrg_per_alignment <- elementLengths(rglist)
-    seqnames <- rep.int(rname, nrg_per_alignment)
+    seqnames <- rep.int(seqnames, nrg_per_alignment)
     strand <- rep.int(strand, nrg_per_alignment)
     unlistData <- GRanges(seqnames=seqnames,
                           ranges=rglist@unlistData,
@@ -462,14 +460,16 @@ setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
 setMethod("grglist", "GappedAlignments",
     function(x, drop.D.ranges = FALSE)
-        .GappedAlignmentsAsGRangesList(rname(x),
-                                       rglist(x, drop.D.ranges=drop.D.ranges),
-                                       strand(x), seqinfo(x))
+    {
+        rglist <- rglist(x, drop.D.ranges=drop.D.ranges)
+        .CompressedIRangesListToGRangesList(rglist, seqnames(x), strand(x),
+                                            seqinfo(x))
+    }
 )
 
 setMethod("granges", "GappedAlignments",
     function(x)
-        .GappedAlignmentsAsGRanges(rname(x), start(x), width(x),
+        .GappedAlignmentsToGRanges(seqnames(x), start(x), width(x),
                                    strand(x), seqinfo(x), names(x))
 )
 
@@ -500,7 +500,7 @@ setMethod("as.data.frame", "GappedAlignments",
             row.names <- names(x)
         else if (!is.character(row.names))
             stop("'row.names' must be NULL or a character vector")
-        ans <- data.frame(rname=as.character(rname(x)),
+        ans <- data.frame(seqnames=as.character(seqnames(x)),
                           strand=as.character(strand(x)),
                           cigar=cigar(x),
                           qwidth=qwidth(x),

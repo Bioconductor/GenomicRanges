@@ -678,7 +678,7 @@ There is one accessor per field displayed by the \Rmethod{show} method
 and it has the same name as the field. All of them return a vector or
 factor of the same length as the object:
 <<accessors>>=
-head(rname(aln1))
+head(seqnames(aln1))
 seqlevels(aln1)
 head(strand(aln1))
 head(cigar(aln1))

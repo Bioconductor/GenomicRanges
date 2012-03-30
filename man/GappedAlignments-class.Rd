@@ -13,14 +13,14 @@
 % Accessors:
 \alias{length,GappedAlignments-method}
 \alias{names,GappedAlignments-method}
+\alias{seqnames,GappedAlignments-method}
 \alias{rname}
 \alias{rname,GappedAlignments-method}
-\alias{seqnames,GappedAlignments-method}
 \alias{strand,GappedAlignments-method}
 \alias{names<-,GappedAlignments-method}
+\alias{seqnames<-,GappedAlignments-method}
 \alias{rname<-}
 \alias{rname<-,GappedAlignments-method}
-\alias{seqnames<-,GappedAlignments-method}
 \alias{strand<-,GappedAlignments-method}
 \alias{cigar}
 \alias{cigar,GappedAlignments-method}
@@ -165,7 +165,7 @@
       package first).
     }
     \item{}{
-      \code{GappedAlignments(rname=Rle(factor()), pos=integer(0),
+      \code{GappedAlignments(seqnames=Rle(factor()), pos=integer(0),
                              cigar=character(0),
                              strand=NULL, names=NULL, seqlengths=NULL, ...)}:
       Low-level GappedAlignments constructor. Generally not used directly.
@@ -189,7 +189,7 @@
       and set the names from the file to read.
     }
     \item{}{
-      \code{rname(x)}, \code{rname(x) <- value}:
+      \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Gets or sets the name of the reference sequence for each alignment
       in \code{x} (see Details section above for more information about
       the RNAME field of a SAM/BAM file).
@@ -197,8 +197,8 @@
       or a character vector.
     }
     \item{}{
-      \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Same as \code{rname(x)} and \code{rname(x) <- value}.
+      \code{rname(x)}, \code{rname(x) <- value}:
+      Same as \code{seqnames(x)} and \code{seqnames(x) <- value}.
     }
     \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:

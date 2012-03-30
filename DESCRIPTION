@@ -6,14 +6,14 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.7.42
+Version: 1.7.43
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.10), methods, BiocGenerics (>= 0.1.12), IRanges (>= 1.13.29)
 Imports: methods, BiocGenerics, IRanges
 LinkingTo: IRanges
-Suggests: Rsamtools (>= 1.5.66), BSgenome, rtracklayer, GenomicFeatures,
+Suggests: Rsamtools (>= 1.7.42), BSgenome, rtracklayer, GenomicFeatures,
 	EatonEtAlChIPseq (>= 0.0.3), leeBamViews, edgeR, DESeq,
 	rtracklayer, org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2,
 	DEXSeq, pasilla, pasillaBamSubset, VariantAnnotation, RUnit
