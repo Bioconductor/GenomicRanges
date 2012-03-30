@@ -6,6 +6,45 @@ NEW FEATURES
     o SummarizedExperiment gains direct access to colData columns with
       $, $<-, [[, and [[<- methods
 
+    o Add map,GenomicRanges,GRangesList and
+      map,GenomicRanges,GappedAlignments methods. These allow mapping
+      from genome space to transcript space, and genome space to read
+      space, respectively.
+    
+    o Add seqinfo methods (and friends) for RangedData, RangesList,
+      and other IRanges data structures. These use metadata(x)$seqinfo.
+
+    o Add disjointBins,GenomicRanges.
+
+    o Add score,GRangesList and score,GenomicRanges
+      (gets the score column like for RangedData)
+    
+    o Add RangedDataList -> GenomicRangesList coercion
+
+    o Add RleViewsList -> GRanges coercion
+
+    o Add pintersect,GRangesList,GRangesList
+
+    o Add stack,GenomicRangesList
+    
+    o ignore.strand argument now more uniformly supported on set operations.
+
+    o Add Ops,GenomicRanges (from rtracklayer)
+    
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o grglist,GappedAlignments now carries over element metadata.
+
+    o Names are no longer forced to be unique when unlisting a
+      GRangesList with use.names = TRUE.
+    
+BUG FIXES
+
+    o flank,GRangesList no longer forces 'use.names' to TRUE and 'both' to
+      FALSE.
+
+    o range,GenomicRanges was broken when object had no ranges
+    
 CHANGES IN VERSION 1.6.0
 ------------------------
 
