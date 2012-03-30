@@ -39,6 +39,16 @@ setMethod("strand", "logical",
         ans
     })
 
+setMethod("strand", "Rle",
+    function(x) {
+        x_runValue <- runValue(x)
+        if (!is.logical(x_runValue))
+            stop("only 'logical'-Rle's are supported by \"strand\" method",
+                 "for Rle objects at the moment, sorry")
+        runValue(x) <- strand(x_runValue)
+        x
+    })
+
 setMethod("strand", "DataTable",
     function(x) {
         ans <- x[["strand"]]

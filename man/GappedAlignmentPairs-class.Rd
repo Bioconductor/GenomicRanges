@@ -136,10 +136,13 @@
       are on the same strand).
     }
     \item{}{
-      \code{first(x)}, \code{last(x)}:
+      \code{first(x, invert.strand=FALSE)},
+      \code{last(x, invert.strand=FALSE)}:
       Gets the first or last alignment for each alignment pair in \code{x}.
       The result is a \link{GappedAlignments} object of the same length
       as \code{x}.
+      If \code{invert.strand=TRUE}, then the strand is inverted on-the-fly,
+      i.e. "+" becomes "-", "-" becomes "+", and "*" remains unchanged.
     }
     \item{}{
       \code{left(x)}:
@@ -281,6 +284,7 @@ strand(galp)
 
 first(galp)
 last(galp)
+last(galp, invert.strand=TRUE)
 left(galp)
 right(galp)
 table(isProperPair(galp))

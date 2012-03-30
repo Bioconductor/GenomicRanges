@@ -7,6 +7,7 @@
 \alias{strand,factor-method}
 \alias{strand,integer-method}
 \alias{strand,logical-method}
+\alias{strand,Rle-method}
 \alias{strand,DataTable-method}
 \alias{strand<-,DataTable-method}
 
@@ -22,6 +23,7 @@
 \S4method{strand}{factor}(x)
 \S4method{strand}{integer}(x)
 \S4method{strand}{logical}(x)
+\S4method{strand}{Rle}(x)
 \S4method{strand}{DataTable}(x)
 \S4method{strand}{DataTable}(x) <- value
 }
@@ -52,6 +54,10 @@
   levels respectively. \code{NA}s in \code{x} produce \code{NA}s
   in the result.
 
+  If \code{x} is a 'logical'-\link[IRanges]{Rle} vector, it is
+  transformed with \code{runValue(x) <- strand(runValue(x))}
+  and returned.
+
   If \code{x} inherits from \code{DataTable}, the \code{"strand"}
   column is returned as a factor with the levels listed above. If
   \code{x} has no \code{"strand"} column, this return value is
@@ -69,6 +75,7 @@ strand()
 strand(c("+", "-", NA, "*"))
 strand(c(-1L, 1L, NA, -1L, NA))
 strand(c(FALSE, FALSE, TRUE, NA, TRUE, FALSE))
+strand(Rle(c(FALSE, FALSE, TRUE, NA, TRUE, FALSE)))
 }
 
 \keyword{methods}

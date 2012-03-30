@@ -44,8 +44,8 @@ setClass("GappedAlignmentPairs",
 ###                 (endomorphism).
 ###
 
-setGeneric("first", function(x) standardGeneric("first"))
-setGeneric("last", function(x) standardGeneric("last"))
+setGeneric("first", function(x, ...) standardGeneric("first"))
+setGeneric("last", function(x, ...) standardGeneric("last"))
 setGeneric("left", function(x, ...) standardGeneric("left"))
 setGeneric("right", function(x, ...) standardGeneric("right"))
 setGeneric("isProperPair", function(x) standardGeneric("isProperPair"))
@@ -64,11 +64,27 @@ setMethod("names", "GappedAlignmentPairs",
 )
 
 setMethod("first", "GappedAlignmentPairs",
-    function(x) setNames(x@first, names(x))
+    function(x, invert.strand=FALSE)
+    {
+        if (!isTRUEorFALSE(invert.strand))
+            stop("'invert.strand' must be TRUE or FALSE")
+        ans <- setNames(x@first, names(x))
+        if (invert.strand)
+            strand(ans) <- strand(strand(ans) == "+")
+        ans
+    }
 )
 
 setMethod("last", "GappedAlignmentPairs",
-    function(x) setNames(x@last, names(x))
+    function(x, invert.strand=FALSE)
+    {
+        if (!isTRUEorFALSE(invert.strand))
+            stop("'invert.strand' must be TRUE or FALSE")
+        ans <- setNames(x@last, names(x))
+        if (invert.strand)
+            strand(ans) <- strand(strand(ans) == "+")
+        ans
+    }
 )
 
 setMethod("left", "GappedAlignmentPairs",
