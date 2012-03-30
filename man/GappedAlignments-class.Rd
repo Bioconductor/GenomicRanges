@@ -287,37 +287,40 @@
     \item{}{
       \code{grglist(x, reorder.ranges.from5to3prime=FALSE,
                        drop.D.ranges=FALSE)},
-      \code{granges(x)},
       \code{rglist(x, reorder.ranges.from5to3prime=FALSE,
-                      drop.D.ranges=FALSE)},
-      \code{ranges(x)}:
-      Returns either a \link{GRangesList} object, or a \link{GRanges} object,
-      or a \link[IRanges]{RangesList} object, or a \link[IRanges]{Ranges}
+                      drop.D.ranges=FALSE)}:
+      Returns either a \link{GRangesList} or a \link[IRanges]{RangesList}
       object of length \code{length(x)} where each element represents the
-      regions in the reference to which a query is
-      aligned.
+      regions in the reference to which a query is aligned.
 
-      For \code{grglist} or \code{rglist},
-      if \code{reorder.ranges.from5to3prime} is \code{FALSE} (the default),
+      More precisely, the \link[IRanges]{RangesList} object returned by
+      \code{rglist(x)} is a \link[IRanges]{CompressedIRangesList} object.
+
+      If \code{reorder.ranges.from5to3prime} is \code{FALSE} (the default),
       then the ranges are ordered in ascending order (i.e. left-to-right)
       in each top-level element of the returned object.
       If \code{reorder.ranges.from5to3prime} is \code{TRUE}, then the ranges
       are ordered from 5' to 3' in each top-level element of the returned
       object. This is achieved by reversing the order of the ranges within
       each top-level element associated with the minus strand (i.e.
-      corresponding to an alignment located on the minus strand), so the
-      ranges end up being in decending order (i.e. right-to-left).
+      corresponding to an alignment located on the minus strand), so, in
+      these top-level elements the ranges end up being in decending order
+      (i.e. right-to-left).
 
-      For \code{grglist} or \code{rglist},
-      if \code{drop.D.ranges} is \code{TRUE}, then the ranges corresponding
+      If \code{drop.D.ranges} is \code{TRUE}, then the ranges corresponding
       to deletions in the CIGAR string are dropped, i.e., they are not
       considered part of the alignment but are treated like the N (gap)
       CIGAR operation.
       See Details section above for more information.
-      More precisely, the \link[IRanges]{RangesList} object returned by
-      \code{rglist(x)} is a \link[IRanges]{CompressedIRangesList} object,
-      and the \link[IRanges]{Ranges} object returned by \code{ranges(x)} is
-      an \link[IRanges]{IRanges} object.
+    }
+    \item{}{
+      \code{granges(x)}, \code{ranges(x)}:
+      Returns either a \link{GRanges} or a \link[IRanges]{Ranges}
+      object of length \code{length(x)} where each element represents the
+      regions in the reference to which a query is aligned.
+
+      More precisely, the \link[IRanges]{Ranges} object returned by
+      \code{ranges(x)} is an \link[IRanges]{IRanges} object.
     }
     \item{}{
       \code{as(x, "GRangesList")}, \code{as(x, "GRanges")},
