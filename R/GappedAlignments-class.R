@@ -454,8 +454,8 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
         return(x)
     elt_len <- elementLengths(x)
     offset <- cumsum(c(0L, elt_len[-length(elt_len)]))
-    must_reorder <- as.logical(strand == "-") & elt_len >= 2L
-    i <- IRanges:::fancy_mseq(elt_len, offset=offset, rev=must_reorder)
+    i <- IRanges:::fancy_mseq(elt_len, offset=offset,
+                              rev=as.logical(strand == "-"))
     x@unlistData <- x@unlistData[i]
     x
 }
