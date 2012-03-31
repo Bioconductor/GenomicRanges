@@ -57,7 +57,7 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 )
 }
 
-GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL,
+GRangesList_encodeOverlaps <- function(query, subject, query.breaks=NULL,
                                        ignore.strand=FALSE)
 {
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
@@ -70,7 +70,7 @@ GRangesList_encodeOverlaps <- function(query, subject, Lquery.lengths=NULL,
                                       ignore.strand=ignore.strand),
                               subject.spaces=.get_GRangesList_spaces(subject,
                                       ignore.strand=ignore.strand),
-                              Lquery.lengths=Lquery.lengths)
+                              query.breaks=query.breaks)
 }
 
 setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
@@ -88,9 +88,9 @@ setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
 setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
     function(query, subject, hits=NULL, ignore.strand=FALSE)
     {
-        Lquery.lengths <- 1L + ngap(left(query))
+        query.breaks <- 1L + ngap(left(query))
         GRangesList_encodeOverlaps(as(query, "GRangesList"), subject,
-                                   Lquery.lengths=Lquery.lengths,
+                                   query.breaks=query.breaks,
                                    ignore.strand=ignore.strand)
     }
 )
