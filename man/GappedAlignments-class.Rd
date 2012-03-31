@@ -290,27 +290,31 @@
       \code{rglist(x, reorder.ranges.from5to3prime=FALSE,
                       drop.D.ranges=FALSE)}:
       Returns either a \link{GRangesList} or a \link[IRanges]{RangesList}
-      object of length \code{length(x)} where each element represents the
-      regions in the reference to which a query is aligned.
+      object of length \code{length(x)} where the i-th element represents
+      the ranges (with respect to the reference) of the i-th alignment in
+      \code{x}.
 
       More precisely, the \link[IRanges]{RangesList} object returned by
       \code{rglist(x)} is a \link[IRanges]{CompressedIRangesList} object.
 
-      If \code{reorder.ranges.from5to3prime} is \code{FALSE} (the default),
-      then the ranges are ordered in ascending order (i.e. left-to-right)
-      in each top-level element of the returned object.
-      If \code{reorder.ranges.from5to3prime} is \code{TRUE}, then the ranges
-      are ordered from 5' to 3' in each top-level element of the returned
-      object. This is achieved by reversing the order of the ranges within
-      each top-level element associated with the minus strand (i.e.
-      corresponding to an alignment located on the minus strand), so, in
-      these top-level elements the ranges end up being in decending order
-      (i.e. right-to-left).
+      The \code{reorder.ranges.from5to3prime} toggle affects the order of
+      the ranges \emph{within} each top-level element of the returned object.
 
-      If \code{drop.D.ranges} is \code{TRUE}, then the ranges corresponding
-      to deletions in the CIGAR string are dropped, i.e., they are not
-      considered part of the alignment but are treated like the N (gap)
-      CIGAR operation.
+      If \code{FALSE} (the default), then the ranges are ordered from 5' to 3'
+      in elements associated with the plus strand (i.e. corresponding to
+      alignments located on the plus strand), and from 3' to 5' in elements
+      associated with the minus strand. So, whatever the strand is, the ranges
+      are in ascending order (i.e. left-to-right).
+
+      If \code{TRUE}, then the order of the ranges in elements associated
+      with the \emph{minus} strand is reversed. So they end up being
+      ordered from 5' to 3' too, which means that they are now in decending
+      order (i.e. right-to-left).
+
+      If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
+      CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges
+      corresponding to deletions are dropped.
+
       See Details section above for more information.
     }
     \item{}{

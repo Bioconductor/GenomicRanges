@@ -127,19 +127,20 @@
     \item{}{
       \code{strand(x)}:
       Gets the strand for each alignment pair in \code{x}. By definition
-      the strand of an alignment pair is the strand of the \emph{first}
+      the strand of an alignment pair is the strand of the \emph{"first"}
       alignment in the pair. In a GappedAlignmentPairs object, the strand
-      of the last alignment in a pair is \emph{always} the opposite of the
-      strand of the first alignment
+      of the "last" alignment in a pair is \emph{always} the opposite of the
+      strand of the "first" alignment
       (\code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
       used by \code{\link[Rsamtools]{readBamGappedAlignmentPairs}} for
-      doing the pairing, rejects pairs where the first and last alignments
-      are on the same strand).
+      doing the pairing, rejects pairs where the "first" and "last"
+      alignments are on the same strand).
     }
     \item{}{
       \code{first(x, invert.strand=FALSE)},
       \code{last(x, invert.strand=FALSE)}:
-      Gets the first or last alignment for each alignment pair in \code{x}.
+      Gets the "first" or "last" alignment for each alignment pair in
+      \code{x}.
       The result is a \link{GappedAlignments} object of the same length
       as \code{x}.
       If \code{invert.strand=TRUE}, then the strand is inverted on-the-fly,
@@ -147,18 +148,18 @@
     }
     \item{}{
       \code{left(x)}:
-      Gets the "left alignment" for each alignment pair in \code{x}.
-      By definition, the "left alignment" in a pair is the alignment that
-      is on the + strand. If this is the first alignment, then it's returned
-      as-is by \code{left(x)}, but if this is the last alignment, then it's
+      Gets the "left" alignment for each alignment pair in \code{x}.
+      By definition, the "left" alignment in a pair is the alignment that
+      is on the + strand. If this is the "first" alignment, then it's returned
+      as-is by \code{left(x)}, but if this is the "last" alignment, then it's
       returned by \code{left(x)} with the strand inverted.
     }
     \item{}{
       \code{right(x)}:
-      Gets the "right alignment" for each alignment pair in \code{x}.
-      By definition, the "right alignment" in a pair is the alignment that
-      is on the - strand. If this is the first alignment, then it's returned
-      as-is by \code{right(x)}, but if this is the last alignment, then it's
+      Gets the "right" alignment for each alignment pair in \code{x}.
+      By definition, the "right" alignment in a pair is the alignment that
+      is on the - strand. If this is the "first" alignment, then it's returned
+      as-is by \code{right(x)}, but if this is the "last" alignment, then it's
       returned by \code{right(x)} with the strand inverted.
     }
     \item{}{
@@ -223,7 +224,7 @@
       \code{x[[i]]}:
       Extract the i-th alignment pair as a \link{GappedAlignments} object
       of length 2. As expected \code{x[[i]][1]} and \code{x[[i]][2]} are
-      respectively the first and last alignments in the pair.
+      respectively the "first" and "last" alignments in the pair.
     }
     \item{}{
       \code{unlist(x, use.names=TRUE)}:
@@ -240,11 +241,51 @@
 
   \describe{
     \item{}{
+      \code{grglist(x, reorder.ranges.from5to3prime=FALSE,
+                       drop.D.ranges=FALSE)}:
+      Returns a \link{GRangesList} object of length \code{length(x)}
+      where the i-th element represents the ranges (with respect to the
+      reference) of the i-th alignment pair in \code{x}.
+
+      IMPORTANT: The strand of the ranges coming from the "last" alignment
+      in the pair is \emph{always} inverted.
+
+      The \code{reorder.ranges.from5to3prime} toggle affects the order of
+      the ranges \emph{within} each top-level element of the returned object.
+
+      If \code{FALSE} (the default), then the "left" ranges are placed before
+      the "right" ranges, and, within each left or right group, are ordered
+      from 5' to 3' in elements associated with the plus strand and from 3'
+      to 5' in elements associated with the minus strand.
+      More formally, the i-th element in the returned \link{GRangesList}
+      object can be defined as \code{c(grl1[[i]], grl2[[i]])}, where
+      \code{grl1} is \code{grglist(left(x))} and \code{grl2} is
+      \code{grglist(right(x))}.
+
+      If \code{TRUE}, then the "first" ranges are placed before the "last"
+      ranges, and, within each first or last group, are always ordered
+      from 5' to 3', whatever the strand is.
+      More formally, the i-th element in the returned \link{GRangesList}
+      object can be defined as \code{c(grl1[[i]], grl2[[i]])}, where
+      \code{grl1} is \code{grglist(first(x),
+                                   reorder.ranges.from5to3prime=TRUE)}
+      and
+      \code{grl2} is \code{grglist(last(x, invert.strand=TRUE),
+                                   reorder.ranges.from5to3prime=TRUE)}.
+
+      Note that the relationship between the 2 \link{GRangesList} objects
+      obtained with or without \code{reorder.ranges.from5to3prime=TRUE}
+      is simpler than it sounds: the only difference is that the order
+      of the ranges in elements associated with the \emph{minus} strand
+      is reversed.
+
+      If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
+      CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges
+      corresponding to deletions are dropped.
+    }
+    \item{}{
       \code{as(x, "GRangesList")}:
-      Returns the \link{GRangesList} object of same length as \code{x}
-      where the i-th element is the \link{GRanges} object conceptually
-      defined by \code{c(as(left(x), "GRangesList")[[i]],
-                         as(right(x), "GRangesList")[[i]])}.
+      An alternate way of doing \code{grglist(x)}.
     }
   }
 }
@@ -293,7 +334,8 @@ table(isProperPair(galp))
 galp[[1]]
 unlist(galp)
 
-as(galp, "GRangesList")
+grglist(galp)
+grglist(galp, reorder.ranges.from5to3prime=TRUE)
 }
 
 \keyword{methods}
