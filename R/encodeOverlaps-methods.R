@@ -13,8 +13,10 @@
             stop("'ignore.strand' must be TRUE or FALSE")
         ans <- as.integer(seqnames(x))
         if (!ignore.strand) {
-            strand <- as.integer(strand(x))
-            ans <- ans * 3L + strand
+            x_strand <- as.integer(strand(x))
+            ans <- ans * 3L + x_strand
+            is_minus <- which(x_strand == as.integer(strand("-")))
+            ans[is_minus] <- - ans[is_minus]
         }
         ans
 }
@@ -57,8 +59,8 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 )
 }
 
-GRangesList_encodeOverlaps <- function(query, subject, query.breaks=NULL,
-                                       ignore.strand=FALSE)
+.GRangesList_encodeOverlaps <- function(query, subject, ignore.strand=FALSE,
+                                        query.breaks=NULL)
 {
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
     seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
@@ -74,24 +76,33 @@ GRangesList_encodeOverlaps <- function(query, subject, query.breaks=NULL,
 }
 
 setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE)
-        GRangesList_encodeOverlaps(query, subject,
-                                   ignore.strand=ignore.strand)
+    function(query, subject, hits=NULL, ignore.strand=FALSE, query.breaks=NULL)
+        .GRangesList_encodeOverlaps(query, subject,
+                                    ignore.strand=ignore.strand,
+                                    query.breaks=query.breaks)
 )
 
 setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE)
-        GRangesList_encodeOverlaps(as(query, "GRangesList"), subject,
-                                   ignore.strand=ignore.strand)
+    function(query, subject, hits=NULL, ignore.strand=FALSE,
+             reorder.ranges.from5to3prime=FALSE)
+    {
+        query <- grglist(query,
+            reorder.ranges.from5to3prime=reorder.ranges.from5to3prime)
+        .GRangesList_encodeOverlaps(query, subject,
+                                    ignore.strand=ignore.strand)
+    }
 )
 
 setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE)
+    function(query, subject, hits=NULL, ignore.strand=FALSE,
+             reorder.ranges.from5to3prime=FALSE)
     {
-        query.breaks <- 1L + ngap(left(query))
-        GRangesList_encodeOverlaps(as(query, "GRangesList"), subject,
-                                   query.breaks=query.breaks,
-                                   ignore.strand=ignore.strand)
+        query <- grglist(query,
+            reorder.ranges.from5to3prime=reorder.ranges.from5to3prime)
+        query.breaks <- elementMetadata(query)$nelt1
+        .GRangesList_encodeOverlaps(query, subject,
+                                    ignore.strand=ignore.strand,
+                                    query.breaks=query.breaks)
     }
 )
 

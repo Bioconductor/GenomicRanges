@@ -394,14 +394,20 @@ setMethod("unlist", "GappedAlignmentPairs",
 ### pairs of consecutive top-level elements.
 .shrinkByHalf <- function(x)
 {
-    if (length(x) == 0L)
-        return(x)
     if (length(x) %% 2L != 0L)
-        stop("'x' length must be even")
+        stop("'x' must have an even length")
     x_elt_lens <- elementLengths(x)
-    ans_elt_lens <- x_elt_lens[c(TRUE, FALSE)] + x_elt_lens[c(FALSE, TRUE)]
+    if (length(x_elt_lens) == 0L) {
+        ans_nelt1 <- ans_nelt2 <- integer(0)
+    } else {
+        ans_nelt1 <- x_elt_lens[c(TRUE, FALSE)]
+        ans_nelt2 <- x_elt_lens[c(FALSE, TRUE)]
+    }
+    ans_elt_lens <- ans_nelt1 + ans_nelt2
     ans_skeleton <- PartitioningByWidth(ans_elt_lens)
-    relist(x@unlistData, skeleton=ans_skeleton)
+    ans <- relist(x@unlistData, skeleton=ans_skeleton)
+    elementMetadata(ans) <- DataFrame(nelt1=ans_nelt1, nelt2=ans_nelt2)
+    ans
 }
 
 setMethod("grglist", "GappedAlignmentPairs",
@@ -409,6 +415,10 @@ setMethod("grglist", "GappedAlignmentPairs",
     {
         if (!isTRUEorFALSE(reorder.ranges.from5to3prime))
             stop("'reorder.ranges.from5to3' must be TRUE or FALSE")
+        x_elt_metadata <- elementMetadata(x)
+        if (any(c("nelt1", "nelt2") %in% colnames(x_elt_metadata)))
+            stop("'elementMetadata(x)' cannot have reserved ",
+                 "columns \"nelt1\" and \"nelt2\"")
         x_first <- x@first
         x_last <- .invertStrand(x@last)
         ## Not the same as doing 'unlist(x, use.names=FALSE)'.
@@ -417,10 +427,21 @@ setMethod("grglist", "GappedAlignmentPairs",
                        reorder.ranges.from5to3prime=TRUE,
                        drop.D.ranges=drop.D.ranges)
         ans <- .shrinkByHalf(grl)
-        if (!reorder.ranges.from5to3prime)
-            ans <- reorderRangesFrom5To3prime(ans, strand(x))
+        ans_nelt1 <- elementMetadata(ans)$nelt1
+        ans_nelt2 <- elementMetadata(ans)$nelt2
+        if (!reorder.ranges.from5to3prime) {
+            ## Yes, we reorder *again* when 'reorder.ranges.from5to3prime' is
+            ## FALSE.
+            i <- which(strand(x) == "-")
+            ans <- revElements(ans, i)
+            tmp <- ans_nelt1[i]
+            ans_nelt1[i] <- ans_nelt2[i]
+            ans_nelt2[i] <- tmp
+        }
         names(ans) <- names(x)
-        elementMetadata(ans) <- elementMetadata(x)
+        x_elt_metadata$nelt1 <- ans_nelt1
+        x_elt_metadata$nelt2 <- ans_nelt2
+        elementMetadata(ans) <- x_elt_metadata
         ans
     }
 )
