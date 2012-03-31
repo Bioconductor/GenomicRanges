@@ -447,8 +447,9 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
         elementMetadata=x@elementMetadata)
 }
 
-### 'x' must be a CompressedList object.
-.reorderRangesFrom5To3prime <- function(x, strand)
+### 'x' must be a CompressedList object (typically CompressedIRangesList or
+### GRangesList). NOT exported.
+reorderRangesFrom5To3prime <- function(x, strand)
 {
     if (length(x) == 0L)
         return(x)
@@ -470,7 +471,7 @@ setGeneric("granges", function(x, ...) standardGeneric("granges"))
 setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
 setMethod("grglist", "GappedAlignments",
-    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges = FALSE)
+    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges=FALSE)
     {
         rgl <- rglist(x,
                    reorder.ranges.from5to3prime=reorder.ranges.from5to3prime,
@@ -494,7 +495,7 @@ setMethod("rglist", "GappedAlignments",
         ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
                                              drop.D.ranges=drop.D.ranges)
         if (reorder.ranges.from5to3prime)
-            ans <- .reorderRangesFrom5To3prime(ans, strand(x))
+            ans <- reorderRangesFrom5To3prime(ans, strand(x))
         names(ans) <- names(x)
         elementMetadata(ans) <- elementMetadata(x)
         ans
@@ -651,7 +652,7 @@ setMethod("show", "GappedAlignments",
 ### Combining and concatenation.
 ###
 
-setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
+setMethod("c", "GappedAlignments", function (x, ..., recursive=FALSE) {
   if (!identical(recursive, FALSE))
     stop("'recursive' argument not supported")
   if (missing(x)) {
@@ -671,22 +672,22 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive = FALSE) {
   if (!all(sapply(args, is, class(x))))
     stop("all arguments in '...' must be ", class(x), " objects (or NULLs)")
  
-  new_NAMES <- unlist(lapply(args, function(i) i@NAMES), use.names = FALSE)
+  new_NAMES <- unlist(lapply(args, function(i) i@NAMES), use.names=FALSE)
   new_seqnames <- do.call(c, lapply(args, seqnames))
-  new_start <- unlist(lapply(args, function(i) i@start), use.names = FALSE)
-  new_cigar <- unlist(lapply(args, function(i) i@cigar), use.names = FALSE)
+  new_start <- unlist(lapply(args, function(i) i@start), use.names=FALSE)
+  new_cigar <- unlist(lapply(args, function(i) i@cigar), use.names=FALSE)
   new_strand <- do.call(c, lapply(args, function(i) i@strand))
   new_seqinfo <- do.call(merge, lapply(args, seqinfo))
   new_elementMetadata <- do.call(rbind, lapply(args, elementMetadata))
   
   initialize(x,
-             NAMES = new_NAMES,
-             start = new_start,
-             seqnames = new_seqnames,
-             strand = new_strand,
-             cigar = new_cigar,
-             seqinfo = new_seqinfo,
-             elementMetadata = new_elementMetadata)
+             NAMES=new_NAMES,
+             start=new_start,
+             seqnames=new_seqnames,
+             strand=new_strand,
+             cigar=new_cigar,
+             seqinfo=new_seqinfo,
+             elementMetadata=new_elementMetadata)
 })
 
 
@@ -752,8 +753,8 @@ setMethod("narrow", "GappedAlignments",
 ###
 
 setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
-  to_grl <- grglist(to, drop.D.ranges = TRUE)
-  from_ol <- findOverlaps(from, to_grl, ignore.strand=TRUE, type = "within")
+  to_grl <- grglist(to, drop.D.ranges=TRUE)
+  from_ol <- findOverlaps(from, to_grl, ignore.strand=TRUE, type="within")
   to_hits <- to[subjectHits(from_ol)]
   starts <- .Call("ref_locs_to_query_locs", start(from)[queryHits(from_ol)],
                   cigar(to_hits), start(to_hits), PACKAGE="GenomicRanges")
@@ -762,8 +763,8 @@ setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
   space <- names(to_hits)
   if (is.null(space))
     space <- as.character(seq_len(length(to))[subjectHits(from_ol)])
-  new("RangesMapping", hits = from_ol, space = Rle(space),
-      ranges = IRanges(starts, ends))
+  new("RangesMapping", hits=from_ol, space=Rle(space),
+      ranges=IRanges(starts, ends))
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

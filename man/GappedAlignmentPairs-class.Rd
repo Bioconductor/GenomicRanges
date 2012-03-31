@@ -38,6 +38,7 @@
 \alias{unlist,GappedAlignmentPairs-method}
 
 % Coercion:
+\alias{grglist,GappedAlignmentPairs-method}
 \alias{coerce,GappedAlignmentPairs,GRangesList-method}
 
 % "show" method:
