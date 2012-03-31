@@ -57,7 +57,7 @@
 
   An "alignment pair" is made of a "first" and a "last" alignment,
   and is formally represented by a \link{GappedAlignments} object of
-  length 2. It is typically representing the hit of a paired-end read to
+  length 2. It is typically representing a hit of a paired-end read to
   the reference genome that was used by the aligner. More precisely,
   in a given pair, the "first" alignment represents the hit of the first
   end of the read (aka "first segment in the template", using SAM Spec
@@ -263,8 +263,8 @@
       \code{grglist(right(x))}.
 
       If \code{TRUE}, then the "first" ranges are placed before the "last"
-      ranges, and, within each first or last group, are always ordered
-      from 5' to 3', whatever the strand is.
+      ranges, and, within each first or last group, are \emph{always}
+      ordered from 5' to 3', whatever the strand is.
       More formally, the i-th element in the returned \link{GRangesList}
       object can be defined as \code{c(grl1[[i]], grl2[[i]])}, where
       \code{grl1} is \code{grglist(first(x),
@@ -274,10 +274,15 @@
                                    reorder.ranges.from5to3prime=TRUE)}.
 
       Note that the relationship between the 2 \link{GRangesList} objects
-      obtained with or without \code{reorder.ranges.from5to3prime=TRUE}
-      is simpler than it sounds: the only difference is that the order
-      of the ranges in elements associated with the \emph{minus} strand
-      is reversed.
+      obtained with \code{reorder.ranges.from5to3prime} being respectively
+      \code{FALSE} or \code{TRUE} is simpler than it sounds: the only
+      difference is that the order of the ranges in elements associated
+      with the \emph{minus} strand is reversed.
+
+      Finally note that, in the latter, the ranges are \emph{always} ordered
+      consistently with the \emph{5' to 3' direction of the query template}
+      they are coming from, whatever the strand is. This is actually the
+      real goal behind the \code{reorder.ranges.from5to3prime=TRUE} feature.
 
       If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
       CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges

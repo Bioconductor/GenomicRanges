@@ -309,7 +309,10 @@
       If \code{TRUE}, then the order of the ranges in elements associated
       with the \emph{minus} strand is reversed. So they end up being
       ordered from 5' to 3' too, which means that they are now in decending
-      order (i.e. right-to-left).
+      order (i.e. right-to-left). It also means that, when
+      \code{reorder.ranges.from5to3prime=TRUE} is used, the ranges are
+      \emph{always} ordered consistently with the \emph{5' to 3' direction
+      of the query template} they are coming from, whatever the strand is.
 
       If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
       CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges
