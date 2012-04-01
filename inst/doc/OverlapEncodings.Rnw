@@ -25,7 +25,7 @@
 
 \title{Overlap encodings}
 \author{Herv\'e Pag\`es}
-\date{Last modified: March 2012; Compiled: \today}
+\date{Last modified: April 2012; Compiled: \today}
 
 \begin{document}
 
@@ -77,7 +77,7 @@ library(pasillaBamSubset)
 untreated1_chr4()
 @
 
-We use the \Rcode{readGappedAlignments} function defined in the
+We use the \Rfunction{readGappedAlignments} function defined in the
 \Rpackage{GenomicRanges} package to read the BAM file into a
 \Rclass{GappedAlignments} object.
 It's probably a good idea to get rid of the PCR or optical duplicate
@@ -146,33 +146,56 @@ exbytx_strand <- unlist(runValue(strand(exbytx)), use.names=FALSE)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Find and encode the overlaps}
 
-We are ready to compute the overlaps:
+We are ready to compute the overlaps with the \Rfunction{findOverlaps}
+function. Note that the strand of the queries produced by the RNA-seq
+experiment is typically unknown so we use \Rcode{ignore.strand=TRUE}:
 
 <<ov14>>=
 ov14 <- findOverlaps(gal14, exbytx, ignore.strand=TRUE)
 @
 
-and to encode them:
+However, the {\it overlap encodings} are strand sensitive so we will
+compute them twice, once for the original alignments (i.e. the alignments
+of the original queries), and once again for the ``flipped alignments''
+(i.e. the alignments of the flipped queries). We extract the ranges of
+the original and flipped alignments in 2 \Rclass{GRangesList} objects
+with:
 
-<<grl14ab>>=
-grl14a <- grglist(gal14, order.as.in.query=TRUE)
-grl14b <- flipQuery(grl14a)
+<<grl14of>>=
+grl14o <- grglist(gal14, order.as.in.query=TRUE)
+grl14f <- flipQuery(grl14o)
 @
 
-<<ovenc14ab>>=
-ovenc14a <- encodeOverlaps(grl14a, exbytx, hits=ov14)
-ovenc14b <- encodeOverlaps(grl14b, exbytx, hits=ov14)
+and encode their overlaps with the transcripts:
+
+<<ovenc14of>>=
+ovenc14o <- encodeOverlaps(grl14o, exbytx, hits=ov14)
+ovenc14f <- encodeOverlaps(grl14f, exbytx, hits=ov14)
 @
+
+\Rcode{ovenc14o} and \Rcode{ovenc14f} are 2 \Rclass{OverlapsEncodings}
+objects of the same length as \Rclass{Hits} object \Rcode{ov14}.
+For each hit in \Rcode{ov14}, we have 2 corresponding encodings, one
+in \Rcode{ovenc14o} and one in \Rcode{ovenc14f}, but only one of them
+encodes a hit between alignment ranges and exon ranges that are on the
+same strand.
+We use the \Rfunction{selectEncodingWithCompatibleStrand} function
+to merge them into a single \Rclass{OverlapsEncodings} of the same
+length. For each hit in \Rcode{ov14}, this selects the encoding
+corresponding to alignment ranges and exon ranges with compatible
+strand:
 
 <<ovenc14>>=
-grl14a_strand <- unlist(runValue(strand(grl14a)), use.names=FALSE)
-ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14a, ovenc14b,
-                                              grl14a_strand, exbytx_strand,
+grl14o_strand <- unlist(runValue(strand(grl14o)), use.names=FALSE)
+ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14o, ovenc14f,
+                                              grl14o_strand, exbytx_strand,
                                               hits=ov14)
 ovenc14
 @
 
-<<>>=
+Unique encodings:
+
+<<ovenc14_table>>=
 unique_ovenc14 <- levels(encoding(ovenc14))
 length(unique_ovenc14)
 head(unique_ovenc14)
@@ -478,7 +501,7 @@ information about those reads):
 untreated3_chr4()
 @
 
-We use the \Rcode{readGappedAlignmentPairs} function to read the BAM file
+We use the \Rfunction{readGappedAlignmentPairs} function to read the BAM file
 into a \Rclass{GappedAlignmentPairs} object:
 
 <<readGappedAlignmentPairs>>=
@@ -533,25 +556,21 @@ ov34 <- findOverlaps(galp34, exbytx, ignore.strand=TRUE)
 
 and encode them:
 
-<<grl34ab>>=
-grl34a <- grglist(galp34, order.as.in.query=TRUE)
-grl34b <- flipQuery(grl34a)
-@
-
-<<ovenc34ab>>=
-ovenc34a <- encodeOverlaps(grl34a, exbytx, hits=ov34)
-ovenc34b <- encodeOverlaps(grl34b, exbytx, hits=ov34)
-@
-
 <<ovenc34>>=
-grl34a_strand <- unlist(runValue(strand(grl34a)), use.names=FALSE)
-ovenc34 <- selectEncodingWithCompatibleStrand(ovenc34a, ovenc34b,
-                                              grl34a_strand, exbytx_strand,
+grl34o <- grglist(galp34, order.as.in.query=TRUE)
+grl34f <- flipQuery(grl34o)
+ovenc34o <- encodeOverlaps(grl34o, exbytx, hits=ov34)
+ovenc34f <- encodeOverlaps(grl34f, exbytx, hits=ov34)
+grl34o_strand <- unlist(runValue(strand(grl34o)), use.names=FALSE)
+ovenc34 <- selectEncodingWithCompatibleStrand(ovenc34o, ovenc34f,
+                                              grl34o_strand, exbytx_strand,
                                               hits=ov34)
 ovenc34
 @
 
-<<>>=
+Unique encodings:
+
+<<ovenc34_table>>=
 unique_ovenc34 <- levels(encoding(ovenc34))
 length(unique_ovenc34)
 head(unique_ovenc34)
