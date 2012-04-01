@@ -7,7 +7,10 @@
 ### Should we use a generic + methods for this?
 ###
 
-.get_GRanges_spaces <- function(x, ignore.strand=FALSE)
+### 'use.negative.space.for.minus.strand' is ignored if 'ignore.strand'
+### is TRUE.
+.get_GRanges_spaces <- function(x, ignore.strand=FALSE,
+                                use.negative.space.for.minus.strand=FALSE)
 {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
@@ -15,18 +18,25 @@
         if (!ignore.strand) {
             x_strand <- as.integer(strand(x))
             ans <- ans * 3L + x_strand
-            is_minus <- which(x_strand == as.integer(strand("-")))
-            ans[is_minus] <- - ans[is_minus]
+            if (use.negative.space.for.minus.strand) {
+                is_minus <- which(x_strand == as.integer(strand("-")))
+                ans[is_minus] <- - ans[is_minus]
+            }
         }
         ans
 }
 
-.get_GRangesList_spaces <- function(x, ignore.strand=FALSE)
+### 'use.negative.space.for.minus.strand' is ignored if 'ignore.strand'
+### is TRUE.
+.get_GRangesList_spaces <- function(x, ignore.strand=FALSE,
+                                    use.negative.space.for.minus.strand=FALSE)
 {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
         unlisted_ans <- .get_GRanges_spaces(x@unlistData,
-                                            ignore.strand=ignore.strand)
+                            ignore.strand=ignore.strand,
+                            use.negative.space.for.minus.strand=
+                                use.negative.space.for.minus.strand)
         as.list(relist(unlisted_ans, x))
 }
 
@@ -60,7 +70,8 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 }
 
 .GRangesList_encodeOverlaps <- function(query, subject, ignore.strand=FALSE,
-                                        query.breaks=NULL)
+                                   query.breaks=NULL,
+                                   use.negative.space.for.minus.strand=FALSE)
 {
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
     seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
@@ -69,14 +80,19 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
                               as.list(start(subject)),
                               as.list(width(subject)),
                               query.spaces=.get_GRangesList_spaces(query,
-                                      ignore.strand=ignore.strand),
+                                      ignore.strand=ignore.strand,
+                                      use.negative.space.for.minus.strand=
+                                          use.negative.space.for.minus.strand),
                               subject.spaces=.get_GRangesList_spaces(subject,
-                                      ignore.strand=ignore.strand),
+                                      ignore.strand=ignore.strand,
+                                      use.negative.space.for.minus.strand=
+                                          use.negative.space.for.minus.strand),
                               query.breaks=query.breaks)
 }
 
 setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE, query.breaks=NULL)
+    function(query, subject, hits=NULL, ignore.strand=FALSE,
+             query.breaks=NULL)
         .GRangesList_encodeOverlaps(query, subject,
                                     ignore.strand=ignore.strand,
                                     query.breaks=query.breaks)
@@ -89,7 +105,9 @@ setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
         query <- grglist(query,
             reorder.ranges.from5to3prime=reorder.ranges.from5to3prime)
         .GRangesList_encodeOverlaps(query, subject,
-                                    ignore.strand=ignore.strand)
+                                    ignore.strand=ignore.strand,
+                                    use.negative.space.for.minus.strand=
+                                        reorder.ranges.from5to3prime)
     }
 )
 
@@ -102,7 +120,9 @@ setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
         query.breaks <- elementMetadata(query)$nelt1
         .GRangesList_encodeOverlaps(query, subject,
                                     ignore.strand=ignore.strand,
-                                    query.breaks=query.breaks)
+                                    query.breaks=query.breaks,
+                                    use.negative.space.for.minus.strand=
+                                        reorder.ranges.from5to3prime)
     }
 )
 
