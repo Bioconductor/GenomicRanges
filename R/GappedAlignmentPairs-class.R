@@ -53,25 +53,6 @@ setGeneric("isProperPair", function(x) standardGeneric("isProperPair"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .invertStrand() internal helper (NOT exported).
-###
-### TODO: We should probably have an invertStrand() generic with methods for
-### GRanges, GRangesList, GappedAlignments, GappedAlignmentPairs, and possibly
-### more, instead of this.
-
-### Works on GRanges and GappedAlignments objects. More generally, it should
-### work on any object that has: (1) a strand() getter that returns a
-### 'factor'-Rle, and (2) a strand() setter.
-.invertStrand <- function(x)
-{
-    x_strand <- strand(x)
-    runValue(x_strand) <- strand(runValue(x_strand) == "+")
-    strand(x) <- x_strand
-    x
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
 ###
 
@@ -90,7 +71,7 @@ setMethod("first", "GappedAlignmentPairs",
             stop("'invert.strand' must be TRUE or FALSE")
         ans <- setNames(x@first, names(x))
         if (invert.strand)
-            ans <- .invertStrand(ans)
+            ans <- invertRleStrand(ans)
         ans
     }
 )
@@ -102,7 +83,7 @@ setMethod("last", "GappedAlignmentPairs",
             stop("'invert.strand' must be TRUE or FALSE")
         ans <- setNames(x@last, names(x))
         if (invert.strand)
-            ans <- .invertStrand(ans)
+            ans <- invertRleStrand(ans)
         ans
     }
 )
@@ -111,7 +92,7 @@ setMethod("left", "GappedAlignmentPairs",
     function(x, ...)
     {
         x_first <- x@first
-        x_last <- .invertStrand(x@last)
+        x_last <- invertRleStrand(x@last)
 
         left_is_last <- which(strand(x_first) == "-")
         idx <- seq_len(length(x))
@@ -126,7 +107,7 @@ setMethod("right", "GappedAlignmentPairs",
     function(x, ...)
     {
         x_first <- x@first
-        x_last <- .invertStrand(x@last)
+        x_last <- invertRleStrand(x@last)
 
         right_is_first <- which(strand(x_first) == "-")
         idx <- seq_len(length(x))
@@ -420,7 +401,7 @@ setMethod("grglist", "GappedAlignmentPairs",
             stop("'elementMetadata(x)' cannot have ",
                  "reserved column \"query.break\"")
         x_first <- x@first
-        x_last <- .invertStrand(x@last)
+        x_last <- invertRleStrand(x@last)
         ## Not the same as doing 'unlist(x, use.names=FALSE)'.
         x_unlisted <- c(x_first, x_last)[.makePickupIndex(length(x))]
         grl <- grglist(x_unlisted,

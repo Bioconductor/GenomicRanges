@@ -45,6 +45,8 @@ export(
     assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
     colData, "colData<-", exptData, "exptData<-",
 
+    flipQuery,
+    selectEncodingWithCompatibleStrand,
     isCompatibleWithSplicing,
     isCompatibleWithSkippedExons, extractSkippedExonRanks,
 

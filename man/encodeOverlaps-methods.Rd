@@ -1,9 +1,11 @@
 \name{encodeOverlaps-methods}
 \alias{encodeOverlaps-methods}
 
+\alias{flipQuery}
+
 \alias{encodeOverlaps,GRangesList,GRangesList,missing-method}
-\alias{encodeOverlaps,GappedAlignments,GRangesList,missing-method}
-\alias{encodeOverlaps,GappedAlignmentPairs,GRangesList,missing-method}
+
+\alias{selectEncodingWithCompatibleStrand}
 
 \alias{isCompatibleWithSplicing}
 \alias{isCompatibleWithSplicing,character-method}
@@ -27,20 +29,42 @@
 }
 
 \usage{
-\S4method{encodeOverlaps}{GRangesList,GRangesList}(query, subject)
+flipQuery(x)
+\S4method{encodeOverlaps}{GRangesList,GRangesList,missing}(query, subject, hits=NULL)
+selectEncodingWithCompatibleStrand(x, y,
+                                   query.strand, subject.strand, hits=NULL)
 isCompatibleWithSplicing(x)
 isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
 extractSkippedExonRanks(x)
 }
 
 \arguments{
+  \item{x}{
+    For \code{flipQuery}: A \link{GRangesList} object.
+
+    For \code{selectEncodingWithCompatibleStrand}:
+    An \link[IRanges]{OverlapEncodings} object.
+
+    For \code{isCompatibleWithSplicing}, \code{isCompatibleWithSkippedExons},
+    and \code{extractSkippedExonRanks}:
+    An \link[IRanges]{OverlapEncodings} object, a factor or a character
+    vector.
+  }
   \item{query, subject}{
     \link{GRangesList}, \link[IRanges]{RangesList} or \link[IRanges]{Ranges}
     objects.
   }
-  \item{x}{
-    An \link[IRanges]{OverlapEncodings} object, a factor or a character
-    vector.
+  \item{hits}{
+    A \link[IRanges]{Hits} object.
+    See \code{?`\link[IRanges]{encodeOverlaps,ANY,ANY,Hits-method}`} for
+    a description of how a supplied \link[IRanges]{Hits} object is handled.
+  }
+  \item{y}{
+    An \link[IRanges]{OverlapEncodings} object.
+  }
+  \item{query.strand, subject.strand}{
+    Vector-like objects containing the strand of the query and subject,
+    respectively.
   }
   \item{max.skipped.exons}{
     Not supported yet. If \code{NA} (the default), the number of skipped
@@ -66,11 +90,8 @@ extractSkippedExonRanks(x)
 \seealso{
   \itemize{
     \item The "Overlap encodings" vignette in the GenomicRanges package.
-    \item \code{\link[GenomicFeatures]{sortExonsByRank}}.
-    \item \code{\link[GenomicFeatures]{makeTranscriptDbFromUCSC}}.
     \item \code{\link[IRanges]{findOverlaps}}.
-    \item \link{GappedAlignments-class}.
-    \item \link{GappedAlignmentPairs-class}.
+    \item \link[IRanges]{OverlapEncodings-class}.
     \item \link{GRangesList-class}.
   }
 }

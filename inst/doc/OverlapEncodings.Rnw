@@ -116,18 +116,30 @@ encodings):
 
 <<makeTranscriptDbFromUCSC>>=
 library(GenomicFeatures)
-txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
-exbytx0 <- exonsBy(txdb, by="tx")
+dm3_refGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
+exbytx <- exonsBy(dm3_refGene_txdb, by="tx")
 @
 
-Before \Rcode{encodeOverlaps()} or related utilities can be used,
-exons in transcripts located on the minus strand must be reordered by
-decreasing rank:
+We check that all the exons in any given transcript belong to the same
+chromosome and strand. Knowing that our set of transcripts is free of
+this kind of trans-splicing events will allow us some significant
+simplifications during the downstream analysis \footnote{dealing with
+trans-splicing events is not covered in this document}.
+A quick and easy way to check this is to take advantage of the fact
+that \Rcode{seqnames} and \Rcode{strand} return \Rclass{RleList} objects.
+So we can extract the number of Rle runs for each transcript and make
+sure it's always 1:
 
-<<sortExonsByRank>>=
-exbytx <- sortExonsByRank(exbytx0, decreasing.rank.on.minus.strand=TRUE)
-exbytx0[[20]]
-exbytx[[20]]
+<<no-trans-splicing>>=
+table(elementLengths(runLength(seqnames(exbytx))))
+table(elementLengths(runLength(strand(exbytx))))
+@
+
+Therefore the strand of any given transcript is unambiguously defined
+and can be extracted with:
+
+<<exbytx_strand>>=
+exbytx_strand <- unlist(runValue(strand(exbytx)), use.names=FALSE)
 @
 
 
@@ -142,9 +154,25 @@ ov14 <- findOverlaps(gal14, exbytx, ignore.strand=TRUE)
 
 and to encode them:
 
+<<grl14ab>>=
+grl14a <- grglist(gal14, order.as.in.query=TRUE)
+grl14b <- flipQuery(grl14a)
+@
+
+<<ovenc14ab>>=
+ovenc14a <- encodeOverlaps(grl14a, exbytx, hits=ov14)
+ovenc14b <- encodeOverlaps(grl14b, exbytx, hits=ov14)
+@
+
 <<ovenc14>>=
-ovenc14 <- encodeOverlaps(gal14, exbytx, hits=ov14, ignore.strand=TRUE)
+grl14a_strand <- unlist(runValue(strand(grl14a)), use.names=FALSE)
+ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14a, ovenc14b,
+                                              grl14a_strand, exbytx_strand,
+                                              hits=ov14)
 ovenc14
+@
+
+<<>>=
 unique_ovenc14 <- levels(encoding(ovenc14))
 length(unique_ovenc14)
 head(unique_ovenc14)
@@ -174,7 +202,7 @@ type.
 7 unique encodings are of type COMPATIBLE\_WITH\_SPLICING:
 
 <<compatible_unique_ovenc14>>=
-tail(sort(ovenc14_table[isCompatibleWithSplicing(unique_ovenc14)]))
+sort(ovenc14_table[isCompatibleWithSplicing(unique_ovenc14)])
 @
 
 Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{ovenc14}),
@@ -248,7 +276,7 @@ Number of alignments with at least 1 hit of type COMPATIBLE\_WITH\_SPLICING:
 sum(gal14_ncompat != 0)
 @
 
-For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute the number
+For each transcript in \Rcode{exbytx}, compute the number
 of hits of type COMPATIBLE\_WITH\_SPLICING:
 
 <<exbytx_ncompat14>>=
@@ -279,15 +307,15 @@ vector containing the unique encodings to find those of type
 COMPATIBLE\_WITH\_SKIPPED\_EXONS i.e. those corresponding to overlaps of
 this type.
 
-8 unique encodings are of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
+7 unique encodings are of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 
 <<almost_compatible_unique_ovenc14>>=
-tail(sort(ovenc14_table[isCompatibleWithSkippedExons(unique_ovenc14)]))
+sort(ovenc14_table[isCompatibleWithSkippedExons(unique_ovenc14)])
 @
 
 Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc14}),
 \Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{ovenc14}),
-and \Rcode{"3:jmm:amm:agm:aaf:"} (11 occurences in \Rcode{ovenc14}),
+and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{ovenc14}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -303,10 +331,10 @@ correspond to the following overlaps:
   - transcript:     ...  ooooooo   ooooo   oooo   oooooooo  ...
 \end{verbatim}
 
-  \item \Rcode{"3:jmm:amm:agm:aaf:"}
+  \item \Rcode{"3:jmm:agm:aam:aaf:"}
 \begin{verbatim}
-  - read (2 gaps):         ooooo-----------oooo---ooo
-  - transcript:     ...  ooooooo   ooooo   oooo   oooooooo  ...
+  - read (2 gaps):         ooooo----oooo-----------ooo
+  - transcript:     ...  ooooooo    oooo   ooooo   oooooooo  ...
 \end{verbatim}
 \end{itemize}
 
@@ -321,6 +349,8 @@ overlaps) of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 <<gal14_nalmostcompat>>=
 gal14_nalmostcompat <- tabulate(queryHits(ov14)[ov14_is_almostcompat],
                                 nbins=length(gal14))
+elementMetadata(gal14)$nalmostcompat <- gal14_nalmostcompat
+head(gal14)
 table(gal14_nalmostcompat)
 @
 
@@ -331,7 +361,7 @@ COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 sum(gal14_nalmostcompat != 0) 
 @
 
-For each transcript in \Rcode{exbytx} (or \Rcode{exbytx0}), compute
+For each transcript in \Rcode{exbytx}, compute
 the number of hits of type COMPATIBLE\_WITH\_SKIPPED\_EXONS:
 
 <<exbytx_nalmostcompat14>>=
@@ -356,7 +386,7 @@ First we extract the index of those alignments:
 <<aln_shows_nov_splice_jct>>=
 aln_shows_nov_splice_jct <- gal14_nalmostcompat != 0L &
                             gal14_ncompat == 0L
-which(aln_shows_nov_splice_jct)
+head(which(aln_shows_nov_splice_jct))
 @
 
 We make this an index into \Rcode{ov14} (Hits object):
@@ -376,7 +406,7 @@ For each overlap of interest, we extract the ranks of the skipped
 exons (we use a list for this as there might be more than 1 skipped
 exon per overlap):
 
-<<skpexrk>>=
+<<extractSkippedExonRanks>>=
 skpexrk <- extractSkippedExonRanks(ovenc14)[is_nov_splice_jct]
 table(elementLengths(skpexrk))
 @
@@ -395,47 +425,34 @@ ids and the second level of names (inner names) are alignment
 indices into \Rcode{gal14}:
 
 <<tx2skpexrk_names>>=
-names(tx2skpexrk)  # transcript TxDb internal ids
+head(names(tx2skpexrk))  # transcript TxDb internal ids
 @
 
-Transcript \Rcode{"10"} has 7 hits, all of them skip exons 9 and 10:
+Transcript \Rcode{"10"} has 7 hits. Three of them skip exons 4 and 5,
+and four of them skip exons 9 and 10:
 
 <<tx10_details>>=
 tx2skpexrk[["10"]]
 @
 
-Transcript \Rcode{"58"} has 4 hits. One hit skips exon 2, one hit skips
-exons 6 to 10, and two hits skip exon 10:
+Transcript \Rcode{"58"} has 4 hits. Two of them skip exon 2, one of them
+skips exons 2 to 6, and one of them skips exon 10:
 
 <<tx58_details>>=
 tx2skpexrk[["58"]]
 @
 
-Final remarks:
-
-\begin{itemize}
-  \item The exon ranks returned by \Rcode{extractSkippedExonRanks()} are exon
-        positions within \Rcode{exbytx}, not \Rcode{exbytx0}. For exons on the
-        plus strand, it makes no difference i.e. the ``real'' exon ranks are
-        returned. But for exons on the minus strand, we get the ``anti-rank''
-        i.e. $N + 1 - rk$ where $N$ is the total nb of exons in the transcript
-        and $rk$ the ``real'' exon rank. So for example in the case of
-        transcript \Rcode{"58"} (located on the minus strand, see
-        \Rcode{exbytx[["58"]]}), exon with ``anti-rank'' 10 is actually at
-        rank 2 (the transcript has 11 exons).
-  \item Let's be cautious about the interpretation of \Rcode{tx2skpexrk}.
-        Because of how we've conducted this analysis, the aligments
-        reported in \Rcode{tx2skpexrk} are guaranteed to NOT have any overlaps
-        of type COMPATIBLE\_WITH\_SPLICING with other known transcripts.
-        All we can say, for example in the case of transcript \Rcode{"10"},
-        is that the 4 reported hits show evidence of one or more unknown
-        transcripts with a splice junction that corresponds to the gap
-        between exons 8 and 11. But without further analysis, we can't
-        make any assumption about the exons structure of those unknown
-        transcripts. In particular, we cannot assume the existence of an
-        unknown transcript made of the same exons as transcript \Rcode{"10"}
-        minus exons 9 and 10!
-\end{itemize}
+A few words about the interpretation of \Rcode{tx2skpexrk}:
+Because of how we've conducted this analysis, the aligments
+reported in \Rcode{tx2skpexrk} are guaranteed to NOT have any overlaps
+of type COMPATIBLE\_WITH\_SPLICING with other known transcripts.
+All we can say, for example in the case of transcript \Rcode{"10"},
+is that the 4 reported hits that skip exons 9 and 10 show evidence
+of one or more unknown transcripts with a splice junction that corresponds
+to the gap between exons 8 and 11. But without further analysis, we can't
+make any assumption about the exons structure of those unknown transcripts.
+In particular, we cannot assume the existence of an unknown transcript
+made of the same exons as transcript \Rcode{"10"} minus exons 9 and 10!
 
 
 
@@ -497,7 +514,7 @@ table(isProperPair(galp34))
 Even though we could do {\it overlap encodings} with the full object,
 we keep only the {\it proper} pairs for our downstream analysis:
 
-<<>>=
+<<keep_only_proper_pairs>>=
 galp34 <- galp34[isProperPair(galp34)]
 @
 
@@ -516,9 +533,25 @@ ov34 <- findOverlaps(galp34, exbytx, ignore.strand=TRUE)
 
 and encode them:
 
+<<grl34ab>>=
+grl34a <- grglist(galp34, order.as.in.query=TRUE)
+grl34b <- flipQuery(grl34a)
+@
+
+<<ovenc34ab>>=
+ovenc34a <- encodeOverlaps(grl34a, exbytx, hits=ov34)
+ovenc34b <- encodeOverlaps(grl34b, exbytx, hits=ov34)
+@
+
 <<ovenc34>>=
-ovenc34 <- encodeOverlaps(galp34, exbytx, hits=ov34, ignore.strand=TRUE)
+grl34a_strand <- unlist(runValue(strand(grl34a)), use.names=FALSE)
+ovenc34 <- selectEncodingWithCompatibleStrand(ovenc34a, ovenc34b,
+                                              grl34a_strand, exbytx_strand,
+                                              hits=ov34)
 ovenc34
+@
+
+<<>>=
 unique_ovenc34 <- levels(encoding(ovenc34))
 length(unique_ovenc34)
 head(unique_ovenc34)
@@ -533,13 +566,13 @@ tail(sort(ovenc34_table))
 Unique encodings ``compatible'' with the splicing of the transcript:
 
 <<compatible_unique_ovenc34>>=
-tail(sort(ovenc34_table[isCompatibleWithSplicing(unique_ovenc34)]))
+sort(ovenc34_table[isCompatibleWithSplicing(unique_ovenc34)])
 @
 
-Encodings \Rcode{"1--1:i--i:"} (118898 occurences in \Rcode{ovenc34}),
-\Rcode{"1--1:i--m:a--i:"} (42107 occurences in \Rcode{ovenc34}),
-\Rcode{"1--2:i--jm:a--af:"} (3579 occurences in \Rcode{ovenc34}),
-and \Rcode{"1--1:i--m:a--m:a--i:"} (2104 occurences in \Rcode{ovenc34}),
+Encodings \Rcode{"1--1:i--i:"} (89039 occurences in \Rcode{ovenc34}),
+\Rcode{"2--1:jm--m:af--i:"} (2825 occurences in \Rcode{ovenc34}),
+\Rcode{"1--2:i--jm:a--af:"} (2339 occurences in \Rcode{ovenc34}),
+and \Rcode{"1--1:i--m:a--i:"} (342 occurences in \Rcode{ovenc34}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -550,11 +583,11 @@ correspond to the following overlaps:
   - transcript:   ...  oooooooooooooooo  ...
 \end{verbatim}
 
-  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"}
+  \item \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"}
 \begin{verbatim}
-  - paired-end read (no gap on the left end, no gap on the
-    right end):           ooo           oooo
-  - transcript:   ...  oooooooooo      ooooooo  ...
+  - paired-end read (1 gap on the left end, no gap on the
+    right end):             oooo-------oo      ooooo
+  - transcript:   ...  ooooooooo       ooooooooooooooo  ...
 \end{verbatim}
 
   \item \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"}
@@ -564,17 +597,17 @@ correspond to the following overlaps:
   - transcript:   ...  ooooooooooooooo       ooooooooo  ...
 \end{verbatim}
 
-  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}m:a{-}{-}i:"}
+  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"}
 \begin{verbatim}
   - paired-end read (no gap on the left end, no gap on the
-    right end):          ooooo                   oooo
-  - transcript:   ...  ooooooooooo   oooooo    ooooooooo  ...
+    right end):           ooo           oooo
+  - transcript:   ...  oooooooooo      ooooooo  ...
 \end{verbatim}
 \end{itemize}
 
 <<ov34_is_compat>>=
 ov34_is_compat <- isCompatibleWithSplicing(ovenc34)
-table(ov34_is_compat)  # 175225 overlaps are "compatible" with the splicing
+table(ov34_is_compat)  # 95801 overlaps are "compatible" with the splicing
 @
 
 Nb of ``compatible'' overlaps per alignment pair in \Rcode{galp34}:

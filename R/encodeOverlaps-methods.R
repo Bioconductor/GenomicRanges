@@ -4,8 +4,44 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### 2 non-exported utilities for inverting the strand of an object.
+###
+### TODO: We should probably have an invertStrand() generic with methods for
+### GRanges, GRangesList, GappedAlignments, GappedAlignmentPairs, and possibly
+### more, instead of this.
+
+### Works on GRanges and GappedAlignments objects. More generally, it should
+### work on any object that has: (1) a strand() getter that returns a
+### 'factor'-Rle, and (2) a strand() setter.
+invertRleStrand <- function(x)
+{
+    x_strand <- strand(x)
+    runValue(x_strand) <- strand(runValue(x_strand) == "+")
+    strand(x) <- x_strand
+    x
+}
+
+invertRleListStrand <- function(x)
+{
+    x@unlistData <- invertRleStrand(x@unlistData)
+    x
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### flipQuery()
 ###
+
+flipQuery <- function(x)
+{
+    if (!is(x, "GRangesList"))
+        stop("'x' must be a GRangesList object")
+    ans <- invertRleListStrand(revElements(x))
+    x_query.break <- elementMetadata(x)$query.break
+    if (!is.null(x_query.break))
+        elementMetadata(ans)$query.break <- elementLengths(x) - x_query.break
+    ans
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,38 +132,42 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 }
 
 setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE,
-             query.breaks=NULL)
+    function(query, subject, hits=NULL)
         .GRangesList_encodeOverlaps(query, subject,
-                                    ignore.strand=ignore.strand,
-                                    query.breaks=query.breaks)
+                             query.breaks=elementMetadata(query)$query.break,
+                             use.negative.space.for.minus.strand=TRUE)
 )
 
-setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE,
-             order.as.in.query=FALSE)
-    {
-        query <- grglist(query, order.as.in.query=order.as.in.query)
-        .GRangesList_encodeOverlaps(query, subject,
-                                    ignore.strand=ignore.strand,
-                                    use.negative.space.for.minus.strand=
-                                        order.as.in.query)
-    }
-)
 
-setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
-    function(query, subject, hits=NULL, ignore.strand=FALSE,
-             order.as.in.query=FALSE)
-    {
-        query <- grglist(query, order.as.in.query=order.as.in.query)
-        query.breaks <- elementMetadata(query)$query.breaks
-        .GRangesList_encodeOverlaps(query, subject,
-                                    ignore.strand=ignore.strand,
-                                    query.breaks=query.breaks,
-                                    use.negative.space.for.minus.strand=
-                                        order.as.in.query)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### selectEncodingWithCompatibleStrand().
+###
+
+selectEncodingWithCompatibleStrand <- function(x, y,
+                                               query.strand, subject.strand,
+                                               hits=NULL)
+{
+    if (!is(x, "OverlapEncodings"))
+        stop("'x' must be an OverlapEncodings object")
+    if (!is(y, "OverlapEncodings"))
+        stop("'y' must be an OverlapEncodings object")
+    if (!is.null(hits)) {
+        if (!is(hits, "Hits"))
+            stop("'hits' must be a Hits object or NULL")
+        query.strand <- query.strand[queryHits(hits)]
+        subject.strand <- subject.strand[subjectHits(hits)]
     }
-)
+    ans <- x
+    names(ans) <- NULL
+    elementMetadata(ans) <- NULL
+    idx <- which(query.strand != subject.strand)
+    ans@Loffset[idx] <- y@Roffset[idx]
+    ans@Roffset[idx] <- y@Loffset[idx]
+    ans_encoding <- as.character(ans@encoding)
+    ans_encoding[idx] <- as.character(y@encoding[idx])
+    ans@encoding <- as.factor(ans_encoding)
+    ans
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
