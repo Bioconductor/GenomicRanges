@@ -75,8 +75,34 @@ information about those reads):
 <<untreated1_chr4>>=
 library(pasillaBamSubset)
 untreated1_chr4()
+@
+
+We use the \Rcode{readGappedAlignments} function defined in the
+\Rpackage{GenomicRanges} package to read the BAM file into a
+\Rclass{GappedAlignments} object.
+It's probably a good idea to get rid of the PCR or optical duplicate
+(flag bit 0x400 in the SAM format, see the SAM Spec
+\footnote{\url{http://samtools.sourceforge.net/}} for the details), as well
+as reads not passing quality controls (flag bit 0x200 in the SAM format).
+We do this by creating a \Rclass{ScanBamParam} object that we pass to
+\Rcode{readGappedAlignments} (see \Rcode{?ScanBamParam} in the
+\Rpackage{Rsamtools} package for the details). Note that we also use
+\Rcode{use.names=TRUE} in order to load the {\it query template names}
+(QNAME field in the SAM format) from the BAM file (\Rcode{readGappedAlignments}
+will use them to set the names of the returned object):
+
+<<readGappedAlignments>>=
 library(GenomicRanges)
-gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE)
+library(Rsamtools)
+flag0 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE)
+param0 <- ScanBamParam(flag=flag0)
+gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
+@
+
+Our reads can have up to 2 gaps (a gap corresponds to an N operation in the
+CIGAR):
+
+<<ngap>>=
 head(gal14)
 table(ngap(gal14))
 @
@@ -431,10 +457,48 @@ reads from an RNA-seq experiment and aligned against the dm3 genome (see
 \Rcode{?untreated3\_chr4} in the \Rpackage{pasillaBamSubset} package for more
 information about those reads):
 
-<<readGappedAlignmentPairs>>=
+<<untreated3_chr4>>=
 untreated3_chr4()
-galp34 <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE)
+@
+
+We use the \Rcode{readGappedAlignmentPairs} function to read the BAM file
+into a \Rclass{GappedAlignmentPairs} object:
+
+<<readGappedAlignmentPairs>>=
+galp34 <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
 head(galp34)
+@
+
+The \Rcode{show} method for \Rclass{GappedAlignmentPairs} objects displays
+two {\tt ranges} columns, one for the {\it first} alignment in the pair (the
+left column), and one for the {\it last} alignment in the pair (the right
+column). The {\tt strand} column corresponds to the strand of the {\it first}
+alignment.
+
+<<first_last>>=
+head(first(galp34))
+head(last(galp34))
+@
+
+According to the SAM format specifications, the aligner is expected to mark
+each alignment pair as {\it proper} or not (flag bit 0x2 in the SAM format).
+The SAM Spec only says that a pair is {\it proper} if the {\it first} and
+{\it last} alignments in the pair are ``properly aligned according to the
+aligner''. So the exact criteria used for setting this flag is left to the
+aligner.
+
+We use \Rcode{isProperPair} to extract this flag from the
+\Rclass{GappedAlignmentPairs} object:
+
+<<isProperPair>>=
+table(isProperPair(galp34))
+@
+
+Even though we could do {\it overlap encodings} with the full object,
+we keep only the {\it proper} pairs for our downstream analysis:
+
+<<>>=
+galp34 <- galp34[isProperPair(galp34)]
 @
 
 For the transcript, we'll reuse the \Rcode{exbytx} object obtained
