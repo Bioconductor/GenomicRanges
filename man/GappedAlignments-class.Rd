@@ -285,10 +285,11 @@
 
   \describe{
     \item{}{
-      \code{grglist(x, reorder.ranges.from5to3prime=FALSE,
+      \code{grglist(x, order.as.in.query=FALSE,
                        drop.D.ranges=FALSE)},
-      \code{rglist(x, reorder.ranges.from5to3prime=FALSE,
+      \code{rglist(x, order.as.in.query=FALSE,
                       drop.D.ranges=FALSE)}:
+
       Returns either a \link{GRangesList} or a \link[IRanges]{RangesList}
       object of length \code{length(x)} where the i-th element represents
       the ranges (with respect to the reference) of the i-th alignment in
@@ -297,8 +298,8 @@
       More precisely, the \link[IRanges]{RangesList} object returned by
       \code{rglist(x)} is a \link[IRanges]{CompressedIRangesList} object.
 
-      The \code{reorder.ranges.from5to3prime} toggle affects the order of
-      the ranges \emph{within} each top-level element of the returned object.
+      The \code{order.as.in.query} toggle affects the order of the ranges
+      \emph{within} each top-level element of the returned object.
 
       If \code{FALSE} (the default), then the ranges are ordered from 5' to 3'
       in elements associated with the plus strand (i.e. corresponding to
@@ -310,10 +311,11 @@
       with the \emph{minus} strand is reversed. So they end up being
       ordered from 5' to 3' too, which means that they are now in decending
       order (i.e. right-to-left). It also means that, when
-      \code{reorder.ranges.from5to3prime=TRUE} is used, the ranges are
-      \emph{always} ordered consistently with the \emph{5' to 3' direction
-      of the query template} they are coming from, whatever the strand is.
-
+      \code{order.as.in.query=TRUE} is used, the ranges are
+      \emph{always} ordered consistently with the original "query template",
+      that is, in the order defined by walking the "query template" from the
+      beginning to the end.
+      
       If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
       CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges
       corresponding to deletions are dropped.

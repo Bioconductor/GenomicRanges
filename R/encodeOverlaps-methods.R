@@ -4,6 +4,11 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### flipQuery()
+###
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Should we use a generic + methods for this?
 ###
 
@@ -100,29 +105,27 @@ setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
 
 setMethod("encodeOverlaps", c("GappedAlignments", "GRangesList", "missing"),
     function(query, subject, hits=NULL, ignore.strand=FALSE,
-             reorder.ranges.from5to3prime=FALSE)
+             order.as.in.query=FALSE)
     {
-        query <- grglist(query,
-            reorder.ranges.from5to3prime=reorder.ranges.from5to3prime)
+        query <- grglist(query, order.as.in.query=order.as.in.query)
         .GRangesList_encodeOverlaps(query, subject,
                                     ignore.strand=ignore.strand,
                                     use.negative.space.for.minus.strand=
-                                        reorder.ranges.from5to3prime)
+                                        order.as.in.query)
     }
 )
 
 setMethod("encodeOverlaps", c("GappedAlignmentPairs", "GRangesList", "missing"),
     function(query, subject, hits=NULL, ignore.strand=FALSE,
-             reorder.ranges.from5to3prime=FALSE)
+             order.as.in.query=FALSE)
     {
-        query <- grglist(query,
-            reorder.ranges.from5to3prime=reorder.ranges.from5to3prime)
-        query.breaks <- elementMetadata(query)$nelt1
+        query <- grglist(query, order.as.in.query=order.as.in.query)
+        query.breaks <- elementMetadata(query)$query.breaks
         .GRangesList_encodeOverlaps(query, subject,
                                     ignore.strand=ignore.strand,
                                     query.breaks=query.breaks,
                                     use.negative.space.for.minus.strand=
-                                        reorder.ranges.from5to3prime)
+                                        order.as.in.query)
     }
 )
 

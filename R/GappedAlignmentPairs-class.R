@@ -411,36 +411,32 @@ setMethod("unlist", "GappedAlignmentPairs",
 }
 
 setMethod("grglist", "GappedAlignmentPairs",
-    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges=FALSE)
+    function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
-        if (!isTRUEorFALSE(reorder.ranges.from5to3prime))
+        if (!isTRUEorFALSE(order.as.in.query))
             stop("'reorder.ranges.from5to3' must be TRUE or FALSE")
         x_elt_metadata <- elementMetadata(x)
-        if (any(c("nelt1", "nelt2") %in% colnames(x_elt_metadata)))
-            stop("'elementMetadata(x)' cannot have reserved ",
-                 "columns \"nelt1\" and \"nelt2\"")
+        if ("query.break" %in% colnames(x_elt_metadata))
+            stop("'elementMetadata(x)' cannot have ",
+                 "reserved column \"query.break\"")
         x_first <- x@first
         x_last <- .invertStrand(x@last)
         ## Not the same as doing 'unlist(x, use.names=FALSE)'.
         x_unlisted <- c(x_first, x_last)[.makePickupIndex(length(x))]
         grl <- grglist(x_unlisted,
-                       reorder.ranges.from5to3prime=TRUE,
+                       order.as.in.query=TRUE,
                        drop.D.ranges=drop.D.ranges)
         ans <- .shrinkByHalf(grl)
         ans_nelt1 <- elementMetadata(ans)$nelt1
-        ans_nelt2 <- elementMetadata(ans)$nelt2
-        if (!reorder.ranges.from5to3prime) {
-            ## Yes, we reorder *again* when 'reorder.ranges.from5to3prime' is
-            ## FALSE.
+        if (!order.as.in.query) {
+            ans_nelt2 <- elementMetadata(ans)$nelt2
+            ## Yes, we reorder *again* when 'order.as.in.query' is FALSE.
             i <- which(strand(x) == "-")
             ans <- revElements(ans, i)
-            tmp <- ans_nelt1[i]
             ans_nelt1[i] <- ans_nelt2[i]
-            ans_nelt2[i] <- tmp
         }
         names(ans) <- names(x)
-        x_elt_metadata$nelt1 <- ans_nelt1
-        x_elt_metadata$nelt2 <- ans_nelt2
+        x_elt_metadata$query.break <- ans_nelt1
         elementMetadata(ans) <- x_elt_metadata
         ans
     }

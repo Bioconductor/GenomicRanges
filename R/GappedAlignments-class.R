@@ -457,10 +457,10 @@ setGeneric("granges", function(x, ...) standardGeneric("granges"))
 setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
 setMethod("grglist", "GappedAlignments",
-    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges=FALSE)
+    function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
         rgl <- rglist(x,
-                   reorder.ranges.from5to3prime=reorder.ranges.from5to3prime,
+                   order.as.in.query=order.as.in.query,
                    drop.D.ranges=drop.D.ranges)
         .CompressedIRangesListToGRangesList(rgl, seqnames(x), strand(x),
                                             seqinfo(x))
@@ -474,13 +474,13 @@ setMethod("granges", "GappedAlignments",
 )
 
 setMethod("rglist", "GappedAlignments",
-    function(x, reorder.ranges.from5to3prime=FALSE, drop.D.ranges=FALSE)
+    function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
-        if (!isTRUEorFALSE(reorder.ranges.from5to3prime))
+        if (!isTRUEorFALSE(order.as.in.query))
             stop("'reorder.ranges.from5to3' must be TRUE or FALSE")
         ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
                                              drop.D.ranges=drop.D.ranges)
-        if (reorder.ranges.from5to3prime)
+        if (order.as.in.query)
             ans <- revElements(ans, strand(x) == "-")
         names(ans) <- names(x)
         elementMetadata(ans) <- elementMetadata(x)

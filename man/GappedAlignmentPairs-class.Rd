@@ -241,8 +241,8 @@
 
   \describe{
     \item{}{
-      \code{grglist(x, reorder.ranges.from5to3prime=FALSE,
-                       drop.D.ranges=FALSE)}:
+      \code{grglist(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)}:
+
       Returns a \link{GRangesList} object of length \code{length(x)}
       where the i-th element represents the ranges (with respect to the
       reference) of the i-th alignment pair in \code{x}.
@@ -250,8 +250,8 @@
       IMPORTANT: The strand of the ranges coming from the "last" alignment
       in the pair is \emph{always} inverted.
 
-      The \code{reorder.ranges.from5to3prime} toggle affects the order of
-      the ranges \emph{within} each top-level element of the returned object.
+      The \code{order.as.in.query} toggle affects the order of the ranges
+      \emph{within} each top-level element of the returned object.
 
       If \code{FALSE} (the default), then the "left" ranges are placed before
       the "right" ranges, and, within each left or right group, are ordered
@@ -268,21 +268,20 @@
       More formally, the i-th element in the returned \link{GRangesList}
       object can be defined as \code{c(grl1[[i]], grl2[[i]])}, where
       \code{grl1} is \code{grglist(first(x),
-                                   reorder.ranges.from5to3prime=TRUE)}
+                                   order.as.in.query=TRUE)}
       and
       \code{grl2} is \code{grglist(last(x, invert.strand=TRUE),
-                                   reorder.ranges.from5to3prime=TRUE)}.
+                                   order.as.in.query=TRUE)}.
 
       Note that the relationship between the 2 \link{GRangesList} objects
-      obtained with \code{reorder.ranges.from5to3prime} being respectively
+      obtained with \code{order.as.in.query} being respectively
       \code{FALSE} or \code{TRUE} is simpler than it sounds: the only
       difference is that the order of the ranges in elements associated
       with the \emph{minus} strand is reversed.
 
       Finally note that, in the latter, the ranges are \emph{always} ordered
-      consistently with the \emph{5' to 3' direction of the query template}
-      they are coming from, whatever the strand is. This is actually the
-      real goal behind the \code{reorder.ranges.from5to3prime=TRUE} feature.
+      consistently with the original "query template", that is, in the order
+      defined by walking the "query template" from the beginning to the end.
 
       If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
       CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges
@@ -340,7 +339,7 @@ galp[[1]]
 unlist(galp)
 
 grglist(galp)
-grglist(galp, reorder.ranges.from5to3prime=TRUE)
+grglist(galp, order.as.in.query=TRUE)
 }
 
 \keyword{methods}
