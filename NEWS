@@ -3,6 +3,20 @@ CHANGES IN VERSION 1.8.0
 
 NEW FEATURES
 
+    o Add GappedAlignmentPairs class (with accessors first(), last(), left(),
+      right(), seqnames(), strand(), isProperPair()), and
+      readGappedAlignmentPairs() for dealing with paired-end reads.
+      Most of the GappedAlignments functionalities (e.g. coercion to
+      GRangesList, "findOverlaps" and related methods, "coverage", etc...)
+      work on a GappedAlignmentPairs object.
+
+    o Add encodeOverlaps,GRangesList,GRangesList,missing and related utilities
+      flipQuery(), selectEncodingWithCompatibleStrand(),
+      isCompatibleWithSplicing(), isCompatibleWithSkippedExons() and
+      extractSkippedExonRanks().
+
+    o Add 'order.as.in.query' arg to grglist() and rglist().
+
     o SummarizedExperiment gains direct access to colData columns with
       $, $<-, [[, and [[<- methods
 
@@ -16,12 +30,12 @@ NEW FEATURES
 
     o Add disjointBins,GenomicRanges.
 
-    o Add score,GRangesList and score,GenomicRanges
-      (gets the score column like for RangedData)
+    o Add score,GRangesList and score,GenomicRanges (gets the score column
+      like for RangedData).
     
-    o Add RangedDataList -> GenomicRangesList coercion
+    o Add RangedDataList -> GenomicRangesList coercion.
 
-    o Add RleViewsList -> GRanges coercion
+    o Add RleViewsList -> GRanges coercion.
 
     o Add pintersect,GRangesList,GRangesList
 
@@ -29,22 +43,66 @@ NEW FEATURES
     
     o ignore.strand argument now more uniformly supported on set operations.
 
-    o Add Ops,GenomicRanges (from rtracklayer)
-    
+    o Add Ops,GenomicRanges (from rtracklayer).
+
+    o Add strand,Rle (only logical-Rle is supported).
+
+    o Add compare,GenomicRanges
+
+    o Add 'drop.empty.ranges' arg (FALSE by default) to low-level cigar
+      utilities cigarToIRanges(), cigarToIRangesListByAlignment(), and
+      cigarToIRangesListByRName().
+
+    o Add 'reduce.ranges' arg to cigarToIRangesListByAlignment().
+ 
 SIGNIFICANT USER-LEVEL CHANGES
 
     o grglist,GappedAlignments now carries over element metadata.
 
     o Names are no longer forced to be unique when unlisting a
-      GRangesList with use.names = TRUE.
-    
+      GRangesList with use.names=TRUE.
+
+    o seqnames() is now preferred over rname() on a GappedAlignments object.
+
+    o cigarToIRangesListByAlignment() now returns a CompressedIRangesList
+      instead of CompressedNormalIRangesList.
+
+    o Low-level CIGAR utilities now ignore CIGAR operation P (instead of
+      trowing an error).
+
+    o The 'weight' arg in "coverage" method for GenomicRanges objects now
+      can also be a single string naming a column in elementMetadata(x).
+
+    o Ranges outside the sequences bounds of the underlying sequences are now
+      accepted (with a warning) in GenomicRanges/GRangesList/GappedAlignments
+      objects.
+
+    o When called with 'ignore.strand=TRUE', the "range" and "disjoin" methods
+      for GenomicRanges objects now behave like if they set the strand of the
+      input to "*" before they do any computation.
+
+    o When called with 'ignore.strand=TRUE', "reduce" method for GenomicRanges
+      objects, and "union", "intersect" and "setdiff" methods for GRanges
+      objects now set the strand of their arguments to "*" prior to any
+      computation.
+
+    o No more mangling of the names when combining GRanges objects ("c" method
+      for GRanges objects was trying to return unique names).
+
+    o Remove isCircularWithKnownLength() generic and methods (nobody knows,
+      uses, or needs this).
+
 BUG FIXES
 
     o flank,GRangesList no longer forces 'use.names' to TRUE and 'both' to
       FALSE.
 
     o range,GenomicRanges was broken when object had no ranges
-    
+
+    o Fix integer overflow issue that can occur in cigarQNarrow() or
+      cigarQNarrow() when the cigar vector is very long.
+
+
 CHANGES IN VERSION 1.6.0
 ------------------------
 
