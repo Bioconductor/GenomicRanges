@@ -234,26 +234,28 @@ correspond to the following overlaps:
 \begin{itemize}
   \item \Rcode{"1:i:"}
 \begin{verbatim}
-  - read (no gap):             oooooo
-  - transcript:    5' ...  oooooooooooo  ... 3'
+  - read (no gap):            oooooooo
+  - transcript:     ...   >>>>>>>>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"2:jm:af:"}
 \begin{verbatim}
-  - read (1 gap):                oooo------oo
-  - transcript:    5' ...  oooooooooo      ooooooo  ... 3'
+  - read (1 gap):             ooooo---ooo
+  - transcript:     ...   >>>>>>>>>   >>>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"3:jmm:agm:aaf:"}
 \begin{verbatim}
-  - read (2 gaps):             ooo-----oo---------oooo
-  - transcript:    5' ...  ooooooo     oo         oooooooooo  ... 3'
+  - read (2 gaps):              oo---ooooo---o
+  - transcript:     ...   >>>>>>>>   >>>>>   >>>>>>>   ...
 \end{verbatim}
 \end{itemize}
 
-Note that the exons represented in the 2nd and 3rd drawings are
-consecutive in the transcript. The transcript can have more exons,
-which is denoted by the ... on each side of the drawings.
+For clarity, only the exons involved in the overlap are represented. The
+transcript can of course have more upstream and downstream exons, which
+is denoted by the ... on the left side (5' end) and right side (3' end)
+of each drawing. Note that the exons represented in the 2nd and 3rd drawings
+are consecutive in the transcript.
 
 Encodings \Rcode{"1:f:"} and \Rcode{"1:j:"} are variations of the situation
 described by encoding \Rcode{"1:i:"}. For \Rcode{"1:f:"}, the first
@@ -264,14 +266,14 @@ flipped read) is aligned with the last base of the exon:
 \begin{itemize}
   \item \Rcode{"1:f:"}
 \begin{verbatim}
-  - read (no gap):         oooooo
-  - transcript:    5' ...  oooooooooooo  ... 3'
+  - read (no gap):        oooooooo
+  - transcript:     ...   >>>>>>>>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"1:j:"}
 \begin{verbatim}
-  - read (no gap):               oooooo
-  - transcript:    5' ...  oooooooooooo  ... 3'
+  - read (no gap):              oooooooo
+  - transcript:     ...   >>>>>>>>>>>>>>   ...
 \end{verbatim}
 \end{itemize}
 
@@ -334,20 +336,20 @@ correspond to the following overlaps:
 \begin{itemize}
   \item \Rcode{"2:jm:am:af:"}
 \begin{verbatim}
-  - read (1 gap):            ooooo------------ooo
-  - transcript:    5' ...  ooooooo    oooo    oooooooo  ... 3'
+  - read (1 gap):           ooooo----------ooo
+  - transcript:     ...   >>>>>>>   >>>>   >>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"2:jm:am:am:af:"}
 \begin{verbatim}
-  - read (1 gap):            ooooo------------------ooo
-  - transcript:    5' ...  ooooooo   ooooo   oooo   oooooooo  ... 3'
+  - read (1 gap):           ooooo------------------ooo
+  - transcript:     ...   >>>>>>>   >>>>   >>>>>   >>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"3:jmm:agm:aam:aaf:"}
 \begin{verbatim}
-  - read (2 gaps):           ooooo----oooo-----------ooo
-  - transcript:    5' ...  ooooooo    oooo   ooooo   oooooooo  ... 3'
+  - read (2 gaps):             oo---oooo-----------oo
+  - transcript:     ...   >>>>>>>   >>>>   >>>>>   >>>>>>>>   ...
 \end{verbatim}
 \end{itemize}
 
@@ -584,32 +586,34 @@ correspond to the following overlaps:
 \begin{itemize}
   \item \Rcode{"1{-}{-}1:i{-}{-}i:"}
 \begin{verbatim}
-  - paired-end read (no gap on the left end, no gap on the
-    right end):              ooo   oooo
-  - transcript:  5' ...  oooooooooooooooo  ... 3'
+  - paired-end read (no gap on the first end, no gap on the
+    last end):               oooo   oooo
+  - transcript:     ...   >>>>>>>>>>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"}
 \begin{verbatim}
-  - paired-end read (1 gap on the left end, no gap on the
-    right end):               oooo-------oo      ooooo
-  - transcript:  5' ...  ooooooooo       ooooooooooooooo  ... 3'
+  - paired-end read (1 gap on the first end, no gap on the
+    last end):                 ooo---o    oooo
+  - transcript:     ...   >>>>>>>>   >>>>>>>>>>>   ...
 \end{verbatim}
 
   \item \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"}
 \begin{verbatim}
-  - paired-end read (no gap on the left end, 1 gap on the
-    right end):            ooooo      oo-------oooo
-  - transcript:  5' ...  ooooooooooooooo       ooooooooo  ... 3'
+  - paired-end read (no gap on the first end, 1 gap on the
+    last end):             oooo      oo---oo
+  - transcript:     ...  >>>>>>>>>>>>>>   >>>>>>>>>  ...
 \end{verbatim}
 
   \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"}
 \begin{verbatim}
-  - paired-end read (no gap on the left end, no gap on the
-    right end):             ooo           oooo
-  - transcript:  5' ...  oooooooooo      ooooooo  ... 3'
+  - paired-end read (no gap on the first end, no gap on the
+    last end):               oooo      oooo
+  - transcript:     ...   >>>>>>>>>   >>>>>>>   ...
 \end{verbatim}
 \end{itemize}
+
+Note: switch use of ``first'' and ``last'' above if the read was flipped.
 
 <<ov34_is_compat>>=
 ov34_is_compat <- isCompatibleWithSplicing(ovenc34)
