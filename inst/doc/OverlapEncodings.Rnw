@@ -193,6 +193,14 @@ ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14o, ovenc14f,
 ovenc14
 @
 
+As a convenience, the 2 above calls to \Rfunction{encodeOverlaps} + merging
+step can be replaced by a single call to \Rfunction{encodeOverlaps} on either
+\Rcode{grl14f} or \Rcode{grl14o} with \Rcode{flip.query.if.wrong.strand=TRUE}:
+<<ovenc14_again>>=
+ovenc14_again <- encodeOverlaps(grl14o, exbytx, hits=ov14, flip.query.if.wrong.strand=TRUE)
+stopifnot(identical(ovenc14_again, ovenc14))
+@
+
 Unique encodings in \Rcode{ovenc14}:
 
 <<ovenc14_table>>=
@@ -544,14 +552,8 @@ ov34 <- findOverlaps(galp34, exbytx, ignore.strand=TRUE)
 and encode them:
 
 <<ovenc34>>=
-grl34o <- grglist(galp34, order.as.in.query=TRUE)
-grl34f <- flipQuery(grl34o)
-ovenc34o <- encodeOverlaps(grl34o, exbytx, hits=ov34)
-ovenc34f <- encodeOverlaps(grl34f, exbytx, hits=ov34)
-grl34o_strand <- unlist(runValue(strand(grl34o)), use.names=FALSE)
-ovenc34 <- selectEncodingWithCompatibleStrand(ovenc34o, ovenc34f,
-                                              grl34o_strand, exbytx_strand,
-                                              hits=ov34)
+grl34 <- grglist(galp34, order.as.in.query=TRUE)
+ovenc34 <- encodeOverlaps(grl34, exbytx, hits=ov34, flip.query.if.wrong.strand=TRUE)
 ovenc34
 @
 

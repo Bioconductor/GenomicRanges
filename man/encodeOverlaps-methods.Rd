@@ -30,7 +30,10 @@
 
 \usage{
 flipQuery(x)
-\S4method{encodeOverlaps}{GRangesList,GRangesList,missing}(query, subject, hits=NULL)
+
+\S4method{encodeOverlaps}{GRangesList,GRangesList,missing}(query, subject, hits=NULL,
+               flip.query.if.wrong.strand=FALSE)
+
 selectEncodingWithCompatibleStrand(x, y,
                                    query.strand, subject.strand, hits=NULL)
 isCompatibleWithSplicing(x)
@@ -58,6 +61,9 @@ extractSkippedExonRanks(x)
     A \link[IRanges]{Hits} object.
     See \code{?`\link[IRanges]{encodeOverlaps,ANY,ANY,Hits-method}`} for
     a description of how a supplied \link[IRanges]{Hits} object is handled.
+  }
+  \item{flip.query.if.wrong.strand}{
+    See the "Overlap encodings" vignette in the GenomicRanges package.
   }
   \item{y}{
     An \link[IRanges]{OverlapEncodings} object.
