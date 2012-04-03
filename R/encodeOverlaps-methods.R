@@ -60,15 +60,22 @@ invertRleListStrand <- function(x)
 ### flipQuery()
 ###
 
-flipQuery <- function(x)
+flipQuery <- function(x, i)
 {
     if (!is(x, "GRangesList"))
         stop("'x' must be a GRangesList object")
-    ans <- invertRleListStrand(revElements(x))
-    x_query.break <- elementMetadata(x)$query.break
-    if (!is.null(x_query.break))
-        elementMetadata(ans)$query.break <- elementLengths(x) - x_query.break
-    ans
+    if (missing(i))
+        i <- seq_len(length(x))
+    else
+        i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+    xi <- x[i]
+    x[i] <- invertRleListStrand(revElements(xi))
+    xi_query.break <- elementMetadata(xi)$query.break
+    if (!is.null(xi_query.break)) {
+        revxi_query.break <- elementLengths(xi) - xi_query.break
+        elementMetadata(x)$query.break[i] <- revxi_query.break
+    }
+    x
 }
 
 
@@ -124,11 +131,10 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 .GRangesList_encodeOverlaps <- function(query, subject,
                                         flip.query.if.wrong.strand=FALSE)
 {
-    seqinfo <- merge(seqinfo(query), seqinfo(subject))
-    seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
-    query.breaks <- elementMetadata(query)$query.break
     if (!isTRUEorFALSE(flip.query.if.wrong.strand))
         stop("'flip.query.if.wrong.strand' must be TRUE or FALSE")
+    seqinfo <- merge(seqinfo(query), seqinfo(subject))
+    seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
     if (flip.query.if.wrong.strand) {
         ## Checking the query and subject seqnames.
         errmsg <- c("some alignments in 'query' have ranges on ",
@@ -154,8 +160,9 @@ setMethod("encodeOverlaps", c("GRanges", "GRanges", "missing"),
 
         ## Flip queries to put them on same strand as corresponding subjects.
         flip_idx <- which(query_strand != subject_strand)
-        query[flip_idx] <- flipQuery(query[flip_idx])
+        query <- flipQuery(query, flip_idx)
     }
+    query.breaks <- elementMetadata(query)$query.break
     RangesList_encodeOverlaps(as.list(start(query)),
                               as.list(width(query)),
                               as.list(start(subject)),

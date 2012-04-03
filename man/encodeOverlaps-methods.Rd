@@ -29,7 +29,7 @@
 }
 
 \usage{
-flipQuery(x)
+flipQuery(x, i)
 
 \S4method{encodeOverlaps}{GRangesList,GRangesList,missing}(query, subject, hits=NULL,
                flip.query.if.wrong.strand=FALSE)
@@ -52,6 +52,10 @@ extractSkippedExonRanks(x)
     and \code{extractSkippedExonRanks}:
     An \link[IRanges]{OverlapEncodings} object, a factor or a character
     vector.
+  }
+  \item{i}{
+    Subscript specifying the elements in \code{x} to flip. If missing, all
+    the elements are flipped.
   }
   \item{query, subject}{
     \link{GRangesList}, \link[IRanges]{RangesList} or \link[IRanges]{Ranges}
