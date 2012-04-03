@@ -161,8 +161,8 @@ selectEncodingWithCompatibleStrand <- function(x, y,
     names(ans) <- NULL
     elementMetadata(ans) <- NULL
     idx <- which(query.strand != subject.strand)
-    ans@Loffset[idx] <- y@Roffset[idx]
-    ans@Roffset[idx] <- y@Loffset[idx]
+    ans@Loffset[idx] <- y@Loffset[idx]
+    ans@Roffset[idx] <- y@Roffset[idx]
     ans_encoding <- as.character(ans@encoding)
     ans_encoding[idx] <- as.character(y@encoding[idx])
     ans@encoding <- as.factor(ans_encoding)

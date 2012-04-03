@@ -130,7 +130,7 @@ that \Rcode{seqnames} and \Rcode{strand} return \Rclass{RleList} objects.
 So we can extract the number of Rle runs for each transcript and make
 sure it's always 1:
 
-<<no-trans-splicing>>=
+<<check-for-trans-splicing>>=
 table(elementLengths(runLength(seqnames(exbytx))))
 table(elementLengths(runLength(strand(exbytx))))
 @
@@ -439,8 +439,7 @@ indices into \Rcode{gal14}:
 head(names(tx2skpexrk))  # transcript TxDb internal ids
 @
 
-Transcript \Rcode{"10"} has 7 hits. Three of them skip exons 4 and 5,
-and four of them skip exons 9 and 10:
+Transcript \Rcode{"10"} has 7 hits. All of them skip exons 9 and 10:
 
 <<tx10_details>>=
 tx2skpexrk[["10"]]
@@ -457,7 +456,7 @@ A few words about the interpretation of \Rcode{tx2skpexrk}:
 Because of how we've conducted this analysis, the aligments reported in
 \Rcode{tx2skpexrk} are guaranteed to NOT have any ``compatible'' overlaps
 with other known transcripts. All we can say, for example in the case of
-transcript \Rcode{"10"}, is that the 4 reported hits that skip exons 9 and 10
+transcript \Rcode{"10"}, is that the 7 reported hits that skip exons 9 and 10
 show evidence of one or more unknown transcripts with a splice junction that
 corresponds to the gap between exons 8 and 11. But without further analysis,
 we can't make any assumption about the exons structure of those unknown
