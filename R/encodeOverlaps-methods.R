@@ -197,11 +197,16 @@ selectEncodingWithCompatibleStrand <- function(x, y,
 ### isCompatibleWithSplicing().
 ###
 
+.extract_ngap_from_encoding <- function(x)
+{
+    as.integer(unlist(strsplit(sub(":.*", "", x), "--", fixed=TRUE),
+                      use.names=FALSE)) - 1L
+}
+
 .check_ngap_max <- function(x)
 {
-    ngap <- as.integer(unlist(strsplit(sub(":.*", "", x), "--", fixed=TRUE),
-                              use.names=FALSE)) - 1L
-    if (max(ngap) > 3L)
+    ngap <- .extract_ngap_from_encoding(x)
+    if (length(ngap) != 0L && max(ngap) > 3L)
         stop("reads with more than 3 gaps are not supported yet, sorry")
 }
 
@@ -209,13 +214,13 @@ setGeneric("isCompatibleWithSplicing",
     function(x) standardGeneric("isCompatibleWithSplicing")
 )
 
-.SUBREGEX1 <- "[fgij]"
-.SUBREGEX2 <- c("[jg][^:-]",
+.REGEX_BLOCKS1 <- "[fgij]"
+.REGEX_BLOCKS2 <- c("[jg][^:-]",
                 "[^:-][gf]")
-.SUBREGEX3 <- c("[jg][^:-][^:-]",
+.REGEX_BLOCKS3 <- c("[jg][^:-][^:-]",
                 "[^:-]g[^:-]",
                 "[^:-][^:-][gf]")
-.SUBREGEX4 <- c("[jg][^:-][^:-][^:-]",
+.REGEX_BLOCKS4 <- c("[jg][^:-][^:-][^:-]",
                 "[^:-]g[^:-][^:-]",
                 "[^:-][^:-]g[^:-]",
                 "[^:-][^:-][^:-][gf]")
@@ -223,27 +228,27 @@ setGeneric("isCompatibleWithSplicing",
 .get_CompatibleWithSplicing_regex <- function()
 {
     ## Sub-regex for single-end reads.
-    Ssubregex1 <- .SUBREGEX1
-    Ssubregex2 <- paste0(.SUBREGEX2, collapse=":")
-    Ssubregex3 <- paste0(.SUBREGEX3, collapse=":")
-    Ssubregex4 <- paste0(.SUBREGEX4, collapse=":")
+    Ssubregex1 <- .REGEX_BLOCKS1
+    Ssubregex2 <- paste0(.REGEX_BLOCKS2, collapse=":")
+    Ssubregex3 <- paste0(.REGEX_BLOCKS3, collapse=":")
+    Ssubregex4 <- paste0(.REGEX_BLOCKS4, collapse=":")
     Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
     Ssubregex <- paste0(":(", Ssubregex, "):")
 
     ## Sub-regex for paired-end reads.
     Rencoding <- "-[^:-]*" 
-    Lsubregex1 <- paste0(":", .SUBREGEX1, "-")
-    Lsubregex2 <- paste0(":", .SUBREGEX2, "-", collapse=Rencoding)
-    Lsubregex3 <- paste0(":", .SUBREGEX3, "-", collapse=Rencoding)
-    Lsubregex4 <- paste0(":", .SUBREGEX4, "-", collapse=Rencoding)
+    Lsubregex1 <- paste0(":", .REGEX_BLOCKS1, "-")
+    Lsubregex2 <- paste0(":", .REGEX_BLOCKS2, "-", collapse=Rencoding)
+    Lsubregex3 <- paste0(":", .REGEX_BLOCKS3, "-", collapse=Rencoding)
+    Lsubregex4 <- paste0(":", .REGEX_BLOCKS4, "-", collapse=Rencoding)
     Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
     Lsubregex <- paste0("(", Lsubregex, ")")
 
     Lencoding <- "[^:-]*-" 
-    Rsubregex1 <- paste0("-", .SUBREGEX1, ":")
-    Rsubregex2 <- paste0("-", .SUBREGEX2, ":", collapse=Lencoding)
-    Rsubregex3 <- paste0("-", .SUBREGEX3, ":", collapse=Lencoding)
-    Rsubregex4 <- paste0("-", .SUBREGEX4, ":", collapse=Lencoding)
+    Rsubregex1 <- paste0("-", .REGEX_BLOCKS1, ":")
+    Rsubregex2 <- paste0("-", .REGEX_BLOCKS2, ":", collapse=Lencoding)
+    Rsubregex3 <- paste0("-", .REGEX_BLOCKS3, ":", collapse=Lencoding)
+    Rsubregex4 <- paste0("-", .REGEX_BLOCKS4, ":", collapse=Lencoding)
     Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
     Rsubregex <- paste0("(", Rsubregex, ")")
 
@@ -287,6 +292,15 @@ setMethod("isCompatibleWithSplicing", "OverlapEncodings",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extractSpannedExonRanks().
+###
+
+setGeneric("extractSpannedExonRanks",
+    function(x) standardGeneric("extractSpannedExonRanks")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isCompatibleWithSkippedExons().
 ###
 
@@ -301,25 +315,25 @@ setGeneric("isCompatibleWithSkippedExons", signature="x",
         stop("only 'max.skipped.exons=NA' is supported for now, sorry")
 
     ## Sub-regex for single-end reads.
-    Ssubregex1 <- .SUBREGEX1
-    Ssubregex2 <- paste0(.SUBREGEX2, collapse=":(..:)*")
-    Ssubregex3 <- paste0(.SUBREGEX3, collapse=":(...:)*")
-    Ssubregex4 <- paste0(.SUBREGEX4, collapse=":(....:)*")
+    Ssubregex1 <- .REGEX_BLOCKS1
+    Ssubregex2 <- paste0(.REGEX_BLOCKS2, collapse=":(..:)*")
+    Ssubregex3 <- paste0(.REGEX_BLOCKS3, collapse=":(...:)*")
+    Ssubregex4 <- paste0(.REGEX_BLOCKS4, collapse=":(....:)*")
     Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
     Ssubregex <- paste0(":(", Ssubregex, "):")
 
     ## Sub-regex for paired-end reads.
-    Lsubregex1 <- paste0(":", .SUBREGEX1, "-")
-    Lsubregex2 <- paste0(":", .SUBREGEX2, "-", collapse=".*")
-    Lsubregex3 <- paste0(":", .SUBREGEX3, "-", collapse=".*")
-    Lsubregex4 <- paste0(":", .SUBREGEX4, "-", collapse=".*")
+    Lsubregex1 <- paste0(":", .REGEX_BLOCKS1, "-")
+    Lsubregex2 <- paste0(":", .REGEX_BLOCKS2, "-", collapse=".*")
+    Lsubregex3 <- paste0(":", .REGEX_BLOCKS3, "-", collapse=".*")
+    Lsubregex4 <- paste0(":", .REGEX_BLOCKS4, "-", collapse=".*")
     Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
     Lsubregex <- paste0("(", Lsubregex, ")")
 
-    Rsubregex1 <- paste0("-", .SUBREGEX1, ":")
-    Rsubregex2 <- paste0("-", .SUBREGEX2, ":", collapse=".*")
-    Rsubregex3 <- paste0("-", .SUBREGEX3, ":", collapse=".*")
-    Rsubregex4 <- paste0("-", .SUBREGEX4, ":", collapse=".*")
+    Rsubregex1 <- paste0("-", .REGEX_BLOCKS1, ":")
+    Rsubregex2 <- paste0("-", .REGEX_BLOCKS2, ":", collapse=".*")
+    Rsubregex3 <- paste0("-", .REGEX_BLOCKS3, ":", collapse=".*")
+    Rsubregex4 <- paste0("-", .REGEX_BLOCKS4, ":", collapse=".*")
     Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
     Rsubregex <- paste0("(", Rsubregex, ")")
 
@@ -368,61 +382,63 @@ setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
                         max.skipped.exons=max.skipped.exons)
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extractSkippedExonRanks().
+###
+
 setGeneric("extractSkippedExonRanks",
     function(x) standardGeneric("extractSkippedExonRanks")
 )
 
+.extractSkippedExonRanksFromEncodingBlocks <- function(encoding_blocks,
+                                                       regex_blocks)
+{
+    regexprs <- paste0("^", regex_blocks, "$")
+    ii <- lapply(regexprs, grep, encoding_blocks)
+    ii_elt_lens <- elementLengths(ii)
+    if (any(ii_elt_lens == 0L))
+        return(integer(0))
+    if (any(ii_elt_lens != 1L))
+        stop("cannot unambiguously extract skipped exons ranks from ",
+             "encoding \"", paste0(encoding_blocks, collapse=":"), "\"")
+    ii <- unlist(ii, use.names=FALSE)
+    dii <- diff(ii)
+    if (any(dii <= 0L))
+        return(integer(0))
+    setdiff(ii[1L]:ii[length(ii)], ii)
+}
+
+### 'encoding' must be a single encoding.
+.extractSkippedExonRanks <- function(encoding)
+{
+    encoding_blocks <- strsplit(encoding, ":", fixed=TRUE)[[1]]
+    ngap <- .extract_ngap_from_encoding(encoding_blocks[1L])
+    if (length(ngap) == 2L)
+        stop("extractSkippedExonRanks() doesn't yet support overlap ",
+             "encodings of paired-end reads, sorry")
+    ans <- integer(0)
+    if (ngap <= 0L)
+        return(ans)
+    encoding_blocks <- encoding_blocks[-1L]
+    if (length(encoding_blocks) < ngap + 2L)
+        return(ans)
+    if (ngap == 1L) {
+        regex_blocks <- .REGEX_BLOCKS2
+    } else if (ngap == 2L) {
+        regex_blocks <- .REGEX_BLOCKS3
+    } else if (ngap == 3L) {
+        regex_blocks <- .REGEX_BLOCKS4
+    } else {
+        stop("reads with more than 3 gaps are not supported yet, sorry")
+    }
+    .extractSkippedExonRanksFromEncodingBlocks(encoding_blocks, regex_blocks)
+}
+
 setMethod("extractSkippedExonRanks", "character",
     function(x)
     {
-        xx <- strsplit(x, ":", fixed=TRUE)
-        lapply(xx,
-               function(s0) {
-                   ngap <- as.integer(s0[1L]) - 1L
-                   ans <- integer(0)
-                   if (ngap <= 0L)
-                       return(ans)
-                   s1 <- s0[-1L]
-                   if (length(s1) < ngap + 2L)
-                       return(ans)
-                   if (ngap == 1L) {
-                       if (grepl("^[jg].$", s1[1L])
-                        && grepl("^.[gf]$", s1[length(s1)])) {
-                           ans <- 2L:(length(s1)-1L)
-                       }
-                   } else if (ngap == 2L) {
-                       if (grepl("^[jg]..$", s1[1L])
-                        && grepl("^..[gf]$", s1[length(s1)])) {
-                           s2 <- s1[-c(1L, length(s1))]
-                           i <- grep("^.g.$", s2)
-                           if (length(i) == 0L)
-                               return(ans)
-                           if (length(i) != 1L)
-                               stop("unexpected/unsupported overlap ",
-                                    "situation: length(i) > 1L")
-                           ans <- (2:(length(s1)-1L))[-i]
-                       }
-                   } else if (ngap == 3L) {
-                       if (grepl("^[jg]...$", s1[1L])
-                        && grepl("^...[gf]$", s1[length(s1)])) {
-                           s2 <- s1[-c(1L, length(s1))]
-                           i <- grep("^.g..$", s2)
-                           j <- grep("^..g.$", s2)
-                           if (length(i) == 0L || length(j) == 0L)
-                               return(ans)
-                           if (length(i) != 1L || length(j) != 1L)
-                               stop("unexpected/unsupported overlap ",
-                                    "situation: length(i) or length(j) > 1L")
-                           if (j <= i)
-                               return(ans)
-                           ans <- (2:(length(s1)-1L))[-c(i,j)]
-                       }
-                   } else {
-                       stop("reads with more than 3 gaps ",
-                            "are not supported yet, sorry")
-                   }
-                   ans
-               })
+        lapply(x, .extractSkippedExonRanks)
     }
 )
 
