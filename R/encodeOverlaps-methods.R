@@ -542,9 +542,9 @@ setMethod("extractSkippedExonRanks", "OverlapEncodings",
 }
 
 ### Returns a data.frame with 1 row per overlap, and 3 integer columns:
-###     1. firstSpannedExonRank
-###     2. startInFirstSpannedExon
-###     3. startInTranscript
+###     1. startInTranscript
+###     2. firstSpannedExonRank
+###     3. startInFirstSpannedExon
 ### Rows for overlaps that are not "compatible" or "almost compatible"
 ### contain NAs.
 extractQueryStartInTranscript <- function(query, subject,
@@ -625,9 +625,9 @@ extractQueryStartInTranscript <- function(query, subject,
     ## Compute the "query start in transcript".
     startInTranscript <- subject2_cumwidth + startInFirstSpannedExon
 
-    data.frame(firstSpannedExonRank=exrank,
+    data.frame(startInTranscript=startInTranscript,
+               firstSpannedExonRank=exrank,
                startInFirstSpannedExon=startInFirstSpannedExon,
-               startInTranscript=startInTranscript,
                check.names=FALSE, stringsAsFactors=FALSE)
 }
 

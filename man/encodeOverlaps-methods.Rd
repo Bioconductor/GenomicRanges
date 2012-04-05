@@ -27,6 +27,8 @@
 \alias{extractSkippedExonRanks,factor-method}
 \alias{extractSkippedExonRanks,OverlapEncodings-method}
 
+\alias{extractQueryStartInTranscript}
+
 \title{encodeOverlaps methods and related utilities}
 
 \description{
@@ -47,6 +49,9 @@ isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
 
 extractSpannedExonRanks(x)
 extractSkippedExonRanks(x)
+
+extractQueryStartInTranscript(query, subject, hits=NULL, ovenc=NULL,
+                              flip.query.if.wrong.strand=FALSE)
 }
 
 \arguments{
@@ -66,8 +71,7 @@ extractSkippedExonRanks(x)
     the elements are flipped.
   }
   \item{query, subject}{
-    \link{GRangesList}, \link[IRanges]{RangesList} or \link[IRanges]{Ranges}
-    objects.
+    \link{GRangesList} objects.
   }
   \item{hits}{
     A \link[IRanges]{Hits} object.
