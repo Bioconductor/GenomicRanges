@@ -161,15 +161,15 @@ of the original queries), and once again for the ``flipped alignments''
 the original and flipped alignments in 2 \Rclass{GRangesList} objects
 with:
 
-<<grl14of>>=
-grl14o <- grglist(gal14, order.as.in.query=TRUE)
-grl14f <- flipQuery(grl14o)
+<<grl14>>=
+grl14 <- grglist(gal14, order.as.in.query=TRUE)  # not flipped
+grl14f <- flipQuery(grl14)  # flipped
 @
 
 and encode their overlaps with the transcripts:
 
 <<ovenc14of>>=
-ovenc14o <- encodeOverlaps(grl14o, exbytx, hits=ov14)
+ovenc14o <- encodeOverlaps(grl14, exbytx, hits=ov14)
 ovenc14f <- encodeOverlaps(grl14f, exbytx, hits=ov14)
 @
 
@@ -186,18 +186,18 @@ corresponding to alignment ranges and exon ranges with compatible
 strand:
 
 <<ovenc14>>=
-grl14o_strand <- unlist(runValue(strand(grl14o)), use.names=FALSE)
+grl14_strand <- unlist(runValue(strand(grl14)), use.names=FALSE)
 ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14o, ovenc14f,
-                                              grl14o_strand, exbytx_strand,
+                                              grl14_strand, exbytx_strand,
                                               hits=ov14)
 ovenc14
 @
 
 As a convenience, the 2 above calls to \Rfunction{encodeOverlaps} + merging
-step can be replaced by a single call to \Rfunction{encodeOverlaps} on either
-\Rcode{grl14f} or \Rcode{grl14o} with \Rcode{flip.query.if.wrong.strand=TRUE}:
+step can be replaced by a single call to \Rfunction{encodeOverlaps} on
+\Rcode{grl14} (or \Rcode{grl14f}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
 <<ovenc14_again>>=
-ovenc14_again <- encodeOverlaps(grl14o, exbytx, hits=ov14, flip.query.if.wrong.strand=TRUE)
+ovenc14_again <- encodeOverlaps(grl14, exbytx, hits=ov14, flip.query.if.wrong.strand=TRUE)
 stopifnot(identical(ovenc14_again, ovenc14))
 @
 
@@ -472,6 +472,65 @@ transcripts. In particular, we cannot assume the existence of an unknown
 transcript made of the same exons as transcript \Rcode{"10"} minus exons 9
 and 10!
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Position of the read within the transcript for ``compatible''
+            and ``almost compatible'' overlaps}
+
+Use the \Rfunction{extractQueryStartInTranscript} function to get that
+information:
+
+<<extractQueryStartInTranscript>>=
+ov14_qstart <- extractQueryStartInTranscript(grl14, exbytx,
+                                             hits=ov14, ovenc=ovenc14)
+head(subset(ov14_qstart, !is.na(startInTranscript)))
+@
+
+\Rcode{ov14_qstart} is a data frame with 1 row per overlap and 3 columns:
+\begin{enumerate}
+    \item \Rcode{startInTranscript}: the 1-based start position of the
+    read with respect to the transcript. Position 1 always corresponds to
+    the first base on the 5' end of the transcript.
+    \item \Rcode{firstSpannedExonRank}: the rank of the first exon spanned
+    by the read, that is, the rank of the exon at \Rcode{startInTranscript}.
+    \item \Rcode{startInFirstSpannedExon}: the 1-based start position of the
+    read with respect to the first exon spanned by the read.
+\end{enumerate}
+
+Having this information allows us for example to compare the nucleotide
+sequence of a read with the corresponding nucleotide sequence in the
+transcript. As a first sanity check, we'll do this with the read sequences
+extracted from the reference genome based on the ranges in \Rcode{grl14}:
+
+<<extractTranscriptsFromGenome>>=
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
+txseq <- extractTranscriptsFromGenome(Dmelanogaster, exbytx)
+@
+
+We compare the sequences for the first 500 ``compatible'' overlaps only.
+Note that because the read sequences (in \Rcode{rseq14}) and the transcript
+sequences (in \Rcode{txseq}) where both extracted from the reference genome,
+we expect of course exact matches between the sequences.
+
+<<isMatchingAt>>=
+stopifnot(all(
+    sapply(which(ov14_is_compat)[1:500],
+           function(i) {
+               query_seq <- rseq14[[queryHits(ov14)[i]]]
+               if (flippedQuery(ovenc14)[i])
+                   query_seq <- reverseComplement(query_seq)
+               subject_seq <- txseq[[subjectHits(ov14)[i]]]
+               isMatchingAt(query_seq, subject_seq,
+                            at=ov14_qstart$startInTranscript[i])
+           })
+))
+@
+
+Doing this with the ``real'' read sequences (i.e. the sequences stored in the
+SEQ field of BAM file {\tt untreated1\_chr4.bam}) implies dealing with
+possible mismatches and indels introduced by the aligner.
+[MORE COMING SOON...]
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

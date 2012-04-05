@@ -187,12 +187,14 @@ selectEncodingWithCompatibleStrand <- function(x, y,
     ans <- x
     names(ans) <- NULL
     elementMetadata(ans) <- NULL
-    idx <- which(query.strand != subject.strand)
+    is_wrong_strand <- query.strand != subject.strand
+    idx <- which(is_wrong_strand)
     ans@Loffset[idx] <- y@Loffset[idx]
     ans@Roffset[idx] <- y@Roffset[idx]
     ans_encoding <- as.character(ans@encoding)
     ans_encoding[idx] <- as.character(y@encoding[idx])
     ans@encoding <- as.factor(ans_encoding)
+    ans@flippedQuery[is_wrong_strand] <- TRUE
     ans
 }
 
