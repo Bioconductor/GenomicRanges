@@ -104,7 +104,7 @@ flipQuery <- function(x, i)
 ### "encodeOverlaps" methods.
 ###
 
-.flipQueryIfWrongStrand <- function(query, subject)
+.isWrongStrand <- function(query, subject)
 {
     if (!is(query, "GRangesList") || !is(subject, "GRangesList"))
         stop("'query' and 'subject' must be GRangesList objects")
@@ -131,9 +131,7 @@ flipQuery <- function(x, i)
                 "both strands (trans-splicing?)")
     subject_strand <- .groupStrand(subject, errmsg)
 
-    ## Flip queries to put them on same strand as subjects.
-    flip_idx <- which(query_strand != subject_strand)
-    flipQuery(query, flip_idx)
+    query_strand != subject_strand
 }
 
 .GRangesList_encodeOverlaps <- function(query, subject,
@@ -143,16 +141,22 @@ flipQuery <- function(x, i)
         stop("'flip.query.if.wrong.strand' must be TRUE or FALSE")
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
     seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
-    if (flip.query.if.wrong.strand)
-        query <- .flipQueryIfWrongStrand(query, subject)
+    if (flip.query.if.wrong.strand) {
+        is_wrong_strand <- .isWrongStrand(query, subject)
+        query <- flipQuery(query, is_wrong_strand)
+    }
     query.breaks <- elementMetadata(query)$query.break
-    RangesList_encodeOverlaps(as.list(start(query)),
-                              as.list(width(query)),
-                              as.list(start(subject)),
-                              as.list(width(subject)),
-                              query.spaces=.get_GRangesList_spaces(query),
-                              subject.spaces=.get_GRangesList_spaces(subject),
-                              query.breaks=query.breaks)
+    ans <- RangesList_encodeOverlaps(
+                           as.list(start(query)),
+                           as.list(width(query)),
+                           as.list(start(subject)),
+                           as.list(width(subject)),
+                           query.spaces=.get_GRangesList_spaces(query),
+                           subject.spaces=.get_GRangesList_spaces(subject),
+                           query.breaks=query.breaks)
+    if (flip.query.if.wrong.strand)
+        ans@flippedQuery <- is_wrong_strand
+    ans
 }
 
 setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
@@ -569,12 +573,9 @@ extractQueryStartInTranscript <- function(query, subject,
         query <- query[queryHits(hits)]
         subject <- subject[subjectHits(hits)]
     }
-    if (!isTRUEorFALSE(flip.query.if.wrong.strand))
-        stop("'flip.query.if.wrong.strand' must be TRUE or FALSE")
-    if (flip.query.if.wrong.strand)
-        query <- .flipQueryIfWrongStrand(query, subject)
     if (is.null(ovenc)) {
-        ovenc <- encodeOverlaps(query, subject)
+        ovenc <- encodeOverlaps(query, subject,
+                         flip.query.if.wrong.strand=flip.query.if.wrong.strand)
     } else {
         if (!is(ovenc, "OverlapEncodings"))
             stop("'ovenc' must be an OverlapEncodings object")
@@ -582,6 +583,7 @@ extractQueryStartInTranscript <- function(query, subject,
             stop("when not NULL, 'ovenc' must have the same length ",
                  "as 'hits', if specified, otherwiseaas 'query'")
     }
+    query <- flipQuery(query, flippedQuery(ovenc))
 
     ## Extract start/end/strand of the first range
     ## in each top-level element of 'query'.
