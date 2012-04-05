@@ -49,6 +49,7 @@ export(
     selectEncodingWithCompatibleStrand,
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSpannedExonRanks, extractSkippedExonRanks,
+    extractQueryStartInTranscript,
 
     countGenomicOverlaps,
 

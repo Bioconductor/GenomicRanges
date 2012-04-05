@@ -434,13 +434,14 @@ setMethod("extractSpannedExonRanks", "character",
         }
         ranks <- lapply(x, .extractRanks)
         if (length(ranks) == 0L) {
-            startRank <- endRank <- integer(0)
+            firstSpannedExonRank <- lastSpannedExonRank <- integer(0)
         } else {
             ranks <- unlist(ranks, use.names=FALSE)
-            startRank <- ranks[c(TRUE, FALSE)]
-            endRank <- ranks[c(FALSE, TRUE)]
+            firstSpannedExonRank <- ranks[c(TRUE, FALSE)]
+            lastSpannedExonRank <- ranks[c(FALSE, TRUE)]
         }
-        data.frame(startRank=startRank, endRank=endRank,
+        data.frame(firstSpannedExonRank=firstSpannedExonRank,
+                   lastSpannedExonRank=lastSpannedExonRank,
                    check.names=FALSE, stringsAsFactors=FALSE)
     }
 )
@@ -461,8 +462,8 @@ setMethod("extractSpannedExonRanks", "OverlapEncodings",
     function(x)
     {
         ranks <- extractSpannedExonRanks(encoding(x))
-        ranks$startRank <- ranks$startRank + Loffset(x)
-        ranks$endRank <- ranks$endRank + Loffset(x)
+        ranks$firstSpannedExonRank <- ranks$firstSpannedExonRank + Loffset(x)
+        ranks$lastSpannedExonRank <- ranks$lastSpannedExonRank + Loffset(x)
         ranks
     }
 )
@@ -511,4 +512,122 @@ setMethod("extractSkippedExonRanks", "OverlapEncodings",
         unname(split(tmp, f))
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extractQueryStartInTranscript().
+###
+
+### TODO: Maybe put this in IRanges and rename it setElementLengths, or even
+### better introduce an "elementLengths<-" generic and make this the method
+### for CompressedList objects?
+.setElementLengths <- function(x, elt_lens)
+{
+    if (!is(x, "CompressedList"))
+        stop("'x' must be a CompressedList object")
+    if (!is.numeric(elt_lens) || length(elt_lens) != length(x))
+        stop("'elt_lens' must be an integer vector of the same length as 'x'")
+    if (!is.integer(elt_lens))
+        elt_lens <- as.integer(elt_lens)
+    if (IRanges:::anyMissingOrOutside(elt_lens, lower=0L))
+        stop("'elt_lens' cannot contain NAs or negative values")
+    x_elt_lens <- elementLengths(x)
+    if (!all(elt_lens <= x_elt_lens))
+        stop("'all(elt_lens <= elementLengths(x))' must be TRUE")
+    offset <- cumsum(c(0L, x_elt_lens[-length(x_elt_lens)]))
+    ii <- IRanges:::fancy_mseq(elt_lens, offset=offset)
+    x@unlistData <- x@unlistData[ii]
+    x@partitioning@end <- unname(cumsum(elt_lens))
+    x
+}
+
+### Returns a data.frame with 1 row per overlap, and 3 integer columns:
+###     1. firstSpannedExonRank
+###     2. startInFirstSpannedExon
+###     3. startInTranscript
+### Rows for overlaps that are not "compatible" or "almost compatible"
+### contain NAs.
+extractQueryStartInTranscript <- function(query, subject,
+                                          hits=NULL, ovenc=NULL,
+                                          flip.query.if.wrong.strand=FALSE)
+{
+    if (!is(query, "GRangesList") || !is(subject, "GRangesList"))
+        stop("'query' and 'subject' must be GRangesList objects")
+    seqinfo <- merge(seqinfo(query), seqinfo(subject))
+    seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
+    if (is.null(hits)) {
+        if (length(query) != length(subject))
+            stop("'query' and 'subject' must have the same length")
+    } else {
+        if (!is(hits, "Hits"))
+            stop("'hits' must be a Hits object or NULL")
+        if (queryLength(hits) != length(query) ||
+            subjectLength(hits) != length(subject))
+            stop("'hits' is not compatible with 'query' and 'subject' ",
+                 "('queryLength(hits)' and 'subjectLength(hits)' don't ",
+                 "match the lengths of 'query' and 'subject')")
+        query <- query[queryHits(hits)]
+        subject <- subject[subjectHits(hits)]
+    }
+    if (!isTRUEorFALSE(flip.query.if.wrong.strand))
+        stop("'flip.query.if.wrong.strand' must be TRUE or FALSE")
+    if (flip.query.if.wrong.strand)
+        query <- .flipQueryIfWrongStrand(query, subject)
+    if (is.null(ovenc)) {
+        ovenc <- encodeOverlaps(query, subject)
+    } else {
+        if (!is(ovenc, "OverlapEncodings"))
+            stop("'ovenc' must be an OverlapEncodings object")
+        if (length(ovenc) != length(query))
+            stop("when not NULL, 'ovenc' must have the same length ",
+                 "as 'hits', if specified, otherwiseaas 'query'")
+    }
+
+    ## Extract start/end/strand of the first range
+    ## in each top-level element of 'query'.
+    qii1 <- start(query@partitioning)
+    query_start1 <- start(query@unlistData)[qii1]
+    query_end1 <- end(query@unlistData)[qii1]
+    query_strand1 <- as.factor(strand(query@unlistData))[qii1]
+
+    ## Extract start/end/strand of the first spanned exon
+    ## in each top-level element of 'subject'.
+    exrank <- extractSpannedExonRanks(ovenc)$firstSpannedExonRank
+    sii1 <- start(subject@partitioning) + exrank - 1L
+    subject_start1 <- start(subject@unlistData)[sii1]
+    subject_end1 <- end(subject@unlistData)[sii1]
+    subject_strand1 <- as.factor(strand(subject@unlistData))[sii1]
+
+    ## A sanity check.
+    if (any(!is.na(exrank) & (query_strand1 != subject_strand1))) {
+        ## TODO: Error message needs to take into account whether 'hits'
+        ## and/or 'ovenc' was supplied or not.
+        stop("'ovenc' is incompatible with the supplied 'query' ",
+             "and/or 'subject' and/or 'hits'")
+    }
+
+    ## Compute the "query start in first spanned exon".
+    startInFirstSpannedExon <- rep.int(NA_integer_, length(query))
+    is_on_plus <- query_strand1 == "+"
+    idx <- which(!is.na(exrank) & is_on_plus)
+    startInFirstSpannedExon[idx] <- query_start1[idx] - subject_start1[idx] + 1L
+    idx <- which(!is.na(exrank) & !is_on_plus)
+    startInFirstSpannedExon[idx] <- subject_end1[idx] - query_end1[idx] + 1L
+
+    ## Truncate each transcript in 'subject' right before the first spanned
+    ## exon and compute the cumulated width of the truncated object.
+    subject2_elt_lens <- exrank - 1L
+    subject2_elt_lens[is.na(exrank)] <- 0L
+    subject2 <- .setElementLengths(subject, subject2_elt_lens)
+    subject2_cumwidth <- unname(sum(width(subject2)))
+    subject2_cumwidth[is.na(exrank)] <- NA_integer_
+
+    ## Compute the "query start in transcript".
+    startInTranscript <- subject2_cumwidth + startInFirstSpannedExon
+
+    data.frame(firstSpannedExonRank=exrank,
+               startInFirstSpannedExon=startInFirstSpannedExon,
+               startInTranscript=startInTranscript,
+               check.names=FALSE, stringsAsFactors=FALSE)
+}
 
