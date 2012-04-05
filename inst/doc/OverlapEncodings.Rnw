@@ -486,7 +486,7 @@ ov14_qstart <- extractQueryStartInTranscript(grl14, exbytx,
 head(subset(ov14_qstart, !is.na(startInTranscript)))
 @
 
-\Rcode{ov14_qstart} is a data frame with 1 row per overlap and 3 columns:
+\Rcode{ov14\_qstart} is a data frame with 1 row per overlap and 3 columns:
 \begin{enumerate}
     \item \Rcode{startInTranscript}: the 1-based start position of the
     read with respect to the transcript. Position 1 always corresponds to
