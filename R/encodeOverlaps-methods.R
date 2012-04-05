@@ -292,15 +292,6 @@ setMethod("isCompatibleWithSplicing", "OverlapEncodings",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### extractSpannedExonRanks().
-###
-
-setGeneric("extractSpannedExonRanks",
-    function(x) standardGeneric("extractSpannedExonRanks")
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isCompatibleWithSkippedExons().
 ###
 
@@ -384,14 +375,14 @@ setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### extractSkippedExonRanks().
+### extractSpannedExonRanks().
 ###
 
-setGeneric("extractSkippedExonRanks",
-    function(x) standardGeneric("extractSkippedExonRanks")
+setGeneric("extractSpannedExonRanks",
+    function(x) standardGeneric("extractSpannedExonRanks")
 )
 
-.extractSkippedExonRanksFromEncodingBlocks <- function(encoding_blocks,
+.extractSteppedExonRanksFromEncodingBlocks <- function(encoding_blocks,
                                                        regex_blocks)
 {
     regexprs <- paste0("^", regex_blocks, "$")
@@ -400,30 +391,27 @@ setGeneric("extractSkippedExonRanks",
     if (any(ii_elt_lens == 0L))
         return(integer(0))
     if (any(ii_elt_lens != 1L))
-        stop("cannot unambiguously extract skipped exons ranks from ",
+        stop("cannot unambiguously extract stepped exon ranks from ",
              "encoding \"", paste0(encoding_blocks, collapse=":"), "\"")
-    ii <- unlist(ii, use.names=FALSE)
-    dii <- diff(ii)
-    if (any(dii <= 0L))
+    ans <- unlist(ii, use.names=FALSE)
+    diff_ans <- diff(ans)
+    if (any(diff_ans <= 0L))
         return(integer(0))
-    setdiff(ii[1L]:ii[length(ii)], ii)
+    ans
 }
 
 ### 'encoding' must be a single encoding.
-.extractSkippedExonRanks <- function(encoding)
+.extractSteppedExonRanks <- function(encoding)
 {
     encoding_blocks <- strsplit(encoding, ":", fixed=TRUE)[[1]]
     ngap <- .extract_ngap_from_encoding(encoding_blocks[1L])
     if (length(ngap) == 2L)
-        stop("extractSkippedExonRanks() doesn't yet support overlap ",
-             "encodings of paired-end reads, sorry")
-    ans <- integer(0)
-    if (ngap <= 0L)
-        return(ans)
+        stop("extractSpannedExonRanks() and extractSkippedExonRanks() ",
+             "don't yet support overlap encodings of paired-end reads, sorry")
     encoding_blocks <- encoding_blocks[-1L]
-    if (length(encoding_blocks) < ngap + 2L)
-        return(ans)
-    if (ngap == 1L) {
+    if (ngap == 0L) {
+        regex_blocks <- .REGEX_BLOCKS1
+    } else if (ngap == 1L) {
         regex_blocks <- .REGEX_BLOCKS2
     } else if (ngap == 2L) {
         regex_blocks <- .REGEX_BLOCKS3
@@ -432,13 +420,72 @@ setGeneric("extractSkippedExonRanks",
     } else {
         stop("reads with more than 3 gaps are not supported yet, sorry")
     }
-    .extractSkippedExonRanksFromEncodingBlocks(encoding_blocks, regex_blocks)
+    .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks, regex_blocks)
 }
+
+setMethod("extractSpannedExonRanks", "character",
+    function(x)
+    {
+        .extractRanks <- function(encoding) {
+            ranks <- .extractSteppedExonRanks(encoding)
+            if (length(ranks) == 0L)
+                return(c(NA_integer_, NA_integer_))
+            c(ranks[1L], ranks[length(ranks)])
+        }
+        ranks <- lapply(x, .extractRanks)
+        if (length(ranks) == 0L) {
+            startRank <- endRank <- integer(0)
+        } else {
+            ranks <- unlist(ranks, use.names=FALSE)
+            startRank <- ranks[c(TRUE, FALSE)]
+            endRank <- ranks[c(FALSE, TRUE)]
+        }
+        data.frame(startRank=startRank, endRank=endRank,
+                   check.names=FALSE, stringsAsFactors=FALSE)
+    }
+)
+
+setMethod("extractSpannedExonRanks", "factor",
+    function(x)
+    {
+        if (length(x) == 0L)
+            return(list())
+        ranks <- extractSpannedExonRanks(levels(x))
+        ans <- ranks[as.integer(x), , drop=FALSE]
+        rownames(ans) <- NULL
+        ans
+    }
+)
+
+setMethod("extractSpannedExonRanks", "OverlapEncodings",
+    function(x)
+    {
+        ranks <- extractSpannedExonRanks(encoding(x))
+        ranks$startRank <- ranks$startRank + Loffset(x)
+        ranks$endRank <- ranks$endRank + Loffset(x)
+        ranks
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extractSkippedExonRanks().
+###
+
+setGeneric("extractSkippedExonRanks",
+    function(x) standardGeneric("extractSkippedExonRanks")
+)
 
 setMethod("extractSkippedExonRanks", "character",
     function(x)
     {
-        lapply(x, .extractSkippedExonRanks)
+        .extractRanks <- function(encoding) {
+            ranks <- .extractSteppedExonRanks(encoding)
+            if (length(ranks) == 0L)
+                return(ranks)
+            setdiff(ranks[1L]:ranks[length(ranks)], ranks)
+        }
+        lapply(x, .extractRanks)
     }
 )
 
@@ -447,19 +494,19 @@ setMethod("extractSkippedExonRanks", "factor",
     {
         if (length(x) == 0L)
             return(list())
-        skipped_ranks <- extractSkippedExonRanks(levels(x))
-        skipped_ranks[as.integer(x)]
+        ranks <- extractSkippedExonRanks(levels(x))
+        ranks[as.integer(x)]
     }
 )
 
 setMethod("extractSkippedExonRanks", "OverlapEncodings",
     function(x)
     {
-        skipped_ranks <- extractSkippedExonRanks(encoding(x))
-        tmp <- unlist(skipped_ranks, use.names=FALSE)
-        tmp <- tmp + rep.int(Loffset(x), elementLengths(skipped_ranks))
-        flevels <- seq_len(length(skipped_ranks))
-        f <- factor(rep.int(flevels, elementLengths(skipped_ranks)),
+        ranks <- extractSkippedExonRanks(encoding(x))
+        tmp <- unlist(ranks, use.names=FALSE)
+        tmp <- tmp + rep.int(Loffset(x), elementLengths(ranks))
+        flevels <- seq_len(length(ranks))
+        f <- factor(rep.int(flevels, elementLengths(ranks)),
                     levels=flevels)
         unname(split(tmp, f))
     }

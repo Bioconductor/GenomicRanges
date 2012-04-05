@@ -17,6 +17,11 @@
 \alias{isCompatibleWithSkippedExons,factor-method}
 \alias{isCompatibleWithSkippedExons,OverlapEncodings-method}
 
+\alias{extractSpannedExonRanks}
+\alias{extractSpannedExonRanks,character-method}
+\alias{extractSpannedExonRanks,factor-method}
+\alias{extractSpannedExonRanks,OverlapEncodings-method}
+
 \alias{extractSkippedExonRanks}
 \alias{extractSkippedExonRanks,character-method}
 \alias{extractSkippedExonRanks,factor-method}
@@ -36,8 +41,11 @@ flipQuery(x, i)
 
 selectEncodingWithCompatibleStrand(x, y,
                                    query.strand, subject.strand, hits=NULL)
+
 isCompatibleWithSplicing(x)
 isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
+
+extractSpannedExonRanks(x)
 extractSkippedExonRanks(x)
 }
 
