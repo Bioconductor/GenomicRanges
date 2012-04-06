@@ -218,7 +218,7 @@ next four subsections.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Detect overlaps showing ``compatibility'' with the transcript}
+\subsection{``Compatible'' overlaps}
 
 We are interested in a particular type of overlap where the read
 overlaps the transcript in a ``compatible'' way, that is, in a way
@@ -451,8 +451,7 @@ table(gal14_nedit)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Detect overlaps showing ``almost compatibility'' with the
-            transcript}
+\subsection{``Almost compatible'' overlaps}
 
 In many aspects, ``compatible'' overlaps correspond to an ideal situation
 but in practise many overlaps don't fall into that category.
@@ -713,7 +712,7 @@ tail(sort(ovenc34_table))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Detect overlaps showing ``compatibility'' with the transcript}
+\subsection{``Compatible'' paired-end overlaps}
 
 \Rcode{ovenc34} contains 13 unique encodings ``compatible'' with the splicing
 of the transcript:
@@ -792,8 +791,7 @@ with at least 1 alignment pair in \Rcode{galp34}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Detect overlaps showing ``almost compatibility'' with the
-            transcript}
+\subsection{``Almost compatible'' paired-end overlaps}
 
 [COMING SOON...]
 
