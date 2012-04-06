@@ -196,6 +196,7 @@ ovenc14
 As a convenience, the 2 above calls to \Rfunction{encodeOverlaps} + merging
 step can be replaced by a single call to \Rfunction{encodeOverlaps} on
 \Rcode{grl14} (or \Rcode{grl14f}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
+
 <<ovenc14_again>>=
 ovenc14_again <- encodeOverlaps(grl14, dm3tx, hits=ov14, flip.query.if.wrong.strand=TRUE)
 stopifnot(identical(ovenc14_again, ovenc14))
@@ -297,13 +298,11 @@ gal14_ncompat <- tabulate(queryHits(ov14)[ov14_is_compat], nbins=length(gal14))
 elementMetadata(gal14)$ncompat <- gal14_ncompat
 head(gal14)
 table(gal14_ncompat)
+mean(gal14_ncompat >= 1)
 @
 
-Number of alignments in \Rcode{gal14} with at least 1 ``compatible'' overlap:
-
-<<nb_non_zero_gal14_ncompat>>=
-sum(gal14_ncompat != 0)
-@
+71.45\% of the alignments in \Rcode{gal14} are ``compatible''
+with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
@@ -311,6 +310,143 @@ Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 dm3tx_ncompat14 <- tabulate(subjectHits(ov14)[ov14_is_compat], nbins=length(dm3tx))
 names(dm3tx_ncompat14) <- names(dm3tx)
 tail(table(dm3tx_ncompat14))
+mean(dm3tx_ncompat14 >= 1)
+@
+
+Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+with at least 1 alignment in \Rcode{gal14}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Position of the read within the transcript for a ``compatible''
+            overlap}
+
+Use the \Rfunction{extractQueryStartInTranscript} function to get that
+information:
+
+<<extractQueryStartInTranscript>>=
+ov14_qstart <- extractQueryStartInTranscript(grl14, dm3tx,
+                                             hits=ov14, ovenc=ovenc14)
+head(subset(ov14_qstart, ov14_is_compat))
+@
+
+\Rcode{ov14\_qstart} is a data frame with 1 row per overlap and 3 columns:
+\begin{enumerate}
+    \item \Rcode{startInTranscript}: the 1-based start position of the
+    read with respect to the transcript. Position 1 always corresponds to
+    the first base on the 5' end of the transcript.
+    \item \Rcode{firstSpannedExonRank}: the rank of the first exon spanned
+    by the read, that is, the rank of the exon at \Rcode{startInTranscript}.
+    \item \Rcode{startInFirstSpannedExon}: the 1-based start position of the
+    read with respect to the first exon spanned by the read.
+\end{enumerate}
+
+Having this information allows us for example to compare the read and
+transcript nucleotide sequences for each overlap. Let's start by using
+the \Rfunction{extractTranscriptsFromGenome} function from the
+\Rpackage{GenomicFeatures} package to extract the transcript sequences
+from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package:
+
+<<txseq>>=
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
+@
+
+As a sanity check, instead of the ``real'' read sequences, we'll use the
+sequences extracted from the reference genome based on the ranges in
+\Rcode{grl14}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
+this:
+
+<<rseq14>>=
+rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
+@
+
+Now we compare the read and transcript sequences of the first 500
+``compatible'' overlaps only. Because the read sequences (in \Rcode{rseq14})
+and the transcript sequences (in \Rcode{txseq}) were both extracted from
+the reference genome, we expect the formers to be {\it exact} substrings
+of the latters:
+
+<<isMatchingAt>>=
+stopifnot(all(
+    sapply(which(ov14_is_compat)[1:500],
+           function(i) {
+               query_seq <- rseq14[[queryHits(ov14)[i]]]
+               if (flippedQuery(ovenc14)[i])
+                   query_seq <- reverseComplement(query_seq)
+               subject_seq <- txseq[[subjectHits(ov14)[i]]]
+               subject_subseq <- subseq(subject_seq,
+                                        start=ov14_qstart$startInTranscript[i],
+                                        width=length(query_seq))
+               query_seq == subject_subseq
+           })
+))
+@
+
+Doing the above with the ``real'' read sequences (i.e. the sequences stored
+in the SEQ field of BAM file {\tt untreated1\_chr4.bam}) would imply dealing
+with possible mismatches and indels introduced by the aligner.
+
+To load the ``real'' read sequences, we reload the BAM file but now we
+explicitely request the SEQ field by using \Rcode{what="seq"} in our call to
+\Rfunction{ScanBamParam}. We also load the NM tag, which is a predefined tag
+described in the SAM Spec as the ``Edit distance to the reference, including
+ambiguous bases but excluding clipping'' (note that tags are optional fields
+i.e. not all BAM files have them):
+
+<<bamseq14>>=
+param <- ScanBamParam(flag=flag0, what="seq", tag="NM")
+gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param)
+bamseq14 <- elementMetadata(gal14)$seq
+names(bamseq14) <- names(gal14)
+head(bamseq14)
+@
+
+Because the BAM format imposes that the read sequence is ``reverse
+complemented'' when the read is aligned to the minus strand, we need
+to ``reverse complement'' it again to get the {\it original} sequence
+(i.e. the sequence stored in the file used as input to the aligner,
+typically a FASTQ file):
+
+<<seq14>>=
+seq14 <- bamseq14
+is_on_minus <- as.logical(strand(gal14) == "-")
+seq14[is_on_minus] <- reverseComplement(seq14[is_on_minus])
+head(seq14)
+@
+
+The following table indicates that indels were not allowed/supported when
+the reads were aligned (no I or D CIGAR operations):
+
+<<cigarOpTable>>=
+colSums(cigarOpTable(cigar(gal14)))
+@
+
+So we should only see mismatches (typically a small number) between the
+sequences in \Rcode{seq14} and those in \Rcode{rseq14}, but no indels,
+thus we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}
+when comparing the read and transcript sequences. We do this comparison for
+the first 500 sequences in \Rcode{gal14}:
+
+<<seq14_vs_rseq14>>=
+gal14_nedit500 <- sapply(1:500, function(i) neditAt(seq14[[i]], rseq14[[i]]))
+table(gal14_nedit500)
+@
+
+Because the edit distance reported by the aligner in the NM tag excludes the
+N CIGAR operations, it should actually be the same as the value returned by
+\Rfunction{neditAt}. We confirm this for the 500 edit distances in
+\Rcode{gal14\_nedit500}:
+
+<<gal14_nedit>>=
+gal14_nedit <- elementMetadata(gal14)$NM
+stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
+@
+
+Is seems that the aligner was able to tolerate up to 6 mismatches:
+
+<<up_to_6_mismatches>>=
+table(gal14_nedit)
 @
 
 
@@ -373,14 +509,11 @@ gal14_nalmostcompat <- tabulate(queryHits(ov14)[ov14_is_almostcompat], nbins=len
 elementMetadata(gal14)$nalmostcompat <- gal14_nalmostcompat
 head(gal14)
 table(gal14_nalmostcompat)
+mean(gal14_nalmostcompat >= 1)
 @
 
-Number of alignments in \Rcode{gal14} with at least 1 ``almost compatible''
-overlap:
-
-<<nb_non_zero_gal14_nalmostcompat>>=
-sum(gal14_nalmostcompat != 0) 
-@
+Only 0.2\% of the alignments in \Rcode{gal14} are ``almost compatible''
+with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
@@ -388,6 +521,18 @@ Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
 dm3tx_nalmostcompat14 <- tabulate(subjectHits(ov14)[ov14_is_almostcompat], nbins=length(dm3tx))
 names(dm3tx_nalmostcompat14) <- names(dm3tx)
 table(dm3tx_nalmostcompat14)
+mean(dm3tx_nalmostcompat14 >= 1)
+@
+
+Only 0.46\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
+with at least 1 alignment in \Rcode{gal14}.
+
+Finally note that the ``query start in transcript'' values returned by
+\Rfunction{extractQueryStartInTranscript} are also defined for ``almost
+compatible'' overlaps:
+
+<<ov14_qstart>>=
+head(subset(ov14_qstart, ov14_is_almostcompat))
 @
 
 
@@ -471,117 +616,6 @@ we can't make any assumption about the exons structure of those unknown
 transcripts. In particular, we cannot assume the existence of an unknown
 transcript made of the same exons as transcript \Rcode{"10"} minus exons 9
 and 10!
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Position of the read within the transcript for ``compatible''
-            and ``almost compatible'' overlaps}
-
-Use the \Rfunction{extractQueryStartInTranscript} function to get that
-information:
-
-<<extractQueryStartInTranscript>>=
-ov14_qstart <- extractQueryStartInTranscript(grl14, dm3tx,
-                                             hits=ov14, ovenc=ovenc14)
-head(subset(ov14_qstart, !is.na(startInTranscript)))
-@
-
-\Rcode{ov14\_qstart} is a data frame with 1 row per overlap and 3 columns:
-\begin{enumerate}
-    \item \Rcode{startInTranscript}: the 1-based start position of the
-    read with respect to the transcript. Position 1 always corresponds to
-    the first base on the 5' end of the transcript.
-    \item \Rcode{firstSpannedExonRank}: the rank of the first exon spanned
-    by the read, that is, the rank of the exon at \Rcode{startInTranscript}.
-    \item \Rcode{startInFirstSpannedExon}: the 1-based start position of the
-    read with respect to the first exon spanned by the read.
-\end{enumerate}
-
-Having this information allows us for example to compare the read and
-transcript nucleotide sequences for each overlap. Let's first extract
-the transcript sequences from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3}
-data package with the \Rfunction{extractTranscriptsFromGenome} function from
-the \Rpackage{GenomicFeatures} package:
-
-<<txseq>>=
-library(BSgenome.Dmelanogaster.UCSC.dm3)
-txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
-@
-
-As a sanity check, instead of the ``real'' read sequences, we'll use the
-sequences extracted from the reference genome based on the ranges in
-\Rcode{grl14}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
-this:
-
-<<rseq14>>=
-rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
-@
-
-Now we compare the sequences associated with the first 500 ``compatible''
-overlaps only. Because the read sequences (in \Rcode{rseq14}) and the
-transcript sequences (in \Rcode{txseq}) were both extracted from the
-reference genome, we expect of course exact matches between the sequences.
-
-<<isMatchingAt>>=
-stopifnot(all(
-    sapply(which(ov14_is_compat)[1:500],
-           function(i) {
-               query_seq <- rseq14[[queryHits(ov14)[i]]]
-               if (flippedQuery(ovenc14)[i])
-                   query_seq <- reverseComplement(query_seq)
-               subject_seq <- txseq[[subjectHits(ov14)[i]]]
-               isMatchingAt(query_seq, subject_seq,
-                            at=ov14_qstart$startInTranscript[i])
-           })
-))
-@
-
-Doing this with the ``real'' read sequences (i.e. the sequences stored in the
-SEQ field of BAM file {\tt untreated1\_chr4.bam}) implies dealing with
-possible mismatches and indels introduced by the aligner.
-To load the ``real'' read sequences, we reload the BAM file and explicitely
-request the SEQ field. We also load the NM tag:
-
-<<bamseq14>>=
-param <- ScanBamParam(flag=flag0, what="seq", tag="NM")
-gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param)
-bamseq14 <- elementMetadata(gal14)$seq
-names(bamseq14) <- names(gal14)
-bamseq14
-@
-
-Because the BAM format imposes that the read sequence is
-``reverse-complemented'' when the read is aligned to the minus strand,
-we need to ``reverse-complement'' it again to get the original sequence:
-
-<<seq14>>=
-seq14 <- bamseq14
-is_on_minus <- as.logical(strand(gal14) == "-")
-seq14[is_on_minus] <- reverseComplement(seq14[is_on_minus])
-@
-
-It seems that indels were not allowed/supported when the reads were
-aligned (no I or D CIGAR operations):
-
-<<cigarOpTable>>=
-colSums(cigarOpTable(cigar(gal14)))
-@
-
-so we expect a small number of mismatches between the sequences in
-\Rcode{seq14} and those in \Rcode{rseq14}, but no indels:
-
-<<seq14_vs_rseq14>>=
-gal14_nedit500 <- sapply(1:500, function(i) neditAt(seq14[[i]], rseq14[[i]]))
-table(gal14_nedit500)
-@
-
-Note that the edit distance is actually stored in the NM tag:
-
-<<gal14_nedit>>=
-gal14_nedit <- elementMetadata(gal14)$NM
-stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
-table(gal14_nedit)  # up to 6 mismatches!
-@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -738,14 +772,11 @@ galp34_ncompat <- tabulate(queryHits(ov34)[ov34_is_compat], nbins=length(galp34)
 elementMetadata(galp34)$ncompat <- galp34_ncompat
 head(galp34)
 table(galp34_ncompat)
+mean(galp34_ncompat >= 1)
 @
 
-Number of alignment pairs in \Rcode{galp34} with at least 1 ``compatible''
-overlap:
-
-<<nb_non_zero_galp34_ncompat>>=
-sum(galp34_ncompat != 0)
-@
+66.8\% of the alignment pairs in \Rcode{galp34} are ``compatible''
+with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
@@ -753,7 +784,18 @@ Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 dm3tx_ncompat34 <- tabulate(subjectHits(ov34)[ov34_is_compat], nbins=length(dm3tx))
 names(dm3tx_ncompat34) <- names(dm3tx)
 tail(table(dm3tx_ncompat34))
+mean(dm3tx_ncompat34 >= 1)
 @
+
+Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+with at least 1 alignment pair in \Rcode{galp34}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Detect overlaps showing ``almost compatibility'' with the
+            transcript}
+
+[COMING SOON...]
 
 
 
