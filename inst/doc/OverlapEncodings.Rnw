@@ -117,7 +117,7 @@ encodings):
 <<makeTranscriptDbFromUCSC>>=
 library(GenomicFeatures)
 dm3_refGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
-exbytx <- exonsBy(dm3_refGene_txdb, by="tx")
+dm3tx <- exonsBy(dm3_refGene_txdb, by="tx")
 @
 
 We check that all the exons in any given transcript belong to the same
@@ -131,15 +131,15 @@ So we can extract the number of Rle runs for each transcript and make
 sure it's always 1:
 
 <<check-for-trans-splicing>>=
-table(elementLengths(runLength(seqnames(exbytx))))
-table(elementLengths(runLength(strand(exbytx))))
+table(elementLengths(runLength(seqnames(dm3tx))))
+table(elementLengths(runLength(strand(dm3tx))))
 @
 
 Therefore the strand of any given transcript is unambiguously defined
 and can be extracted with:
 
-<<exbytx_strand>>=
-exbytx_strand <- unlist(runValue(strand(exbytx)), use.names=FALSE)
+<<dm3tx_strand>>=
+dm3tx_strand <- unlist(runValue(strand(dm3tx)), use.names=FALSE)
 @
 
 
@@ -151,7 +151,7 @@ function. Note that the strand of the queries produced by the RNA-seq
 experiment is typically unknown so we use \Rcode{ignore.strand=TRUE}:
 
 <<ov14>>=
-ov14 <- findOverlaps(gal14, exbytx, ignore.strand=TRUE)
+ov14 <- findOverlaps(gal14, dm3tx, ignore.strand=TRUE)
 @
 
 However, the {\it overlap encodings} are strand sensitive so we will
@@ -169,8 +169,8 @@ grl14f <- flipQuery(grl14)  # flipped
 and encode their overlaps with the transcripts:
 
 <<ovenc14of>>=
-ovenc14o <- encodeOverlaps(grl14, exbytx, hits=ov14)
-ovenc14f <- encodeOverlaps(grl14f, exbytx, hits=ov14)
+ovenc14o <- encodeOverlaps(grl14, dm3tx, hits=ov14)
+ovenc14f <- encodeOverlaps(grl14f, dm3tx, hits=ov14)
 @
 
 \Rcode{ovenc14o} and \Rcode{ovenc14f} are 2 \Rclass{OverlapsEncodings}
@@ -188,7 +188,7 @@ strand:
 <<ovenc14>>=
 grl14_strand <- unlist(runValue(strand(grl14)), use.names=FALSE)
 ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14o, ovenc14f,
-                                              grl14_strand, exbytx_strand,
+                                              grl14_strand, dm3tx_strand,
                                               hits=ov14)
 ovenc14
 @
@@ -197,7 +197,7 @@ As a convenience, the 2 above calls to \Rfunction{encodeOverlaps} + merging
 step can be replaced by a single call to \Rfunction{encodeOverlaps} on
 \Rcode{grl14} (or \Rcode{grl14f}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
 <<ovenc14_again>>=
-ovenc14_again <- encodeOverlaps(grl14, exbytx, hits=ov14, flip.query.if.wrong.strand=TRUE)
+ovenc14_again <- encodeOverlaps(grl14, dm3tx, hits=ov14, flip.query.if.wrong.strand=TRUE)
 stopifnot(identical(ovenc14_again, ovenc14))
 @
 
@@ -213,7 +213,7 @@ tail(sort(ovenc14_table))
 
 Encodings are sort of cryptic but utilities are provided to extract
 specific meaning from them. Use of these utilities is covered in the
-next three subsections.
+next four subsections.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -305,12 +305,12 @@ Number of alignments in \Rcode{gal14} with at least 1 ``compatible'' overlap:
 sum(gal14_ncompat != 0)
 @
 
-Number of ``compatible'' overlaps per transcript in \Rcode{exbytx}:
+Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
-<<exbytx_ncompat14>>=
-exbytx_ncompat14 <- tabulate(subjectHits(ov14)[ov14_is_compat], nbins=length(exbytx))
-names(exbytx_ncompat14) <- names(exbytx)
-tail(table(exbytx_ncompat14))
+<<dm3tx_ncompat14>>=
+dm3tx_ncompat14 <- tabulate(subjectHits(ov14)[ov14_is_compat], nbins=length(dm3tx))
+names(dm3tx_ncompat14) <- names(dm3tx)
+tail(table(dm3tx_ncompat14))
 @
 
 
@@ -382,12 +382,12 @@ overlap:
 sum(gal14_nalmostcompat != 0) 
 @
 
-Number of ``almost compatible'' overlaps per transcript in \Rcode{exbytx}:
+Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
-<<exbytx_nalmostcompat14>>=
-exbytx_nalmostcompat14 <- tabulate(subjectHits(ov14)[ov14_is_almostcompat], nbins=length(exbytx))
-names(exbytx_nalmostcompat14) <- names(exbytx)
-table(exbytx_nalmostcompat14)
+<<dm3tx_nalmostcompat14>>=
+dm3tx_nalmostcompat14 <- tabulate(subjectHits(ov14)[ov14_is_almostcompat], nbins=length(dm3tx))
+names(dm3tx_nalmostcompat14) <- names(dm3tx)
+table(dm3tx_nalmostcompat14)
 @
 
 
@@ -434,7 +434,7 @@ Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
 
 <<tx2skpexrk>>=
 names(skpexrk) <- queryHits(ov14)[is_nov_splice_jct]
-f <- names(exbytx)[subjectHits(ov14)[is_nov_splice_jct]]
+f <- names(dm3tx)[subjectHits(ov14)[is_nov_splice_jct]]
 tx2skpexrk <- split(skpexrk, f)
 @
 
@@ -481,7 +481,7 @@ Use the \Rfunction{extractQueryStartInTranscript} function to get that
 information:
 
 <<extractQueryStartInTranscript>>=
-ov14_qstart <- extractQueryStartInTranscript(grl14, exbytx,
+ov14_qstart <- extractQueryStartInTranscript(grl14, dm3tx,
                                              hits=ov14, ovenc=ovenc14)
 head(subset(ov14_qstart, !is.na(startInTranscript)))
 @
@@ -497,21 +497,30 @@ head(subset(ov14_qstart, !is.na(startInTranscript)))
     read with respect to the first exon spanned by the read.
 \end{enumerate}
 
-Having this information allows us for example to compare the nucleotide
-sequence of a read with the corresponding nucleotide sequence in the
-transcript. As a first sanity check, we'll do this with the read sequences
-extracted from the reference genome based on the ranges in \Rcode{grl14}:
+Having this information allows us for example to compare the read and
+transcript nucleotide sequences for each overlap. Let's first extract
+the transcript sequences from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3}
+data package with the \Rfunction{extractTranscriptsFromGenome} function from
+the \Rpackage{GenomicFeatures} package:
 
-<<extractTranscriptsFromGenome>>=
+<<txseq>>=
 library(BSgenome.Dmelanogaster.UCSC.dm3)
-rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
-txseq <- extractTranscriptsFromGenome(Dmelanogaster, exbytx)
+txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 @
 
-We compare the sequences for the first 500 ``compatible'' overlaps only.
-Note that because the read sequences (in \Rcode{rseq14}) and the transcript
-sequences (in \Rcode{txseq}) where both extracted from the reference genome,
-we expect of course exact matches between the sequences.
+As a sanity check, instead of the ``real'' read sequences, we'll use the
+sequences extracted from the reference genome based on the ranges in
+\Rcode{grl14}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
+this:
+
+<<rseq14>>=
+rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
+@
+
+Now we compare the sequences associated with the first 500 ``compatible''
+overlaps only. Because the read sequences (in \Rcode{rseq14}) and the
+transcript sequences (in \Rcode{txseq}) were both extracted from the
+reference genome, we expect of course exact matches between the sequences.
 
 <<isMatchingAt>>=
 stopifnot(all(
@@ -530,7 +539,49 @@ stopifnot(all(
 Doing this with the ``real'' read sequences (i.e. the sequences stored in the
 SEQ field of BAM file {\tt untreated1\_chr4.bam}) implies dealing with
 possible mismatches and indels introduced by the aligner.
-[MORE COMING SOON...]
+To load the ``real'' read sequences, we reload the BAM file and explicitely
+request the SEQ field. We also load the NM tag:
+
+<<bamseq14>>=
+param <- ScanBamParam(flag=flag0, what="seq", tag="NM")
+gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param)
+bamseq14 <- elementMetadata(gal14)$seq
+names(bamseq14) <- names(gal14)
+bamseq14
+@
+
+Because the BAM format imposes that the read sequence is
+``reverse-complemented'' when the read is aligned to the minus strand,
+we need to ``reverse-complement'' it again to get the original sequence:
+
+<<seq14>>=
+seq14 <- bamseq14
+is_on_minus <- as.logical(strand(gal14) == "-")
+seq14[is_on_minus] <- reverseComplement(seq14[is_on_minus])
+@
+
+It seems that indels were not allowed/supported when the reads were
+aligned (no I or D CIGAR operations):
+
+<<cigarOpTable>>=
+colSums(cigarOpTable(cigar(gal14)))
+@
+
+so we expect a small number of mismatches between the sequences in
+\Rcode{seq14} and those in \Rcode{rseq14}, but no indels:
+
+<<seq14_vs_rseq14>>=
+gal14_nedit500 <- sapply(1:500, function(i) neditAt(seq14[[i]], rseq14[[i]]))
+table(gal14_nedit500)
+@
+
+Note that the edit distance is actually stored in the NM tag:
+
+<<gal14_nedit>>=
+gal14_nedit <- elementMetadata(gal14)$NM
+stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
+table(gal14_nedit)  # up to 6 mismatches!
+@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -595,7 +646,7 @@ we keep only the {\it proper} pairs for our downstream analysis:
 galp34 <- galp34[isProperPair(galp34)]
 @
 
-For the transcript, we'll reuse the \Rcode{exbytx} object obtained
+For the transcript, we'll reuse the \Rcode{dm3tx} object obtained
 previously.
 
 
@@ -605,14 +656,14 @@ previously.
 Let's compute the overlaps:
 
 <<ov34>>=
-ov34 <- findOverlaps(galp34, exbytx, ignore.strand=TRUE)
+ov34 <- findOverlaps(galp34, dm3tx, ignore.strand=TRUE)
 @
 
 and encode them:
 
 <<ovenc34>>=
 grl34 <- grglist(galp34, order.as.in.query=TRUE)
-ovenc34 <- encodeOverlaps(grl34, exbytx, hits=ov34, flip.query.if.wrong.strand=TRUE)
+ovenc34 <- encodeOverlaps(grl34, dm3tx, hits=ov34, flip.query.if.wrong.strand=TRUE)
 ovenc34
 @
 
@@ -696,12 +747,12 @@ overlap:
 sum(galp34_ncompat != 0)
 @
 
-Number of ``compatible'' overlaps per transcript in \Rcode{exbytx}:
+Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
-<<exbytx_ncompat34>>=
-exbytx_ncompat34 <- tabulate(subjectHits(ov34)[ov34_is_compat], nbins=length(exbytx))
-names(exbytx_ncompat34) <- names(exbytx)
-tail(table(exbytx_ncompat34))
+<<dm3tx_ncompat34>>=
+dm3tx_ncompat34 <- tabulate(subjectHits(ov34)[ov34_is_compat], nbins=length(dm3tx))
+names(dm3tx_ncompat34) <- names(dm3tx)
+tail(table(dm3tx_ncompat34))
 @
 
 
