@@ -1161,17 +1161,39 @@ setMethod("restrict", "GenomicRanges",
 )
 
 setMethod("distance", c("GenomicRanges", "GenomicRanges"),
-    function(x, y, ignore.strand=FALSE)
+    function(x, y, ignore.strand=FALSE, ...)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
         if (length(x) != length(y))
             stop("'x' and 'y' must have the same length")
         d <- distance(ranges(x), ranges(y))
-        seqselect(d, seqnames(x) != seqnames(y)) <- NA
-        if (!ignore.strand)
-            seqselect(d, strand(x) != strand(y)) <- NA
+        mismtch <- as.character(seqnames(x)) != as.character(seqnames(y))
+        if (any(mismtch))
+            d[mismtch] <- NA
+        if (!ignore.strand) {
+            idx <- as.numeric(strand(x)) + as.numeric(strand(y))
+            if (any(idx == 3))
+                d[idx == 3] <- NA
+        }
         d
+    }
+)
+
+setMethod("distanceToNearest", c("GenomicRanges", "missing"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...)
+    }
+)
+
+setMethod("distanceToNearest", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, ignore.strand=FALSE, ...)
+    {
+        x_nearest <- nearest(x, subject, ignore.strand=ignore.strand)
+        subject <- subject[x_nearest]
+        DataFrame(queryHits=seq(length(x)), subjectHits=x_nearest, 
+                  distance=distance(x, subject, ignore.strand=ignore.strand))
     }
 )
 

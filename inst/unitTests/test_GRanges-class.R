@@ -539,6 +539,28 @@ test_GRanges_nearest <- function() {
     checkIdentical(target, current)
 }
 
+test_GRanges_distance <- function() {
+    g1 <- GRanges(seqnames = c(rep("chr1", 3), rep("chr2", 2)),
+        ranges = IRanges(rep(1, 5),  width=3),
+        strand = c("+", "-", "*", "*", "*"))
+
+    g2 <- GRanges(seqnames = c(rep("chr1", 3), rep("chr2", 2)),
+        ranges = IRanges(rep(5, 5),  width=3),
+        strand = c("+", "-", "*", "-", "+"))
+
+    current <- distance(g1, g2)
+    target <- c(2L, 2L, 2L, 2L, 2L)
+    checkIdentical(current, target)
+
+    strand(g2[1]) <- "-"
+    current <- distance(g1[1], g2[1])
+    checkTrue(is.na(current))
+
+    seqnames(g2[4]) <- factor("chr1", levels=c("chr1", "chr2")) 
+    current <- distance(g1[4], g2[4])
+    checkTrue(is.na(current))
+}
+
 test_GRanges_combine <- function() {
   gr1 <- make_test_GRanges()
   gr2 <- make_test_GRanges()

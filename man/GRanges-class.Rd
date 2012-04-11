@@ -61,6 +61,7 @@
 \alias{disjointBins,GenomicRanges-method}
 \alias{restrict,GenomicRanges-method}
 \alias{distance,GenomicRanges,GenomicRanges-method}
+\alias{distanceToNearest,GenomicRanges,GenomicRanges-method}
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
