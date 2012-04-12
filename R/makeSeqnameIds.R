@@ -46,7 +46,7 @@
 ###      by something" part (or at the entire name for group (n)): collation
 ###      defined by LC_COLLATE set to C applies.
 ###
-### 'X.is.seXual' lets the user control whether X refers to the sexual
+### 'X.is.sexchrom' lets the user control whether X refers to the sexual
 ### chromosome or to chromosome with roman number X.
 ###
 ### One of the ugliest functions I ever wrote, sorry...
@@ -59,14 +59,14 @@
 ### to 'seq_len(length(seqnames(Hsapiens))))'.
 ### TODO: Add unit test for makeSeqnameIds().
 
-makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
+makeSeqnameIds <- function(seqnames, X.is.sexchrom=NA)
 {
     if (is.character(seqnames))
         seqnames <- factor(seqnames)
     else if (!is.factor(seqnames))
         stop("'seqnames' must be a character vector or factor")
-    if (!is.logical(X.is.seXual) || length(X.is.seXual) != 1L)
-        stop("'X.is.seXual' must be a single logical")
+    if (!is.logical(X.is.sexchrom) || length(X.is.sexchrom) != 1L)
+        stop("'X.is.sexchrom' must be a single logical")
     seqlevels <- levels(factor(seqnames))  # unique seqnames
 
     ## Set LC_COLLATE to C so our calls to as.integer(factor(...)) below
@@ -137,16 +137,18 @@ makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
         is_nbxxx <- isNb(sgsuffix, abc=".*") & !is_nb_or_nbL_or_nbR
         is_X <- sgsuffix == "X"
         is_Y <- sgsuffix == "Y"
-        if (is.na(X.is.seXual)) {
+        if (is.na(X.is.sexchrom)) {
             if (any(is_X)) {
-                X.is.seXual <- any(is_Y) ||
+                X_is_seXual <- any(is_Y) ||
                                any(is_nb_or_nbL_or_nbR) ||
                                any(is_nbxxx)
             } else {
-                X.is.seXual <- TRUE  # or FALSE, won't make any difference
+                X_is_seXual <- TRUE  # or FALSE, won't make any difference
             }
+        } else {
+            X_is_seXual <- X.is.sexchrom
         }
-        is_seXual <- is_X & X.is.seXual
+        is_seXual <- is_X & X_is_seXual
         is_roman <- isRoman(sgsuffix) & !is_seXual
         is_U <- sgsuffix == "U"
         is_MT <- sgsuffix == "MT"
