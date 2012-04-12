@@ -25,13 +25,13 @@ export(
     constraint, "constraint<-",
     checkConstraint,
 
+    makeSeqnameIds,
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlevels, "seqlevels<-",
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     genome, "genome<-",
-    makeSeqnameIds,
     Seqinfo,
 
     GRanges, GRangesList, GenomicRangesList,

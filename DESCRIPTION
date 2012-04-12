@@ -22,6 +22,7 @@ Collate: utils.R
 	cigar-utils.R
 	transcript-utils.R
 	constraint.R
+	makeSeqnameIds.R
 	seqinfo.R
 	strand-utils.R
 	Seqinfo-class.R
