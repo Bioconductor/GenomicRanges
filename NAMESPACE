@@ -2,6 +2,8 @@ useDynLib(GenomicRanges)
 
 import(methods)
 
+import(utils)  # for as.roman()
+
 import(BiocGenerics)
 
 import(IRanges)

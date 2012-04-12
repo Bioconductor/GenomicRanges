@@ -61,17 +61,17 @@
 
 makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
 {
-    if (!is.character(seqnames))
-        stop("'seqnames' must be a character vector")
+    if (is.character(seqnames))
+        seqnames <- factor(seqnames)
+    else if (!is.factor(seqnames))
+        stop("'seqnames' must be a character vector or factor")
     if (!is.logical(X.is.seXual) || length(X.is.seXual) != 1L)
         stop("'X.is.seXual' must be a single logical")
+    seqlevels <- levels(factor(seqnames))  # unique seqnames
 
-    seqnames_sm <- match(seqnames, seqnames)  # self-match
-    uidx <- which(seqnames_sm == seq_len(length(seqnames_sm)))
-    seqlevels <- seqnames[uidx]  # unique seqnames
-
-    ## Set LC_COLLATE to C so the order of the factor levels will be the same
-    ## for everybody (i.e. for every user on any machine in any country).
+    ## Set LC_COLLATE to C so our calls to as.integer(factor(...)) below
+    ## return the same thing for everybody (i.e. for every user on any machine
+    ## in any country).
     prev_locale <- Sys.getlocale("LC_COLLATE")
     Sys.setlocale("LC_COLLATE", "C")
     on.exit(Sys.setlocale("LC_COLLATE", prev_locale))
@@ -98,6 +98,13 @@ makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
         substr(seqnames, start=1L, stop=nchar(prefix)) == prefix
     dropPrefix <- function(seqnames, nchar)
         substr(seqnames, start=nchar+1L, stop=nchar(seqnames))
+    isRoman <- function(seqnames)
+    {
+        suppressWarnings(roman <- utils:::.roman2numeric(seqnames))
+        ans <- logical(length(seqnames))
+        ans[!is.na(roman) & toupper(seqnames) == seqnames] <- TRUE
+        ans
+    }
     REGEXP0 <- "[1-9][0-9]*"
     REGEXP1 <- "[0-9]*"
     isNb <- function(seqnames, abc="")
@@ -123,7 +130,6 @@ makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
             return()
         sgsuffix <- seqlevels[sgidx]
         sgsuffix <- dropPrefix(sgsuffix, nchar(prefix))
-        suppressWarnings(suff_as_roman <- as.roman(sgsuffix))
         is_nb <- isNb(sgsuffix)
         is_nbL <- isNb(sgsuffix, abc="L")
         is_nbR <- isNb(sgsuffix, abc="R")
@@ -141,7 +147,7 @@ makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
             }
         }
         is_seXual <- is_X & X.is.seXual
-        is_roman <- !is.na(suff_as_roman) & !is_seXual
+        is_roman <- isRoman(sgsuffix) & !is_seXual
         is_U <- sgsuffix == "U"
         is_MT <- sgsuffix == "MT"
         is_M <- sgsuffix == "M"
@@ -159,7 +165,8 @@ makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
                   !is_Xxxx & !is_Yxxx & !is_Uxxx & !is_Mxxx & !is_MTxxx
         ## Group (a).
         if (any(is_roman)) {
-            ints <- as.integer(suff_as_roman[is_roman])
+            gsuffix <- sgsuffix[is_roman]
+            ints <- as.integer(utils:::.roman2numeric(gsuffix))
             makeAndAssignProvIds(sgidx[is_roman], ints=ints)
         }
         ## Group (b).
@@ -252,11 +259,11 @@ makeSeqnameIds <- function(seqnames, X.is.seXual=NA)
     assignProvIdsForSuperGroup(seqlevels, "")
 
     ## Seqlevel ids.
-    uids <- integer(length(prov_ids))
+    seqlevel_ids <- integer(length(prov_ids))
     oo <- order(prov_ids)
-    uids[oo] <- seq_len(length(uids))
+    seqlevel_ids[oo] <- seq_len(length(seqlevel_ids))
 
     ## Seqname ids.
-    uids[seqnames_sm]
+    seqlevel_ids[as.integer(seqnames)]
 }
 
