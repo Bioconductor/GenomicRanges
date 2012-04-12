@@ -31,6 +31,7 @@ export(
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     genome, "genome<-",
+    makeSeqnameIds,
     Seqinfo,
 
     GRanges, GRangesList, GenomicRangesList,
