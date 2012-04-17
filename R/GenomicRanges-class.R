@@ -128,14 +128,15 @@ setMethod("elementMetadata", "GenomicRanges",
     NULL
 }
 
+## NOTE: This list is also included in the man page for GRanges objects.
+## Keep the 2 lists in sync!
+INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
+                         "seqlevels", "seqlengths", "isCircular", "genome",
+                         "start", "end", "width", "element")
+
 .valid.GenomicRanges.elementMetadata <- function(x)
-{
-    ## NOTE: This list is also included in the man page for GRanges objects.
-    ## Keep the 2 lists in sync!
-    INVALID.COLNAMES <- c("seqnames", "ranges", "strand",
-                          "seqlevels", "seqlengths", "isCircular", "genome",
-                          "start", "end", "width", "element")
-    if (any(INVALID.COLNAMES %in% colnames(elementMetadata(x)))) {
+{    
+    if (any(INVALID.GR.COLNAMES %in% colnames(elementMetadata(x)))) {
         msg <- c("slot 'elementMetadata' cannot use",
                  paste("\"", INVALID.COLNAMES, "\"", sep="", collapse=", "),
                  "as column names")
