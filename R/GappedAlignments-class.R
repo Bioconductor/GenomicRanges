@@ -759,7 +759,6 @@ setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
 
 grg <- function(x, ...)
 {
-    .Deprecated("granges")
-    granges(x, ...)
+    .Defunct("granges")
 }
 

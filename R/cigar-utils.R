@@ -182,11 +182,7 @@ queryLocs2refLocs <- function(qlocs, cigar, pos, flag=NULL)
 }
 
 globalToQuery <- function(global, ga) {
-  .Deprecated("map")
-  mapping <- map(global, ga)
-  DataFrame(from.ind = queryHits(mapping),
-            query.ind = subjectHits(mapping),
-            query.range = ranges(mapping))
+  .Defunct("map")
 }
 
 splitCigar <- function(cigar)

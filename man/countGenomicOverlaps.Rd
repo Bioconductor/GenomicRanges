@@ -1,26 +1,18 @@
 \name{countGenomicOverlaps}
 
 \alias{countGenomicOverlaps}
-\alias{countGenomicOverlaps,GRangesList,GRangesList-method}
-\alias{countGenomicOverlaps,GenomicRanges,GenomicRanges-method}
-\alias{countGenomicOverlaps,GenomicRanges,GRangesList-method}
-\alias{countGenomicOverlaps,GRangesList,GenomicRanges-method}
-\alias{countGenomicOverlaps,GenomicRanges,GappedAlignments-method}
-\alias{countGenomicOverlaps,GRangesList,GappedAlignments-method}
-
 
 \title{Count Read Hits in Genomic Features} 
 
 \description{
   Count read hits per exon or transcript and resolve multi-hit reads.
 
-  WARNING: \code{countGenomicOverlaps} is deprecated in favor of
-  \code{summarizeOverlaps}.
+  WARNING: \code{countGenomicOverlaps} is now defunct. Please use
+  \code{\link{summarizeOverlaps}} instead.
 }
 
 \usage{
-  \S4method{countGenomicOverlaps}{GRangesList,GRangesList}(
-    query, subject, 
+countGenomicOverlaps(query, subject, 
     type = c("any", "start", "end", "within", "equal"),
     resolution = c("none", "divide", "uniqueDisjoint"),
     ignore.strand = FALSE, splitreads = TRUE, ...) 
@@ -118,6 +110,10 @@
 }
 
 \author{Valerie Obenchain and Martin Morgan}
+
+\seealso{
+\code{\link{summarizeOverlaps}}
+}
 
 \examples{
 \dontrun{

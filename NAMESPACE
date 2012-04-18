@@ -97,7 +97,6 @@ exportMethods(
     qnarrow,
     first, last, left, right, isProperPair,
     dimnames, "dimnames<-", precede, follow,
-    countGenomicOverlaps,
     keepSeqlevels, renameSeqlevels,
     summarizeOverlaps 
 )
