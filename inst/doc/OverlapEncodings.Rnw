@@ -361,25 +361,19 @@ this:
 rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
 @
 
-Now we compare the read and transcript sequences of the first 500
-``compatible'' overlaps only. Because the read sequences (in \Rcode{rseq14})
-and the transcript sequences (in \Rcode{txseq}) were both extracted from
-the reference genome, we expect the formers to be {\it exact} substrings
-of the latters:
+Now we compare the read and transcript sequences for each ``compatible''
+overlap. Because the read sequences (in \Rcode{rseq14}) and the transcript
+sequences (in \Rcode{txseq}) were both extracted from the reference genome,
+we expect the formers to be {\it exact} substrings of the latters:
 
-<<isMatchingAt>>=
+<<ov14_qseq_vs_ov14_txseq>>=
+ov14_qseq <- rseq14[queryHits(ov14)]
+ov14_qseq[flippedQuery(ovenc14)] <- reverseComplement(ov14_qseq[flippedQuery(ovenc14)])
+ov14_txseq <- txseq[subjectHits(ov14)]
 stopifnot(all(
-    sapply(which(ov14_is_compat)[1:500],
-           function(i) {
-               query_seq <- rseq14[[queryHits(ov14)[i]]]
-               if (flippedQuery(ovenc14)[i])
-                   query_seq <- reverseComplement(query_seq)
-               subject_seq <- txseq[[subjectHits(ov14)[i]]]
-               subject_subseq <- subseq(subject_seq,
-                                        start=ov14_qstart$startInTranscript[i],
-                                        width=length(query_seq))
-               query_seq == subject_subseq
-           })
+    ov14_qseq[ov14_is_compat] == narrow(ov14_txseq[ov14_is_compat],
+                                        start=ov14_qstart$startInTranscript[ov14_is_compat],
+                                        width=width(ov14_qseq)[ov14_is_compat])
 ))
 @
 
@@ -443,7 +437,8 @@ gal14_nedit <- elementMetadata(gal14)$NM
 stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
 @
 
-Is seems that the aligner was able to tolerate up to 6 mismatches:
+Finally, the maximum observed number of mismatches tells us how many mismatches
+per read the aligner tolerated during the alignment process:
 
 <<up_to_6_mismatches>>=
 table(gal14_nedit)
