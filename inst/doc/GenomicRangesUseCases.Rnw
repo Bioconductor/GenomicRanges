@@ -515,20 +515,30 @@ rownames in any \Rpackage{DESeq} frame objects that you create.
 At this point you might be satisfied with calculating the amount of
 known genes in your model, but what if you wanted to know about
 regions that were transcribed but which were NOT found amongst the
-annotated transcripts?  To look at these you would first want to filter
-out transcripts that are known from your dataset using
-\Rfunction{subsetByOverlaps}.
+annotated transcripts? 
 
+Isolate regions not present in the annotation.
+<<noOlap>>=
+noOlap <- aligns[!aligns %in% exonRanges]
+@
+
+Perform a \Rcode{findOverlaps} to confirm no ranges overlap.
+<<confirm_noOlap>>=
+findOverlaps(noOlap, exonRanges)
+@
+
+It is interesting to note that in spite of having removed all known exons, 
+this object still contains about half of the original set of aligned reads.
+<<length_noOlap>>=
+length(noOlap)
+@
+
+Create a subset of records that do overlap with the annotation using the 
+\Rfunction{subsetByOverlaps} function.
 <<filterKnowns>>=
 filtData <- subsetByOverlaps(aligns, exonRanges)
 length(filtData)
 @
-
-At this point, the \Robject{filtData} object only contains ranges that
-did not overlap with any of the known exons from
-\textit{Saccharomycess cerevisiae}. It is interesting to note that in
-spite of having removed all known exons, this object still contains
-about half of the original set of aligned reads.
 
 If a coarser level of filtering is desired, you could also use the
 output of \Rmethod{transcriptsBy} as the subject argument for
