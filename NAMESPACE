@@ -51,7 +51,7 @@ export(
     flipQuery,
     selectEncodingWithCompatibleStrand,
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSpannedExonRanks, extractSkippedExonRanks,
+    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
     extractQueryStartInTranscript,
 
     countGenomicOverlaps,
@@ -91,7 +91,7 @@ exportMethods(
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, match, "%in%",
     encodeOverlaps, isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSpannedExonRanks, extractSkippedExonRanks,
+    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,

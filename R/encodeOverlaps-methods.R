@@ -397,12 +397,8 @@ setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### extractSpannedExonRanks().
+### extractSteppedExonRanks().
 ###
-
-setGeneric("extractSpannedExonRanks",
-    function(x) standardGeneric("extractSpannedExonRanks")
-)
 
 .extractSteppedExonRanksFromEncodingBlocks <- function(encoding_blocks,
                                                        encoding_patterns)
@@ -423,24 +419,105 @@ setGeneric("extractSpannedExonRanks",
 }
 
 ### 'encoding' must be a single encoding.
-.extractSteppedExonRanks <- function(encoding)
+### Returns a sorted integer vector, unnamed and strictly sorted if single-end
+### read, named and not necessarily strictly sorted if paired-end read (last
+### exon stepped by the left end can be the same as first exon stepped by right
+### end).
+.extractSteppedExonRanks <- function(encoding, for.query.right.end=FALSE)
 {
+    if (!isTRUEorFALSE(for.query.right.end))
+        stop("'for.query.right.end' must be TRUE or FALSE")
     encoding_blocks <- strsplit(encoding, ":", fixed=TRUE)[[1L]]
     ngap <- .extract_ngap_from_encoding(encoding_blocks[1L])
-    if (length(ngap) == 2L)
-        stop("extractSpannedExonRanks() and extractSkippedExonRanks() ",
-             "don't yet support overlap encodings of paired-end reads, sorry")
     encoding_blocks <- encoding_blocks[-1L]
-    encoding_patterns <- .build_encoding_patterns(ngap)
-    .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks,
-                                               encoding_patterns)
+    if (length(ngap) == 1L) {
+        ## Single-end read.
+        if (for.query.right.end)
+            stop("cannot use 'for.query.right.end=TRUE' ",
+                 "on single-end encoding: ", encoding)
+        encoding_patterns <- .build_encoding_patterns(ngap)
+        return(.extractSteppedExonRanksFromEncodingBlocks(encoding_blocks,
+                                                          encoding_patterns))
+    }
+    if (length(ngap) != 2L)  # should never happen
+        stop(encoding, ": invalid encoding")
+    ## Paired-end read.
+    encoding_blocks <- strsplit(encoding_blocks, "--", fixed=TRUE)
+    if (!all(elementLengths(encoding_blocks) == 2L))  # should never happen
+        stop(encoding, ": invalid encoding")
+    encoding_blocks <- matrix(unlist(encoding_blocks, use.names=FALSE), nrow=2L)
+    Lencoding_patterns <- .build_encoding_patterns(ngap[1L])
+    Lranks <- .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks[1L, ],
+                                                         Lencoding_patterns)
+    Rencoding_patterns <- .build_encoding_patterns(ngap[2L])
+    Rranks <- .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks[2L, ],
+                                                         Rencoding_patterns)
+    if (length(Lranks) == 0L || length(Rranks) == 0L ||
+        Lranks[length(Lranks)] > Rranks[1L]) {
+        ranks <- integer(0)
+        names(ranks) <- character(0)
+        return(ranks)
+    }
+    if (for.query.right.end)
+        return(Rranks)  # unnamed! (like for a single-end read)
+    names(Rranks) <- rep.int("R", length(Rranks))
+    names(Lranks) <- rep.int("L", length(Lranks))
+    c(Lranks, Rranks)
 }
 
+setGeneric("extractSteppedExonRanks",
+    function(x, for.query.right.end=FALSE)
+        standardGeneric("extractSteppedExonRanks")
+)
+
+setMethod("extractSteppedExonRanks", "character",
+    function(x, for.query.right.end=FALSE)
+    {
+        lapply(x, .extractSteppedExonRanks, for.query.right.end)
+    }
+)
+
+setMethod("extractSteppedExonRanks", "factor",
+    function(x, for.query.right.end=FALSE)
+    {
+        if (length(x) == 0L)
+            return(list())
+        ranks <- extractSteppedExonRanks(levels(x),
+                     for.query.right.end=for.query.right.end)
+        ranks[as.integer(x)]
+    }
+)
+
+setMethod("extractSteppedExonRanks", "OverlapEncodings",
+    function(x, for.query.right.end=FALSE)
+    {
+        ranks <- extractSteppedExonRanks(encoding(x),
+                     for.query.right.end=for.query.right.end)
+        ranks_elt_lens <- elementLengths(ranks)
+        tmp <- unlist(unname(ranks), use.names=TRUE)  # we want the inner names
+        tmp <- tmp + rep.int(Loffset(x), ranks_elt_lens)
+        flevels <- seq_len(length(ranks))
+        f <- factor(rep.int(flevels, ranks_elt_lens), levels=flevels)
+        unname(split(tmp, f))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extractSpannedExonRanks().
+###
+
+setGeneric("extractSpannedExonRanks",
+    function(x, for.query.right.end=FALSE)
+        standardGeneric("extractSpannedExonRanks")
+)
+
 setMethod("extractSpannedExonRanks", "character",
-    function(x)
+    function(x, for.query.right.end=FALSE)
     {
         .extractRanks <- function(encoding) {
-            ranks <- .extractSteppedExonRanks(encoding)
+            ranks <- .extractSteppedExonRanks(encoding,
+                          for.query.right.end=for.query.right.end)
             if (length(ranks) == 0L)
                 return(c(NA_integer_, NA_integer_))
             c(ranks[1L], ranks[length(ranks)])
@@ -460,11 +537,12 @@ setMethod("extractSpannedExonRanks", "character",
 )
 
 setMethod("extractSpannedExonRanks", "factor",
-    function(x)
+    function(x, for.query.right.end=FALSE)
     {
         if (length(x) == 0L)
             return(list())
-        ranks <- extractSpannedExonRanks(levels(x))
+        ranks <- extractSpannedExonRanks(levels(x),
+                     for.query.right.end=for.query.right.end)
         ans <- ranks[as.integer(x), , drop=FALSE]
         rownames(ans) <- NULL
         ans
@@ -472,9 +550,10 @@ setMethod("extractSpannedExonRanks", "factor",
 )
 
 setMethod("extractSpannedExonRanks", "OverlapEncodings",
-    function(x)
+    function(x, for.query.right.end=FALSE)
     {
-        ranks <- extractSpannedExonRanks(encoding(x))
+        ranks <- extractSpannedExonRanks(encoding(x),
+                     for.query.right.end=for.query.right.end)
         ranks$firstSpannedExonRank <- ranks$firstSpannedExonRank + Loffset(x)
         ranks$lastSpannedExonRank <- ranks$lastSpannedExonRank + Loffset(x)
         ranks
@@ -487,41 +566,56 @@ setMethod("extractSpannedExonRanks", "OverlapEncodings",
 ###
 
 setGeneric("extractSkippedExonRanks",
-    function(x) standardGeneric("extractSkippedExonRanks")
+    function(x, for.query.right.end=FALSE)
+        standardGeneric("extractSkippedExonRanks")
 )
 
 setMethod("extractSkippedExonRanks", "character",
-    function(x)
+    function(x, for.query.right.end=FALSE)
     {
         .extractRanks <- function(encoding) {
-            ranks <- .extractSteppedExonRanks(encoding)
+            ranks <- .extractSteppedExonRanks(encoding,
+                          for.query.right.end=for.query.right.end)
             if (length(ranks) == 0L)
                 return(ranks)
-            setdiff(ranks[1L]:ranks[length(ranks)], ranks)
+            ranks_names <- names(ranks)
+            if (is.null(ranks_names))  # single-end read
+                return(setdiff(ranks[1L]:ranks[length(ranks)], ranks))
+            ## Paired-end read.
+            ranks <- split(unname(ranks), ranks_names)
+            Lranks <- ranks$L
+            Lranks <- setdiff(Lranks[1L]:Lranks[length(Lranks)], Lranks)
+            Rranks <- ranks$R
+            Rranks <- setdiff(Rranks[1L]:Rranks[length(Rranks)], Rranks)
+            names(Lranks) <- rep.int("L", length(Lranks))
+            names(Rranks) <- rep.int("R", length(Rranks))
+            c(Lranks, Rranks)
         }
         lapply(x, .extractRanks)
     }
 )
 
 setMethod("extractSkippedExonRanks", "factor",
-    function(x)
+    function(x, for.query.right.end=FALSE)
     {
         if (length(x) == 0L)
             return(list())
-        ranks <- extractSkippedExonRanks(levels(x))
+        ranks <- extractSkippedExonRanks(levels(x),
+                     for.query.right.end=for.query.right.end)
         ranks[as.integer(x)]
     }
 )
 
 setMethod("extractSkippedExonRanks", "OverlapEncodings",
-    function(x)
+    function(x, for.query.right.end=FALSE)
     {
-        ranks <- extractSkippedExonRanks(encoding(x))
-        tmp <- unlist(ranks, use.names=FALSE)
-        tmp <- tmp + rep.int(Loffset(x), elementLengths(ranks))
+        ranks <- extractSkippedExonRanks(encoding(x),
+                     for.query.right.end=for.query.right.end)
+        ranks_elt_lens <- elementLengths(ranks)
+        tmp <- unlist(unname(ranks), use.names=TRUE)  # we want the inner names
+        tmp <- tmp + rep.int(Loffset(x), ranks_elt_lens)
         flevels <- seq_len(length(ranks))
-        f <- factor(rep.int(flevels, elementLengths(ranks)),
-                    levels=flevels)
+        f <- factor(rep.int(flevels, ranks_elt_lens), levels=flevels)
         unname(split(tmp, f))
     }
 )
@@ -562,7 +656,8 @@ setMethod("extractSkippedExonRanks", "OverlapEncodings",
 ### contain NAs.
 extractQueryStartInTranscript <- function(query, subject,
                                           hits=NULL, ovenc=NULL,
-                                          flip.query.if.wrong.strand=FALSE)
+                                          flip.query.if.wrong.strand=FALSE,
+                                          for.query.right.end=FALSE)
 {
     if (!is(query, "GRangesList") || !is(subject, "GRangesList"))
         stop("'query' and 'subject' must be GRangesList objects")
@@ -592,18 +687,32 @@ extractQueryStartInTranscript <- function(query, subject,
             stop("when not NULL, 'ovenc' must have the same length ",
                  "as 'hits', if specified, otherwiseaas 'query'")
     }
+    if (!isTRUEorFALSE(for.query.right.end))
+        stop("'for.query.right.end' must be TRUE or FALSE")
+
     query <- flipQuery(query, flippedQuery(ovenc))
 
     ## Extract start/end/strand of the first range
     ## in each top-level element of 'query'.
     qii1 <- start(query@partitioning)
+    if (for.query.right.end) {
+        query.break <- elementMetadata(query)$query.break
+        if (is.null(query.break))
+            stop("using 'for.query.right.end=TRUE' requires that ",
+                 "'elementMetadata(query)' has a \"query.break\" column ",
+                 "indicating for each paired-end read the position of the ",
+                 "break between the ranges coming from one end and those ",
+                 "coming from the other end")
+        qii1 <- qii1 + query.break
+    }
     query_start1 <- start(query@unlistData)[qii1]
     query_end1 <- end(query@unlistData)[qii1]
     query_strand1 <- as.factor(strand(query@unlistData))[qii1]
 
     ## Extract start/end/strand of the first spanned exon
     ## in each top-level element of 'subject'.
-    exrank <- extractSpannedExonRanks(ovenc)$firstSpannedExonRank
+    exrank <- extractSpannedExonRanks(ovenc,
+                  for.query.right.end=for.query.right.end)$firstSpannedExonRank
     sii1 <- start(subject@partitioning) + exrank - 1L
     subject_start1 <- start(subject@unlistData)[sii1]
     subject_end1 <- end(subject@unlistData)[sii1]

@@ -17,6 +17,11 @@
 \alias{isCompatibleWithSkippedExons,factor-method}
 \alias{isCompatibleWithSkippedExons,OverlapEncodings-method}
 
+\alias{extractSteppedExonRanks}
+\alias{extractSteppedExonRanks,character-method}
+\alias{extractSteppedExonRanks,factor-method}
+\alias{extractSteppedExonRanks,OverlapEncodings-method}
+
 \alias{extractSpannedExonRanks}
 \alias{extractSpannedExonRanks,character-method}
 \alias{extractSpannedExonRanks,factor-method}
@@ -47,23 +52,26 @@ selectEncodingWithCompatibleStrand(x, y,
 isCompatibleWithSplicing(x)
 isCompatibleWithSkippedExons(x, max.skipped.exons=NA)
 
-extractSpannedExonRanks(x)
-extractSkippedExonRanks(x)
+extractSteppedExonRanks(x, for.query.right.end=FALSE)
+extractSpannedExonRanks(x, for.query.right.end=FALSE)
+extractSkippedExonRanks(x, for.query.right.end=FALSE)
 
 extractQueryStartInTranscript(query, subject, hits=NULL, ovenc=NULL,
-                              flip.query.if.wrong.strand=FALSE)
+                              flip.query.if.wrong.strand=FALSE,
+                              for.query.right.end=FALSE)
 }
 
 \arguments{
   \item{x}{
-    For \code{flipQuery}: A \link{GRangesList} object.
+    For \code{flipQuery}: a \link{GRangesList} object.
 
     For \code{selectEncodingWithCompatibleStrand}:
-    An \link[IRanges]{OverlapEncodings} object.
+    an \link[IRanges]{OverlapEncodings} object.
 
     For \code{isCompatibleWithSplicing}, \code{isCompatibleWithSkippedExons},
-    and \code{extractSkippedExonRanks}:
-    An \link[IRanges]{OverlapEncodings} object, a factor or a character
+    \code{extractSteppedExonRanks}, \code{extractSpannedExonRanks}, and
+    \code{extractSkippedExonRanks}:
+    an \link[IRanges]{OverlapEncodings} object, a factor or a character
     vector.
   }
   \item{i}{
@@ -91,6 +99,11 @@ extractQueryStartInTranscript(query, subject, hits=NULL, ovenc=NULL,
   \item{max.skipped.exons}{
     Not supported yet. If \code{NA} (the default), the number of skipped
     exons must be 1 or more (there is no max).
+  }
+  \item{for.query.right.end}{
+    If \code{TRUE}, then the information reported in the output is for
+    the right ends of the paired-end reads.
+    Using \code{for.query.right.end=TRUE} with single-end reads is an error.
   }
 }
 
