@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Overlap encodings}
-%\VignetteDepends{pasillaBamSubset, GenomicRanges, Rsamtools, GenomicFeatures}
+%\VignetteDepends{pasillaBamSubset, GenomicRanges, Rsamtools, GenomicFeatures, BSgenome.Dmelanogaster.UCSC.dm3}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 \documentclass[10pt]{article}
@@ -318,13 +318,12 @@ with at least 1 alignment in \Rcode{gal14}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Position of the read within the transcript for a ``compatible''
-            overlap}
+\subsection{Projecting the reads on the transcripts}
 
-Use the \Rfunction{extractQueryStartInTranscript} function to get that
-information:
+The \Rfunction{extractQueryStartInTranscript} function computes for each
+overlap the position of the {\it query start} in the transcript:
 
-<<extractQueryStartInTranscript>>=
+<<ov14_qstart>>=
 ov14_qstart <- extractQueryStartInTranscript(grl14, dm3tx,
                                              hits=ov14, ovenc=ovenc14)
 head(subset(ov14_qstart, ov14_is_compat))
@@ -334,18 +333,20 @@ head(subset(ov14_qstart, ov14_is_compat))
 \begin{enumerate}
     \item \Rcode{startInTranscript}: the 1-based start position of the
     read with respect to the transcript. Position 1 always corresponds to
-    the first base on the 5' end of the transcript.
+    the first base on the 5' end of the transcript sequence.
     \item \Rcode{firstSpannedExonRank}: the rank of the first exon spanned
-    by the read, that is, the rank of the exon at \Rcode{startInTranscript}.
+    by the read, that is, the rank of the exon found at position
+    \Rcode{startInTranscript} in the transcript.
     \item \Rcode{startInFirstSpannedExon}: the 1-based start position of the
     read with respect to the first exon spanned by the read.
 \end{enumerate}
 
 Having this information allows us for example to compare the read and
-transcript nucleotide sequences for each overlap. Let's start by using
-the \Rfunction{extractTranscriptsFromGenome} function from the
-\Rpackage{GenomicFeatures} package to extract the transcript sequences
-from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package:
+transcript nucleotide sequences for each ``compatible'' overlap.
+Let's start by using the \Rfunction{extractTranscriptsFromGenome}
+function from the \Rpackage{GenomicFeatures} package to extract the
+transcript sequences from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3}
+data package:
 
 <<txseq>>=
 library(BSgenome.Dmelanogaster.UCSC.dm3)
@@ -357,17 +358,17 @@ sequences extracted from the reference genome based on the ranges in
 \Rcode{grl14}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
 this:
 
-<<rseq14>>=
-rseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
+<<qseq14>>=
+qseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
 @
 
 Now we compare the read and transcript sequences for each ``compatible''
-overlap. Because the read sequences (in \Rcode{rseq14}) and the transcript
+overlap. Because the read sequences (in \Rcode{qseq14}) and the transcript
 sequences (in \Rcode{txseq}) were both extracted from the reference genome,
 we expect the formers to be {\it exact} substrings of the latters:
 
 <<ov14_qseq_vs_ov14_txseq>>=
-ov14_qseq <- rseq14[queryHits(ov14)]
+ov14_qseq <- qseq14[queryHits(ov14)]
 ov14_qseq[flippedQuery(ovenc14)] <- reverseComplement(ov14_qseq[flippedQuery(ovenc14)])
 ov14_txseq <- txseq[subjectHits(ov14)]
 stopifnot(all(
@@ -409,21 +410,21 @@ seq14[is_on_minus] <- reverseComplement(seq14[is_on_minus])
 head(seq14)
 @
 
-The following table indicates that indels were not allowed/supported when
-the reads were aligned (no I or D CIGAR operations):
+The following table indicates that indels were not allowed/supported 
+during the alignment process (no I or D CIGAR operations):
 
 <<cigarOpTable>>=
 colSums(cigarOpTable(cigar(gal14)))
 @
 
 So we should only see mismatches (typically a small number) between the
-sequences in \Rcode{seq14} and those in \Rcode{rseq14}, but no indels,
+sequences in \Rcode{seq14} and those in \Rcode{qseq14}, but no indels,
 thus we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}
 when comparing the read and transcript sequences. We do this comparison for
 the first 500 sequences in \Rcode{gal14}:
 
-<<seq14_vs_rseq14>>=
-gal14_nedit500 <- sapply(1:500, function(i) neditAt(seq14[[i]], rseq14[[i]]))
+<<seq14_vs_qseq14>>=
+gal14_nedit500 <- sapply(1:500, function(i) neditAt(seq14[[i]], qseq14[[i]]))
 table(gal14_nedit500)
 @
 
@@ -437,8 +438,8 @@ gal14_nedit <- elementMetadata(gal14)$NM
 stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
 @
 
-Finally, the maximum observed number of mismatches tells us how many mismatches
-per read the aligner tolerated during the alignment process:
+Finally, the maximum observed number of mismatches tells us how many
+mismatches per read were tolerated during the alignment process:
 
 <<up_to_6_mismatches>>=
 table(gal14_nedit)
@@ -531,9 +532,7 @@ head(subset(ov14_qstart, ov14_is_almostcompat))
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Combining results of \Rcode{isCompatibleWithSplicing()} and
-            \Rcode{isCompatibleWithSkippedExons()} to detect novel splice
-            junctions}
+\subsection{Detect novel splice junctions}
 
 An alignment in \Rcode{gal14} with ``almost compatible'' hits but
 no ``compatible'' hits suggests the presence of one or more transcripts that
@@ -783,6 +782,95 @@ mean(dm3tx_ncompat34 >= 1)
 
 Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
 with at least 1 alignment pair in \Rcode{galp34}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Projecting the paired-end reads on the transcripts}
+
+For a paired-end read, the {\it query start} is the start of its ``left end''.
+
+<<ov34_Lqstart>>=
+ov34_Lqstart <- extractQueryStartInTranscript(grl34, dm3tx,
+                                              hits=ov34, ovenc=ovenc34)
+head(subset(ov34_Lqstart, ov34_is_compat))
+@
+
+Note that \Rfunction{extractQueryStartInTranscript} can be called with
+\Rcode{for.query.right.end=TRUE} if we want this information for the ``right
+ends'' of the reads:
+
+<<ov34_Rqstart>>=
+ov34_Rqstart <- extractQueryStartInTranscript(grl34, dm3tx,
+                                              hits=ov34, ovenc=ovenc34,
+                                              for.query.right.end=TRUE)
+head(subset(ov34_Rqstart, ov34_is_compat))
+@
+
+In order to perform the same kind of sanity check that we did for the
+single-end reads, we need to split \Rcode{grl34} in 2 \Rclass{GRangesList}
+objects of the same length as \Rcode{grl34}, one containing the ranges of
+the ``first ends'' (aka ``first segments'' in BAM jargon), and one containing
+the ranges of the ``last ends'' (aka ``last segments'' in BAM jargon).
+Here is an efficient way to do this:
+
+<<split_grl34>>=
+grl34_first <- grglist(first(galp34), order.as.in.query=TRUE)
+grl34_last <- grglist(last(galp34, invert.strand=TRUE), order.as.in.query=TRUE)
+@
+
+Then we extract the sequences from the reference genome based on the ranges
+in those 2 \Rclass{GRangesList} objects:
+
+<<qseq34_first_and_last>>=
+qseq34_first <- extractTranscriptsFromGenome(Dmelanogaster, grl34_first)
+qseq34_last <- extractTranscriptsFromGenome(Dmelanogaster, grl34_last)
+@
+
+and we assign 2 sequences to each overlap, one for each end of the read:
+
+<<ov34_Lqseq_and_Rqseq>>=
+ov34_Lqseq <- qseq34_first[queryHits(ov34)]
+ov34_Rqseq <- qseq34_last[queryHits(ov34)]
+@
+
+For the single-end reads, the sequences associated with a ``flipped query''
+just needed to be reverse complemented. For paired-end reads, we also
+need to swap them between \Rcode{ov34\_Lqseq} and \Rcode{ov34\_Rqseq}:
+
+<<ov34_Lqseq_and_Rqseq>>=
+flip_idx <- which(flippedQuery(ovenc34))
+tmp <- ov34_Lqseq[flip_idx]
+ov34_Lqseq[flip_idx] <- reverseComplement(ov34_Rqseq[flip_idx])
+ov34_Rqseq[flip_idx] <- reverseComplement(tmp)
+@
+
+We assign the transcript sequence to each overlap:
+
+<<ov34_txseq>>=
+ov34_txseq <- txseq[subjectHits(ov34)]
+@
+
+Finally we do our sanity check of comparing the read and transcript
+nucleotide sequences for each ``compatible'' overlap.
+We check the ``left ends'':
+
+<<ov34_Lqseq_vs_ov34_txseq>>=
+stopifnot(all(
+    ov34_Lqseq[ov34_is_compat] == narrow(ov34_txseq[ov34_is_compat],
+                                         start=ov34_Lqstart$startInTranscript[ov34_is_compat],
+                                         width=width(ov34_Lqseq)[ov34_is_compat])
+))
+@
+
+and the ``right ends'':
+
+<<ov34_Rqseq_vs_ov34_txseq>>=
+stopifnot(all(
+    ov34_Rqseq[ov34_is_compat] == narrow(ov34_txseq[ov34_is_compat],
+                                         start=ov34_Rqstart$startInTranscript[ov34_is_compat],
+                                         width=width(ov34_Rqseq)[ov34_is_compat])
+))
+@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
