@@ -203,81 +203,93 @@ selectEncodingWithCompatibleStrand <- function(x, y,
 ### isCompatibleWithSplicing().
 ###
 
+.build_encoding_patterns <- function(ngap)
+{
+    ## Each "atom" must match exactly 1 code in the encoding.
+    ATOM0 <- "[fgij]"
+    if (ngap == 0L)
+        return(ATOM0)
+    LEFT_ATOM <- "[jg]"
+    RIGHT_ATOM <- "[gf]"
+    WILDCARD_ATOM <- "[^:-]"
+    sapply(seq_len(ngap + 1L),
+           function(i) {
+               if (i == 1L) {
+                   atoms <- c(LEFT_ATOM, rep.int(WILDCARD_ATOM, ngap))
+               } else if (i == ngap + 1L) {
+                   atoms <- c(rep.int(WILDCARD_ATOM, ngap), RIGHT_ATOM)
+               } else {
+                   atoms <- c(rep.int(WILDCARD_ATOM, i-1L),
+                              "g",
+                              rep.int(WILDCARD_ATOM, ngap-i+1L))
+               }
+               paste0(atoms, collapse="")
+           })
+}
+
+## Putting an arbitrary limit on the number of gaps in a read.
+.NGAP_MAX <- 3L
+
 .extract_ngap_from_encoding <- function(x)
 {
     as.integer(unlist(strsplit(sub(":.*", "", x), "--", fixed=TRUE),
                       use.names=FALSE)) - 1L
 }
 
-.check_ngap_max <- function(x)
+.check_ngap_max <- function(x, max.ngap)
 {
     ngap <- .extract_ngap_from_encoding(x)
-    if (length(ngap) != 0L && max(ngap) > 3L)
-        stop("reads with more than 3 gaps are not supported yet, sorry")
+    if (length(ngap) != 0L && max(ngap) > max.ngap)
+        stop("reads with more than ", max.ngap,
+             " gaps are not supported, sorry")
 }
 
 setGeneric("isCompatibleWithSplicing",
     function(x) standardGeneric("isCompatibleWithSplicing")
 )
 
-.REGEX_BLOCKS1 <- "[fgij]"
-.REGEX_BLOCKS2 <- c("[jg][^:-]",
-                "[^:-][gf]")
-.REGEX_BLOCKS3 <- c("[jg][^:-][^:-]",
-                "[^:-]g[^:-]",
-                "[^:-][^:-][gf]")
-.REGEX_BLOCKS4 <- c("[jg][^:-][^:-][^:-]",
-                "[^:-]g[^:-][^:-]",
-                "[^:-][^:-]g[^:-]",
-                "[^:-][^:-][^:-][gf]")
-
-.get_CompatibleWithSplicing_regex <- function()
+.build_CompatibleWithSplicing_pattern <- function(max.ngap)
 {
-    ## Sub-regex for single-end reads.
-    Ssubregex1 <- .REGEX_BLOCKS1
-    Ssubregex2 <- paste0(.REGEX_BLOCKS2, collapse=":")
-    Ssubregex3 <- paste0(.REGEX_BLOCKS3, collapse=":")
-    Ssubregex4 <- paste0(.REGEX_BLOCKS4, collapse=":")
-    Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
-    Ssubregex <- paste0(":(", Ssubregex, "):")
+    ## Subpattern for single-end reads.
+    Ssubpattern <- sapply(0:max.ngap,
+                     function(ngap)
+                       paste0(.build_encoding_patterns(ngap),
+                              collapse=":"))
+    Ssubpattern <- paste0(":(", paste0(Ssubpattern, collapse="|"), "):")
 
-    ## Sub-regex for paired-end reads.
-    Rencoding <- "-[^:-]*" 
-    Lsubregex1 <- paste0(":", .REGEX_BLOCKS1, "-")
-    Lsubregex2 <- paste0(":", .REGEX_BLOCKS2, "-", collapse=Rencoding)
-    Lsubregex3 <- paste0(":", .REGEX_BLOCKS3, "-", collapse=Rencoding)
-    Lsubregex4 <- paste0(":", .REGEX_BLOCKS4, "-", collapse=Rencoding)
-    Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
-    Lsubregex <- paste0("(", Lsubregex, ")")
+    ## Subpattern for paired-end reads.
+    Lsubpattern <- sapply(0:max.ngap,
+                     function(ngap)
+                       paste0(":", .build_encoding_patterns(ngap), "-",
+                              collapse="-[^:-]*"))
+    Lsubpattern <- paste0("(", paste0(Lsubpattern, collapse="|"), ")")
 
-    Lencoding <- "[^:-]*-" 
-    Rsubregex1 <- paste0("-", .REGEX_BLOCKS1, ":")
-    Rsubregex2 <- paste0("-", .REGEX_BLOCKS2, ":", collapse=Lencoding)
-    Rsubregex3 <- paste0("-", .REGEX_BLOCKS3, ":", collapse=Lencoding)
-    Rsubregex4 <- paste0("-", .REGEX_BLOCKS4, ":", collapse=Lencoding)
-    Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
-    Rsubregex <- paste0("(", Rsubregex, ")")
+    Rsubpattern <- sapply(0:max.ngap,
+                     function(ngap)
+                       paste0("-", .build_encoding_patterns(ngap), ":",
+                              collapse="[^:-]*-"))
+    Rsubpattern <- paste0("(", paste0(Rsubpattern, collapse="|"), ")")
 
-    LRsubregex <- paste0(Lsubregex, ".*", Rsubregex)
+    LRsubpattern <- paste0(Lsubpattern, ".*", Rsubpattern)
 
-    ## Final regex.
-    paste0("(", Ssubregex, "|", LRsubregex, ")")
+    ## Final pattern.
+    paste0("(", Ssubpattern, "|", LRsubpattern, ")")
 }
 
 .isCompatibleWithSplicing <- function(x)
 {
     if (!is.character(x))
         stop("'x' must be a character vector")
-    .check_ngap_max(x)
-    grepl(.get_CompatibleWithSplicing_regex(), x)
+    .check_ngap_max(x, .NGAP_MAX)
+    grepl(.build_CompatibleWithSplicing_pattern(.NGAP_MAX), x)
 }
 
 .whichCompatibleWithSplicing <- function(x)
 {
     if (!is.character(x))
         stop("'x' must be a character vector")
-    .check_ngap_max(x)
-    grep(.get_CompatibleWithSplicing_regex(), x)
+    .check_ngap_max(x, .NGAP_MAX)
+    grep(.build_CompatibleWithSplicing_pattern(.NGAP_MAX), x)
 }
 
 setMethod("isCompatibleWithSplicing", "character", .isCompatibleWithSplicing)
@@ -306,56 +318,60 @@ setGeneric("isCompatibleWithSkippedExons", signature="x",
         standardGeneric("isCompatibleWithSkippedExons")
 )
 
-.get_CompatibleWithSkippedExons_regex <- function(max.skipped.exons=NA)
+.build_CompatibleWithSkippedExons_pattern <- function(max.ngap,
+                                                      max.skipped.exons=NA)
 {
     if (!identical(max.skipped.exons, NA))
         stop("only 'max.skipped.exons=NA' is supported for now, sorry")
 
-    ## Sub-regex for single-end reads.
-    Ssubregex1 <- .REGEX_BLOCKS1
-    Ssubregex2 <- paste0(.REGEX_BLOCKS2, collapse=":(..:)*")
-    Ssubregex3 <- paste0(.REGEX_BLOCKS3, collapse=":(...:)*")
-    Ssubregex4 <- paste0(.REGEX_BLOCKS4, collapse=":(....:)*")
-    Ssubregex <- paste(Ssubregex1, Ssubregex2, Ssubregex3, Ssubregex4, sep="|")
-    Ssubregex <- paste0(":(", Ssubregex, "):")
+    ## Subpattern for single-end reads.
+    skipped_exons_subpatterns <- c(":(.:)*", ":(..:)*",
+                                   ":(...:)*", ":(....:)*")
+    Ssubpattern <- sapply(0:max.ngap,
+                     function(ngap)
+                       paste0(.build_encoding_patterns(ngap),
+                              collapse=skipped_exons_subpatterns[ngap+1L]))
+    Ssubpattern <- paste0(":(", paste0(Ssubpattern, collapse="|"), "):")
 
-    ## Sub-regex for paired-end reads.
-    Lsubregex1 <- paste0(":", .REGEX_BLOCKS1, "-")
-    Lsubregex2 <- paste0(":", .REGEX_BLOCKS2, "-", collapse=".*")
-    Lsubregex3 <- paste0(":", .REGEX_BLOCKS3, "-", collapse=".*")
-    Lsubregex4 <- paste0(":", .REGEX_BLOCKS4, "-", collapse=".*")
-    Lsubregex <- paste(Lsubregex1, Lsubregex2, Lsubregex3, Lsubregex4, sep="|")
-    Lsubregex <- paste0("(", Lsubregex, ")")
+    ## Subpattern for paired-end reads.
+    Lsubpattern <- sapply(0:max.ngap,
+                     function(ngap)
+                       paste0(":", .build_encoding_patterns(ngap), "-",
+                              collapse=".*"))
+    Lsubpattern <- paste0("(", paste0(Lsubpattern, collapse="|"), ")")
 
-    Rsubregex1 <- paste0("-", .REGEX_BLOCKS1, ":")
-    Rsubregex2 <- paste0("-", .REGEX_BLOCKS2, ":", collapse=".*")
-    Rsubregex3 <- paste0("-", .REGEX_BLOCKS3, ":", collapse=".*")
-    Rsubregex4 <- paste0("-", .REGEX_BLOCKS4, ":", collapse=".*")
-    Rsubregex <- paste(Rsubregex1, Rsubregex2, Rsubregex3, Rsubregex4, sep="|")
-    Rsubregex <- paste0("(", Rsubregex, ")")
+    Rsubpattern <- sapply(0:max.ngap,
+                     function(ngap)
+                       paste0("-", .build_encoding_patterns(ngap), ":",
+                              collapse=".*"))
+    Rsubpattern <- paste0("(", paste0(Rsubpattern, collapse="|"), ")")
 
-    LRsubregex <- paste0(Lsubregex, ".*", Rsubregex)
+    LRsubpattern <- paste0(Lsubpattern, ".*", Rsubpattern)
 
-    ## Final regex.
-    paste0("(", Ssubregex, "|", LRsubregex, ")")
+    ## Final pattern.
+    paste0("(", Ssubpattern, "|", LRsubpattern, ")")
 }
 
 .isCompatibleWithSkippedExons <- function(x, max.skipped.exons=NA)
 {
     if (!is.character(x))
         stop("'x' must be a character vector")
-    .check_ngap_max(x)
-    grepl(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x) &
-    !grepl(.get_CompatibleWithSplicing_regex(), x)
+    .check_ngap_max(x, .NGAP_MAX)
+    pattern1 <- .build_CompatibleWithSkippedExons_pattern(.NGAP_MAX,
+                                                          max.skipped.exons)
+    pattern2 <- .build_CompatibleWithSplicing_pattern(.NGAP_MAX)
+    grepl(pattern1, x) & !grepl(pattern2, x)
 }
 
 .whichCompatibleWithSkippedExons <- function(x, max.skipped.exons=NA)
 {
     if (!is.character(x))
         stop("'x' must be a character vector")
-    .check_ngap_max(x)
-    setdiff(grep(.get_CompatibleWithSkippedExons_regex(max.skipped.exons), x),
-            grep(.get_CompatibleWithSplicing_regex(), x))
+    .check_ngap_max(x, .NGAP_MAX)
+    pattern1 <- .build_CompatibleWithSkippedExons_pattern(.NGAP_MAX,
+                                                          max.skipped.exons)
+    pattern2 <- .build_CompatibleWithSplicing_pattern(.NGAP_MAX)
+    setdiff(grep(pattern1, x), grep(pattern2, x))
 }
 
 setMethod("isCompatibleWithSkippedExons", "character",
@@ -389,10 +405,10 @@ setGeneric("extractSpannedExonRanks",
 )
 
 .extractSteppedExonRanksFromEncodingBlocks <- function(encoding_blocks,
-                                                       regex_blocks)
+                                                       encoding_patterns)
 {
-    regexprs <- paste0("^", regex_blocks, "$")
-    ii <- lapply(regexprs, grep, encoding_blocks)
+    patterns <- paste0("^", encoding_patterns, "$")
+    ii <- lapply(patterns, grep, encoding_blocks)
     ii_elt_lens <- elementLengths(ii)
     if (any(ii_elt_lens == 0L))
         return(integer(0))
@@ -409,24 +425,15 @@ setGeneric("extractSpannedExonRanks",
 ### 'encoding' must be a single encoding.
 .extractSteppedExonRanks <- function(encoding)
 {
-    encoding_blocks <- strsplit(encoding, ":", fixed=TRUE)[[1]]
+    encoding_blocks <- strsplit(encoding, ":", fixed=TRUE)[[1L]]
     ngap <- .extract_ngap_from_encoding(encoding_blocks[1L])
     if (length(ngap) == 2L)
         stop("extractSpannedExonRanks() and extractSkippedExonRanks() ",
              "don't yet support overlap encodings of paired-end reads, sorry")
     encoding_blocks <- encoding_blocks[-1L]
-    if (ngap == 0L) {
-        regex_blocks <- .REGEX_BLOCKS1
-    } else if (ngap == 1L) {
-        regex_blocks <- .REGEX_BLOCKS2
-    } else if (ngap == 2L) {
-        regex_blocks <- .REGEX_BLOCKS3
-    } else if (ngap == 3L) {
-        regex_blocks <- .REGEX_BLOCKS4
-    } else {
-        stop("reads with more than 3 gaps are not supported yet, sorry")
-    }
-    .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks, regex_blocks)
+    encoding_patterns <- .build_encoding_patterns(ngap)
+    .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks,
+                                               encoding_patterns)
 }
 
 setMethod("extractSpannedExonRanks", "character",
