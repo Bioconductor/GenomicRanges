@@ -443,7 +443,7 @@ setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
     ans <- cbind(pair_cols,
                  `:`=rep.int(":", lx),
                  first_cols,
-                 `:`=rep.int(":", lx),
+                 `--`=rep.int("--", lx),
                  last_cols)
     if (nc > 0L) {
         tmp <- do.call(data.frame, lapply(elementMetadata(x),
@@ -477,7 +477,7 @@ showGappedAlignmentPairs <- function(x, margin="",
         .COL2CLASS <- c(.PAIR_COL2CLASS,
                         ":",
                         .HALVES_COL2CLASS,
-                        ":",
+                        "--",
                         .HALVES_COL2CLASS)
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
