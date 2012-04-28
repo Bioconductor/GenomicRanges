@@ -96,15 +96,15 @@ library(GenomicRanges)
 library(Rsamtools)
 flag0 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE)
 param0 <- ScanBamParam(flag=flag0)
-gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
+U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
 @
 
 Our reads can have up to 2 gaps (a gap corresponds to an N operation in the
 CIGAR):
 
 <<ngap>>=
-head(gal14)
-table(ngap(gal14))
+head(U1gal)
+table(ngap(U1gal))
 @
 
 We also need to retrieve the dm3 transcripts and their exons from UCSC,
@@ -150,8 +150,8 @@ We are ready to compute the overlaps with the \Rfunction{findOverlaps}
 function. Note that the strand of the queries produced by the RNA-seq
 experiment is typically unknown so we use \Rcode{ignore.strand=TRUE}:
 
-<<ov14>>=
-ov14 <- findOverlaps(gal14, dm3tx, ignore.strand=TRUE)
+<<U1ov>>=
+U1ov <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
 @
 
 However, the {\it overlap encodings} are strand sensitive so we will
@@ -161,55 +161,55 @@ of the original queries), and once again for the ``flipped alignments''
 the original and flipped alignments in 2 \Rclass{GRangesList} objects
 with:
 
-<<grl14>>=
-grl14 <- grglist(gal14, order.as.in.query=TRUE)  # not flipped
-grl14f <- flipQuery(grl14)  # flipped
+<<U1grl>>=
+U1grl <- grglist(U1gal, order.as.in.query=TRUE)  # not flipped
+U1grlf <- flipQuery(U1grl)  # flipped
 @
 
 and encode their overlaps with the transcripts:
 
-<<ovenc14of>>=
-ovenc14o <- encodeOverlaps(grl14, dm3tx, hits=ov14)
-ovenc14f <- encodeOverlaps(grl14f, dm3tx, hits=ov14)
+<<U1ovencof>>=
+U1ovenco <- encodeOverlaps(U1grl, dm3tx, hits=U1ov)
+U1ovencf <- encodeOverlaps(U1grlf, dm3tx, hits=U1ov)
 @
 
-\Rcode{ovenc14o} and \Rcode{ovenc14f} are 2 \Rclass{OverlapsEncodings}
-objects of the same length as \Rclass{Hits} object \Rcode{ov14}.
-For each hit in \Rcode{ov14}, we have 2 corresponding encodings, one
-in \Rcode{ovenc14o} and one in \Rcode{ovenc14f}, but only one of them
+\Rcode{U1ovenco} and \Rcode{U1ovencf} are 2 \Rclass{OverlapsEncodings}
+objects of the same length as \Rclass{Hits} object \Rcode{U1ov}.
+For each hit in \Rcode{U1ov}, we have 2 corresponding encodings, one
+in \Rcode{U1ovenco} and one in \Rcode{U1ovencf}, but only one of them
 encodes a hit between alignment ranges and exon ranges that are on the
 same strand.
 We use the \Rfunction{selectEncodingWithCompatibleStrand} function
 to merge them into a single \Rclass{OverlapsEncodings} of the same
-length. For each hit in \Rcode{ov14}, this selects the encoding
+length. For each hit in \Rcode{U1ov}, this selects the encoding
 corresponding to alignment ranges and exon ranges with compatible
 strand:
 
-<<ovenc14>>=
-grl14_strand <- unlist(runValue(strand(grl14)), use.names=FALSE)
-ovenc14 <- selectEncodingWithCompatibleStrand(ovenc14o, ovenc14f,
-                                              grl14_strand, dm3tx_strand,
-                                              hits=ov14)
-ovenc14
+<<U1ovenc>>=
+U1grl_strand <- unlist(runValue(strand(U1grl)), use.names=FALSE)
+U1ovenc <- selectEncodingWithCompatibleStrand(U1ovenco, U1ovencf,
+                                              U1grl_strand, dm3tx_strand,
+                                              hits=U1ov)
+U1ovenc
 @
 
 As a convenience, the 2 above calls to \Rfunction{encodeOverlaps} + merging
 step can be replaced by a single call to \Rfunction{encodeOverlaps} on
-\Rcode{grl14} (or \Rcode{grl14f}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
+\Rcode{U1grl} (or \Rcode{U1grlf}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
 
-<<ovenc14_again>>=
-ovenc14_again <- encodeOverlaps(grl14, dm3tx, hits=ov14, flip.query.if.wrong.strand=TRUE)
-stopifnot(identical(ovenc14_again, ovenc14))
+<<U1ovenc_again>>=
+U1ovenc_again <- encodeOverlaps(U1grl, dm3tx, hits=U1ov, flip.query.if.wrong.strand=TRUE)
+stopifnot(identical(U1ovenc_again, U1ovenc))
 @
 
-Unique encodings in \Rcode{ovenc14}:
+Unique encodings in \Rcode{U1ovenc}:
 
-<<ovenc14_table>>=
-unique_ovenc14 <- levels(encoding(ovenc14))
-length(unique_ovenc14)
-head(unique_ovenc14)
-ovenc14_table <- table(encoding(ovenc14))
-tail(sort(ovenc14_table))
+<<U1ovenc_table>>=
+unique_U1ovenc <- levels(encoding(U1ovenc))
+length(unique_U1ovenc)
+head(unique_U1ovenc)
+U1ovenc_table <- table(encoding(U1ovenc))
+tail(sort(U1ovenc_table))
 @
 
 Encodings are sort of cryptic but utilities are provided to extract
@@ -228,16 +228,16 @@ The \Rfunction{isCompatibleWithSplicing} function can be used on an
 Note that \Rfunction{isCompatibleWithSplicing} can also be used on a
 character vector or factor.
 
-\Rcode{ovenc14} contains 7 unique encodings ``compatible'' with the splicing
+\Rcode{U1ovenc} contains 7 unique encodings ``compatible'' with the splicing
 of the transcript:
 
-<<compatible_unique_ovenc14>>=
-sort(ovenc14_table[isCompatibleWithSplicing(unique_ovenc14)])
+<<compatible_unique_U1ovenc>>=
+sort(U1ovenc_table[isCompatibleWithSplicing(unique_U1ovenc)])
 @
 
-Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{ovenc14}),
-\Rcode{"2:jm:af:"} (68914 occurences in \Rcode{ovenc14}),
-and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{ovenc14}),
+Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{U1ovenc}),
+\Rcode{"2:jm:af:"} (68914 occurences in \Rcode{U1ovenc}),
+and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{U1ovenc}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -286,35 +286,35 @@ flipped read) is aligned with the last base of the exon:
 \end{verbatim}
 \end{itemize}
 
-<<ov14_is_compat>>=
-ov14_is_compat <- isCompatibleWithSplicing(ovenc14)
-table(ov14_is_compat)  # 476124 "compatible" overlaps
+<<U1ov_is_compat>>=
+U1ov_is_compat <- isCompatibleWithSplicing(U1ovenc)
+table(U1ov_is_compat)  # 476124 "compatible" overlaps
 @
 
-Number of ``compatible'' overlaps per alignment in \Rcode{gal14}:
+Number of ``compatible'' overlaps per alignment in \Rcode{U1gal}:
 
-<<gal14_ncompat>>=
-gal14_ncompat <- tabulate(queryHits(ov14)[ov14_is_compat], nbins=length(gal14))
-elementMetadata(gal14)$ncompat <- gal14_ncompat
-head(gal14)
-table(gal14_ncompat)
-mean(gal14_ncompat >= 1)
+<<U1gal_ncompat>>=
+U1gal_ncompat <- tabulate(queryHits(U1ov)[U1ov_is_compat], nbins=length(U1gal))
+elementMetadata(U1gal)$ncompat <- U1gal_ncompat
+head(U1gal)
+table(U1gal_ncompat)
+mean(U1gal_ncompat >= 1)
 @
 
-71.45\% of the alignments in \Rcode{gal14} are ``compatible''
+71.45\% of the alignments in \Rcode{U1gal} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
-<<dm3tx_ncompat14>>=
-dm3tx_ncompat14 <- tabulate(subjectHits(ov14)[ov14_is_compat], nbins=length(dm3tx))
-names(dm3tx_ncompat14) <- names(dm3tx)
-tail(table(dm3tx_ncompat14))
-mean(dm3tx_ncompat14 >= 1)
+<<dm3tx_U1ncompat>>=
+dm3tx_U1ncompat <- tabulate(subjectHits(U1ov)[U1ov_is_compat], nbins=length(dm3tx))
+names(dm3tx_U1ncompat) <- names(dm3tx)
+tail(table(dm3tx_U1ncompat))
+mean(dm3tx_U1ncompat >= 1)
 @
 
 Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 1 alignment in \Rcode{gal14}.
+with at least 1 alignment in \Rcode{U1gal}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -323,13 +323,13 @@ with at least 1 alignment in \Rcode{gal14}.
 The \Rfunction{extractQueryStartInTranscript} function computes for each
 overlap the position of the {\it query start} in the transcript:
 
-<<ov14_qstart>>=
-ov14_qstart <- extractQueryStartInTranscript(grl14, dm3tx,
-                                             hits=ov14, ovenc=ovenc14)
-head(subset(ov14_qstart, ov14_is_compat))
+<<U1ov_qstart>>=
+U1ov_qstart <- extractQueryStartInTranscript(U1grl, dm3tx,
+                                             hits=U1ov, ovenc=U1ovenc)
+head(subset(U1ov_qstart, U1ov_is_compat))
 @
 
-\Rcode{ov14\_qstart} is a data frame with 1 row per overlap and 3 columns:
+\Rcode{U1ov\_qstart} is a data frame with 1 row per overlap and 3 columns:
 \begin{enumerate}
     \item \Rcode{startInTranscript}: the 1-based start position of the
     read with respect to the transcript. Position 1 always corresponds to
@@ -355,26 +355,26 @@ txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 
 As a sanity check, instead of the ``real'' read sequences, we'll use the
 sequences extracted from the reference genome based on the ranges in
-\Rcode{grl14}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
+\Rcode{U1grl}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
 this:
 
-<<qseq14>>=
-qseq14 <- extractTranscriptsFromGenome(Dmelanogaster, grl14)
+<<U1qseq>>=
+U1qseq <- extractTranscriptsFromGenome(Dmelanogaster, U1grl)
 @
 
 Now we compare the read and transcript sequences for each ``compatible''
-overlap. Because the read sequences (in \Rcode{qseq14}) and the transcript
+overlap. Because the read sequences (in \Rcode{U1qseq}) and the transcript
 sequences (in \Rcode{txseq}) were both extracted from the reference genome,
 we expect the formers to be {\it exact} substrings of the latters:
 
-<<ov14_qseq_vs_ov14_txseq>>=
-ov14_qseq <- qseq14[queryHits(ov14)]
-ov14_qseq[flippedQuery(ovenc14)] <- reverseComplement(ov14_qseq[flippedQuery(ovenc14)])
-ov14_txseq <- txseq[subjectHits(ov14)]
+<<U1ov_qseq_vs_U1ov_txseq>>=
+U1ov_qseq <- U1qseq[queryHits(U1ov)]
+U1ov_qseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov_qseq[flippedQuery(U1ovenc)])
+U1ov_txseq <- txseq[subjectHits(U1ov)]
 stopifnot(all(
-    ov14_qseq[ov14_is_compat] == narrow(ov14_txseq[ov14_is_compat],
-                                        start=ov14_qstart$startInTranscript[ov14_is_compat],
-                                        width=width(ov14_qseq)[ov14_is_compat])
+    U1ov_qseq[U1ov_is_compat] == narrow(U1ov_txseq[U1ov_is_compat],
+                                        start=U1ov_qstart$startInTranscript[U1ov_is_compat],
+                                        width=width(U1ov_qseq)[U1ov_is_compat])
 ))
 @
 
@@ -389,12 +389,12 @@ described in the SAM Spec as the ``Edit distance to the reference, including
 ambiguous bases but excluding clipping'' (note that tags are optional fields
 i.e. not all BAM files have them):
 
-<<bamseq14>>=
+<<U1bamseq>>=
 param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
-gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
-bamseq14 <- elementMetadata(gal14)$seq
-names(bamseq14) <- names(gal14)
-head(bamseq14)
+U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
+U1bamseq <- elementMetadata(U1gal)$seq
+names(U1bamseq) <- names(U1gal)
+head(U1bamseq)
 @
 
 Because the BAM format imposes that the read sequence is ``reverse
@@ -403,46 +403,46 @@ to ``reverse complement'' it again to get the {\it original} sequence
 (i.e. the sequence stored in the file used as input to the aligner,
 typically a FASTQ file):
 
-<<seq14>>=
-seq14 <- bamseq14
-is_on_minus <- as.logical(strand(gal14) == "-")
-seq14[is_on_minus] <- reverseComplement(seq14[is_on_minus])
-head(seq14)
+<<U1seq>>=
+U1seq <- U1bamseq
+is_on_minus <- as.logical(strand(U1gal) == "-")
+U1seq[is_on_minus] <- reverseComplement(U1seq[is_on_minus])
+head(U1seq)
 @
 
 The following table indicates that indels were not allowed/supported 
 during the alignment process (no I or D CIGAR operations):
 
-<<no_indels_in_gal14>>=
-colSums(cigarOpTable(cigar(gal14)))
+<<no_indels_in_U1gal>>=
+colSums(cigarOpTable(cigar(U1gal)))
 @
 
 So we should only see mismatches (typically a small number) between the
-sequences in \Rcode{seq14} and those in \Rcode{qseq14}, but no indels,
+sequences in \Rcode{U1seq} and those in \Rcode{U1qseq}, but no indels,
 thus we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}
 when comparing the read and transcript sequences. We do this comparison for
-the first 500 sequences in \Rcode{gal14}:
+the first 500 sequences in \Rcode{U1gal}:
 
-<<seq14_vs_qseq14>>=
-gal14_nedit500 <- sapply(1:500, function(i) neditAt(seq14[[i]], qseq14[[i]]))
-table(gal14_nedit500)
+<<U1seq_vs_U1qseq>>=
+U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1seq[[i]], U1qseq[[i]]))
+table(U1gal_nedit500)
 @
 
 Because the edit distance reported by the aligner in the NM tag excludes the
 N CIGAR operations, it should actually be the same as the value returned by
 \Rfunction{neditAt}. We confirm this for the 500 edit distances in
-\Rcode{gal14\_nedit500}:
+\Rcode{U1gal\_nedit500}:
 
-<<gal14_nedit>>=
-gal14_nedit <- elementMetadata(gal14)$NM
-stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
+<<U1gal_nedit>>=
+U1gal_nedit <- elementMetadata(U1gal)$NM
+stopifnot(all(U1gal_nedit[1:500] == U1gal_nedit500))
 @
 
 Finally, the maximum observed number of mismatches tells us how many
 mismatches per read were tolerated by the aligner:
 
 <<up_to_6_mismatches>>=
-table(gal14_nedit)
+table(U1gal_nedit)
 @
 
 
@@ -460,16 +460,16 @@ The \Rfunction{isCompatibleWithSkippedExons} function can be used on an
 Note that \Rfunction{isCompatibleWithSkippedExons} can also be used on a
 character vector of factor.
 
-\Rcode{ovenc14} contains 7 unique encodings ``almost compatible'' with the
+\Rcode{U1ovenc} contains 7 unique encodings ``almost compatible'' with the
 splicing of the transcript:
 
-<<almost_compatible_unique_ovenc14>>=
-sort(ovenc14_table[isCompatibleWithSkippedExons(unique_ovenc14)])
+<<almost_compatible_unique_U1ovenc>>=
+sort(U1ovenc_table[isCompatibleWithSkippedExons(unique_U1ovenc)])
 @
 
-Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{ovenc14}),
-\Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{ovenc14}),
-and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{ovenc14}),
+Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{U1ovenc}),
+\Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{U1ovenc}),
+and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{U1ovenc}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -492,71 +492,71 @@ correspond to the following overlaps:
 \end{verbatim}
 \end{itemize}
 
-<<ov14_is_almostcompat>>=
-ov14_is_almostcompat <- isCompatibleWithSkippedExons(ovenc14)
-table(ov14_is_almostcompat)  # 837 "almost compatible" overlaps
+<<U1ov_is_almostcompat>>=
+U1ov_is_almostcompat <- isCompatibleWithSkippedExons(U1ovenc)
+table(U1ov_is_almostcompat)  # 837 "almost compatible" overlaps
 @
 
-Number of ``almost compatible'' overlaps per alignment in \Rcode{gal14}:
+Number of ``almost compatible'' overlaps per alignment in \Rcode{U1gal}:
 
-<<gal14_nalmostcompat>>=
-gal14_nalmostcompat <- tabulate(queryHits(ov14)[ov14_is_almostcompat], nbins=length(gal14))
-elementMetadata(gal14)$nalmostcompat <- gal14_nalmostcompat
-head(gal14)
-table(gal14_nalmostcompat)
-mean(gal14_nalmostcompat >= 1)
+<<U1gal_nalmostcompat>>=
+U1gal_nalmostcompat <- tabulate(queryHits(U1ov)[U1ov_is_almostcompat], nbins=length(U1gal))
+elementMetadata(U1gal)$nalmostcompat <- U1gal_nalmostcompat
+head(U1gal)
+table(U1gal_nalmostcompat)
+mean(U1gal_nalmostcompat >= 1)
 @
 
-Only 0.2\% of the alignments in \Rcode{gal14} are ``almost compatible''
+Only 0.2\% of the alignments in \Rcode{U1gal} are ``almost compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
-<<dm3tx_nalmostcompat14>>=
-dm3tx_nalmostcompat14 <- tabulate(subjectHits(ov14)[ov14_is_almostcompat], nbins=length(dm3tx))
-names(dm3tx_nalmostcompat14) <- names(dm3tx)
-table(dm3tx_nalmostcompat14)
-mean(dm3tx_nalmostcompat14 >= 1)
+<<dm3tx_U1nalmostcompat>>=
+dm3tx_U1nalmostcompat <- tabulate(subjectHits(U1ov)[U1ov_is_almostcompat], nbins=length(dm3tx))
+names(dm3tx_U1nalmostcompat) <- names(dm3tx)
+table(dm3tx_U1nalmostcompat)
+mean(dm3tx_U1nalmostcompat >= 1)
 @
 
 Only 0.46\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
-with at least 1 alignment in \Rcode{gal14}.
+with at least 1 alignment in \Rcode{U1gal}.
 
 Finally note that the ``query start in transcript'' values returned by
 \Rfunction{extractQueryStartInTranscript} are also defined for ``almost
 compatible'' overlaps:
 
-<<ov14_qstart>>=
-head(subset(ov14_qstart, ov14_is_almostcompat))
+<<U1ov_qstart>>=
+head(subset(U1ov_qstart, U1ov_is_almostcompat))
 @
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Detect novel splice junctions}
 
-An alignment in \Rcode{gal14} with ``almost compatible'' hits but
+An alignment in \Rcode{U1gal} with ``almost compatible'' hits but
 no ``compatible'' hits suggests the presence of one or more transcripts that
 are not in our annotations.
 
 First we extract the index of those alignments:
 
 <<aln_shows_nov_splice_jct>>=
-aln_shows_nov_splice_jct <- gal14_nalmostcompat != 0L &
-                            gal14_ncompat == 0L
+aln_shows_nov_splice_jct <- U1gal_nalmostcompat != 0L &
+                            U1gal_ncompat == 0L
 head(which(aln_shows_nov_splice_jct))
 @
 
-We make this an index into \Rcode{ov14} (Hits object):
+We make this an index into \Rcode{U1ov} (Hits object):
 
 <<is_nov_splice_jct>>=
-is_nov_splice_jct <- queryHits(ov14) %in% which(aln_shows_nov_splice_jct)
+is_nov_splice_jct <- queryHits(U1ov) %in% which(aln_shows_nov_splice_jct)
 @
 
 We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
 of interest:
 
 <<narrow_is_nov_splice_jct>>=
-is_nov_splice_jct <- is_nov_splice_jct & ov14_is_almostcompat
+is_nov_splice_jct <- is_nov_splice_jct & U1ov_is_almostcompat
 @
 
 For each overlap of interest, we extract the ranks of the skipped
@@ -564,22 +564,22 @@ exons (we use a list for this as there might be more than 1 skipped
 exon per overlap):
 
 <<extractSkippedExonRanks>>=
-skpexrk <- extractSkippedExonRanks(ovenc14)[is_nov_splice_jct]
+skpexrk <- extractSkippedExonRanks(U1ovenc)[is_nov_splice_jct]
 table(elementLengths(skpexrk))
 @
 
 Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
 
 <<tx2skpexrk>>=
-names(skpexrk) <- queryHits(ov14)[is_nov_splice_jct]
-f <- names(dm3tx)[subjectHits(ov14)[is_nov_splice_jct]]
+names(skpexrk) <- queryHits(U1ov)[is_nov_splice_jct]
+f <- names(dm3tx)[subjectHits(U1ov)[is_nov_splice_jct]]
 tx2skpexrk <- split(skpexrk, f)
 @
 
 \Rcode{tx2skpexrk} is a named list of named lists of integer vectors.
 The first level of names (outer names) are transcript TxDb internal
 ids and the second level of names (inner names) are alignment
-indices into \Rcode{gal14}:
+indices into \Rcode{U1gal}:
 
 <<tx2skpexrk_names>>=
 head(names(tx2skpexrk))  # transcript TxDb internal ids
@@ -637,8 +637,8 @@ We use the \Rfunction{readGappedAlignmentPairs} function to read the BAM file
 into a \Rclass{GappedAlignmentPairs} object:
 
 <<readGappedAlignmentPairs>>=
-galp34 <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
-head(galp34)
+U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
+head(U3galp)
 @
 
 The \Rcode{show} method for \Rclass{GappedAlignmentPairs} objects displays
@@ -648,8 +648,8 @@ column). The {\tt strand} column corresponds to the strand of the {\it first}
 alignment.
 
 <<first_last>>=
-head(first(galp34))
-head(last(galp34))
+head(first(U3galp))
+head(last(U3galp))
 @
 
 According to the SAM format specifications, the aligner is expected to mark
@@ -663,14 +663,14 @@ We use \Rcode{isProperPair} to extract this flag from the
 \Rclass{GappedAlignmentPairs} object:
 
 <<isProperPair>>=
-table(isProperPair(galp34))
+table(isProperPair(U3galp))
 @
 
 Even though we could do {\it overlap encodings} with the full object,
 we keep only the {\it proper} pairs for our downstream analysis:
 
 <<keep_only_proper_pairs>>=
-galp34 <- galp34[isProperPair(galp34)]
+U3galp <- U3galp[isProperPair(U3galp)]
 @
 
 For the transcript, we'll reuse the \Rcode{dm3tx} object obtained
@@ -682,43 +682,43 @@ previously.
 
 Let's compute the overlaps:
 
-<<ov34>>=
-ov34 <- findOverlaps(galp34, dm3tx, ignore.strand=TRUE)
+<<U3ov>>=
+U3ov <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
 @
 
 and encode them:
 
-<<ovenc34>>=
-grl34 <- grglist(galp34, order.as.in.query=TRUE)
-ovenc34 <- encodeOverlaps(grl34, dm3tx, hits=ov34, flip.query.if.wrong.strand=TRUE)
-ovenc34
+<<U3ovenc>>=
+U3grl <- grglist(U3galp, order.as.in.query=TRUE)
+U3ovenc <- encodeOverlaps(U3grl, dm3tx, hits=U3ov, flip.query.if.wrong.strand=TRUE)
+U3ovenc
 @
 
-Unique encodings in \Rcode{ovenc34}:
+Unique encodings in \Rcode{U3ovenc}:
 
-<<ovenc34_table>>=
-unique_ovenc34 <- levels(encoding(ovenc34))
-length(unique_ovenc34)
-head(unique_ovenc34)
-ovenc34_table <- table(encoding(ovenc34))
-tail(sort(ovenc34_table))
+<<U3ovenc_table>>=
+unique_U3ovenc <- levels(encoding(U3ovenc))
+length(unique_U3ovenc)
+head(unique_U3ovenc)
+U3ovenc_table <- table(encoding(U3ovenc))
+tail(sort(U3ovenc_table))
 @
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{``Compatible'' paired-end overlaps}
 
-\Rcode{ovenc34} contains 13 unique encodings ``compatible'' with the splicing
+\Rcode{U3ovenc} contains 13 unique encodings ``compatible'' with the splicing
 of the transcript:
 
-<<compatible_unique_ovenc34>>=
-sort(ovenc34_table[isCompatibleWithSplicing(unique_ovenc34)])
+<<compatible_unique_U3ovenc>>=
+sort(U3ovenc_table[isCompatibleWithSplicing(unique_U3ovenc)])
 @
 
-Encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (89039 occurences in \Rcode{ovenc34}),
-\Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2825 occurences in \Rcode{ovenc34}),
-\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2339 occurences in \Rcode{ovenc34}),
-and \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (342 occurences in \Rcode{ovenc34}),
+Encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (89039 occurences in \Rcode{U3ovenc}),
+\Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2825 occurences in \Rcode{U3ovenc}),
+\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2339 occurences in \Rcode{U3ovenc}),
+and \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (342 occurences in \Rcode{U3ovenc}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -753,35 +753,35 @@ correspond to the following overlaps:
 
 Note: switch use of ``first'' and ``last'' above if the read was flipped.
 
-<<ov34_is_compat>>=
-ov34_is_compat <- isCompatibleWithSplicing(ovenc34)
-table(ov34_is_compat)  # 95801 "compatible" overlaps
+<<U3ov_is_compat>>=
+U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
+table(U3ov_is_compat)  # 95801 "compatible" overlaps
 @
 
-Number of ``compatible'' overlaps per alignment pair in \Rcode{galp34}:
+Number of ``compatible'' overlaps per alignment pair in \Rcode{U3galp}:
 
-<<galp34_ncompat>>=
-galp34_ncompat <- tabulate(queryHits(ov34)[ov34_is_compat], nbins=length(galp34))
-elementMetadata(galp34)$ncompat <- galp34_ncompat
-head(galp34)
-table(galp34_ncompat)
-mean(galp34_ncompat >= 1)
+<<U3galp_ncompat>>=
+U3galp_ncompat <- tabulate(queryHits(U3ov)[U3ov_is_compat], nbins=length(U3galp))
+elementMetadata(U3galp)$ncompat <- U3galp_ncompat
+head(U3galp)
+table(U3galp_ncompat)
+mean(U3galp_ncompat >= 1)
 @
 
-66.8\% of the alignment pairs in \Rcode{galp34} are ``compatible''
+66.8\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
-<<dm3tx_ncompat34>>=
-dm3tx_ncompat34 <- tabulate(subjectHits(ov34)[ov34_is_compat], nbins=length(dm3tx))
-names(dm3tx_ncompat34) <- names(dm3tx)
-tail(table(dm3tx_ncompat34))
-mean(dm3tx_ncompat34 >= 1)
+<<dm3tx_U3ncompat>>=
+dm3tx_U3ncompat <- tabulate(subjectHits(U3ov)[U3ov_is_compat], nbins=length(dm3tx))
+names(dm3tx_U3ncompat) <- names(dm3tx)
+tail(table(dm3tx_U3ncompat))
+mean(dm3tx_U3ncompat >= 1)
 @
 
 Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 1 alignment pair in \Rcode{galp34}.
+with at least 1 alignment pair in \Rcode{U3galp}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -789,166 +789,166 @@ with at least 1 alignment pair in \Rcode{galp34}.
 
 For a paired-end read, the {\it query start} is the start of its ``left end''.
 
-<<ov34_Lqstart>>=
-ov34_Lqstart <- extractQueryStartInTranscript(grl34, dm3tx,
-                                              hits=ov34, ovenc=ovenc34)
-head(subset(ov34_Lqstart, ov34_is_compat))
+<<U3ov_Lqstart>>=
+U3ov_Lqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
+                                              hits=U3ov, ovenc=U3ovenc)
+head(subset(U3ov_Lqstart, U3ov_is_compat))
 @
 
 Note that \Rfunction{extractQueryStartInTranscript} can be called with
 \Rcode{for.query.right.end=TRUE} if we want this information for the ``right
 ends'' of the reads:
 
-<<ov34_Rqstart>>=
-ov34_Rqstart <- extractQueryStartInTranscript(grl34, dm3tx,
-                                              hits=ov34, ovenc=ovenc34,
+<<U3ov_Rqstart>>=
+U3ov_Rqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
+                                              hits=U3ov, ovenc=U3ovenc,
                                               for.query.right.end=TRUE)
-head(subset(ov34_Rqstart, ov34_is_compat))
+head(subset(U3ov_Rqstart, U3ov_is_compat))
 @
 
 In order to perform the same kind of sanity check that we did for the
-single-end reads, we need to split \Rcode{grl34} in 2 \Rclass{GRangesList}
-objects of the same length as \Rcode{grl34}, one containing the ranges of
+single-end reads, we need to split \Rcode{U3grl} in 2 \Rclass{GRangesList}
+objects of the same length as \Rcode{U3grl}, one containing the ranges of
 the ``first ends'' (aka ``first segments'' in BAM jargon), and one containing
 the ranges of the ``last ends'' (aka ``last segments'' in BAM jargon).
 Here is an efficient way to do this:
 
-<<split_grl34>>=
-grl34_first <- grglist(first(galp34), order.as.in.query=TRUE)
-grl34_last <- grglist(last(galp34, invert.strand=TRUE), order.as.in.query=TRUE)
+<<split_U3grl>>=
+U3grl_first <- grglist(first(U3galp), order.as.in.query=TRUE)
+U3grl_last <- grglist(last(U3galp, invert.strand=TRUE), order.as.in.query=TRUE)
 @
 
 Then we extract the sequences from the reference genome based on the ranges
 in those 2 \Rclass{GRangesList} objects:
 
-<<qseq34_first_and_last>>=
-qseq34_first <- extractTranscriptsFromGenome(Dmelanogaster, grl34_first)
-qseq34_last <- extractTranscriptsFromGenome(Dmelanogaster, grl34_last)
+<<U3qseq_first_and_last>>=
+U3qseq_first <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
+U3qseq_last <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
 @
 
 and we assign 2 sequences to each overlap, one for each end of the read:
 
-<<ov34_Lqseq_and_Rqseq>>=
-ov34_Lqseq <- qseq34_first[queryHits(ov34)]
-ov34_Rqseq <- qseq34_last[queryHits(ov34)]
+<<U3ov_Lqseq_and_Rqseq>>=
+U3ov_Lqseq <- U3qseq_first[queryHits(U3ov)]
+U3ov_Rqseq <- U3qseq_last[queryHits(U3ov)]
 @
 
 For the single-end reads, the sequences associated with a ``flipped query''
 just needed to be ``reverse complemented''. For paired-end reads, we also
-need to swap them between \Rcode{ov34\_Lqseq} and \Rcode{ov34\_Rqseq}:
+need to swap them between \Rcode{U3ov\_Lqseq} and \Rcode{U3ov\_Rqseq}:
 
-<<ov34_Lqseq_and_Rqseq>>=
-flip_idx <- which(flippedQuery(ovenc34))
-tmp <- ov34_Lqseq[flip_idx]
-ov34_Lqseq[flip_idx] <- reverseComplement(ov34_Rqseq[flip_idx])
-ov34_Rqseq[flip_idx] <- reverseComplement(tmp)
+<<U3ov_Lqseq_and_Rqseq>>=
+flip_idx <- which(flippedQuery(U3ovenc))
+tmp <- U3ov_Lqseq[flip_idx]
+U3ov_Lqseq[flip_idx] <- reverseComplement(U3ov_Rqseq[flip_idx])
+U3ov_Rqseq[flip_idx] <- reverseComplement(tmp)
 @
 
 We assign the transcript sequence to each overlap:
 
-<<ov34_txseq>>=
-ov34_txseq <- txseq[subjectHits(ov34)]
+<<U3ov_txseq>>=
+U3ov_txseq <- txseq[subjectHits(U3ov)]
 @
 
 Finally we do our sanity check of comparing the read and transcript
 nucleotide sequences for each ``compatible'' overlap.
 We check the ``left ends'':
 
-<<ov34_Lqseq_vs_ov34_txseq>>=
+<<U3ov_Lqseq_vs_U3ov_txseq>>=
 stopifnot(all(
-    ov34_Lqseq[ov34_is_compat] == narrow(ov34_txseq[ov34_is_compat],
-                                         start=ov34_Lqstart$startInTranscript[ov34_is_compat],
-                                         width=width(ov34_Lqseq)[ov34_is_compat])
+    U3ov_Lqseq[U3ov_is_compat] == narrow(U3ov_txseq[U3ov_is_compat],
+                                         start=U3ov_Lqstart$startInTranscript[U3ov_is_compat],
+                                         width=width(U3ov_Lqseq)[U3ov_is_compat])
 ))
 @
 
 and the ``right ends'':
 
-<<ov34_Rqseq_vs_ov34_txseq>>=
+<<U3ov_Rqseq_vs_U3ov_txseq>>=
 stopifnot(all(
-    ov34_Rqseq[ov34_is_compat] == narrow(ov34_txseq[ov34_is_compat],
-                                         start=ov34_Rqstart$startInTranscript[ov34_is_compat],
-                                         width=width(ov34_Rqseq)[ov34_is_compat])
+    U3ov_Rqseq[U3ov_is_compat] == narrow(U3ov_txseq[U3ov_is_compat],
+                                         start=U3ov_Rqstart$startInTranscript[U3ov_is_compat],
+                                         width=width(U3ov_Rqseq)[U3ov_is_compat])
 ))
 @
 
 Now let's have a look at the ``real'' read sequences. Like we did with our
 single-end reads, we load them by reloading the BAM file and requesting
 the SEQ field and NM tag. Since we've removed the improper pairs from
-our current \Rcode{galp34}, we need to do this again but now we do it at
+our current \Rcode{U3galp}, we need to do this again but now we do it at
 load time which is equivalent to doing it afterward (i.e. not only do we
-have the guarantee to end up with the same elements in \Rcode{galp34}, but
+have the guarantee to end up with the same elements in \Rcode{U3galp}, but
 also to have them in the same order):
 
-<<bamseq34_first_and_last>>=
+<<U3bamseq_first_and_last>>=
 flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
 param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
-galp34 <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
+U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
 
-bamseq34_first <- elementMetadata(first(galp34))$seq
-names(bamseq34_first) <- names(galp34)
-head(bamseq34_first)
+U3bamseq_first <- elementMetadata(first(U3galp))$seq
+names(U3bamseq_first) <- names(U3galp)
+head(U3bamseq_first)
 
-bamseq34_last <- elementMetadata(last(galp34))$seq
-names(bamseq34_last) <- names(galp34)
-head(bamseq34_last)
+U3bamseq_last <- elementMetadata(last(U3galp))$seq
+names(U3bamseq_last) <- names(U3galp)
+head(U3bamseq_last)
 @
 
 We obtain the {\it original} sequences (i.e. the sequences stored in the
 file used as input to the aligner) by ``reverse complementing'' those
 that are aligned to the minus strand:
 
-<<seq34_first_and_last>>=
-seq34_first <- bamseq34_first
-is_on_minus <- as.logical(strand(first(galp34)) == "-")
-seq34_first[is_on_minus] <- reverseComplement(seq34_first[is_on_minus])
+<<U3seq_first_and_last>>=
+U3seq_first <- U3bamseq_first
+is_on_minus <- as.logical(strand(first(U3galp)) == "-")
+U3seq_first[is_on_minus] <- reverseComplement(U3seq_first[is_on_minus])
 
-seq34_last <- bamseq34_last
-is_on_minus <- as.logical(strand(last(galp34)) == "-")
-seq34_last[is_on_minus] <- reverseComplement(seq34_last[is_on_minus])
+U3seq_last <- U3bamseq_last
+is_on_minus <- as.logical(strand(last(U3galp)) == "-")
+U3seq_last[is_on_minus] <- reverseComplement(U3seq_last[is_on_minus])
 @
 
 The following tables indicate that indels were not allowed/supported 
 during the alignment process (no I or D CIGAR operations):
 
-<<no_indels_in_galp34>>=
-colSums(cigarOpTable(cigar(first(galp34))))
-colSums(cigarOpTable(cigar(last(galp34))))
+<<no_indels_in_U3galp>>=
+colSums(cigarOpTable(cigar(first(U3galp))))
+colSums(cigarOpTable(cigar(last(U3galp))))
 @
 
 So we should only see mismatches (typically a small number) between the
-{\it original} sequences (in \Rcode{seq34\_first} and \Rcode{seq34\_last})
-and those in \Rcode{qseq34\_first} and \Rcode{qseq34\_last}, but no indels.
-We do this comparison for the first 500 sequences in \Rcode{galp34}:
+{\it original} sequences (in \Rcode{U3seq\_first} and \Rcode{U3seq\_last})
+and those in \Rcode{U3qseq\_first} and \Rcode{U3qseq\_last}, but no indels.
+We do this comparison for the first 500 sequences in \Rcode{U3galp}:
 
-<<seq34_vs_qseq34>>=
-galp34_first_nedit500 <- sapply(1:500, function(i)
-    neditAt(seq34_first[[i]], qseq34_first[[i]])
+<<U3seq_vs_U3qseq>>=
+U3galp_first_nedit500 <- sapply(1:500, function(i)
+    neditAt(U3seq_first[[i]], U3qseq_first[[i]])
 )
-table(galp34_first_nedit500)
+table(U3galp_first_nedit500)
 
-galp34_last_nedit500 <- sapply(1:500, function(i)
-    neditAt(reverseComplement(seq34_last[[i]]), qseq34_last[[i]])
+U3galp_last_nedit500 <- sapply(1:500, function(i)
+    neditAt(reverseComplement(U3seq_last[[i]]), U3qseq_last[[i]])
 )
-table(galp34_last_nedit500)
+table(U3galp_last_nedit500)
 @
 
 The edit distance reported by the aligner in the NM tag should
 be the same as the value returned by \Rfunction{neditAt}:
 
-<<galp34_nedit_vs_NM>>=
-galp34_first_nedit <- elementMetadata(first(galp34))$NM
-stopifnot(all(galp34_first_nedit[1:500] == galp34_first_nedit500))
+<<U3galp_nedit_vs_NM>>=
+U3galp_first_nedit <- elementMetadata(first(U3galp))$NM
+stopifnot(all(U3galp_first_nedit[1:500] == U3galp_first_nedit500))
 
-galp34_last_nedit <- elementMetadata(last(galp34))$NM
-stopifnot(all(galp34_last_nedit[1:500] == galp34_last_nedit500))
+U3galp_last_nedit <- elementMetadata(last(U3galp))$NM
+stopifnot(all(U3galp_last_nedit[1:500] == U3galp_last_nedit500))
 @
 
 Finally, the following table tells us how many mismatches per read
 were tolerated by the aligner:
 
 <<up_to_2_mismatches_per_end>>=
-table(galp34_first_nedit, galp34_last_nedit)
+table(U3galp_first_nedit, U3galp_last_nedit)
 @
 
 Up to 2 mismatches per end.
