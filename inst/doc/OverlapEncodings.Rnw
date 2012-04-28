@@ -944,14 +944,14 @@ galp34_last_nedit <- elementMetadata(last(galp34))$NM
 stopifnot(all(galp34_last_nedit[1:500] == galp34_last_nedit500))
 @
 
-Finally, the maximum observed number of mismatches tells us how many
-mismatches per read were tolerated by the aligner:
+Finally, the following table tells us how many mismatches per read
+were tolerated by the aligner:
 
 <<up_to_2_mismatches_per_end>>=
-table(galp34_first_nedit + galp34_last_nedit)
-table(galp34_first_nedit)
-table(galp34_last_nedit)
+table(galp34_first_nedit, galp34_last_nedit)
 @
+
+Up to 2 mismatches per end.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
