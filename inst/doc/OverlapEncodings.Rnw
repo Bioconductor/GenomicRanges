@@ -390,8 +390,8 @@ ambiguous bases but excluding clipping'' (note that tags are optional fields
 i.e. not all BAM files have them):
 
 <<bamseq14>>=
-param <- ScanBamParam(flag=flag0, what="seq", tag="NM")
-gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param)
+param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
+gal14 <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
 bamseq14 <- elementMetadata(gal14)$seq
 names(bamseq14) <- names(gal14)
 head(bamseq14)
@@ -413,7 +413,7 @@ head(seq14)
 The following table indicates that indels were not allowed/supported 
 during the alignment process (no I or D CIGAR operations):
 
-<<cigarOpTable>>=
+<<no_indels_in_gal14>>=
 colSums(cigarOpTable(cigar(gal14)))
 @
 
@@ -439,7 +439,7 @@ stopifnot(all(gal14_nedit[1:500] == gal14_nedit500))
 @
 
 Finally, the maximum observed number of mismatches tells us how many
-mismatches per read were tolerated during the alignment process:
+mismatches per read were tolerated by the aligner:
 
 <<up_to_6_mismatches>>=
 table(gal14_nedit)
@@ -834,7 +834,7 @@ ov34_Rqseq <- qseq34_last[queryHits(ov34)]
 @
 
 For the single-end reads, the sequences associated with a ``flipped query''
-just needed to be reverse complemented. For paired-end reads, we also
+just needed to be ``reverse complemented''. For paired-end reads, we also
 need to swap them between \Rcode{ov34\_Lqseq} and \Rcode{ov34\_Rqseq}:
 
 <<ov34_Lqseq_and_Rqseq>>=
@@ -870,6 +870,87 @@ stopifnot(all(
                                          start=ov34_Rqstart$startInTranscript[ov34_is_compat],
                                          width=width(ov34_Rqseq)[ov34_is_compat])
 ))
+@
+
+Now let's have a look at the ``real'' read sequences. Like we did with our
+single-end reads, we load them by reloading the BAM file and requesting
+the SEQ field and NM tag. Since we've removed the improper pairs from
+our current \Rcode{galp34}, we need to do this again but now we do it at
+load time which is equivalent to doing it afterward (i.e. not only do we
+have the guarantee to end up with the same elements in \Rcode{galp34}, but
+also to have them in the same order):
+
+<<bamseq34_first_and_last>>=
+flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
+param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
+galp34 <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
+
+bamseq34_first <- elementMetadata(first(galp34))$seq
+names(bamseq34_first) <- names(galp34)
+head(bamseq34_first)
+
+bamseq34_last <- elementMetadata(last(galp34))$seq
+names(bamseq34_last) <- names(galp34)
+head(bamseq34_last)
+@
+
+We obtain the {\it original} sequences (i.e. the sequences stored in the
+file used as input to the aligner) by ``reverse complementing'' those
+that are aligned to the minus strand:
+
+<<seq34_first_and_last>>=
+seq34_first <- bamseq34_first
+is_on_minus <- as.logical(strand(first(galp34)) == "-")
+seq34_first[is_on_minus] <- reverseComplement(seq34_first[is_on_minus])
+
+seq34_last <- bamseq34_last
+is_on_minus <- as.logical(strand(last(galp34)) == "-")
+seq34_last[is_on_minus] <- reverseComplement(seq34_last[is_on_minus])
+@
+
+The following tables indicate that indels were not allowed/supported 
+during the alignment process (no I or D CIGAR operations):
+
+<<no_indels_in_galp34>>=
+colSums(cigarOpTable(cigar(first(galp34))))
+colSums(cigarOpTable(cigar(last(galp34))))
+@
+
+So we should only see mismatches (typically a small number) between the
+{\it original} sequences (in \Rcode{seq34\_first} and \Rcode{seq34\_last})
+and those in \Rcode{qseq34\_first} and \Rcode{qseq34\_last}, but no indels.
+We do this comparison for the first 500 sequences in \Rcode{galp34}:
+
+<<seq34_vs_qseq34>>=
+galp34_first_nedit500 <- sapply(1:500, function(i)
+    neditAt(seq34_first[[i]], qseq34_first[[i]])
+)
+table(galp34_first_nedit500)
+
+galp34_last_nedit500 <- sapply(1:500, function(i)
+    neditAt(reverseComplement(seq34_last[[i]]), qseq34_last[[i]])
+)
+table(galp34_last_nedit500)
+@
+
+The edit distance reported by the aligner in the NM tag should
+be the same as the value returned by \Rfunction{neditAt}:
+
+<<galp34_nedit_vs_NM>>=
+galp34_first_nedit <- elementMetadata(first(galp34))$NM
+stopifnot(all(galp34_first_nedit[1:500] == galp34_first_nedit500))
+
+galp34_last_nedit <- elementMetadata(last(galp34))$NM
+stopifnot(all(galp34_last_nedit[1:500] == galp34_last_nedit500))
+@
+
+Finally, the maximum observed number of mismatches tells us how many
+mismatches per read were tolerated by the aligner:
+
+<<up_to_2_mismatches_per_end>>=
+table(galp34_first_nedit + galp34_last_nedit)
+table(galp34_first_nedit)
+table(galp34_last_nedit)
 @
 
 
