@@ -243,7 +243,7 @@ setMethod("as.data.frame", "GenomicRanges",
                    end=end(x),
                    width=width(x),
                    strand=as.factor(strand(x)),
-                   as.data.frame(elementMetadata(x)),
+                   as.data.frame(elementMetadata(x), ...),
                    row.names=row.names,
                    stringsAsFactors=FALSE)
     }

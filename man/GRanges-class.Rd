@@ -154,10 +154,13 @@
       and \code{genome(from)} vectors are stored in the element metadata.
     }
     \item{}{
-      \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
+      \code{as.data.frame(x, row.names = NULL, optional = FALSE, ...)}:
       Creates a data.frame with columns \code{seqnames} (factor),
       \code{start} (integer), \code{end} (integer), \code{width} (integer),
       \code{strand} (factor), as well as the additional columns stored in
+      \code{elementMetadata(x)}. Pass an explicit
+      \code{stringsAsFactors=TRUE/FALSE} argument via \code{\ldots} to
+      override the default conversions for the columns in
       \code{elementMetadata(x)}.
     }
   }
