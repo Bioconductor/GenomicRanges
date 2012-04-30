@@ -18,7 +18,7 @@ Suggests: Biostrings (>= 2.25.3), Rsamtools (>= 1.9.8), BSgenome,
 	EatonEtAlChIPseq (>= 0.0.3), leeBamViews,
 	pasilla, pasillaBamSubset,
 	org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2,
-	RUnit, BSgenome.Dmelanogaster.UCSC.dm3
+	BSgenome.Dmelanogaster.UCSC.dm3, RUnit
 License: Artistic-2.0
 Collate: utils.R
 	cigar-utils.R

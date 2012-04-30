@@ -50,27 +50,26 @@ overlaps that are ``compatible'' with the splicing of the transcript.
 
 Various tools are provided in the \Rpackage{IRanges} and
 \Rpackage{GenomicRanges} packages for working with {\it overlap encodings}.
-In this vignette, we illustrate the use of these tools on real RNA-seq
-data.
+In this vignette, we illustrate the use of these tools on the single-end
+and paired-end reads of an RNA-seq experiment.
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Example 1: With single-end reads}
+\section{Load the reads and transcripts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Load the reads and transcripts}
+\subsection{Load single-end reads from a BAM file}
 
-We start by loading some aligned reads into a \Rclass{GappedAlignments} object.
-The reads are stored in a BAM file ({\tt untreated1\_chr4.bam}) located
-in the \Rpackage{pasillaBamSubset} data package. This file contains single-end
-reads from an RNA-seq experiment and aligned against the dm3 genome (see
-\Rcode{?untreated1\_chr4} in the \Rpackage{pasillaBamSubset} package for more
-information about those reads):
+BAM file {\tt untreated1\_chr4.bam} (located in the
+\Rpackage{pasillaBamSubset} data package) contains single-end reads from
+the ``Pasilla'' experiment and aligned against the dm3 genome (see
+\Rcode{?untreated1\_chr4} in the \Rpackage{pasillaBamSubset} package for
+more information about those reads):
 
 <<untreated1_chr4>>=
 library(pasillaBamSubset)
@@ -78,7 +77,7 @@ untreated1_chr4()
 @
 
 We use the \Rfunction{readGappedAlignments} function defined in the
-\Rpackage{GenomicRanges} package to read the BAM file into a
+\Rpackage{GenomicRanges} package to load the reads into a
 \Rclass{GappedAlignments} object.
 It's probably a good idea to get rid of the PCR or optical duplicate
 (flag bit 0x400 in the SAM format, see the SAM Spec
@@ -106,6 +105,60 @@ CIGAR):
 head(U1gal)
 table(ngap(U1gal))
 @
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Load paired-end reads from a BAM file}
+
+BAM file {\tt untreated3\_chr4.bam} (located in the
+\Rpackage{pasillaBamSubset} data package) contains paired-end reads from
+the ``Pasilla'' experiment and aligned against the dm3 genome (see
+\Rcode{?untreated3\_chr4} in the \Rpackage{pasillaBamSubset} package for
+more information about those reads).
+We use the \Rfunction{readGappedAlignmentPairs} function to load them
+into a \Rclass{GappedAlignmentPairs} object:
+
+<<readGappedAlignmentPairs>>=
+U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
+head(U3galp)
+@
+
+The \Rcode{show} method for \Rclass{GappedAlignmentPairs} objects displays
+two {\tt ranges} columns, one for the {\it first} alignment in the pair (the
+left column), and one for the {\it last} alignment in the pair (the right
+column). The {\tt strand} column corresponds to the strand of the {\it first}
+alignment.
+
+<<first_last>>=
+head(first(U3galp))
+head(last(U3galp))
+@
+
+According to the SAM format specifications, the aligner is expected to mark
+each alignment pair as {\it proper} or not (flag bit 0x2 in the SAM format).
+The SAM Spec only says that a pair is {\it proper} if the {\it first} and
+{\it last} alignments in the pair are ``properly aligned according to the
+aligner''. So the exact criteria used for setting this flag is left to the
+aligner.
+
+We use \Rcode{isProperPair} to extract this flag from the
+\Rclass{GappedAlignmentPairs} object:
+
+<<isProperPair>>=
+table(isProperPair(U3galp))
+@
+
+Even though we could do {\it overlap encodings} with the full object,
+we keep only the {\it proper} pairs for our downstream analysis:
+
+
+<<keep_only_proper_pairs>>=
+U3galp <- U3galp[isProperPair(U3galp)]
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Load the transcripts from a \Rclass{TranscriptDb} object}
 
 We also need to retrieve the dm3 transcripts and their exons from UCSC,
 and extract the exons grouped by transcript in a \Rclass{GRangesList}
@@ -143,8 +196,16 @@ dm3tx_strand <- unlist(runValue(strand(dm3tx)), use.names=FALSE)
 @
 
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Find and encode the overlaps}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Find and encode the overlaps between the reads and transcripts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Single-end overlaps}
 
 We are ready to compute the overlaps with the \Rfunction{findOverlaps}
 function. Note that the strand of the queries produced by the RNA-seq
@@ -213,12 +274,44 @@ tail(sort(U1ovenc_table))
 @
 
 Encodings are sort of cryptic but utilities are provided to extract
-specific meaning from them. Use of these utilities is covered in the
-next four subsections.
+specific meaning from them. Use of these utilities is covered later in this
+document.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{``Compatible'' overlaps}
+\subsection{Paired-end overlaps}
+
+Let's compute the overlaps:
+
+<<U3ov>>=
+U3ov <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
+@
+
+and encode them:
+
+<<U3ovenc>>=
+U3grl <- grglist(U3galp, order.as.in.query=TRUE)
+U3ovenc <- encodeOverlaps(U3grl, dm3tx, hits=U3ov, flip.query.if.wrong.strand=TRUE)
+U3ovenc
+@
+
+Unique encodings in \Rcode{U3ovenc}:
+
+<<U3ovenc_table>>=
+unique_U3ovenc <- levels(encoding(U3ovenc))
+length(unique_U3ovenc)
+head(unique_U3ovenc)
+U3ovenc_table <- table(encoding(U3ovenc))
+tail(sort(U3ovenc_table))
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{``Compatible'' overlaps}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 We are interested in a particular type of overlap where the read
 overlaps the transcript in a ``compatible'' way, that is, in a way
@@ -227,6 +320,10 @@ The \Rfunction{isCompatibleWithSplicing} function can be used on an
 \Rclass{OverlapEncodings} object to detect this type of overlap.
 Note that \Rfunction{isCompatibleWithSplicing} can also be used on a
 character vector or factor.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{``Compatible'' single-end overlaps}
 
 \Rcode{U1ovenc} contains 7 unique encodings ``compatible'' with the splicing
 of the transcript:
@@ -318,7 +415,94 @@ with at least 1 alignment in \Rcode{U1gal}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Projecting the reads on the transcripts}
+\subsection{``Compatible'' paired-end overlaps}
+
+\Rcode{U3ovenc} contains 13 unique encodings ``compatible'' with the splicing
+of the transcript:
+
+<<compatible_unique_U3ovenc>>=
+sort(U3ovenc_table[isCompatibleWithSplicing(unique_U3ovenc)])
+@
+
+Encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (89039 occurences in \Rcode{U3ovenc}),
+\Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2825 occurences in \Rcode{U3ovenc}),
+\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2339 occurences in \Rcode{U3ovenc}),
+and \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (342 occurences in \Rcode{U3ovenc}),
+correspond to the following overlaps:
+
+\begin{itemize}
+  \item \Rcode{"1{-}{-}1:i{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (no gap on the first end, no gap on the
+    last end):               oooo   oooo
+  - transcript:     ...   >>>>>>>>>>>>>>>>   ...
+\end{verbatim}
+
+  \item \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (1 gap on the first end, no gap on the
+    last end):                 ooo---o    oooo
+  - transcript:     ...   >>>>>>>>   >>>>>>>>>>>   ...
+\end{verbatim}
+
+  \item \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"}
+\begin{verbatim}
+  - paired-end read (no gap on the first end, 1 gap on the
+    last end):             oooo      oo---oo
+  - transcript:     ...  >>>>>>>>>>>>>>   >>>>>>>>>  ...
+\end{verbatim}
+
+  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (no gap on the first end, no gap on the
+    last end):               oooo      oooo
+  - transcript:     ...   >>>>>>>>>   >>>>>>>   ...
+\end{verbatim}
+\end{itemize}
+
+Note: switch use of ``first'' and ``last'' above if the read was flipped.
+
+<<U3ov_is_compat>>=
+U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
+table(U3ov_is_compat)  # 95801 "compatible" overlaps
+@
+
+Number of ``compatible'' overlaps per alignment pair in \Rcode{U3galp}:
+
+<<U3galp_ncompat>>=
+U3galp_ncompat <- tabulate(queryHits(U3ov)[U3ov_is_compat], nbins=length(U3galp))
+elementMetadata(U3galp)$ncompat <- U3galp_ncompat
+head(U3galp)
+table(U3galp_ncompat)
+mean(U3galp_ncompat >= 1)
+@
+
+66.8\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
+with at least 1 transcript in \Rcode{dm3tx}.
+
+Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
+
+<<dm3tx_U3ncompat>>=
+dm3tx_U3ncompat <- tabulate(subjectHits(U3ov)[U3ov_is_compat], nbins=length(dm3tx))
+names(dm3tx_U3ncompat) <- names(dm3tx)
+tail(table(dm3tx_U3ncompat))
+mean(dm3tx_U3ncompat >= 1)
+@
+
+Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+with at least 1 alignment pair in \Rcode{U3galp}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Projecting the reads on the transcripts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Projecting the single-end reads on the transcripts}
 
 The \Rfunction{extractQueryStartInTranscript} function computes for each
 overlap the position of the {\it query start} in the transcript:
@@ -444,344 +628,6 @@ mismatches per read were tolerated by the aligner:
 <<up_to_6_mismatches>>=
 table(U1gal_nedit)
 @
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{``Almost compatible'' overlaps}
-
-In many aspects, ``compatible'' overlaps correspond to an ideal situation
-but in practise many overlaps don't fall into that category.
-Here we are interested in a less perfect type of overlap where the
-read overlaps the transcript in a way that {\it would} be ``compatible''
-if 1 or more exons were removed from the transcript. In that case we say
-that the overlap is ``almost compatible'' with the transcript.
-The \Rfunction{isCompatibleWithSkippedExons} function can be used on an
-\Rclass{OverlapEncodings} object to detect this type of overlap.
-Note that \Rfunction{isCompatibleWithSkippedExons} can also be used on a
-character vector of factor.
-
-\Rcode{U1ovenc} contains 7 unique encodings ``almost compatible'' with the
-splicing of the transcript:
-
-<<almost_compatible_unique_U1ovenc>>=
-sort(U1ovenc_table[isCompatibleWithSkippedExons(unique_U1ovenc)])
-@
-
-Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{U1ovenc}),
-\Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{U1ovenc}),
-and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{U1ovenc}),
-correspond to the following overlaps:
-
-\begin{itemize}
-  \item \Rcode{"2:jm:am:af:"}
-\begin{verbatim}
-  - read (1 gap):           ooooo----------ooo
-  - transcript:     ...   >>>>>>>   >>>>   >>>>>>>>   ...
-\end{verbatim}
-
-  \item \Rcode{"2:jm:am:am:af:"}
-\begin{verbatim}
-  - read (1 gap):           ooooo------------------ooo
-  - transcript:     ...   >>>>>>>   >>>>   >>>>>   >>>>>>>>   ...
-\end{verbatim}
-
-  \item \Rcode{"3:jmm:agm:aam:aaf:"}
-\begin{verbatim}
-  - read (2 gaps):             oo---oooo-----------oo
-  - transcript:     ...   >>>>>>>   >>>>   >>>>>   >>>>>>>>   ...
-\end{verbatim}
-\end{itemize}
-
-<<U1ov_is_almostcompat>>=
-U1ov_is_almostcompat <- isCompatibleWithSkippedExons(U1ovenc)
-table(U1ov_is_almostcompat)  # 837 "almost compatible" overlaps
-@
-
-Number of ``almost compatible'' overlaps per alignment in \Rcode{U1gal}:
-
-<<U1gal_nalmostcompat>>=
-U1gal_nalmostcompat <- tabulate(queryHits(U1ov)[U1ov_is_almostcompat], nbins=length(U1gal))
-elementMetadata(U1gal)$nalmostcompat <- U1gal_nalmostcompat
-head(U1gal)
-table(U1gal_nalmostcompat)
-mean(U1gal_nalmostcompat >= 1)
-@
-
-Only 0.2\% of the alignments in \Rcode{U1gal} are ``almost compatible''
-with at least 1 transcript in \Rcode{dm3tx}.
-
-Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
-
-<<dm3tx_U1nalmostcompat>>=
-dm3tx_U1nalmostcompat <- tabulate(subjectHits(U1ov)[U1ov_is_almostcompat], nbins=length(dm3tx))
-names(dm3tx_U1nalmostcompat) <- names(dm3tx)
-table(dm3tx_U1nalmostcompat)
-mean(dm3tx_U1nalmostcompat >= 1)
-@
-
-Only 0.46\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
-with at least 1 alignment in \Rcode{U1gal}.
-
-Finally note that the ``query start in transcript'' values returned by
-\Rfunction{extractQueryStartInTranscript} are also defined for ``almost
-compatible'' overlaps:
-
-<<U1ov_qstart>>=
-head(subset(U1ov_qstart, U1ov_is_almostcompat))
-@
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Detect novel splice junctions}
-
-An alignment in \Rcode{U1gal} with ``almost compatible'' hits but
-no ``compatible'' hits suggests the presence of one or more transcripts that
-are not in our annotations.
-
-First we extract the index of those alignments:
-
-<<aln_shows_nov_splice_jct>>=
-aln_shows_nov_splice_jct <- U1gal_nalmostcompat != 0L &
-                            U1gal_ncompat == 0L
-head(which(aln_shows_nov_splice_jct))
-@
-
-We make this an index into \Rcode{U1ov} (Hits object):
-
-<<is_nov_splice_jct>>=
-is_nov_splice_jct <- queryHits(U1ov) %in% which(aln_shows_nov_splice_jct)
-@
-
-We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
-of interest:
-
-<<narrow_is_nov_splice_jct>>=
-is_nov_splice_jct <- is_nov_splice_jct & U1ov_is_almostcompat
-@
-
-For each overlap of interest, we extract the ranks of the skipped
-exons (we use a list for this as there might be more than 1 skipped
-exon per overlap):
-
-<<extractSkippedExonRanks>>=
-skpexrk <- extractSkippedExonRanks(U1ovenc)[is_nov_splice_jct]
-table(elementLengths(skpexrk))
-@
-
-Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
-
-<<tx2skpexrk>>=
-names(skpexrk) <- queryHits(U1ov)[is_nov_splice_jct]
-f <- names(dm3tx)[subjectHits(U1ov)[is_nov_splice_jct]]
-tx2skpexrk <- split(skpexrk, f)
-@
-
-\Rcode{tx2skpexrk} is a named list of named lists of integer vectors.
-The first level of names (outer names) are transcript TxDb internal
-ids and the second level of names (inner names) are alignment
-indices into \Rcode{U1gal}:
-
-<<tx2skpexrk_names>>=
-head(names(tx2skpexrk))  # transcript TxDb internal ids
-@
-
-Transcript \Rcode{"10"} has 7 hits. All of them skip exons 9 and 10:
-
-<<tx10_details>>=
-tx2skpexrk[["10"]]
-@
-
-Transcript \Rcode{"58"} has 4 hits. Two of them skip exon 2, one of them
-skips exons 2 to 6, and one of them skips exon 10:
-
-<<tx58_details>>=
-tx2skpexrk[["58"]]
-@
-
-A few words about the interpretation of \Rcode{tx2skpexrk}:
-Because of how we've conducted this analysis, the aligments reported in
-\Rcode{tx2skpexrk} are guaranteed to NOT have any ``compatible'' overlaps
-with other known transcripts. All we can say, for example in the case of
-transcript \Rcode{"10"}, is that the 7 reported hits that skip exons 9 and 10
-show evidence of one or more unknown transcripts with a splice junction that
-corresponds to the gap between exons 8 and 11. But without further analysis,
-we can't make any assumption about the exons structure of those unknown
-transcripts. In particular, we cannot assume the existence of an unknown
-transcript made of the same exons as transcript \Rcode{"10"} minus exons 9
-and 10!
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Example 2: With paired-end reads}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Load the reads and transcripts}
-
-We start by loading some aligned paired-end reads into a
-\Rclass{GappedAlignmentPairs} object.
-The reads are stored in a BAM file ({\tt untreated3\_chr4.bam}) located
-in the \Rpackage{pasillaBamSubset} data package. This file contains paired-end
-reads from an RNA-seq experiment and aligned against the dm3 genome (see
-\Rcode{?untreated3\_chr4} in the \Rpackage{pasillaBamSubset} package for more
-information about those reads):
-
-<<untreated3_chr4>>=
-untreated3_chr4()
-@
-
-We use the \Rfunction{readGappedAlignmentPairs} function to read the BAM file
-into a \Rclass{GappedAlignmentPairs} object:
-
-<<readGappedAlignmentPairs>>=
-U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
-head(U3galp)
-@
-
-The \Rcode{show} method for \Rclass{GappedAlignmentPairs} objects displays
-two {\tt ranges} columns, one for the {\it first} alignment in the pair (the
-left column), and one for the {\it last} alignment in the pair (the right
-column). The {\tt strand} column corresponds to the strand of the {\it first}
-alignment.
-
-<<first_last>>=
-head(first(U3galp))
-head(last(U3galp))
-@
-
-According to the SAM format specifications, the aligner is expected to mark
-each alignment pair as {\it proper} or not (flag bit 0x2 in the SAM format).
-The SAM Spec only says that a pair is {\it proper} if the {\it first} and
-{\it last} alignments in the pair are ``properly aligned according to the
-aligner''. So the exact criteria used for setting this flag is left to the
-aligner.
-
-We use \Rcode{isProperPair} to extract this flag from the
-\Rclass{GappedAlignmentPairs} object:
-
-<<isProperPair>>=
-table(isProperPair(U3galp))
-@
-
-Even though we could do {\it overlap encodings} with the full object,
-we keep only the {\it proper} pairs for our downstream analysis:
-
-<<keep_only_proper_pairs>>=
-U3galp <- U3galp[isProperPair(U3galp)]
-@
-
-For the transcript, we'll reuse the \Rcode{dm3tx} object obtained
-previously.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Find and encode the overlaps}
-
-Let's compute the overlaps:
-
-<<U3ov>>=
-U3ov <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
-@
-
-and encode them:
-
-<<U3ovenc>>=
-U3grl <- grglist(U3galp, order.as.in.query=TRUE)
-U3ovenc <- encodeOverlaps(U3grl, dm3tx, hits=U3ov, flip.query.if.wrong.strand=TRUE)
-U3ovenc
-@
-
-Unique encodings in \Rcode{U3ovenc}:
-
-<<U3ovenc_table>>=
-unique_U3ovenc <- levels(encoding(U3ovenc))
-length(unique_U3ovenc)
-head(unique_U3ovenc)
-U3ovenc_table <- table(encoding(U3ovenc))
-tail(sort(U3ovenc_table))
-@
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{``Compatible'' paired-end overlaps}
-
-\Rcode{U3ovenc} contains 13 unique encodings ``compatible'' with the splicing
-of the transcript:
-
-<<compatible_unique_U3ovenc>>=
-sort(U3ovenc_table[isCompatibleWithSplicing(unique_U3ovenc)])
-@
-
-Encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (89039 occurences in \Rcode{U3ovenc}),
-\Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2825 occurences in \Rcode{U3ovenc}),
-\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2339 occurences in \Rcode{U3ovenc}),
-and \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (342 occurences in \Rcode{U3ovenc}),
-correspond to the following overlaps:
-
-\begin{itemize}
-  \item \Rcode{"1{-}{-}1:i{-}{-}i:"}
-\begin{verbatim}
-  - paired-end read (no gap on the first end, no gap on the
-    last end):               oooo   oooo
-  - transcript:     ...   >>>>>>>>>>>>>>>>   ...
-\end{verbatim}
-
-  \item \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"}
-\begin{verbatim}
-  - paired-end read (1 gap on the first end, no gap on the
-    last end):                 ooo---o    oooo
-  - transcript:     ...   >>>>>>>>   >>>>>>>>>>>   ...
-\end{verbatim}
-
-  \item \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"}
-\begin{verbatim}
-  - paired-end read (no gap on the first end, 1 gap on the
-    last end):             oooo      oo---oo
-  - transcript:     ...  >>>>>>>>>>>>>>   >>>>>>>>>  ...
-\end{verbatim}
-
-  \item \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"}
-\begin{verbatim}
-  - paired-end read (no gap on the first end, no gap on the
-    last end):               oooo      oooo
-  - transcript:     ...   >>>>>>>>>   >>>>>>>   ...
-\end{verbatim}
-\end{itemize}
-
-Note: switch use of ``first'' and ``last'' above if the read was flipped.
-
-<<U3ov_is_compat>>=
-U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
-table(U3ov_is_compat)  # 95801 "compatible" overlaps
-@
-
-Number of ``compatible'' overlaps per alignment pair in \Rcode{U3galp}:
-
-<<U3galp_ncompat>>=
-U3galp_ncompat <- tabulate(queryHits(U3ov)[U3ov_is_compat], nbins=length(U3galp))
-elementMetadata(U3galp)$ncompat <- U3galp_ncompat
-head(U3galp)
-table(U3galp_ncompat)
-mean(U3galp_ncompat >= 1)
-@
-
-66.8\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
-with at least 1 transcript in \Rcode{dm3tx}.
-
-Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
-
-<<dm3tx_U3ncompat>>=
-dm3tx_U3ncompat <- tabulate(subjectHits(U3ov)[U3ov_is_compat], nbins=length(dm3tx))
-names(dm3tx_U3ncompat) <- names(dm3tx)
-tail(table(dm3tx_U3ncompat))
-mean(dm3tx_U3ncompat >= 1)
-@
-
-Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 1 alignment pair in \Rcode{U3galp}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -954,8 +800,196 @@ table(U3galp_first_nedit, U3galp_last_nedit)
 Up to 2 mismatches per end.
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{``Almost compatible'' overlaps}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+In many aspects, ``compatible'' overlaps correspond to an ideal situation
+but in practise many overlaps don't fall into that category.
+Here we are interested in a less perfect type of overlap where the
+read overlaps the transcript in a way that {\it would} be ``compatible''
+if 1 or more exons were removed from the transcript. In that case we say
+that the overlap is ``almost compatible'' with the transcript.
+The \Rfunction{isCompatibleWithSkippedExons} function can be used on an
+\Rclass{OverlapEncodings} object to detect this type of overlap.
+Note that \Rfunction{isCompatibleWithSkippedExons} can also be used on a
+character vector of factor.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{``Almost compatible'' single-end overlaps}
+
+\Rcode{U1ovenc} contains 7 unique encodings ``almost compatible'' with the
+splicing of the transcript:
+
+<<almost_compatible_unique_U1ovenc>>=
+sort(U1ovenc_table[isCompatibleWithSkippedExons(unique_U1ovenc)])
+@
+
+Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{U1ovenc}),
+\Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{U1ovenc}),
+and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{U1ovenc}),
+correspond to the following overlaps:
+
+\begin{itemize}
+  \item \Rcode{"2:jm:am:af:"}
+\begin{verbatim}
+  - read (1 gap):           ooooo----------ooo
+  - transcript:     ...   >>>>>>>   >>>>   >>>>>>>>   ...
+\end{verbatim}
+
+  \item \Rcode{"2:jm:am:am:af:"}
+\begin{verbatim}
+  - read (1 gap):           ooooo------------------ooo
+  - transcript:     ...   >>>>>>>   >>>>   >>>>>   >>>>>>>>   ...
+\end{verbatim}
+
+  \item \Rcode{"3:jmm:agm:aam:aaf:"}
+\begin{verbatim}
+  - read (2 gaps):             oo---oooo-----------oo
+  - transcript:     ...   >>>>>>>   >>>>   >>>>>   >>>>>>>>   ...
+\end{verbatim}
+\end{itemize}
+
+<<U1ov_is_almostcompat>>=
+U1ov_is_almostcompat <- isCompatibleWithSkippedExons(U1ovenc)
+table(U1ov_is_almostcompat)  # 837 "almost compatible" overlaps
+@
+
+Number of ``almost compatible'' overlaps per alignment in \Rcode{U1gal}:
+
+<<U1gal_nalmostcompat>>=
+U1gal_nalmostcompat <- tabulate(queryHits(U1ov)[U1ov_is_almostcompat], nbins=length(U1gal))
+elementMetadata(U1gal)$nalmostcompat <- U1gal_nalmostcompat
+head(U1gal)
+table(U1gal_nalmostcompat)
+mean(U1gal_nalmostcompat >= 1)
+@
+
+Only 0.2\% of the alignments in \Rcode{U1gal} are ``almost compatible''
+with at least 1 transcript in \Rcode{dm3tx}.
+
+Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
+
+<<dm3tx_U1nalmostcompat>>=
+dm3tx_U1nalmostcompat <- tabulate(subjectHits(U1ov)[U1ov_is_almostcompat], nbins=length(dm3tx))
+names(dm3tx_U1nalmostcompat) <- names(dm3tx)
+table(dm3tx_U1nalmostcompat)
+mean(dm3tx_U1nalmostcompat >= 1)
+@
+
+Only 0.46\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
+with at least 1 alignment in \Rcode{U1gal}.
+
+Finally note that the ``query start in transcript'' values returned by
+\Rfunction{extractQueryStartInTranscript} are also defined for ``almost
+compatible'' overlaps:
+
+<<U1ov_qstart>>=
+head(subset(U1ov_qstart, U1ov_is_almostcompat))
+@
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{``Almost compatible'' paired-end overlaps}
+
+[COMING SOON...]
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Detect novel splice junctions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{By looking at single-end overlaps}
+
+An alignment in \Rcode{U1gal} with ``almost compatible'' hits but
+no ``compatible'' hits suggests the presence of one or more transcripts that
+are not in our annotations.
+
+First we extract the index of those alignments:
+
+<<aln_shows_nov_splice_jct>>=
+aln_shows_nov_splice_jct <- U1gal_nalmostcompat != 0L &
+                            U1gal_ncompat == 0L
+head(which(aln_shows_nov_splice_jct))
+@
+
+We make this an index into \Rcode{U1ov} (Hits object):
+
+<<is_nov_splice_jct>>=
+is_nov_splice_jct <- queryHits(U1ov) %in% which(aln_shows_nov_splice_jct)
+@
+
+We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
+of interest:
+
+<<narrow_is_nov_splice_jct>>=
+is_nov_splice_jct <- is_nov_splice_jct & U1ov_is_almostcompat
+@
+
+For each overlap of interest, we extract the ranks of the skipped
+exons (we use a list for this as there might be more than 1 skipped
+exon per overlap):
+
+<<extractSkippedExonRanks>>=
+skpexrk <- extractSkippedExonRanks(U1ovenc)[is_nov_splice_jct]
+table(elementLengths(skpexrk))
+@
+
+Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
+
+<<tx2skpexrk>>=
+names(skpexrk) <- queryHits(U1ov)[is_nov_splice_jct]
+f <- names(dm3tx)[subjectHits(U1ov)[is_nov_splice_jct]]
+tx2skpexrk <- split(skpexrk, f)
+@
+
+\Rcode{tx2skpexrk} is a named list of named lists of integer vectors.
+The first level of names (outer names) are transcript TxDb internal
+ids and the second level of names (inner names) are alignment
+indices into \Rcode{U1gal}:
+
+<<tx2skpexrk_names>>=
+head(names(tx2skpexrk))  # transcript TxDb internal ids
+@
+
+Transcript \Rcode{"10"} has 7 hits. All of them skip exons 9 and 10:
+
+<<tx10_details>>=
+tx2skpexrk[["10"]]
+@
+
+Transcript \Rcode{"58"} has 4 hits. Two of them skip exon 2, one of them
+skips exons 2 to 6, and one of them skips exon 10:
+
+<<tx58_details>>=
+tx2skpexrk[["58"]]
+@
+
+A few words about the interpretation of \Rcode{tx2skpexrk}:
+Because of how we've conducted this analysis, the aligments reported in
+\Rcode{tx2skpexrk} are guaranteed to NOT have any ``compatible'' overlaps
+with other known transcripts. All we can say, for example in the case of
+transcript \Rcode{"10"}, is that the 7 reported hits that skip exons 9 and 10
+show evidence of one or more unknown transcripts with a splice junction that
+corresponds to the gap between exons 8 and 11. But without further analysis,
+we can't make any assumption about the exons structure of those unknown
+transcripts. In particular, we cannot assume the existence of an unknown
+transcript made of the same exons as transcript \Rcode{"10"} minus exons 9
+and 10!
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{By looking at paired-end overlaps}
 
 [COMING SOON...]
 
