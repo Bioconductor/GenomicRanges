@@ -1015,17 +1015,23 @@ stopifnot(all(
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-Aligning the {\it original queries} to the reference genome is not the
-most efficient nor accurate way to count the number of ``compatible''
-overlaps per {\it original query}. Supporting junction reads (i.e. reads
-that align with at least 1 gap) introduces a significant computational cost
-during the alignment process. Then, as we've seen in the previous sections,
-each alignment produced by the aligner needs to be broken into a set of
-ranges (based on its CIGAR) and those ranges compared to the ranges of
-the exons grouped by transcript.
+Aligning the reads to the reference genome is not the most efficient nor
+accurate way to count the number of ``compatible'' overlaps per {\it original
+query}. Supporting junction reads (i.e. reads that align with at least 1 gap)
+introduces a significant computational cost during the alignment process.
+Then, as we've seen in the previous sections, each alignment produced by the
+aligner needs to be broken into a set of ranges (based on its CIGAR) and
+those ranges compared to the ranges of the exons grouped by transcript.
 
-A more straightforward and accurate approach is to align the {\it original
-queries} directly to the transcriptome.
+A more straightforward and accurate approach is to align the reads directly
+to the transcriptome, and without allowing the typical gap that the aligner
+needs to introduce when aligning a junction read to the reference genome.
+With this approach, a ``hit'' between a read and a transcript is necessarily
+compatible with the splicing of the transcript. In case of a ``hit'', we'll
+say that the read and the transcript are ``sequence-based compatible'' (to
+differentiate from our previous notion of ``compatible'' overlaps that we
+will call ``encoding-based compatible'' from now on, unless the context is
+clear).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1063,8 +1069,10 @@ findSequenceHits <- function(oqseq, txseq, which.txseq=NULL, max.mismatch=0)
                     queryLength=pattern_length, subjectLength=length(x))
     }
 
-    if (!is.null(which.txseq))
+    if (!is.null(which.txseq)) {
+        txseq0_length <- length(txseq)
         txseq <- txseq[which.txseq]
+    }
 
     names(oqseq) <- NULL
     other <- alphabetFrequency(oqseq, baseOnly=TRUE)[ , "other"]
@@ -1093,7 +1101,7 @@ findSequenceHits <- function(oqseq, txseq, which.txseq=NULL, max.mismatch=0)
 
     if (!is.null(which.txseq)) {
         subject_hits <- which.txseq[subject_hits]
-        hits0@subjectLength <- length(txseq)
+        hits0@subjectLength <- txseq0_length
     }
 
     ## Order the hits.
@@ -1127,8 +1135,41 @@ U1hitsf <- findSequenceHits(reverseComplement(U1oqseq), dm3txseq,
 U1hits <- union(U1hits, U1hitsf)
 @
 <<LOAD_U1hits, echo=FALSE, results=hide>>=
-.loadPrecomputed("U1hits")
+U1hits <- .loadPrecomputed("U1hits")
 @
+
+This method finds at least all the ``encoding-based'' compatible overlaps
+that we found previsouly plus more:
+
+<<U1hits-vs-U1ov>>=
+setdiff(U1ov[U1ov_is_compat], U1hits)
+setdiff(U1hits, U1ov[U1ov_is_compat])
+@
+
+Number of ``sequence-based compatible'' overlaps per alignment in
+\Rcode{U1gal}:
+
+<<U1gal_ncompat2>>=
+U1gal_nsbcompat <- tabulate(queryHits(U1hits), nbins=length(U1oqseq))
+elementMetadata(U1gal)$nsbcompat <- U1gal_nsbcompat
+head(U1gal)
+table(U1gal_nsbcompat)
+mean(U1gal_nsbcompat >= 1)
+@
+
+76.44\% of the alignments in \Rcode{U1gal} are ``sequence-based compatible''
+with at least 1 transcript in \Rcode{dm3tx}.
+
+Number of ``sequence-based compatible'' overlaps per {\it original query}:
+
+<<U1uqnames_nsbcompat>>=
+U1uqnames_nsbcompat <- sumByQNAME(U1gal_nsbcompat, names(U1gal))
+table(U1uqnames_nsbcompat)
+mean(U1uqnames_nsbcompat >= 1)
+@
+
+77.8\% of the {\it original queries} are ``sequence-based compatible'' with
+at least 1 transcript in \Rcode{dm3tx}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
