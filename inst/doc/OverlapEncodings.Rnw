@@ -33,7 +33,26 @@
 
 <<options,echo=FALSE>>=
 options(width=100)
+.precomputed_results <- system.file("doc", "precomputed_results",
+                                    package="GenomicRanges", mustWork=TRUE)
+.loadPrecomputed <- function(objname)
+{
+    filename <- paste0(objname, ".rda")
+    path <- file.path(.precomputed_results, filename)
+    tempenv <- new.env(parent=emptyenv())
+    load(path, envir=tempenv)
+    get(objname, envir=tempenv)
+}
+.checkIdenticalToPrecomputed <- function(obj, objname, ignore.metadata=FALSE)
+{
+    precomputed_obj <- .loadPrecomputed(objname)
+    if (ignore.metadata)
+        metadata(obj) <- metadata(precomputed_obj) <- list()
+    if (!identical(obj, precomputed_obj))
+        stop("'", objname, "' is not identical to precomputed version")
+}
 @
+
 \tableofcontents
 
 
@@ -111,7 +130,7 @@ table(duplicated(names(U1gal)))
 Our reads can have up to 2 gaps (a gap corresponds to an N operation in the
 CIGAR):
 
-<<gaps_in_U1gal>>=
+<<gaps-in-U1gal>>=
 head(unique(cigar(U1gal)))
 table(ngap(U1gal))
 @
@@ -119,7 +138,7 @@ table(ngap(U1gal))
 Also, the following table indicates that indels were not allowed/supported 
 during the alignment process (no I or D CIGAR operations):
 
-<<no_indels_in_U1gal>>=
+<<no-indels-in-U1gal>>=
 colSums(cigarOpTable(cigar(U1gal)))
 @
 
@@ -168,7 +187,7 @@ table(isProperPair(U3galp))
 Even though we could do {\it overlap encodings} with the full object,
 we keep only the {\it proper} pairs for our downstream analysis:
 
-<<keep_only_proper_pairs>>=
+<<keep-only-proper-pairs>>=
 U3galp <- U3galp[isProperPair(U3galp)]
 @
 
@@ -184,7 +203,7 @@ table(duplicated(names(U3galp)))
 
 Our reads can have up to 1 gap per end:
 
-<<gaps_in_U3galp>>=
+<<gaps-in-U3galp>>=
 head(unique(cigar(first(U3galp))))
 head(unique(cigar(last(U3galp))))
 table(ngap(first(U3galp)), ngap(last(U3galp)))
@@ -193,7 +212,7 @@ table(ngap(first(U3galp)), ngap(last(U3galp)))
 Like for our single-end reads, the following tables indicate that indels were
 not allowed/supported during the alignment process:
 
-<<no_indels_in_U3galp>>=
+<<no-indels-in-U3galp>>=
 colSums(cigarOpTable(cigar(first(U3galp))))
 colSums(cigarOpTable(cigar(last(U3galp))))
 @
@@ -255,10 +274,9 @@ Note that sequences with the same {\it query name} correspond to the same
 {\it original query} and therefore must be the same. Let's do a quick sanity
 check:
 
-<<same_name_implies_same_seq_in_U1oqseq>>=
-stopifnot(all(
-    U1oqseq[match(names(U1oqseq), names(U1oqseq))] == U1oqseq
-))
+<<same-name-implies-same-seq-in-U1oqseq>>=
+dup2uniq <- match(names(U1oqseq), names(U1oqseq))
+stopifnot(all(U1oqseq[dup2uniq] == U1oqseq))
 @
 
 \subsubsection{Compute the {\it reference query sequences}}
@@ -302,7 +320,7 @@ we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
 Because calling \Rfunction{neditAt} in a loop is inefficient, we do this
 comparison for the first 500 sequences in \Rcode{U1oqseq} only:
 
-<<U1oqseq_vs_U1rqseq>>=
+<<U1oqseq-vs-U1rqseq>>=
 U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1oqseq[[i]], U1rqseq[[i]]))
 table(U1gal_nedit500)
 @
@@ -315,7 +333,7 @@ edit distance reported by the aligner (NM tag). Because the latter excludes
 the N CIGAR operations, it should actually be the same as the former.
 We confirm this for the 500 edit distances computed in \Rcode{U1gal\_nedit500}:
 
-<<U1gal_nedit_vs_NM>>=
+<<U1gal_nedit-vs-NM>>=
 U1gal_NM <- elementMetadata(U1gal)$NM
 stopifnot(all(U1gal_NM[1:500] == U1gal_nedit500))
 @
@@ -323,7 +341,7 @@ stopifnot(all(U1gal_NM[1:500] == U1gal_nedit500))
 Note that the maximum observed number of mismatches tells us how many
 mismatches per read were tolerated by the aligner:
 
-<<up_to_6_mismatches>>=
+<<up-to-6-mismatches>>=
 table(U1gal_NM)
 @
 
@@ -340,7 +358,7 @@ now we do it at load time which is equivalent to doing it afterward (i.e.
 not only do we have the guarantee to end up with the same elements in
 \Rcode{U3galp}, but also to have them in the same order):
 
-<<U3galp_reloaded>>=
+<<reload-U3galp>>=
 flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
 param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
 U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
@@ -350,11 +368,9 @@ Let's extract the {\it first} and {\it last} sequences from \Rcode{U3galp}:
 
 <<U3bamseq>>=
 U3bamseq_first <- elementMetadata(first(U3galp))$seq
-names(U3bamseq_first) <- names(U3galp)
-head(U3bamseq_first)
-
 U3bamseq_last <- elementMetadata(last(U3galp))$seq
-names(U3bamseq_last) <- names(U3galp)
+names(U3bamseq_first) <- names(U3bamseq_last) <- names(U3galp)
+head(U3bamseq_first)
 head(U3bamseq_last)
 @
 
@@ -375,13 +391,10 @@ Note that sequence pairs with the same {\it query template name} correspond
 to the same {\it original query pairs} and therefore should be the same.
 Let's do a quick sanity check:
 
-<<same_name_implies_same_seq_in_U3oqseq>>=
-stopifnot(all(
-    U3oqseq_first[match(names(U3oqseq_first), names(U3oqseq_first))] == U3oqseq_first
-))
-stopifnot(all(
-    U3oqseq_last[match(names(U3oqseq_last), names(U3oqseq_last))] == U3oqseq_last
-))
+<<same-name-implies-same-seq-pair-in-U3oqseq>>=
+dup2uniq <- match(names(U3oqseq_first), names(U3oqseq_first))
+stopifnot(all(U3oqseq_first[dup2uniq] == U3oqseq_first))
+stopifnot(all(U3oqseq_last[dup2uniq] == U3oqseq_last))
 @
 
 \subsubsection{Compute the {\it reference query sequences}}
@@ -414,7 +427,7 @@ call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
 Let's do this comparison for the first 500 sequences in \Rcode{U3oqseq\_first}
 and \Rcode{U3oqseq\_last}:
 
-<<U3oqseq_vs_U3rqseq>>=
+<<U3oqseq-vs-U3rqseq>>=
 U3galp_first_nedit500 <- sapply(1:500, function(i)
     neditAt(U3oqseq_first[[i]], U3rqseq_first[[i]])
 )
@@ -436,7 +449,7 @@ the N CIGAR operations, it should actually be the same as the former.
 We confirm this for the 500 edit distances computed in
 \Rcode{U3galp\_first\_nedit500} and \Rcode{U3galp\_last\_nedit500}:
 
-<<U3galp_nedit_vs_NM>>=
+<<U3galp_nedit-vs-NM>>=
 U3galp_first_NM <- elementMetadata(first(U3galp))$NM
 stopifnot(all(U3galp_first_NM[1:500] == U3galp_first_nedit500))
 
@@ -447,7 +460,7 @@ stopifnot(all(U3galp_last_NM[1:500] == U3galp_last_nedit500))
 Note that the following table tells us how many mismatches per read were
 tolerated by the aligner:
 
-<<up_to_2_mismatches_per_end>>=
+<<up-to-2-mismatches-per-end>>=
 table(U3galp_first_NM, U3galp_last_NM)
 @
 
@@ -495,6 +508,9 @@ from UCSC:
 dm3_refGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
 dm3tx <- exonsBy(dm3_refGene_txdb, by="tx")
 @
+<<CHECK_dm3tx, echo=FALSE, results=hide>>=
+.checkIdenticalToPrecomputed(dm3tx, "dm3tx", ignore.metadata=TRUE)
+@
 
 We check that all the exons in any given transcript belong to the same
 chromosome and strand. Knowing that our set of transcripts is free of
@@ -531,10 +547,10 @@ U1ov <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
 @
 
 However, the {\it overlap encodings} are strand sensitive so we will
-compute them twice, once for the original alignments (i.e. the alignments
-of the original queries), and once again for the ``flipped alignments''
-(i.e. the alignments of the flipped queries). We extract the ranges of
-the original and flipped alignments in 2 \Rclass{GRangesList} objects
+compute them twice, once for the ``original alignments'' (i.e. the alignments
+of the {\it original queries}), and once again for the ``flipped alignments''
+(i.e. the alignments of the ``flipped queries''). We extract the ranges of
+the ``original'' and ``flipped'' alignments in 2 \Rclass{GRangesList} objects
 with:
 
 <<U1grlf>>=
@@ -679,9 +695,9 @@ are consecutive in the transcript.
 
 Encodings \Rcode{"1:f:"} and \Rcode{"1:j:"} are variations of the situation
 described by encoding \Rcode{"1:i:"}. For \Rcode{"1:f:"}, the first
-aligned base of the read (or flipped read) is aligned with the first base
-of the exon. For \Rcode{"1:j:"}, the last aligned base of the read (or
-flipped read) is aligned with the last base of the exon:
+aligned base of the read (or ``flipped'' read) is aligned with the first
+base of the exon. For \Rcode{"1:j:"}, the last aligned base of the read (or
+``flipped'' read) is aligned with the last base of the exon:
 
 \begin{itemize}
   \item \Rcode{"1:f:"}
@@ -799,7 +815,7 @@ correspond to the following overlaps:
 \end{verbatim}
 \end{itemize}
 
-Note: switch use of ``first'' and ``last'' above if the read was flipped.
+Note: switch use of ``first'' and ``last'' above if the read was ``flipped''.
 
 <<U3ov_is_compat>>=
 U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
@@ -885,17 +901,17 @@ Let's start by using the \Rfunction{extractTranscriptsFromGenome}
 to extract the transcript sequences (aka transcriptome) from the dm3
 reference genome:
 
-<<txseq>>=
-txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
+<<dm3txseq>>=
+dm3txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 @
 
 For each ``compatible'' overlap, the read sequence in \Rcode{U1rqseq} must
-be an {\it exact} substring of the transcript sequence in \Rcode{txseq}:
+be an {\it exact} substring of the transcript sequence in \Rcode{dm3txseq}:
 
-<<U1ov_rqseq_vs_U1ov_txseq>>=
+<<U1ov_rqseq-vs-U1ov_txseq>>=
 U1ov_rqseq <- U1rqseq[queryHits(U1ov)]
 U1ov_rqseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov_rqseq[flippedQuery(U1ovenc)])
-U1ov_txseq <- txseq[subjectHits(U1ov)]
+U1ov_txseq <- dm3txseq[subjectHits(U1ov)]
 stopifnot(all(
     U1ov_rqseq[U1ov_is_compat] ==
         narrow(U1ov_txseq[U1ov_is_compat],
@@ -963,14 +979,14 @@ U3ov_Rrqseq[flip_idx] <- reverseComplement(tmp)
 Let's assign the transcript sequence to each overlap:
 
 <<U3ov_txseq>>=
-U3ov_txseq <- txseq[subjectHits(U3ov)]
+U3ov_txseq <- dm3txseq[subjectHits(U3ov)]
 @
 
 For each ``compatible'' overlap, we expect the ``left and right reference
 query sequences'' of the read to be {\it exact} substrings of the transcript
 sequence. Let's check the ``left reference query sequences'':
 
-<<U3ov_Lrqseq_vs_U3ov_txseq>>=
+<<U3ov_Lrqseq-vs-U3ov_txseq>>=
 stopifnot(all(
     U3ov_Lrqseq[U3ov_is_compat] ==
         narrow(U3ov_txseq[U3ov_is_compat],
@@ -981,7 +997,7 @@ stopifnot(all(
 
 and the ``right reference query sequences'':
 
-<<U3ov_Rrqseq_vs_U3ov_txseq>>=
+<<U3ov_Rrqseq-vs-U3ov_txseq>>=
 stopifnot(all(
     U3ov_Rrqseq[U3ov_is_compat] ==
         narrow(U3ov_txseq[U3ov_is_compat],
@@ -1015,18 +1031,27 @@ queries} directly to the transcriptome.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Align the single-end reads to the transcriptome}
 
-Since indels were not allowed/supported for the alignment of the reads to
+The single-end reads are in \Rcode{U1oqseq}, the transcriptome is in
+\Rcode{dm3txseq}.
+
+Since indels were not allowed/supported during the alignment of the reads to
 the reference genome, we don't need to allow/support them either for aligning
 the reads to the transcriptome. Also since our goal is to find (and count)
-``compatible'' overlaps between reads and transcripts, we don't keep track
-of the details of alignments between the reads and transcripts. Those
-simplifications allow us to write the following function that we will use for
-finding the ``compatible'' overlaps:
+``compatible'' overlaps between reads and transcripts, we don't need to keep
+track of the details of the alignments between the reads and the transcripts.
+Finally, since BAM file {\tt untreated1\_chr4.bam} is not the full output of
+the aligner but the subset obtained by keeping only the alignments located
+on chr4, we don't need to align \Rcode{U1oqseq} to the full transcriptome,
+but only to the subset of \Rcode{dm3txseq} made of the transcripts located
+on chr4.
 
-<<findCompatibleOverlaps>>=
+With those simplifications in mind, we write the following function that we
+will use to find the ``hits'' between the reads and the transcriptome:
+
+<<findSequenceHits>>=
 ### A wrapper to vwhichPDict() that supports ambiguity codes in 'oqseq'
 ### and 'txseq', and treats them as such.
-findCompatibleOverlaps <- function(oqseq, txseq, max.mismatch=0)
+findSequenceHits <- function(oqseq, txseq, which.txseq=NULL, max.mismatch=0)
 {
     .asHits <- function(x, pattern_length)
     {
@@ -1037,6 +1062,9 @@ findCompatibleOverlaps <- function(oqseq, txseq, max.mismatch=0)
         new("Hits", queryHits=query_hits, subjectHits=subject_hits,
                     queryLength=pattern_length, subjectLength=length(x))
     }
+
+    if (!is.null(which.txseq))
+        txseq <- txseq[which.txseq]
 
     names(oqseq) <- NULL
     other <- alphabetFrequency(oqseq, baseOnly=TRUE)[ , "other"]
@@ -1062,6 +1090,13 @@ findCompatibleOverlaps <- function(oqseq, txseq, max.mismatch=0)
     ## Combine the hits.
     query_hits <- c(queryHits(hits0), queryHits(hits1))
     subject_hits <- c(subjectHits(hits0), subjectHits(hits1))
+
+    if (!is.null(which.txseq)) {
+        subject_hits <- which.txseq[subject_hits]
+        hits0@subjectLength <- length(txseq)
+    }
+
+    ## Order the hits.
     oo <- IRanges:::orderIntegerPairs(query_hits, subject_hits)
     hits0@queryHits <- query_hits[oo]
     hits0@subjectHits <- subject_hits[oo]
@@ -1069,11 +1104,37 @@ findCompatibleOverlaps <- function(oqseq, txseq, max.mismatch=0)
 }
 @
 
+Let's compute the index of the transcripts in \Rcode{dm3txseq} located on chr4
+(\Rfunction{findSequenceHits} will restrict the search to those transcripts):
 
+<<which.txseq>>=
+dm3chr4tx <- transcripts(dm3_refGene_txdb, vals=list(tx_chrom="chr4"))
+dm3chr4txids <- elementMetadata(dm3chr4tx)$tx_id
+which.txseq <- match(dm3chr4txids, names(dm3txseq))
+@
+
+We know that the aligner tolerated up to 6 mismatches per read.
+The following 3 commands find the ``hits'' for the {\it original queries},
+then find the ``hits'' for the ``flipped queries'', and finally merge all
+the ``hits'' (note that the 3 commands take about 10-12 minutes to complete
+on a modern laptop):
+
+<<U1hits, eval=FALSE>>=
+U1hits <- findSequenceHits(U1oqseq, dm3txseq,
+                           which.txseq=which.txseq, max.mismatch=6)
+U1hitsf <- findSequenceHits(reverseComplement(U1oqseq), dm3txseq,
+                            which.txseq=which.txseq, max.mismatch=6)
+U1hits <- union(U1hits, U1hitsf)
+@
+<<LOAD_U1hits, echo=FALSE, results=hide>>=
+.loadPrecomputed("U1hits")
+@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Align the paired-end reads to the transcriptome}
+
+[COMING SOON...]
 
 
 
@@ -1186,9 +1247,9 @@ head(subset(U1ov_qstart, U1ov_is_almostcompat))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{By looking at single-end overlaps}
 
-An alignment in \Rcode{U1gal} with ``almost compatible'' hits but
-no ``compatible'' hits suggests the presence of one or more transcripts that
-are not in our annotations.
+An alignment in \Rcode{U1gal} with ``almost compatible'' overlaps but
+no ``compatible'' overlaps suggests the presence of one or more transcripts
+that are not in our annotations.
 
 First we extract the index of those alignments:
 
@@ -1207,7 +1268,7 @@ is_nov_splice_jct <- queryHits(U1ov) %in% which(aln_shows_nov_splice_jct)
 We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
 of interest:
 
-<<narrow_is_nov_splice_jct>>=
+<<narrow-is_nov_splice_jct>>=
 is_nov_splice_jct <- is_nov_splice_jct & U1ov_is_almostcompat
 @
 
@@ -1237,16 +1298,16 @@ indices into \Rcode{U1gal}:
 head(names(tx2skpexrk))  # transcript TxDb internal ids
 @
 
-Transcript \Rcode{"10"} has 7 hits. All of them skip exons 9 and 10:
+Transcript \Rcode{"10"} receives 7 hits. All of them skip exons 9 and 10:
 
-<<tx10_details>>=
+<<tx10-details>>=
 tx2skpexrk[["10"]]
 @
 
-Transcript \Rcode{"58"} has 4 hits. Two of them skip exon 2, one of them
+Transcript \Rcode{"58"} receives 4 hits. Two of them skip exon 2, one of them
 skips exons 2 to 6, and one of them skips exon 10:
 
-<<tx58_details>>=
+<<tx58-details>>=
 tx2skpexrk[["58"]]
 @
 
