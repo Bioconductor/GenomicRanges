@@ -126,10 +126,10 @@ colSums(cigarOpTable(cigar(U1gal)))
 In this document, we will also need to access the {\it original query
 sequences}. To load them, we reload the BAM file but now we explicitely
 request the SEQ field by using \Rcode{what="seq"} in our call to
-\Rfunction{ScanBamParam}. The NM tag, which is a predefined tag
-described in the SAM Spec as the ``Edit distance to the reference, including
-ambiguous bases but excluding clipping'' (note that tags are optional fields
-i.e. not all BAM files have them). We will also need to access this tag:
+\Rfunction{ScanBamParam}. We also load the NM tag (we will need it too),
+which is a predefined tag described in the SAM Spec as the ``Edit distance
+to the reference, including ambiguous bases but excluding clipping''
+(note that tags are optional fields i.e. not all BAM files have them):
 
 <<U1bamseq>>=
 param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
