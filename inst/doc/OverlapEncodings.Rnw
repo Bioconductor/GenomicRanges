@@ -244,20 +244,20 @@ Because the BAM format imposes that the read sequence is ``reverse
 complemented'' when the read is aligned to the minus strand, we ``reverse
 complement'' it again to get the {\it original query sequences}:
 
-<<U1seq>>=
-U1seq <- U1bamseq
+<<U1oqseq>>=
+U1oqseq <- U1bamseq
 is_on_minus <- as.logical(strand(U1gal) == "-")
-U1seq[is_on_minus] <- reverseComplement(U1seq[is_on_minus])
-head(U1seq)
+U1oqseq[is_on_minus] <- reverseComplement(U1oqseq[is_on_minus])
+head(U1oqseq)
 @
 
 Note that sequences with the same {\it query name} correspond to the same
 {\it original query} and therefore must be the same. Let's do a quick sanity
 check:
 
-<<same_name_implies_same_seq_in_U1seq>>=
+<<same_name_implies_same_seq_in_U1oqseq>>=
 stopifnot(all(
-    U1seq[match(names(U1seq), names(U1seq))] == U1seq
+    U1oqseq[match(names(U1oqseq), names(U1oqseq))] == U1oqseq
 ))
 @
 
@@ -300,14 +300,14 @@ We can use the \Rfunction{neditAt} function defined in the
 see mismatches (typically a small number) during that comparison so
 we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
 Because calling \Rfunction{neditAt} in a loop is inefficient, we do this
-comparison for the first 500 sequences in \Rcode{U1seq} only:
+comparison for the first 500 sequences in \Rcode{U1oqseq} only:
 
-<<U1seq_vs_U1rqseq>>=
-U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1seq[[i]], U1rqseq[[i]]))
+<<U1oqseq_vs_U1rqseq>>=
+U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1oqseq[[i]], U1rqseq[[i]]))
 table(U1gal_nedit500)
 @
 
-Yes, the first 500 sequences in \Rcode{U1seq} are ``close'' to the first
+Yes, the first 500 sequences in \Rcode{U1oqseq} are ``close'' to the first
 500 sequences in \Rcode{U1rqseq}.
 
 Now let's compare the edit distance reported by \Rfunction{neditAt} with the
@@ -361,26 +361,26 @@ head(U3bamseq_last)
 To obtain the {\it original query sequences} we ``reverse complement''
 the sequences that are aligned to the minus strand:
 
-<<U3seq>>=
-U3seq_first <- U3bamseq_first
+<<U3oqseq>>=
+U3oqseq_first <- U3bamseq_first
 is_on_minus <- as.logical(strand(first(U3galp)) == "-")
-U3seq_first[is_on_minus] <- reverseComplement(U3seq_first[is_on_minus])
+U3oqseq_first[is_on_minus] <- reverseComplement(U3oqseq_first[is_on_minus])
 
-U3seq_last <- U3bamseq_last
+U3oqseq_last <- U3bamseq_last
 is_on_minus <- as.logical(strand(last(U3galp)) == "-")
-U3seq_last[is_on_minus] <- reverseComplement(U3seq_last[is_on_minus])
+U3oqseq_last[is_on_minus] <- reverseComplement(U3oqseq_last[is_on_minus])
 @
 
-Note that sequences with the same {\it query name} correspond to the same
-{\it original query} and therefore should be the same. Let's do a quick
-sanity check:
+Note that sequence pairs with the same {\it query template name} correspond
+to the same {\it original query pairs} and therefore should be the same.
+Let's do a quick sanity check:
 
-<<same_name_implies_same_seq_in_U3seq>>=
+<<same_name_implies_same_seq_in_U3oqseq>>=
 stopifnot(all(
-    U3seq_first[match(names(U3seq_first), names(U3seq_first))] == U3seq_first
+    U3oqseq_first[match(names(U3oqseq_first), names(U3oqseq_first))] == U3oqseq_first
 ))
 stopifnot(all(
-    U3seq_last[match(names(U3seq_last), names(U3seq_last))] == U3seq_last
+    U3oqseq_last[match(names(U3oqseq_last), names(U3oqseq_last))] == U3oqseq_last
 ))
 @
 
@@ -411,22 +411,22 @@ U3rqseq_last <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
 Because the aligned reads have no indels, we should only see mismatches
 (typically a small number) during that comparison so we don't need to
 call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
-Let's do this comparison for the first 500 sequences in \Rcode{U3seq\_first}
-and \Rcode{U3seq\_last}:
+Let's do this comparison for the first 500 sequences in \Rcode{U3oqseq\_first}
+and \Rcode{U3oqseq\_last}:
 
-<<U3seq_vs_U3rqseq>>=
+<<U3oqseq_vs_U3rqseq>>=
 U3galp_first_nedit500 <- sapply(1:500, function(i)
-    neditAt(U3seq_first[[i]], U3rqseq_first[[i]])
+    neditAt(U3oqseq_first[[i]], U3rqseq_first[[i]])
 )
 table(U3galp_first_nedit500)
 
 U3galp_last_nedit500 <- sapply(1:500, function(i)
-    neditAt(reverseComplement(U3seq_last[[i]]), U3rqseq_last[[i]])
+    neditAt(reverseComplement(U3oqseq_last[[i]]), U3rqseq_last[[i]])
 )
 table(U3galp_last_nedit500)
 @
 
-Yes, the first 500 sequences in \Rcode{U3seq\_first} and \Rcode{U3seq\_last}
+Yes, the first 500 sequences in \Rcode{U3oqseq\_first} and \Rcode{U3oqseq\_last}
 are ``close'' to the first 500 sequences in \Rcode{U3rqseq\_first} and
 \Rcode{U3rqseq\_last}, respectively.
 
@@ -846,13 +846,13 @@ with at least 1 alignment pair in \Rcode{U3galp}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Projecting the reads on the transcripts}
+\section{Project the reads on the transcriptome}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Projecting the single-end reads on the transcripts}
+\subsection{Project the single-end reads on the transcriptome}
 
 The \Rfunction{extractQueryStartInTranscript} function computes for each
 overlap the position of the {\it query start} in the transcript:
@@ -882,7 +882,8 @@ query sequence} for this comparison, then it should match {\bf exactly}
 the sequence found at the {\it query start} in the transcript.
 
 Let's start by using the \Rfunction{extractTranscriptsFromGenome}
-to extract the transcript sequences from the dm3 reference genome:
+to extract the transcript sequences (aka transcriptome) from the dm3
+reference genome:
 
 <<txseq>>=
 txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
@@ -891,15 +892,15 @@ txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 For each ``compatible'' overlap, the read sequence in \Rcode{U1rqseq} must
 be an {\it exact} substring of the transcript sequence in \Rcode{txseq}:
 
-<<U1ov_qseq_vs_U1ov_txseq>>=
-U1ov_qseq <- U1rqseq[queryHits(U1ov)]
-U1ov_qseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov_qseq[flippedQuery(U1ovenc)])
+<<U1ov_rqseq_vs_U1ov_txseq>>=
+U1ov_rqseq <- U1rqseq[queryHits(U1ov)]
+U1ov_rqseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov_rqseq[flippedQuery(U1ovenc)])
 U1ov_txseq <- txseq[subjectHits(U1ov)]
 stopifnot(all(
-    U1ov_qseq[U1ov_is_compat] ==
+    U1ov_rqseq[U1ov_is_compat] ==
         narrow(U1ov_txseq[U1ov_is_compat],
                start=U1ov_qstart$startInTranscript[U1ov_is_compat],
-               width=width(U1ov_qseq)[U1ov_is_compat])
+               width=width(U1ov_rqseq)[U1ov_is_compat])
 ))
 @
 
@@ -912,7 +913,7 @@ the transcript of a ``compatible'' overlap.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Projecting the paired-end reads on the transcripts}
+\subsection{Project the paired-end reads on the transcriptome}
 
 For a paired-end read, the {\it query start} is the start of its ``left end''.
 
@@ -988,6 +989,91 @@ stopifnot(all(
                width=width(U3ov_Rrqseq)[U3ov_is_compat])
 ))
 @
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Align the reads to the transcriptome}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Aligning the {\it original queries} to the reference genome is not the
+most efficient nor accurate way to count the number of ``compatible''
+overlaps per {\it original query}. Supporting junction reads (i.e. reads
+that align with at least 1 gap) introduces a significant computational cost
+during the alignment process. Then, as we've seen in the previous sections,
+each alignment produced by the aligner needs to be broken into a set of
+ranges (based on its CIGAR) and those ranges compared to the ranges of
+the exons grouped by transcript.
+
+A more straightforward and accurate approach is to align the {\it original
+queries} directly to the transcriptome.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Align the single-end reads to the transcriptome}
+
+Since indels were not allowed/supported for the alignment of the reads to
+the reference genome, we don't need to allow/support them either for aligning
+the reads to the transcriptome. Also since our goal is to find (and count)
+``compatible'' overlaps between reads and transcripts, we don't keep track
+of the details of alignments between the reads and transcripts. Those
+simplifications allow us to write the following function that we will use for
+finding the ``compatible'' overlaps:
+
+<<findCompatibleOverlaps>>=
+### A wrapper to vwhichPDict() that supports ambiguity codes in 'oqseq'
+### and 'txseq', and treats them as such.
+findCompatibleOverlaps <- function(oqseq, txseq, max.mismatch=0)
+{
+    .asHits <- function(x, pattern_length)
+    {
+        query_hits <- unlist(x)
+        if (is.null(query_hits))
+            query_hits <- integer(0)
+        subject_hits <- rep.int(seq_len(length(x)), elementLengths(x))
+        new("Hits", queryHits=query_hits, subjectHits=subject_hits,
+                    queryLength=pattern_length, subjectLength=length(x))
+    }
+
+    names(oqseq) <- NULL
+    other <- alphabetFrequency(oqseq, baseOnly=TRUE)[ , "other"]
+    is_clean <- other == 0L
+
+    ## Find hits for "clean" original queries.
+    oqseq0 <- oqseq[is_clean]
+    pdict0 <- PDict(oqseq0, max.mismatch=max.mismatch)
+    m0 <- vwhichPDict(pdict0, txseq,
+                      max.mismatch=max.mismatch, fixed="pattern")
+    hits0 <- .asHits(m0, length(oqseq0))
+    hits0@queryLength <- length(oqseq)
+    hits0@queryHits <- which(is_clean)[hits0@queryHits]
+
+    ## Find hits for non "clean" original queries.
+    oqseq1 <- oqseq[!is_clean]
+    m1 <- vwhichPDict(oqseq1, txseq,
+                      max.mismatch=max.mismatch, fixed=FALSE)
+    hits1 <- .asHits(m1, length(oqseq1))
+    hits1@queryLength <- length(oqseq)
+    hits1@queryHits <- which(!is_clean)[hits1@queryHits]
+
+    ## Combine the hits.
+    query_hits <- c(queryHits(hits0), queryHits(hits1))
+    subject_hits <- c(subjectHits(hits0), subjectHits(hits1))
+    oo <- IRanges:::orderIntegerPairs(query_hits, subject_hits)
+    hits0@queryHits <- query_hits[oo]
+    hits0@subjectHits <- subject_hits[oo]
+    hits0
+}
+@
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Align the paired-end reads to the transcriptome}
 
 
 
