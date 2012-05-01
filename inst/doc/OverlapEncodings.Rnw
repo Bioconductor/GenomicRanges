@@ -96,14 +96,67 @@ library(Rsamtools)
 flag0 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE)
 param0 <- ScanBamParam(flag=flag0)
 U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
+head(U1gal)
+@
+
+Because the aligner used to align those reads can report more than 1 alignment
+per {\it original query} (i.e. per sequence stored in the input file,
+typically a FASTQ file), we shouldn't expect the names of \Rcode{U1gal} to
+be unique:
+
+<<U1gal_names>>=
+table(duplicated(names(U1gal)))
 @
 
 Our reads can have up to 2 gaps (a gap corresponds to an N operation in the
 CIGAR):
 
-<<ngap>>=
-head(U1gal)
+<<gaps_in_U1gal>>=
+head(unique(cigar(U1gal)))
 table(ngap(U1gal))
+@
+
+Also, the following table indicates that indels were not allowed/supported 
+during the alignment process (no I or D CIGAR operations):
+
+<<no_indels_in_U1gal>>=
+colSums(cigarOpTable(cigar(U1gal)))
+@
+
+In this document, we will also need to access the {\it original query
+sequences}. To load them, we reload the BAM file but now we explicitely
+request the SEQ field by using \Rcode{what="seq"} in our call to
+\Rfunction{ScanBamParam}. The NM tag, which is a predefined tag
+described in the SAM Spec as the ``Edit distance to the reference, including
+ambiguous bases but excluding clipping'' (note that tags are optional fields
+i.e. not all BAM files have them). We will also need to access this tag:
+
+<<U1bamseq>>=
+param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
+U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
+U1bamseq <- elementMetadata(U1gal)$seq
+names(U1bamseq) <- names(U1gal)
+head(U1bamseq)
+@
+
+Because the BAM format imposes that the read sequence is ``reverse
+complemented'' when the read is aligned to the minus strand, we ``reverse
+complement'' it again to get the {\it original query sequences}:
+
+<<U1seq>>=
+U1seq <- U1bamseq
+is_on_minus <- as.logical(strand(U1gal) == "-")
+U1seq[is_on_minus] <- reverseComplement(U1seq[is_on_minus])
+head(U1seq)
+@
+
+Sequences with the same {\it query name} correspond to the same {\it original
+query} and therefore should be the same:
+
+<<same_name_implies_same_seq_in_U1seq>>=
+stopifnot(all(
+    U1seq[match(names(U1seq), names(U1seq))] == U1seq
+))
 @
 
 
@@ -151,9 +204,80 @@ table(isProperPair(U3galp))
 Even though we could do {\it overlap encodings} with the full object,
 we keep only the {\it proper} pairs for our downstream analysis:
 
-
 <<keep_only_proper_pairs>>=
 U3galp <- U3galp[isProperPair(U3galp)]
+@
+
+Because the aligner used to align those reads can report more than 1 alignment
+per {\it original query template} (i.e. per pair of sequences stored in the
+input files, typically 1 FASTQ file for the ``first ends'' and 1 FASTQ file
+for the ``last ends''), we shouldn't expect the names of \Rcode{U3galp} to be
+unique:
+
+<<U3galp_names>>=
+table(duplicated(names(U3galp)))
+@
+
+Our reads can have up to 1 gap per end:
+
+<<gaps_in_U3galp>>=
+head(unique(cigar(first(U3galp))))
+head(unique(cigar(last(U3galp))))
+table(ngap(first(U3galp)), ngap(last(U3galp)))
+@
+
+Like for our single-end reads, the following tables indicate that indels were
+not allowed/supported during the alignment process:
+
+<<no_indels_in_U3galp>>=
+colSums(cigarOpTable(cigar(first(U3galp))))
+colSums(cigarOpTable(cigar(last(U3galp))))
+@
+
+To load the {\it original query sequences}, we reload the BAM file and
+request the SEQ field (and also the NM tag). Since we've removed the improper
+pairs from our current \Rcode{U3galp} object, we need to do this again but
+now we do it at load time which is equivalent to doing it afterward (i.e.
+not only do we have the guarantee to end up with the same elements in
+\Rcode{U3galp}, but also to have them in the same order):
+
+<<U3bamseq>>=
+flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
+param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
+U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
+
+U3bamseq_first <- elementMetadata(first(U3galp))$seq
+names(U3bamseq_first) <- names(U3galp)
+head(U3bamseq_first)
+
+U3bamseq_last <- elementMetadata(last(U3galp))$seq
+names(U3bamseq_last) <- names(U3galp)
+head(U3bamseq_last)
+@
+
+To obtain the {\it original query sequences} we ``reverse complement''
+the sequences that are aligned to the minus strand:
+
+<<U3seq>>=
+U3seq_first <- U3bamseq_first
+is_on_minus <- as.logical(strand(first(U3galp)) == "-")
+U3seq_first[is_on_minus] <- reverseComplement(U3seq_first[is_on_minus])
+
+U3seq_last <- U3bamseq_last
+is_on_minus <- as.logical(strand(last(U3galp)) == "-")
+U3seq_last[is_on_minus] <- reverseComplement(U3seq_last[is_on_minus])
+@
+
+Sequences with the same {\it query name} correspond to the same {\it original
+query} and therefore should be the same:
+
+<<same_name_implies_same_seq_in_U3seq>>=
+stopifnot(all(
+    U3seq_first[match(names(U3seq_first), names(U3seq_first))] == U3seq_first
+))
+stopifnot(all(
+    U3seq_last[match(names(U3seq_last), names(U3seq_last))] == U3seq_last
+))
 @
 
 
@@ -401,6 +525,31 @@ mean(U1gal_ncompat >= 1)
 71.45\% of the alignments in \Rcode{U1gal} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
+Because \Rcode{U1gal} can (and actually does) contain more than 1 alignment
+per {\it original query}, we also count the number of ``compatible'' overlaps
+per {\it original query}:
+
+<<U1uqnames_ncompat>>=
+## A fast alternative to 'aggregate(FUN=sum)'.
+sumByQNAME <- function(x, qnames)
+{
+    ## We avoid using 'order(qnames)': order() on a character vector is slow
+    ## and  "locale" dependent.
+    oo <- order(match(qnames, qnames))
+    oqnames <- Rle(qnames[oo])
+    ans <- diff(c(0L, cumsum(x[oo])[cumsum(runLength(oqnames))]))
+    names(ans) <- runValue(oqnames)
+    ans
+}
+
+U1uqnames_ncompat <- sumByQNAME(U1gal_ncompat, names(U1gal))
+table(U1uqnames_ncompat)
+mean(U1uqnames_ncompat >= 1)
+@
+
+76.54\% of the {\it original queries} are ``compatible'' with at least
+1 transcript in \Rcode{dm3tx}.
+
 Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
 <<dm3tx_U1ncompat>>=
@@ -480,6 +629,17 @@ mean(U3galp_ncompat >= 1)
 66.8\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
+Number of ``compatible'' overlaps per {\it original query template}:
+
+<<U3uqnames_ncompat>>=
+U3uqnames_ncompat <- sumByQNAME(U3galp_ncompat, names(U3galp))
+table(U3uqnames_ncompat)
+mean(U3uqnames_ncompat >= 1)
+@
+
+70.13\% of the {\it original query templates} are ``compatible'' with at
+least 1 transcript in \Rcode{dm3tx}.
+
 Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 
 <<dm3tx_U3ncompat>>=
@@ -537,78 +697,43 @@ library(BSgenome.Dmelanogaster.UCSC.dm3)
 txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 @
 
-As a sanity check, instead of the ``real'' read sequences, we'll use the
-sequences extracted from the reference genome based on the ranges in
-\Rcode{U1grl}. We can reuse \Rfunction{extractTranscriptsFromGenome} for
-this:
+Instead of using the {\it original query sequences} for this comparison,
+we'll use the {\it reference query sequences} i.e. the sequences obtained
+by extracting the portions of the reference genome corresponding to the
+ranges in \Rcode{U1grl}. We can reuse \Rfunction{extractTranscriptsFromGenome}
+for this:
 
-<<U1qseq>>=
-U1qseq <- extractTranscriptsFromGenome(Dmelanogaster, U1grl)
+<<U1rqseq>>=
+U1rqseq <- extractTranscriptsFromGenome(Dmelanogaster, U1grl)
 @
 
 Now we compare the read and transcript sequences for each ``compatible''
-overlap. Because the read sequences (in \Rcode{U1qseq}) and the transcript
+overlap. Because the read sequences (in \Rcode{U1rqseq}) and the transcript
 sequences (in \Rcode{txseq}) were both extracted from the reference genome,
 we expect the formers to be {\it exact} substrings of the latters:
 
 <<U1ov_qseq_vs_U1ov_txseq>>=
-U1ov_qseq <- U1qseq[queryHits(U1ov)]
+U1ov_qseq <- U1rqseq[queryHits(U1ov)]
 U1ov_qseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov_qseq[flippedQuery(U1ovenc)])
 U1ov_txseq <- txseq[subjectHits(U1ov)]
 stopifnot(all(
-    U1ov_qseq[U1ov_is_compat] == narrow(U1ov_txseq[U1ov_is_compat],
-                                        start=U1ov_qstart$startInTranscript[U1ov_is_compat],
-                                        width=width(U1ov_qseq)[U1ov_is_compat])
+    U1ov_qseq[U1ov_is_compat] ==
+        narrow(U1ov_txseq[U1ov_is_compat],
+               start=U1ov_qstart$startInTranscript[U1ov_is_compat],
+               width=width(U1ov_qseq)[U1ov_is_compat])
 ))
 @
 
-Doing the above with the ``real'' read sequences (i.e. the sequences stored
-in the SEQ field of BAM file {\tt untreated1\_chr4.bam}) would imply dealing
-with possible mismatches and indels introduced by the aligner.
+Thanks to the above result, comparing the {\it original query sequences}
+to the transcript sequences is equivalent to comparing them to the
+{\it reference query sequences}. And because the aligned reads have no indels,
+we should only see mismatches (typically a small number) during that
+comparison so we don't need to call \Rfunction{neditAt} with
+\Rcode{with.indels=TRUE}.
+Let's do this comparison for the first 500 sequences in \Rcode{U1gal}:
 
-To load the ``real'' read sequences, we reload the BAM file but now we
-explicitely request the SEQ field by using \Rcode{what="seq"} in our call to
-\Rfunction{ScanBamParam}. We also load the NM tag, which is a predefined tag
-described in the SAM Spec as the ``Edit distance to the reference, including
-ambiguous bases but excluding clipping'' (note that tags are optional fields
-i.e. not all BAM files have them):
-
-<<U1bamseq>>=
-param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
-U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
-U1bamseq <- elementMetadata(U1gal)$seq
-names(U1bamseq) <- names(U1gal)
-head(U1bamseq)
-@
-
-Because the BAM format imposes that the read sequence is ``reverse
-complemented'' when the read is aligned to the minus strand, we need
-to ``reverse complement'' it again to get the {\it original} sequence
-(i.e. the sequence stored in the file used as input to the aligner,
-typically a FASTQ file):
-
-<<U1seq>>=
-U1seq <- U1bamseq
-is_on_minus <- as.logical(strand(U1gal) == "-")
-U1seq[is_on_minus] <- reverseComplement(U1seq[is_on_minus])
-head(U1seq)
-@
-
-The following table indicates that indels were not allowed/supported 
-during the alignment process (no I or D CIGAR operations):
-
-<<no_indels_in_U1gal>>=
-colSums(cigarOpTable(cigar(U1gal)))
-@
-
-So we should only see mismatches (typically a small number) between the
-sequences in \Rcode{U1seq} and those in \Rcode{U1qseq}, but no indels,
-thus we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}
-when comparing the read and transcript sequences. We do this comparison for
-the first 500 sequences in \Rcode{U1gal}:
-
-<<U1seq_vs_U1qseq>>=
-U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1seq[[i]], U1qseq[[i]]))
+<<U1seq_vs_U1rqseq>>=
+U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1seq[[i]], U1rqseq[[i]]))
 table(U1gal_nedit500)
 @
 
@@ -652,12 +777,17 @@ U3ov_Rqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
 head(subset(U3ov_Rqstart, U3ov_is_compat))
 @
 
-In order to perform the same kind of sanity check that we did for the
-single-end reads, we need to split \Rcode{U3grl} in 2 \Rclass{GRangesList}
-objects of the same length as \Rcode{U3grl}, one containing the ranges of
-the ``first ends'' (aka ``first segments'' in BAM jargon), and one containing
-the ranges of the ``last ends'' (aka ``last segments'' in BAM jargon).
-Here is an efficient way to do this:
+Like with single-end reads, having this information allows us to compare the
+read and transcript nucleotide sequences for each ``compatible'' overlap.
+Here too, instead of using the {\it original query sequences} for this
+comparison, we'll use the {\it reference query sequences} i.e. the sequences
+obtained by extracting the portions of the reference genome corresponding to
+the ranges in \Rcode{U3grl}. However, because our reads are paired-end, we
+need to split \Rcode{U3grl} in 2 \Rclass{GRangesList} objects of the same
+length as \Rcode{U3grl}, one containing the ranges of the ``first ends''
+(aka ``first segments'' in BAM jargon), and one containing the ranges of
+the ``last ends'' (aka ``last segments'' in BAM jargon). Here is an efficient
+way to do this:
 
 <<split_U3grl>>=
 U3grl_first <- grglist(first(U3galp), order.as.in.query=TRUE)
@@ -667,27 +797,27 @@ U3grl_last <- grglist(last(U3galp, invert.strand=TRUE), order.as.in.query=TRUE)
 Then we extract the sequences from the reference genome based on the ranges
 in those 2 \Rclass{GRangesList} objects:
 
-<<U3qseq_first_and_last>>=
-U3qseq_first <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
-U3qseq_last <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
+<<U3rqseq>>=
+U3rqseq_first <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
+U3rqseq_last <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
 @
 
 and we assign 2 sequences to each overlap, one for each end of the read:
 
-<<U3ov_Lqseq_and_Rqseq>>=
-U3ov_Lqseq <- U3qseq_first[queryHits(U3ov)]
-U3ov_Rqseq <- U3qseq_last[queryHits(U3ov)]
+<<U3ov_Lrqseq_and_Rrqseq>>=
+U3ov_Lrqseq <- U3rqseq_first[queryHits(U3ov)]
+U3ov_Rrqseq <- U3rqseq_last[queryHits(U3ov)]
 @
 
 For the single-end reads, the sequences associated with a ``flipped query''
 just needed to be ``reverse complemented''. For paired-end reads, we also
-need to swap them between \Rcode{U3ov\_Lqseq} and \Rcode{U3ov\_Rqseq}:
+need to swap them between \Rcode{U3ov\_Lrqseq} and \Rcode{U3ov\_Rrqseq}:
 
-<<U3ov_Lqseq_and_Rqseq>>=
+<<U3ov_Lrqseq_and_Rrqseq>>=
 flip_idx <- which(flippedQuery(U3ovenc))
-tmp <- U3ov_Lqseq[flip_idx]
-U3ov_Lqseq[flip_idx] <- reverseComplement(U3ov_Rqseq[flip_idx])
-U3ov_Rqseq[flip_idx] <- reverseComplement(tmp)
+tmp <- U3ov_Lrqseq[flip_idx]
+U3ov_Lrqseq[flip_idx] <- reverseComplement(U3ov_Rrqseq[flip_idx])
+U3ov_Rrqseq[flip_idx] <- reverseComplement(tmp)
 @
 
 We assign the transcript sequence to each overlap:
@@ -696,85 +826,46 @@ We assign the transcript sequence to each overlap:
 U3ov_txseq <- txseq[subjectHits(U3ov)]
 @
 
-Finally we do our sanity check of comparing the read and transcript
-nucleotide sequences for each ``compatible'' overlap.
-We check the ``left ends'':
+For each ``compatible'' overlap, we expect the ``left and right sequences''
+of the read to be {\it exact} substrings of the transcript sequence:
 
-<<U3ov_Lqseq_vs_U3ov_txseq>>=
+Let's check the ``left sequences'':
+
+<<U3ov_Lrqseq_vs_U3ov_txseq>>=
 stopifnot(all(
-    U3ov_Lqseq[U3ov_is_compat] == narrow(U3ov_txseq[U3ov_is_compat],
-                                         start=U3ov_Lqstart$startInTranscript[U3ov_is_compat],
-                                         width=width(U3ov_Lqseq)[U3ov_is_compat])
+    U3ov_Lrqseq[U3ov_is_compat] ==
+        narrow(U3ov_txseq[U3ov_is_compat],
+               start=U3ov_Lqstart$startInTranscript[U3ov_is_compat],
+               width=width(U3ov_Lrqseq)[U3ov_is_compat])
 ))
 @
 
-and the ``right ends'':
+and the ``right sequences'':
 
-<<U3ov_Rqseq_vs_U3ov_txseq>>=
+<<U3ov_Rrqseq_vs_U3ov_txseq>>=
 stopifnot(all(
-    U3ov_Rqseq[U3ov_is_compat] == narrow(U3ov_txseq[U3ov_is_compat],
-                                         start=U3ov_Rqstart$startInTranscript[U3ov_is_compat],
-                                         width=width(U3ov_Rqseq)[U3ov_is_compat])
+    U3ov_Rrqseq[U3ov_is_compat] ==
+        narrow(U3ov_txseq[U3ov_is_compat],
+               start=U3ov_Rqstart$startInTranscript[U3ov_is_compat],
+               width=width(U3ov_Rrqseq)[U3ov_is_compat])
 ))
 @
 
-Now let's have a look at the ``real'' read sequences. Like we did with our
-single-end reads, we load them by reloading the BAM file and requesting
-the SEQ field and NM tag. Since we've removed the improper pairs from
-our current \Rcode{U3galp}, we need to do this again but now we do it at
-load time which is equivalent to doing it afterward (i.e. not only do we
-have the guarantee to end up with the same elements in \Rcode{U3galp}, but
-also to have them in the same order):
+Thanks to the above result, and like with our single-end reads, comparing the
+{\it original query sequences} to the transcript sequences is equivalent to
+comparing them to the {\it reference query sequences}. And because the aligned
+reads have no indels, we should only see mismatches (typically a small number)
+during that comparison.
+Let's do this comparison for the first 500 sequences in \Rcode{U3galp}:
 
-<<U3bamseq_first_and_last>>=
-flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
-param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
-U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
-
-U3bamseq_first <- elementMetadata(first(U3galp))$seq
-names(U3bamseq_first) <- names(U3galp)
-head(U3bamseq_first)
-
-U3bamseq_last <- elementMetadata(last(U3galp))$seq
-names(U3bamseq_last) <- names(U3galp)
-head(U3bamseq_last)
-@
-
-We obtain the {\it original} sequences (i.e. the sequences stored in the
-file used as input to the aligner) by ``reverse complementing'' those
-that are aligned to the minus strand:
-
-<<U3seq_first_and_last>>=
-U3seq_first <- U3bamseq_first
-is_on_minus <- as.logical(strand(first(U3galp)) == "-")
-U3seq_first[is_on_minus] <- reverseComplement(U3seq_first[is_on_minus])
-
-U3seq_last <- U3bamseq_last
-is_on_minus <- as.logical(strand(last(U3galp)) == "-")
-U3seq_last[is_on_minus] <- reverseComplement(U3seq_last[is_on_minus])
-@
-
-The following tables indicate that indels were not allowed/supported 
-during the alignment process (no I or D CIGAR operations):
-
-<<no_indels_in_U3galp>>=
-colSums(cigarOpTable(cigar(first(U3galp))))
-colSums(cigarOpTable(cigar(last(U3galp))))
-@
-
-So we should only see mismatches (typically a small number) between the
-{\it original} sequences (in \Rcode{U3seq\_first} and \Rcode{U3seq\_last})
-and those in \Rcode{U3qseq\_first} and \Rcode{U3qseq\_last}, but no indels.
-We do this comparison for the first 500 sequences in \Rcode{U3galp}:
-
-<<U3seq_vs_U3qseq>>=
+<<U3seq_vs_U3rqseq>>=
 U3galp_first_nedit500 <- sapply(1:500, function(i)
-    neditAt(U3seq_first[[i]], U3qseq_first[[i]])
+    neditAt(U3seq_first[[i]], U3rqseq_first[[i]])
 )
 table(U3galp_first_nedit500)
 
 U3galp_last_nedit500 <- sapply(1:500, function(i)
-    neditAt(reverseComplement(U3seq_last[[i]]), U3qseq_last[[i]])
+    neditAt(reverseComplement(U3seq_last[[i]]), U3rqseq_last[[i]])
 )
 table(U3galp_last_nedit500)
 @
