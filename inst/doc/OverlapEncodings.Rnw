@@ -123,52 +123,6 @@ during the alignment process (no I or D CIGAR operations):
 colSums(cigarOpTable(cigar(U1gal)))
 @
 
-In this document, we will also need to access the {\it original query
-sequences}. To load them, we reload the BAM file but now we explicitely
-request the SEQ field by using \Rcode{what="seq"} in our call to
-\Rfunction{ScanBamParam}. We also load the NM tag (we will need it too),
-which is a predefined tag described in the SAM Spec as the ``Edit distance
-to the reference, including ambiguous bases but excluding clipping''
-(note that tags are optional fields i.e. not all BAM files have them):
-
-<<U1bamseq>>=
-param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
-U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
-U1bamseq <- elementMetadata(U1gal)$seq
-names(U1bamseq) <- names(U1gal)
-head(U1bamseq)
-@
-
-Because the BAM format imposes that the read sequence is ``reverse
-complemented'' when the read is aligned to the minus strand, we ``reverse
-complement'' it again to get the {\it original query sequences}:
-
-<<U1seq>>=
-U1seq <- U1bamseq
-is_on_minus <- as.logical(strand(U1gal) == "-")
-U1seq[is_on_minus] <- reverseComplement(U1seq[is_on_minus])
-head(U1seq)
-@
-
-Sequences with the same {\it query name} correspond to the same {\it original
-query} and therefore should be the same:
-
-<<same_name_implies_same_seq_in_U1seq>>=
-stopifnot(all(
-    U1seq[match(names(U1seq), names(U1seq))] == U1seq
-))
-@
-
-Finally, since indels were not allowed/supported during the alignment process,
-the NM tag (edit distance) is actually equal to the number of mismatches.
-The maximum observed number of mismatches tells us how many mismatches per
-read were tolerated by the aligner:
-
-<<up_to_6_mismatches>>=
-U1gal_NM <- elementMetadata(U1gal)$NM
-table(U1gal_NM)
-@
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Load paired-end reads from a BAM file}
@@ -220,9 +174,9 @@ U3galp <- U3galp[isProperPair(U3galp)]
 
 Because the aligner used to align those reads can report more than 1 alignment
 per {\it original query template} (i.e. per pair of sequences stored in the
-input files, typically 1 FASTQ file for the ``first ends'' and 1 FASTQ file
-for the ``last ends''), we shouldn't expect the names of \Rcode{U3galp} to be
-unique:
+input files, typically 1 FASTQ file for the {\it first} ends and 1 FASTQ file
+for the {\it last} ends), we shouldn't expect the names of \Rcode{U3galp} to
+be unique:
 
 <<U3galp_names>>=
 table(duplicated(names(U3galp)))
@@ -244,6 +198,140 @@ colSums(cigarOpTable(cigar(first(U3galp))))
 colSums(cigarOpTable(cigar(last(U3galp))))
 @
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Validate the alignments produced by the aligner}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+In this section we show how to validate the alignments produced by the
+aligner by comparing the {\it original query sequences} (aka ``true'' or
+``real'' query sequences, or query sequences {\bf before} alignment) with
+the {\it reference query sequences} (i.e. the query sequences {\bf after}
+alignment).
+
+Note that even though this step is not strictly required for computing
+the {\it overlap encodings}, some of the concepts and string-based
+computations described in this section are slightly related to some ideas
+introduced later in this document.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Validate the single-end alignments}
+
+\subsubsection{Load the {\it original query sequences}}
+
+To load the {\it original query sequences}, we reload the BAM file but now
+we explicitely request the SEQ field by using \Rcode{what="seq"} in our call
+to \Rfunction{ScanBamParam}. To further validate the alignments produced
+by the aligner, we also need to load the NM tag which is a predefined tag
+described in the SAM Spec as the ``Edit distance to the reference, including
+ambiguous bases but excluding clipping'' (note that tags are optional fields
+i.e. not all BAM files have them):
+
+<<U1bamseq>>=
+param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
+U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
+U1bamseq <- elementMetadata(U1gal)$seq
+names(U1bamseq) <- names(U1gal)
+head(U1bamseq)
+@
+
+Because the BAM format imposes that the read sequence is ``reverse
+complemented'' when the read is aligned to the minus strand, we ``reverse
+complement'' it again to get the {\it original query sequences}:
+
+<<U1seq>>=
+U1seq <- U1bamseq
+is_on_minus <- as.logical(strand(U1gal) == "-")
+U1seq[is_on_minus] <- reverseComplement(U1seq[is_on_minus])
+head(U1seq)
+@
+
+Note that sequences with the same {\it query name} correspond to the same
+{\it original query} and therefore must be the same. Let's do a quick sanity
+check:
+
+<<same_name_implies_same_seq_in_U1seq>>=
+stopifnot(all(
+    U1seq[match(names(U1seq), names(U1seq))] == U1seq
+))
+@
+
+\subsubsection{Compute the {\it reference query sequences}}
+
+The {\it reference query sequences} can easily be computed by extracting
+the nucleotide mapped to each read from the reference genome. This of
+course requires that we have access to the reference genome used by the
+aligner. In Bioconductor, the full genome sequence for the dm3 assembly
+is stored in the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package:
+
+<<Dmelanogaster>>=
+library(BSgenome.Dmelanogaster.UCSC.dm3)
+Dmelanogaster
+@
+
+Let's start by converting our \Rclass{GappedAlignments} object \Rcode{U1gal}
+into a \Rclass{GRangesList} object:
+
+<<U1grl>>=
+U1grl <- grglist(U1gal, order.as.in.query=TRUE)
+@
+
+To extract the portions of the reference genome corresponding to the ranges
+in \Rcode{U1grl}, we can use the \Rfunction{extractTranscriptsFromGenome}
+function defined in the \Rpackage{GenomicFeatures} package:
+
+<<U1rqseq>>=
+library(GenomicFeatures)
+U1rqseq <- extractTranscriptsFromGenome(Dmelanogaster, U1grl)
+@
+
+\subsubsection{Compare the {\it original query sequences} with the
+               {\it reference query sequences}}
+
+We can use the \Rfunction{neditAt} function defined in the
+\Rpackage{Biostrings} package to compute the edit distance between
+2 strings. Because the aligned reads have no indels, we should only
+see mismatches (typically a small number) during that comparison so
+we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
+Because calling \Rfunction{neditAt} in a loop is inefficient, we do this
+comparison for the first 500 sequences in \Rcode{U1seq} only:
+
+<<U1seq_vs_U1rqseq>>=
+U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1seq[[i]], U1rqseq[[i]]))
+table(U1gal_nedit500)
+@
+
+Yes, the first 500 sequences in \Rcode{U1seq} are ``close'' to the first
+500 sequences in \Rcode{U1rqseq}.
+
+Now let's compare the edit distance reported by \Rfunction{neditAt} with the
+edit distance reported by the aligner (NM tag). Because the latter excludes
+the N CIGAR operations, it should actually be the same as the former.
+We confirm this for the 500 edit distances computed in \Rcode{U1gal\_nedit500}:
+
+<<U1gal_nedit_vs_NM>>=
+U1gal_NM <- elementMetadata(U1gal)$NM
+stopifnot(all(U1gal_NM[1:500] == U1gal_nedit500))
+@
+
+Note that the maximum observed number of mismatches tells us how many
+mismatches per read were tolerated by the aligner:
+
+<<up_to_6_mismatches>>=
+table(U1gal_NM)
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Validate the paired-end alignments}
+
+\subsubsection{Load the {\it original query sequences}}
+
 To load the {\it original query sequences}, we reload the BAM file and
 request the SEQ field (and also the NM tag). Since we've removed the improper
 pairs from our current \Rcode{U3galp} object, we need to do this again but
@@ -251,11 +339,15 @@ now we do it at load time which is equivalent to doing it afterward (i.e.
 not only do we have the guarantee to end up with the same elements in
 \Rcode{U3galp}, but also to have them in the same order):
 
-<<U3bamseq>>=
+<<U3galp_reloaded>>=
 flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
 param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
 U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
+@
 
+Let's extract the {\it first} and {\it last} sequences from \Rcode{U3galp}:
+
+<<U3bamseq>>=
 U3bamseq_first <- elementMetadata(first(U3galp))$seq
 names(U3bamseq_first) <- names(U3galp)
 head(U3bamseq_first)
@@ -278,8 +370,9 @@ is_on_minus <- as.logical(strand(last(U3galp)) == "-")
 U3seq_last[is_on_minus] <- reverseComplement(U3seq_last[is_on_minus])
 @
 
-Sequences with the same {\it query name} correspond to the same {\it original
-query} and therefore should be the same:
+Note that sequences with the same {\it query name} correspond to the same
+{\it original query} and therefore should be the same. Let's do a quick
+sanity check:
 
 <<same_name_implies_same_seq_in_U3seq>>=
 stopifnot(all(
@@ -290,12 +383,70 @@ stopifnot(all(
 ))
 @
 
-Finally, the following table tells us how many mismatches per read were
+\subsubsection{Compute the {\it reference query sequences}}
+
+Because our reads are paired-end, we extract separately the ranges
+corresponding to their {\it first} ends (aka {\it first} segments in BAM
+jargon) and those corresponding to their {\it last} ends (aka {\it last}
+segments in BAM jargon):
+
+<<U3grl_first_and_last>>=
+U3grl_first <- grglist(first(U3galp), order.as.in.query=TRUE)
+U3grl_last <- grglist(last(U3galp, invert.strand=TRUE), order.as.in.query=TRUE)
+@
+
+Then we extract the portions of the reference genome corresponding to the
+ranges in \Rclass{GRangesList} objects \Rcode{U3grl\_first} and
+\Rcode{U3grl\_last}:
+
+<<U3rqseq>>=
+U3rqseq_first <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
+U3rqseq_last <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
+@
+
+\subsubsection{Compare the {\it original query sequences} with the
+               {\it reference query sequences}}
+
+Because the aligned reads have no indels, we should only see mismatches
+(typically a small number) during that comparison so we don't need to
+call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
+Let's do this comparison for the first 500 sequences in \Rcode{U3seq\_first}
+and \Rcode{U3seq\_last}:
+
+<<U3seq_vs_U3rqseq>>=
+U3galp_first_nedit500 <- sapply(1:500, function(i)
+    neditAt(U3seq_first[[i]], U3rqseq_first[[i]])
+)
+table(U3galp_first_nedit500)
+
+U3galp_last_nedit500 <- sapply(1:500, function(i)
+    neditAt(reverseComplement(U3seq_last[[i]]), U3rqseq_last[[i]])
+)
+table(U3galp_last_nedit500)
+@
+
+Yes, the first 500 sequences in \Rcode{U3seq\_first} and \Rcode{U3seq\_last}
+are ``close'' to the first 500 sequences in \Rcode{U3rqseq\_first} and
+\Rcode{U3rqseq\_last}, respectively.
+
+Now let's compare the edit distance reported by \Rfunction{neditAt} with the
+edit distance reported by the aligner (NM tag). Because the latter excludes
+the N CIGAR operations, it should actually be the same as the former.
+We confirm this for the 500 edit distances computed in
+\Rcode{U3galp\_first\_nedit500} and \Rcode{U3galp\_last\_nedit500}:
+
+<<U3galp_nedit_vs_NM>>=
+U3galp_first_NM <- elementMetadata(first(U3galp))$NM
+stopifnot(all(U3galp_first_NM[1:500] == U3galp_first_nedit500))
+
+U3galp_last_NM <- elementMetadata(last(U3galp))$NM
+stopifnot(all(U3galp_last_NM[1:500] == U3galp_last_nedit500))
+@
+
+Note that the following table tells us how many mismatches per read were
 tolerated by the aligner:
 
 <<up_to_2_mismatches_per_end>>=
-U3galp_first_NM <- elementMetadata(first(U3galp))$NM
-U3galp_last_NM <- elementMetadata(last(U3galp))$NM
 table(U3galp_first_NM, U3galp_last_NM)
 @
 
@@ -303,17 +454,43 @@ Up to 2 mismatches per end.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Conclusion}
+
+In addition to validate the alignments produced by the aligner, the
+validation described in this section is also an efficient and accurate way
+to make sure that the reference genome we've picked up is the same as the
+reference genome used by the aligner, at least for the regions covered by
+the reads.
+
+In other words, if it's known that the 2 reference genomes are different,
+then this validation could still be performed, and, if successful, would
+indicate that the 2 genomes are probably substitutable for most analysis
+happening downstream of the BAM file.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Find and encode the overlaps between the reads and transcripts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Load the transcripts from a \Rclass{TranscriptDb} object}
 
-We also need to retrieve the dm3 transcripts and their exons from UCSC,
-and extract the exons grouped by transcript in a \Rclass{GRangesList}
-object. IMPORTANT: The reference genome of the transcripts must be
-{\bf exactly} the same as the reference genome used to align the reads
-(note that this is a general rule, not only when working with overlap
-encodings):
+Before we can compute overlaps between reads and transcripts, we need to
+retrieve the dm3 transcripts and their exons from UCSC, and extract the
+exons grouped by transcript in a \Rclass{GRangesList} object.
+IMPORTANT: The reference genome of the transcripts must be {\bf exactly}
+the same as the reference genome used to align the reads (note that this
+is a general rule, not only when working with overlap encodings).
 
-<<makeTranscriptDbFromUCSC>>=
-library(GenomicFeatures)
+Let's use the \Rfunction{makeTranscriptDbFromUCSC} defined in the
+\Rpackage{GenomicFeatures} to retrieve the dm3 transcripts and their exons
+from UCSC:
+
+<<dm3tx>>=
 dm3_refGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
 dm3tx <- exonsBy(dm3_refGene_txdb, by="tx")
 @
@@ -328,7 +505,7 @@ that \Rcode{seqnames} and \Rcode{strand} return \Rclass{RleList} objects.
 So we can extract the number of Rle runs for each transcript and make
 sure it's always 1:
 
-<<check-for-trans-splicing>>=
+<<check-for-trans-splicing-in-dm3tx>>=
 table(elementLengths(runLength(seqnames(dm3tx))))
 table(elementLengths(runLength(strand(dm3tx))))
 @
@@ -339,14 +516,6 @@ and can be extracted with:
 <<dm3tx_strand>>=
 dm3tx_strand <- unlist(runValue(strand(dm3tx)), use.names=FALSE)
 @
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Find and encode the overlaps between the reads and transcripts}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -367,8 +536,7 @@ of the original queries), and once again for the ``flipped alignments''
 the original and flipped alignments in 2 \Rclass{GRangesList} objects
 with:
 
-<<U1grl>>=
-U1grl <- grglist(U1gal, order.as.in.query=TRUE)  # not flipped
+<<U1grlf>>=
 U1grlf <- flipQuery(U1grl)  # flipped
 @
 
@@ -708,34 +876,19 @@ head(subset(U1ov_qstart, U1ov_is_compat))
 
 Having this information allows us for example to compare the read and
 transcript nucleotide sequences for each ``compatible'' overlap.
-Furthermore, we'll be able to show that, for ``compatible'' overlaps,
-the edit distance reported in the NM tag of the BAM file is actually
-the edit distance between the read and the transcript.
+If we use the {\it reference query sequence} instead of the {\it original
+query sequence} for this comparison, then it should match {\bf exactly}
+the sequence found at the {\it query start} in the transcript.
 
 Let's start by using the \Rfunction{extractTranscriptsFromGenome}
-function from the \Rpackage{GenomicFeatures} package to extract the
-transcript sequences from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3}
-data package:
+to extract the transcript sequences from the dm3 reference genome:
 
 <<txseq>>=
-library(BSgenome.Dmelanogaster.UCSC.dm3)
 txseq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 @
 
-Instead of using the {\it original query sequences} for this comparison,
-we'll use the {\it reference query sequences} i.e. the sequences obtained
-by extracting the portions of the reference genome corresponding to the
-ranges in \Rcode{U1grl}. We can reuse \Rfunction{extractTranscriptsFromGenome}
-for this:
-
-<<U1rqseq>>=
-U1rqseq <- extractTranscriptsFromGenome(Dmelanogaster, U1grl)
-@
-
-Now we compare the read and transcript sequences for each ``compatible''
-overlap. Because the read sequences (in \Rcode{U1rqseq}) and the transcript
-sequences (in \Rcode{txseq}) were both extracted from the reference genome,
-we expect the formers to be {\it exact} substrings of the latters:
+For each ``compatible'' overlap, the read sequence in \Rcode{U1rqseq} must
+be an {\it exact} substring of the transcript sequence in \Rcode{txseq}:
 
 <<U1ov_qseq_vs_U1ov_txseq>>=
 U1ov_qseq <- U1rqseq[queryHits(U1ov)]
@@ -749,32 +902,12 @@ stopifnot(all(
 ))
 @
 
-Thanks to the above result, comparing the {\it original query sequences}
-to the transcript sequences is equivalent to comparing them to the
-{\it reference query sequences}. And because the aligned reads have no indels,
-we should only see mismatches (typically a small number) during that
-comparison so we don't need to call \Rfunction{neditAt} with
-\Rcode{with.indels=TRUE}.
-Let's do this comparison for the first 500 sequences in \Rcode{U1gal}:
-
-<<U1seq_vs_U1rqseq>>=
-U1gal_nedit500 <- sapply(1:500, function(i) neditAt(U1seq[[i]], U1rqseq[[i]]))
-table(U1gal_nedit500)
-@
-
-Because the edit distance reported by the aligner in the NM tag excludes the
-N CIGAR operations, it should actually be the same as the value returned by
-\Rfunction{neditAt}. We confirm this for the 500 edit distances in
-\Rcode{U1gal\_nedit500}:
-
-<<U1gal_nedit_vs_NM>>=
-stopifnot(all(U1gal_NM[1:500] == U1gal_nedit500))
-@
-
-Assuming that this is true for all the sequences in \Rcode{U1seq},
-then we would be able to conclude that the edit distance reported in
-the NM tag is actually the edit distance between the read and transcript
-sequences of a ``compatible'' overlap.
+Because of this relationship between the {\it reference query sequence}
+and the transcript sequence of a ``compatible'' overlap, and because of
+the relationship between the {\it original query sequences} and the
+{\it reference query sequences}, then the edit distance reported in the
+NM tag is actually the edit distance between the {\it original query} and
+the transcript of a ``compatible'' overlap.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -799,32 +932,15 @@ U3ov_Rqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
 head(subset(U3ov_Rqstart, U3ov_is_compat))
 @
 
-Like with single-end reads, having this information allows us to compare the
-read and transcript nucleotide sequences for each ``compatible'' overlap.
-Here too, instead of using the {\it original query sequences} for this
-comparison, we'll use the {\it reference query sequences} i.e. the sequences
-obtained by extracting the portions of the reference genome corresponding to
-the ranges in \Rcode{U3grl}. However, because our reads are paired-end, we
-need to split \Rcode{U3grl} in 2 \Rclass{GRangesList} objects of the same
-length as \Rcode{U3grl}, one containing the ranges of the ``first ends''
-(aka ``first segments'' in BAM jargon), and one containing the ranges of
-the ``last ends'' (aka ``last segments'' in BAM jargon). Here is an efficient
-way to do this:
+Like with single-end reads, having this information allows us for example
+to compare the read and transcript nucleotide sequences for each
+``compatible'' overlap. If we use the {\it reference query sequence} instead
+of the {\it original query sequence} for this comparison, then it should
+match {\bf exactly} the sequences of the ``left'' and ``right'' ends of the
+read in the transcript.
 
-<<split_U3grl>>=
-U3grl_first <- grglist(first(U3galp), order.as.in.query=TRUE)
-U3grl_last <- grglist(last(U3galp, invert.strand=TRUE), order.as.in.query=TRUE)
-@
-
-Then we extract the sequences from the reference genome based on the ranges
-in those 2 \Rclass{GRangesList} objects:
-
-<<U3rqseq>>=
-U3rqseq_first <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
-U3rqseq_last <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
-@
-
-and we assign 2 sequences to each overlap, one for each end of the read:
+Let's assign the ``left and right reference query sequences'' to each
+overlap:
 
 <<U3ov_Lrqseq_and_Rrqseq>>=
 U3ov_Lrqseq <- U3rqseq_first[queryHits(U3ov)]
@@ -842,16 +958,15 @@ U3ov_Lrqseq[flip_idx] <- reverseComplement(U3ov_Rrqseq[flip_idx])
 U3ov_Rrqseq[flip_idx] <- reverseComplement(tmp)
 @
 
-We assign the transcript sequence to each overlap:
+Let's assign the transcript sequence to each overlap:
 
 <<U3ov_txseq>>=
 U3ov_txseq <- txseq[subjectHits(U3ov)]
 @
 
-For each ``compatible'' overlap, we expect the ``left and right sequences''
-of the read to be {\it exact} substrings of the transcript sequence:
-
-Let's check the ``left sequences'':
+For each ``compatible'' overlap, we expect the ``left and right reference
+query sequences'' of the read to be {\it exact} substrings of the transcript
+sequence. Let's check the ``left reference query sequences'':
 
 <<U3ov_Lrqseq_vs_U3ov_txseq>>=
 stopifnot(all(
@@ -862,7 +977,7 @@ stopifnot(all(
 ))
 @
 
-and the ``right sequences'':
+and the ``right reference query sequences'':
 
 <<U3ov_Rrqseq_vs_U3ov_txseq>>=
 stopifnot(all(
@@ -873,38 +988,6 @@ stopifnot(all(
 ))
 @
 
-Thanks to the above result, and like with our single-end reads, comparing the
-{\it original query sequences} to the transcript sequences is equivalent to
-comparing them to the {\it reference query sequences}. And because the aligned
-reads have no indels, we should only see mismatches (typically a small number)
-during that comparison.
-Let's do this comparison for the first 500 sequences in \Rcode{U3galp}:
-
-<<U3seq_vs_U3rqseq>>=
-U3galp_first_nedit500 <- sapply(1:500, function(i)
-    neditAt(U3seq_first[[i]], U3rqseq_first[[i]])
-)
-table(U3galp_first_nedit500)
-
-U3galp_last_nedit500 <- sapply(1:500, function(i)
-    neditAt(reverseComplement(U3seq_last[[i]]), U3rqseq_last[[i]])
-)
-table(U3galp_last_nedit500)
-@
-
-The edit distance reported by the aligner in the NM tag should
-be the same as the value returned by \Rfunction{neditAt}:
-
-<<U3galp_nedit_vs_NM>>=
-stopifnot(all(U3galp_first_NM[1:500] == U3galp_first_nedit500))
-
-stopifnot(all(U3galp_last_NM[1:500] == U3galp_last_nedit500))
-@
-
-Again, assuming that this is true for all the sequences in \Rcode{U3galp},
-then we would be able to conclude that the edit distance reported in
-the NM tag is actually the edit distance between the read and transcript
-sequences of a ``compatible'' overlap.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
