@@ -264,7 +264,7 @@ stopifnot(all(
 \subsubsection{Compute the {\it reference query sequences}}
 
 The {\it reference query sequences} can easily be computed by extracting
-the nucleotide mapped to each read from the reference genome. This of
+the nucleotides mapped to each read from the reference genome. This of
 course requires that we have access to the reference genome used by the
 aligner. In Bioconductor, the full genome sequence for the dm3 assembly
 is stored in the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package:
@@ -288,6 +288,7 @@ function defined in the \Rpackage{GenomicFeatures} package:
 <<U1rqseq>>=
 library(GenomicFeatures)
 U1rqseq <- extractTranscriptsFromGenome(Dmelanogaster, U1grl)
+head(U1rqseq)
 @
 
 \subsubsection{Compare the {\it original query sequences} with the
