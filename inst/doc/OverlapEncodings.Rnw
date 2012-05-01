@@ -159,6 +159,16 @@ stopifnot(all(
 ))
 @
 
+Finally, since indels were not allowed/supported during the alignment process,
+the NM tag (edit distance) is actually equal to the number of mismatches.
+The maximum observed number of mismatches tells us how many mismatches per
+read were tolerated by the aligner:
+
+<<up_to_6_mismatches>>=
+U1gal_NM <- elementMetadata(U1gal)$NM
+table(U1gal_NM)
+@
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Load paired-end reads from a BAM file}
@@ -279,6 +289,17 @@ stopifnot(all(
     U3seq_last[match(names(U3seq_last), names(U3seq_last))] == U3seq_last
 ))
 @
+
+Finally, the following table tells us how many mismatches per read were
+tolerated by the aligner:
+
+<<up_to_2_mismatches_per_end>>=
+U3galp_first_NM <- elementMetadata(first(U3galp))$NM
+U3galp_last_NM <- elementMetadata(last(U3galp))$NM
+table(U3galp_first_NM, U3galp_last_NM)
+@
+
+Up to 2 mismatches per end.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -687,6 +708,10 @@ head(subset(U1ov_qstart, U1ov_is_compat))
 
 Having this information allows us for example to compare the read and
 transcript nucleotide sequences for each ``compatible'' overlap.
+Furthermore, we'll be able to show that, for ``compatible'' overlaps,
+the edit distance reported in the NM tag of the BAM file is actually
+the edit distance between the read and the transcript.
+
 Let's start by using the \Rfunction{extractTranscriptsFromGenome}
 function from the \Rpackage{GenomicFeatures} package to extract the
 transcript sequences from the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3}
@@ -742,17 +767,14 @@ N CIGAR operations, it should actually be the same as the value returned by
 \Rfunction{neditAt}. We confirm this for the 500 edit distances in
 \Rcode{U1gal\_nedit500}:
 
-<<U1gal_nedit>>=
-U1gal_nedit <- elementMetadata(U1gal)$NM
-stopifnot(all(U1gal_nedit[1:500] == U1gal_nedit500))
+<<U1gal_nedit_vs_NM>>=
+stopifnot(all(U1gal_NM[1:500] == U1gal_nedit500))
 @
 
-Finally, the maximum observed number of mismatches tells us how many
-mismatches per read were tolerated by the aligner:
-
-<<up_to_6_mismatches>>=
-table(U1gal_nedit)
-@
+Assuming that this is true for all the sequences in \Rcode{U1seq},
+then we would be able to conclude that the edit distance reported in
+the NM tag is actually the edit distance between the read and transcript
+sequences of a ``compatible'' overlap.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -874,22 +896,15 @@ The edit distance reported by the aligner in the NM tag should
 be the same as the value returned by \Rfunction{neditAt}:
 
 <<U3galp_nedit_vs_NM>>=
-U3galp_first_nedit <- elementMetadata(first(U3galp))$NM
-stopifnot(all(U3galp_first_nedit[1:500] == U3galp_first_nedit500))
+stopifnot(all(U3galp_first_NM[1:500] == U3galp_first_nedit500))
 
-U3galp_last_nedit <- elementMetadata(last(U3galp))$NM
-stopifnot(all(U3galp_last_nedit[1:500] == U3galp_last_nedit500))
+stopifnot(all(U3galp_last_NM[1:500] == U3galp_last_nedit500))
 @
 
-Finally, the following table tells us how many mismatches per read
-were tolerated by the aligner:
-
-<<up_to_2_mismatches_per_end>>=
-table(U3galp_first_nedit, U3galp_last_nedit)
-@
-
-Up to 2 mismatches per end.
-
+Again, assuming that this is true for all the sequences in \Rcode{U3galp},
+then we would be able to conclude that the edit distance reported in
+the NM tag is actually the edit distance between the read and transcript
+sequences of a ``compatible'' overlap.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
