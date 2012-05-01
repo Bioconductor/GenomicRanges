@@ -25,7 +25,7 @@
 
 \title{Overlap encodings}
 \author{Herv\'e Pag\`es}
-\date{Last modified: April 2012; Compiled: \today}
+\date{Last modified: May 2012; Compiled: \today}
 
 \begin{document}
 
@@ -998,9 +998,8 @@ stopifnot(all(
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-In many aspects, ``compatible'' overlaps correspond to an ideal situation
-but in practise many overlaps don't fall into that category.
-Here we are interested in a less perfect type of overlap where the
+In many aspects, ``compatible'' overlaps can be seen as perfect.
+We are now insterested in a less perfect type of overlap where the
 read overlaps the transcript in a way that {\it would} be ``compatible''
 if 1 or more exons were removed from the transcript. In that case we say
 that the overlap is ``almost compatible'' with the transcript.
