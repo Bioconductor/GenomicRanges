@@ -404,7 +404,7 @@ corresponding to their {\it first} ends (aka {\it first} segments in BAM
 jargon) and those corresponding to their {\it last} ends (aka {\it last}
 segments in BAM jargon):
 
-<<U3grl_first_and_last>>=
+<<U3grl_first-and-U3grl_last>>=
 U3grl_first <- grglist(first(U3galp), order.as.in.query=TRUE)
 U3grl_last <- grglist(last(U3galp, invert.strand=TRUE), order.as.in.query=TRUE)
 @
@@ -655,6 +655,8 @@ character vector or factor.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{``Compatible'' single-end overlaps}
 
+\subsubsection{``Compatible'' single-end encodings}
+
 \Rcode{U1ovenc} contains 7 unique encodings ``compatible'' with the splicing
 of the transcript:
 
@@ -718,6 +720,8 @@ U1ov_is_compat <- isCompatibleWithSplicing(U1ovenc)
 table(U1ov_is_compat)  # 476124 "compatible" overlaps
 @
 
+\subsubsection{Tabulate the ``compatible'' single-end overlaps}
+
 Number of ``compatible'' overlaps per alignment in \Rcode{U1gal}:
 
 <<U1gal_ncompat>>=
@@ -761,16 +765,18 @@ Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 <<dm3tx_U1ncompat>>=
 dm3tx_U1ncompat <- tabulate(subjectHits(U1ov)[U1ov_is_compat], nbins=length(dm3tx))
 names(dm3tx_U1ncompat) <- names(dm3tx)
-tail(table(dm3tx_U1ncompat))
-mean(dm3tx_U1ncompat >= 1)
+head(sort(dm3tx_U1ncompat, decreasing=TRUE), n=10)  # top 10 transcripts
+mean(dm3tx_U1ncompat >= 50)
 @
 
-Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 1 alignment in \Rcode{U1gal}.
+Only 0.835\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+with at least 50 alignments in \Rcode{U1gal}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{``Compatible'' paired-end overlaps}
+
+\subsubsection{``Compatible'' paired-end encodings}
 
 \Rcode{U3ovenc} contains 13 unique encodings ``compatible'' with the splicing
 of the transcript:
@@ -822,6 +828,8 @@ U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
 table(U3ov_is_compat)  # 95801 "compatible" overlaps
 @
 
+\subsubsection{Tabulate the ``compatible'' paired-end overlaps}
+
 Number of ``compatible'' overlaps per alignment pair in \Rcode{U3galp}:
 
 <<U3galp_ncompat>>=
@@ -851,12 +859,12 @@ Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
 <<dm3tx_U3ncompat>>=
 dm3tx_U3ncompat <- tabulate(subjectHits(U3ov)[U3ov_is_compat], nbins=length(dm3tx))
 names(dm3tx_U3ncompat) <- names(dm3tx)
-tail(table(dm3tx_U3ncompat))
-mean(dm3tx_U3ncompat >= 1)
+head(sort(dm3tx_U3ncompat, decreasing=TRUE), n=10)  # top 10 transcripts
+mean(dm3tx_U3ncompat >= 50)
 @
 
-Only 1\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 1 alignment pair in \Rcode{U3galp}.
+Only 0.73\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+with at least 50 alignment pairs in \Rcode{U3galp}.
 
 
 
@@ -1028,7 +1036,7 @@ to the transcriptome, and without allowing the typical gap that the aligner
 needs to introduce when aligning a junction read to the reference genome.
 With this approach, a ``hit'' between a read and a transcript is necessarily
 compatible with the splicing of the transcript. In case of a ``hit'', we'll
-say that the read and the transcript are ``sequence-based compatible'' (to
+say that the read and the transcript are ``string-based compatible'' (to
 differentiate from our previous notion of ``compatible'' overlaps that we
 will call ``encoding-based compatible'' from now on, unless the context is
 clear).
@@ -1036,6 +1044,8 @@ clear).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Align the single-end reads to the transcriptome}
+
+\subsubsection{Find the ``hits''}
 
 The single-end reads are in \Rcode{U1oqseq}, the transcriptome is in
 \Rcode{dm3txseq}.
@@ -1138,15 +1148,9 @@ U1hits <- union(U1hits, U1hitsf)
 U1hits <- .loadPrecomputed("U1hits")
 @
 
-This method finds at least all the ``encoding-based'' compatible overlaps
-that we found previsouly plus more:
+\subsubsection{Tabulate the ``hits''}
 
-<<U1hits-vs-U1ov>>=
-setdiff(U1ov[U1ov_is_compat], U1hits)
-setdiff(U1hits, U1ov[U1ov_is_compat])
-@
-
-Number of ``sequence-based compatible'' overlaps per alignment in
+Number of ``string-based compatible'' overlaps per alignment in
 \Rcode{U1gal}:
 
 <<U1gal_ncompat2>>=
@@ -1157,10 +1161,10 @@ table(U1gal_nsbcompat)
 mean(U1gal_nsbcompat >= 1)
 @
 
-76.44\% of the alignments in \Rcode{U1gal} are ``sequence-based compatible''
+76.44\% of the alignments in \Rcode{U1gal} are ``string-based compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
-Number of ``sequence-based compatible'' overlaps per {\it original query}:
+Number of ``string-based compatible'' overlaps per {\it original query}:
 
 <<U1uqnames_nsbcompat>>=
 U1uqnames_nsbcompat <- sumByQNAME(U1gal_nsbcompat, names(U1gal))
@@ -1168,8 +1172,47 @@ table(U1uqnames_nsbcompat)
 mean(U1uqnames_nsbcompat >= 1)
 @
 
-77.8\% of the {\it original queries} are ``sequence-based compatible'' with
+77.8\% of the {\it original queries} are ``string-based compatible'' with
 at least 1 transcript in \Rcode{dm3tx}.
+
+Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
+
+<<dm3tx_U1nsbcompat>>=
+dm3tx_U1nsbcompat <- tabulate(subjectHits(U1hits), nbins=length(dm3tx))
+names(dm3tx_U1nsbcompat) <- names(dm3tx)
+head(sort(dm3tx_U1nsbcompat, decreasing=TRUE), n=10)  # top 10 transcripts
+mean(dm3tx_U1nsbcompat >= 50)
+@
+
+Only 0.839\% of the transcripts in \Rcode{dm3tx} are ``string-based
+compatible'' with at least 50 alignments in \Rcode{U1gal}.
+
+\subsubsection{A closer look at the ``hits''}
+
+[WORK IN PROGRESS, might be removed or replaced soon...]
+
+Any ``encoding-based compatible'' overlap is of course ``string-based
+compatible'':
+
+<<encoding-based-compatible-implies-string-based-compatible>>=
+setdiff(U1ov[U1ov_is_compat], U1hits)
+@
+
+But now we want to look at those ``string-based compatible'' overlaps
+that are not ``encoding-based compatible''. We divide them in 2 groups:
+\begin{itemize}
+  \item Group A: Overlaps in \Rcode{U1ov} (i.e. found by \Rcode{findOverlaps})
+        that are ``string-based compatible'' but not ``encoding-based
+        compatible''.
+  \item Group B: Overlaps not even in \Rcode{U1ov} (i.e. not found by
+        \Rcode{findOverlaps}).
+\end{itemize}
+
+<<U1hitsAB>>=
+U1hitsAB <- setdiff(U1hits, U1ov[U1ov_is_compat])
+U1hitsB <- intersect(U1hitsAB, U1ov)
+U1hitsA <- setdiff(U1hitsAB, U1hitsB)
+@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1199,6 +1242,8 @@ character vector of factor.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{``Almost compatible'' single-end overlaps}
+
+\subsubsection{``Almost compatible'' single-end encodings}
 
 \Rcode{U1ovenc} contains 7 unique encodings ``almost compatible'' with the
 splicing of the transcript:
@@ -1237,6 +1282,8 @@ U1ov_is_almostcompat <- isCompatibleWithSkippedExons(U1ovenc)
 table(U1ov_is_almostcompat)  # 837 "almost compatible" overlaps
 @
 
+\subsubsection{Tabulate the ``almost compatible'' single-end overlaps}
+
 Number of ``almost compatible'' overlaps per alignment in \Rcode{U1gal}:
 
 <<U1gal_nalmostcompat>>=
@@ -1256,11 +1303,12 @@ Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
 dm3tx_U1nalmostcompat <- tabulate(subjectHits(U1ov)[U1ov_is_almostcompat], nbins=length(dm3tx))
 names(dm3tx_U1nalmostcompat) <- names(dm3tx)
 table(dm3tx_U1nalmostcompat)
-mean(dm3tx_U1nalmostcompat >= 1)
+head(sort(dm3tx_U1nalmostcompat, decreasing=TRUE), n=10)  # top 10 transcripts
+mean(dm3tx_U1nalmostcompat >= 50)
 @
 
-Only 0.46\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
-with at least 1 alignment in \Rcode{U1gal}.
+Only 0.004\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
+with at least 50 alignments in \Rcode{U1gal}.
 
 Finally note that the ``query start in transcript'' values returned by
 \Rfunction{extractQueryStartInTranscript} are also defined for ``almost
