@@ -39,3 +39,16 @@ test_renameSeqlevels <- function()
         seqlevels(suppressWarnings(renameSeqlevels(gr1, c(chr2="chr1")))))
 }
 
+test_renameSeqlevels_reorder <- function()
+{
+    ## seqlevels are in order chr1, chr2, but map is ordered chr2, chr1
+    orig <- setNames(1:2, c("chr1", "chr2"))
+    map <- c(chr2="2", chr1="1")
+    exp <- setNames(1:2, c("1", "2"))
+
+    si <- Seqinfo(names(orig), unname(orig))
+    updt <- GenomicRanges:::.renameSeqlevels(si, map)
+    obs <- seqlengths(updt)[c("1", "2")]
+    checkIdentical(exp, obs)
+} 
+
