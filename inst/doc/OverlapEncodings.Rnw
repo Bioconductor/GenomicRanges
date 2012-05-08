@@ -455,7 +455,8 @@ Because the aligned reads have no indels, we should only see mismatches
 (typically a small number) during that comparison so we don't need to
 call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
 Let's do this comparison for the first 500 sequences in
-\Rcode{U3galp\_first\_oqseq} and \Rcode{reverseComplement(U3galp\_last\_oqseq)}:
+\Rcode{U3galp\_first\_oqseq} and in
+\Rcode{reverseComplement(U3galp\_last\_oqseq)}:
 
 <<U3-oqseq-vs-U3-rqseq>>=
 U3galp_first_nedit500 <- sapply(1:500, function(i)
@@ -469,9 +470,9 @@ U3galp_last_nedit500 <- sapply(1:500, function(i)
 table(U3galp_last_nedit500)
 @
 
-Yes, the first 500 sequences in \Rcode{U3galp\_first\_oqseq} and
+Yes, the first 500 sequences in \Rcode{U3galp\_first\_oqseq} and in
 \Rcode{reverseComplement(U3galp\_last\_oqseq)} are ``close'' to the first 500
-sequences in \Rcode{U3galp\_first\_rqseq} and \Rcode{U3galp\_last\_rqseq},
+sequences in \Rcode{U3galp\_first\_rqseq} and in \Rcode{U3galp\_last\_rqseq},
 respectively.
 
 Now let's compare the edit distance reported by \Rfunction{neditAt} with the
@@ -580,9 +581,9 @@ U1ov <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
 However, the {\it overlap encodings} are strand sensitive so we will
 compute them twice, once for the ``original alignments'' (i.e. the alignments
 of the {\it original queries}), and once again for the ``flipped alignments''
-(i.e. the alignments of the ``flipped queries''). We extract the ranges of
-the ``original'' and ``flipped'' alignments in 2 \Rclass{GRangesList} objects
-with:
+(i.e. the alignments of the ``flipped {\it original queries}''). We extract
+the ranges of the ``original'' and ``flipped'' alignments in 2
+\Rclass{GRangesList} objects with:
 
 <<U1grlf>>=
 U1grlf <- flipQuery(U1grl)  # flipped
@@ -627,9 +628,9 @@ stopifnot(identical(U1ovenc_again, U1ovenc))
 Unique encodings in \Rcode{U1ovenc}:
 
 <<U1ovenc_table>>=
-unique_U1ovenc <- levels(encoding(U1ovenc))
-length(unique_U1ovenc)
-head(unique_U1ovenc)
+U1_unique_encodings <- levels(encoding(U1ovenc))
+length(U1_unique_encodings)
+head(U1_unique_encodings)
 U1ovenc_table <- table(encoding(U1ovenc))
 tail(sort(U1ovenc_table))
 @
@@ -659,9 +660,9 @@ U3ovenc
 Unique encodings in \Rcode{U3ovenc}:
 
 <<U3ovenc_table>>=
-unique_U3ovenc <- levels(encoding(U3ovenc))
-length(unique_U3ovenc)
-head(unique_U3ovenc)
+U3_unique_encodings <- levels(encoding(U3ovenc))
+length(U3_unique_encodings)
+head(U3_unique_encodings)
 U3ovenc_table <- table(encoding(U3ovenc))
 tail(sort(U3ovenc_table))
 @
@@ -691,8 +692,8 @@ character vector or factor.
 \Rcode{U1ovenc} contains 7 unique encodings ``compatible'' with the splicing
 of the transcript:
 
-<<compatible_unique_U1ovenc>>=
-sort(U1ovenc_table[isCompatibleWithSplicing(unique_U1ovenc)])
+<<U1-unique-compatible-encodings>>=
+sort(U1ovenc_table[isCompatibleWithSplicing(U1_unique_encodings)])
 @
 
 Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{U1ovenc}),
@@ -810,8 +811,8 @@ with at least 50 alignments in \Rcode{U1gal}.
 \Rcode{U3ovenc} contains 13 unique encodings ``compatible'' with the splicing
 of the transcript:
 
-<<compatible_unique_U3ovenc>>=
-sort(U3ovenc_table[isCompatibleWithSplicing(unique_U3ovenc)])
+<<U3-unique-compatible-encodings>>=
+sort(U3ovenc_table[isCompatibleWithSplicing(U3_unique_encodings)])
 @
 
 Encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (89039 occurences in \Rcode{U3ovenc}),
@@ -1005,9 +1006,9 @@ U3ov_Lrqseq <- U3galp_first_rqseq[queryHits(U3ov)]
 U3ov_Rrqseq <- U3galp_last_rqseq[queryHits(U3ov)]
 @
 
-For the single-end reads, the sequences associated with a ``flipped query''
+For the single-end reads, the sequence associated with a ``flipped query''
 just needed to be ``reverse complemented''. For paired-end reads, we also
-need to swap them between \Rcode{U3ov\_Lrqseq} and \Rcode{U3ov\_Rrqseq}:
+need to swap the 2 sequences in the pair:
 
 <<U3ov_Lrqseq_and_Rrqseq>>=
 flip_idx <- which(flippedQuery(U3ovenc))
@@ -1166,9 +1167,9 @@ which.txseq <- match(dm3chr4txids, names(dm3tx_seq))
 
 We know that the aligner tolerated up to 6 mismatches per read.
 The following 3 commands find the ``hits'' for the {\it original queries},
-then find the ``hits'' for the ``flipped queries'', and finally merge all
-the ``hits'' (note that the 3 commands take about 10-12 minutes to complete
-on a modern laptop):
+then find the ``hits'' for the ``flipped {\it original queries}'', and
+finally merge all the ``hits'' (note that the 3 commands take about
+10-12 minutes to complete on a modern laptop):
 
 <<U1hits, eval=FALSE>>=
 U1hits <- findSequenceHits(U1gal_oqseq, dm3tx_seq,
@@ -1281,8 +1282,8 @@ character vector of factor.
 \Rcode{U1ovenc} contains 7 unique encodings ``almost compatible'' with the
 splicing of the transcript:
 
-<<almost_compatible_unique_U1ovenc>>=
-sort(U1ovenc_table[isCompatibleWithSkippedExons(unique_U1ovenc)])
+<<U1-unique-almost-compatible-encodings>>=
+sort(U1ovenc_table[isCompatibleWithSkippedExons(U1_unique_encodings)])
 @
 
 Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{U1ovenc}),
