@@ -124,15 +124,17 @@ per {\it original query} (i.e. per sequence stored in the input file,
 typically a FASTQ file), we shouldn't expect the names of \Rcode{U1gal} to
 be unique:
 
-<<U1gal_names>>=
-table(duplicated(names(U1gal)))
+<<U1gal_names_is_dup>>=
+U1gal_names_is_dup <- duplicated(names(U1gal))
+table(U1gal_names_is_dup)
 @
 
 Storing the {\it query names} in a factor will be useful as we will see later
 in this document:
 
 <<U1gal_qnames>>=
-U1gal_qnames <- factor(names(U1gal), levels=unique(names(U1gal)))
+U1uqnames <- unique(names(U1gal))
+U1gal_qnames <- factor(names(U1gal), levels=U1uqnames)
 @
 
 Note that we explicitely provide the levels of the factor to enforce their
@@ -184,7 +186,7 @@ left column), and one for the {\it last} alignment in the pair (the right
 column). The {\tt strand} column corresponds to the strand of the {\it first}
 alignment.
 
-<<first_last>>=
+<<U3galp-first-and-last>>=
 head(first(U3galp))
 head(last(U3galp))
 @
@@ -216,14 +218,16 @@ input files, typically 1 FASTQ file for the {\it first} ends and 1 FASTQ file
 for the {\it last} ends), we shouldn't expect the names of \Rcode{U3galp} to
 be unique:
 
-<<U3galp_names>>=
-table(duplicated(names(U3galp)))
+<<U3galp_names_is_dup>>=
+U3galp_names_is_dup <- duplicated(names(U3galp))
+table(U3galp_names_is_dup)
 @
 
 Storing the {\it query template names} in a factor will be useful:
 
 <<U3galp_qnames>>=
-U3galp_qnames <- factor(names(U3galp), levels=unique(names(U3galp)))
+U3uqnames <- unique(names(U3galp))
+U3galp_qnames <- factor(names(U3galp), levels=U3uqnames)
 @
 
 as well as having the mapping between each {\it query template name} and its
@@ -283,12 +287,12 @@ described in the SAM Spec as the ``Edit distance to the reference, including
 ambiguous bases but excluding clipping'' (note that tags are optional fields
 i.e. not all BAM files have them):
 
-<<U1gal_seq>>=
+<<U1gal_qseq>>=
 param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
 U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
-U1gal_seq <- elementMetadata(U1gal)$seq
-names(U1gal_seq) <- names(U1gal)
-head(U1gal_seq)
+U1gal_qseq <- elementMetadata(U1gal)$seq
+names(U1gal_qseq) <- names(U1gal)
+head(U1gal_qseq)
 @
 
 Because the BAM format imposes that the read sequence is ``reverse
@@ -296,7 +300,7 @@ complemented'' when the read is aligned to the minus strand, we ``reverse
 complement'' it again to get the {\it original query sequences}:
 
 <<U1-original-query-sequences>>=
-U1gal_oqseq <- U1gal_seq
+U1gal_oqseq <- U1gal_qseq
 U1gal_is_on_minus <- as.logical(strand(U1gal) == "-")
 U1gal_oqseq[U1gal_is_on_minus] <- reverseComplement(U1gal_oqseq[U1gal_is_on_minus])
 head(U1gal_oqseq)
@@ -309,6 +313,17 @@ check:
 <<same-name-implies-same-seq-in-U1-oqseq>>=
 stopifnot(all(U1gal_oqseq[U1gal_dup2unq] == U1gal_oqseq))
 @
+
+Finally, let's reduce \Rcode{U1gal\_oqseq} to one {\it original query sequence}
+per unique {\it query name}:
+
+<<U1oqseq>>=
+U1oqseq <- U1gal_oqseq[!U1gal_names_is_dup]
+@
+
+If we had access to the FASTQ file used as input to the aligner,
+\Rcode{U1oqseq} would be the subset of this file made of the sequences with
+at least 1 alignment reported in BAM file {\tt untreated1\_chr4.bam}.
 
 \subsubsection{Compute the {\it reference query sequences}}
 
@@ -364,7 +379,7 @@ edit distance reported by the aligner (NM tag). Because the latter excludes
 the N CIGAR operations, it should actually be the same as the former.
 We confirm this for the 500 edit distances computed in \Rcode{U1gal\_nedit500}:
 
-<<U1gal_nedit-vs-NM>>=
+<<U1gal-nedit-vs-NM>>=
 U1gal_NM <- elementMetadata(U1gal)$NM
 stopifnot(all(U1gal_NM[1:500] == U1gal_nedit500))
 @
@@ -397,25 +412,25 @@ U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=para
 
 Let's extract the {\it first} and {\it last} sequences from \Rcode{U3galp}:
 
-<<U3bamseq>>=
-U3galp_first_seq <- elementMetadata(first(U3galp))$seq
-U3galp_last_seq <- elementMetadata(last(U3galp))$seq
-names(U3galp_first_seq) <- names(U3galp_last_seq) <- names(U3galp)
-head(U3galp_first_seq)
-head(U3galp_last_seq)
+<<U3galp-qseq1-and-qseq2>>=
+U3galp_qseq1 <- elementMetadata(first(U3galp))$seq
+U3galp_qseq2 <- elementMetadata(last(U3galp))$seq
+names(U3galp_qseq1) <- names(U3galp_qseq2) <- names(U3galp)
+head(U3galp_qseq1)
+head(U3galp_qseq2)
 @
 
 To obtain the {\it original query sequences} we ``reverse complement''
 the sequences that are aligned to the minus strand:
 
 <<U3-original-query-sequences>>=
-U3galp_first_oqseq <- U3galp_first_seq
+U3galp_oqseq1 <- U3galp_qseq1
 U3galp_first_is_on_minus <- as.logical(strand(first(U3galp)) == "-")
-U3galp_first_oqseq[U3galp_first_is_on_minus] <- reverseComplement(U3galp_first_oqseq[U3galp_first_is_on_minus])
+U3galp_oqseq1[U3galp_first_is_on_minus] <- reverseComplement(U3galp_oqseq1[U3galp_first_is_on_minus])
 
-U3galp_last_oqseq <- U3galp_last_seq
+U3galp_oqseq2 <- U3galp_qseq2
 U3galp_last_is_on_minus <- as.logical(strand(last(U3galp)) == "-")
-U3galp_last_oqseq[U3galp_last_is_on_minus] <- reverseComplement(U3galp_last_oqseq[U3galp_last_is_on_minus])
+U3galp_oqseq2[U3galp_last_is_on_minus] <- reverseComplement(U3galp_oqseq2[U3galp_last_is_on_minus])
 @
 
 Note that sequence pairs with the same {\it query template name} correspond
@@ -423,9 +438,22 @@ to the same {\it original query pairs} and therefore should be the same.
 Let's do a quick sanity check:
 
 <<same-name-implies-same-seq-pair-in-U3-oqseq>>=
-stopifnot(all(U3galp_first_oqseq[U3galp_dup2unq] == U3galp_first_oqseq))
-stopifnot(all(U3galp_last_oqseq[U3galp_dup2unq] == U3galp_last_oqseq))
+stopifnot(all(U3galp_oqseq1[U3galp_dup2unq] == U3galp_oqseq1))
+stopifnot(all(U3galp_oqseq2[U3galp_dup2unq] == U3galp_oqseq2))
 @
+
+Finally, let's reduce \Rcode{U3galp\_oqseq1} and \Rcode{U3galp\_oqseq2}
+to one {\it original query sequence} per unique {\it query template name}:
+
+<<U3oqseq>>=
+U3oqseq1 <- U3galp_oqseq1[!U3galp_names_is_dup]
+U3oqseq2 <- U3galp_oqseq2[!U3galp_names_is_dup]
+@
+
+If we had access to the 2 FASTQ files used as input to the aligner,
+\Rcode{U3oqseq1} and \Rcode{U3oqseq2} would be the subsets of those files
+made of the sequence pairs with at least 1 alignment pair reported in
+BAM file {\tt untreated3\_chr4.bam}.
 
 \subsubsection{Compute the {\it reference query sequences}}
 
@@ -444,8 +472,8 @@ ranges in \Rclass{GRangesList} objects \Rcode{U3grl\_first} and
 \Rcode{U3grl\_last}:
 
 <<U3-reference-query-sequences>>=
-U3galp_first_rqseq <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
-U3galp_last_rqseq <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
+U3galp_rqseq1 <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_first)
+U3galp_rqseq2 <- extractTranscriptsFromGenome(Dmelanogaster, U3grl_last)
 @
 
 \subsubsection{Compare the {\it original query sequences} with the
@@ -455,24 +483,23 @@ Because the aligned reads have no indels, we should only see mismatches
 (typically a small number) during that comparison so we don't need to
 call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
 Let's do this comparison for the first 500 sequences in
-\Rcode{U3galp\_first\_oqseq} and in
-\Rcode{reverseComplement(U3galp\_last\_oqseq)}:
+\Rcode{U3galp\_oqseq1} and in \Rcode{reverseComplement(U3galp\_oqseq2)}:
 
 <<U3-oqseq-vs-U3-rqseq>>=
 U3galp_first_nedit500 <- sapply(1:500, function(i)
-    neditAt(U3galp_first_oqseq[[i]], U3galp_first_rqseq[[i]])
+    neditAt(U3galp_oqseq1[[i]], U3galp_rqseq1[[i]])
 )
 table(U3galp_first_nedit500)
 
 U3galp_last_nedit500 <- sapply(1:500, function(i)
-    neditAt(reverseComplement(U3galp_last_oqseq[[i]]), U3galp_last_rqseq[[i]])
+    neditAt(reverseComplement(U3galp_oqseq2[[i]]), U3galp_rqseq2[[i]])
 )
 table(U3galp_last_nedit500)
 @
 
-Yes, the first 500 sequences in \Rcode{U3galp\_first\_oqseq} and in
-\Rcode{reverseComplement(U3galp\_last\_oqseq)} are ``close'' to the first 500
-sequences in \Rcode{U3galp\_first\_rqseq} and in \Rcode{U3galp\_last\_rqseq},
+Yes, the first 500 sequences in \Rcode{U3galp\_oqseq1} and in
+\Rcode{reverseComplement(U3galp\_oqseq2)} are ``close'' to the first 500
+sequences in \Rcode{U3galp\_rqseq1} and in \Rcode{U3galp\_rqseq2},
 respectively.
 
 Now let's compare the edit distance reported by \Rfunction{neditAt} with the
@@ -481,7 +508,7 @@ the N CIGAR operations, it should actually be the same as the former.
 We confirm this for the 500 edit distances computed in
 \Rcode{U3galp\_first\_nedit500} and \Rcode{U3galp\_last\_nedit500}:
 
-<<U3galp_nedit-vs-NM>>=
+<<U3galp-nedit-vs-NM>>=
 U3galp_first_NM <- elementMetadata(first(U3galp))$NM
 stopifnot(all(U3galp_first_NM[1:500] == U3galp_first_nedit500))
 
@@ -530,7 +557,7 @@ retrieve the dm3 transcripts and their exons from UCSC, and extract the
 exons grouped by transcript in a \Rclass{GRangesList} object.
 IMPORTANT: The reference genome of the transcripts must be {\bf exactly}
 the same as the reference genome used to align the reads (note that this
-is a general rule, not only when working with overlap encodings).
+is a general rule, not only when working with {\it overlap encodings}).
 
 Let's use the \Rfunction{makeTranscriptDbFromUCSC} defined in the
 \Rpackage{GenomicFeatures} to retrieve the dm3 transcripts and their exons
@@ -591,15 +618,15 @@ U1grlf <- flipQuery(U1grl)  # flipped
 
 and encode their overlaps with the transcripts:
 
-<<U1ovencof>>=
-U1ovenco <- encodeOverlaps(U1grl, dm3tx, hits=U1ov)
-U1ovencf <- encodeOverlaps(U1grlf, dm3tx, hits=U1ov)
+<<U1ovencAB>>=
+U1ovencA <- encodeOverlaps(U1grl, dm3tx, hits=U1ov)
+U1ovencB <- encodeOverlaps(U1grlf, dm3tx, hits=U1ov)
 @
 
-\Rcode{U1ovenco} and \Rcode{U1ovencf} are 2 \Rclass{OverlapsEncodings}
+\Rcode{U1ovencA} and \Rcode{U1ovencB} are 2 \Rclass{OverlapsEncodings}
 objects of the same length as \Rclass{Hits} object \Rcode{U1ov}.
 For each hit in \Rcode{U1ov}, we have 2 corresponding encodings, one
-in \Rcode{U1ovenco} and one in \Rcode{U1ovencf}, but only one of them
+in \Rcode{U1ovencA} and one in \Rcode{U1ovencB}, but only one of them
 encodes a hit between alignment ranges and exon ranges that are on the
 same strand.
 We use the \Rfunction{selectEncodingWithCompatibleStrand} function
@@ -610,7 +637,7 @@ strand:
 
 <<U1ovenc>>=
 U1grl_strand <- unlist(runValue(strand(U1grl)), use.names=FALSE)
-U1ovenc <- selectEncodingWithCompatibleStrand(U1ovenco, U1ovencf,
+U1ovenc <- selectEncodingWithCompatibleStrand(U1ovencA, U1ovencB,
                                               U1grl_strand, dm3tx_strand,
                                               hits=U1ov)
 U1ovenc
@@ -763,7 +790,7 @@ nhitPerQuery <- function(x) tabulate(queryHits(x), nbins=queryLength(x))
 nhitPerSubject <- function(x) tabulate(subjectHits(x), nbins=subjectLength(x))
 @
 
-Number of ``compatible'' overlaps per alignment in \Rcode{U1gal}:
+Number of ``compatible'' transcripts per alignment in \Rcode{U1gal}:
 
 <<U1gal_ncompat>>=
 U1compatov <- U1ov[U1ov_is_compat]
@@ -778,29 +805,31 @@ mean(U1gal_ncompat >= 1)
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Because \Rcode{U1gal} can (and actually does) contain more than 1 alignment
-per {\it original query}, we also count the number of ``compatible'' overlaps
-per unique {\it query name}:
+per {\it original query}, we also count the number of ``compatible''
+transcripts per read:
 
 <<U1uqnames_ncompat>>=
-U1uqnames_ncompat <- nhitPerQuery(remapHits(U1compatov, query.map=U1gal_qnames))
+U1compathits <- remapHits(U1compatov, query.map=U1gal_qnames)
+U1uqnames_ncompat <- nhitPerQuery(U1compathits)
+names(U1uqnames_ncompat) <- U1uqnames
 table(U1uqnames_ncompat)
 mean(U1uqnames_ncompat >= 1)
 @
 
-76.54\% of the {\it original queries} are ``compatible'' with at least
-1 transcript in \Rcode{dm3tx}.
+76.54\% of the reads are ``compatible'' with at least 1 transcript in
+\Rcode{dm3tx}.
 
-Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
+Number of ``compatible'' reads per transcript:
 
 <<dm3tx_U1ncompat>>=
-dm3tx_U1ncompat <- nhitPerSubject(U1compatov)
+dm3tx_U1ncompat <- nhitPerSubject(U1compathits)
 names(dm3tx_U1ncompat) <- names(dm3tx)
 head(sort(dm3tx_U1ncompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U1ncompat >= 50)
 @
 
 Only 0.835\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 50 alignments in \Rcode{U1gal}.
+with at least 50 reads.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -860,7 +889,7 @@ table(U3ov_is_compat)  # 95801 "compatible" overlaps
 
 \subsubsection{Tabulate the ``compatible'' paired-end overlaps}
 
-Number of ``compatible'' overlaps per alignment pair in \Rcode{U3galp}:
+Number of ``compatible'' transcripts per alignment pair in \Rcode{U3galp}:
 
 <<U3galp_ncompat>>=
 U3compatov <- U3ov[U3ov_is_compat]
@@ -876,28 +905,30 @@ with at least 1 transcript in \Rcode{dm3tx}.
 
 Because \Rcode{U3galp} can (and actually does) contain more than 1 alignment
 pair per {\it original query template}, we also count the number of
-``compatible'' overlaps per unique {\it query template name}:
+``compatible'' transcripts per read:
 
 <<U3uqnames_ncompat>>=
-U3uqnames_ncompat <- nhitPerQuery(remapHits(U3compatov, query.map=U3galp_qnames))
+U3compathits <- remapHits(U3compatov, query.map=U3galp_qnames)
+U3uqnames_ncompat <- nhitPerQuery(U3compathits)
+names(U3uqnames_ncompat) <- U3uqnames
 table(U3uqnames_ncompat)
 mean(U3uqnames_ncompat >= 1)
 @
 
-70.13\% of the {\it original query templates} are ``compatible'' with at
-least 1 transcript in \Rcode{dm3tx}.
+70.13\% of the reads are ``compatible'' with at least 1 transcript in
+\Rcode{dm3tx}.
 
-Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
+Number of ``compatible'' reads per transcript:
 
 <<dm3tx_U3ncompat>>=
-dm3tx_U3ncompat <- nhitPerSubject(U3compatov)
+dm3tx_U3ncompat <- nhitPerSubject(U3compathits)
 names(dm3tx_U3ncompat) <- names(dm3tx)
 head(sort(dm3tx_U3ncompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U3ncompat >= 50)
 @
 
-Only 0.73\% of the transcripts in \Rcode{dm3tx} are ``compatible''
-with at least 50 alignment pairs in \Rcode{U3galp}.
+Only 0.73\% of the transcripts in \Rcode{dm3tx} are ``compatible'' with at
+least 50 reads.
 
 
 
@@ -1002,8 +1033,8 @@ Let's assign the ``left and right reference query sequences'' to each
 overlap:
 
 <<U3ov_Lrqseq_and_Rrqseq>>=
-U3ov_Lrqseq <- U3galp_first_rqseq[queryHits(U3ov)]
-U3ov_Rrqseq <- U3galp_last_rqseq[queryHits(U3ov)]
+U3ov_Lrqseq <- U3galp_rqseq1[queryHits(U3ov)]
+U3ov_Rrqseq <- U3galp_rqseq2[queryHits(U3ov)]
 @
 
 For the single-end reads, the sequence associated with a ``flipped query''
@@ -1080,7 +1111,7 @@ clear).
 
 \subsubsection{Find the ``hits''}
 
-The single-end reads are in \Rcode{U1gal\_oqseq}, the transcriptome is in
+The single-end reads are in \Rcode{U1oqseq}, the transcriptome is in
 \Rcode{dm3tx\_seq}.
 
 Since indels were not allowed/supported during the alignment of the reads to
@@ -1090,7 +1121,7 @@ the reads to the transcriptome. Also since our goal is to find (and count)
 track of the details of the alignments between the reads and the transcripts.
 Finally, since BAM file {\tt untreated1\_chr4.bam} is not the full output of
 the aligner but the subset obtained by keeping only the alignments located
-on chr4, we don't need to align \Rcode{U1gal\_oqseq} to the full transcriptome,
+on chr4, we don't need to align \Rcode{U1oqseq} to the full transcriptome,
 but only to the subset of \Rcode{dm3tx\_seq} made of the transcripts located
 on chr4.
 
@@ -1098,9 +1129,9 @@ With those simplifications in mind, we write the following function that we
 will use to find the ``hits'' between the reads and the transcriptome:
 
 <<findSequenceHits>>=
-### A wrapper to vwhichPDict() that supports ambiguity codes in 'oqseq'
+### A wrapper to vwhichPDict() that supports IUPAC ambiguity codes in 'qseq'
 ### and 'txseq', and treats them as such.
-findSequenceHits <- function(oqseq, txseq, which.txseq=NULL, max.mismatch=0)
+findSequenceHits <- function(qseq, txseq, which.txseq=NULL, max.mismatch=0)
 {
     .asHits <- function(x, pattern_length)
     {
@@ -1112,30 +1143,42 @@ findSequenceHits <- function(oqseq, txseq, which.txseq=NULL, max.mismatch=0)
                     queryLength=pattern_length, subjectLength=length(x))
     }
 
+    .isHitInTranscriptBounds <- function(hits, qseq, txseq)
+    {
+        sapply(seq_len(length(hits)),
+            function(i) {
+                pattern <- qseq[[queryHits(hits)[i]]]
+                subject <- txseq[[subjectHits(hits)[i]]]
+                v <- matchPattern(pattern, subject,
+                                  max.mismatch=max.mismatch, fixed=FALSE)
+                any(1L <= start(v) & end(v) <= length(subject))
+            })
+    }
+
     if (!is.null(which.txseq)) {
-        txseq0_length <- length(txseq)
+        txseq0 <- txseq
         txseq <- txseq[which.txseq]
     }
 
-    names(oqseq) <- NULL
-    other <- alphabetFrequency(oqseq, baseOnly=TRUE)[ , "other"]
-    is_clean <- other == 0L
+    names(qseq) <- NULL
+    other <- alphabetFrequency(qseq, baseOnly=TRUE)[ , "other"]
+    is_clean <- other == 0L  # "clean" means "no IUPAC ambiguity code"
 
     ## Find hits for "clean" original queries.
-    oqseq0 <- oqseq[is_clean]
-    pdict0 <- PDict(oqseq0, max.mismatch=max.mismatch)
+    qseq0 <- qseq[is_clean]
+    pdict0 <- PDict(qseq0, max.mismatch=max.mismatch)
     m0 <- vwhichPDict(pdict0, txseq,
                       max.mismatch=max.mismatch, fixed="pattern")
-    hits0 <- .asHits(m0, length(oqseq0))
-    hits0@queryLength <- length(oqseq)
+    hits0 <- .asHits(m0, length(qseq0))
+    hits0@queryLength <- length(qseq)
     hits0@queryHits <- which(is_clean)[hits0@queryHits]
 
     ## Find hits for non "clean" original queries.
-    oqseq1 <- oqseq[!is_clean]
-    m1 <- vwhichPDict(oqseq1, txseq,
+    qseq1 <- qseq[!is_clean]
+    m1 <- vwhichPDict(qseq1, txseq,
                       max.mismatch=max.mismatch, fixed=FALSE)
-    hits1 <- .asHits(m1, length(oqseq1))
-    hits1@queryLength <- length(oqseq)
+    hits1 <- .asHits(m1, length(qseq1))
+    hits1@queryLength <- length(qseq)
     hits1@queryHits <- which(!is_clean)[hits1@queryHits]
 
     ## Combine the hits.
@@ -1143,14 +1186,22 @@ findSequenceHits <- function(oqseq, txseq, which.txseq=NULL, max.mismatch=0)
     subject_hits <- c(subjectHits(hits0), subjectHits(hits1))
 
     if (!is.null(which.txseq)) {
+        ## Remap the hits.
+        txseq <- txseq0
         subject_hits <- which.txseq[subject_hits]
-        hits0@subjectLength <- txseq0_length
+        hits0@subjectLength <- length(txseq)
     }
 
     ## Order the hits.
     oo <- IRanges:::orderIntegerPairs(query_hits, subject_hits)
     hits0@queryHits <- query_hits[oo]
     hits0@subjectHits <- subject_hits[oo]
+
+    if (max.mismatch != 0L) {
+        ## Keep only "in bounds" hits.
+        is_in_bounds <- .isHitInTranscriptBounds(hits0, qseq, txseq)
+        hits0 <- hits0[is_in_bounds]
+    }
     hits0
 }
 @
@@ -1166,60 +1217,49 @@ which.txseq <- match(dm3chr4txids, names(dm3tx_seq))
 @
 
 We know that the aligner tolerated up to 6 mismatches per read.
-The following 3 commands find the ``hits'' for the {\it original queries},
-then find the ``hits'' for the ``flipped {\it original queries}'', and
-finally merge all the ``hits'' (note that the 3 commands take about
-10-12 minutes to complete on a modern laptop):
+The 3 following commands find the ``hits'' for each {\it original
+query}, then find the ``hits'' for each ``flipped {\it original query}'',
+and finally merge all the ``hits'' (note that the 3 commands take about
+1 hour to complete on a modern laptop):
 
-<<U1hits, eval=FALSE>>=
-U1hits <- findSequenceHits(U1gal_oqseq, dm3tx_seq,
-                           which.txseq=which.txseq, max.mismatch=6)
-U1hitsf <- findSequenceHits(reverseComplement(U1gal_oqseq), dm3tx_seq,
-                            which.txseq=which.txseq, max.mismatch=6)
-U1hits <- union(U1hits, U1hitsf)
+<<U1sbcompathits, eval=FALSE>>=
+U1sbcompathitsA <- findSequenceHits(U1oqseq, dm3tx_seq,
+                                    which.txseq=which.txseq, max.mismatch=6)
+U1sbcompathitsB <- findSequenceHits(reverseComplement(U1oqseq), dm3tx_seq,
+                                    which.txseq=which.txseq, max.mismatch=6)
+U1sbcompathits <- union(U1sbcompathitsA, U1sbcompathitsB)
 @
-<<LOAD_U1hits, echo=FALSE, results=hide>>=
-U1hits <- .loadPrecomputed("U1hits")
+<<LOAD_U1sbcompathits, echo=FALSE, results=hide>>=
+U1sbcompathitsA <- .loadPrecomputed("U1sbcompathitsA")
+U1sbcompathitsB <- .loadPrecomputed("U1sbcompathitsB")
+U1sbcompathits <- union(U1sbcompathitsA, U1sbcompathitsB)
 @
 
 \subsubsection{Tabulate the ``hits''}
 
-Number of ``string-based compatible'' overlaps per alignment in
-\Rcode{U1gal}:
-
-<<U1gal_nsbcompat>>=
-U1gal_nsbcompat <- nhitPerQuery(U1hits)
-elementMetadata(U1gal)$nsbcompat <- U1gal_nsbcompat
-head(U1gal)
-table(U1gal_nsbcompat)
-mean(U1gal_nsbcompat >= 1)
-@
-
-76.44\% of the alignments in \Rcode{U1gal} are ``string-based compatible''
-with at least 1 transcript in \Rcode{dm3tx}.
-
-Number of ``string-based compatible'' overlaps per unique {\it query name}:
+Number of ``string-based compatible'' transcripts per read:
 
 <<U1uqnames_nsbcompat>>=
-U1uqnames_nsbcompat <- nhitPerQuery(remapHits(U1hits, query.map=U1gal_qnames))
+U1uqnames_nsbcompat <- nhitPerQuery(U1sbcompathits)
+names(U1uqnames_nsbcompat) <- U1uqnames
 table(U1uqnames_nsbcompat)
 mean(U1uqnames_nsbcompat >= 1)
 @
 
-77.8\% of the {\it original queries} are ``string-based compatible'' with
-at least 1 transcript in \Rcode{dm3tx}.
+77.8\% of the reads are ``string-based compatible'' with at least 1
+transcript in \Rcode{dm3tx}.
 
-Number of ``compatible'' overlaps per transcript in \Rcode{dm3tx}:
+Number of ``string-based compatible'' reads per transcript:
 
 <<dm3tx_U1nsbcompat>>=
-dm3tx_U1nsbcompat <- nhitPerSubject(U1hits)
+dm3tx_U1nsbcompat <- nhitPerSubject(U1sbcompathits)
 names(dm3tx_U1nsbcompat) <- names(dm3tx)
 head(sort(dm3tx_U1nsbcompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U1nsbcompat >= 50)
 @
 
 Only 0.839\% of the transcripts in \Rcode{dm3tx} are ``string-based
-compatible'' with at least 50 alignments in \Rcode{U1gal}.
+compatible'' with at least 50 reads.
 
 \subsubsection{A closer look at the ``hits''}
 
@@ -1229,24 +1269,30 @@ Any ``encoding-based compatible'' overlap is of course ``string-based
 compatible'':
 
 <<encoding-based-compatible-implies-string-based-compatible>>=
-setdiff(U1ov[U1ov_is_compat], U1hits)
+length(setdiff(U1compathits, U1sbcompathits))
 @
 
-But now we want to look at those ``string-based compatible'' overlaps
-that are not ``encoding-based compatible''. We divide them in 2 groups:
-\begin{itemize}
-  \item Group A: Overlaps in \Rcode{U1ov} (i.e. found by \Rcode{findOverlaps})
-        that are ``string-based compatible'' but not ``encoding-based
-        compatible''.
-  \item Group B: Overlaps not even in \Rcode{U1ov} (i.e. not found by
-        \Rcode{findOverlaps}).
-\end{itemize}
+but the reverse is not true:
 
-<<U1hitsAB>>=
-U1hitsAB <- setdiff(U1hits, U1ov[U1ov_is_compat])
-U1hitsB <- intersect(U1hitsAB, U1ov)
-U1hitsA <- setdiff(U1hitsAB, U1hitsB)
+<<string-based-compatible-does-NOT-imply-encoding-based-compatible>>=
+length(setdiff(U1sbcompathits, U1compathits))
 @
+
+%To understand why the {\it overlap encodings} approach doesn't find all
+%the ``string-based compatible'' hits, let's look at the second hit in
+%\Rcode{setdiff(U1sbcompathits, U1compathits)}. This is a perfect hit between
+%read SRR031728.4692406 and transcript 18924:
+%
+%<<>>=
+%matchPattern(U1oqseq[[6306]], dm3tx_seq[[18924]])
+%U1gal_idx <- which(U1gal_qnames == "SRR031728.4692406")
+%U1gal[U1gal_idx]
+%U1gal_idx %in% queryHits(U1ov)
+%U1gal[12636]
+%which(queryHits(U1ov) == 12636)
+%U1ov[305]
+%as.character(encoding(U1ovenc)[305])
+%@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
