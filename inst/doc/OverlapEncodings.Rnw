@@ -563,12 +563,13 @@ Let's use the \Rfunction{makeTranscriptDbFromUCSC} defined in the
 \Rpackage{GenomicFeatures} to retrieve the dm3 transcripts and their exons
 from UCSC:
 
-<<dm3tx>>=
+<<dm3tx, eval=FALSE>>=
 dm3_refGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
 dm3tx <- exonsBy(dm3_refGene_txdb, by="tx")
 @
 <<CHECK_dm3tx, echo=FALSE, results=hide>>=
-.checkIdenticalToPrecomputed(dm3tx, "dm3tx", ignore.metadata=TRUE)
+#.checkIdenticalToPrecomputed(dm3tx, "dm3tx", ignore.metadata=TRUE)
+dm3tx <- .loadPrecomputed("dm3tx")
 @
 
 We check that all the exons in any given transcript belong to the same
@@ -1210,7 +1211,7 @@ Let's compute the index of the transcripts in \Rcode{dm3tx\_seq} located on
 chr4 (\Rfunction{findSequenceHits} will restrict the search to those
 transcripts):
 
-<<which.txseq>>=
+<<which.txseq, eval=FALSE>>=
 dm3chr4tx <- transcripts(dm3_refGene_txdb, vals=list(tx_chrom="chr4"))
 dm3chr4txids <- elementMetadata(dm3chr4tx)$tx_id
 which.txseq <- match(dm3chr4txids, names(dm3tx_seq))
