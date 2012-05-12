@@ -1031,9 +1031,9 @@ setMethod("nearest", c("GenomicRanges", "missing"),
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
     if (ignore.strand)
-        strand(x) <- strand(subject) <- "+"
-    if (all(strand(x) == "*") && all(strand(subject) == "*"))
-        strand(x) <- strand(subject) <- "+"
+        strand(x) <- "+"
+    else if (all(strand(x) == "*") && all(strand(subject) == "*"))
+        strand(x) <- "+"
     x
 }
 
