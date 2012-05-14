@@ -563,13 +563,12 @@ Let's use the \Rfunction{makeTranscriptDbFromUCSC} defined in the
 \Rpackage{GenomicFeatures} to retrieve the dm3 transcripts and their exons
 from UCSC:
 
-<<dm3tx, eval=FALSE>>=
-dm3_refGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="refGene")
-dm3tx <- exonsBy(dm3_refGene_txdb, by="tx")
+<<dm3tx>>=
+dm3_ensGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="ensGene")
+dm3tx <- exonsBy(dm3_ensGene_txdb, by="tx", use.names=TRUE)
 @
 <<CHECK_dm3tx, echo=FALSE, results=hide>>=
-#.checkIdenticalToPrecomputed(dm3tx, "dm3tx", ignore.metadata=TRUE)
-dm3tx <- .loadPrecomputed("dm3tx")
+.checkIdenticalToPrecomputed(dm3tx, "dm3tx", ignore.metadata=TRUE)
 @
 
 We check that all the exons in any given transcript belong to the same
@@ -802,7 +801,7 @@ table(U1gal_ncompat)
 mean(U1gal_ncompat >= 1)
 @
 
-71.45\% of the alignments in \Rcode{U1gal} are ``compatible''
+73.8\% of the alignments in \Rcode{U1gal} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Because \Rcode{U1gal} can (and actually does) contain more than 1 alignment
@@ -817,7 +816,7 @@ table(U1uqnames_ncompat)
 mean(U1uqnames_ncompat >= 1)
 @
 
-76.54\% of the reads are ``compatible'' with at least 1 transcript in
+76.5\% of the reads are ``compatible'' with at least 1 transcript in
 \Rcode{dm3tx}.
 
 Number of ``compatible'' reads per transcript:
@@ -829,7 +828,7 @@ head(sort(dm3tx_U1ncompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U1ncompat >= 50)
 @
 
-Only 0.835\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+Only 0.86\% of the transcripts in \Rcode{dm3tx} are ``compatible''
 with at least 50 reads.
 
 
@@ -901,7 +900,7 @@ table(U3galp_ncompat)
 mean(U3galp_ncompat >= 1)
 @
 
-66.8\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
+66.9\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Because \Rcode{U3galp} can (and actually does) contain more than 1 alignment
@@ -916,7 +915,7 @@ table(U3uqnames_ncompat)
 mean(U3uqnames_ncompat >= 1)
 @
 
-70.13\% of the reads are ``compatible'' with at least 1 transcript in
+70.1\% of the reads are ``compatible'' with at least 1 transcript in
 \Rcode{dm3tx}.
 
 Number of ``compatible'' reads per transcript:
@@ -928,7 +927,7 @@ head(sort(dm3tx_U3ncompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U3ncompat >= 50)
 @
 
-Only 0.73\% of the transcripts in \Rcode{dm3tx} are ``compatible'' with at
+Only 0.75\% of the transcripts in \Rcode{dm3tx} are ``compatible'' with at
 least 50 reads.
 
 
@@ -1212,9 +1211,9 @@ chr4 (\Rfunction{findSequenceHits} will restrict the search to those
 transcripts):
 
 <<which.txseq, eval=FALSE>>=
-dm3chr4tx <- transcripts(dm3_refGene_txdb, vals=list(tx_chrom="chr4"))
-dm3chr4txids <- elementMetadata(dm3chr4tx)$tx_id
-which.txseq <- match(dm3chr4txids, names(dm3tx_seq))
+dm3chr4tx <- transcripts(dm3_ensGene_txdb, vals=list(tx_chrom="chr4"))
+dm3chr4txnames <- elementMetadata(dm3chr4tx)$tx_name
+which.txseq <- match(dm3chr4txnames, names(dm3tx_seq))
 @
 
 We know that the aligner tolerated up to 6 mismatches per read.
@@ -1247,7 +1246,7 @@ table(U1uqnames_nsbcompat)
 mean(U1uqnames_nsbcompat >= 1)
 @
 
-77.8\% of the reads are ``string-based compatible'' with at least 1
+77.7\% of the reads are ``string-based compatible'' with at least 1
 transcript in \Rcode{dm3tx}.
 
 Number of ``string-based compatible'' reads per transcript:
@@ -1259,7 +1258,7 @@ head(sort(dm3tx_U1nsbcompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U1nsbcompat >= 50)
 @
 
-Only 0.839\% of the transcripts in \Rcode{dm3tx} are ``string-based
+Only 0.86\% of the transcripts in \Rcode{dm3tx} are ``string-based
 compatible'' with at least 50 reads.
 
 \subsubsection{A closer look at the ``hits''}
@@ -1376,7 +1375,7 @@ table(U1gal_nalmostcompat)
 mean(U1gal_nalmostcompat >= 1)
 @
 
-Only 0.2\% of the alignments in \Rcode{U1gal} are ``almost compatible''
+Only 0.22\% of the alignments in \Rcode{U1gal} are ``almost compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``almost compatible'' overlaps per transcript in \Rcode{dm3tx}:
@@ -1389,7 +1388,7 @@ head(sort(dm3tx_U1nalmostcompat, decreasing=TRUE), n=10)  # top 10 transcripts
 mean(dm3tx_U1nalmostcompat >= 50)
 @
 
-Only 0.004\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
+Only 0.0087\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
 with at least 50 alignments in \Rcode{U1gal}.
 
 Finally note that the ``query start in transcript'' values returned by
