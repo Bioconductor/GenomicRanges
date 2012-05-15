@@ -819,6 +819,15 @@ mean(U1gal_ncompat >= 1)
 73.8\% of the alignments in \Rcode{U1gal} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
 
+Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
+can be used directly on \Rcode{U1gal} and \Rcode{dm3tx} for computing
+\Rcode{U1gal\_ncompat}:
+
+<<U1gal_ncompat_again, eval=FALSE>>=
+U1gal_ncompat_again <- countCompatibleOverlaps(U1gal, dm3tx)
+stopifnot(identical(U1gal_ncompat_again, U1gal_ncompat))
+@
+
 Because \Rcode{U1gal} can (and actually does) contain more than 1 alignment
 per {\it original query}, we also count the number of ``compatible''
 transcripts per read:
@@ -931,8 +940,17 @@ table(U3galp_ncompat)
 mean(U3galp_ncompat >= 1)
 @
 
-66.9\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
+68.9\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
 with at least 1 transcript in \Rcode{dm3tx}.
+
+Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
+can be used directly on \Rcode{U3galp} and \Rcode{dm3tx} for computing
+\Rcode{U3galp\_ncompat}:
+
+<<U3galp_ncompat_again, eval=FALSE>>=
+U3galp_ncompat_again <- countCompatibleOverlaps(U3galp, dm3tx)
+stopifnot(identical(U3galp_ncompat_again, U3galp_ncompat))
+@
 
 Because \Rcode{U3galp} can (and actually does) contain more than 1 alignment
 pair per {\it original query template}, we also count the number of
