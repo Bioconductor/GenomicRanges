@@ -53,6 +53,7 @@ export(
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
     extractQueryStartInTranscript,
+    findCompatibleOverlaps, countCompatibleOverlaps,
 
     countGenomicOverlaps,
 
@@ -92,6 +93,7 @@ exportMethods(
     findOverlaps, countOverlaps, match, "%in%",
     encodeOverlaps, isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
+    findCompatibleOverlaps,
     show,
     rname, "rname<-", cigar, qwidth, grglist, granges, rglist, ngap,
     qnarrow,

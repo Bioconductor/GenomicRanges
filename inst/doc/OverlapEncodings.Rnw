@@ -779,6 +779,22 @@ U1ov_is_compat <- isCompatibleWithSplicing(U1ovenc)
 table(U1ov_is_compat)  # 476124 "compatible" overlaps
 @
 
+Finally, let's extract the ``compatible'' overlaps from \Rcode{U1ov}:
+
+<<U1compatov>>=
+U1compatov <- U1ov[U1ov_is_compat]
+@
+
+Note that high-level convenience wrapper \Rfunction{findCompatibleOverlaps}
+can be used for computing the ``compatible'' overlaps directly between
+a \Rclass{GappedAlignments} object (containing reads) and a
+\Rclass{GRangesList} object (containing transcripts):
+
+<<U1compatov_again, eval=FALSE>>=
+U1compatov_again <- findCompatibleOverlaps(U1gal, dm3tx)
+stopifnot(identical(U1compatov_again, U1compatov))
+@
+
 \subsubsection{Tabulate the ``compatible'' single-end overlaps}
 
 We will repeatedly use the 2 following little helper functions to ``tabulate''
@@ -793,7 +809,6 @@ nhitPerSubject <- function(x) tabulate(subjectHits(x), nbins=subjectLength(x))
 Number of ``compatible'' transcripts per alignment in \Rcode{U1gal}:
 
 <<U1gal_ncompat>>=
-U1compatov <- U1ov[U1ov_is_compat]
 U1gal_ncompat <- nhitPerQuery(U1compatov)
 elementMetadata(U1gal)$ncompat <- U1gal_ncompat
 head(U1gal)
@@ -887,12 +902,28 @@ U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
 table(U3ov_is_compat)  # 95801 "compatible" overlaps
 @
 
+Finally, let's extract the ``compatible'' overlaps from \Rcode{U3ov}:
+
+<<U3compatov>>=
+U3compatov <- U3ov[U3ov_is_compat]
+@
+
+Note that, like with our single-end reads, high-level convenience
+wrapper \Rfunction{findCompatibleOverlaps} can be used for computing
+the ``compatible'' overlaps directly between a \Rclass{GappedAlignmentPairs}
+object (containing paired-end reads) and a \Rclass{GRangesList} object
+(containing transcripts):
+
+<<U3compatov_again, eval=FALSE>>=
+U3compatov_again <- findCompatibleOverlaps(U3galp, dm3tx)
+stopifnot(identical(U3compatov_again, U3compatov))
+@
+
 \subsubsection{Tabulate the ``compatible'' paired-end overlaps}
 
 Number of ``compatible'' transcripts per alignment pair in \Rcode{U3galp}:
 
 <<U3galp_ncompat>>=
-U3compatov <- U3ov[U3ov_is_compat]
 U3galp_ncompat <- nhitPerQuery(U3compatov)
 elementMetadata(U3galp)$ncompat <- U3galp_ncompat
 head(U3galp)

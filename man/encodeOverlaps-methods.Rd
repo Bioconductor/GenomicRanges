@@ -34,17 +34,25 @@
 
 \alias{extractQueryStartInTranscript}
 
-\title{encodeOverlaps methods and related utilities}
+\alias{findCompatibleOverlaps}
+\alias{findCompatibleOverlaps,GappedAlignments,GRangesList-method}
+\alias{findCompatibleOverlaps,GappedAlignmentPairs,GRangesList-method}
+\alias{countCompatibleOverlaps}
+
+
+\title{encodeOverlaps method for GRangesList objects, and related utilities}
 
 \description{
-  \code{encodeOverlaps} methods and related utilities.
+  \code{encodeOverlaps} method for \link{GRangesList}, and related utilities.
 }
 
 \usage{
-flipQuery(x, i)
-
 \S4method{encodeOverlaps}{GRangesList,GRangesList,missing}(query, subject, hits=NULL,
                flip.query.if.wrong.strand=FALSE)
+
+## Low-level utils:
+
+flipQuery(x, i)
 
 selectEncodingWithCompatibleStrand(x, y,
                                    query.strand, subject.strand, hits=NULL)
@@ -59,6 +67,11 @@ extractSkippedExonRanks(x, for.query.right.end=FALSE)
 extractQueryStartInTranscript(query, subject, hits=NULL, ovenc=NULL,
                               flip.query.if.wrong.strand=FALSE,
                               for.query.right.end=FALSE)
+
+## High-level convenience wrappers:
+
+findCompatibleOverlaps(query, subject)
+countCompatibleOverlaps(query, subject)
 }
 
 \arguments{
@@ -79,7 +92,9 @@ extractQueryStartInTranscript(query, subject, hits=NULL, ovenc=NULL,
     the elements are flipped.
   }
   \item{query, subject}{
-    \link{GRangesList} objects.
+    \link{GRangesList} objects except for \code{findCompatibleOverlaps}
+    and \code{countCompatibleOverlaps} where \code{query} must be a
+    \link{GappedAlignments} or \link{GappedAlignmentPairs} object.
   }
   \item{hits}{
     A \link[IRanges]{Hits} object.
@@ -125,15 +140,57 @@ extractQueryStartInTranscript(query, subject, hits=NULL, ovenc=NULL,
 \seealso{
   \itemize{
     \item The "Overlap encodings" vignette in the GenomicRanges package.
-    \item \code{\link[IRanges]{findOverlaps}}.
-    \item \link[IRanges]{OverlapEncodings-class}.
-    \item \link{GRangesList-class}.
+    \item The \code{\link[IRanges]{findOverlaps}} generic function defined
+          in the IRanges package.
+    \item The \link[IRanges]{OverlapEncodings} class defined in the IRanges
+          package.
+    \item The \link{GRangesList}, \link{GappedAlignments}, and
+          \link{GappedAlignmentPairs} classes.
   }
 }
 
 \examples{
-## See the "Overlap encodings" vignette in the GenomicRanges package for
-## some examples.
+## Here we only show a simple example illustrating the use of
+## countCompatibleOverlaps() on a very small data set. Please
+## refer to the "Overlap encodings" vignette in the GenomicRanges
+## package for a more comprehensive presentation of "overlap
+## encodings" and related tools/concepts (e.g. "compatible"
+## overlaps, "almost compatible" overlaps etc...), and for more
+## examples.
+
+## sm_treated1.bam contains a small subset of treated1.bam, a BAM
+## file containing single-end reads from the "Pasilla" experiment
+## (RNA-seq, Fly, see the pasilla data package for the details)
+## and aligned to reference genome BDGP Release 5 (aka dm3 genome on
+## the UCSC Genome Browser):
+sm_treated1 <- system.file("extdata", "sm_treated1.bam",
+                           package="GenomicRanges", mustWork=TRUE)
+
+## Load the alignments:
+library(Rsamtools)
+flag0 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE)
+param0 <- ScanBamParam(flag=flag0)
+gal <- readGappedAlignments(sm_treated1, use.names=TRUE, param=param0)
+
+## Load the transcripts (IMPORTANT: Like always, the reference genome
+## of the transcripts must be *exactly* the same as the reference
+## genome used to align the reads):
+library(GenomicFeatures)
+dm3_ensGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="ensGene")
+dm3tx <- exonsBy(dm3_ensGene_txdb, by="tx", use.names=TRUE)
+
+## Number of "compatible" transcripts per alignment in 'gal':
+gal_ncompat <- countCompatibleOverlaps(gal, dm3tx)
+elementMetadata(gal)$ncompat <- gal_ncompat
+table(gal_ncompat)
+mean(gal_ncompat >= 1)
+## --> 33% of the alignments in 'gal' are "compatible" with at least
+## 1 transcript in 'dm3tx'.
+
+## Keep only alignments compatible with at least 1 transcript in
+## 'dm3tx':
+compatgal <- gal[gal_ncompat >= 1]
+head(compatgal)
 }
 
 \keyword{methods}
