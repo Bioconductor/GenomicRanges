@@ -170,29 +170,29 @@ setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
 ### selectEncodingWithCompatibleStrand().
 ###
 
-selectEncodingWithCompatibleStrand <- function(x, y,
+selectEncodingWithCompatibleStrand <- function(ovencA, ovencB,
                                                query.strand, subject.strand,
                                                hits=NULL)
 {
-    if (!is(x, "OverlapEncodings"))
-        stop("'x' must be an OverlapEncodings object")
-    if (!is(y, "OverlapEncodings"))
-        stop("'y' must be an OverlapEncodings object")
+    if (!is(ovencA, "OverlapEncodings"))
+        stop("'ovencA' must be an OverlapEncodings object")
+    if (!is(ovencB, "OverlapEncodings"))
+        stop("'ovencB' must be an OverlapEncodings object")
     if (!is.null(hits)) {
         if (!is(hits, "Hits"))
             stop("'hits' must be a Hits object or NULL")
         query.strand <- query.strand[queryHits(hits)]
         subject.strand <- subject.strand[subjectHits(hits)]
     }
-    ans <- x
+    ans <- ovencA
     names(ans) <- NULL
     elementMetadata(ans) <- NULL
     is_wrong_strand <- query.strand != subject.strand
     idx <- which(is_wrong_strand)
-    ans@Loffset[idx] <- y@Loffset[idx]
-    ans@Roffset[idx] <- y@Roffset[idx]
+    ans@Loffset[idx] <- ovencB@Loffset[idx]
+    ans@Roffset[idx] <- ovencB@Roffset[idx]
     ans_encoding <- as.character(ans@encoding)
-    ans_encoding[idx] <- as.character(y@encoding[idx])
+    ans_encoding[idx] <- as.character(ovencB@encoding[idx])
     ans@encoding <- as.factor(ans_encoding)
     ans@flippedQuery[is_wrong_strand] <- TRUE
     ans

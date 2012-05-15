@@ -54,7 +54,7 @@
 
 flipQuery(x, i)
 
-selectEncodingWithCompatibleStrand(x, y,
+selectEncodingWithCompatibleStrand(ovencA, ovencB,
                                    query.strand, subject.strand, hits=NULL)
 
 isCompatibleWithSplicing(x)
@@ -78,9 +78,6 @@ countCompatibleOverlaps(query, subject)
   \item{x}{
     For \code{flipQuery}: a \link{GRangesList} object.
 
-    For \code{selectEncodingWithCompatibleStrand}:
-    an \link[IRanges]{OverlapEncodings} object.
-
     For \code{isCompatibleWithSplicing}, \code{isCompatibleWithSkippedExons},
     \code{extractSteppedExonRanks}, \code{extractSpannedExonRanks}, and
     \code{extractSkippedExonRanks}:
@@ -90,6 +87,9 @@ countCompatibleOverlaps(query, subject)
   \item{i}{
     Subscript specifying the elements in \code{x} to flip. If missing, all
     the elements are flipped.
+  }
+  \item{ovencA, ovencB, ovenc}{
+    \link[IRanges]{OverlapEncodings} objects.
   }
   \item{query, subject}{
     \link{GRangesList} objects except for \code{findCompatibleOverlaps}
@@ -103,9 +103,6 @@ countCompatibleOverlaps(query, subject)
   }
   \item{flip.query.if.wrong.strand}{
     See the "Overlap encodings" vignette in the GenomicRanges package.
-  }
-  \item{y}{
-    An \link[IRanges]{OverlapEncodings} object.
   }
   \item{query.strand, subject.strand}{
     Vector-like objects containing the strand of the query and subject,
