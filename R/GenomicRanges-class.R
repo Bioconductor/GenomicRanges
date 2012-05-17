@@ -921,33 +921,249 @@ setMethod("show", "GenomicRanges",
 ###
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, ignore.strand=FALSE, ...)
+    function(x, subject, select = c("first", "all"), ignore.strand=FALSE, ...)
     {
-        .findRanges(x, subject, ignore.strand, type="precede", ...) 
+        .precede_GRanges(x, subject, select, ignore.strand, ...) 
     }
 )
 
 setMethod("precede", c("GenomicRanges", "missing"),
-    function(x, subject, ignore.strand=FALSE, ...)
+    function(x, subject, select = c("first", "all"), ignore.strand=FALSE, ...)
     {
-        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...) 
+        callGeneric(x, subject=x, select=select, 
+            ignore.strand=ignore.strand, ...) 
     }
 )
 
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, ignore.strand=FALSE, ...)
+    function(x, subject, select = c("last", "all"), ignore.strand=FALSE, ...)
     {
-        .findRanges(x, subject, ignore.strand, type="follow", ...) 
+        .follow_GRanges(x, subject, select, ignore.strand, ...) 
     }
 )
 
 setMethod("follow", c("GenomicRanges", "missing"),
-    function(x, subject, ignore.strand=FALSE, ...)
+    function(x, subject, select=c("last", "all"), ignore.strand=FALSE, ...)
     {
-        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...) 
+        callGeneric(x, subject=x, select=select,
+            ignore.strand=ignore.strand, ...) 
     }
 )
 
+.precede_GRanges <-
+    function(x, subject, select = c("first", "all"), ignore.strand=FALSE, ...)
+{
+    select <- match.arg(select)
+    .precedefollow_GRanges(x, subject, select, ignore.strand,
+        "precede", ...)
+}
+
+.follow_GRanges <-
+    function(x, subject, select = c("last", "all"), ignore.strand=FALSE, ...)
+{
+    select <- match.arg(select)
+    .precedefollow_GRanges(x, subject, select, ignore.strand,
+        "follow", ...)
+}
+
+.precedefollow_GRanges <-
+    function(x, y=x, select, ignore.strand=FALSE, 
+        where=c("precede", "follow"), ...)
+{
+    if (ignore.strand)
+        strand(x) <- strand(subject) <- "+"
+ 
+    switch(match.arg(where), precede = {
+        plusfun <- .left_GRanges
+        minusfun <- .right_GRanges
+        strandfun <- function(x, y)
+            if (x == "-") {
+                as.numeric(y) - 1
+            } else {
+                3 - as.numeric(y)
+            }
+    }, follow = {
+        plusfun <- .right_GRanges
+        minusfun <- .left_GRanges
+        strandfun = function(x, y)
+            if (x == "-") {
+                3 - as.numeric(y)
+            } else {
+                as.numeric(y) - 1
+            }
+    })
+
+    ## map chromosome, strand (non-*) coordinates to global coordinates
+    maxend <- (max(max(end(x)), max(end(y))) + 1) * 3
+    lvls <- union(seqlevels(x), seqlevels(y))
+    offset <- setNames((seq_along(lvls) - 1) * maxend, lvls)
+    stopifnot(typeof(offset) == "double")      # avoid integer overflow
+    sentinel <- c(0, seq_along(lvls) * maxend) # chromosome bounds mark
+
+    xoff <- offset[as.character(seqnames(x))]
+    xstart <- start(x) * 3 + xoff
+    xend <- end(x) * 3 + xoff
+
+    y <- local({
+        off <- offset[as.character(seqnames(y))]
+        s <- start(y) * 3 + off
+        e <- end(y) * 3 + off
+        pidx <- as.logical(strand(y) != "-")
+        midx <- as.logical(strand(y) != "+")
+        pstrand <- strandfun("+", strand(y)[pidx])
+        mstrand <- strandfun("-", strand(y)[midx])
+        yseq <- seq_along(y)
+        list(plus = list(
+               seq = yseq[pidx],
+               start = s[pidx] - pstrand,
+               end = e[pidx] - pstrand),
+             minus = list(
+               seq = yseq[midx],
+               start = s[midx] - mstrand,
+               end = e[midx] - mstrand))
+    })
+
+    if (select != "all") {
+        result <- integer(length(x))
+        result[] <- NA_integer_
+    } else {
+        xplus <- xminus <- xstarplus <- xstarminus <- NULL
+        yplus <- yminus <- ystarplus <- ystarminus <- NULL
+    }
+    ## '+' query
+    if (any(pidx <- as.logical(strand(x) == "+"))) {
+        yidx <- plusfun(xstart[pidx], xend[pidx], y$plus$start,
+            y$plus$end, select, sentinel)
+        if (select != "all") {
+            result[pidx] <- y$plus$seq[yidx]
+        }
+        else {
+            xplus <- which(pidx)[queryHits(yidx)]
+            yplus <- y$plus$seq[subjectHits(yidx)]
+        }
+    }
+
+    ## '-' query
+    if (any(midx <- as.logical(strand(x) == "-"))) {
+        yidx <- minusfun(xstart[midx], xend[midx], y$minus$start,
+            y$minus$end, select, sentinel)
+        if (select != "all") {
+            result[midx] <- y$minus$seq[yidx]
+        }
+        else {
+            xminus <- which(midx)[queryHits(yidx)]
+            yminus <- y$minus$seq[subjectHits(yidx)]
+        }
+    }
+
+    ## '*' query
+    if (any(sidx <- as.logical(strand(x) == "*"))) {
+        xstart <- xstart[sidx]
+        xend <- xend[sidx]
+        yp <- plusfun(xstart, xend, y$plus$start, y$plus$end,
+            select, sentinel)
+        ym <- minusfun(xstart, xend, y$minus$start, y$minus$end,
+             select, sentinel)
+        if (select != "all") {
+            switch(where, precede = {
+                dp <- y$plus$start[yp] - xend
+                dm <- xstart - y$minus$end[ym]
+            }, follow = {
+                dp <- y$plus$end[yp] - xstart
+                dm <- xend - y$minus$start[ym]
+            })
+                result[sidx] <- y$plus$seq[yp]
+                ok <- is.na(dp) | (dp > dm)
+                ok[is.na(ok)] <- FALSE
+                result[sidx][ok] <- y$minus$seq[ym][ok]
+        } else {
+            xstarplus <- which(sidx)[queryHits(yp)]
+            xstarminus <- which(sidx)[queryHits(ym)]
+            ystarplus <- y$plus$seq[subjectHits(yp)]
+            ystarminus <- y$minus$seq[subjectHits(ym)]
+        }
+    }
+
+    if (select != "all") {
+        names(result) <- names(x)
+        result
+    } else {
+        df <- data.frame(queryHits=c(xplus, xminus, xstarplus, xstarminus),
+            subjectHits=c(yplus, yminus, ystarplus, ystarminus))
+        df[do.call(order, df), ]
+        new("Hits", queryHits=as.integer(df$queryHits),
+            subjectHits=as.integer(df$subjectHits))
+   } 
+}
+
+## FIXME: impelement / import
+.isNotSorted <- IRanges:::isNotSorted
+.vectorToHits <- IRanges:::.vectorToHits
+.orderNumeric <- function(x)            # unstable order
+    sort.list(x, na.last=NA)
+
+.left_GRanges <-
+    function (xstart, xend, ystart, yend, select, sentinel, ...)
+{
+    ## unused: xstart, yend
+    ystart <- c(ystart, sentinel)
+
+    ord <- NULL
+    if (.isNotSorted(ystart)) {
+        ord <- .orderNumeric(ystart)
+        ystart <- ystart[ord]
+    }
+    if (select == "all") {
+        srle <- Rle(ystart)
+        ystart <- runValue(srle)
+    }
+
+    i <- findInterval(xend, ystart) + 1L
+    na <- (ceiling(xend / 3) == ceiling(ystart[i] / 3)) |
+        (ystart[i] %in% sentinel)
+    i[na] <- NA_integer_
+
+    if (select == "all") {
+        .vectorToHits(i, srle, ord)
+    } else {
+        if (!is.null(ord))
+            i <- ord[i]
+        i
+    }
+}
+
+.right_GRanges <-
+    function (xstart, xend, ystart, yend, select, sentinel, ...)
+{
+    ## unused: xend, ystart
+    yend <- c(yend, sentinel)
+
+    ord <- NULL
+    if (.isNotSorted(yend)) {
+        ord <- .orderNumeric(yend)
+        yend <- yend[ord]
+    }
+    if (select == "all") {
+        srle <- Rle(yend)
+        yend <- runValue(srle)
+    }
+
+    i <- findInterval(xstart - 1, yend)
+    na <- (ceiling(xstart / 3) == ceiling(yend[i] / 3)) |
+        yend[i] %in% sentinel
+    i[na] <- NA_integer_
+
+    if (select == "all") {
+        .vectorToHits(i, srle, ord)
+    } else {
+        if (!is.null(ord))
+            i <- ord[i]
+        i
+    }
+} 
+
+
+## FIXME : modify nearest to use .precede_GRanges and .follow_GRanges
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
@@ -998,14 +1214,12 @@ setMethod("nearest", c("GenomicRanges", "missing"),
                     k <- values(xelt)[["posIndx"]][!is.na(res)]
                     ans[k] <- values(s1)[["posIndx"]][na.omit(res)]
                 } else { 
-                    ## FIXME : include "*"?
                     sub1 <- unlist(ss1["+"])
                     res1 <- .findRangesPos(xelt, sub1, type, ...)
                     k1 <- values(xelt)[["posIndx"]][!is.na(res1)]
                     dist1[k1] <- .distance(xelt, sub1, res1, "+", type) 
                     ans[k1] <- values(sub1)[["posIndx"]][na.omit(res1)]
 
-                    ## FIXME : include "*"?
                     sub2 <- unlist(ss1["-"])
                     res2 <- .findRangesNeg(xelt, sub2, type, ...)
                     k2 <- values(xelt)[["posIndx"]][!is.na(res2)]
