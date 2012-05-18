@@ -138,7 +138,7 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
 {    
     if (any(INVALID.GR.COLNAMES %in% colnames(elementMetadata(x)))) {
         msg <- c("slot 'elementMetadata' cannot use",
-                 paste("\"", INVALID.COLNAMES, "\"", sep="", collapse=", "),
+                 paste("\"", INVALID.GR.COLNAMES, "\"", sep="", collapse=", "),
                  "as column names")
         return(paste(msg, collapse=" "))
     }
