@@ -20,6 +20,7 @@
 % Accessor methods:
 \alias{seqnames,GRangesList-method}
 \alias{seqnames<-,GRangesList-method}
+\alias{seqnameStyle,GRangesList-method}
 \alias{ranges,GRangesList-method}
 \alias{ranges<-,GRangesList-method}
 \alias{strand,GRangesList-method}
@@ -111,6 +112,10 @@
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Gets or sets the sequence names in the form of an RleList. \code{value}
       can be an RleList or CharacterList.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      Lists the matching seqname styles for \code{x}.
     }
     \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:

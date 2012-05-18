@@ -24,6 +24,7 @@
 \alias{isCircular<-,Seqinfo-method}
 \alias{genome,Seqinfo-method}
 \alias{genome<-,Seqinfo-method}
+\alias{seqnameStyle,Seqinfo-method}
 \alias{[,Seqinfo-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
 \alias{coerce,Seqinfo,RangesList-method}
@@ -128,6 +129,10 @@
       \code{genome(x)}, \code{genome(x) <- value}:
       Gets/sets the genome identifier or assembly name for each sequence
       in \code{x}.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      Lists the matching seqname styles for \code{x}.
     }
   }
 }

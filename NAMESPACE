@@ -35,6 +35,7 @@ export(
     isCircular, "isCircular<-",
     genome, "genome<-",
     Seqinfo,
+    seqnameStyle,
 
     GRanges, GRangesList, GenomicRangesList,
     makeGRangesListFromFeatureFragments,

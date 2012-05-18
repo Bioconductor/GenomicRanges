@@ -14,6 +14,7 @@
 \alias{names,GappedAlignmentPairs-method}
 \alias{names<-,GappedAlignmentPairs-method}
 \alias{seqnames,GappedAlignmentPairs-method}
+\alias{seqnameStyle,GappedAlignmentPairs-method}
 \alias{strand,GappedAlignmentPairs-method}
 \alias{first}
 \alias{first,GappedAlignmentPairs-method}
@@ -123,6 +124,10 @@
       (\code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
       used by \code{\link[Rsamtools]{readBamGappedAlignmentPairs}} for
       doing the pairing, rejects pairs with incompatible RNAME values).
+    }
+    \item{}{
+      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      Lists the matching seqname styles for \code{x}.
     }
     \item{}{
       \code{strand(x)}:

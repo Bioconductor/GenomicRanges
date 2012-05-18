@@ -14,6 +14,7 @@
 \alias{length,GappedAlignments-method}
 \alias{names,GappedAlignments-method}
 \alias{seqnames,GappedAlignments-method}
+\alias{seqnameStyle,GappedAlignments-method}
 \alias{rname}
 \alias{rname,GappedAlignments-method}
 \alias{strand,GappedAlignments-method}
@@ -195,6 +196,10 @@
       the RNAME field of a SAM/BAM file).
       \code{value} can be a factor, or a 'factor' \link[IRanges]{Rle},
       or a character vector.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      Lists the matching seqname styles for \code{x}.
     }
     \item{}{
       \code{rname(x)}, \code{rname(x) <- value}:

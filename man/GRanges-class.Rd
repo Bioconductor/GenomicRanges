@@ -27,6 +27,7 @@
 % Accessors:
 \alias{seqnames,GRanges-method}
 \alias{seqnames<-,GenomicRanges-method}
+\alias{seqnameStyle,GRanges-method}
 \alias{ranges,GRanges-method}
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
@@ -183,6 +184,10 @@
       Gets or sets the sequence names.
       \code{value} can be an \link[IRanges]{Rle} object, a character vector,
       or a factor.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      Lists the matching seqname styles for \code{x}.
     }
     \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:
