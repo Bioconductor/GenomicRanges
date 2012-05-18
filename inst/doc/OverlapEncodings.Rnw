@@ -603,21 +603,21 @@ We are ready to compute the overlaps with the \Rfunction{findOverlaps}
 function. Note that the strand of the queries produced by the RNA-seq
 experiment is typically unknown so we use \Rcode{ignore.strand=TRUE}:
 
-<<U1ov>>=
-U1ov <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
+<<U1ov00>>=
+U1ov00 <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
 @
 
-\Rcode{U1ov} is a \Rclass{Hits} object that contains 1 element per
+\Rcode{U1ov00} is a \Rclass{Hits} object that contains 1 element per
 overlap. Its length gives the number of overlaps:
 
-<<length-of-U1ov>>=
-length(U1ov)
+<<length-of-U1ov00>>=
+length(U1ov00)
 @
 
 \subsubsection{Tabulate the single-end overlaps}
 
 We will repeatedly use the 2 following little helper functions to ``tabulate''
-the overlaps in a given \Rclass{Hits} object (e.g. \Rcode{U1ov}), i.e. to
+the overlaps in a given \Rclass{Hits} object (e.g. \Rcode{U1ov00}), i.e. to
 count the number of overlaps for each element in the query or for each
 element in the subject:
 
@@ -629,7 +629,7 @@ nhitPerSubject <- function(x) tabulate(subjectHits(x), nbins=subjectLength(x))
 Number of transcripts for each alignment in \Rcode{U1gal}:
 
 <<U1gal_ntx>>=
-U1gal_ntx <- nhitPerQuery(U1ov)
+U1gal_ntx <- nhitPerQuery(U1ov00)
 elementMetadata(U1gal)$ntx <- U1gal_ntx
 head(U1gal)
 table(U1gal_ntx)
@@ -652,8 +652,8 @@ per {\it original query} (aka read), we also count the number of transcripts
 for each read:
 
 <<U1uqnames_ntx>>=
-U1hits <- remapHits(U1ov, query.map=U1gal_qnames)
-U1uqnames_ntx <- nhitPerQuery(U1hits)
+U1ov10 <- remapHits(U1ov00, query.map=U1gal_qnames)
+U1uqnames_ntx <- nhitPerQuery(U1ov10)
 names(U1uqnames_ntx) <- U1uqnames
 table(U1uqnames_ntx)
 mean(U1uqnames_ntx >= 1)
@@ -664,10 +664,10 @@ at least 1 transcript in \Rcode{dm3tx}.
 
 Number of reads for each transcript:
 
-<<dm3tx_U1nhit>>=
-dm3tx_U1nhit <- nhitPerSubject(U1hits)
-names(dm3tx_U1nhit) <- names(dm3tx)
-mean(dm3tx_U1nhit >= 50)
+<<dm3tx_nU1ov10>>=
+dm3tx_nU1ov10 <- nhitPerSubject(U1ov10)
+names(dm3tx_nU1ov10) <- names(dm3tx)
+mean(dm3tx_nU1ov10 >= 50)
 @
 
 Only 0.869\% of the transcripts in \Rcode{dm3tx} have an overlap with
@@ -675,8 +675,8 @@ at least 50 reads.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_U1nhit>>=
-head(sort(dm3tx_U1nhit, decreasing=TRUE), n=10) 
+<<top-10-transcripts-based-on-dm3tx_nU1ov10>>=
+head(sort(dm3tx_nU1ov10, decreasing=TRUE), n=10) 
 @
 
 
@@ -688,15 +688,15 @@ head(sort(dm3tx_U1nhit, decreasing=TRUE), n=10)
 Like with our single-end overlaps, we call \Rfunction{findOverlaps} with
 \Rcode{ignore.strand=TRUE}:
 
-<<U3ov>>=
-U3ov <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
+<<U3ov00>>=
+U3ov00 <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
 @
 
-Like \Rcode{U1ov}, \Rcode{U3ov} is a \Rclass{Hits} object. Its length gives
+Like \Rcode{U1ov00}, \Rcode{U3ov00} is a \Rclass{Hits} object. Its length gives
 the number of paired-end overlaps:
 
-<<length-of-U3ov>>=
-length(U3ov)
+<<length-of-U3ov00>>=
+length(U3ov00)
 @
 
 \subsubsection{Tabulate the paired-end overlaps}
@@ -704,7 +704,7 @@ length(U3ov)
 Number of transcripts for each alignment pair in \Rcode{U3galp}:
 
 <<U3galp_ntx>>=
-U3galp_ntx <- nhitPerQuery(U3ov)
+U3galp_ntx <- nhitPerQuery(U3ov00)
 elementMetadata(U3galp)$ntx <- U3galp_ntx
 head(U3galp)
 table(U3galp_ntx)
@@ -727,8 +727,8 @@ pair per {\it original query template}, we also count the number of
 transcripts for each template:
 
 <<U3uqnames_ntx>>=
-U3hits <- remapHits(U3ov, query.map=U3galp_qnames)
-U3uqnames_ntx <- nhitPerQuery(U3hits)
+U3ov10 <- remapHits(U3ov00, query.map=U3galp_qnames)
+U3uqnames_ntx <- nhitPerQuery(U3ov10)
 names(U3uqnames_ntx) <- U3uqnames
 table(U3uqnames_ntx)
 mean(U3uqnames_ntx >= 1)
@@ -739,10 +739,10 @@ mean(U3uqnames_ntx >= 1)
 
 Number of templates for each transcript:
 
-<<dm3tx_U3nhit>>=
-dm3tx_U3nhit <- nhitPerSubject(U3hits)
-names(dm3tx_U3nhit) <- names(dm3tx)
-mean(dm3tx_U3nhit >= 50)
+<<dm3tx_nU3ov10>>=
+dm3tx_nU3ov10 <- nhitPerSubject(U3ov10)
+names(dm3tx_nU3ov10) <- names(dm3tx)
+mean(dm3tx_nU3ov10 >= 50)
 @
 
 Only 0.756\% of the transcripts in \Rcode{dm3tx} have an overlap with
@@ -750,8 +750,8 @@ at least 50 templates.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_U3nhit>>=
-head(sort(dm3tx_U3nhit, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-dm3tx_nU3ov10>>=
+head(sort(dm3tx_nU3ov10, decreasing=TRUE), n=10)
 @
 
 
@@ -780,19 +780,19 @@ U1grlf <- flipQuery(U1grl)  # flipped
 and encode their overlaps with the transcripts:
 
 <<U1ovencAB>>=
-U1ovencA <- encodeOverlaps(U1grl, dm3tx, hits=U1ov)
-U1ovencB <- encodeOverlaps(U1grlf, dm3tx, hits=U1ov)
+U1ovencA <- encodeOverlaps(U1grl, dm3tx, hits=U1ov00)
+U1ovencB <- encodeOverlaps(U1grlf, dm3tx, hits=U1ov00)
 @
 
 \Rcode{U1ovencA} and \Rcode{U1ovencB} are 2 \Rclass{OverlapsEncodings}
-objects of the same length as \Rclass{Hits} object \Rcode{U1ov}.
-For each hit in \Rcode{U1ov}, we have 2 corresponding encodings, one
+objects of the same length as \Rclass{Hits} object \Rcode{U1ov00}.
+For each hit in \Rcode{U1ov00}, we have 2 corresponding encodings, one
 in \Rcode{U1ovencA} and one in \Rcode{U1ovencB}, but only one of them
 encodes a hit between alignment ranges and exon ranges that are on the
 same strand.
 We use the \Rfunction{selectEncodingWithCompatibleStrand} function
 to merge them into a single \Rclass{OverlapsEncodings} of the same
-length. For each hit in \Rcode{U1ov}, this selects the encoding
+length. For each hit in \Rcode{U1ov00}, this selects the encoding
 corresponding to alignment ranges and exon ranges with compatible
 strand:
 
@@ -800,7 +800,7 @@ strand:
 U1grl_strand <- unlist(runValue(strand(U1grl)), use.names=FALSE)
 U1ovenc <- selectEncodingWithCompatibleStrand(U1ovencA, U1ovencB,
                                               U1grl_strand, dm3tx_strand,
-                                              hits=U1ov)
+                                              hits=U1ov00)
 U1ovenc
 @
 
@@ -809,7 +809,7 @@ step can be replaced by a single call to \Rfunction{encodeOverlaps} on
 \Rcode{U1grl} (or \Rcode{U1grlf}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
 
 <<U1ovenc_again>>=
-U1ovenc_again <- encodeOverlaps(U1grl, dm3tx, hits=U1ov, flip.query.if.wrong.strand=TRUE)
+U1ovenc_again <- encodeOverlaps(U1grl, dm3tx, hits=U1ov00, flip.query.if.wrong.strand=TRUE)
 stopifnot(identical(U1ovenc_again, U1ovenc))
 @
 
@@ -831,11 +831,11 @@ document.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Paired-end encodings}
 
-Let's encode the overlaps in \Rcode{U3ov}:
+Let's encode the overlaps in \Rcode{U3ov00}:
 
 <<U3ovenc>>=
 U3grl <- grglist(U3galp, order.as.in.query=TRUE)
-U3ovenc <- encodeOverlaps(U3grl, dm3tx, hits=U3ov, flip.query.if.wrong.strand=TRUE)
+U3ovenc <- encodeOverlaps(U3grl, dm3tx, hits=U3ov00, flip.query.if.wrong.strand=TRUE)
 U3ovenc
 @
 
@@ -930,15 +930,15 @@ base of the exon. For \Rcode{"1:j:"}, the last aligned base of the read (or
 \end{verbatim}
 \end{itemize}
 
-<<U1ov_is_compat>>=
-U1ov_is_compat <- isCompatibleWithSplicing(U1ovenc)
-table(U1ov_is_compat)  # 476124 "compatible" overlaps
+<<U1ov00_is_comp>>=
+U1ov00_is_comp <- isCompatibleWithSplicing(U1ovenc)
+table(U1ov00_is_comp)  # 476124 "compatible" overlaps
 @
 
-Finally, let's extract the ``compatible'' overlaps from \Rcode{U1ov}:
+Finally, let's extract the ``compatible'' overlaps from \Rcode{U1ov00}:
 
-<<U1compatov>>=
-U1compatov <- U1ov[U1ov_is_compat]
+<<U1compov00>>=
+U1compov00 <- U1ov00[U1ov00_is_comp]
 @
 
 Note that high-level convenience wrapper \Rfunction{findCompatibleOverlaps}
@@ -946,21 +946,21 @@ can be used for computing the ``compatible'' overlaps directly between
 a \Rclass{GappedAlignments} object (containing reads) and a
 \Rclass{GRangesList} object (containing transcripts):
 
-<<U1compatov_again, eval=FALSE>>=
-U1compatov_again <- findCompatibleOverlaps(U1gal, dm3tx)
-stopifnot(identical(U1compatov_again, U1compatov))
+<<U1compov00_again, eval=FALSE>>=
+U1compov00_again <- findCompatibleOverlaps(U1gal, dm3tx)
+stopifnot(identical(U1compov00_again, U1compov00))
 @
 
 \subsubsection{Tabulate the ``compatible'' single-end overlaps}
 
 Number of ``compatible'' transcripts for each alignment in \Rcode{U1gal}:
 
-<<U1gal_ncompat>>=
-U1gal_ncompat <- nhitPerQuery(U1compatov)
-elementMetadata(U1gal)$ncompat <- U1gal_ncompat
+<<U1gal_ncomptx>>=
+U1gal_ncomptx <- nhitPerQuery(U1compov00)
+elementMetadata(U1gal)$ncomptx <- U1gal_ncomptx
 head(U1gal)
-table(U1gal_ncompat)
-mean(U1gal_ncompat >= 1)
+table(U1gal_ncomptx)
+mean(U1gal_ncomptx >= 1)
 @
 
 73.8\% of the alignments in \Rcode{U1gal} are ``compatible''
@@ -968,21 +968,21 @@ with at least 1 transcript in \Rcode{dm3tx}.
 
 Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
 can be used directly on \Rcode{U1gal} and \Rcode{dm3tx} for computing
-\Rcode{U1gal\_ncompat}:
+\Rcode{U1gal\_ncomptx}:
 
-<<U1gal_ncompat_again, eval=FALSE>>=
-U1gal_ncompat_again <- countCompatibleOverlaps(U1gal, dm3tx)
-stopifnot(identical(U1gal_ncompat_again, U1gal_ncompat))
+<<U1gal_ncomptx_again, eval=FALSE>>=
+U1gal_ncomptx_again <- countCompatibleOverlaps(U1gal, dm3tx)
+stopifnot(identical(U1gal_ncomptx_again, U1gal_ncomptx))
 @
 
 Number of ``compatible'' transcripts for each read:
 
-<<U1uqnames_ncompat>>=
-U1compathits <- remapHits(U1compatov, query.map=U1gal_qnames)
-U1uqnames_ncompat <- nhitPerQuery(U1compathits)
-names(U1uqnames_ncompat) <- U1uqnames
-table(U1uqnames_ncompat)
-mean(U1uqnames_ncompat >= 1)
+<<U1uqnames_ncomptx>>=
+U1compov10 <- remapHits(U1compov00, query.map=U1gal_qnames)
+U1uqnames_ncomptx <- nhitPerQuery(U1compov10)
+names(U1uqnames_ncomptx) <- U1uqnames
+table(U1uqnames_ncomptx)
+mean(U1uqnames_ncomptx >= 1)
 @
 
 76.5\% of the reads are ``compatible'' with at least 1 transcript in
@@ -990,10 +990,10 @@ mean(U1uqnames_ncompat >= 1)
 
 Number of ``compatible'' reads for each transcript:
 
-<<dm3tx_U1ncompat>>=
-dm3tx_U1ncompat <- nhitPerSubject(U1compathits)
-names(dm3tx_U1ncompat) <- names(dm3tx)
-mean(dm3tx_U1ncompat >= 50)
+<<dm3tx_nU1compov10>>=
+dm3tx_nU1compov10 <- nhitPerSubject(U1compov10)
+names(dm3tx_nU1compov10) <- names(dm3tx)
+mean(dm3tx_nU1compov10 >= 50)
 @
 
 Only 0.860\% of the transcripts in \Rcode{dm3tx} are ``compatible''
@@ -1001,12 +1001,12 @@ with at least 50 reads.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_U1ncompat>>=
-head(sort(dm3tx_U1ncompat, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-dm3tx_nU1compov10>>=
+head(sort(dm3tx_nU1compov10, decreasing=TRUE), n=10)
 @
 
 Note that this ``top 10'' is slightly different from the ``top 10'' we
-obtained earlier when we counted all the overlaps.
+obtained earlier when we counted {\bf all} the overlaps.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1059,15 +1059,15 @@ correspond to the following overlaps:
 
 Note: switch use of ``first'' and ``last'' above if the read was ``flipped''.
 
-<<U3ov_is_compat>>=
-U3ov_is_compat <- isCompatibleWithSplicing(U3ovenc)
-table(U3ov_is_compat)  # 95801 "compatible" overlaps
+<<U3ov00_is_comp>>=
+U3ov00_is_comp <- isCompatibleWithSplicing(U3ovenc)
+table(U3ov00_is_comp)  # 95801 "compatible" overlaps
 @
 
-Finally, let's extract the ``compatible'' overlaps from \Rcode{U3ov}:
+Finally, let's extract the ``compatible'' overlaps from \Rcode{U3ov00}:
 
-<<U3compatov>>=
-U3compatov <- U3ov[U3ov_is_compat]
+<<U3compov00>>=
+U3compov00 <- U3ov00[U3ov00_is_comp]
 @
 
 Note that, like with our single-end reads, high-level convenience
@@ -1076,9 +1076,9 @@ the ``compatible'' overlaps directly between a \Rclass{GappedAlignmentPairs}
 object (containing paired-end reads) and a \Rclass{GRangesList} object
 (containing transcripts):
 
-<<U3compatov_again, eval=FALSE>>=
-U3compatov_again <- findCompatibleOverlaps(U3galp, dm3tx)
-stopifnot(identical(U3compatov_again, U3compatov))
+<<U3compov00_again, eval=FALSE>>=
+U3compov00_again <- findCompatibleOverlaps(U3galp, dm3tx)
+stopifnot(identical(U3compov00_again, U3compov00))
 @
 
 \subsubsection{Tabulate the ``compatible'' paired-end overlaps}
@@ -1086,12 +1086,12 @@ stopifnot(identical(U3compatov_again, U3compatov))
 Number of ``compatible'' transcripts for each alignment pair in
 \Rcode{U3galp}:
 
-<<U3galp_ncompat>>=
-U3galp_ncompat <- nhitPerQuery(U3compatov)
-elementMetadata(U3galp)$ncompat <- U3galp_ncompat
+<<U3galp_ncomptx>>=
+U3galp_ncomptx <- nhitPerQuery(U3compov00)
+elementMetadata(U3galp)$ncomptx <- U3galp_ncomptx
 head(U3galp)
-table(U3galp_ncompat)
-mean(U3galp_ncompat >= 1)
+table(U3galp_ncomptx)
+mean(U3galp_ncomptx >= 1)
 @
 
 68.9\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
@@ -1099,21 +1099,21 @@ with at least 1 transcript in \Rcode{dm3tx}.
 
 Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
 can be used directly on \Rcode{U3galp} and \Rcode{dm3tx} for computing
-\Rcode{U3galp\_ncompat}:
+\Rcode{U3galp\_ncomptx}:
 
-<<U3galp_ncompat_again, eval=FALSE>>=
-U3galp_ncompat_again <- countCompatibleOverlaps(U3galp, dm3tx)
-stopifnot(identical(U3galp_ncompat_again, U3galp_ncompat))
+<<U3galp_ncomptx_again, eval=FALSE>>=
+U3galp_ncomptx_again <- countCompatibleOverlaps(U3galp, dm3tx)
+stopifnot(identical(U3galp_ncomptx_again, U3galp_ncomptx))
 @
 
 Number of ``compatible'' transcripts for each template:
 
-<<U3uqnames_ncompat>>=
-U3compathits <- remapHits(U3compatov, query.map=U3galp_qnames)
-U3uqnames_ncompat <- nhitPerQuery(U3compathits)
-names(U3uqnames_ncompat) <- U3uqnames
-table(U3uqnames_ncompat)
-mean(U3uqnames_ncompat >= 1)
+<<U3uqnames_ncomptx>>=
+U3compov10 <- remapHits(U3compov00, query.map=U3galp_qnames)
+U3uqnames_ncomptx <- nhitPerQuery(U3compov10)
+names(U3uqnames_ncomptx) <- U3uqnames
+table(U3uqnames_ncomptx)
+mean(U3uqnames_ncomptx >= 1)
 @
 
 70.1\% of the templates are ``compatible'' with at least 1 transcript in
@@ -1121,10 +1121,10 @@ mean(U3uqnames_ncompat >= 1)
 
 Number of ``compatible'' templates for each transcript:
 
-<<dm3tx_U3ncompat>>=
-dm3tx_U3ncompat <- nhitPerSubject(U3compathits)
-names(dm3tx_U3ncompat) <- names(dm3tx)
-mean(dm3tx_U3ncompat >= 50)
+<<dm3tx_nU3compov10>>=
+dm3tx_nU3compov10 <- nhitPerSubject(U3compov10)
+names(dm3tx_nU3compov10) <- names(dm3tx)
+mean(dm3tx_nU3compov10 >= 50)
 @
 
 Only 0.752\% of the transcripts in \Rcode{dm3tx} are ``compatible'' with at
@@ -1132,12 +1132,12 @@ least 50 templates.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_U3ncompat>>=
-head(sort(dm3tx_U3ncompat, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-dm3tx_nU3compov10>>=
+head(sort(dm3tx_nU3compov10, decreasing=TRUE), n=10)
 @
 
 Note that this ``top 10'' is slightly different from the ``top 10'' we
-obtained earlier when we counted all the overlaps.
+obtained earlier when we counted {\bf all} the overlaps.
 
 
 
@@ -1154,13 +1154,13 @@ obtained earlier when we counted all the overlaps.
 The \Rfunction{extractQueryStartInTranscript} function computes for each
 overlap the position of the {\it query start} in the transcript:
 
-<<U1ov_qstart>>=
-U1ov_qstart <- extractQueryStartInTranscript(U1grl, dm3tx,
-                                             hits=U1ov, ovenc=U1ovenc)
-head(subset(U1ov_qstart, U1ov_is_compat))
+<<U1ov00_qstart>>=
+U1ov00_qstart <- extractQueryStartInTranscript(U1grl, dm3tx,
+                                               hits=U1ov00, ovenc=U1ovenc)
+head(subset(U1ov00_qstart, U1ov00_is_comp))
 @
 
-\Rcode{U1ov\_qstart} is a data frame with 1 row per overlap and 3 columns:
+\Rcode{U1ov00\_qstart} is a data frame with 1 row per overlap and 3 columns:
 \begin{enumerate}
     \item \Rcode{startInTranscript}: the 1-based start position of the
     read with respect to the transcript. Position 1 always corresponds to
@@ -1189,15 +1189,15 @@ dm3tx_seq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
 For each ``compatible'' overlap, the read sequence in \Rcode{U1gal\_rqseq} must
 be an {\it exact} substring of the transcript sequence in \Rcode{dm3tx\_seq}:
 
-<<U1ov_rqseq-vs-U1ov_txseq>>=
-U1ov_rqseq <- U1gal_rqseq[queryHits(U1ov)]
-U1ov_rqseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov_rqseq[flippedQuery(U1ovenc)])
-U1ov_txseq <- dm3tx_seq[subjectHits(U1ov)]
+<<U1ov00_rqseq-vs-U1ov00_txseq>>=
+U1ov00_rqseq <- U1gal_rqseq[queryHits(U1ov00)]
+U1ov00_rqseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov00_rqseq[flippedQuery(U1ovenc)])
+U1ov00_txseq <- dm3tx_seq[subjectHits(U1ov00)]
 stopifnot(all(
-    U1ov_rqseq[U1ov_is_compat] ==
-        narrow(U1ov_txseq[U1ov_is_compat],
-               start=U1ov_qstart$startInTranscript[U1ov_is_compat],
-               width=width(U1ov_rqseq)[U1ov_is_compat])
+    U1ov00_rqseq[U1ov00_is_comp] ==
+        narrow(U1ov00_txseq[U1ov00_is_comp],
+               start=U1ov00_qstart$startInTranscript[U1ov00_is_comp],
+               width=width(U1ov00_rqseq)[U1ov00_is_comp])
 ))
 @
 
@@ -1214,21 +1214,21 @@ the transcript of a ``compatible'' overlap.
 
 For a paired-end read, the {\it query start} is the start of its ``left end''.
 
-<<U3ov_Lqstart>>=
-U3ov_Lqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
-                                              hits=U3ov, ovenc=U3ovenc)
-head(subset(U3ov_Lqstart, U3ov_is_compat))
+<<U3ov00_Lqstart>>=
+U3ov00_Lqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
+                                              hits=U3ov00, ovenc=U3ovenc)
+head(subset(U3ov00_Lqstart, U3ov00_is_comp))
 @
 
 Note that \Rfunction{extractQueryStartInTranscript} can be called with
 \Rcode{for.query.right.end=TRUE} if we want this information for the ``right
 ends'' of the reads:
 
-<<U3ov_Rqstart>>=
-U3ov_Rqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
-                                              hits=U3ov, ovenc=U3ovenc,
+<<U3ov00_Rqstart>>=
+U3ov00_Rqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
+                                              hits=U3ov00, ovenc=U3ovenc,
                                               for.query.right.end=TRUE)
-head(subset(U3ov_Rqstart, U3ov_is_compat))
+head(subset(U3ov00_Rqstart, U3ov00_is_comp))
 @
 
 Like with single-end reads, having this information allows us for example
@@ -1241,49 +1241,49 @@ read in the transcript.
 Let's assign the ``left and right reference query sequences'' to each
 overlap:
 
-<<U3ov_Lrqseq_and_Rrqseq>>=
-U3ov_Lrqseq <- U3galp_rqseq1[queryHits(U3ov)]
-U3ov_Rrqseq <- U3galp_rqseq2[queryHits(U3ov)]
+<<U3ov00_Lrqseq_and_Rrqseq>>=
+U3ov00_Lrqseq <- U3galp_rqseq1[queryHits(U3ov00)]
+U3ov00_Rrqseq <- U3galp_rqseq2[queryHits(U3ov00)]
 @
 
 For the single-end reads, the sequence associated with a ``flipped query''
 just needed to be ``reverse complemented''. For paired-end reads, we also
 need to swap the 2 sequences in the pair:
 
-<<U3ov_Lrqseq_and_Rrqseq>>=
+<<U3ov00_Lrqseq_and_Rrqseq>>=
 flip_idx <- which(flippedQuery(U3ovenc))
-tmp <- U3ov_Lrqseq[flip_idx]
-U3ov_Lrqseq[flip_idx] <- reverseComplement(U3ov_Rrqseq[flip_idx])
-U3ov_Rrqseq[flip_idx] <- reverseComplement(tmp)
+tmp <- U3ov00_Lrqseq[flip_idx]
+U3ov00_Lrqseq[flip_idx] <- reverseComplement(U3ov00_Rrqseq[flip_idx])
+U3ov00_Rrqseq[flip_idx] <- reverseComplement(tmp)
 @
 
 Let's assign the transcript sequence to each overlap:
 
-<<U3ov_txseq>>=
-U3ov_txseq <- dm3tx_seq[subjectHits(U3ov)]
+<<U3ov00_txseq>>=
+U3ov00_txseq <- dm3tx_seq[subjectHits(U3ov00)]
 @
 
 For each ``compatible'' overlap, we expect the ``left and right reference
 query sequences'' of the read to be {\it exact} substrings of the transcript
 sequence. Let's check the ``left reference query sequences'':
 
-<<U3ov_Lrqseq-vs-U3ov_txseq>>=
+<<U3ov00_Lrqseq-vs-U3ov00_txseq>>=
 stopifnot(all(
-    U3ov_Lrqseq[U3ov_is_compat] ==
-        narrow(U3ov_txseq[U3ov_is_compat],
-               start=U3ov_Lqstart$startInTranscript[U3ov_is_compat],
-               width=width(U3ov_Lrqseq)[U3ov_is_compat])
+    U3ov00_Lrqseq[U3ov00_is_comp] ==
+        narrow(U3ov00_txseq[U3ov00_is_comp],
+               start=U3ov00_Lqstart$startInTranscript[U3ov00_is_comp],
+               width=width(U3ov00_Lrqseq)[U3ov00_is_comp])
 ))
 @
 
 and the ``right reference query sequences'':
 
-<<U3ov_Rrqseq-vs-U3ov_txseq>>=
+<<U3ov00_Rrqseq-vs-U3ov00_txseq>>=
 stopifnot(all(
-    U3ov_Rrqseq[U3ov_is_compat] ==
-        narrow(U3ov_txseq[U3ov_is_compat],
-               start=U3ov_Rqstart$startInTranscript[U3ov_is_compat],
-               width=width(U3ov_Rrqseq)[U3ov_is_compat])
+    U3ov00_Rrqseq[U3ov00_is_comp] ==
+        narrow(U3ov00_txseq[U3ov00_is_comp],
+               start=U3ov00_Rqstart$startInTranscript[U3ov00_is_comp],
+               width=width(U3ov00_Rrqseq)[U3ov00_is_comp])
 ))
 @
 
@@ -1431,28 +1431,28 @@ query}, then find the ``hits'' for each ``flipped {\it original query}'',
 and finally merge all the ``hits'' (note that the 3 commands take about
 1 hour to complete on a modern laptop):
 
-<<U1sbcompathits, eval=FALSE>>=
-U1sbcompathitsA <- findSequenceHits(U1oqseq, dm3tx_seq,
+<<U1sbcomphits, eval=FALSE>>=
+U1sbcomphitsA <- findSequenceHits(U1oqseq, dm3tx_seq,
                                     which.txseq=which.txseq, max.mismatch=6)
-U1sbcompathitsB <- findSequenceHits(reverseComplement(U1oqseq), dm3tx_seq,
+U1sbcomphitsB <- findSequenceHits(reverseComplement(U1oqseq), dm3tx_seq,
                                     which.txseq=which.txseq, max.mismatch=6)
-U1sbcompathits <- union(U1sbcompathitsA, U1sbcompathitsB)
+U1sbcomphits <- union(U1sbcomphitsA, U1sbcomphitsB)
 @
-<<LOAD_U1sbcompathits, echo=FALSE, results=hide>>=
-U1sbcompathitsA <- .loadPrecomputed("U1sbcompathitsA")
-U1sbcompathitsB <- .loadPrecomputed("U1sbcompathitsB")
-U1sbcompathits <- union(U1sbcompathitsA, U1sbcompathitsB)
+<<LOAD_U1sbcomphits, echo=FALSE, results=hide>>=
+U1sbcomphitsA <- .loadPrecomputed("U1sbcomphitsA")
+U1sbcomphitsB <- .loadPrecomputed("U1sbcomphitsB")
+U1sbcomphits <- union(U1sbcomphitsA, U1sbcomphitsB)
 @
 
 \subsubsection{Tabulate the ``hits''}
 
 Number of ``string-based compatible'' transcripts for each read:
 
-<<U1uqnames_nsbcompat>>=
-U1uqnames_nsbcompat <- nhitPerQuery(U1sbcompathits)
-names(U1uqnames_nsbcompat) <- U1uqnames
-table(U1uqnames_nsbcompat)
-mean(U1uqnames_nsbcompat >= 1)
+<<U1uqnames_nsbcomptx>>=
+U1uqnames_nsbcomptx <- nhitPerQuery(U1sbcomphits)
+names(U1uqnames_nsbcomptx) <- U1uqnames
+table(U1uqnames_nsbcomptx)
+mean(U1uqnames_nsbcomptx >= 1)
 @
 
 77.7\% of the reads are ``string-based compatible'' with at least 1
@@ -1460,10 +1460,10 @@ transcript in \Rcode{dm3tx}.
 
 Number of ``string-based compatible'' reads for each transcript:
 
-<<dm3tx_U1nsbcompat>>=
-dm3tx_U1nsbcompat <- nhitPerSubject(U1sbcompathits)
-names(dm3tx_U1nsbcompat) <- names(dm3tx)
-mean(dm3tx_U1nsbcompat >= 50)
+<<dm3tx_nU1sbcomphits>>=
+dm3tx_nU1sbcomphits <- nhitPerSubject(U1sbcomphits)
+names(dm3tx_nU1sbcomphits) <- names(dm3tx)
+mean(dm3tx_nU1sbcomphits >= 50)
 @
 
 Only 0.865\% of the transcripts in \Rcode{dm3tx} are ``string-based
@@ -1471,8 +1471,8 @@ compatible'' with at least 50 reads.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_U1nsbcompat>>=
-head(sort(dm3tx_U1nsbcompat, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-dm3tx_nU1sbcomphits>>=
+head(sort(dm3tx_nU1sbcomphits, decreasing=TRUE), n=10)
 @
 
 \subsubsection{A closer look at the ``hits''}
@@ -1483,28 +1483,28 @@ Any ``encoding-based compatible'' overlap is of course ``string-based
 compatible'':
 
 <<encoding-based-compatible-implies-string-based-compatible>>=
-length(setdiff(U1compathits, U1sbcompathits))
+length(setdiff(U1compov10, U1sbcomphits))
 @
 
 but the reverse is not true:
 
 <<string-based-compatible-does-NOT-imply-encoding-based-compatible>>=
-length(setdiff(U1sbcompathits, U1compathits))
+length(setdiff(U1sbcomphits, U1compov10))
 @
 
 %To understand why the {\it overlap encodings} approach doesn't find all
 %the ``string-based compatible'' hits, let's look at the second hit in
-%\Rcode{setdiff(U1sbcompathits, U1compathits)}. This is a perfect hit between
+%\Rcode{setdiff(U1sbcomphits, U1compov10)}. This is a perfect hit between
 %read SRR031728.4692406 and transcript 18924:
 %
 %<<>>=
 %matchPattern(U1oqseq[[6306]], dm3tx_seq[[18924]])
 %U1gal_idx <- which(U1gal_qnames == "SRR031728.4692406")
 %U1gal[U1gal_idx]
-%U1gal_idx %in% queryHits(U1ov)
+%U1gal_idx %in% queryHits(U1ov00)
 %U1gal[12636]
-%which(queryHits(U1ov) == 12636)
-%U1ov[305]
+%which(queryHits(U1ov00) == 12636)
+%U1ov00[305]
 %as.character(encoding(U1ovenc)[305])
 %@
 
@@ -1571,22 +1571,22 @@ correspond to the following overlaps:
 \end{verbatim}
 \end{itemize}
 
-<<U1ov_is_almostcompat>>=
-U1ov_is_almostcompat <- isCompatibleWithSkippedExons(U1ovenc)
-table(U1ov_is_almostcompat)  # 837 "almost compatible" overlaps
+<<U1ov00_is_acomp>>=
+U1ov00_is_acomp <- isCompatibleWithSkippedExons(U1ovenc)
+table(U1ov00_is_acomp)  # 837 "almost compatible" overlaps
 @
 
 \subsubsection{Tabulate the ``almost compatible'' single-end overlaps}
 
 Number of ``almost compatible'' overlaps for each alignment in \Rcode{U1gal}:
 
-<<U1gal_nalmostcompat>>=
-U1almostcompatov <- U1ov[U1ov_is_almostcompat]
-U1gal_nalmostcompat <- nhitPerQuery(U1almostcompatov)
-elementMetadata(U1gal)$nalmostcompat <- U1gal_nalmostcompat
+<<U1gal_nacomptx>>=
+U1acompov00 <- U1ov00[U1ov00_is_acomp]
+U1gal_nacomptx <- nhitPerQuery(U1acompov00)
+elementMetadata(U1gal)$nacomptx <- U1gal_nacomptx
 head(U1gal)
-table(U1gal_nalmostcompat)
-mean(U1gal_nalmostcompat >= 1)
+table(U1gal_nacomptx)
+mean(U1gal_nacomptx >= 1)
 @
 
 Only 0.22\% of the alignments in \Rcode{U1gal} are ``almost compatible''
@@ -1594,11 +1594,11 @@ with at least 1 transcript in \Rcode{dm3tx}.
 
 Number of ``almost compatible'' overlaps for each transcript in \Rcode{dm3tx}:
 
-<<dm3tx_U1nalmostcompat>>=
-dm3tx_U1nalmostcompat <- nhitPerSubject(U1almostcompatov)
-names(dm3tx_U1nalmostcompat) <- names(dm3tx)
-table(dm3tx_U1nalmostcompat)
-mean(dm3tx_U1nalmostcompat >= 50)
+<<dm3tx_nU1acompov00>>=
+dm3tx_nU1acompov00 <- nhitPerSubject(U1acompov00)
+names(dm3tx_nU1acompov00) <- names(dm3tx)
+table(dm3tx_nU1acompov00)
+mean(dm3tx_nU1acompov00 >= 50)
 @
 
 Only 0.0087\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
@@ -1608,8 +1608,8 @@ Finally note that the ``query start in transcript'' values returned by
 \Rfunction{extractQueryStartInTranscript} are also defined for ``almost
 compatible'' overlaps:
 
-<<U1ov_qstart>>=
-head(subset(U1ov_qstart, U1ov_is_almostcompat))
+<<U1ov00_qstart>>=
+head(subset(U1ov00_qstart, U1ov00_is_acomp))
 @
 
 
@@ -1637,22 +1637,22 @@ that are not in our annotations.
 First we extract the index of those alignments:
 
 <<aln_shows_nov_splice_jct>>=
-aln_shows_nov_splice_jct <- U1gal_nalmostcompat != 0L &
-                            U1gal_ncompat == 0L
+aln_shows_nov_splice_jct <- U1gal_nacomptx != 0L &
+                            U1gal_ncomptx == 0L
 head(which(aln_shows_nov_splice_jct))
 @
 
-We make this an index into \Rcode{U1ov} (Hits object):
+We make this an index into \Rcode{U1ov00} (Hits object):
 
 <<is_nov_splice_jct>>=
-is_nov_splice_jct <- queryHits(U1ov) %in% which(aln_shows_nov_splice_jct)
+is_nov_splice_jct <- queryHits(U1ov00) %in% which(aln_shows_nov_splice_jct)
 @
 
-We intersect with \Rcode{is\_almost\_compat} to keep only the overlaps
+We intersect with \Rcode{U1ov00\_is\_acomp} to keep only the overlaps
 of interest:
 
 <<narrow-is_nov_splice_jct>>=
-is_nov_splice_jct <- is_nov_splice_jct & U1ov_is_almostcompat
+is_nov_splice_jct <- is_nov_splice_jct & U1ov00_is_acomp
 @
 
 For each overlap of interest, we extract the ranks of the skipped
@@ -1667,8 +1667,8 @@ table(elementLengths(skpexrk))
 Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
 
 <<tx2skpexrk>>=
-names(skpexrk) <- queryHits(U1ov)[is_nov_splice_jct]
-f <- names(dm3tx)[subjectHits(U1ov)[is_nov_splice_jct]]
+names(skpexrk) <- queryHits(U1ov00)[is_nov_splice_jct]
+f <- names(dm3tx)[subjectHits(U1ov00)[is_nov_splice_jct]]
 tx2skpexrk <- split(skpexrk, f)
 @
 
