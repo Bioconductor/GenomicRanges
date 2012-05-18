@@ -514,3 +514,72 @@ setMethod("merge", c("Seqinfo", "Seqinfo"),
     function(x, y, ...) .Seqinfo.merge(x, y, ...)
 )
 
+
+
+
+## Need getters of seqnameStyle() to deduce this from seqinfo class.
+## Once I have that, I can just extend that to Granges, GRangesList, GappedAlignments etc.  In fact I think I can just say "ANY" like above once I have this 1st method put together.
+
+## To make this work I need to do some kind of 'fuzzy matching'.  What that means mostly is just that a lot of things DO NOT MATTER HERE.  For example, I don't care if I have the organism wrong for this getter!  Not only am I not returning the organism, but I only need to match to *A* seqnameStyle such that all the things in my seqinfo are accounted for.  Also, it doesn't matter if my seqnameStyle is not the perfect one, because I only need one that works for all the fields that the user has in their seqinfo.
+
+## But what are "all" the things in my seqinfo?  Because sometimes things are in there that the user does NOT need renamed (I don't want to try to match those!).  How do I know which things are the ones I have to match? In the case of determineDefaultSeqnameStyle() I was able to rely on the fact that all the fields in the DB would have to be present in the incoming data, but now I don't have the luxury of that test.  I no longer know which things are the ones I need to be matching.  Maybe this too doesn't really matter.  Those other things are NEVER going to match, so all I really need is the best match?  But that won't quite cut it since my best match might kind of suck.  Suppose that there really is no good match in the DB, shouldn't the user be told that???
+
+## proposed strategy:
+## 1) Go down the seqnames vector and find things that match NOTHING in the DB.  Throw those things away. We don't want to even try to match those.  If the vector is not length 0, then error out.
+## 2) Find the best match you can of the remaining things.  If there are multiple best matches, keep the 1st one of them and return the name of that seqnameStyle.  If the set of things that each have the same number of best matches have "match indices" that are not identical, then issue a warning.
+
+## Generic has to be moved down from GenomicFeatures.
+setGeneric("seqnameStyle",
+           function(x) standardGeneric("seqnameStyle"))
+
+.getSeqnameStyle  <- function(x) {
+  seqnames <- seqnames(x)
+  ## Get vector of ALL possible chromosome names
+  allNames <- supportedSeqnames()  
+  ## compare to seqnames and filter out things that can never match
+  seqnames <- seqnames[seqnames %in% allNames]
+  if(length(seqnames)==0){
+    stop("It is not possibe to match the seqnameStyle of this object to the seqnames.db database")
+  }
+  ## now compare to all, one style at a time.
+  allseqnameStyles <- listAllSupportedSeqnameStyles()
+  ## (get match indices for each style)
+  .getIndices <- function(style, seqnames){
+    match(seqnames, style)
+  }
+  indices <- lapply(allseqnameStyles,.getIndices,seqnames=seqnames)
+  ## I need to count the number that have some match (are not NA)
+  cnts <- unlist(lapply(indices, function(x){x<-x[!is.na(x)];length(x)}))
+  ## now I can calculate the result
+  res <- names(cnts)[cnts==max(cnts)]
+  res <- unique(sub("^.*__","",res,perl=TRUE))
+  ## if things are matching poorly in a way that may be consequential give a
+  ## warning
+  if(length(res) > 1 && length(cnts[cnts==max(cnts)]) > 1){
+    ## more than one match means things are ambiguous
+    warning("The seqnames for this object matches multiple different seqname styles equally well.  You may wish to verify that the seqnames.db database contains records that match your data.")
+  }
+  res
+}
+
+setMethod("seqnameStyle", "Seqinfo",
+          function(x) .getSeqnameStyle(x)
+)
+
+## Can I still use ANY? (concerned about TranscriptDbs)
+setMethod("seqnameStyle", "ANY", function(x)  seqnameStyle(seqinfo(x)) )
+
+
+## Test:
+## library(GenomicFeatures);
+## gr <-GRanges(seqnames =
+##              Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+##              ranges =
+##              IRanges(1:10, width = 10:1, names = head(letters,10)),
+##              strand =
+##              Rle(strand(c("-", "+", "*", "+", "-")),
+##                  c(1, 2, 2, 3, 2)),
+##              score = 1:10,
+##              GC = seq(1, 0, length=10))
+## seqnameStyle(gr)
+
