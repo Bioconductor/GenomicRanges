@@ -1124,13 +1124,13 @@ obtained earlier when we counted all the overlaps.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Project the reads on the transcriptome}
+\section{Project the alignments on the transcriptome}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Project the single-end reads on the transcriptome}
+\subsection{Project the single-end alignments on the transcriptome}
 
 The \Rfunction{extractQueryStartInTranscript} function computes for each
 overlap the position of the {\it query start} in the transcript:
@@ -1191,7 +1191,7 @@ the transcript of a ``compatible'' overlap.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Project the paired-end reads on the transcriptome}
+\subsection{Project the paired-end alignments on the transcriptome}
 
 For a paired-end read, the {\it query start} is the start of its ``left end''.
 
