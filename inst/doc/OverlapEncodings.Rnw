@@ -544,7 +544,7 @@ happening downstream of the BAM file.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Find the overlaps between the reads and transcripts}
+\section{Find all the overlaps between the reads and transcripts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -597,12 +597,21 @@ dm3tx_strand <- unlist(runValue(strand(dm3tx)), use.names=FALSE)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Single-end overlaps}
 
+\subsubsection{Find the single-end overlaps}
+
 We are ready to compute the overlaps with the \Rfunction{findOverlaps}
 function. Note that the strand of the queries produced by the RNA-seq
 experiment is typically unknown so we use \Rcode{ignore.strand=TRUE}:
 
 <<U1ov>>=
 U1ov <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
+@
+
+\Rcode{U1ov} is a \Rclass{Hits} object that contains 1 element per
+overlap. Its length gives the number of overlaps:
+
+<<length-of-U1ov>>=
+length(U1ov)
 @
 
 \subsubsection{Tabulate the single-end overlaps}
@@ -674,10 +683,20 @@ head(sort(dm3tx_U1nhit, decreasing=TRUE), n=10)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Paired-end overlaps}
 
-Let's compute the overlaps:
+\subsubsection{Find the paired-end overlaps}
+
+Like with our single-end overlaps, we call \Rfunction{findOverlaps} with
+\Rcode{ignore.strand=TRUE}:
 
 <<U3ov>>=
 U3ov <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
+@
+
+Like \Rcode{U1ov}, \Rcode{U3ov} is a \Rclass{Hits} object. Its length gives
+the number of paired-end overlaps:
+
+<<length-of-U3ov>>=
+length(U3ov)
 @
 
 \subsubsection{Tabulate the paired-end overlaps}
