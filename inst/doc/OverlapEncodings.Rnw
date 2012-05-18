@@ -670,7 +670,7 @@ names(dm3tx_U1nhit) <- names(dm3tx)
 mean(dm3tx_U1nhit >= 50)
 @
 
-Only 0.87\% of the transcripts in \Rcode{dm3tx} have an overlap with
+Only 0.869\% of the transcripts in \Rcode{dm3tx} have an overlap with
 at least 50 reads.
 
 Top 10 transcripts:
@@ -996,7 +996,7 @@ names(dm3tx_U1ncompat) <- names(dm3tx)
 mean(dm3tx_U1ncompat >= 50)
 @
 
-Only 0.86\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+Only 0.860\% of the transcripts in \Rcode{dm3tx} are ``compatible''
 with at least 50 reads.
 
 Top 10 transcripts:
@@ -1466,7 +1466,7 @@ names(dm3tx_U1nsbcompat) <- names(dm3tx)
 mean(dm3tx_U1nsbcompat >= 50)
 @
 
-Only 0.86\% of the transcripts in \Rcode{dm3tx} are ``string-based
+Only 0.865\% of the transcripts in \Rcode{dm3tx} are ``string-based
 compatible'' with at least 50 reads.
 
 Top 10 transcripts:
