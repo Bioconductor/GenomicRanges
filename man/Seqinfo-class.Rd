@@ -24,6 +24,7 @@
 \alias{isCircular<-,Seqinfo-method}
 \alias{genome,Seqinfo-method}
 \alias{genome<-,Seqinfo-method}
+\alias{seqnameStyle}
 \alias{seqnameStyle,Seqinfo-method}
 \alias{[,Seqinfo-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
@@ -131,7 +132,7 @@
       in \code{x}.
     }
     \item{}{
-      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      \code{seqnameStyle(x)}:
       Lists the matching seqname styles for \code{x}.
     }
   }

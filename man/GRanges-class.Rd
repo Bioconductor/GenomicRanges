@@ -186,7 +186,7 @@
       or a factor.
     }
     \item{}{
-      \code{seqnameStyle(x)}, \code{seqnameStyle(x)}:
+      \code{seqnameStyle(x)}:
       Lists the matching seqname styles for \code{x}.
     }
     \item{}{
