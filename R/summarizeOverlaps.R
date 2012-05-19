@@ -12,7 +12,7 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
     function(features, reads, mode, ignore.strand = FALSE, ...)
 {
     mode <- match.fun(mode)
-    counts <- .dispatch(reads, features, mode, ignore.strand)
+    counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
     if (length(metadata(reads)) > 0)
         colData <- DataFrame(metaData = metadata(reads))
     else
@@ -25,7 +25,7 @@ setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
     function(features, reads, mode, ignore.strand = FALSE, ...)
 {
     mode <- match.fun(mode)
-    counts <- .dispatch(reads, features, mode, ignore.strand)
+    counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
     if (length(metadata(reads)) > 0)
         colData <- DataFrame(metaData = metadata(reads))
     else
@@ -34,7 +34,8 @@ setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
                          rowData=features, colData=colData)
 })
 
-.dispatch <- function(reads, features, mode, ignore.strand, ...)
+.dispatchOverlaps <-
+    function(reads, features, mode, ignore.strand, ...)
 {
     if (ignore.strand)
            strand(reads) <- "*"
