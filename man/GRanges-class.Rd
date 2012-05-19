@@ -373,8 +373,7 @@
       strand are set to \code{+}. 
 
       \describe{
-        Select argument :
-        \item{\code{first}}{An integer vector is returned with the index of
+        \item{\code{select = 'first'}}{An integer vector is returned with the index of
           the \code{subject} that is directly preceded by \code{x}. If there is no
           match in \code{subject} an \code{NA} is returned. Overlapping ranges
           are excluded. 
@@ -395,7 +394,7 @@
           \code{precede} on \code{+} and \code{follow} on \code{-} choose first
           \code{precede} on \code{-} and \code{follow} on \code{+} choose last 
         } 
-        \item{\code{all}}{Returns a \code{"Hits"} object with all matches for
+        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with all matches for
           \code{x}. If a \code{x} does not have a match in \code{subject}
           no result for that \code{x} is returned. Overlapping ranges are
           excluded.
@@ -404,18 +403,18 @@
 
       \describe{
         Order of strand preference :
-        \item{}{\code{x} on the \code{+} strand first looks for a match with a
-          \code{subject} on the \code{+} strand, then on the \code{*} strand
+        \item{\code{x} on \code{+} strand :}{first matches a \code{subject} 
+          on the \code{+} strand, then on the \code{*} strand
         }
-        \item{}{\code{x} on the \code{-} strand first looks for a match with a
-          \code{subject} on the \code{-} strand, then on the \code{*} strand
+        \item{\code{x} on \code{-} strand :}{first matches a \code{subject} 
+          on the \code{-} strand, then on the \code{*} strand
         }
-        \item{}{\code{x} on the \code{*} strand will first match a \code{subject}
+        \item{\code{x} on \code{*} strand :}{first matches a \code{subject}
           on the \code{+} strand, then on the \code{*} strand with respect to
-          the positive strand. If none are found it will then match a
-          \code{subject} on the \code{-} strand, then on the \code{*} strand
-          with respect to the negative strand. `With respect to' means the
-          unstranded range will be treated as if it was \code{+} or \code{-}.
+          the positive strand. If no suitable matches are found it then 
+          matches a \code{subject} on the \code{-} strand, then on the \code{*} 
+          strand with respect to the negative strand. `With respect to' means 
+          the unstranded range will be treated as if it was \code{+} or \code{-}.
         }
       }
     }
@@ -428,14 +427,13 @@
       strand are set to \code{+}. 
 
       \describe{
-        Select argument :
-        \item{\code{last}}{An integer vector is returned with the index of
+        \item{\code{select = 'last'}}{An integer vector is returned with the index of
           the \code{subject} that is directly followed by \code{x}. If there is no
           match in \code{subject} an \code{NA} is returned. Overlapping ranges
           are excluded. See documentation for \code{precede} for details of
           strand priority. 
         }
-        \item{\code{all}}{Returns a \code{"Hits"} object with all matches for
+        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with all matches for
           \code{x}. If a \code{x} does not have a match in \code{subject}
           no result for that \code{x} is returned. Overlapping ranges are
           excluded.
