@@ -268,8 +268,7 @@
       Gets or sets \code{width(ranges(x))}.
     }
     \item{}{
-      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE,
-          ignore.strand=FALSE)}:
+      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE, ignore.strand=FALSE)}:
       Returns a new GRanges object containing intervals of width \code{width}
       that flank the intervals in \code{x}.
       The \code{start} argument takes a logical indicating whether \code{x}
@@ -365,18 +364,17 @@
   In the code snippets below, \code{x} and \code{subject} are GRanges objects.
   \describe{
     \item{}{
-      \code{precede(x, subject = x, select = c("first", "all"), 
-                    ignore.strand = FALSE, ...)}:
+      \code{precede(x, subject = x, select = c("first", "all"), ignore.strand = FALSE, ...)}:
       Identifies which subject(s) the query precedes. Returns the index of the
       interval in \code{subject} that is directly preceded by the range in 
       \code{x}. When ignore.strand = TRUE, both \code{x} and \code{subject} 
       strand are set to \code{+}. 
 
       \describe{
-        \item{\code{select = 'first'}}{An integer vector is returned with the index of
-          the \code{subject} that is directly preceded by \code{x}. If there is no
-          match in \code{subject} an \code{NA} is returned. Overlapping ranges
-          are excluded. 
+        \item{\code{select = 'first'}}{An integer vector is returned
+          with the index of the \code{subject} that is directly preceded
+          by \code{x}. If there is no match in \code{subject} an
+          \code{NA} is returned. Overlapping ranges are excluded.
 
           Strand priority is described in the `Order of strand preference' rules.
           An unstranded \code{x} may match \code{subject} ranges on multiple 
@@ -394,49 +392,47 @@
           \code{precede} on \code{+} and \code{follow} on \code{-} choose first
           \code{precede} on \code{-} and \code{follow} on \code{+} choose last 
         } 
-        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with all matches for
-          \code{x}. If a \code{x} does not have a match in \code{subject}
-          no result for that \code{x} is returned. Overlapping ranges are
-          excluded.
-        }
+        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with
+          all matches for \code{x}. If a \code{x} does not have a match
+          in \code{subject} no result for that \code{x} is
+          returned. Overlapping ranges are excluded.
+	}
       }
 
+      Order of strand preference:
       \describe{
-        Order of strand preference :
-        \item{\code{x} on \code{+} strand :}{first matches a \code{subject} 
-          on the \code{+} strand, then on the \code{*} strand
-        }
-        \item{\code{x} on \code{-} strand :}{first matches a \code{subject} 
-          on the \code{-} strand, then on the \code{*} strand
-        }
-        \item{\code{x} on \code{*} strand :}{first matches a \code{subject}
-          on the \code{+} strand, then on the \code{*} strand with respect to
-          the positive strand. If no suitable matches are found it then 
-          matches a \code{subject} on the \code{-} strand, then on the \code{*} 
-          strand with respect to the negative strand. `With respect to' means 
-          the unstranded range will be treated as if it was \code{+} or \code{-}.
-        }
+        \item{\code{x} on \code{+} strand:}{First matches a \code{subject} 
+          on the \code{+} strand, then on the \code{*} strand.}
+        \item{\code{x} on \code{-} strand:}{First matches a \code{subject} 
+          on the \code{-} strand, then on the \code{*} strand.}
+        \item{\code{x} on \code{*} strand:}{First matches a
+          \code{subject} on the \code{+} strand, then on the \code{*}
+          strand with respect to the positive strand. If no suitable
+          matches are found it then matches a \code{subject} on the
+          \code{-} strand, then on the \code{*} strand with respect to
+          the negative strand. `With respect to' means the unstranded
+          range will be treated as if it was \code{+} or \code{-}.}
       }
     }
     \item{}{
-      \code{follow(x, subject = x, select = c("last", "all"),
-                   ignore.strand = FALSE, ...)}:
+      \code{follow(x, subject = x, select = c("last", "all"), ignore.strand = FALSE, ...)}:
       Identifies which subject(s) the query follows. Returns the index of the
       interval in \code{subject} that is directly followed by the range in 
       \code{x}. When ignore.strand = TRUE, both \code{x} and \code{subject} 
       strand are set to \code{+}. 
 
       \describe{
-        \item{\code{select = 'last'}}{An integer vector is returned with the index of
-          the \code{subject} that is directly followed by \code{x}. If there is no
-          match in \code{subject} an \code{NA} is returned. Overlapping ranges
-          are excluded. See documentation for \code{precede} for details of
-          strand priority. 
-        }
-        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with all matches for
-          \code{x}. If a \code{x} does not have a match in \code{subject}
-          no result for that \code{x} is returned. Overlapping ranges are
-          excluded.
+        \item{\code{select = 'last'}}{An integer vector is returned with
+          the index of the \code{subject} that is directly followed by
+          \code{x}. If there is no match in \code{subject} an \code{NA}
+          is returned. Overlapping ranges are excluded. See
+          documentation for \code{precede} for details of strand
+          priority.
+	}
+        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with
+          all matches for \code{x}. If a \code{x} does not have a match
+          in \code{subject} no result for that \code{x} is
+          returned. Overlapping ranges are excluded.
         }
       }
     }
