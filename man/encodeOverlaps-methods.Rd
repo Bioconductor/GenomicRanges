@@ -177,17 +177,17 @@ dm3_ensGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="ensGene")
 dm3tx <- exonsBy(dm3_ensGene_txdb, by="tx", use.names=TRUE)
 
 ## Number of "compatible" transcripts per alignment in 'gal':
-gal_ncompat <- countCompatibleOverlaps(gal, dm3tx)
-elementMetadata(gal)$ncompat <- gal_ncompat
-table(gal_ncompat)
-mean(gal_ncompat >= 1)
+gal_ncomptx <- countCompatibleOverlaps(gal, dm3tx)
+elementMetadata(gal)$ncomptx <- gal_ncomptx
+table(gal_ncomptx)
+mean(gal_ncomptx >= 1)
 ## --> 33% of the alignments in 'gal' are "compatible" with at least
 ## 1 transcript in 'dm3tx'.
 
 ## Keep only alignments compatible with at least 1 transcript in
 ## 'dm3tx':
-compatgal <- gal[gal_ncompat >= 1]
-head(compatgal)
+compgal <- gal[gal_ncomptx >= 1]
+head(compgal)
 }
 
 \keyword{methods}

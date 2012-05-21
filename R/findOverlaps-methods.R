@@ -645,6 +645,5 @@ for (sig in .signatures) {
     else
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps.default)
     setMethod("match", sig, .match.default)
-    setMethod("%in%", sig, function(x, table) !is.na(match(x, table)))
 }
 
