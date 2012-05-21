@@ -113,7 +113,7 @@ object):
 <<readGappedAlignments>>=
 library(GenomicRanges)
 library(Rsamtools)
-flag0 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE)
+flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
 U1gal <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
 head(U1gal)
@@ -405,9 +405,11 @@ not only do we have the guarantee to end up with the same elements in
 \Rcode{U3galp}, but also to have them in the same order):
 
 <<reload-U3galp>>=
-flag2 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE, isProperPair=TRUE)
+flag2 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE,
+    isProperPair=TRUE)
 param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
-U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
+U3galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE,
+    param=param2)
 @
 
 Let's extract the {\it first} and {\it last} sequences from \Rcode{U3galp}:
