@@ -184,7 +184,7 @@
 
   fls = list.files(system.file("extdata",package="GenomicRanges"),
       recursive=TRUE, pattern="*bam$", full=TRUE)
-  bfl <- BamFileList(fls)
+  bfl <- BamFileList(fls, index=character())
   features <- GRanges(
       seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R",
           "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
