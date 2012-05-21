@@ -165,7 +165,7 @@ sm_treated1 <- system.file("extdata", "sm_treated1.bam",
 
 ## Load the alignments:
 library(Rsamtools)
-flag0 <- scanBamFlag(isDuplicate=FALSE, isValidVendorRead=TRUE)
+flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
 gal <- readGappedAlignments(sm_treated1, use.names=TRUE, param=param0)
 
