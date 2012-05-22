@@ -133,18 +133,6 @@
 
 \examples{
 
-  group_id <- c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H")
-  features <- GRanges(
-      seqnames = Rle(c("chr1", "chr2", "chr1", "chr1", "chr2", "chr2", 
-          "chr1", "chr1", "chr2", "chr1", "chr1")),
-      strand = strand(rep("+", length(group_id))),
-      ranges = IRanges(
-          start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 3000, 
-              5000, 5400),
-          width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 500, 500)),
-     DataFrame(group_id)
-  )
- 
   reads <- GappedAlignments(
       names = c("a","b","c","d","e","f","g"),
       seqnames = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
@@ -153,53 +141,70 @@
           "50M200N50M", "50M150N50M"),
       strand = strand(rep("+", 7)))
 
-  ## Results from countOverlaps are included to highlight how the 
-  ## modes in summarizeOverlaps count a read a maximum of once.
+  ## ---------------------------------------------------------------------
+  ## 'features' as GRanges
+  ##
 
-  ## When the 'features' argument is a GRanges, each row 
-  ## is treated as a different feature. 
-  rowsAsFeatures <- 
-      data.frame(union = assays(summarizeOverlaps(features, reads))$counts, 
-                 intStrict = assays(summarizeOverlaps(features, reads, 
-                     mode="IntersectionStrict"))$counts,
-                 intNotEmpty = assays(summarizeOverlaps(features, reads,
-                     mode="IntersectionNotEmpty"))$counts,
-                 countOverlaps = countOverlaps(features, reads))
+  features <- GRanges(
+      seqnames = c(rep("chr1", 7), rep("chr2", 4)), strand = "+", 
+      ranges = IRanges(c(1000, 3000, 3600, 4000, 4000, 5000, 5400, 2000, 
+          3000, 7000, 7500), width = c(500, 500, 300, 500, 900, 500, 500, 
+          900, 500, 600, 300)), 
+      group_id = c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H"))
 
-  ## When the 'features' argument is a GRangesList, each
-  ## highest list-level is a different feature.
+
+  ## Each row is a feature the read can 'hit'.
+  rowsAsFeatures <- data.frame(
+      union = assays(summarizeOverlaps(features, reads))$counts, 
+      intStrict = assays(summarizeOverlaps(features, reads, 
+          mode="IntersectionStrict"))$counts,
+      intNotEmpty = assays(summarizeOverlaps(features, reads,
+          mode="IntersectionNotEmpty"))$counts,
+      countOverlaps = countOverlaps(features, reads))
+
+  ## Results from countOverlaps() are included to highlight how
+  ## summarizeOverlaps() counts a read only once.
+
+  ## ---------------------------------------------------------------------
+  ## 'features' as GRangesList
+  ##
+
+  ## Each highest list-level is a feature the read can 'hit'.
   lst <- split(features, values(features)[["group_id"]])
-  listAsFeatures <- 
-      data.frame(union = assays(summarizeOverlaps(lst, reads))$counts, 
-                 intStrict = assays(summarizeOverlaps(lst, reads, 
-                     mode="IntersectionStrict"))$counts,
-                 intNotEmpty = assays(summarizeOverlaps(lst, reads,
-                     mode="IntersectionNotEmpty"))$counts,
-                 countOverlaps = countOverlaps(lst, reads))
+  listAsFeatures <- data.frame(
+      union = assays(summarizeOverlaps(lst, reads))$counts, 
+      intStrict = assays(summarizeOverlaps(lst, reads, 
+          mode="IntersectionStrict"))$counts,
+      intNotEmpty = assays(summarizeOverlaps(lst, reads,
+          mode="IntersectionNotEmpty"))$counts,
+      countOverlaps = countOverlaps(lst, reads))
 
-  ## Read across BAM files and package output for DESeq or edgeR analysis
+  ## ---------------------------------------------------------------------
+  ## 'reads' as BamFileList 
+  ##
+
+  ## Count BAM files and prepare output for DESeq or edgeR analysis
   library(Rsamtools)
   library(DESeq)
   library(edgeR)
 
-  fls = list.files(system.file("extdata",package="GenomicRanges"),
+  fls <- list.files(system.file("extdata",package="GenomicRanges"),
       recursive=TRUE, pattern="*bam$", full=TRUE)
+  names(fls) <- basename(fls)
   bfl <- BamFileList(fls, index=character())
+
   features <- GRanges(
-      seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R",
-          "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
-      strand = strand(rep("+", 11)),
-      ranges = IRanges(start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000,
-          3000, 5000, 5400), width=c(500, 900, 500, 300, 600, 300, 500, 900, 
-          500, 500, 500))
-  )
+      seqnames = c(rep("chr2L", 4), rep("chr2R", 5), rep("chr3L", 2)),
+      ranges = IRanges(c(1000, 3000, 4000, 7000, 2000, 3000, 3600, 4000, 
+          7500, 5000, 5400), width=c(rep(500, 3), 600, 900, 500, 300, 900, 
+          300, 500, 500)), "-",
+      group_id=c(rep("A", 4), rep("B", 5), rep("C", 2)))
 
   solap <- summarizeOverlaps(features, bfl)
 
-  deseq <- newCountDataSet(countData=assays(solap)$counts, 
-                           conditions=rownames(colData(solap)))
+  deseq <- newCountDataSet(assays(solap)$counts, rownames(colData(solap)))
 
-  edger <- DGEList(counts=assays(solap)$counts, group=rownames(colData(solap)))
+  edger <- DGEList(assays(solap)$counts, group=rownames(colData(solap)))
 }
 
 \keyword{methods}
