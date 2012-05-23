@@ -373,233 +373,104 @@ test_GRanges_Vector <- function() {
     checkIdentical(gr[1:3], window(gr, 1, 3))
 }
 
-test_precede_plusstranded <- function()
+test_findNearest0_GRanges <- function()
 {
-    ## single seqname
-    g1 <- GRanges("A", IRanges(30, 40), "+")
-    g2 <- GRanges("A", IRanges(10, 20), "+")
-    checkIdentical(NA_integer_, precede(g1, g2))
-    checkIdentical(1L, precede(g2, g1))
+    .findNearest <- GenomicRanges:::.findNearest0_GRanges
+    sentinel <- c(0, 20) 
+    subject <- c(5, 15) 
 
-    ## identical
-    g1 <- GRanges("A", IRanges(30, 40), "+")
-    checkIdentical(NA_integer_, precede(g1))
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "+")
-    checkIdentical(rep(NA_integer_, 2), precede(g1))
-    g1 <- GRanges("A", IRanges(c(10, 20), width=5), "+")
-    checkIdentical(c(2L, NA), precede(g1))
-    checkIdentical(c(NA, 1L), precede(rev(g1)))
-    g1 <- GRanges("A", IRanges(10, width=1), "+")
-    checkIdentical(NA_integer_, precede(g1))
+    hits <- .findNearest(10, subject, sentinel, TRUE)
+    checkIdentical(2L, subjectHits(hits))
+    hits <- .findNearest(10, subject, sentinel, FALSE)
+    checkIdentical(1L, subjectHits(hits))
+
+    hits <- .findNearest(5, subject, sentinel, TRUE)
+    checkIdentical(2L, subjectHits(hits))
+    hits <- .findNearest(15, subject, sentinel, FALSE)
+    checkIdentical(1L, subjectHits(hits))
  
-    ## two seqnames
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "+")
-    g2 <- GRanges("A", IRanges(10, 20), "+")
-    checkIdentical(rep(NA_integer_, 2), precede(g1, g2))
-    checkIdentical(1L, precede(g2, g1))
+    hits <- .findNearest(5, subject, sentinel, FALSE)
+    checkIdentical(integer(), subjectHits(hits))
+    hits <- .findNearest(15, subject, sentinel, TRUE)
+    checkIdentical(integer(), subjectHits(hits))
 
-    g1 <- GRanges(c("A", "B"), IRanges(10, 20), "+")
-    g2 <- GRanges("A", IRanges(30, 40), "+")
-    checkIdentical(c(1L, NA), precede(g1, g2))
-    checkIdentical(NA_integer_, precede(g2, g1))
+    subject <- c(15, 5)
+    hits <- .findNearest(10, subject, sentinel, TRUE)
+    checkIdentical(1L, subjectHits(hits))
+    hits <- .findNearest(10, subject, sentinel, FALSE)
+    checkIdentical(2L, subjectHits(hits))
 }
 
-test_precede_minusstranded <- function()
+test_precede_follow_GRanges <- function()
 {
-    ## single seqname
-    g1 <- GRanges("A", IRanges(30, 40), "-")
-    g2 <- GRanges("A", IRanges(10, 20), "-")
-    checkIdentical(1L, precede(g1, g2))
-    checkIdentical(NA_integer_, precede(g2, g1))
+    ## query on "+"
+    query <- GRanges("A", IRanges(c(1, 5, 10, 15, 20), width=1), "+")
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "+")
+    hits <- precede(query, subject)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
 
-    ## identical
-    g1 <- GRanges("A", IRanges(30, 40), "-")
-    checkIdentical(NA_integer_, precede(g1))
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "-")
-    checkIdentical(rep(NA_integer_, 2), precede(g1))
-    g1 <- GRanges("A", IRanges(c(10, 20), width=5), "-")
-    checkIdentical(c(NA, 1L), precede(g1))
-    checkIdentical(c(2L, NA), precede(rev(g1)))
-    g1 <- GRanges("A", IRanges(10, width=1), "-")
-    checkIdentical(NA_integer_, precede(g1))
- 
-    ## two seqnames
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "-")
-    g2 <- GRanges("A", IRanges(10, 20), "-")
-    checkIdentical(c(1L, NA), precede(g1, g2))
-    checkIdentical(NA_integer_, precede(g2, g1))
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "-")
+    hits <- precede(query, subject)
+    checkIdentical(rep(NA_integer_, length(query)), hits)
+    hits <- follow(query, subject)
+    checkIdentical(rep(NA_integer_, length(query)), hits)
 
-    g1 <- GRanges(c("A", "B"), IRanges(10, 20), "-")
-    g2 <- GRanges("A", IRanges(30, 40), "-")
-    checkIdentical(rep(NA_integer_, 2), precede(g1, g2))
-    checkIdentical(1L, precede(g2, g1))
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "*")
+    hits <- precede(query, subject)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
+
+    ## query on "-"
+    query <- GRanges("A", IRanges(c(1, 5, 10, 15, 20), width=1), "-")
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "-")
+    hits <- precede(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "+")
+    hits <- precede(query, subject)
+    checkIdentical(rep(NA_integer_, length(query)), hits)
+    hits <- follow(query, subject)
+    checkIdentical(rep(NA_integer_, length(query)), hits)
+
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "*")
+    hits <- precede(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+
+    ## query on "*"
+    query <- GRanges("A", IRanges(c(1, 5, 10, 15, 20), width=1), "*")
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "+")
+    hits <- precede(query, subject)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
+
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "-")
+    hits <- precede(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+
+    subject <- GRanges("A", IRanges(c(5, 15), width=1), "*")
+    hits <- precede(query, subject)
+    checkIdentical(c(1L, 2L, 1L, 1L, 2L), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(1L, 2L, 1L, 1L, 2L), hits)
 }
 
-test_follow_plusstranded <- function()
+test_precede_Follow_GRanges_ties <- function()
 {
-    ## same as precede, minusstrand
-    ## single seqname
-    g1 <- GRanges("A", IRanges(30, 40), "+")
-    g2 <- GRanges("A", IRanges(10, 20), "+")
-    checkIdentical(1L, follow(g1, g2))
-    checkIdentical(NA_integer_, follow(g2, g1))
-
-    ## identical
-    g1 <- GRanges("A", IRanges(30, 40), "+")
-    checkIdentical(NA_integer_, follow(g1))
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "+")
-    checkIdentical(rep(NA_integer_, 2), follow(g1))
-    g1 <- GRanges("A", IRanges(c(10, 20), width=5), "+")
-    checkIdentical(c(NA, 1L), follow(g1))
-    checkIdentical(c(2L, NA), follow(rev(g1)))
-    g1 <- GRanges("A", IRanges(10, width=1), "+")
-    checkIdentical(NA_integer_, follow(g1))
- 
-    ## two seqnames
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "+")
-    g2 <- GRanges("A", IRanges(10, 20), "+")
-    checkIdentical(c(1L, NA), follow(g1, g2))
-    checkIdentical(NA_integer_, follow(g2, g1))
-
-    g1 <- GRanges(c("A", "B"), IRanges(10, 20), "+")
-    g2 <- GRanges("A", IRanges(30, 40), "+")
-    checkIdentical(rep(NA_integer_, 2), follow(g1, g2))
-    checkIdentical(1L, follow(g2, g1))
-}
-
-test_follow_minusstranded <- function()
-{
-    ## same as precede, plusstrand
-    ## single seqname
-    g1 <- GRanges("A", IRanges(30, 40), "-")
-    g2 <- GRanges("A", IRanges(10, 20), "-")
-    checkIdentical(NA_integer_, follow(g1, g2))
-    checkIdentical(1L, follow(g2, g1))
-
-    ## identical
-    g1 <- GRanges("A", IRanges(30, 40), "-")
-    checkIdentical(NA_integer_, follow(g1))
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "-")
-    checkIdentical(rep(NA_integer_, 2), follow(g1))
-    g1 <- GRanges("A", IRanges(c(10, 20), width=5), "-")
-    checkIdentical(c(2L, NA), follow(g1))
-    checkIdentical(c(NA, 1L), follow(rev(g1)))
-    g1 <- GRanges("A", IRanges(10, width=1), "-")
-    checkIdentical(NA_integer_, follow(g1))
- 
-    ## two seqnames
-    g1 <- GRanges(c("A", "B"), IRanges(30, 40), "-")
-    g2 <- GRanges("A", IRanges(10, 20), "-")
-    checkIdentical(rep(NA_integer_, 2), follow(g1, g2))
-    checkIdentical(1L, follow(g2, g1))
-
-    g1 <- GRanges(c("A", "B"), IRanges(10, 20), "-")
-    g2 <- GRanges("A", IRanges(30, 40), "-")
-    checkIdentical(c(1L, NA), follow(g1, g2))
-    checkIdentical(NA_integer_, follow(g2, g1))
-}
-
-test_precede_bothstrands <- function()
-{
-    g1 <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
-    g2 <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
-                  strand=c("+", "+", "-", "-"))
-
-    checkIdentical(c(1L, NA), precede(g1, g2))
-    checkIdentical(rep(c(2L, NA), each=2), precede(g2, g1))
-}
-
-test_follow_bothstrands <- function()
-{
-    g1 <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
-    g2 <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
-                  strand=c("+", "+", "-", "-"))
-
-    checkIdentical(c(NA, 2L), follow(g1, g2))
-    checkIdentical(rep(c(1L, NA), each=2), follow(g2, g1))
-}
-
-test_precede_star <- function()
-{
-    ## only "*", 1 range
-    g1 <- GRanges("A", IRanges(c(5, 15, 25, 35), width=1), "+")
-    g2 <- GRanges("A", IRanges(c(11, 21, 31), width=1), "*")
-    checkIdentical(c(1:3, NA), precede(g1, g2))
-    checkIdentical(2:4, precede(g2, g1))
-    g2 <- GRanges("A", IRanges(c(9, 19, 29), width=1), "*")
-    checkIdentical(2:4, precede(g2, g1))
-
-    ## identical
-    g1 <- GRanges("A", IRanges(10, width=1), "*")
-    checkIdentical(NA_integer_, precede(g1))
-
-    ## order of preference
-    g1 <- GRanges("A", IRanges(15, width=1), "+")
-    g2 <- GRanges("A", IRanges(c(20, 20), width=1), c("*","+"))
-    checkIdentical(2L, precede(g1, g2))
-    checkIdentical(1L, precede(g1, g2[-2]))
-
-    g1 <- GRanges("A", IRanges(15, width=1), "-")
-    g2 <- GRanges("A", IRanges(c(10, 10), width=1), c("*","-"))
-    checkIdentical(2L, precede(g1, g2))
-    checkIdentical(1L, precede(g1, g2[-2]))
-
-    g1 <- GRanges("A", IRanges(15, width=1), "*")
-    g2 <- GRanges("A", IRanges(c(20, 20, 10, 10), width=1),
-                  c("*", "+", "*","-"))
-    checkIdentical(2L, precede(g1, g2))
-    checkIdentical(1L, precede(g1, g2[-2]))
-    checkIdentical(2L, precede(g1, g2[-c(1:2)]))
-    checkIdentical(1L, precede(g1, g2[-c(1:2, 4)]))
-}
-
-test_precede_select <- function() 
-{
-    ## precede on "+" chooses first
-    g1 <- GRanges("A", IRanges(5, width=6), "+")
-    g2 <- GRanges("A", IRanges(rep(15, 3), c(20, 25, 30)), "+")
-    checkIdentical(1L, precede(g1, g2))
-    checkIdentical(1L, precede(g1, g2[c(3,1,2)]))
-
-    ## precede on "-" chooses last 
-    g1 <- GRanges("A", IRanges(25, width=6), "-")
-    g2 <- GRanges("A", IRanges(c(5, 10, 15), c(20, 20, 20)), "-")
-    checkIdentical(3L, precede(g1, g2))
-    checkIdentical(3L, precede(g1, g2[c(3,1,2)]))
-
-    ## select = "all"
-    hits <- new("Hits", queryHits=as.integer(c(1,1,1)),
-        subjectHits=as.integer(c(1:3)))
-    checkIdentical(hits, precede(g1, g2, "all"))
-    g1 <- GRanges("A", IRanges(c(45, 25), width=6), "-")
-    g2 <- GRanges("A", IRanges(c(5, 10, 30), c(20, 20, 40)), "-")
-    checkIdentical(c(1L, 2L, 2L), queryHits(precede(g1, g2, "all")))
-    checkIdentical(c(1L, 1L, 2L), queryHits(precede(g1[2:1], g2, "all")))
-}
-
-test_follow_select <- function() 
-{
-    ## follow on "+" chooses last 
-    g1 <- GRanges("A", IRanges(25, width=6), "+")
-    g2 <- GRanges("A", IRanges(c(5, 10, 15), c(20, 20, 20)), "+")
-    checkIdentical(3L, follow(g1, g2))
-    checkIdentical(3L, follow(g1, g2[c(3,1,2)]))
-
-    ## select = "all"
-    hits <- new("Hits", queryHits=as.integer(c(1,1,1)),
-        subjectHits=as.integer(c(1:3)))
-    checkIdentical(hits, follow(g1, g2, "all"))
-    checkIdentical(hits, follow(g1, g2, "all"))
-    g1 <- GRanges("A", IRanges(c(45, 25), width=6), "+")
-    g2 <- GRanges("A", IRanges(c(5, 10, 30), c(20, 20, 40)), "+")
-    checkIdentical(c(1L, 2L, 2L), queryHits(follow(g1, g2, "all")))
-    checkIdentical(c(1L, 1L, 2L), queryHits(follow(g1[2:1], g2, "all")))
-
-    ## follow on "-" chooses first 
-    g1 <- GRanges("A", IRanges(5, width=6), "-")
-    g2 <- GRanges("A", IRanges(rep(15, 3), c(20, 25, 30)), "-")
-    checkIdentical(1L, follow(g1, g2))
-    checkIdentical(1L, follow(g1, g2[c(3,1,2)]))
+    query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
+    subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
+                       rep(c("+", "-", "*"), 2))
+    checkIdentical(c(4L, 2L, 2L), precede(query, subject))
+    checkIdentical(c(1L, 4L, 1L), precede(query, rev(subject)))
 }
 
 test_GRanges_nearest <- function() {

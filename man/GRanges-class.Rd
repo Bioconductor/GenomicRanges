@@ -364,77 +364,49 @@
   In the code snippets below, \code{x} and \code{subject} are GRanges objects.
   \describe{
     \item{}{
-      \code{precede(x, subject = x, select = c("first", "all"), ignore.strand = FALSE, ...)}:
+      \code{precede(x, subject = x, select = c("arbitrary", "all"), ignore.strand = FALSE, ...)}:
       Identifies which subject(s) the query precedes. Returns the index of the
-      interval in \code{subject} that is directly preceded by the range in 
-      \code{x}. When ignore.strand = TRUE, both \code{x} and \code{subject} 
-      strand are set to \code{+}. 
+      range in \code{subject} that is directly preceded by the range in 
+      \code{x}. When ignore.strand = TRUE, the strand for both \code{x} and 
+      \code{subject} are set to \code{'+'}. 
 
+      When \code{select = 'arbitrary'} an integer vector is returned with a
+      single match per \code{x}. If no match is found an \code{NA} is returned. 
+      When \code{select = 'all'} a \code{Hits} object is returned with all 
+      matches for \code{x}. If \code{x} does not have a match in \code{subject} 
+      the \code{x} is not included in the \code{Hits} object. Overlapping 
+      ranges are excluded.
+
+      Matching by strand :
       \describe{
-        \item{\code{select = 'first'}}{An integer vector is returned
-          with the index of the \code{subject} that is directly preceded
-          by \code{x}. If there is no match in \code{subject} an
-          \code{NA} is returned. Overlapping ranges are excluded.
-
-          Strand priority is described in the `Order of strand preference' rules.
-          An unstranded \code{x} may match \code{subject} ranges on multiple 
-          strands. In this case the nearest range is selected. If the ranges are 
-          equidistant the `Order of strand preference' rules are applied.
-
-          The terms `first' and `last' are a slight misnomer when dealing with
-          stranded ranges. They originate from the generic set on \code{Ranges}
-          and describe how ties are broken when a \code{x} matches multiple
-          equidistant ranges. On the \code{+} strand, \code{precede} will choose
-          the first by order and \code{follow} will choose the last. This
-          behavior is reversed when performing the operations on the \code{-}
-          strand. See examples for details. In summary :
-
-          \code{precede} on \code{+} and \code{follow} on \code{-} choose first
-          \code{precede} on \code{-} and \code{follow} on \code{+} choose last 
+        \item{}{x on '+' strand can match to ranges on both \code{'+'} and 
+          \code{'*'} strands. In the case of a tie the first range by order 
+          is chosen.
         } 
-        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with
-          all matches for \code{x}. If a \code{x} does not have a match
-          in \code{subject} no result for that \code{x} is
-          returned. Overlapping ranges are excluded.
-	}
-      }
-
-      Order of strand preference:
-      \describe{
-        \item{\code{x} on \code{+} strand:}{First matches a \code{subject} 
-          on the \code{+} strand, then on the \code{*} strand.}
-        \item{\code{x} on \code{-} strand:}{First matches a \code{subject} 
-          on the \code{-} strand, then on the \code{*} strand.}
-        \item{\code{x} on \code{*} strand:}{First matches a
-          \code{subject} on the \code{+} strand, then on the \code{*}
-          strand with respect to the positive strand. If no suitable
-          matches are found it then matches a \code{subject} on the
-          \code{-} strand, then on the \code{*} strand with respect to
-          the negative strand. `With respect to' means the unstranded
-          range will be treated as if it was \code{+} or \code{-}.}
+        \item{}{x on '-' strand can match to ranges on both \code{'-'} and 
+          \code{'*'} strands. In the case of a tie the first range by order 
+          is chosen.
+        } 
+        \item{}{x on '*' strand can match to ranges on any of \code{'+'}, 
+          \code{'-'} or \code{'*'} strands. In the case of a tie the first 
+          range by order is chosen.
+        }
       }
     }
     \item{}{
-      \code{follow(x, subject = x, select = c("last", "all"), ignore.strand = FALSE, ...)}:
+      \code{follow(x, subject = x, select = c("arbitrary", "all"), ignore.strand = FALSE, ...)}:
       Identifies which subject(s) the query follows. Returns the index of the
       interval in \code{subject} that is directly followed by the range in 
       \code{x}. When ignore.strand = TRUE, both \code{x} and \code{subject} 
-      strand are set to \code{+}. 
+      strand are set to \code{'+'}.
 
-      \describe{
-        \item{\code{select = 'last'}}{An integer vector is returned with
-          the index of the \code{subject} that is directly followed by
-          \code{x}. If there is no match in \code{subject} an \code{NA}
-          is returned. Overlapping ranges are excluded. See
-          documentation for \code{precede} for details of strand
-          priority.
-	}
-        \item{\code{select = 'all'}}{Returns a \code{"Hits"} object with
-          all matches for \code{x}. If a \code{x} does not have a match
-          in \code{subject} no result for that \code{x} is
-          returned. Overlapping ranges are excluded.
-        }
-      }
+      When \code{select = 'arbitrary'} an integer vector is returned with a
+      single match per \code{x}. If no match is found an \code{NA} is returned. 
+      When \code{select = 'all'} a \code{Hits} object is returned with all 
+      matches for \code{x}. If \code{x} does not have a match in \code{subject} 
+      the \code{x} is not included in the \code{Hits} object. Overlapping 
+      ranges are excluded. See the documentation for \code{precede} for details 
+      of strand matching.
     }
     \item{}{
       \code{nearest(x, subject = x, ignore.strand = FALSE)}:
@@ -641,7 +613,7 @@
   range(gr)
   reduce(gr)
   restrict(gr, start =3)
-  
+
   # Combining objects
   gr2 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 3, 4)),
                  IRanges(1:10, width=5), strand='-',
@@ -654,27 +626,24 @@
   ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
   all.gr <- c(gr, gr2, gr3, .ignoreElementMetadata=TRUE)
 
-  ## precede and follow
-  g1 <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
-  g2 <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
-                strand=c("+", "+", "-", "-"))
-  precede(g1, g2)
-  follow(g1, g2)
+  # precede and follow :
 
-  ## precede on "+" chooses first in order
-  g1 <- GRanges("A", IRanges(5, width=6), "+")
-  g2 <- GRanges("A", IRanges(rep(15, 3), c(20, 25, 30)),
-                rep("+", 3))
-  hits <- new("Hits", queryHits=as.integer(c(1,1,1)),
-      subjectHits=as.integer(c(1:3)))
-  precede(g1, g2[c(3,1,2)])
-  precede(g1, g2, "all")
+  # query on "+" strand
+  query <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
+  subject <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
+                     strand=c("+", "+", "-", "-"))
+  precede(query, subject)
+  follow(query, subject)
 
-  ## precede on "-" chooses last in order 
-  g1 <- GRanges("A", IRanges(25, width=6), "-")
-  g2 <- GRanges("A", IRanges(c(5, 10, 15), c(20, 20, 20)),
-                rep("-", 3))
-  precede(g1, g2[c(3,1,2)])
-  precede(g1, g2, "all")
+  # query on "+" strand
+  strand(query) <- "-"
+  precede(query, subject)
+  follow(query, subject)
 
+  # ties choose first in order
+  query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
+  subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
+                       rep(c("+", "-", "*"), 2))
+  precede(query, subject)
+  precede(query, rev(subject))
 }
