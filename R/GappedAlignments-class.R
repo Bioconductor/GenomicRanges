@@ -522,6 +522,24 @@ setMethod("as.data.frame", "GappedAlignments",
     }
 )
 
+setAs("GenomicRanges", "GappedAlignments",
+      function(from) {
+        ga <-
+          GappedAlignments(seqnames(from), start(from),
+                           if (!is.null(values(from)[["cigar"]]))
+                             values(from)[["cigar"]]
+                           else paste0(width(from), "M"),
+                           strand(from),
+                           if (!is.null(names(from))) names(from)
+                           else values(from)$name,
+                           seqlengths(from),
+                           values(from)[setdiff(colnames(values(from)),
+                                                c("cigar", "name"))])
+        metadata(ga) <- metadata(from)
+        seqinfo(ga) <- seqinfo(from)
+        ga
+      })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
