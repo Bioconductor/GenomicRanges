@@ -3,9 +3,9 @@
 ## -------------------------------------------------------------------------
 
 
-setGeneric("summarizeOverlaps", signature = c("features", "reads"),
-    function(features, reads, mode = Union, ignore.strand = FALSE, 
-             ..., param = ScanBamParam(), single.end = TRUE)
+setGeneric("summarizeOverlaps", signature=c("features", "reads"),
+    function(features, reads, mode=Union, ignore.strand=FALSE, 
+             ..., single.end=TRUE, param=ScanBamParam())
 {
     standardGeneric("summarizeOverlaps")
 })
@@ -19,7 +19,7 @@ setGeneric("summarizeOverlaps", signature = c("features", "reads"),
 ##
 
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
-    function(features, reads, mode, ignore.strand = FALSE, ...)
+    function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
@@ -28,7 +28,7 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
 })
 
 setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
-    function(features, reads, mode, ignore.strand = FALSE, ...)
+    function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
@@ -41,7 +41,7 @@ setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
 ##
 
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
-    function(features, reads, mode, ignore.strand = FALSE, ...)
+    function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
@@ -50,7 +50,7 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
 })
 
 setMethod("summarizeOverlaps", c("GRanges", "GappedAlignmentPairs"),
-    function(features, reads, mode, ignore.strand = FALSE, ...)
+    function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
