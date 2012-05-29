@@ -19,8 +19,16 @@
 }
 
 \usage{
+  ## single-end reads
   \S4method{summarizeOverlaps}{GRanges,GappedAlignments}(
-    features, reads, mode, ignore.strand = FALSE, ..., param = ScanBamParam()) 
+    features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
+  \S4method{summarizeOverlaps}{GRangesList,GappedAlignments}(
+    features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
+  ## paired-end reads
+  \S4method{summarizeOverlaps}{GRanges,GappedAlignmentPairs}(
+    features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
+  \S4method{summarizeOverlaps}{GRangesList,GappedAlignmentPairs}(
+    features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
 }
 
 \arguments{
@@ -83,15 +91,19 @@
             }
    }
   }
-  \item{param}{An optional \link[Rsamtools]{ScanBamParam} instance to
-     further influence scanning, counting, or filtering of the BAM file.}
-
   \item{ignore.strand}{
     A logical value indicating if strand should be considered when matching.
   }
   \item{...}{Additional arguments for other methods.  If using multiple
     cores, you can pass arguments in here to be used by mclapply to
     indicate the number of cores to use etc.
+  }
+  \item{param}{An optional \link[Rsamtools]{ScanBamParam} instance to
+     further influence scanning, counting, or filtering of the BAM file.
+  }
+  \item{single.end}{An optional logical value indicating if the reads in
+     bam file are single or paired-end. This argument is only used for
+     the \code{BamFileList} and \code{BamFileViews} methods.
   }
 }
 
