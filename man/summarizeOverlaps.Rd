@@ -3,16 +3,19 @@
 \alias{summarizeOverlaps}
 \alias{summarizeOverlaps,GRanges,GappedAlignments-method}
 \alias{summarizeOverlaps,GRangesList,GappedAlignments-method}
+\alias{summarizeOverlaps,GRanges,GappedAlignmentPairs-method}
+\alias{summarizeOverlaps,GRangesList,GappedAlignmentPairs-method}
 \alias{Union}
 \alias{IntersectionStrict}
 \alias{IntersectionNotEmpty}
 
 
-\title{Count reads that map to genomic features} 
+\title{Perform overlap queries between reads and genomic features} 
 
 \description{
-  Count reads that map to genomic features with options to resolve reads that
-  overlap multiple features.
+  \code{summarizeOverlaps} extends \code{findOverlaps} by providing 
+  options to resolve reads that overlap multiple features. Each read 
+  is counted a maximum of once.
 }
 
 \usage{
@@ -22,24 +25,24 @@
 
 \arguments{
   \item{features}{
-    A \linkS4class{GRanges} or a \linkS4class{GRangesList} object of genomic 
-    regions of interest. When a \linkS4class{GRanges} is supplied, each row is 
-    considered a different feature. When a \linkS4class{GRangesList} is 
-    supplied, each highest list-level is considered a feature and the multiple 
-    elements are considered portions of the same feature. See examples or
-    vignette for details. 
+    A \linkS4class{GRanges} or a \linkS4class{GRangesList} containing genomic 
+    regions of interest. This will commonly be a \code{GRanges} of exons
+    or transcripts or a \code{GRangesList} of exons by gene or transcripts
+    by gene.
+
   }
   \item{reads}{
-    A \linkS4class{GappedAlignments}, \link[Rsamtools]{BamFileList} or a
-    \link[Rsamtools]{BamViews} object. 
+    A \linkS4class{GappedAlignments}, \linkS4class{GappedAlignmentPairs},
+    \link[Rsamtools]{BamFileList} or a \link[Rsamtools]{BamViews} object
+    containing the reads to be mapped to the genomic regions of interest. 
   }
   \item{mode}{
     Character name of a function that defines the counting method to be used. 
-    Available counting modes include "Union", "IntersectionStrict", or 
-    "IntersectionNotEmpty" and are designed after the counting modes available 
-    in the HTSeq package by Simon Anders (see references). A user provided
-    count function can be used as the \code{mode} with the \code{BamFileList} 
-    method for \code{summarizedOverlaps}.
+    Modes include "Union", "IntersectionStrict", or "IntersectionNotEmpty" and 
+    are designed after the counting modes available in the HTSeq package by 
+    Simon Anders (see references). All methods are gap-aware and count a read 
+    a maximum of once. A user can provide their own count function as the 
+    \code{mode} argument when using the \code{BamFileList} method.
 
     \itemize{
       \item "Union" : (Default) Reads that overlap any portion of exactly one 
@@ -47,6 +50,15 @@
             discarded. For mode "Union" gapped reads are handled the same as 
             simple reads. If any portion of the gapped read hits >1 feature 
             the read is discarded. 
+
+            The number of reads counted depends on the quality of the features
+            (i.e., do the features overlap, have gaps, etc.). Of the three
+            modes `Union' tends to be the most conservative and 
+            often resuts in the lowest number of read counts. This is 
+            because the method does not attempt to resolve a read that hits 
+            multiple subjects but simply discards them. Both 
+            `IntersectionStrict' and `IntersectionNotEmpty' have rules that
+            attempt to assign a `multi-hit read' to a single feature.
 
       \item "IntersectionStrict" : The read must fall completely within a 
             single feature to be counted. A read can overlap multiple 
@@ -84,36 +96,44 @@
 }
 
 \details{
-  In the context of \code{summarizeOverlaps} a "feature" can be any portion of a 
-  genomic region such as a gene, transcript, exon etc. When the \code{features} 
-  argument is a \linkS4class{GRanges} the rows define the features to be 
-  overlapped. When \code{features} is a \linkS4class{GRangesList} the highest 
-  list-levels define the features. 
+  \describe{
+    \item{features}{
+      A "feature" can be any portion of a genomic region such as a gene, 
+      transcript, exon etc. When the \code{features} argument is a 
+      \linkS4class{GRanges} the rows define the features. The result
+      will be the same length as the \linkS4class{GRanges}. When 
+      \code{features} is a \linkS4class{GRangesList} the highest list-level 
+      defines the features and the result will be the same length as the 
+      \linkS4class{GRangesList}. 
 
-  \code{summarizeOverlaps} offers three \code{mode} functions to handle reads
-  that overlap multiple features: "Union", "IntersectionStrict", and
-  "IntersectionNotEmpty".  These functions are patterned after the counting
-  methods in the HTSeq package (see references). Each mode has a set of rules
-  that dictate how a read is assigned. Reads are counted a maximum of once. 
-  Alternatively, users can provide their own counting function as the 
-  \code{mode} argument and take advantage of the infrastructure in 
-  \code{summarizeOverlaps} to count across multiple files and parse the results 
-  into a \linkS4class{SummarizedExperiment} object.
+      Each count `mode' attempts to assign a read that overlapps multiple 
+      features to a single feature if possible. If there are multiple
+      ranges that should be considered a single feature (e.g., exons in
+      genes or transcripts in genes) the \linkS4class{GRangesList} would
+      be appropriate. If there is no grouping in the data (e.g., a list of
+      exons or transcripts or gene ranges) then a \linkS4class{GRanges}
+      would be appropriate. 
+    }
+    \item{paired-end reads}{
+      Paired-end reads should be provided in a 
+      \linkS4class{GappedAlignmentPairs} container. Paired-end reads
+      are counted the same a single-end reads with gaps. 
 
-  Currently reads must be input as either a BAM file or a 
-  \linkS4class{GappedAlignments} object. The information in the CIGAR field 
-  is used to determine if gapped reads are present. 
-
-  NOTE : \code{summarizeOverlaps} does not currently handle paired-end reads. 
+      The \code{BamFileList} method has an additional argument,
+      \code{single.end}, to indicate if the bam files contain single or
+      paired-end reads. 
+      See ?\code{'summarizeOverlaps,GRanges,BamFileList-method'} for
+      details.
+    }
+  }
 }
 
 \value{
-  A \linkS4class{SummarizedExperiment} object. The \code{assays} slot holds the
-  counts, \code{rowData} holds the \code{features}, \code{colData}
+  A \linkS4class{SummarizedExperiment} object. The \code{assays} slot holds 
+  the counts, \code{rowData} holds the \code{features}, \code{colData}
   will either be \code{NULL} or hold any metadata that was present in the
   \code{reads}.
 }
-
 
 \references{
   \url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html} 
@@ -129,10 +149,12 @@
   \code{DESeq}, \code{DEXSeq} and \code{edgeR} packages
   \link[Rsamtools]{BamFileList} 
   \link[Rsamtools]{BamViews} 
+  \linkS4class{GappedAlignments} 
+  \linkS4class{GappedAlignmentPairs} 
+  \link{readGappedAlignmentPairs} 
 }
 
 \examples{
-
   reads <- GappedAlignments(
       names = c("a","b","c","d","e","f","g"),
       seqnames = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
@@ -163,7 +185,11 @@
       countOverlaps = countOverlaps(features, reads))
 
   ## Results from countOverlaps() are included to highlight how
-  ## summarizeOverlaps() counts a read only once.
+  ## summarizeOverlaps() counts a read only once. For these 7
+  ## reads, "Union" is the most conservative counting mode, followed 
+  ## by "intersectionstrict" and then "intersectionNotEmpty". 
+
+  colSums(rowsAsFeatures)
 
   ## ---------------------------------------------------------------------
   ## 'features' as GRangesList
@@ -205,6 +231,21 @@
   deseq <- newCountDataSet(assays(solap)$counts, rownames(colData(solap)))
 
   edger <- DGEList(assays(solap)$counts, group=rownames(colData(solap)))
+
+  ## ---------------------------------------------------------------------
+  ## paired-end reads 
+  ##
+
+  library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
+  exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
+  fl <- system.file("extdata", "untreated3_chr4.bam", 
+      package="pasillaBamSubset") 
+
+  ## Paired-end reads are stored in a GappedAlignmentPairs object
+  reads <- readGappedAlignmentPairs(fl)
+
+  res <- summarizeOverlaps(exbygene, reads, "Union")
+  stopifnot(length(assays(res)$counts) == length(exbygene))
 }
 
 \keyword{methods}

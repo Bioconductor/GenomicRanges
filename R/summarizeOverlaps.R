@@ -1,3 +1,8 @@
+## -------------------------------------------------------------------------
+## summarizeOverlaps methods and related utilities
+## -------------------------------------------------------------------------
+
+
 setGeneric("summarizeOverlaps", signature = c("features", "reads"),
     function(features, reads, mode = Union, ignore.strand = FALSE, 
              ..., param = ScanBamParam())
@@ -5,20 +10,21 @@ setGeneric("summarizeOverlaps", signature = c("features", "reads"),
     standardGeneric("summarizeOverlaps")
 })
 
-## methods for BamFiles and BamViews are in Rsamtools
+## -------------------------------------------------------------------------
+## BamFiles and BamViews methods are in Rsamtools
+##
 
-## methods for GappedAlignments
+## -------------------------------------------------------------------------
+## GappedAlignments methods
+##
+
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
     function(features, reads, mode, ignore.strand = FALSE, ...)
 {
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
-    if (length(metadata(reads)) > 0)
-        colData <- DataFrame(metaData = metadata(reads))
-    else
-        colData <- DataFrame(metaData = character(1))
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-                         rowData=features, colData=colData)
+        rowData=features, colData=.readsMetadata(reads))
 })
 
 setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
@@ -26,21 +32,35 @@ setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
 {
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
-    if (length(metadata(reads)) > 0)
-        colData <- DataFrame(metaData = metadata(reads))
-    else
-        colData <- DataFrame(metaData = character(1))
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-                         rowData=features, colData=colData)
+        rowData=features, colData=.readsMetadata(reads))
 })
 
-.dispatchOverlaps <-
-    function(reads, features, mode, ignore.strand, ...)
+## -------------------------------------------------------------------------
+## GappedAlignmentPairs methods
+##
+
+setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
+    function(features, reads, mode, ignore.strand = FALSE, ...)
 {
-    if (ignore.strand)
-           strand(reads) <- "*"
-    mode(reads, features, ignore.strand)
-}
+    mode <- match.fun(mode)
+    counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
+    SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
+        rowData=features, colData=.readsMetadata(reads))
+})
+
+setMethod("summarizeOverlaps", c("GRanges", "GappedAlignmentPairs"),
+    function(features, reads, mode, ignore.strand = FALSE, ...)
+{
+    mode <- match.fun(mode)
+    counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
+    SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
+        rowData=features, colData=.readsMetadata(reads))
+})
+
+## -------------------------------------------------------------------------
+## 'mode' functions 
+##
 
 Union <- function(reads, features, ignore.strand=FALSE, ...)
 {
@@ -80,6 +100,26 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     counts <- .IntersectionNotEmpty(reads, features, ignore.strand)
     names(counts) <- names(features)
     counts 
+}
+
+## -------------------------------------------------------------------------
+## non-exported helpers 
+##
+
+.readsMetadata <- function(reads)
+{
+    if (length(metadata(reads)) > 0)
+        DataFrame(metaData = metadata(reads))
+    else
+        DataFrame(metaData = character(1))
+}
+
+.dispatchOverlaps <-
+    function(reads, features, mode, ignore.strand, ...)
+{
+    if (ignore.strand)
+           strand(reads) <- "*"
+    mode(reads, features, ignore.strand)
 }
 
 .IntersectionNotEmpty <- function(reads, features, ignore.strand=FALSE)
@@ -129,9 +169,3 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
     counts[runValue(countsRle)] <- runLength(countsRle) 
     counts
 }
-
-.isEqual <- function(x)
-{
-    diff(range(x)) < .Machine$double.eps ^ 0.5
-}
-
