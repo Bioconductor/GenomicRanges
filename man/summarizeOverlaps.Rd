@@ -19,12 +19,10 @@
 }
 
 \usage{
-  ## single-end reads
   \S4method{summarizeOverlaps}{GRanges,GappedAlignments}(
     features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
   \S4method{summarizeOverlaps}{GRangesList,GappedAlignments}(
     features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
-  ## paired-end reads
   \S4method{summarizeOverlaps}{GRanges,GappedAlignmentPairs}(
     features, reads, mode, ignore.strand=FALSE, ..., param=ScanBamParam(), single.end=TRUE) 
   \S4method{summarizeOverlaps}{GRangesList,GappedAlignmentPairs}(
@@ -40,9 +38,16 @@
 
   }
   \item{reads}{
-    A \linkS4class{GappedAlignments}, \linkS4class{GappedAlignmentPairs},
-    \link[Rsamtools]{BamFileList} or a \link[Rsamtools]{BamViews} object
-    containing the reads to be mapped to the genomic regions of interest. 
+    A \linkS4class{GappedAlignments} (single-end), 
+    \linkS4class{GappedAlignmentPairs} (paired-end), or
+    \link[Rsamtools]{BamFileList} or \link[Rsamtools]{BamViews} objects
+    containing the reads to be mapped to the genomic regions of interest.
+
+    The \code{BamFileList} and \code{BamViews} methods can handle single
+    or paired-end reads by appropriately specifying the \code{single.end} 
+    argument. Currently \code{single.end} is set once for all files in the 
+    list (i.e., the list cannot contain both single and paired-end read 
+    files.).
   }
   \item{mode}{
     Character name of a function that defines the counting method to be used. 
