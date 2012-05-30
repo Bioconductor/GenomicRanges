@@ -4,8 +4,7 @@
 
 
 setGeneric("summarizeOverlaps", signature=c("features", "reads"),
-    function(features, reads, mode=Union, ignore.strand=FALSE, 
-             ..., single.end=TRUE, param=ScanBamParam())
+    function(features, reads, mode=Union, ignore.strand=FALSE, ...)
 {
     standardGeneric("summarizeOverlaps")
 })
