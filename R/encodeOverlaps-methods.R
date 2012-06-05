@@ -4,30 +4,64 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### 2 non-exported utilities for safe extraction of group seqnames and strand
-### of a GRangesList object.
+### .isWrongStrand() internal helper.
 ###
 
-.groupSeqnames <- function(x, errmsg)
+.oneValPerTopLevelElt <- function(x, errmsg)
 {
-    if (!is(x, "GRangesList"))
-        stop("'x' must be a GRangesList object")
-    group_seqnames <- runValue(seqnames(x))
-    elt_lens <- elementLengths(group_seqnames)
+    if (!is(x, "RleList"))
+        stop("'x' must be an RleList object")
+    vals <- runValue(x)
+    elt_lens <- elementLengths(vals)
     if (!all(elt_lens == 1L))
         stop(errmsg)
-    unlist(group_seqnames, use.names=FALSE)
+    unlist(vals, use.names=FALSE)
 }
 
-.groupStrand <- function(x, errmsg)
+.isWrongStrand <- function(query, subject, hits)
 {
-    if (!is(x, "GRangesList"))
-        stop("'x' must be a GRangesList object")
-    group_strand <- runValue(strand(x))
-    elt_lens <- elementLengths(group_strand)
-    if (!all(elt_lens == 1L))
-        stop(errmsg)
-    unlist(group_strand, use.names=FALSE)
+    if (!is(query, "GRangesList") || !is(subject, "GRangesList"))
+        stop("'query' and 'subject' must be GRangesList objects")
+
+    ## Extract the top-level strand and seqnames of the query.
+    errmsg <- c("some alignments in 'query' have ranges on ",
+                "more than 1 reference sequence (fusion reads?)")
+    query_seqnames <- .oneValPerTopLevelElt(seqnames(query), errmsg)
+    errmsg <- c("some alignments in 'query' have ranges on ",
+                "both strands")
+    query_strand <- .oneValPerTopLevelElt(strand(query), errmsg)
+
+    ## Extract the top-level strand and seqnames of the subject.
+    errmsg <- c("some transcripts in 'subject' mix exons from ",
+                "different chromosomes (trans-splicing?)")
+    subject_seqnames <- .oneValPerTopLevelElt(seqnames(subject), errmsg)
+    errmsg <- c("some transcripts in 'subject' mix exons from ",
+                "both strands (trans-splicing?)")
+    subject_strand <- .oneValPerTopLevelElt(strand(subject), errmsg)
+
+    ## Expand the top-level strand and seqnames of the query and subject.
+    if (!is.null(hits)) {
+        if (!is(hits, "Hits"))
+            stop("'hits' must be NULL or a Hits object")
+        if (queryLength(hits) != length(query) ||
+            subjectLength(hits) != length(subject))
+            stop("'hits' is not compatible with 'query' and 'subject' ",
+                 "('queryLength(hits)' and 'subjectLength(hits)' don't ",
+                 "match the lengths of 'query' and 'subject')")
+        query_seqnames <- query_seqnames[queryHits(hits)]
+        query_strand <- query_strand[queryHits(hits)]
+        subject_seqnames <- subject_seqnames[subjectHits(hits)]
+        subject_strand <- subject_strand[subjectHits(hits)]
+    }
+
+    ## Should never happen if 'encodeOverlaps(query, subject, hits)'
+    ## was called with 'hits' being the result of a call to
+    ## 'findOverlaps(query, subject)'.
+    if (!all(query_seqnames == subject_seqnames))
+        stop("cannot use 'flip.query.if.wrong.strand=TRUE' to ",
+             "encode overlaps across chromosomes")
+
+    query_strand != subject_strand
 }
 
 
@@ -87,7 +121,6 @@ flipQuery <- function(x, i)
 {
         ans <- as.integer(seqnames(x))
         x_strand <- as.integer(strand(x))
-        ans <- ans * 3L + x_strand
         is_minus <- which(x_strand == as.integer(strand("-")))
         ans[is_minus] <- - ans[is_minus]
         ans
@@ -104,65 +137,33 @@ flipQuery <- function(x, i)
 ### "encodeOverlaps" methods.
 ###
 
-.isWrongStrand <- function(query, subject)
-{
-    if (!is(query, "GRangesList") || !is(subject, "GRangesList"))
-        stop("'query' and 'subject' must be GRangesList objects")
-
-    ## Checking the query and subject seqnames.
-    errmsg <- c("some alignments in 'query' have ranges on ",
-                "more than 1 reference sequence (fusion reads?)")
-    query_seqnames <- .groupSeqnames(query, errmsg)
-    errmsg <- c("some transcripts in 'subject' mix exons from ",
-                "different chromosomes (trans-splicing?)")
-    subject_seqnames <- .groupSeqnames(subject, errmsg)
-    ## Should never happen if 'encodeOverlaps(query, subject, hits)'
-    ## was called with 'hits' being the result of a call to
-    ## 'findOverlaps(query, subject)'.
-    if (!all(query_seqnames == subject_seqnames))
-        stop("cannot use 'flip.query.if.wrong.strand=TRUE' to ",
-             "encode overlaps across chromosomes")
-
-    ## Checking the query and subject strand.
-    errmsg <- c("some alignments in 'query' have ranges on ",
-                "both strands")
-    query_strand <- .groupStrand(query, errmsg)
-    errmsg <- c("some transcripts in 'subject' mix exons from ",
-                "both strands (trans-splicing?)")
-    subject_strand <- .groupStrand(subject, errmsg)
-
-    query_strand != subject_strand
-}
-
-.GRangesList_encodeOverlaps <- function(query, subject,
-                                        flip.query.if.wrong.strand=FALSE)
+.GRangesList_encodeOverlaps <- function(query, subject, hits,
+                                        flip.query.if.wrong.strand)
 {
     if (!isTRUEorFALSE(flip.query.if.wrong.strand))
         stop("'flip.query.if.wrong.strand' must be TRUE or FALSE")
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
     seqlevels(query) <- seqlevels(subject) <- seqlevels(seqinfo)
     if (flip.query.if.wrong.strand) {
-        is_wrong_strand <- .isWrongStrand(query, subject)
-        query <- flipQuery(query, is_wrong_strand)
+        flip.query <- .isWrongStrand(query, subject, hits)
+    } else {
+        flip.query <- NULL
     }
     query.breaks <- elementMetadata(query)$query.break
-    ans <- RangesList_encodeOverlaps(
-                           as.list(start(query)),
-                           as.list(width(query)),
-                           as.list(start(subject)),
-                           as.list(width(subject)),
-                           query.spaces=.get_GRangesList_spaces(query),
-                           subject.spaces=.get_GRangesList_spaces(subject),
-                           query.breaks=query.breaks)
-    if (flip.query.if.wrong.strand)
-        ans@flippedQuery <- is_wrong_strand
-    ans
+    RangesList_encodeOverlaps(as.list(start(query)),
+                              as.list(width(query)),
+                              as.list(start(subject)),
+                              as.list(width(subject)),
+                              hits, flip.query,
+                              query.spaces=.get_GRangesList_spaces(query),
+                              subject.spaces=.get_GRangesList_spaces(subject),
+                              query.breaks=query.breaks)
 }
 
-setMethod("encodeOverlaps", c("GRangesList", "GRangesList", "missing"),
+setMethod("encodeOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, hits=NULL, flip.query.if.wrong.strand=FALSE)
-        .GRangesList_encodeOverlaps(query, subject,
-                flip.query.if.wrong.strand=flip.query.if.wrong.strand)
+        .GRangesList_encodeOverlaps(query, subject, hits,
+                                    flip.query.if.wrong.strand)
 )
 
 

@@ -3,7 +3,7 @@
 
 \alias{flipQuery}
 
-\alias{encodeOverlaps,GRangesList,GRangesList,missing-method}
+\alias{encodeOverlaps,GRangesList,GRangesList-method}
 
 \alias{selectEncodingWithCompatibleStrand}
 
