@@ -334,7 +334,7 @@ aligner. In Bioconductor, the full genome sequence for the dm3 assembly
 is stored in the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package
 \footnote{See \url{http://bioconductor.org/packages/release/data/annotation/}
 for the full list of annotation packages available in the current release
-of Bioconductor}:
+of Bioconductor.}:
 
 <<Dmelanogaster>>=
 library(BSgenome.Dmelanogaster.UCSC.dm3)
@@ -569,12 +569,12 @@ UCSC Genome Browser\footnote{\url{http://genome.ucsc.edu/cgi-bin/hgGateway}}.
 The Bioconductor project however provides a few annotation packages
 containing \Rclass{TranscriptDb} objects for the most commonly studied
 organisms (those data packages are sometimes called the {\it TxDb} packages).
-One of them is the \Rpackage{TxDb.Dmelanogaster.UCSC.dm3.ensGene} package.
+One of them is the \Rpackage{TxDb.Dmelanogaster.\-UCSC.\-dm3.ensGene} package.
 It contains a \Rclass{TranscriptDb} object that was made by pointing
 the \Rfunction{makeTranscriptDbFromUCSC} function to the dm3 genome
 and {\it Ensembl Genes} track \footnote{See
 \url{http://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=276880911&g=ensGene}
-for a description of this track}. We can use it here:
+for a description of this track.}. We can use it here:
 
 <<txdb>>=
 library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
@@ -594,9 +594,9 @@ length(exbytx)  # nb of transcripts
 
 We check that all the exons in any given transcript belong to the same
 chromosome and strand. Knowing that our set of transcripts is free of
-this sort of trans-splicing events will allow us some significant
+this sort of trans-splicing events typically allows some significant
 simplifications during the downstream analysis \footnote{Dealing with
-trans-splicing events is not covered in this document}.
+trans-splicing events is not covered in this document.}.
 A quick and easy way to check this is to take advantage of the fact
 that \Rcode{seqnames} and \Rcode{strand} return \Rclass{RleList} objects.
 So we can extract the number of Rle runs for each transcript and make
