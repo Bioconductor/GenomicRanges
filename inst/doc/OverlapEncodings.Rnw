@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Overlap encodings}
-%\VignetteDepends{pasillaBamSubset, GenomicRanges, Rsamtools, GenomicFeatures, BSgenome.Dmelanogaster.UCSC.dm3}
+%\VignetteDepends{pasillaBamSubset, GenomicRanges, Rsamtools, GenomicFeatures, BSgenome.Dmelanogaster.UCSC.dm3, TxDb.Dmelanogaster.UCSC.dm3.ensGene}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 \documentclass[10pt]{article}
@@ -331,7 +331,10 @@ The {\it reference query sequences} can easily be computed by extracting
 the nucleotides mapped to each read from the reference genome. This of
 course requires that we have access to the reference genome used by the
 aligner. In Bioconductor, the full genome sequence for the dm3 assembly
-is stored in the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package:
+is stored in the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} data package
+\footnote{See \url{http://bioconductor.org/packages/release/data/annotation/}
+for the full list of annotation packages available in the current release
+of Bioconductor}:
 
 <<Dmelanogaster>>=
 library(BSgenome.Dmelanogaster.UCSC.dm3)
@@ -554,29 +557,44 @@ happening downstream of the BAM file.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Load the transcripts from a \Rclass{TranscriptDb} object}
 
-Before we can compute overlaps between reads and transcripts, we need to
-retrieve the dm3 transcripts and their exons from UCSC, and then extract
-the exons grouped by transcript in a \Rclass{GRangesList} object.
-IMPORTANT: The reference genome of the transcripts must be {\bf exactly}
-the same as the reference genome used to align the reads (note that this
-is a general rule, not only when working with {\it overlap encodings}).
+In order to compute overlaps between reads and transcripts, we need access
+to the genomic positions of a set of known transcripts and their exons.
+It is essential that the reference genome of this set of transcripts and exons
+be {\bf exactly} the same as the reference genome used to align the reads.
 
-We use the \Rfunction{makeTranscriptDbFromUCSC} function defined in the
-\Rpackage{GenomicFeatures} package to retrieve the dm3 transcripts and
-their exons from UCSC:
+We could use the \Rfunction{makeTranscriptDbFromUCSC} function defined in
+the \Rpackage{GenomicFeatures} package to make a \Rclass{TranscriptDb}
+object containing the dm3 transcripts and their exons retrieved from the
+UCSC Genome Browser\footnote{\url{http://genome.ucsc.edu/cgi-bin/hgGateway}}.
+The Bioconductor project however provides a few annotation packages
+containing \Rclass{TranscriptDb} objects for the most commonly studied
+organisms (those data packages are sometimes called the {\it TxDb} packages).
+One of them is the \Rpackage{TxDb.Dmelanogaster.UCSC.dm3.ensGene} package.
+It contains a \Rclass{TranscriptDb} object that was made by pointing
+the \Rfunction{makeTranscriptDbFromUCSC} function to the dm3 genome
+and {\it Ensembl Genes} track \footnote{See
+\url{http://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=276880911&g=ensGene}
+for a description of this track}. We can use it here:
 
-<<dm3tx>>=
-dm3_ensGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="ensGene")
-dm3tx <- exonsBy(dm3_ensGene_txdb, by="tx", use.names=TRUE)
-length(dm3tx)  # nb of transcripts
+<<txdb>>=
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+TxDb.Dmelanogaster.UCSC.dm3.ensGene
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
 @
-<<CHECK_dm3tx, echo=FALSE, results=hide>>=
-.checkIdenticalToPrecomputed(dm3tx, "dm3tx", ignore.metadata=TRUE)
+
+We extract the exons grouped by transcript in a \Rclass{GRangesList} object:
+
+<<exbytx>>=
+exbytx <- exonsBy(txdb, by="tx", use.names=TRUE)
+length(exbytx)  # nb of transcripts
+@
+<<CHECK_exbytx, echo=FALSE, results=hide>>=
+.checkIdenticalToPrecomputed(exbytx, "exbytx", ignore.metadata=TRUE)
 @
 
 We check that all the exons in any given transcript belong to the same
 chromosome and strand. Knowing that our set of transcripts is free of
-this kind of trans-splicing events will allow us some significant
+this sort of trans-splicing events will allow us some significant
 simplifications during the downstream analysis \footnote{Dealing with
 trans-splicing events is not covered in this document}.
 A quick and easy way to check this is to take advantage of the fact
@@ -584,33 +602,33 @@ that \Rcode{seqnames} and \Rcode{strand} return \Rclass{RleList} objects.
 So we can extract the number of Rle runs for each transcript and make
 sure it's always 1:
 
-<<check-for-trans-splicing-in-dm3tx>>=
-table(elementLengths(runLength(seqnames(dm3tx))))
-table(elementLengths(runLength(strand(dm3tx))))
+<<check-for-trans-splicing-in-exbytx>>=
+table(elementLengths(runLength(seqnames(exbytx))))
+table(elementLengths(runLength(strand(exbytx))))
 @
 
 Therefore the strand of any given transcript is unambiguously defined
 and can be extracted with:
 
-<<dm3tx_strand>>=
-dm3tx_strand <- unlist(runValue(strand(dm3tx)), use.names=FALSE)
+<<exbytx_strand>>=
+exbytx_strand <- unlist(runValue(strand(exbytx)), use.names=FALSE)
 @
 
 We will also need the mapping between the transcripts and their gene.
 We start by using \Rfunction{transcripts} to extract this information
-from our \Rclass{TranscriptDb} object \Rcode{dm3\_ensGene\_txdb}, and
+from our \Rclass{TranscriptDb} object \Rcode{txdb}, and
 then we construct a named factor that represents the mapping:
 
-<<dm3tx2gene>>=
-tx <- transcripts(dm3_ensGene_txdb, columns=c("tx_name", "gene_id"))
+<<exbytx2gene>>=
+tx <- transcripts(txdb, columns=c("tx_name", "gene_id"))
 head(tx)
 df <- elementMetadata(tx)
-dm3tx2gene <- as.character(df$gene_id)
-dm3tx2gene <- factor(dm3tx2gene, levels=unique(dm3tx2gene))
-names(dm3tx2gene) <- df$tx_name
-dm3tx2gene <- dm3tx2gene[names(dm3tx)]
-head(dm3tx2gene)
-nlevels(dm3tx2gene)  # nb of genes
+exbytx2gene <- as.character(df$gene_id)
+exbytx2gene <- factor(exbytx2gene, levels=unique(exbytx2gene))
+names(exbytx2gene) <- df$tx_name
+exbytx2gene <- exbytx2gene[names(exbytx)]
+head(exbytx2gene)
+nlevels(exbytx2gene)  # nb of genes
 @
 
 
@@ -624,7 +642,7 @@ function. Note that the strand of the queries produced by the RNA-seq
 experiment is typically unknown so we use \Rcode{ignore.strand=TRUE}:
 
 <<U1ov00>>=
-U1ov00 <- findOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
+U1ov00 <- findOverlaps(U1gal, exbytx, ignore.strand=TRUE)
 @
 
 \Rcode{U1ov00} is a \Rclass{Hits} object that contains 1 element per
@@ -657,13 +675,13 @@ mean(U1gal_ntx >= 1)
 @
 
 76\% of the alignments in \Rcode{U1gal} have an overlap with
-at least 1 transcript in \Rcode{dm3tx}.
+at least 1 transcript in \Rcode{exbytx}.
 
 Note that \Rfunction{countOverlaps} can be used directly on \Rcode{U1gal}
-and \Rcode{dm3tx} for computing \Rcode{U1gal\_ntx}:
+and \Rcode{exbytx} for computing \Rcode{U1gal\_ntx}:
 
 <<U1gal_ntx_again, eval=FALSE>>=
-U1gal_ntx_again <- countOverlaps(U1gal, dm3tx, ignore.strand=TRUE)
+U1gal_ntx_again <- countOverlaps(U1gal, exbytx, ignore.strand=TRUE)
 stopifnot(identical(unname(U1gal_ntx_again), U1gal_ntx))
 @
 
@@ -680,23 +698,23 @@ mean(U1uqnames_ntx >= 1)
 @
 
 78.4\% of the reads have an overlap with
-at least 1 transcript in \Rcode{dm3tx}.
+at least 1 transcript in \Rcode{exbytx}.
 
 Number of reads for each transcript:
 
-<<dm3tx_nU1ov10>>=
-dm3tx_nU1ov10 <- nhitPerSubject(U1ov10)
-names(dm3tx_nU1ov10) <- names(dm3tx)
-mean(dm3tx_nU1ov10 >= 50)
+<<exbytx_nU1ov10>>=
+exbytx_nU1ov10 <- nhitPerSubject(U1ov10)
+names(exbytx_nU1ov10) <- names(exbytx)
+mean(exbytx_nU1ov10 >= 50)
 @
 
-Only 0.869\% of the transcripts in \Rcode{dm3tx} have an overlap with
+Only 0.869\% of the transcripts in \Rcode{exbytx} have an overlap with
 at least 50 reads.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_nU1ov10>>=
-head(sort(dm3tx_nU1ov10, decreasing=TRUE), n=10) 
+<<top-10-transcripts-based-on-exbytx_nU1ov10>>=
+head(sort(exbytx_nU1ov10, decreasing=TRUE), n=10) 
 @
 
 
@@ -709,7 +727,7 @@ Like with our single-end overlaps, we call \Rfunction{findOverlaps} with
 \Rcode{ignore.strand=TRUE}:
 
 <<U3ov00>>=
-U3ov00 <- findOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
+U3ov00 <- findOverlaps(U3galp, exbytx, ignore.strand=TRUE)
 @
 
 Like \Rcode{U1ov00}, \Rcode{U3ov00} is a \Rclass{Hits} object. Its length gives
@@ -732,13 +750,13 @@ mean(U3galp_ntx >= 1)
 @
 
 71\% of the alignment pairs in \Rcode{U3galp} have an overlap
-with at least 1 transcript in \Rcode{dm3tx}.
+with at least 1 transcript in \Rcode{exbytx}.
 
 Note that \Rfunction{countOverlaps} can be used directly on \Rcode{U3galp}
-and \Rcode{dm3tx} for computing \Rcode{U3galp\_ntx}:
+and \Rcode{exbytx} for computing \Rcode{U3galp\_ntx}:
 
 <<U3galp_ntx_again, eval=FALSE>>=
-U3galp_ntx_again <- countOverlaps(U3galp, dm3tx, ignore.strand=TRUE)
+U3galp_ntx_again <- countOverlaps(U3galp, exbytx, ignore.strand=TRUE)
 stopifnot(identical(unname(U3galp_ntx_again), U3galp_ntx))
 @
 
@@ -755,23 +773,23 @@ mean(U3uqnames_ntx >= 1)
 @
 
 72.3\% of the templates have an overlap with at least 1 transcript in
-\Rcode{dm3tx}.
+\Rcode{exbytx}.
 
 Number of templates for each transcript:
 
-<<dm3tx_nU3ov10>>=
-dm3tx_nU3ov10 <- nhitPerSubject(U3ov10)
-names(dm3tx_nU3ov10) <- names(dm3tx)
-mean(dm3tx_nU3ov10 >= 50)
+<<exbytx_nU3ov10>>=
+exbytx_nU3ov10 <- nhitPerSubject(U3ov10)
+names(exbytx_nU3ov10) <- names(exbytx)
+mean(exbytx_nU3ov10 >= 50)
 @
 
-Only 0.756\% of the transcripts in \Rcode{dm3tx} have an overlap with
+Only 0.756\% of the transcripts in \Rcode{exbytx} have an overlap with
 at least 50 templates.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_nU3ov10>>=
-head(sort(dm3tx_nU3ov10, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-exbytx_nU3ov10>>=
+head(sort(exbytx_nU3ov10, decreasing=TRUE), n=10)
 @
 
 
@@ -800,8 +818,8 @@ U1grlf <- flipQuery(U1grl)  # flipped
 and encode their overlaps with the transcripts:
 
 <<U1ovencAB>>=
-U1ovencA <- encodeOverlaps(U1grl, dm3tx, hits=U1ov00)
-U1ovencB <- encodeOverlaps(U1grlf, dm3tx, hits=U1ov00)
+U1ovencA <- encodeOverlaps(U1grl, exbytx, hits=U1ov00)
+U1ovencB <- encodeOverlaps(U1grlf, exbytx, hits=U1ov00)
 @
 
 \Rcode{U1ovencA} and \Rcode{U1ovencB} are 2 \Rclass{OverlapsEncodings}
@@ -819,7 +837,7 @@ strand:
 <<U1ovenc>>=
 U1grl_strand <- unlist(runValue(strand(U1grl)), use.names=FALSE)
 U1ovenc <- selectEncodingWithCompatibleStrand(U1ovencA, U1ovencB,
-                                              U1grl_strand, dm3tx_strand,
+                                              U1grl_strand, exbytx_strand,
                                               hits=U1ov00)
 U1ovenc
 @
@@ -829,7 +847,7 @@ step can be replaced by a single call to \Rfunction{encodeOverlaps} on
 \Rcode{U1grl} (or \Rcode{U1grlf}) with \Rcode{flip.query.if.wrong.strand=TRUE}:
 
 <<U1ovenc_again>>=
-U1ovenc_again <- encodeOverlaps(U1grl, dm3tx, hits=U1ov00, flip.query.if.wrong.strand=TRUE)
+U1ovenc_again <- encodeOverlaps(U1grl, exbytx, hits=U1ov00, flip.query.if.wrong.strand=TRUE)
 stopifnot(identical(U1ovenc_again, U1ovenc))
 @
 
@@ -855,7 +873,7 @@ Let's encode the overlaps in \Rcode{U3ov00}:
 
 <<U3ovenc>>=
 U3grl <- grglist(U3galp, order.as.in.query=TRUE)
-U3ovenc <- encodeOverlaps(U3grl, dm3tx, hits=U3ov00, flip.query.if.wrong.strand=TRUE)
+U3ovenc <- encodeOverlaps(U3grl, exbytx, hits=U3ov00, flip.query.if.wrong.strand=TRUE)
 U3ovenc
 @
 
@@ -967,7 +985,7 @@ a \Rclass{GappedAlignments} object (containing reads) and a
 \Rclass{GRangesList} object (containing transcripts):
 
 <<U1compov00_again, eval=FALSE>>=
-U1compov00_again <- findCompatibleOverlaps(U1gal, dm3tx)
+U1compov00_again <- findCompatibleOverlaps(U1gal, exbytx)
 stopifnot(identical(U1compov00_again, U1compov00))
 @
 
@@ -984,14 +1002,14 @@ mean(U1gal_ncomptx >= 1)
 @
 
 73.8\% of the alignments in \Rcode{U1gal} are ``compatible''
-with at least 1 transcript in \Rcode{dm3tx}.
+with at least 1 transcript in \Rcode{exbytx}.
 
 Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
-can be used directly on \Rcode{U1gal} and \Rcode{dm3tx} for computing
+can be used directly on \Rcode{U1gal} and \Rcode{exbytx} for computing
 \Rcode{U1gal\_ncomptx}:
 
 <<U1gal_ncomptx_again, eval=FALSE>>=
-U1gal_ncomptx_again <- countCompatibleOverlaps(U1gal, dm3tx)
+U1gal_ncomptx_again <- countCompatibleOverlaps(U1gal, exbytx)
 stopifnot(identical(U1gal_ncomptx_again, U1gal_ncomptx))
 @
 
@@ -1006,23 +1024,23 @@ mean(U1uqnames_ncomptx >= 1)
 @
 
 76.5\% of the reads are ``compatible'' with at least 1 transcript in
-\Rcode{dm3tx}.
+\Rcode{exbytx}.
 
 Number of ``compatible'' reads for each transcript:
 
-<<dm3tx_nU1compov10>>=
-dm3tx_nU1compov10 <- nhitPerSubject(U1compov10)
-names(dm3tx_nU1compov10) <- names(dm3tx)
-mean(dm3tx_nU1compov10 >= 50)
+<<exbytx_nU1compov10>>=
+exbytx_nU1compov10 <- nhitPerSubject(U1compov10)
+names(exbytx_nU1compov10) <- names(exbytx)
+mean(exbytx_nU1compov10 >= 50)
 @
 
-Only 0.860\% of the transcripts in \Rcode{dm3tx} are ``compatible''
+Only 0.860\% of the transcripts in \Rcode{exbytx} are ``compatible''
 with at least 50 reads.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_nU1compov10>>=
-head(sort(dm3tx_nU1compov10, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-exbytx_nU1compov10>>=
+head(sort(exbytx_nU1compov10, decreasing=TRUE), n=10)
 @
 
 Note that this ``top 10'' is slightly different from the ``top 10'' we
@@ -1097,7 +1115,7 @@ object (containing paired-end reads) and a \Rclass{GRangesList} object
 (containing transcripts):
 
 <<U3compov00_again, eval=FALSE>>=
-U3compov00_again <- findCompatibleOverlaps(U3galp, dm3tx)
+U3compov00_again <- findCompatibleOverlaps(U3galp, exbytx)
 stopifnot(identical(U3compov00_again, U3compov00))
 @
 
@@ -1115,14 +1133,14 @@ mean(U3galp_ncomptx >= 1)
 @
 
 68.9\% of the alignment pairs in \Rcode{U3galp} are ``compatible''
-with at least 1 transcript in \Rcode{dm3tx}.
+with at least 1 transcript in \Rcode{exbytx}.
 
 Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
-can be used directly on \Rcode{U3galp} and \Rcode{dm3tx} for computing
+can be used directly on \Rcode{U3galp} and \Rcode{exbytx} for computing
 \Rcode{U3galp\_ncomptx}:
 
 <<U3galp_ncomptx_again, eval=FALSE>>=
-U3galp_ncomptx_again <- countCompatibleOverlaps(U3galp, dm3tx)
+U3galp_ncomptx_again <- countCompatibleOverlaps(U3galp, exbytx)
 stopifnot(identical(U3galp_ncomptx_again, U3galp_ncomptx))
 @
 
@@ -1137,23 +1155,23 @@ mean(U3uqnames_ncomptx >= 1)
 @
 
 70.1\% of the templates are ``compatible'' with at least 1 transcript in
-\Rcode{dm3tx}.
+\Rcode{exbytx}.
 
 Number of ``compatible'' templates for each transcript:
 
-<<dm3tx_nU3compov10>>=
-dm3tx_nU3compov10 <- nhitPerSubject(U3compov10)
-names(dm3tx_nU3compov10) <- names(dm3tx)
-mean(dm3tx_nU3compov10 >= 50)
+<<exbytx_nU3compov10>>=
+exbytx_nU3compov10 <- nhitPerSubject(U3compov10)
+names(exbytx_nU3compov10) <- names(exbytx)
+mean(exbytx_nU3compov10 >= 50)
 @
 
-Only 0.752\% of the transcripts in \Rcode{dm3tx} are ``compatible'' with at
+Only 0.752\% of the transcripts in \Rcode{exbytx} are ``compatible'' with at
 least 50 templates.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_nU3compov10>>=
-head(sort(dm3tx_nU3compov10, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-exbytx_nU3compov10>>=
+head(sort(exbytx_nU3compov10, decreasing=TRUE), n=10)
 @
 
 Note that this ``top 10'' is slightly different from the ``top 10'' we
@@ -1175,7 +1193,7 @@ The \Rfunction{extractQueryStartInTranscript} function computes for each
 overlap the position of the {\it query start} in the transcript:
 
 <<U1ov00_qstart>>=
-U1ov00_qstart <- extractQueryStartInTranscript(U1grl, dm3tx,
+U1ov00_qstart <- extractQueryStartInTranscript(U1grl, exbytx,
                                                hits=U1ov00, ovenc=U1ovenc)
 head(subset(U1ov00_qstart, U1ov00_is_comp))
 @
@@ -1202,17 +1220,17 @@ Let's start by using the \Rfunction{extractTranscriptsFromGenome}
 to extract the transcript sequences (aka transcriptome) from the dm3
 reference genome:
 
-<<dm3tx_seq>>=
-dm3tx_seq <- extractTranscriptsFromGenome(Dmelanogaster, dm3tx)
+<<txseq>>=
+txseq <- extractTranscriptsFromGenome(Dmelanogaster, exbytx)
 @
 
 For each ``compatible'' overlap, the read sequence in \Rcode{U1gal\_rqseq} must
-be an {\it exact} substring of the transcript sequence in \Rcode{dm3tx\_seq}:
+be an {\it exact} substring of the transcript sequence in \Rcode{exbytx\_seq}:
 
 <<U1ov00_rqseq-vs-U1ov00_txseq>>=
 U1ov00_rqseq <- U1gal_rqseq[queryHits(U1ov00)]
 U1ov00_rqseq[flippedQuery(U1ovenc)] <- reverseComplement(U1ov00_rqseq[flippedQuery(U1ovenc)])
-U1ov00_txseq <- dm3tx_seq[subjectHits(U1ov00)]
+U1ov00_txseq <- txseq[subjectHits(U1ov00)]
 stopifnot(all(
     U1ov00_rqseq[U1ov00_is_comp] ==
         narrow(U1ov00_txseq[U1ov00_is_comp],
@@ -1235,8 +1253,8 @@ the transcript of a ``compatible'' overlap.
 For a paired-end read, the {\it query start} is the start of its ``left end''.
 
 <<U3ov00_Lqstart>>=
-U3ov00_Lqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
-                                              hits=U3ov00, ovenc=U3ovenc)
+U3ov00_Lqstart <- extractQueryStartInTranscript(U3grl, exbytx,
+                                                hits=U3ov00, ovenc=U3ovenc)
 head(subset(U3ov00_Lqstart, U3ov00_is_comp))
 @
 
@@ -1245,8 +1263,8 @@ Note that \Rfunction{extractQueryStartInTranscript} can be called with
 ends'' of the reads:
 
 <<U3ov00_Rqstart>>=
-U3ov00_Rqstart <- extractQueryStartInTranscript(U3grl, dm3tx,
-                                              hits=U3ov00, ovenc=U3ovenc,
+U3ov00_Rqstart <- extractQueryStartInTranscript(U3grl, exbytx,
+                                                hits=U3ov00, ovenc=U3ovenc,
                                               for.query.right.end=TRUE)
 head(subset(U3ov00_Rqstart, U3ov00_is_comp))
 @
@@ -1280,7 +1298,7 @@ U3ov00_Rrqseq[flip_idx] <- reverseComplement(tmp)
 Let's assign the transcript sequence to each overlap:
 
 <<U3ov00_txseq>>=
-U3ov00_txseq <- dm3tx_seq[subjectHits(U3ov00)]
+U3ov00_txseq <- txseq[subjectHits(U3ov00)]
 @
 
 For each ``compatible'' overlap, we expect the ``left and right reference
@@ -1341,7 +1359,7 @@ clear).
 \subsubsection{Find the ``hits''}
 
 The single-end reads are in \Rcode{U1oqseq}, the transcriptome is in
-\Rcode{dm3tx\_seq}.
+\Rcode{exbytx\_seq}.
 
 Since indels were not allowed/supported during the alignment of the reads to
 the reference genome, we don't need to allow/support them either for aligning
@@ -1351,7 +1369,7 @@ track of the details of the alignments between the reads and the transcripts.
 Finally, since BAM file {\tt untreated1\_chr4.bam} is not the full output of
 the aligner but the subset obtained by keeping only the alignments located
 on chr4, we don't need to align \Rcode{U1oqseq} to the full transcriptome,
-but only to the subset of \Rcode{dm3tx\_seq} made of the transcripts located
+but only to the subset of \Rcode{exbytx\_seq} made of the transcripts located
 on chr4.
 
 With those simplifications in mind, we write the following function that we
@@ -1435,14 +1453,14 @@ findSequenceHits <- function(qseq, txseq, which.txseq=NULL, max.mismatch=0)
 }
 @
 
-Let's compute the index of the transcripts in \Rcode{dm3tx\_seq} located on
+Let's compute the index of the transcripts in \Rcode{exbytx\_seq} located on
 chr4 (\Rfunction{findSequenceHits} will restrict the search to those
 transcripts):
 
 <<which.txseq, eval=FALSE>>=
-dm3chr4tx <- transcripts(dm3_ensGene_txdb, vals=list(tx_chrom="chr4"))
-dm3chr4txnames <- elementMetadata(dm3chr4tx)$tx_name
-which.txseq <- match(dm3chr4txnames, names(dm3tx_seq))
+chr4tx <- transcripts(txdb, vals=list(tx_chrom="chr4"))
+chr4txnames <- elementMetadata(chr4tx)$tx_name
+which.txseq <- match(chr4txnames, names(txseq))
 @
 
 We know that the aligner tolerated up to 6 mismatches per read.
@@ -1452,10 +1470,10 @@ and finally merge all the ``hits'' (note that the 3 commands take about
 1 hour to complete on a modern laptop):
 
 <<U1sbcomphits, eval=FALSE>>=
-U1sbcomphitsA <- findSequenceHits(U1oqseq, dm3tx_seq,
-                                    which.txseq=which.txseq, max.mismatch=6)
-U1sbcomphitsB <- findSequenceHits(reverseComplement(U1oqseq), dm3tx_seq,
-                                    which.txseq=which.txseq, max.mismatch=6)
+U1sbcomphitsA <- findSequenceHits(U1oqseq, txseq,
+                                  which.txseq=which.txseq, max.mismatch=6)
+U1sbcomphitsB <- findSequenceHits(reverseComplement(U1oqseq), txseq,
+                                  which.txseq=which.txseq, max.mismatch=6)
 U1sbcomphits <- union(U1sbcomphitsA, U1sbcomphitsB)
 @
 <<LOAD_U1sbcomphits, echo=FALSE, results=hide>>=
@@ -1476,23 +1494,23 @@ mean(U1uqnames_nsbcomptx >= 1)
 @
 
 77.7\% of the reads are ``string-based compatible'' with at least 1
-transcript in \Rcode{dm3tx}.
+transcript in \Rcode{exbytx}.
 
 Number of ``string-based compatible'' reads for each transcript:
 
-<<dm3tx_nU1sbcomphits>>=
-dm3tx_nU1sbcomphits <- nhitPerSubject(U1sbcomphits)
-names(dm3tx_nU1sbcomphits) <- names(dm3tx)
-mean(dm3tx_nU1sbcomphits >= 50)
+<<exbytx_nU1sbcomphits>>=
+exbytx_nU1sbcomphits <- nhitPerSubject(U1sbcomphits)
+names(exbytx_nU1sbcomphits) <- names(exbytx)
+mean(exbytx_nU1sbcomphits >= 50)
 @
 
-Only 0.865\% of the transcripts in \Rcode{dm3tx} are ``string-based
+Only 0.865\% of the transcripts in \Rcode{exbytx} are ``string-based
 compatible'' with at least 50 reads.
 
 Top 10 transcripts:
 
-<<top-10-transcripts-based-on-dm3tx_nU1sbcomphits>>=
-head(sort(dm3tx_nU1sbcomphits, decreasing=TRUE), n=10)
+<<top-10-transcripts-based-on-exbytx_nU1sbcomphits>>=
+head(sort(exbytx_nU1sbcomphits, decreasing=TRUE), n=10)
 @
 
 \subsubsection{A closer look at the ``hits''}
@@ -1503,7 +1521,7 @@ Any ``encoding-based compatible'' overlap is of course ``string-based
 compatible'':
 
 <<encoding-based-compatible-implies-string-based-compatible>>=
-length(setdiff(U1compov10, U1sbcomphits))
+stopifnot(length(setdiff(U1compov10, U1sbcomphits)) == 0)
 @
 
 but the reverse is not true:
@@ -1518,7 +1536,7 @@ length(setdiff(U1sbcomphits, U1compov10))
 %read SRR031728.4692406 and transcript 18924:
 %
 %<<>>=
-%matchPattern(U1oqseq[[6306]], dm3tx_seq[[18924]])
+%matchPattern(U1oqseq[[6306]], txseq[[18924]])
 %U1gal_idx <- which(U1gal_qnames == "SRR031728.4692406")
 %U1gal[U1gal_idx]
 %U1gal_idx %in% queryHits(U1ov00)
@@ -1610,18 +1628,18 @@ mean(U1gal_nacomptx >= 1)
 @
 
 Only 0.22\% of the alignments in \Rcode{U1gal} are ``almost compatible''
-with at least 1 transcript in \Rcode{dm3tx}.
+with at least 1 transcript in \Rcode{exbytx}.
 
-Number of ``almost compatible'' overlaps for each transcript in \Rcode{dm3tx}:
+Number of ``almost compatible'' overlaps for each transcript in \Rcode{exbytx}:
 
-<<dm3tx_nU1acompov00>>=
-dm3tx_nU1acompov00 <- nhitPerSubject(U1acompov00)
-names(dm3tx_nU1acompov00) <- names(dm3tx)
-table(dm3tx_nU1acompov00)
-mean(dm3tx_nU1acompov00 >= 50)
+<<exbytx_nU1acompov00>>=
+exbytx_nU1acompov00 <- nhitPerSubject(U1acompov00)
+names(exbytx_nU1acompov00) <- names(exbytx)
+table(exbytx_nU1acompov00)
+mean(exbytx_nU1acompov00 >= 50)
 @
 
-Only 0.0087\% of the transcripts in \Rcode{dm3tx} are ``almost compatible''
+Only 0.0087\% of the transcripts in \Rcode{exbytx} are ``almost compatible''
 with at least 50 alignments in \Rcode{U1gal}.
 
 Finally note that the ``query start in transcript'' values returned by
@@ -1688,7 +1706,7 @@ Finally, we split \Rcode{skpexrk} by transcript TxDb internal id:
 
 <<tx2skpexrk>>=
 names(skpexrk) <- queryHits(U1ov00)[is_nov_splice_jct]
-f <- names(dm3tx)[subjectHits(U1ov00)[is_nov_splice_jct]]
+f <- names(exbytx)[subjectHits(U1ov00)[is_nov_splice_jct]]
 tx2skpexrk <- split(skpexrk, f)
 @
 

@@ -172,20 +172,19 @@ gal <- readGappedAlignments(sm_treated1, use.names=TRUE, param=param0)
 ## Load the transcripts (IMPORTANT: Like always, the reference genome
 ## of the transcripts must be *exactly* the same as the reference
 ## genome used to align the reads):
-library(GenomicFeatures)
-dm3_ensGene_txdb <- makeTranscriptDbFromUCSC(genome="dm3", tablename="ensGene")
-dm3tx <- exonsBy(dm3_ensGene_txdb, by="tx", use.names=TRUE)
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+exbytx <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, by="tx", use.names=TRUE)
 
 ## Number of "compatible" transcripts per alignment in 'gal':
-gal_ncomptx <- countCompatibleOverlaps(gal, dm3tx)
+gal_ncomptx <- countCompatibleOverlaps(gal, exbytx)
 elementMetadata(gal)$ncomptx <- gal_ncomptx
 table(gal_ncomptx)
 mean(gal_ncomptx >= 1)
 ## --> 33% of the alignments in 'gal' are "compatible" with at least
-## 1 transcript in 'dm3tx'.
+## 1 transcript in 'exbytx'.
 
 ## Keep only alignments compatible with at least 1 transcript in
-## 'dm3tx':
+## 'exbytx':
 compgal <- gal[gal_ncomptx >= 1]
 head(compgal)
 }
