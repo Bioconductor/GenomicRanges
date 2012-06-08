@@ -98,8 +98,8 @@ countCompatibleOverlaps(query, subject)
   }
   \item{hits}{
     A \link[IRanges]{Hits} object.
-    See \code{?`\link[IRanges]{encodeOverlaps,ANY,ANY,Hits-method}`} for
-    a description of how a supplied \link[IRanges]{Hits} object is handled.
+    See \code{?`\link[IRanges]{encodeOverlaps}`} for a description of
+    how a supplied \link[IRanges]{Hits} object is handled.
   }
   \item{flip.query.if.wrong.strand}{
     See the "Overlap encodings" vignette in the GenomicRanges package.
