@@ -47,7 +47,7 @@
 }
 
 \usage{
-\S4method{encodeOverlaps}{GRangesList,GRangesList,missing}(query, subject, hits=NULL,
+\S4method{encodeOverlaps}{GRangesList,GRangesList}(query, subject, hits=NULL,
                flip.query.if.wrong.strand=FALSE)
 
 ## Low-level utils:
