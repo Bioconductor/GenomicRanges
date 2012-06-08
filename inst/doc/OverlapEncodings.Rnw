@@ -854,7 +854,7 @@ stopifnot(identical(U1ovenc_again, U1ovenc))
 Unique encodings in \Rcode{U1ovenc}:
 
 <<U1ovenc_table>>=
-U1_unique_encodings <- levels(encoding(U1ovenc))
+U1_unique_encodings <- levels(U1ovenc)
 length(U1_unique_encodings)
 head(U1_unique_encodings)
 U1ovenc_table <- table(encoding(U1ovenc))
@@ -880,7 +880,7 @@ U3ovenc
 Unique encodings in \Rcode{U3ovenc}:
 
 <<U3ovenc_table>>=
-U3_unique_encodings <- levels(encoding(U3ovenc))
+U3_unique_encodings <- levels(U3ovenc)
 length(U3_unique_encodings)
 head(U3_unique_encodings)
 U3ovenc_table <- table(encoding(U3ovenc))
