@@ -267,8 +267,8 @@ setGeneric("isCompatibleWithSplicing",
     Lngap <- Lngap(x)
     Rngap <- Rngap(x)
     max.ngap1 <- max(c(0L, ngap[is.na(Lngap)]))
-    max.Lngap <- max(c(0L, Lngap, na.rm=TRUE))
-    max.Rngap <- max(c(0L, Rngap, na.rm=TRUE))
+    max.Lngap <- max(c(0L, Lngap), na.rm=TRUE)
+    max.Rngap <- max(c(0L, Rngap), na.rm=TRUE)
     .build_CompatibleWithSplicing_pattern0(max.ngap1, max.Lngap, max.Rngap)
 }
 
@@ -355,8 +355,8 @@ setGeneric("isCompatibleWithSkippedExons", signature="x",
     Lngap <- Lngap(x)
     Rngap <- Rngap(x)
     max.ngap1 <- max(c(0L, ngap[is.na(Lngap)]))
-    max.Lngap <- max(c(0L, Lngap, na.rm=TRUE))
-    max.Rngap <- max(c(0L, Rngap, na.rm=TRUE))
+    max.Lngap <- max(c(0L, Lngap), na.rm=TRUE)
+    max.Rngap <- max(c(0L, Rngap), na.rm=TRUE)
     .build_CompatibleWithSkippedExons_pattern0(max.ngap1, max.Lngap, max.Rngap,
                     max.skipped.exons=max.skipped.exons)
 }
