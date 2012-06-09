@@ -210,19 +210,24 @@ selectEncodingWithCompatibleStrand <- function(ovencA, ovencB,
     ATOM0 <- "[fgij]"
     if (ngap == 0L)
         return(ATOM0)
+    #ntimes <- function(atom, n) rep.int(atom, n)
+    ntimes <- function(atom, n) {
+        if (n == 1L) atom else c(atom, "{", n, "}")
+    }
     LEFT_ATOM <- "[jg]"
+    MIDDLE_ATOM <- "g"
     RIGHT_ATOM <- "[gf]"
     WILDCARD_ATOM <- "[^:-]"
     sapply(seq_len(ngap + 1L),
            function(i) {
                if (i == 1L) {
-                   atoms <- c(LEFT_ATOM, rep.int(WILDCARD_ATOM, ngap))
+                   atoms <- c(LEFT_ATOM, ntimes(WILDCARD_ATOM, ngap))
                } else if (i == ngap + 1L) {
-                   atoms <- c(rep.int(WILDCARD_ATOM, ngap), RIGHT_ATOM)
+                   atoms <- c(ntimes(WILDCARD_ATOM, ngap), RIGHT_ATOM)
                } else {
-                   atoms <- c(rep.int(WILDCARD_ATOM, i-1L),
-                              "g",
-                              rep.int(WILDCARD_ATOM, ngap-i+1L))
+                   atoms <- c(ntimes(WILDCARD_ATOM, i-1L),
+                              MIDDLE_ATOM,
+                              ntimes(WILDCARD_ATOM, ngap-i+1L))
                }
                paste0(atoms, collapse="")
            })
