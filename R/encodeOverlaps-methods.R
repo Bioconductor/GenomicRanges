@@ -204,7 +204,7 @@ selectEncodingWithCompatibleStrand <- function(ovencA, ovencB,
 ### isCompatibleWithSplicing().
 ###
 
-.build_encoding_patterns <- function(ngap)
+.build_compatible_encoding_patterns <- function(ngap)
 {
     ## Each "atom" must match exactly 1 code in the encoding.
     ATOM0 <- "[fgij]"
@@ -243,20 +243,24 @@ setGeneric("isCompatibleWithSplicing",
     ## Subpattern for single-end reads.
     subpattern1 <- sapply(0:max.ngap1,
                      function(ngap)
-                       paste0(.build_encoding_patterns(ngap),
+                       paste0(.build_compatible_encoding_patterns(ngap),
                               collapse=":"))
     subpattern1 <- paste0(":(", paste0(subpattern1, collapse="|"), "):")
 
     ## Subpattern for paired-end reads.
     Lsubpattern <- sapply(0:max.Lngap,
                      function(ngap)
-                       paste0(":", .build_encoding_patterns(ngap), "-",
+                       paste0(":",
+                              .build_compatible_encoding_patterns(ngap),
+                              "-",
                               collapse="-[^:-]*"))
     Lsubpattern <- paste0("(", paste0(Lsubpattern, collapse="|"), ")")
 
     Rsubpattern <- sapply(0:max.Rngap,
                      function(ngap)
-                       paste0("-", .build_encoding_patterns(ngap), ":",
+                       paste0("-",
+                              .build_compatible_encoding_patterns(ngap),
+                              ":",
                               collapse="[^:-]*-"))
     Rsubpattern <- paste0("(", paste0(Rsubpattern, collapse="|"), ")")
 
@@ -331,20 +335,24 @@ setGeneric("isCompatibleWithSkippedExons", signature="x",
                                    ":(...:)*", ":(....:)*")
     subpattern1 <- sapply(0:max.ngap1,
                      function(ngap)
-                       paste0(.build_encoding_patterns(ngap),
+                       paste0(.build_compatible_encoding_patterns(ngap),
                               collapse=skipped_exons_subpatterns[ngap+1L]))
     subpattern1 <- paste0(":(", paste0(subpattern1, collapse="|"), "):")
 
     ## Subpattern for paired-end reads.
     Lsubpattern <- sapply(0:max.Lngap,
                      function(ngap)
-                       paste0(":", .build_encoding_patterns(ngap), "-",
+                       paste0(":",
+                              .build_compatible_encoding_patterns(ngap),
+                              "-",
                               collapse=".*"))
     Lsubpattern <- paste0("(", paste0(Lsubpattern, collapse="|"), ")")
 
     Rsubpattern <- sapply(0:max.Rngap,
                      function(ngap)
-                       paste0("-", .build_encoding_patterns(ngap), ":",
+                       paste0("-",
+                              .build_compatible_encoding_patterns(ngap),
+                              ":",
                               collapse=".*"))
     Rsubpattern <- paste0("(", paste0(Rsubpattern, collapse="|"), ")")
 
@@ -453,7 +461,7 @@ setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
         if (for.query.right.end)
             stop("cannot use 'for.query.right.end=TRUE' ",
                  "on single-end encoding: ", encoding)
-        encoding_patterns <- .build_encoding_patterns(ngap)
+        encoding_patterns <- .build_compatible_encoding_patterns(ngap)
         return(.extractSteppedExonRanksFromEncodingBlocks(encoding_blocks,
                                                           encoding_patterns))
     }
@@ -464,10 +472,10 @@ setMethod("isCompatibleWithSkippedExons", "OverlapEncodings",
     if (!all(elementLengths(encoding_blocks) == 2L))  # should never happen
         stop(encoding, ": invalid encoding")
     encoding_blocks <- matrix(unlist(encoding_blocks, use.names=FALSE), nrow=2L)
-    Lencoding_patterns <- .build_encoding_patterns(ngap[1L])
+    Lencoding_patterns <- .build_compatible_encoding_patterns(ngap[1L])
     Lranks <- .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks[1L, ],
                                                          Lencoding_patterns)
-    Rencoding_patterns <- .build_encoding_patterns(ngap[2L])
+    Rencoding_patterns <- .build_compatible_encoding_patterns(ngap[2L])
     Rranks <- .extractSteppedExonRanksFromEncodingBlocks(encoding_blocks[2L, ],
                                                          Rencoding_patterns)
     if (length(Lranks) == 0L || length(Rranks) == 0L ||
