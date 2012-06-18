@@ -917,9 +917,9 @@ of the transcript:
 sort(U1ovenc_table[isCompatibleWithSplicing(U1_unique_encodings)])
 @
 
-Encodings \Rcode{"1:i:"} (403826 occurences in \Rcode{U1ovenc}),
-\Rcode{"2:jm:af:"} (68914 occurences in \Rcode{U1ovenc}),
-and \Rcode{"3:jmm:agm:aaf:"} (438 occurences in \Rcode{U1ovenc}),
+Encodings \Rcode{"1:i:"} (395278 occurences in \Rcode{U1ovenc}),
+\Rcode{"2:jm:af:"} (65169 occurences in \Rcode{U1ovenc}),
+and \Rcode{"3:jmm:agm:aaf:"} (342 occurences in \Rcode{U1ovenc}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -1052,18 +1052,20 @@ obtained earlier when we counted {\bf all} the overlaps.
 
 \subsubsection{``Compatible'' paired-end encodings}
 
-\Rcode{U3ovenc} contains 13 unique encodings ``compatible'' with the splicing
-of the transcript:
+\Rcode{U3ovenc} contains 13 unique paired-end encodings ``compatible'' with
+the splicing of the transcript:
 
 <<U3-unique-compatible-encodings>>=
 sort(U3ovenc_table[isCompatibleWithSplicing(U3_unique_encodings)])
 @
 
-Encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (89039 occurences in \Rcode{U3ovenc}),
-\Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2825 occurences in \Rcode{U3ovenc}),
-\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2339 occurences in \Rcode{U3ovenc}),
-and \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (342 occurences in \Rcode{U3ovenc}),
-correspond to the following overlaps:
+Paired-end encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (87951 occurences in
+\Rcode{U3ovenc}), \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2562 occurences
+in \Rcode{U3ovenc}), \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2023 occurences
+in \Rcode{U3ovenc}), \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (353 occurences
+in \Rcode{U3ovenc}), and \Rcode{"2{-}{-}2:jm{-}{-}mm:af{-}{-}jm:aa{-}{-}af:"}
+(122 occurences in \Rcode{U3ovenc}), correspond to the following paired-end
+overlaps:
 
 \begin{itemize}
   \item \Rcode{"1{-}{-}1:i{-}{-}i:"}
@@ -1093,16 +1095,24 @@ correspond to the following overlaps:
     last end):               oooo      oooo
   - transcript:     ...   >>>>>>>>>   >>>>>>>   ...
 \end{verbatim}
+
+  \item \Rcode{"2{-}{-}2:jm{-}{-}mm:af{-}{-}jm:aa{-}{-}af:"}
+\begin{verbatim}
+  - paired-end read (1 gap on the first end, 1 gap on the
+    last end):               ooo---o    oo---oo
+  - transcript:     ...   >>>>>>   >>>>>>>   >>>>>   ...
+\end{verbatim}
 \end{itemize}
 
 Note: switch use of ``first'' and ``last'' above if the read was ``flipped''.
 
 <<U3ov00_is_comp>>=
 U3ov00_is_comp <- isCompatibleWithSplicing(U3ovenc)
-table(U3ov00_is_comp)  # 95801 "compatible" overlaps
+table(U3ov00_is_comp)  # 94068 "compatible" paired-end overlaps
 @
 
-Finally, let's extract the ``compatible'' overlaps from \Rcode{U3ov00}:
+Finally, let's extract the ``compatible'' paired-end overlaps from
+\Rcode{U3ov00}:
 
 <<U3compov00>>=
 U3compov00 <- U3ov00[U3ov00_is_comp]
@@ -1110,9 +1120,9 @@ U3compov00 <- U3ov00[U3ov00_is_comp]
 
 Note that, like with our single-end reads, high-level convenience
 wrapper \Rfunction{findCompatibleOverlaps} can be used for computing
-the ``compatible'' overlaps directly between a \Rclass{GappedAlignmentPairs}
-object (containing paired-end reads) and a \Rclass{GRangesList} object
-(containing transcripts):
+the ``compatible'' paired-end overlaps directly between a
+\Rclass{GappedAlignmentPairs} object (containing paired-end reads)
+and a \Rclass{GRangesList} object (containing transcripts):
 
 <<U3compov00_again, eval=FALSE>>=
 U3compov00_again <- findCompatibleOverlaps(U3galp, exbytx)
@@ -1175,7 +1185,7 @@ head(sort(exbytx_nU3compov10, decreasing=TRUE), n=10)
 @
 
 Note that this ``top 10'' is slightly different from the ``top 10'' we
-obtained earlier when we counted {\bf all} the overlaps.
+obtained earlier when we counted {\bf all} the paired-end overlaps.
 
 
 
@@ -1584,8 +1594,8 @@ splicing of the transcript:
 sort(U1ovenc_table[isCompatibleWithSkippedExons(U1_unique_encodings)])
 @
 
-Encodings \Rcode{"2:jm:am:af:"} (696 occurences in \Rcode{U1ovenc}),
-\Rcode{"2:jm:am:am:af:"} (114 occurences in \Rcode{U1ovenc}),
+Encodings \Rcode{"2:jm:am:af:"} (721 occurences in \Rcode{U1ovenc}),
+\Rcode{"2:jm:am:am:af:"} (112 occurences in \Rcode{U1ovenc}),
 and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{U1ovenc}),
 correspond to the following overlaps:
 
@@ -1611,15 +1621,20 @@ correspond to the following overlaps:
 
 <<U1ov00_is_acomp>>=
 U1ov00_is_acomp <- isCompatibleWithSkippedExons(U1ovenc)
-table(U1ov00_is_acomp)  # 837 "almost compatible" overlaps
+table(U1ov00_is_acomp)  # 860 "almost compatible" overlaps
+@
+
+Finally, let's extract the ``almost compatible'' overlaps from \Rcode{U1ov00}:
+
+<<U1acompov00>>=
+U1acompov00 <- U1ov00[U1ov00_is_acomp]
 @
 
 \subsubsection{Tabulate the ``almost compatible'' single-end overlaps}
 
-Number of ``almost compatible'' overlaps for each alignment in \Rcode{U1gal}:
+Number of ``almost compatible'' transcripts for each alignment in \Rcode{U1gal}:
 
 <<U1gal_nacomptx>>=
-U1acompov00 <- U1ov00[U1ov00_is_acomp]
 U1gal_nacomptx <- nhitPerQuery(U1acompov00)
 elementMetadata(U1gal)$nacomptx <- U1gal_nacomptx
 head(U1gal)
@@ -1630,7 +1645,7 @@ mean(U1gal_nacomptx >= 1)
 Only 0.22\% of the alignments in \Rcode{U1gal} are ``almost compatible''
 with at least 1 transcript in \Rcode{exbytx}.
 
-Number of ``almost compatible'' overlaps for each transcript in \Rcode{exbytx}:
+Number of ``almost compatible'' alignments for each transcript:
 
 <<exbytx_nU1acompov00>>=
 exbytx_nU1acompov00 <- nhitPerSubject(U1acompov00)
@@ -1654,7 +1669,96 @@ head(subset(U1ov00_qstart, U1ov00_is_acomp))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{``Almost compatible'' paired-end overlaps}
 
-[COMING SOON...]
+\subsubsection{``Almost compatible'' paired-end encodings}
+
+\Rcode{U3ovenc} contains 5 unique paired-end encodings ``almost compatible''
+with the splicing of the transcript:
+
+<<U3-unique-almost-compatible-encodings>>=
+sort(U3ovenc_table[isCompatibleWithSkippedExons(U3_unique_encodings)])
+@
+
+Paired-end encodings \Rcode{"2{-}{-}1:jm{-}{-}m:am{-}{-}m:af{-}{-}i:"}
+(54 occurences in \Rcode{U3ovenc}),
+\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}am:a{-}{-}af:"} (36 occurences in
+\Rcode{U3ovenc}), and
+\Rcode{"2{-}{-}2:jm{-}{-}mm:am{-}{-}mm:af{-}{-}jm:aa{-}{-}af:"}
+(9 occurences in \Rcode{U3ovenc}), correspond to the following paired-end
+overlaps:
+
+\begin{itemize}
+  \item \Rcode{"2{-}{-}1:jm{-}{-}m:am{-}{-}m:af{-}{-}i:"}
+\begin{verbatim}
+  - paired-end read (1 gap on the first end, no gap on the
+    last end):              ooo----------o  oooo
+  - transcript:     ...   >>>>>   >>>>   >>>>>>>>>   ...
+\end{verbatim}
+
+  \item \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}am:a{-}{-}af:"}
+\begin{verbatim}
+  - paired-end read (no gap on the first end, 1 gap on the
+    last end):              oooo   oo---------oo
+  - transcript:     ...   >>>>>>>>>>>   >>>   >>>>>>   ...
+\end{verbatim}
+
+  \item \Rcode{"2{-}{-}2:jm{-}{-}mm:am{-}{-}mm:af{-}{-}jm:aa{-}{-}af:"}
+\begin{verbatim}
+  - paired-end read (1 gap on the first end, 1 gap on the
+    last end):                o----------ooo   oo---oo
+  - transcript:     ...   >>>>>   >>>>   >>>>>>>>   >>>>>>   ...
+\end{verbatim}
+\end{itemize}
+
+Note: switch use of ``first'' and ``last'' above if the read was ``flipped''.
+
+<<U3ov00_is_acomp>>=
+U3ov00_is_acomp <- isCompatibleWithSkippedExons(U3ovenc)
+table(U3ov00_is_acomp)  # 104 "almost compatible" paired-end overlaps
+@
+
+Finally, let's extract the ``almost compatible'' paired-end overlaps from
+\Rcode{U3ov00}:
+
+<<U3acompov00>>=
+U3acompov00 <- U3ov00[U3ov00_is_acomp]
+@
+
+\subsubsection{Tabulate the ``almost compatible'' paired-end overlaps}
+
+Number of ``almost compatible'' transcripts for each alignment pair in
+\Rcode{U3galp}:
+
+<<U3galp_nacomptx>>=
+U3galp_nacomptx <- nhitPerQuery(U3acompov00)
+elementMetadata(U3galp)$nacomptx <- U3galp_nacomptx
+head(U3galp)
+table(U3galp_nacomptx)
+mean(U3galp_nacomptx >= 1)
+@
+
+Only 0.18\% of the alignment pairs in \Rcode{U3galp} are ``almost compatible''
+with at least 1 transcript in \Rcode{exbytx}.
+
+Number of ``almost compatible'' alignment pairs for each transcript:
+
+<<exbytx_nU3acompov00>>=
+exbytx_nU3acompov00 <- nhitPerSubject(U3acompov00)
+names(exbytx_nU3acompov00) <- names(exbytx)
+table(exbytx_nU3acompov00)
+mean(exbytx_nU3acompov00 >= 50)
+@
+
+Only 0.0043\% of the transcripts in \Rcode{exbytx} are ``almost compatible''
+with at least 50 alignment pairs in \Rcode{U3galp}.
+
+Finally note that the ``query start in transcript'' values returned by
+\Rfunction{extractQueryStartInTranscript} are also defined for ``almost
+compatible'' paired-end overlaps:
+
+<<U3ov00_Lqstart-and-U3ov00_Rqstart>>=
+head(subset(U3ov00_Lqstart, U3ov00_is_acomp))
+head(subset(U3ov00_Rqstart, U3ov00_is_acomp))
+@
 
 
 
