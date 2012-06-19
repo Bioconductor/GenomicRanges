@@ -1778,70 +1778,70 @@ An alignment in \Rcode{U1.GAL} with ``almost compatible'' overlaps but
 no ``compatible'' overlaps suggests the presence of one or more transcripts
 that are not in our annotations.
 
-First we extract the index of those alignments ({\it nsh} here means
-``{\bf n}ovel {\bf s}plicing {\bf h}int''):
+First we extract the index of those alignments ({\it nsj} here stands
+for ``{\bf n}ovel {\bf s}plice {\bf j}unction''):
 
-<<U1.GAL_is_nsh>>=
-U1.GAL_is_nsh <- U1.GAL_nacomptx != 0L & U1.GAL_ncomptx == 0L
-head(which(U1.GAL_is_nsh))
+<<U1.GAL_is_nsj>>=
+U1.GAL_is_nsj <- U1.GAL_nacomptx != 0L & U1.GAL_ncomptx == 0L
+head(which(U1.GAL_is_nsj))
 @
 
 We make this an index into \Rcode{U1.OV00}:
 
-<<U1.OV00_is_nsh>>=
-U1.OV00_is_nsh <- queryHits(U1.OV00) %in% which(U1.GAL_is_nsh)
+<<U1.OV00_is_nsj>>=
+U1.OV00_is_nsj <- queryHits(U1.OV00) %in% which(U1.GAL_is_nsj)
 @
 
 We intersect with \Rcode{U1.OV00\_is\_acomp} and then subset \Rcode{U1.OV00}
 to keep only the overlaps that suggest novel splicing:
 
-<<narrow-U1.OV00_is_nsh>>=
-U1.OV00_is_nsh <- U1.OV00_is_nsh & U1.OV00_is_acomp
-U1.nshOV00 <- U1.OV00[U1.OV00_is_nsh]
+<<narrow-U1.OV00_is_nsj>>=
+U1.OV00_is_nsj <- U1.OV00_is_nsj & U1.OV00_is_acomp
+U1.nsjOV00 <- U1.OV00[U1.OV00_is_nsj]
 @
 
-For each overlap in \Rcode{U1.nshOV00}, we extract the ranks of the skipped
-exons (we use a list for this as there might be more than 1 skipped
+For each overlap in \Rcode{U1.nsjOV00}, we extract the ranks of the
+skipped exons (we use a list for this as there might be more than 1 skipped
 exon per overlap):
 
-<<U1.nshOV00_skippedexranks>>=
-U1.nshOV00_skippedexranks <- extractSkippedExonRanks(U1.ovenc)[U1.OV00_is_nsh]
-names(U1.nshOV00_skippedexranks) <- queryHits(U1.nshOV00)
-table(elementLengths(U1.nshOV00_skippedexranks))
+<<U1.nsjOV00_skippedex>>=
+U1.nsjOV00_skippedex <- extractSkippedExonRanks(U1.ovenc)[U1.OV00_is_nsj]
+names(U1.nsjOV00_skippedex) <- queryHits(U1.nsjOV00)
+table(elementLengths(U1.nsjOV00_skippedex))
 @
 
-Finally, we split \Rcode{U1.nshOV00\_skippedexranks} by transcript names:
+Finally, we split \Rcode{U1.nsjOV00\_skippedex} by transcript names:
 
-<<U1.exbytx_skippedexranks>>=
-f <- factor(names(exbytx)[subjectHits(U1.nshOV00)], levels=names(exbytx))
-U1.exbytx_skippedexranks <- split(U1.nshOV00_skippedexranks, f)
+<<U1.exbytx_skippedex>>=
+f <- factor(names(exbytx)[subjectHits(U1.nsjOV00)], levels=names(exbytx))
+U1.exbytx_skippedex <- split(U1.nsjOV00_skippedex, f)
 @
 
-\Rcode{U1.exbytx\_skippedexranks} is a named list of named lists of integer
+\Rcode{U1.exbytx\_skippedex} is a named list of named lists of integer
 vectors. The first level of names (outer names) are transcript names and
 the second level of names (inner names) are alignment indices into
 \Rcode{U1.GAL}:
 
-<<names-of-U1.exbytx_skippedexranks>>=
-head(names(U1.exbytx_skippedexranks))  # transcript names
+<<names-of-U1.exbytx_skippedex>>=
+head(names(U1.exbytx_skippedex))  # transcript names
 @
 
 Transcript FBtr0089124 receives 7 hits. All of them skip exons 9 and 10:
 
 <<FBtr0089124-skipped-exons>>=
-U1.exbytx_skippedexranks$FBtr0089124
+U1.exbytx_skippedex$FBtr0089124
 @
 
 Transcript FBtr0089147 receives 4 hits. Two of them skip exon 2, one of them
 skips exons 2 to 6, and one of them skips exon 10:
 
 <<FBtr0089147-skipped-exons>>=
-U1.exbytx_skippedexranks$FBtr0089147
+U1.exbytx_skippedex$FBtr0089147
 @
 
-A few words about the interpretation of \Rcode{U1.exbytx\_skippedexranks}:
+A few words about the interpretation of \Rcode{U1.exbytx\_skippedex}:
 Because of how we've conducted this analysis, the aligments reported in
-\Rcode{U1.exbytx\_skippedexranks} are guaranteed to not have any ``compatible''
+\Rcode{U1.exbytx\_skippedex} are guaranteed to not have any ``compatible''
 overlaps with other known transcripts. All we can say, for example in the
 case of transcript FBtr0089124, is that the 7 reported hits that skip exons 9
 and 10 show evidence of one or more unknown transcripts with a splice junction
