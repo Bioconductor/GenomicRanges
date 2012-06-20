@@ -98,7 +98,7 @@ untreated1_chr4()
 We use the \Rfunction{readGappedAlignments} function defined in the
 \Rpackage{GenomicRanges} package to load the reads into a
 \Rclass{GappedAlignments} object.
-It's probably a good idea to get rid of the PCR or optical duplicate
+It's probably a good idea to get rid of the PCR or optical duplicates
 (flag bit 0x400 in the SAM format, see the SAM Spec
 \footnote{\url{http://samtools.sourceforge.net/}} for the details), as well
 as reads not passing quality controls (flag bit 0x200 in the SAM format).
@@ -366,8 +366,8 @@ We can use the \Rfunction{neditAt} function defined in the
 2 strings. Because the aligned reads have no indels, we should only
 see mismatches (typically a small number) during that comparison so
 we don't need to call \Rfunction{neditAt} with \Rcode{with.indels=TRUE}.
-Because calling \Rfunction{neditAt} in a loop is inefficient, we do this
-comparison for the first 500 sequences in \Rcode{U1.GAL\_oqseq} only:
+And because calling \Rfunction{neditAt} in a loop is inefficient, we only
+do this comparison for the first 500 sequences in \Rcode{U1.GAL\_oqseq}:
 
 <<U1-oqseq-vs-U1-rqseq>>=
 U1.GAL_nedit500 <- sapply(1:500, function(i) neditAt(U1.GAL_oqseq[[i]], U1.GAL_rqseq[[i]]))
