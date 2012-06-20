@@ -22,6 +22,7 @@ Suggests: Biostrings (>= 2.25.3), Rsamtools (>= 1.9.15), BSgenome,
         RUnit
 License: Artistic-2.0
 Collate: utils.R
+	phicoef.R
 	cigar-utils.R
 	transcript-utils.R
 	constraint.R

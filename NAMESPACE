@@ -18,6 +18,8 @@ exportClasses(
 )
 
 export(
+    phicoef,
+
     validCigar, cigarOpTable,
     cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
