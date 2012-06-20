@@ -43,6 +43,7 @@ phicoef(x, y)
 phicoef(rep(x, 10), c(rep(x, 9), y))
 
 stopifnot(phicoef(table(x, y)) == phicoef(x, y))
+stopifnot(phicoef(y, x) == phicoef(x, y))
 stopifnot(phicoef(x, !y) == - phicoef(x, y))
 stopifnot(phicoef(x, x) == 1)
 }
