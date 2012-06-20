@@ -417,7 +417,9 @@
       a description of the algorithm used.
 
       If ignore.strand = TRUE, both \code{x} and \code{subject} strand are
-      set to \code{"+"}. 
+      set to \code{"+"}. \code{nearest} calls \code{precede} and \code{follow}
+      and thus the strand matching for \code{*} follows the conventions
+      documented under those functions. 
     }
     \item{}{
       \code{distanceToNearest(x, subject, ignore.strand = FALSE)}:

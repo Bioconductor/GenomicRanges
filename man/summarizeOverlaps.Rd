@@ -43,11 +43,12 @@
     \link[Rsamtools]{BamFileList} or \link[Rsamtools]{BamViews} objects
     containing the reads to be mapped to the genomic regions of interest.
 
-    The \code{BamFileList} and \code{BamViews} methods can handle single
-    or paired-end reads by appropriately specifying the \code{single.end} 
-    argument. Currently \code{single.end} is set once for all files in the 
-    list (i.e., the list cannot contain both single and paired-end read 
-    files.). See ?\code{summerizeOverlaps,GRanges,BamFileList-method}.
+    The \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} methods 
+    can handle single or paired-end reads by appropriately specifying the
+    \code{singleEnd} argument. Currently \code{singleEnd} is set once for 
+    all files in the list (i.e., the list cannot contain both single and 
+    paired-end read files.). 
+    See ?\code{summerizeOverlaps,GRanges,BamFileList-method}.
   }
   \item{mode}{
     Character name of a function that defines the counting method to be used. 
@@ -131,7 +132,7 @@
       are counted the same as single-end reads with gaps. 
 
       The \linkS4class{BamFileList} and \linkS4class{BamViews} methods 
-      have an additional argument, \code{single.end}, to indicate if 
+      have an additional argument, \code{singleEnd}, to indicate if 
       the bam files contain single or paired-end reads. 
       See ?\code{summarizeOverlaps,GRanges,BamFileList-method} for
       details.
