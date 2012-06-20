@@ -15,15 +15,16 @@ phicoef(x, y=NULL)
 
 \arguments{
   \item{x, y}{
-    Two logical vectors of the same length, or, if \code{y} is not supplied,
-    \code{x} must be a 2x2 integer matrix (or an integer vector of length 4)
-    representing the contingency table of two binary variables.
+    Two logical vectors of the same length.
+    If \code{y} is not supplied, \code{x} must be a 2x2 integer matrix
+    (or an integer vector of length 4) representing the contingency table
+    of two binary variables.
   }
 }
 
 \value{
   The "phi coefficient" between the two binary variables.
-  This is a single numeric value ranging from -1 to + 1.
+  This is a single numeric value ranging from -1 to +1.
 }
 
 \references{
