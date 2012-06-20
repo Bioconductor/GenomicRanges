@@ -378,7 +378,7 @@
       ranges are excluded.
 
       Matching by strand :
-      \describe{
+      \itemize{
         \item{}{x on '+' strand can match to ranges on both \code{'+'} and 
           \code{'*'} strands. In the case of a tie the first range by order 
           is chosen.
@@ -566,7 +566,7 @@
   }
 }
 
-\author{P. Aboyoun}
+\author{P. Aboyoun and V. Obenchain <vobencha@fhcrc.org>}
 
 \seealso{
   \link{GRangesList-class},
