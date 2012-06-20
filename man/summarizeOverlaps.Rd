@@ -56,8 +56,8 @@
     are designed after the counting modes in the HTSeq package by Simon Anders 
     (see references). All methods are gap-aware and count a read a maximum of 
     once. A user can provide their own count function as the \code{mode} 
-    argument when using the \linkS4class{BamFileList} or \linkS4class{BamViews} 
-    methods.
+    argument when using the \link[Rsamtools]{BamFileList} or 
+    \link[Rsamtools]{BamViews} methods.
 
     \itemize{
       \item Union : (Default) Reads that overlap any portion of exactly one 
@@ -131,8 +131,8 @@
       \linkS4class{GappedAlignmentPairs} container. Paired-end reads
       are counted the same as single-end reads with gaps. 
 
-      The \linkS4class{BamFileList} and \linkS4class{BamViews} methods 
-      have an additional argument, \code{singleEnd}, to indicate if 
+      The \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} 
+      methods have an additional argument, \code{singleEnd}, to indicate if 
       the bam files contain single or paired-end reads. 
       See ?\code{summarizeOverlaps,GRanges,BamFileList-method} for
       details.
