@@ -4,8 +4,8 @@ phicoef <- function(x, y=NULL)
 {
     if (is.null(y)) {
         if (!is.integer(x) || length(x) != 4L)
-            stop("when 'y' is not supplied, 'x' must be a 2x2 integer matrix ",
-                 "or a vector of length 4")
+            stop("when 'y' is not supplied, 'x' must be ",
+                 "a 2x2 integer matrix or an integer vector of length 4")
         a <- x[1L]
         c <- x[2L]
         b <- x[3L]
