@@ -47,26 +47,6 @@
 \alias{end<-,GenomicRanges-method}
 \alias{width,GenomicRanges-method}
 \alias{width<-,GenomicRanges-method}
-\alias{flank,GenomicRanges-method}
-\alias{resize,GenomicRanges-method}
-\alias{shift,GenomicRanges-method}
-\alias{disjoin,GenomicRanges-method}
-\alias{gaps,GenomicRanges-method}
-\alias{range,GenomicRanges-method}
-\alias{reduce,GenomicRanges-method}
-\alias{precede,GenomicRanges,GenomicRanges-method}
-\alias{follow,GenomicRanges,GenomicRanges-method}
-\alias{precede,GenomicRanges,missing-method}
-\alias{follow,GenomicRanges,missing-method}
-\alias{isDisjoint,GenomicRanges-method}
-\alias{disjointBins,GenomicRanges-method}
-\alias{restrict,GenomicRanges-method}
-\alias{distance,GenomicRanges,GenomicRanges-method}
-\alias{distance,GenomicRanges,missing-method}
-\alias{nearest,GenomicRanges,GenomicRanges-method}
-\alias{nearest,GenomicRanges,missing-method}
-\alias{distanceToNearest,GenomicRanges,GenomicRanges-method}
-\alias{distanceToNearest,GenomicRanges,missing-method}
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
@@ -267,168 +247,6 @@
       \code{width(x)}, \code{width(x) <- value}:
       Gets or sets \code{width(ranges(x))}.
     }
-    \item{}{
-      \code{flank(x, width, start = TRUE, both = FALSE, use.names = TRUE, ignore.strand=FALSE)}:
-      Returns a new GRanges object containing intervals of width \code{width}
-      that flank the intervals in \code{x}.
-      The \code{start} argument takes a logical indicating whether \code{x}
-      should be flanked at the "start" (\code{TRUE}) or the "end"
-      (\code{FALSE}), which for \code{strand(x) != "-"} is \code{start(x)} and
-      \code{end(x)} respectively and for \code{strand(x) == "-"} is 
-      code{end(x)} and \code{start(x)} respectively.
-      The \code{both} argument takes a single logical value indicating whether
-      the flanking region \code{width} positions extends \emph{into} the range.
-      If \code{both = TRUE}, the resulting range thus straddles the end point,
-      with \code{width} positions on either side.
-    }
-    \item{}{
-      \code{resize(x, width, use.names = TRUE)}: Returns a new GRanges
-      object containing intervals that have been resized to width
-      \code{width} based on the \code{strand(x)} values.  Elements where
-      \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at
-      \code{start(x)} and elements where \code{strand(x) == "-"} are
-      anchored at the \code{end(x)}. The \code{use.names} argument
-      determines whether or not to keep the names on the ranges.
-    }
-    \item{}{
-      \code{shift(x, shift, use.names = TRUE)}:
-      Returns a new GRanges object containing intervals with start and
-      end values that have been shifted by integer vector \code{shift}.
-      The \code{use.names} argument determines whether or not to
-      keep the names on the ranges.
-    }
-    \item{}{
-      \code{disjoin(x)}:
-      Returns a new GRanges object containing disjoint ranges for each
-      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
-      the columns in \code{x} are dropped.
-    }
-    \item{}{
-      \code{isDisjoint(x)}:
-      Return a logical value indicating whether the ranges
-      \code{x} are disjoint (i.e. non-overlapping).
-    }
-    \item{}{
-      \code{disjointBins(x, ignore.strand = FALSE)}:
-      Returns bin indexes for the ranges in \code{x}, such that ranges
-      in the same bin do not overlap. If \code{ignore.strand = FALSE},
-      the two features cannot overlap if they are on different strands.
-    }
-    \item{}{
-      \code{gaps(x, start = 1L, end = seqlengths(x))}: Returns a new
-      GRanges object containing complemented ranges for each distinct
-      (seqname, strand) pairing. The names (\code{names(x)}) and the
-      columns in \code{x} are dropped.  For the start and end
-      arguments of this gaps method, it is expected that the user will
-      supply a named integer vector (where the names correspond to the
-      appropriate seqlevels). See
-      \code{?\link[IRanges:RangesList-utils]{gaps}} for more
-      information about range complements and for a description of the
-      optional arguments.
-    }
-    \item{}{
-      \code{range(x, ...)}:
-      Returns a new GRanges object containing range bounds for each
-      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
-      the columns in \code{x} are dropped.
-    }
-    \item{}{
-      \code{reduce(x, drop.empty.ranges = FALSE, min.gapwidth = 1L)}:
-      Returns a new GRanges object containing reduced ranges for each
-      distinct (seqname, strand) pairing. The names (\code{names(x)}) and
-      the columns in \code{x} are dropped. See
-      \code{?\link[IRanges:RangesList-utils]{reduce}} for more information
-      about range reduction and for a description of the optional arguments.
-    }
-     \item{}{
-      \code{restrict(x,  start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)}:
-      Returns a new GRanges object containing restricted ranges for distinct seqnames.
-      The \code{start} and \code{end} arguments can be a named numeric vector of
-      seqnames for the ranges to be resticted or a numeric vector or length 1 if
-      the restriction operation is to be applied to all the sequences in
-      \code{x}. See \code{?\link[IRanges:RangesList-utils]{restrict}} for more information
-      about range restriction and for a description of the optional arguments.
-    }
-    \item{}{
-      \code{distance(x, y, ignore.strand = FALSE)}: Calculate the number
-      of positions separating two features. The value is zero if the
-      features overlap and \code{NA} if the features are on different
-      sequences, or different strands (if \code{ignore.strand} is
-      \code{FALSE}).
-    }
-  }
-}
-
-\section{Other ranges utilities}{
-
-  In the code snippets below, \code{x} and \code{subject} are GRanges objects.
-  \describe{
-    \item{}{
-      \code{precede(x, subject = x, select = c("arbitrary", "all"), ignore.strand = FALSE, ...)}:
-      Identifies which subject(s) the query precedes. Returns the index of the
-      range in \code{subject} that is directly preceded by the range in 
-      \code{x}. When ignore.strand = TRUE, the strand for both \code{x} and 
-      \code{subject} are set to \code{'+'}. 
-
-      When \code{select = 'arbitrary'} an integer vector is returned with a
-      single match per \code{x}. If no match is found an \code{NA} is returned. 
-      When \code{select = 'all'} a \code{Hits} object is returned with all 
-      matches for \code{x}. If \code{x} does not have a match in \code{subject} 
-      the \code{x} is not included in the \code{Hits} object. Overlapping 
-      ranges are excluded.
-
-      Matching by strand :
-      \itemize{
-        \item{}{x on '+' strand can match to ranges on both \code{'+'} and 
-          \code{'*'} strands. In the case of a tie the first range by order 
-          is chosen.
-        } 
-        \item{}{x on '-' strand can match to ranges on both \code{'-'} and 
-          \code{'*'} strands. In the case of a tie the first range by order 
-          is chosen.
-        } 
-        \item{}{x on '*' strand can match to ranges on any of \code{'+'}, 
-          \code{'-'} or \code{'*'} strands. In the case of a tie the first 
-          range by order is chosen.
-        }
-      }
-    }
-    \item{}{
-      \code{follow(x, subject = x, select = c("arbitrary", "all"), ignore.strand = FALSE, ...)}:
-      Identifies which subject(s) the query follows. Returns the index of the
-      interval in \code{subject} that is directly followed by the range in 
-      \code{x}. When ignore.strand = TRUE, both \code{x} and \code{subject} 
-      strand are set to \code{'+'}.
-
-      When \code{select = 'arbitrary'} an integer vector is returned with a
-      single match per \code{x}. If no match is found an \code{NA} is returned. 
-      When \code{select = 'all'} a \code{Hits} object is returned with all 
-      matches for \code{x}. If \code{x} does not have a match in \code{subject} 
-      the \code{x} is not included in the \code{Hits} object. Overlapping 
-      ranges are excluded. See the documentation for \code{precede} for details 
-      of strand matching.
-    }
-    \item{}{
-      \code{nearest(x, subject = x, ignore.strand = FALSE)}:
-      Conventional nearest neighbor finder which returns an integer vector
-      containing the index of the nearest neightbor range in \code{subject}
-      for each range in \code{x}. If there is no nearest neighbor \code{NA}
-      is returned. See the \code{nearest} man page in \code{IRanges} for
-      a description of the algorithm used.
-
-      If ignore.strand = TRUE, both \code{x} and \code{subject} strand are
-      set to \code{"+"}. \code{nearest} calls \code{precede} and \code{follow}
-      and thus the strand matching for \code{*} follows the conventions
-      documented under those functions. 
-    }
-    \item{}{
-      \code{distanceToNearest(x, subject, ignore.strand = FALSE)}:
-      Returns the distance for each range in \code{x} to its nearest
-      neighbor in the \code{subject}. 
-
-      If ignore.strand = TRUE, both \code{x} and \code{subject} strand are
-      set to \code{"+"}. 
-    }
   }
 }
 
@@ -566,7 +384,7 @@
   }
 }
 
-\author{P. Aboyoun and V. Obenchain <vobencha@fhcrc.org>}
+\author{P. Aboyoun}
 
 \seealso{
   \link{GRangesList-class},
@@ -575,6 +393,7 @@
   \link[IRanges]{Ranges-class},
   \link[IRanges]{Rle-class},
   \link[IRanges]{DataFrame-class},
+  \link{GenomicRanges-utils},
   \link{coverage-methods},
   \link{setops-methods},
   \link{findOverlaps-methods}
@@ -603,19 +422,6 @@
   seqlevels(gr) <- sub("chr", "Chrom", seqlevels(gr))
   gr
 
-  # Intra-interval operations
-  flank(gr, 10)
-  resize(gr, 10)
-  shift(gr, 1)
-
-  # Inter-interval operations
-  isDisjoint(gr)
-  disjoin(gr)
-  gaps(gr, start = 1, end = 10)
-  range(gr)
-  reduce(gr)
-  restrict(gr, start =3)
-
   # Combining objects
   gr2 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 3, 4)),
                  IRanges(1:10, width=5), strand='-',
@@ -627,25 +433,4 @@
  
   ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
   all.gr <- c(gr, gr2, gr3, .ignoreElementMetadata=TRUE)
-
-  # precede and follow :
-
-  # query on "+" strand
-  query <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
-  subject <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
-                     strand=c("+", "+", "-", "-"))
-  precede(query, subject)
-  follow(query, subject)
-
-  # query on "+" strand
-  strand(query) <- "-"
-  precede(query, subject)
-  follow(query, subject)
-
-  # ties choose first in order
-  query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
-  subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
-                       rep(c("+", "-", "*"), 2))
-  precede(query, subject)
-  precede(query, rev(subject))
 }

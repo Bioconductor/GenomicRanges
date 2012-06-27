@@ -18,8 +18,8 @@ Suggests: Biostrings (>= 2.25.3), Rsamtools (>= 1.9.15), BSgenome,
 	EatonEtAlChIPseq (>= 0.0.3), leeBamViews,
 	pasilla, pasillaBamSubset,
 	org.Sc.sgd.db, TxDb.Dmelanogaster.UCSC.dm3.ensGene,
-        BSgenome.Scerevisiae.UCSC.sacCer2, BSgenome.Dmelanogaster.UCSC.dm3, 
-        RUnit
+	BSgenome.Scerevisiae.UCSC.sacCer2, BSgenome.Dmelanogaster.UCSC.dm3, 
+	RUnit
 License: Artistic-2.0
 Collate: utils.R
 	phicoef.R
@@ -31,9 +31,10 @@ Collate: utils.R
 	strand-utils.R
 	Seqinfo-class.R
 	GenomicRanges-class.R
-	GenomicRangesList-class.R
-	GenomicRanges-comparison.R
 	GRanges-class.R
+	GenomicRanges-comparison.R
+	GenomicRanges-utils.R
+	GenomicRangesList-class.R
 	GRangesList-class.R
 	GappedAlignments-class.R
 	GappedAlignmentPairs-class.R
