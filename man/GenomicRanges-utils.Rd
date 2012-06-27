@@ -28,12 +28,9 @@
 
 \description{
   Utility functions for performing basic ranges operations on
-  \link{GenomicRanges} objects.
-
-  Note that the operations described here work on any \link{GenomicRanges}
-  object i.e. on any object that belongs to a concrete subclass of
-  the \link{GenomicRanges} class (like for example the \link{GRanges}
-  class).
+  \link{GenomicRanges} objects (i.e. on objects that belong to the
+  \link{GenomicRanges} class or one of its subclasses, this includes
+  for example \link{GRanges} objects).
 }
 
 \usage{
