@@ -207,10 +207,9 @@ test_GenomicRanges_nearest <- function()
     checkEquals(nearest(r), nearest(g))
 
     g <- GRanges("chr1", r, "*")
-    checkEquals(precede(g), follow(g))
+    checkEquals(follow(g), precede(g))
     checkEquals(nearest(r), follow(g))
-
-    checkEquals(nearest(g), follow(g))
+    checkEquals(follow(g), nearest(g))
 }
 
 test_GenomicRanges_distance <- function()
