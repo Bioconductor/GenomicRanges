@@ -62,8 +62,6 @@ export(
 
     keepSeqlevels, renameSeqlevels,
 
-    findSpliceOverlaps,
-
     summarizeOverlaps,
     Union, IntersectionNotEmpty, IntersectionStrict
 )
@@ -106,7 +104,6 @@ exportMethods(
     first, last, left, right, isProperPair,
     dimnames, "dimnames<-",
     keepSeqlevels, renameSeqlevels,
-    findSpliceOverlaps,
     summarizeOverlaps,
     seqnameStyle
 )
