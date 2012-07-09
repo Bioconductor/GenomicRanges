@@ -45,6 +45,7 @@
 \alias{[,GRangesList-method}
 \alias{[<-,GRangesList,ANY,ANY,ANY-method}
 \alias{[[<-,GRangesList-method}
+\alias{[[<-,GRangesList,ANY,ANY-method}
 
 % show method:
 \alias{show,GRangesList-method}

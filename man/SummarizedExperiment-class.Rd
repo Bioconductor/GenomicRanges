@@ -53,8 +53,10 @@
 \alias{[<-,SummarizedExperiment,ANY,ANY,SummarizedExperiment-method}
 \alias{$,SummarizedExperiment-method}
 \alias{$<-,SummarizedExperiment,ANY-method}
+\alias{$<-,SummarizedExperiment-method}
 \alias{[[,SummarizedExperiment,ANY,missing-method}
 \alias{[[<-,SummarizedExperiment,ANY,missing,ANY-method}
+\alias{[[<-,SummarizedExperiment,ANY,missing-method}
 
 % show method:
 \alias{show,SummarizedExperiment-method}

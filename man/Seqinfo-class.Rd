@@ -25,6 +25,7 @@
 \alias{genome,Seqinfo-method}
 \alias{genome<-,Seqinfo-method}
 \alias{seqnameStyle}
+\alias{seqnameStyle,ANY-method}
 \alias{seqnameStyle,Seqinfo-method}
 \alias{[,Seqinfo-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}

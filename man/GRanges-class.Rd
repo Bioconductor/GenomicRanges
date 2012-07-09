@@ -20,6 +20,7 @@
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
+\alias{coerce,GenomicRanges,GappedAlignments-method}
 \alias{coerce,RleList,GRanges-method}
 \alias{coerce,RleViewsList,GRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
@@ -137,6 +138,13 @@
       object. The \code{strand} and values become element metadata on the
       ranges. The \code{seqlengths(from)}, \code{isCircular(from)},
       and \code{genome(from)} vectors are stored in the element metadata.
+    }
+    \item{}{
+      \code{as(from, "GappedAlignments")}:
+      Creates a GappedAlignments object from a GRanges object. The values 
+      become element metadata on the ranges. cigar values are created 
+      from the sequence width unless a "cigar" element metadata column 
+      already exists in \code{from}.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE, ...)}:
