@@ -148,8 +148,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## sm_treated1.bam contains a small subset of treated1.bam, a BAM
   ## file containing single-end reads from the "Pasilla" experiment
   ## (RNA-seq, Fly, see the pasilla data package for the details).
-\dontrun{
-  library(Rsamtools)
   fl <- system.file("extdata", "sm_treated1.bam", package="GenomicRanges")
   library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
   txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
@@ -178,7 +176,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## Alternatively, supply the 'cds'
   cdsbytx <- cdsBy(txdb)
   hits <- findSpliceOverlaps(fl, exbytx, cds=cdsbytx) 
-}
 }
 
 \keyword{methods}
