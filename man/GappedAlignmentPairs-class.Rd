@@ -302,7 +302,7 @@
       \code{introns(x)}: Extract the gaps (i.e. N operations in the CIGAR)
       of the "first" and "last" alignments of each pair as a
       \link{GRangesList} object of the same length as \code{x}.
-      Equivalent to (but faster than)
+      Equivalent to (but faster than):
       \preformatted{
     introns1 <- introns(first(x))
     introns2 <- introns(last(x, invert.strand=TRUE))

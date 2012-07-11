@@ -341,7 +341,7 @@
     \item{}{
       \code{introns(x)}: Extract the gaps (i.e. N operations in the CIGAR)
       as a \link{GRangesList} object of the same length as \code{x}.
-      Equivalent to
+      Equivalent to:
       \preformatted{
     psetdiff(granges(x), grglist(x, order.as.in.query=TRUE))
       }
