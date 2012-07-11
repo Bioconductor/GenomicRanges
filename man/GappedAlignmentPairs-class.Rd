@@ -13,9 +13,6 @@
 \alias{length,GappedAlignmentPairs-method}
 \alias{names,GappedAlignmentPairs-method}
 \alias{names<-,GappedAlignmentPairs-method}
-\alias{seqnames,GappedAlignmentPairs-method}
-\alias{seqnameStyle,GappedAlignmentPairs-method}
-\alias{strand,GappedAlignmentPairs-method}
 \alias{first}
 \alias{first,GappedAlignmentPairs-method}
 \alias{last}
@@ -24,6 +21,10 @@
 \alias{left,GappedAlignmentPairs-method}
 \alias{right}
 \alias{right,GappedAlignmentPairs-method}
+\alias{seqnames,GappedAlignmentPairs-method}
+\alias{seqnameStyle,GappedAlignmentPairs-method}
+\alias{strand,GappedAlignmentPairs-method}
+\alias{ngap,GappedAlignmentPairs-method}
 \alias{isProperPair}
 \alias{isProperPair,GappedAlignmentPairs-method}
 \alias{elementMetadata,GappedAlignmentPairs-method}
@@ -40,6 +41,7 @@
 
 % Coercion:
 \alias{grglist,GappedAlignmentPairs-method}
+\alias{introns,GappedAlignmentPairs-method}
 \alias{coerce,GappedAlignmentPairs,GRangesList-method}
 
 % "show" method:
@@ -117,6 +119,32 @@
       extract and set the names from the file to read.
     }
     \item{}{
+      \code{first(x, invert.strand=FALSE)},
+      \code{last(x, invert.strand=FALSE)}:
+      Gets the "first" or "last" alignment for each alignment pair in
+      \code{x}.
+      The result is a \link{GappedAlignments} object of the same length
+      as \code{x}.
+      If \code{invert.strand=TRUE}, then the strand is inverted on-the-fly,
+      i.e. "+" becomes "-", "-" becomes "+", and "*" remains unchanged.
+    }
+    \item{}{
+      \code{left(x)}:
+      Gets the "left" alignment for each alignment pair in \code{x}.
+      By definition, the "left" alignment in a pair is the alignment that
+      is on the + strand. If this is the "first" alignment, then it's returned
+      as-is by \code{left(x)}, but if this is the "last" alignment, then it's
+      returned by \code{left(x)} with the strand inverted.
+    }
+    \item{}{
+      \code{right(x)}:
+      Gets the "right" alignment for each alignment pair in \code{x}.
+      By definition, the "right" alignment in a pair is the alignment that
+      is on the - strand. If this is the "first" alignment, then it's returned
+      as-is by \code{right(x)}, but if this is the "last" alignment, then it's
+      returned by \code{right(x)} with the strand inverted.
+    }
+    \item{}{
       \code{seqnames(x)}:
       Gets the name of the reference sequence for each alignment pair
       in \code{x}. This comes from the RNAME field of the BAM file and
@@ -142,30 +170,8 @@
       alignments are on the same strand).
     }
     \item{}{
-      \code{first(x, invert.strand=FALSE)},
-      \code{last(x, invert.strand=FALSE)}:
-      Gets the "first" or "last" alignment for each alignment pair in
-      \code{x}.
-      The result is a \link{GappedAlignments} object of the same length
-      as \code{x}.
-      If \code{invert.strand=TRUE}, then the strand is inverted on-the-fly,
-      i.e. "+" becomes "-", "-" becomes "+", and "*" remains unchanged.
-    }
-    \item{}{
-      \code{left(x)}:
-      Gets the "left" alignment for each alignment pair in \code{x}.
-      By definition, the "left" alignment in a pair is the alignment that
-      is on the + strand. If this is the "first" alignment, then it's returned
-      as-is by \code{left(x)}, but if this is the "last" alignment, then it's
-      returned by \code{left(x)} with the strand inverted.
-    }
-    \item{}{
-      \code{right(x)}:
-      Gets the "right" alignment for each alignment pair in \code{x}.
-      By definition, the "right" alignment in a pair is the alignment that
-      is on the - strand. If this is the "first" alignment, then it's returned
-      as-is by \code{right(x)}, but if this is the "last" alignment, then it's
-      returned by \code{right(x)} with the strand inverted.
+      \code{ngap(x)}:
+      Equivalent to \code{ngap(first(x)) + ngap(last(x))}.
     }
     \item{}{
       \code{isProperPair(x)}:
@@ -293,6 +299,17 @@
       corresponding to deletions are dropped.
     }
     \item{}{
+      \code{introns(x)}: Extract the gaps (i.e. N operations in the CIGAR)
+      of the "first" and "last" alignments of each pair as a
+      \link{GRangesList} object of the same length as \code{x}.
+      Equivalent to (but faster than)
+      \preformatted{
+    introns1 <- introns(first(x))
+    introns2 <- introns(last(x, invert.strand=TRUE))
+    mendoapply(c, introns1, introns2)
+      }
+    }
+    \item{}{
       \code{as(x, "GRangesList")}:
       An alternate way of doing \code{grglist(x)}.
     }
@@ -324,27 +341,29 @@ galp
 length(galp)
 head(galp)
 head(names(galp))
+first(galp)
+last(galp)
+last(galp, invert.strand=TRUE)
+left(galp)
+right(galp)
 seqnames(galp)
+strand(galp)
+head(ngap(galp))
+table(isProperPair(galp))
 seqlevels(galp)
 
 ## Rename the reference sequences:
 seqlevels(galp) <- sub("seq", "chr", seqlevels(galp))
 seqlevels(galp)
 
-strand(galp)
-
-first(galp)
-last(galp)
-last(galp, invert.strand=TRUE)
-left(galp)
-right(galp)
-table(isProperPair(galp))
-
 galp[[1]]
 unlist(galp)
 
-grglist(galp)
+grglist(galp)  # a GRangesList object
 grglist(galp, order.as.in.query=TRUE)
+stopifnot(identical(unname(elementLengths(grglist(galp))), ngap(galp) + 2L))
+introns(galp)  # a GRangesList object
+stopifnot(identical(unname(elementLengths(introns(galp))), ngap(galp)))
 }
 
 \keyword{methods}

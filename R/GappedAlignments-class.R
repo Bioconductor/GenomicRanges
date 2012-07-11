@@ -35,6 +35,8 @@ setClass("GappedAlignments",
 ###   ngap(x)     - integer vector of the same length as 'x'.
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
 ###   granges(x)  - GRanges object of the same length as 'x'.
+###   introns(x)  - Extract the N gaps in a GRangesList object of the same
+###                 length as 'x'.
 ###   rglist(x)   - CompressedIRangesList object of the same length as 'x'.
 ###   ranges(x)   - IRanges object of the same length as 'x'.
 ###   as.data.frame(x) - data.frame with 1 row per alignment in 'x'.
@@ -103,7 +105,7 @@ setMethod("strand", "GappedAlignments", function(x) x@strand)
 setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
 
 setMethod("ngap", "GappedAlignments",
-    function(x) {elementLengths(rglist(x)) - 1L}
+    function(x) {unname(elementLengths(rglist(x))) - 1L}
 )
 
 setMethod("elementMetadata", "GappedAlignments",
@@ -454,6 +456,7 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 
 setGeneric("grglist", function(x, ...) standardGeneric("grglist"))
 setGeneric("granges", function(x, ...) standardGeneric("granges"))
+setGeneric("introns", function(x, ...) standardGeneric("introns"))
 setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
 setMethod("grglist", "GappedAlignments",
@@ -471,6 +474,14 @@ setMethod("granges", "GappedAlignments",
     function(x)
         .GappedAlignmentsToGRanges(seqnames(x), start(x), width(x),
                                    strand(x), seqinfo(x), names(x))
+)
+
+setMethod("introns", "GappedAlignments",
+    function(x)
+    {
+        grl <- grglist(x, order.as.in.query=TRUE)
+        psetdiff(granges(x), grl)
+    }
 )
 
 setMethod("rglist", "GappedAlignments",

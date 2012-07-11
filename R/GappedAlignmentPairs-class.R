@@ -36,9 +36,12 @@ setClass("GappedAlignmentPairs",
 ###                 right(x).
 ###   seqnames(x) - same as 'seqnames(first(x))' or 'seqnames(last(x))'.
 ###   strand(x)   - same as 'strand(first(x))' (opposite of 'strand(last(x))').
+###   ngap(x)     - same as 'ngap(first(x)) + ngap(last(x))'.
 ###   isProperPair(x) - returns "isProperPair" slot.
 ###   seqinfo(x)  - returns 'seqinfo(first(x))' (same as 'seqinfo(last(x))').
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
+###   introns(x)  - Extract the N gaps in a GRangesList object of the same
+###                 length as 'x'.
 ###   show(x)     - compact display in a data.frame-like fashion.
 ###   GappedAlignmentPairs(x) - constructor.
 ###   x[i]        - GappedAlignmentPairs object of the same class as 'x'
@@ -119,11 +122,15 @@ setMethod("right", "GappedAlignmentPairs",
 )
 
 setMethod("seqnames", "GappedAlignmentPairs",
-    function(x) seqnames(first(x))
+    function(x) seqnames(x@first)
 )
 
 setMethod("strand", "GappedAlignmentPairs",
-    function(x) strand(first(x))
+    function(x) strand(x@first)
+)
+
+setMethod("ngap", "GappedAlignmentPairs",
+    function(x) {ngap(x@first) + ngap(x@last)}
 )
 
 setMethod("isProperPair", "GappedAlignmentPairs",
@@ -329,7 +336,7 @@ setMethod("[", "GappedAlignmentPairs",
 ### should be optimal.)
 .GappedAlignmentPairs.getElement <- function(x, i)
 {
-    c(first(x)[i], last(x)[i])
+    c(x@first[i], x@last[i])
 }
 
 setMethod("[[", "GappedAlignmentPairs",
@@ -423,6 +430,21 @@ setMethod("grglist", "GappedAlignmentPairs",
     }
 )
 
+setMethod("introns", "GappedAlignmentPairs",
+    function(x)
+    {
+        first_introns <- introns(x@first)
+        last_introns <- introns(invertRleStrand(x@last))
+        ## Fast way of doing mendoapply(c, first_introns, last_introns)
+        ## on 2 CompressedList objects.
+        ans <- c(first_introns, last_introns)
+        ans <- ans[.makePickupIndex(length(x))]
+        ans <- .shrinkByHalf(ans)
+        elementMetadata(ans) <- NULL
+        ans
+    }
+)
+
 setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
 
 
@@ -436,9 +458,9 @@ setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
     nc <- ncol(elementMetadata(x))
     pair_cols <- cbind(seqnames=as.character(seqnames(x)),
                        strand=as.character(strand(x)))
-    x_first <- first(x)
+    x_first <- x@first
     first_cols <- cbind(ranges=IRanges:::showAsCell(ranges(x_first)))
-    x_last <- last(x)
+    x_last <- x@last
     last_cols <- cbind(ranges=IRanges:::showAsCell(ranges(x_last)))
     ans <- cbind(pair_cols,
                  `:`=rep.int(":", lx),

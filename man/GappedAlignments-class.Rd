@@ -39,9 +39,11 @@
 % Coercion:
 \alias{grglist}
 \alias{granges}
+\alias{introns}
 \alias{rglist}
 \alias{grglist,GappedAlignments-method}
 \alias{granges,GappedAlignments-method}
+\alias{introns,GappedAlignments-method}
 \alias{rglist,GappedAlignments-method}
 \alias{ranges,GappedAlignments-method}
 \alias{coerce,GappedAlignments,GRangesList-method}
@@ -245,9 +247,9 @@
     }
     \item{}{
       \code{ngap(x)}:
-      Returns an integer vector of length \code{length(x)}
-      containing the number of gaps for each alignment.
-      Equivalent to \code{elementLengths(rglist(x)) - 1L}.
+      Returns an integer vector of the same length as \code{x} containing
+      the number of gaps (i.e. N operations in the CIGAR) for each alignment.
+      Equivalent to \code{unname(elementLengths(rglist(x))) - 1L}.
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
@@ -321,9 +323,9 @@
       that is, in the order defined by walking the "query template" from the
       beginning to the end.
       
-      If \code{drop.D.ranges} is \code{TRUE}, then deletions (Ds in the
-      CIGAR) are treated like gaps (Ns in the CIGAR), that is, the ranges
-      corresponding to deletions are dropped.
+      If \code{drop.D.ranges} is \code{TRUE}, then deletions (D operations
+      in the CIGAR) are treated like gaps (N operations in the CIGAR),
+      that is, the ranges corresponding to deletions are dropped.
 
       See Details section above for more information.
     }
@@ -337,9 +339,17 @@
       \code{ranges(x)} is an \link[IRanges]{IRanges} object.
     }
     \item{}{
+      \code{introns(x)}: Extract the gaps (i.e. N operations in the CIGAR)
+      as a \link{GRangesList} object of the same length as \code{x}.
+      Equivalent to
+      \preformatted{
+    psetdiff(granges(x), grglist(x, order.as.in.query=TRUE))
+      }
+    }
+    \item{}{
       \code{as(x, "GRangesList")}, \code{as(x, "GRanges")},
       \code{as(x, "RangesList")}, \code{as(x, "Ranges")}:
-      An alternate way of doing \code{grglist(x)}, \code{granges(x)},
+      Alternate ways of doing \code{grglist(x)}, \code{granges(x)},
       \code{rglist(x)}, \code{ranges(x)}, respectively.
     }
   }
@@ -430,27 +440,28 @@ length(gal)
 head(gal)
 names(gal)  # no names by default
 seqnames(gal)
+strand(gal)
+head(cigar(gal))
+head(qwidth(gal))
+table(qwidth(gal))
+head(start(gal))
+head(end(gal))
+head(width(gal))
+head(ngap(gal))
 seqlevels(gal)
 
 ## Rename the reference sequences:
 seqlevels(gal) <- sub("seq", "chr", seqlevels(gal))
 seqlevels(gal)
 
-strand(gal)
-head(cigar(gal))
-head(qwidth(gal))
-table(qwidth(gal))
-
 grglist(gal)  # a GRangesList object
+stopifnot(identical(unname(elementLengths(grglist(gal))), ngap(gal) + 1L))
 granges(gal)  # a GRanges object
 rglist(gal)   # a CompressedIRangesList object
+stopifnot(identical(unname(elementLengths(rglist(gal))), ngap(gal) + 1L))
 ranges(gal)   # an IRanges object
-stopifnot(identical(elementLengths(grglist(gal)), elementLengths(rglist(gal))))
-
-head(start(gal))
-head(end(gal))
-head(width(gal))
-head(ngap(gal))
+introns(gal)  # a GRangesList object
+stopifnot(identical(unname(elementLengths(introns(gal))), ngap(gal)))
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING
@@ -468,7 +479,7 @@ gal[6]             # a GappedAlignments object of length 1
 grglist(gal)[[6]]  # a GRanges object of length 1
 rglist(gal)[[6]]   # a NormalIRanges object of length 1
 
-## Ds are NOT gaps:
+## D operations are NOT gaps:
 ii <- grep("D", cigar(gal), fixed=TRUE)
 gal[ii]
 ngap(gal[ii])
