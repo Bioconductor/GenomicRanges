@@ -141,6 +141,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 }
 
 \examples{
+\dontrun{
   ## ----------------------------------------------------------------------- 
   ## 'subject' as TranscriptDb
   ## ----------------------------------------------------------------------- 
@@ -176,6 +177,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## Alternatively, supply the 'cds'
   cdsbytx <- cdsBy(txdb)
   hits <- findSpliceOverlaps(fl, exbytx, cds=cdsbytx) 
+}
 }
 
 \keyword{methods}
