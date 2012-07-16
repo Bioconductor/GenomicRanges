@@ -29,18 +29,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 }
 
 \section{Additional methods}{
-  ## Methods in GenomicFeatures : 
-  \describe{
-    \item{}{
-      findSpliceOverlaps,GappedAlignments,TranscriptDb(query, subject, ignore.strand=FALSE, ...)
-    }
-    \item{}{
-      findSpliceOverlaps,GappedAlignmentPairs,TranscriptDb(query, subject, ignore.strand=FALSE, ...)
-    }
-    \item{}{
-      findSpliceOverlaps,GRangesList,TranscriptDb(query, subject, ignore.strand=FALSE, ...)
-    }
-  }
   ## Methods in Rsamtools : 
   \describe{
     \item{}{
@@ -65,8 +53,8 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     \linkS4class{GRanges} object.
   }
   \item{subject}{
-    A \link[GenomicFeatures]{TranscriptDb}, or \link{GRangesList} containing
-    the annotations. 
+    A \link{GRangesList} containing the annotations. This list is
+    expected to be exons by transcripts. 
   }
   \item{ignore.strand}{
     When set to \code{TRUE}, strand information is ignored in the
@@ -78,11 +66,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     will be a \code{logical} vector indicating if the read falls 
     in a coding region. When not provided, the "coding" output is 
     \code{NA}.
-
-    When a \link[GenomicFeatures]{TranscriptDb} is given as the
-    \code{subject} the coding regions are taken from the txdb.
-    The function called is \code{exonsBy(txdb, "tx")} which 
-    produces a \code{GRangesList} of exons by transcript. 
   }
   \item{\dots}{
   }
@@ -117,26 +100,31 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     }
     \item{novelTSS }{Novel transcription site start. No matching 
       transcript has a TSS further 5' than the bound of the read.
+      Applies to reads with or without gaps.
     }
     \item{novelTSE }{Novel transcription site end. No matching 
       transcript has a TSE further 3' than the bound of the read.
+      Applies to reads with or without gaps.
     }
     \item{novelSite }{A donor or acceptor site is not present in any
       known transcript. Put another way, the start or end of a read
       splice site does not match any start or end position of a known 
-      intron.
+      intron. Applies to reads with gaps only.
     }
     \item{novelJunction }{A combination of donor and acceptor sites is 
       not present in any known transcript. Put another way, the
       start/end combination of a read splice does not match any
-      start/end combination of a known intron.
+      start/end combination of a known intron. Applies to reads
+      with gaps only.
     }
     \item{novelExon }{An internal segment of a read (i.e., a segment
       separated by splices) is completely within a region that is 
-      intronic in all known transcripts.
+      intronic in all known transcripts. Applies to reads with
+      gaps only.
     }
-    \item{novelRetention }{A read spans a region that is intronic in all 
-     known transcripts.
+    \item{novelRetention }{A read fragment overlaps part or all of 
+     a region that is intronic in all known transcripts. Applies 
+     to reads with or without gaps.
     }
   }
 }
@@ -159,14 +147,17 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## findSpliceOverlaps() can assist in quantifying isoform expression
   ## by identifying reads that map compatibly and uniquely to a 
   ## transcript isoform.
+  \dontrun{
   library(Rsamtools)
   library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
   txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
   library(pasillaBamSubset)
   ## untreated1_chr4() contains single-end reads
   se <- untreated1_chr4()
+  exbytx <- exonsBy(txdb, "tx")
+  cdsbytx <- cdsBy(txdb, "tx")
   param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,3e5)))
-  sehits <- findSpliceOverlaps(se, txdb, param=param)
+  sehits <- findSpliceOverlaps(se, exbytx, cds=cdsbytx, param=param)
 
   ## Tally the reads by category to get an idea of read distribution.
   lst <- lapply(values(sehits), table)
@@ -233,6 +224,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
       GappedAlignments("chr1", 50L, "6M", strand("-")),
       isProperPair=TRUE)
   findSpliceOverlaps(galp, genes)
+}
 }
 
 \keyword{methods}
