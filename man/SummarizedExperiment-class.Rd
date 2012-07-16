@@ -34,6 +34,10 @@
 \alias{rowData<-}
 \alias{rowData<-,SummarizedExperiment,GenomicRanges-method}
 \alias{rowData<-,SummarizedExperiment,GRangesList-method}
+\alias{seqinfo,SummarizedExperiment-method}
+\alias{seqinfo<-,SummarizedExperiment-method}
+\alias{elementMetadata,SummarizedExperiment-method}
+\alias{elementMetadata<-,SummarizedExperiment-method}
 \alias{colData}
 \alias{colData,SummarizedExperiment-method}
 \alias{colData<-}
@@ -94,6 +98,10 @@ assay(x, i, ...)
 assay(x, i, ...) <- value
 rowData(x, ...)
 rowData(x, ...) <- value
+\S4method{seqinfo}{SummarizedExperiment}(x)
+\S4method{seqinfo}{SummarizedExperiment}(x, new2old=NULL, force=FALSE) <- value
+\S4method{elementMetadata}{SummarizedExperiment}(x, ...)
+\S4method{elementMetadata}{SummarizedExperiment}(x, ...) <- value
 colData(x, ...)
 colData(x, ...) <- value
 exptData(x, ...)
@@ -176,6 +184,8 @@ exptData(x, ...) <- value
     should be applied to extracted assay elements.}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
+
+  \item{new2old, force}{See \code{\link{seqinfo<-}}.}
 
   \item{value}{An instance of a class specified in the S4 method
     signature or as outlined in \sQuote{Details}.}
@@ -278,6 +288,14 @@ exptData(x, ...) <- value
       row data. \code{value} is a \code{GenomicRanges} instance. Row
       names of \code{value} must be NULL or consistent with the existing
       row names of \code{x}.}
+
+    \item{\code{seqinfo(x)}, \code{seqinfo(x) <- value}:}{Get or set the
+      seqinfo of the row data; the \code{seqlengths} and \code{genome}
+      accessors are also enabled.}
+
+    \item{\code{elementMetadata(x)}, \code{elementMetadata(x) <-
+      value}:}{Get or set the element metadata of the row data; the
+      \code{values} accessors are also enabled.}
 
     \item{\code{colData(x)}, \code{colData(x) <- value}:}{Get or set the
       column data. \code{value} is a \code{DataFrame} instance. Row

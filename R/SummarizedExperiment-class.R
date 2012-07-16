@@ -132,6 +132,34 @@ setReplaceMethod("rowData", c("SummarizedExperiment", "GRangesList"),
     initialize(x, ..., rowData=value)
 })
 
+## also seqlevels, genome, seqlevels<-, genome<-
+setMethod(seqinfo, "SummarizedExperiment",
+    function(x)
+{
+    seqinfo(rowData(x))
+})
+
+setReplaceMethod("seqinfo", "SummarizedExperiment",
+    function(x, new2old = NULL, force = FALSE, value)
+{
+    seqinfo(rowData(x), new2old=new2old, force=force) <- value
+    x
+})
+
+## also values, values<-
+setMethod(elementMetadata, "SummarizedExperiment",
+    function(x, ...)
+{
+    elementMetadata(rowData(x), ...)
+})
+
+setReplaceMethod("elementMetadata", "SummarizedExperiment",
+    function(x, ..., value)
+{
+    elementMetadata(x, ...) <- value
+    x
+})
+
 setMethod(colData, "SummarizedExperiment",
     function(x, ...) slot(x, "colData"))
 
