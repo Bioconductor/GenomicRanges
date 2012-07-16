@@ -6,10 +6,13 @@
 \alias{findSpliceOverlaps,GappedAlignmentPairs,GRangesList-method}
 \alias{findSpliceOverlaps,GRangesList,GRangesList-method}
 
-\title{findSpliceOverlaps ** UNDER CONSTRUCTION **}
+\title{Classify ranges (reads) as compatible with existing genomic annotations 
+       or as having novel splice events}
 
 \description{
-  Identify reads compatible with transcript isoforms and novel splice events
+  The \code{findSpliceOverlaps} function identifies ranges (reads) that are 
+  compatible with a specific transcript isoform. The non-compatible ranges are
+  analyzed for the presence of novel splice events.
 }
 
 \usage{
@@ -72,27 +75,36 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   \item{cds}{
     Optional \link{GRangesList} of coding regions for each transcript
     in the \code{subject}. If provided, the "coding" output column
-    will contain \code{logical} values indicating if the read falls 
-    in a coding region.
+    will be a \code{logical} vector indicating if the read falls 
+    in a coding region. When not provided, the "coding" output is 
+    \code{NA}.
+
+    When a \link[GenomicFeatures]{TranscriptDb} is given as the
+    \code{subject} the coding regions are taken from the txdb.
+    The function called is \code{exonsBy(txdb, "tx")} which 
+    produces a \code{GRangesList} of exons by transcript. 
   }
   \item{\dots}{
   }
 }
 
 \details{
-  When assigning a fragment of mRNA to a transcript both the bounds
-  and splicing pattern must be checked. If a read maps compatibly and
-  uniquely to a transcript isoform we can quantify the expression of 
-  that isoform and look for shifts in the balance of isoform expression
-  When a read does not map in a compatible way to a known isoform, novel
-  splice events such as splice junctions, novel exons or retentions can
-  be quantified and compared across samples.
+  When a read maps compatibly and uniquely to a transcript isoform we 
+  can quantify the expression and look for shifts in the balance of 
+  isoform expression. If a read does not map in compatible way, novel 
+  splice events such as splice junctions, novel exons or retentions 
+  can be quantified and compared across samples.
 
-  \code{findSpliceOverlaps} detects which reads (query) match to which 
-  transcripts (subject) in a compatible fashion. The non-compatible 
-  reads are further analyzed to identify novel splice events and 
-  transcript bounds. The output is a \link[IRanges]{Hits} object with
-  metadata columns defined below. Each column is a \code{logical} 
+  \code{findSpliceOverlaps} detects which reads (query) match to 
+  transcripts (subject) in a compatible fashion. Compatibility is based 
+  on both the transcript bounds and splicing pattern. Assessing the 
+  splicing pattern involves comparision of the read splices (i.e., the 
+  "N" gaps in the cigar) with the transcript introns. For paired-end 
+  reads, the inter-read gap is not considered a splice.
+
+  Reads identified as non-compatible are further analyzed for novel 
+  splice events. The output is a \link[IRanges]{Hits} object with
+  elementMetadata columns defined below. Each column is a \code{logical} 
   indicating if the read (query) met the criteria. 
 
   \itemize{
@@ -141,43 +153,82 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 }
 
 \examples{
-\dontrun{
   ## ----------------------------------------------------------------------- 
-  ## 'subject' as TranscriptDb
+  ## Isoform expression :
   ## ----------------------------------------------------------------------- 
-
-  ## sm_treated1.bam contains a small subset of treated1.bam, a BAM
-  ## file containing single-end reads from the "Pasilla" experiment
-  ## (RNA-seq, Fly, see the pasilla data package for the details).
-  fl <- system.file("extdata", "sm_treated1.bam", package="GenomicRanges")
+  ## findSpliceOverlaps() can assist in quantifying isoform expression
+  ## by identifying reads that map compatibly and uniquely to a 
+  ## transcript isoform.
+  library(Rsamtools)
   library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
   txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
-  hits <- findSpliceOverlaps(fl, txdb) 
+  library(pasillaBamSubset)
+  ## untreated1_chr4() contains single-end reads
+  se <- untreated1_chr4()
+  param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,1e6)))
+  sehits <- findSpliceOverlaps(se, txdb, param=param)
 
-  ## How many reads were compatible with a transcript?
-  table(values(hits)$compatible)
-  ## How many of these compatible reads map to only one transcript?
-  table(values(hits)$unique)
-  ## A closer look at the non-compatible reads
-  ## These aren't very interesting - no splices - 
-  ## need a better example
-  nc <- hits[values(hits)$compatible == FALSE]
-  nc
+  ## Tally the reads by category to get an idea of read distribution.
+  lst <- lapply(values(sehits), table)
+
+  ## Approximately 96% (287963/300722) of these reads are compatible with 
+  ## one or more transcript isoforms. Only 7% (20286/287963) of the 
+  ## compatible reads are unique (i.e., map to a single isoform). The vast 
+  ## majority of reads are in a coding region as defined by the txdb 
+  ## annotation.
+  nms <- names(lst) %in% c("compatible", "unique", "coding")
+  tbl <- do.call(rbind, lst[nms]) 
+  tbl
+
+  ## Check : Total number of reads should be the same across categories.
+  rowSums(tbl)
+ 
+  ## ----------------------------------------------------------------------- 
+  ## Novel splice events :
+  ## ----------------------------------------------------------------------- 
+  ## When a read does not map in a compatible way to a known isoform, novel
+  ## splice events such as splice junctions, novel exons or retentions may
+  ## be present. 
+
+  ## Only non-compatible reads have the potential for novel splice
+  ## events. When we subset on the non-compatible reads we see this
+  ## group does not have reads with a novelExon or novelRetention.
+  nc <- sehits[values(sehits)$compatible == FALSE]
+  lapply(values(nc), table)
+
+  ## Isolate reads with a novelTSS or novelTSE
+  novelTSS <- values(sehits)$novelTSS
+  novelTSE <- values(sehits)$novelTSE
+  head(sehits[novelTSS | novelTSE])
+
+  ## FIXME : Subject index is off if circular have been removed 
+  ## Identify the reads with a novelSite that map to one isoform.
+  ## Locate the area in the annotation these reads came from.
+  novelSite <- sehits[values(sehits)$novelSite & values(sehits)$unique]
+  exonsbytx <- exonsBy(txdb, "tx")
+  exonsbytx[subjectHits(novelSite)]
 
   ## ----------------------------------------------------------------------- 
-  ## 'subject' as GRangesList
+  ## Paired-end reads :
   ## ----------------------------------------------------------------------- 
-
-  ## If 'cds' is not specified  when 'subject' is a GRangesList
-  ## all values in the "coding" output will be NA
-
-  exbytx <- exonsBy(txdb, by="tx", use.names=TRUE)
-  hits <- findSpliceOverlaps(fl, exbytx) 
-
-  ## Alternatively, supply the 'cds'
-  cdsbytx <- cdsBy(txdb)
-  hits <- findSpliceOverlaps(fl, exbytx, cds=cdsbytx) 
-}
+  ## The 'singleEnd' argument is set to FALSE for a Bam file with
+  ## paired-end reads.
+  \dontrun{
+  pe <- untreated3_chr4()
+  hits2 <- findSpliceOverlaps(pe, txdb, singleEnd=FALSE, param=param)
+  } 
+  ## In addition to Bam files, paired-end reads can be supplied in a 
+  ## GappedAlignmentPairs object. In this example the difference between 
+  ## novelJunction and novelSite is demonstrated. All novelSites result in 
+  ## novelJunctions but not vice versa.
+  genes <- GRangesList(
+      GRanges("chr1", IRanges(c(5, 20), c(10, 25)), "+"),
+      GRanges("chr1", IRanges(c(5, 22), c(15, 25)), "+"))
+  galp <- GappedAlignmentPairs(
+      GappedAlignments("chr1", 5L, "11M4N6M", strand("+")),
+      GappedAlignments("chr1", 50L, "6M", strand("-")),
+      isProperPair=TRUE)
+  findSpliceOverlaps(galp, genes)
 }
 
 \keyword{methods}

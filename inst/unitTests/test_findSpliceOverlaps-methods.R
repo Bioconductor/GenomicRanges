@@ -1,4 +1,3 @@
-findSpliceOverlaps <- GenomicRanges:::.findSpliceOverlaps 
 .extract <- function(x, col) as.logical(values(x)[[col]])
 
 test_findSpliceOverlaps_novelTSS <- function()
@@ -33,7 +32,7 @@ test_findSpliceOverlaps_novelTSS <- function()
     genes <- GRangesList(
         GRanges("chr1", IRanges(c(5, 15), c(10, 20)), "+"))
     reads <- GRangesList(
-        GRanges("chr1", IRanges(12, 18), "+"),
+        GRanges("chr1", IRanges(12, 23), "+"),
         GRanges("chr1", IRanges(3, 18), "+"))
     res <- findSpliceOverlaps(reads[1], genes)
     checkIdentical(FALSE, .extract(res, "novelTSS"))
@@ -74,7 +73,7 @@ test_findSpliceOverlaps_novelTSE <- function()
         GRanges("chr1", IRanges(c(5, 15), c(10, 20)), "+"))
     reads <- GRangesList(
         GRanges("chr1", IRanges(2, 12), "+"),
-        GRanges("chr1", IRanges(18, 25), "+"))
+        GRanges("chr1", IRanges(18, 23), "+"))
     res <- findSpliceOverlaps(reads[1], genes)
     checkIdentical(FALSE, .extract(res, "novelTSE"))
     res <- findSpliceOverlaps(reads[2], genes)
@@ -92,11 +91,11 @@ test_findSpliceOverlaps_novelExon <- function()
     checkIdentical(TRUE, .extract(res, "novelExon"))
 
     ## exact match to intron boundaries
-    ## (FALSE b/c 'reads' has no gaps)
+    ## (compatible b/c 'reads' has no gaps)
     reads <- GRangesList(
         GRanges("chr1", IRanges(c(7, 11, 20), c(10, 19, 23)), "+"))
-    res <- findSpliceOverlaps(reads, genes)
-    checkIdentical(FALSE, .extract(res, "novelExon"))
+    res <- suppressWarnings(findSpliceOverlaps(reads, genes))
+    checkIdentical(TRUE, .extract(res, "compatible"))
 
     ## overlap intron boundaries
     reads <- GRangesList(
@@ -132,18 +131,21 @@ test_findSpliceOverlaps_novelRetention <- function()
     reads <- GRangesList(
         GRanges("chr1", IRanges(11, 19), "+"))
     res <- findSpliceOverlaps(reads, genes)
-    checkIdentical(logical(0), .extract(res, "novelRetention"))
+    checkIdentical(logical(0), .extract(res, "compatible"))
 
     ## overlap and span intron boundaries
+    genes <- GRangesList(
+        GRanges("chr1", IRanges(c(5, 20, 30), c(10, 25, 35)), "+"))
     reads <- GRangesList(
-        GRanges("chr1", IRanges(5, 12), "+"),
+        GRanges("chr1", IRanges(5, 12), "+"), 
         GRanges("chr1", IRanges(18, 23), "+"),
-        GRanges("chr1", IRanges(4, 26), "+"))
-    res <- findSpliceOverlaps(reads[1], genes)
-    checkIdentical(FALSE, .extract(res, "novelRetention"))
-    res <- findSpliceOverlaps(reads[2], genes)
-    checkIdentical(FALSE, .extract(res, "novelRetention"))
-    res <- findSpliceOverlaps(reads[3], genes)
+        GRanges("chr1", IRanges(c(4, 30), c(26, 36)), "+"))
+    ## FIXME : what kind of violation
+    #res <- findSpliceOverlaps(reads[1], genes) ## no read gaps
+    #checkIdentical(FALSE, .extract(res, "novelRetention"))
+    #res <- findSpliceOverlaps(reads[2], genes) ## no read gaps
+    #checkIdentical(FALSE, .extract(res, "novelRetention"))
+    res <- findSpliceOverlaps(reads[3], genes) ## read gaps
     checkIdentical(TRUE, .extract(res, "novelRetention"))
 
     ## region is not 'intronic' in all transcripts  
@@ -177,14 +179,30 @@ test_findSpliceOverlaps_novelSite <- function()
 
 test_findSpliceOverlaps_novelJunction <- function()
 {
+    ## novel junction, no novel sites
     genes <- GRangesList(
         GRanges("chr1", IRanges(c(5, 20), c(10, 25)), "+"),
         GRanges("chr1", IRanges(c(5, 22), c(15, 25)), "+"))
+
+    ## query = GRanges 
     reads <- GRangesList(
         GRanges("chr1", IRanges(c(5, 20), c(15, 25)), "+"))
-    ## novel junction, no novel sites
-    res <- findSpliceOverlaps(reads, genes)
-    checkIdentical(c(TRUE, TRUE), .extract(res, "novelJunction"))
-    checkIdentical(c(FALSE, FALSE), .extract(res, "novelSite"))
+    GRres <- findSpliceOverlaps(reads, genes)
+    checkIdentical(c(TRUE, TRUE), .extract(GRres, "novelJunction"))
+    checkIdentical(c(FALSE, FALSE), .extract(GRres, "novelSite"))
+
+    ## query = GappedAlignments
+    gal <- GappedAlignments("chr1", 5L, "11M4N6M", strand("+"))
+    GALres <- findSpliceOverlaps(gal, genes)
+    checkIdentical(c(TRUE, TRUE), .extract(GALres, "novelJunction"))
+    checkIdentical(c(FALSE, FALSE), .extract(GALres, "novelSite"))
+
+    ## query = GappedAlignmentPairs
+    gal1 <- GappedAlignments("chr1", 5L, "11M4N6M", strand("+"))
+    gal2 <- GappedAlignments("chr1", 50L, "6M", strand("-"))
+    galp <- GappedAlignmentPairs(gal1, gal2, TRUE)
+    GALPres <- findSpliceOverlaps(galp, genes)
+    checkIdentical(c(TRUE, TRUE), .extract(GALPres, "novelJunction"))
+    checkIdentical(c(FALSE, FALSE), .extract(GALPres, "novelSite"))
 }
 

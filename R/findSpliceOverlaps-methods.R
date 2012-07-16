@@ -15,15 +15,14 @@ setGeneric("findSpliceOverlaps", signature=c("query", "subject"),
 setMethod("findSpliceOverlaps", c("GappedAlignments", "GRangesList"),
     function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 {
-    callGeneric(grglist(query, order.as.in.query=TRUE), subject,
+    callGeneric(grglist(query, order.as.in.query=TRUE), subject, 
                 ignore.strand, ..., cds=cds)
 })
 
 setMethod("findSpliceOverlaps", c("GappedAlignmentPairs", "GRangesList"),
     function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 {
-    callGeneric(grglist(query, order.as.in.query=TRUE), subject,
-                ignore.strand, ..., cds=cds)
+    .findSpliceOverlaps(query, subject, ignore.strand, singleEnd=FALSE, cds=cds)
 })
 
 setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
@@ -32,15 +31,26 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
     .findSpliceOverlaps(query, subject, ignore.strand, cds=cds)
 })
 
-.findSpliceOverlaps <- function(query, subject, ignore.strand=FALSE, cds=NULL)
+.findSpliceOverlaps <- function(query, subject, ignore.strand=FALSE,
+                                singleEnd=TRUE, cds=NULL)
 {
-    ## FIXME : ignore.strand?
+    ## remove circular sequences
+    qcirc <- isCircular(query)
+    scirc <- isCircular(subject)
+    if (any(circular <- na.omit(c(qcirc, scirc)))) { 
+        circNames <- names(circular)[circular] 
+        warning("circular sequence(s) '", 
+            paste(circNames, sep="' '"), "' ignored")
+
+        if (any(circNames %in% names(qcirc))) 
+            query <- keepSeqlevels(query, setdiff(names(qcirc), circNames)) 
+        if (any(circNames %in% names(scirc))) 
+            subject <- keepSeqlevels(subject, setdiff(names(scirc), circNames)) 
+    }
+
     olap <- findOverlaps(query, subject, ignore.strand=ignore.strand)
     if (length(olap) == 0L)
         return(.result(olap))
-    query <- query[queryHits(olap)]
-    subject <- subject[subjectHits(olap)]
-
     if (!is.null(cds)) {
         coding <- rep.int(FALSE, length(olap))
         hits <- findOverlaps(subject, cds, ignore.strand=ignore.strand)
@@ -48,25 +58,32 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
     } else {
         coding <- rep.int(NA, length(olap))
     }
-    cmptrans <- .compatibleTranscription(query, subject, olap)
-    compatible <- cmptrans$compatible
+
+    query <- query[queryHits(olap)]
+    subject <- subject[subjectHits(olap)]
+    if (!singleEnd) {
+        splice <- introns(query)
+        query <- grglist(query, order.as.in.query=TRUE)
+    } else { 
+        splice <- .gaps(query)
+    }
+    intron <- .gaps(subject)
+    cmp <- .compatibleTranscription(query, splice, subject, intron, olap)
+    compatible <- cmp$compatible
     unique <- .oneMatch(compatible, queryHits(olap))
     strandSpecific <- all(strand(query) != "*")[queryHits(olap)]
     if (!any(nc <- !compatible)) {
         ## compatible only 
         warning("all ranges in 'query' are compatible with ranges in 'subject'")
-        .result(olap, compatible, unique, coding, strandSpecific)
+        .result(olap, nc=NULL, compatible, unique, coding, strandSpecific)
     } else {
         ## compatible and non-compatible
-        splice <- .gaps(query)
-        intron <- .gaps(subject)
         novelExon <- .novelExon(splice, intron, nc)
-        novelBounds <- .novelBounds(query, subject, olap)
-        novelRetention <- .novelRetention(query, intron, nc)
+        novelRetention <- .novelRetention(query, intron, cmp$novelSplicing)
         novelSpliceEvent <- .novelSpliceEvent(splice, intron)
 
         .result(olap, compatible, unique, coding, strandSpecific, nc=nc,
-                novelTSS=novelBounds$TSS, novelTSE=novelBounds$TSE,
+                novelTSS=cmp$novelTSS, novelTSE=cmp$novelTSE,
                 novelSite=novelSpliceEvent$Site,
                 novelJunction=novelSpliceEvent$Junction,
                 novelExon, novelRetention)
@@ -74,16 +91,12 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
 }
 
 ## -------------------------------------------------------------------------
-## Methods in Rsamtools 
-##
-
+## Methods in Rsamtools :
 ## findSpliceOverlaps,character,ANY-method
 ## findSpliceOverlaps,BamFile,ANY-method
  
 ## -------------------------------------------------------------------------
-## Methods in GenomicFeatures 
-##
-
+## Methods in GenomicFeatures : 
 ## findSpliceOverlaps,GappedAlignments,TranscriptDb-method
 ## findSpliceOverlaps,GappedAlignmentPairs,TranscriptDb-method
 ## findSpliceOverlaps,GRangesList,TranscriptDb-method
