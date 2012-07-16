@@ -146,7 +146,19 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
     x
 })
 
-## also values, values<-
+setMethod(values, "SummarizedExperiment",
+    function(x, ...)
+{
+    values(rowData(x), ...)
+})
+
+setReplaceMethod("values", "SummarizedExperiment",
+    function(x, ..., value)
+{
+    values(rowData(x), ...) <- value
+    x
+})
+
 setMethod(elementMetadata, "SummarizedExperiment",
     function(x, ...)
 {
@@ -156,7 +168,7 @@ setMethod(elementMetadata, "SummarizedExperiment",
 setReplaceMethod("elementMetadata", "SummarizedExperiment",
     function(x, ..., value)
 {
-    elementMetadata(x, ...) <- value
+    elementMetadata(rowData(x), ...) <- value
     x
 })
 

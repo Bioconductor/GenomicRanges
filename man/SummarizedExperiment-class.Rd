@@ -38,6 +38,8 @@
 \alias{seqinfo<-,SummarizedExperiment-method}
 \alias{elementMetadata,SummarizedExperiment-method}
 \alias{elementMetadata<-,SummarizedExperiment-method}
+\alias{values,SummarizedExperiment-method}
+\alias{values<-,SummarizedExperiment-method}
 \alias{colData}
 \alias{colData,SummarizedExperiment-method}
 \alias{colData<-}
@@ -102,6 +104,8 @@ rowData(x, ...) <- value
 \S4method{seqinfo}{SummarizedExperiment}(x, new2old=NULL, force=FALSE) <- value
 \S4method{elementMetadata}{SummarizedExperiment}(x, ...)
 \S4method{elementMetadata}{SummarizedExperiment}(x, ...) <- value
+\S4method{values}{SummarizedExperiment}(x, ...)
+\S4method{values}{SummarizedExperiment}(x, ...) <- value
 colData(x, ...)
 colData(x, ...) <- value
 exptData(x, ...)
