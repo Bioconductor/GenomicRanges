@@ -34,20 +34,6 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
 .findSpliceOverlaps <- function(query, subject, ignore.strand=FALSE,
                                 singleEnd=TRUE, cds=NULL)
 {
-    ## remove circular sequences
-    qcirc <- isCircular(query)
-    scirc <- isCircular(subject)
-    if (any(circular <- na.omit(c(qcirc, scirc)))) { 
-        circNames <- names(circular)[circular] 
-        warning("circular sequence(s) '", 
-            paste(circNames, sep="' '"), "' ignored")
-
-        if (any(circNames %in% names(qcirc))) 
-            query <- keepSeqlevels(query, setdiff(names(qcirc), circNames)) 
-        if (any(circNames %in% names(scirc))) 
-            subject <- keepSeqlevels(subject, setdiff(names(scirc), circNames)) 
-    }
-
     olap <- findOverlaps(query, subject, ignore.strand=ignore.strand)
     if (length(olap) == 0L)
         return(.result(olap))

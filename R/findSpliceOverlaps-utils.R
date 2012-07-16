@@ -11,6 +11,7 @@
 .compatibleTranscription <- function(query, splice, subject, intron, hits,
                                      clip=0L)
 {
+    ## FIXME : range() is slow
     qrange <- range(query)
     srange <- range(subject)
     splrange <- ranges(splice)
@@ -47,9 +48,11 @@
     idx <- elementLengths(splrange) != 0L
     splicev <- rep.int(FALSE, length(splrange))
     if (any(idx)) {
-        diff1 <- elementLengths(setdiff(splrange[idx],ranges(intron)[idx])) > 0L
-        diff2 <- elementLengths(setdiff(ranges(intron)[idx], splrange[idx])) > 0L
-        splicev[idx] <- diff1 | diff2
+        splrng <- splrange[idx]
+        intrng <- ranges(intron)[idx]
+        diff1 <- elementLengths(setdiff(splrng, intrng))
+        diff2 <- elementLengths(setdiff(intrng, splrng))
+        splicev[idx] <- (diff1 > 0L) | (diff2 > 0L)
     }
 
     DataFrame(compatible=!boundsv & !splicev, 

@@ -165,23 +165,28 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   library(pasillaBamSubset)
   ## untreated1_chr4() contains single-end reads
   se <- untreated1_chr4()
-  param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,1e6)))
+  param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,3e5)))
   sehits <- findSpliceOverlaps(se, txdb, param=param)
 
   ## Tally the reads by category to get an idea of read distribution.
   lst <- lapply(values(sehits), table)
-
-  ## Approximately 96% (287963/300722) of these reads are compatible with 
-  ## one or more transcript isoforms. Only 7% (20286/287963) of the 
-  ## compatible reads are unique (i.e., map to a single isoform). The vast 
-  ## majority of reads are in a coding region as defined by the txdb 
-  ## annotation.
-  nms <- names(lst) %in% c("compatible", "unique", "coding")
+  nms <- names(lst) %in% c("compatible", "unique")
   tbl <- do.call(rbind, lst[nms]) 
   tbl
 
+  ## Reads compatible with one or more transcript isoforms.
+  rnms <- rownames(tbl)
+  tbl[rnms == "compatible","TRUE"]/sum(tbl[rnms == "compatible",])
+
+  ## Reads compatible with a single isoform. 
+  tbl[rnms == "unique","TRUE"]/sum(tbl[rnms == "unique",])
+
+  ## All reads fall in a coding region as defined by 
+  ## the txdb annotation.
+  lst[["coding"]] 
+
   ## Check : Total number of reads should be the same across categories.
-  rowSums(tbl)
+  lapply(lst, sum)
  
   ## ----------------------------------------------------------------------- 
   ## Novel splice events :
@@ -190,23 +195,22 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## splice events such as splice junctions, novel exons or retentions may
   ## be present. 
 
-  ## Only non-compatible reads have the potential for novel splice
-  ## events. When we subset on the non-compatible reads we see this
-  ## group does not have reads with a novelExon or novelRetention.
+  ## Subset the data on the non-compatible reads and summarize
+  ## the categories.
   nc <- sehits[values(sehits)$compatible == FALSE]
   lapply(values(nc), table)
 
   ## Isolate reads with a novelTSS or novelTSE
-  novelTSS <- values(sehits)$novelTSS
-  novelTSE <- values(sehits)$novelTSE
-  head(sehits[novelTSS | novelTSE])
+  novelTSS <- sehits[values(sehits)$novelTSS]
+  novelTSE <- sehits[values(sehits)$novelTSE]
+  ## Locate the annotation region of the novelTSS reads.
+  exbytx <- exonsBy(txdb, "tx")
+  exbytx[subjectHits(novelTSS)]
 
-  ## FIXME : Subject index is off if circular have been removed 
-  ## Identify the reads with a novelSite that map to one isoform.
-  ## Locate the area in the annotation these reads came from.
-  novelSite <- sehits[values(sehits)$novelSite & values(sehits)$unique]
-  exonsbytx <- exonsBy(txdb, "tx")
-  exonsbytx[subjectHits(novelSite)]
+  ## None of the reads with a novelSite or novelJunction map to 
+  ## only one isoform.
+  sehits[values(sehits)$novelSite & values(sehits)$unique]
+  sehits[values(sehits)$novelJunction & values(sehits)$unique]
 
   ## ----------------------------------------------------------------------- 
   ## Paired-end reads :
