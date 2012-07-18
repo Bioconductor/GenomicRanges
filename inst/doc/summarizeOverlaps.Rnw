@@ -24,7 +24,7 @@
 
 \title{Counting with \Rfunction{summarizeOverlaps}}
 \author{Valerie Obenchain}
-\date{Edited: October 2011; Compiled: \today}
+\date{Edited: July 2012; Compiled: \today}
 
 \begin{document}
 
@@ -54,25 +54,20 @@ library(Rsamtools)
 library(DESeq)
 library(edgeR)
 
-fls = list.files(system.file("extdata",package="GenomicRanges"),
+fls <- list.files(system.file("extdata",package="GenomicRanges"),
     recursive=TRUE, pattern="*bam$", full=TRUE)
 bfl <- BamFileList(fls, index=character())
 
 features <- GRanges(
-    seqnames = Rle(c("chr2L", "chr2R", "chr2L", "chr2R", "chr2L", "chr2R",
-        "chr2L", "chr2R", "chr2R", "chr3L", "chr3L")),
-    strand = strand(rep("+", 11)),
-    ranges = IRanges(start=c(1000, 2000, 3000, 3600, 7000, 7500, 4000, 4000, 
-        3000, 5000, 5400), width=c(500, 900, 500, 300, 600, 300, 500, 900, 500, 
-        500, 500))
-)
+    seqnames = c(rep("chr2L", 4), rep("chr2R", 5), rep("chr3L", 2)),
+    ranges = IRanges(c(1000, 3000, 4000, 7000, 2000, 3000, 3600, 4000, 
+        7500, 5000, 5400), width=c(rep(500, 3), 600, 900, 500, 300, 900, 
+        300, 500, 500)), "-",
+    group_id=c(rep("A", 4), rep("B", 5), rep("C", 2)))
 
 olap <- summarizeOverlaps(features, bfl)
-
-deseq <- newCountDataSet(countData=assays(olap)$counts,  
-                           conditions=rownames(colData(olap)))
-
-edger <- DGEList(counts=assays(olap)$counts, group=rownames(colData(olap)))
+deseq <- newCountDataSet(assays(olap)$counts, rownames(colData(olap)))
+edger <- DGEList(assays(olap)$counts, group=rownames(colData(olap)))
 @
 
 \section{Counting Modes}
@@ -224,88 +219,82 @@ BAM files and parsing the results into a \Rclass{SummarizedExperiment}.
 See \Rcode{?'BamViews-class' or ?'BamFile-class'} in \Rpackage{Rsamtools}.
 
 \section{\Rcode{pasilla} Data}
-In this excercise we use the \Rpackage{pasilla} data to create an 
-\Rclass{ExonCountSet} and \Rclass{CountDataSet} similar to those available 
-in the \Rpackage{pasilla} data package. These objects can be used in 
-differential expression methods offered in the \Rpackage{DESeq} or 
-\Rpackage{DEXSeq} packages. Details of read alignment and the creation 
-of the annotaion file are available in the \Rpackage{pasilla} package vignette. 
+In this excercise we count the \Rpackage{pasilla} data by gene and by
+transcript and create an \Rclass{CountDataSet}. This object can be used 
+in differential expression methods offered in the \Rpackage{DESeq} 
+package. 
 
 \subsection{source files}
 BAM files were downloaded from \url{http://www.embl.de/~reyes/Graveley/bam}.
 Of the seven files available, 3 are single-reads and 4 are paired-end.
-\Rfunction{summarizeOverlaps} does not currently handle paired-end reads so 
-in this example we use the following 3 single-read files,
+Smaller versions of untreated1 (single-end) and untreated2 (paired-end)
+have been made available in the \Rpacakge{pasillaBamSubset} package. This 
+subset includes chromosome 4 only.
+
+\Rfunction{summarizeOverlaps} is capable of counting paired-end reads in
+both a \Rcode{BamFile}-method (set argument \Rcode{singleEnd=TRUE}) or a
+\Rcode{GappedAlignmentPairs}-method. For this example, we use the
+3 single-end read files,
 \begin{itemize}
 \item treated1.bam
 \item untreated1.bam
 \item untreated2.bam
 \end{itemize}
 
-We use the Dmel.BDGP5.25.62.DEXSeq.chr.gff annotation file created by 
-the \Rpackage{pasilla} authors and stored in the \Rcode{/extdata} directory 
-of the package. This file contains non-overlapping exon regions identified as 
-"exonic\_part" and a collective range for the exons identified as 
-"aggregate\_gene". The "exonic\_part" ranges will be used to create the 
-\Rclass{ExonCountSet} and the "aggregate\_gene" ranges to create the
-\Rclass{CountDataSet}. 
-
-<<pasilla_features>>=
-library(pasilla)
+Annotations are retrieved as a GTF file from the ENSEMBL web site. We 
+download the file our local disk, then use \Biocpkg{Rtracklayer}'s 
+\Rfunction{import} function to parse the file to a \Rclass{GRanges}
+instance. 
+<<gff, eval=FALSE>>=
 library(rtracklayer)
-library(Rsamtools)
-
-gff <- import(system.file("extdata", "Dmel.BDGP5.25.62.DEXSeq.chr.gff",
-    package = "pasilla"), "gff1")
-features <- as(gff, "GRanges")
-head(features[,1])
+fl <- paste0("ftp://ftp.ensembl.org/pub/release-62/",
+             "gtf/drosophila_melanogaster/",
+             "Drosophila_melanogaster.BDGP5.25.62.gtf.gz")
+gffFile <- file.path(tempdir(), basename(fl))
+download.file(fl, gffFile)
+gff0 <- import(gffFile, asRangedData=FALSE)
 @
 
-\subsection{Exon counts}
-For counting exons we retain the ranges marked as "exonic\_part". The exon and 
-gene id's are extracted from the 'group' metadata column for later use.
-<<pasilla_exons>>=
-exons <- features[values(features)[["type"]] == "exonic_part"]
-
-st <- strsplit(gsub("\"", "", values(exons)[["group"]]), ";") 
-exonID <- do.call(c,
-              lapply(st, function(x) {
-                 gsub("[^0-9]", "", x[2])}))
-
-geneID <- do.call(c,
-              lapply(st, function(x) {
-                 gsub(" gene_id ", "", x[3])}))
+Subset on the protein-coding, exon regions of chromosome 4
+and split by gene id.
+<<gff_parse, eval=FALSE>>=
+idx <- values(gff0)$source == "protein_coding" & 
+           values(gff0)$type == "exon" & 
+           seqnames(gff0) == "4"
+gff <- gff0[idx]
+## adjust seqnames to match Bam files
+seqlevels(gff) <- paste("chr", seqlevels(gff), sep="")
+chr4genes <- split(gff, values(gff)$gene_id)
 @
 
+\subsection{Counting}
 The \Rcode{params} argument can be used to subset the reads in the bam file
 on characteristics such as position, unmapped or paired-end reads. Quality 
 scores or the "NH" tag, which identifies reads with multiple mappings, can be
 included as metadata columns for further subsetting. See \Rcode{?ScanBamParam} 
 for details about specifying the \Rcode{param} argument.
-
 <<pasilla_param>>=
 param <- ScanBamParam(
              what='qual',
-             which=GRanges("chr2L", IRanges(1, 1e+6)),
-             flag=scanBamFlag(isUnmappedQuery=FALSE, isPaired=NA))
-bamTag(param) <- "NH" 
+             which=GRanges("chr4", IRanges(1, 1e6)),
+             flag=scanBamFlag(isUnmappedQuery=FALSE, isPaired=NA),
+             tag="NH")
 @
 
 We use \Rfunction{summarizeOverlaps} to count with the default mode of "Union".
 If a \Rcode{param} argument is not included all reads from the BAM file are
 counted. 
 <<pasilla_count, eval=FALSE>>=
-fls <- c("treated1.bam", "untreated1.bam", "untreated2.bam") 
+fls <- c("treated1.bam", "untreated1.bam", "untreated2.bam")
 path <- "pathToBAMFiles"
-bamFiles <- BamFileList(file.path(paste(path, fls, sep="")), index=character()) 
-se_exons <- summarizeOverlaps(exons, bamFiles, mode="Union")
+bamlst <- BamFileList(fls, index=character()) 
+genehits <- summarizeOverlaps(chr4genes, bamlst, mode="Union")
 @
 
 \noindent
-An \Rcode{ExonCountSet} is constructed from the counts and experiment
+A \Rcode{CountDataSet} is constructed from the counts and experiment
 data in \Rclass{pasilla}.
 <<pasilla_exoncountset, eval=FALSE>>=
-library(DEXSeq)
 expdata = new("MIAME",
               name="pasilla knockdown",
               lab="Genetics and Developmental Biology, University of 
@@ -324,38 +313,23 @@ design <- data.frame(
               condition=c("treated", "untreated", "untreated"),
               replicate=c(1,1,2),
               type=rep("single-read", 3),
-              countfiles=colData(se_exons)[,1], stringsAsFactors=TRUE)
+              countfiles=path(colData(genehits)[,1]), stringsAsFactors=TRUE)
 
-pasillaECS <- newExonCountSet(
-                  countData=assays(se_exons)$counts,
-                  design=design,
-                  exonIDs=factor(exonID), 
-                  geneIDs=factor(geneID))
+geneCDS <- newCountDataSet(
+                  countData=assays(genehits)$counts,
+                  conditions=design)
 
-experimentData(pasillaECS) <- expdata
-sampleNames(pasillaECS) = colnames(se_exons)
+experimentData(geneCDS) <- expdata
+sampleNames(geneCDS) = colnames(genehits)
 @
 
-\subsection{Gene counts}
-The \Rclass{CountDataSet} will hold counts for the aggregate gene 
-regions. The counts can be obtained by summing the exon hits by gene id
-using \Robject{geneCountTable} in \Rpackage{DEXSeq},
-<<pasilla_bingenes, eval=FALSE>>=
-genetable = geneCountTable(pasillaECS)
-pasillaCDS = newCountDataSet(countData=genetable, conditions=design)
-experimentData(pasillaCDS) = expdata
-@
-
-If the primary interest was in counts per gene and counts per exon were not
-needed an alternative approach could be taken. The annotation file could 
-be subset on "aggregate\_gene" ranges and then counted. 
+If the primary interest is to count by transcript instead of by gene, 
+the annotation file can be split on transcript id. 
 <<pasilla_genes, eval=FALSE>>=
-genes <- features[values(features)[["type"]] == "aggregate_gene"]
-se_genes <- summarizeOverlaps(genes, bamFiles, mode="Union")
-
-pasillaCDS_alt <- newCountDataSet(countData=assays(se_genes)$counts,
-    conditions=design) 
-experimentData(pasillaCDS_alt) = expdata
+chr4tx <- split(gff, values(gff)$transcript_id)
+txhits <- summarizeOverlaps(chr4tx, bamlst)
+txCDS <- newCountDataSet(assays(txhits)$counts, design) 
+experimentData(txCDS) <- expdata
 @
 
 \section{Refererences}

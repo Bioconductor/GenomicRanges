@@ -119,12 +119,10 @@
       \linkS4class{GRangesList}. 
 
       Each count `mode' attempts to assign a read that overlapps multiple 
-      features to a single feature if possible. If there are multiple
-      ranges that should be considered a single feature (e.g., exons in
-      genes or transcripts in genes) the \linkS4class{GRangesList} would
-      be appropriate. If there is no grouping in the data (e.g., a list of
-      exons or transcripts or gene ranges) then a \linkS4class{GRanges}
-      would be appropriate. 
+      features to a single feature. If there are ranges that should be
+      considered together (e.g., exons by transcript or cds regions by gene)
+      the \linkS4class{GRangesList} would be appropriate. If there is no 
+      grouping in the data then a \linkS4class{GRanges} would be appropriate. 
     }
     \item{paired-end reads :}{
       Paired-end reads should be provided in a 
