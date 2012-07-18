@@ -220,7 +220,7 @@ See \Rcode{?'BamViews-class' or ?'BamFile-class'} in \Rpackage{Rsamtools}.
 
 \section{\Rcode{pasilla} Data}
 In this excercise we count the \Rpackage{pasilla} data by gene and by
-transcript and create an \Rclass{CountDataSet}. This object can be used 
+transcript then create a \Rclass{CountDataSet}. This object can be used 
 in differential expression methods offered in the \Rpackage{DESeq} 
 package. 
 
@@ -228,7 +228,7 @@ package.
 BAM files were downloaded from \url{http://www.embl.de/~reyes/Graveley/bam}.
 Of the seven files available, 3 are single-reads and 4 are paired-end.
 Smaller versions of untreated1 (single-end) and untreated2 (paired-end)
-have been made available in the \Rpacakge{pasillaBamSubset} package. This 
+have been made available in the \Rpackage{pasillaBamSubset} package. This 
 subset includes chromosome 4 only.
 
 \Rfunction{summarizeOverlaps} is capable of counting paired-end reads in
@@ -242,7 +242,7 @@ both a \Rcode{BamFile}-method (set argument \Rcode{singleEnd=TRUE}) or a
 \end{itemize}
 
 Annotations are retrieved as a GTF file from the ENSEMBL web site. We 
-download the file our local disk, then use \Biocpkg{Rtracklayer}'s 
+download the file our local disk, then use \Rpackage{Rtracklayer}'s 
 \Rfunction{import} function to parse the file to a \Rclass{GRanges}
 instance. 
 <<gff, eval=FALSE>>=
@@ -267,7 +267,7 @@ seqlevels(gff) <- paste("chr", seqlevels(gff), sep="")
 chr4genes <- split(gff, values(gff)$gene_id)
 @
 
-\subsection{Counting}
+\subsection{counting}
 The \Rcode{params} argument can be used to subset the reads in the bam file
 on characteristics such as position, unmapped or paired-end reads. Quality 
 scores or the "NH" tag, which identifies reads with multiple mappings, can be
