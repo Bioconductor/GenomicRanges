@@ -43,7 +43,7 @@ test_GenomicRanges_intra_interval_ops <- function()
     checkIdentical(ranges(resize(gr, 10, fix = c("start", "end"))),
                    IRanges(c(1L, 1L, 3L, 1L, 5L, 1L, 7L, 1L, 1L, 10L),
                            width = 10, names = head(letters, 10)))
-                   
+ 
     ## restrict
     gr <-  make_test_GRanges()
     st <- structure(c(4,5), names = c("chr1", "chr2"))
@@ -191,6 +191,17 @@ test_GenomicRanges_precede_follow_ties <- function()
                        rep(c("+", "-", "*"), 2))
     checkIdentical(c(4L, 2L, 2L), precede(query, subject))
     checkIdentical(c(1L, 4L, 1L), precede(query, rev(subject)))
+}
+
+test_GenomicRanges_ignore_strand <- function()
+{
+    query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
+    subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
+                       rep(c("+", "-", "*"), 2))
+    checkIdentical(c(4L, 4L, 4L),
+                   precede(query, subject, ignore.strand=TRUE))
+    checkIdentical(c(1L, 1L, 1L), 
+                   precede(query, rev(subject),ignore.strand=TRUE))
 }
 
 test_GenomicRanges_nearest <- function()
