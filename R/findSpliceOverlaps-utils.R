@@ -147,19 +147,19 @@
   regions
 }
 
-.result <- function(hits, nc=NULL, compatible=NULL, unique=NULL, coding=NULL, 
-                    strandSpecific=NULL, novelTSS=NULL, novelTSE=NULL, 
-                    novelSite=NULL, novelJunction=NULL, novelExon=NULL, 
+.result <- function(hits, nc=NULL, compatible=NULL, unique=NULL, coding=NULL,
+                    strandSpecific=NULL, novelTSS=NULL, novelTSE=NULL,
+                    novelSite=NULL, novelJunction=NULL, novelExon=NULL,
                     novelRetention=NULL)
 {
-    nms <- c("compatible", "unique", "coding", "strandSpecific", 
-             "novelTSS", "novelTSE", "novelSite", "novelJunction", 
+    nms <- c("compatible", "unique", "coding", "strandSpecific",
+             "novelTSS", "novelTSE", "novelSite", "novelJunction",
              "novelExon", "novelRetention")
     ## full result
     if (!is.null(nc)) {
         values(hits) <- DataFrame(compatible, unique, coding, strandSpecific,
-                                  novelTSS, novelTSE, novelSite, novelJunction, 
-                                  novelExon, novelRetention) 
+                                  novelTSS, novelTSE, novelSite, novelJunction,
+                                  novelExon, novelRetention)
         hits
     ## no overlaps 
     } else if (is.null(compatible)) {
@@ -169,8 +169,8 @@
         hits
     ## no compatible overlaps 
     } else {
-        mat <- matrix(FALSE, length(hits), length(nms)) 
-        values(hits) <- DataFrame(cbind(compatible, unique, coding, 
+        mat <- matrix(FALSE, length(hits), length(nms))
+        values(hits) <- DataFrame(cbind(compatible, unique, coding,
                                   strandSpecific, mat))
         names(values(hits)) <- nms
         hits

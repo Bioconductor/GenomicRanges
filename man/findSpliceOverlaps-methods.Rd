@@ -32,10 +32,10 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## Methods in Rsamtools : 
   \describe{
     \item{}{
-      findSpliceOverlaps,character,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), singleEnd=TRUE, cds=NULL)
+      findSpliceOverlaps,character,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), pairedEnd=FALSE, cds=NULL)
     }
     \item{}{
-      findSpliceOverlaps,BamFile,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), singleEnd=TRUE, cds=NULL)
+      findSpliceOverlaps,BamFile,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), pairedEnd=FALSE, cds=NULL)
     }
   }
 }
@@ -46,8 +46,8 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     \linkS4class{GappedAlignments}, \linkS4class{GappedAlignmentPairs} 
     or a \linkS4class{GRangesList} object containing the reads.
 
-    Single or paired-end reads are specified with the \code{singleEnd} 
-    argument (default TRUE). Paired-end reads can be supplied in a Bam 
+    Single or paired-end reads are specified with the \code{pairedEnd} 
+    argument (default FALSE). Paired-end reads can be supplied in a Bam 
     file or \linkS4class{GappedAlignmentPairs} object. Single-end are
     expected to be in a Bam file, \linkS4class{GappedAlignments} or 
     \linkS4class{GRanges} object.
@@ -83,10 +83,10 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   on both the transcript bounds and splicing pattern. Assessing the 
   splicing pattern involves comparision of the read splices (i.e., the 
   "N" gaps in the cigar) with the transcript introns. For paired-end 
-  reads, the inter-read gap is not considered a splice.
+  reads, the inter-read gap is not considered a splice. The analysis 
+  of non-compatible reads for novel splice events is under construction.
 
-  Reads identified as non-compatible are further analyzed for novel 
-  splice events. The output is a \link[IRanges]{Hits} object with
+  The output is a \link[IRanges]{Hits} object with
   elementMetadata columns defined below. Each column is a \code{logical} 
   indicating if the read (query) met the criteria. 
 
@@ -98,33 +98,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     \item{unique }{The read is compatible with only one annotated 
       transcript.
     }
-    \item{novelTSS }{Novel transcription site start. No matching 
-      transcript has a TSS further 5' than the bound of the read.
-      Applies to reads with or without gaps.
-    }
-    \item{novelTSE }{Novel transcription site end. No matching 
-      transcript has a TSE further 3' than the bound of the read.
-      Applies to reads with or without gaps.
-    }
-    \item{novelSite }{A donor or acceptor site is not present in any
-      known transcript. Put another way, the start or end of a read
-      splice site does not match any start or end position of a known 
-      intron. Applies to reads with gaps only.
-    }
-    \item{novelJunction }{A combination of donor and acceptor sites is 
-      not present in any known transcript. Put another way, the
-      start/end combination of a read splice does not match any
-      start/end combination of a known intron. Applies to reads
-      with gaps only.
-    }
-    \item{novelExon }{An internal segment of a read (i.e., a segment
-      separated by splices) is completely within a region that is 
-      intronic in all known transcripts. Applies to reads with
-      gaps only.
-    }
-    \item{novelRetention }{A read fragment overlaps part or all of 
-     a region that is intronic in all known transcripts. Applies 
-     to reads with or without gaps.
+    \item{strandSpecific}{The query (read) was stranded. 
     }
   }
 }
@@ -180,40 +154,15 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   lapply(lst, sum)
  
   ## ----------------------------------------------------------------------- 
-  ## Novel splice events :
-  ## ----------------------------------------------------------------------- 
-  ## When a read does not map in a compatible way to a known isoform, novel
-  ## splice events such as splice junctions, novel exons or retentions may
-  ## be present. 
-
-  ## Subset the data on the non-compatible reads and summarize
-  ## the categories.
-  nc <- sehits[values(sehits)$compatible == FALSE]
-  lapply(values(nc), table)
-
-  ## Isolate reads with a novelTSS or novelTSE
-  novelTSS <- sehits[values(sehits)$novelTSS]
-  novelTSE <- sehits[values(sehits)$novelTSE]
-  ## Locate the annotation region of the novelTSS reads.
-  exbytx <- exonsBy(txdb, "tx")
-  exbytx[subjectHits(novelTSS)]
-
-  ## None of the reads with a novelSite or novelJunction map to 
-  ## only one isoform.
-  sehits[values(sehits)$novelSite & values(sehits)$unique]
-  sehits[values(sehits)$novelJunction & values(sehits)$unique]
-
-  ## ----------------------------------------------------------------------- 
   ## Paired-end reads :
   ## ----------------------------------------------------------------------- 
-  ## The 'singleEnd' argument is set to FALSE for a Bam file with
+  ## The 'pairedEnd' argument is set to TRUE for a Bam file with
   ## paired-end reads.
   pe <- untreated3_chr4()
-  hits2 <- findSpliceOverlaps(pe, txdb, singleEnd=FALSE, param=param)
+  hits2 <- findSpliceOverlaps(pe, txdb, pairedEnd=TRUE, param=param)
+ 
   ## In addition to Bam files, paired-end reads can be supplied in a 
-  ## GappedAlignmentPairs object. In this example the difference between 
-  ## novelJunction and novelSite is demonstrated. All novelSites result in 
-  ## novelJunctions but not vice versa.
+  ## GappedAlignmentPairs object. 
   genes <- GRangesList(
       GRanges("chr1", IRanges(c(5, 20), c(10, 25)), "+"),
       GRanges("chr1", IRanges(c(5, 22), c(15, 25)), "+"))
