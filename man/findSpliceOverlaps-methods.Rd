@@ -208,10 +208,8 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## ----------------------------------------------------------------------- 
   ## The 'singleEnd' argument is set to FALSE for a Bam file with
   ## paired-end reads.
-  \dontrun{
   pe <- untreated3_chr4()
   hits2 <- findSpliceOverlaps(pe, txdb, singleEnd=FALSE, param=param)
-  } 
   ## In addition to Bam files, paired-end reads can be supplied in a 
   ## GappedAlignmentPairs object. In this example the difference between 
   ## novelJunction and novelSite is demonstrated. All novelSites result in 

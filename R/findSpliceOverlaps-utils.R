@@ -2,63 +2,48 @@
 ### findSpliceOverlaps utilities
 ### -------------------------------------------------------------------------
 
-.rangeForSorted <- function(x) {
-  part <- PartitioningByWidth(x)
-  xflat <- unlist(x, use.names=FALSE)
-  IRanges(start(xflat)[start(part)], end(xflat)[end(part)])
-}
-
-.compatibleTranscription <- function(query, splice, subject, intron, hits,
-                                     clip=0L)
+.compatibleTranscription <- function(query, subject, splice, clip=0L)
 {
-    ## FIXME : range() is slow
-    qrange <- range(query)
-    srange <- range(subject)
-    splrange <- ranges(splice)
-    qstrand <- as.character(strand(qrange))
+    qrng <- ranges(query)
+    srng <- ranges(subject)
+    sprng <- ranges(splice)
+    idx <- elementLengths(sprng) > 0L
     ## FIXME : should clip be a modifiable parameter?
     if (clip != 0L) {
-        bounds <- .rangeForSorted(qrange) - clip
-        qrange <- restrict(qrange, start(bounds), end(bounds),
+        bounds <- .rangeForSorted(qrng) - clip
+        qrange <- restrict(qrng, start(bounds), end(bounds),
                            keep.all.ranges = TRUE)
     }
-    ## novelBounds
-    qstrand <- as.character(qstrand)
+    bnds <- elementLengths(setdiff(qrng, srng)) == 0L
+    splc0 <- elementLengths(intersect(srng[idx], sprng[idx])) == 0L
+    splc <- logical(length(sprng))
+    splc[idx] <- splc0
+    bnds & splc
+}
+
+.novelBounds <- function(query, subject, qhits)
+{
+    qrange <- range(query)
+    qstrand <- as.character(strand(qrange))
     qrange <- unlist(qrange, use.names=FALSE)
-    srange <- unlist(srange, use.names=FALSE)
+    srange <- unlist(range(subject), use.names=FALSE)
     ## bounds violation for each match 
     lviol <- start(qrange) < start(srange)
     rviol <- end(qrange) > end(srange)
     TSSviol <- as.logical(ifelse(qstrand != "-", lviol, rviol))
     TSEviol <- as.logical(ifelse(qstrand != "+", lviol, rviol))
     ## bounds violation across all subjects hit (grouped)
-    lmatch <- start(qrange) == start(srange)
-    rmatch <- end(qrange) == end(srange)
-    TSSmatch <- as.logical(ifelse(qstrand != "-", lmatch, rmatch))
-    TSEmatch <- as.logical(ifelse(qstrand != "+", lmatch, rmatch))
-    qhits <- queryHits(hits)
+    lviol <- start(qrange) == start(srange)
+    rviol <- end(qrange) == end(srange)
+    TSSmatch <- as.logical(ifelse(qstrand != "-", lviol, rviol))
+    TSEmatch <- as.logical(ifelse(qstrand != "+", lviol, rviol))
     TSSgroup <- (rowsum(as.integer(TSSmatch), qhits)[,1] > 0L)[factor(qhits)]
     TSEgroup <- (rowsum(as.integer(TSEmatch), qhits)[,1] > 0L)[factor(qhits)]
 
     TSS <- TSSviol & !TSSgroup
     TSE <- TSEviol & !TSEgroup
-    boundsv <- TSSviol | TSEviol
 
-    ## novelSplicing
-    idx <- elementLengths(splrange) != 0L
-    splicev <- rep.int(FALSE, length(splrange))
-    if (any(idx)) {
-        splrng <- splrange[idx]
-        intrng <- ranges(intron)[idx]
-        diff1 <- elementLengths(setdiff(splrng, intrng))
-        diff2 <- elementLengths(setdiff(intrng, splrng))
-        splicev[idx] <- (diff1 > 0L) | (diff2 > 0L)
-    }
-
-    DataFrame(compatible=!boundsv & !splicev, 
-              novelTSS=TSS,
-              novelTSE=TSE,
-              novelSplicing=splicev)
+    DataFrame(TSS=TSS, TSE=TSE)
 }
 
 .allMatch <- function(x, idx)
@@ -73,23 +58,23 @@
     unname(x & oneMatch)
 }
 
-.novelExon <- function(splice, intron, nc)
+.novelExon <- function(splice, intronRegion)
 {
     if (sum(elementLengths(splice)) == 0L)
-        return(rep.int(FALSE, length(splice)))
+        return(logical(length(splice)))
 
     ## subset on elements with splices
-    ans <- rep.int(FALSE, length(splice))
+    ans <- logical(length(splice))
     idx <- elementLengths(splice) > 0 
     splice <- splice[idx]
-    internal <- .gaps(splice)
-    if (sum(elementLengths(internal)) == 0L)
+    internal <- unlist(.gaps(splice), use.names=FALSE)
+    if (sum(length(internal)) == 0L)
         return(ans)
 
-    hits <- findOverlaps(unlist(internal, use.names=FALSE), intron[idx], 
-                         type="within", ignore.strand=TRUE)
+    ## FIXME : not competely "within"
+    hits <- findOverlaps(internal, intronRegion, ignore.strand=TRUE)
     if (length(hits) > 0L) {
-        ans0 <- rep.int(FALSE, length(splice))
+        ans0 <- logical(length(splice))
         ne <- table(togroup(splice)[queryHits(hits)]) == 1L
         ans0[unique(togroup(splice)[queryHits(hits)])] <- ne
         ans[idx] <- ans0
@@ -136,30 +121,30 @@
     rowsum(as.integer(novel), elt) > 0L
 }
 
-.novelRetention <- function(query, intron, ns)
+.novelRetention <- function(query, intronRegion)
 {
-    ## FIXME :  novelSplicing does not catch reads 
-    ##          with no gaps
-
-    ans <- rep.int(FALSE, length(query))
-    if (sum(ns) == 0L)
+    ans <- logical(length(query))
+    if (length(query) == 0L)
         return(ans)
 
-    ## subset on elements with novelSplicing
-    qns <- query[ns]
-    ins <- intron[ns] 
-    ## FIXME : memory problem with paired-end
-    hit <- findOverlaps(unlist(ins, use.names=FALSE), qns, 
-                         type="within", ignore.strand=TRUE)
+    hits <- findOverlaps(unlist(query, use.names=FALSE), intronRegion, 
+                        ignore.strand=TRUE)
     if (length(hits) > 0L) {
-        ans0 <- rep.int(FALSE, length(qns))
-        nr <- table(togroup(qns)[queryHits(hit)]) == 1L
-        ans0[unique(togroup(qns)[queryHits(hit)])] <- nr
-        ans[ns] <- ans0
-        ans
+        ans[unique(togroup(query)[queryHits(hits)])] <- TRUE
     } else {
         ans
     }
+}
+
+.intronicRegions <- function(tx, intron) {
+  txflt <- unlist(tx, use.names = FALSE)
+  intronflt <- unlist(intron, use.names = FALSE)
+  regions <- setdiff(intronflt, txflt, ignore.strand = TRUE)
+  #map <- findOverlaps(regions, intronflt)
+  #values(regions)$tx_id <-
+  #  seqsplit(names(tx)[togroup(introns)][subjectHits(intronic_to_tx)],
+  #           queryHits(intronic_to_tx))
+  regions
 }
 
 .result <- function(hits, nc=NULL, compatible=NULL, unique=NULL, coding=NULL, 
@@ -222,4 +207,10 @@ isNumericOrNAs <- IRanges:::isNumericOrNAs
     } else {
        psetdiff(range(x), x)
     }
+}
+
+.rangeForSorted <- function(x) {
+  part <- PartitioningByWidth(x)
+  xflat <- unlist(x, use.names=FALSE)
+  IRanges(start(xflat)[start(part)], end(xflat)[end(part)])
 }

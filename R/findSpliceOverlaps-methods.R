@@ -34,28 +34,29 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
 .findSpliceOverlaps <- function(query, subject, ignore.strand=FALSE,
                                 singleEnd=TRUE, cds=NULL)
 {
+    ## FIXME : this overlap misses a read competely within an intron
     olap <- findOverlaps(query, subject, ignore.strand=ignore.strand)
     if (length(olap) == 0L)
         return(.result(olap))
     if (!is.null(cds)) {
-        coding <- rep.int(FALSE, length(olap))
+        coding <- logical(length(olap))
         hits <- findOverlaps(subject, cds, ignore.strand=ignore.strand)
         coding[subjectHits(olap) %in% queryHits(hits)] <- TRUE
     } else {
         coding <- rep.int(NA, length(olap))
     }
-
+    intron <- .gaps(subject)
+    intronRegion <- .intronicRegions(subject, intron) 
     query <- query[queryHits(olap)]
     subject <- subject[subjectHits(olap)]
+    intron <- intron[subjectHits(olap)]
     if (!singleEnd) {
         splice <- introns(query)
         query <- grglist(query, order.as.in.query=TRUE)
     } else { 
         splice <- .gaps(query)
     }
-    intron <- .gaps(subject)
-    cmp <- .compatibleTranscription(query, splice, subject, intron, olap)
-    compatible <- cmp$compatible
+    compatible <- .compatibleTranscription(query, subject, splice)
     unique <- .oneMatch(compatible, queryHits(olap))
     strandSpecific <- all(strand(query) != "*")[queryHits(olap)]
     if (!any(nc <- !compatible)) {
@@ -63,15 +64,23 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
         warning("all ranges in 'query' are compatible with ranges in 'subject'")
         .result(olap, nc=NULL, compatible, unique, coding, strandSpecific)
     } else {
-        ## compatible and non-compatible
-        novelExon <- .novelExon(splice, intron, nc)
-        novelRetention <- .novelRetention(query, intron, cmp$novelSplicing)
-        novelSpliceEvent <- .novelSpliceEvent(splice, intron)
-
+        ## non-compatible 
+        novelTSS <- novelTSE <- novelExon <- novelRetention <- 
+        novelSite <- novelJunction <- logical(length(olap))
+        query <- query[nc]
+        subject <- subject[nc]
+        ## reads with splices
+        novelExon[nc] <- .novelExon(splice[nc], intronRegion)
+        novelSpliceEvent <- .novelSpliceEvent(splice[nc], intron[nc])
+        novelSite[nc] <- novelSpliceEvent$Site 
+        novelJunction[nc] <- novelSpliceEvent$Junction
+        ## reads with or without splices
+        novelBounds <- .novelBounds(query, subject, queryHits(olap)[nc])
+        novelTSS[nc] <- novelBounds$TSS 
+        novelTSE[nc] <- novelBounds$TSE
+        novelRetention[nc] <- .novelRetention(query, intronRegion)
         .result(olap, compatible, unique, coding, strandSpecific, nc=nc,
-                novelTSS=cmp$novelTSS, novelTSE=cmp$novelTSE,
-                novelSite=novelSpliceEvent$Site,
-                novelJunction=novelSpliceEvent$Junction,
+                novelTSS, novelTSE, novelSite, novelJunction,
                 novelExon, novelRetention)
     }
 }
