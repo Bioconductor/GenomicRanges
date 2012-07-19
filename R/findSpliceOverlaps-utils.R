@@ -7,17 +7,15 @@
     qrng <- ranges(query)
     srng <- ranges(subject)
     sprng <- ranges(splice)
-    idx <- elementLengths(sprng) > 0L
     ## FIXME : should clip be a modifiable parameter?
+    ## Or we could consider taking it out entirely... the aligner should clip
     if (clip != 0L) {
         bounds <- .rangeForSorted(qrng) - clip
         qrange <- restrict(qrng, start(bounds), end(bounds),
                            keep.all.ranges = TRUE)
     }
     bnds <- elementLengths(setdiff(qrng, srng)) == 0L
-    splc0 <- elementLengths(intersect(srng[idx], sprng[idx])) == 0L
-    splc <- logical(length(sprng))
-    splc[idx] <- splc0
+    splc <- elementLengths(intersect(srng, sprng)) == 0L
     bnds & splc
 }
 
@@ -177,6 +175,22 @@
     }
 }
 
+insertGaps <- function(reads) {
+  query.break <- values(reads)$query.break
+  if (is.null(query.break))
+    stop("missing 'query.break' metadata variable: reads not paired?")
+  reads_flat <- unlist(reads, use.names = FALSE)
+  reads_part <- PartitioningByWidth(reads)
+  left_end <- start(reads_part) + query.break - 1L
+  right_start <- left_end + 1L
+  start <- end(reads_flat)[left_end]
+  end <- pmax(start(reads_flat)[right_start], start - 1L)
+  if (any(seqnames(reads_flat)[left_end] != seqnames(reads_flat)[right_start]))
+    stop("reads are on different chromosomes")
+  GRanges(seqnames(reads_flat)[left_end],
+          IRanges(start, end), strand(reads_flat)[left_end])
+}
+
 ## Until we have the formal 'gaps' method for GRangeList
 isNumericOrNAs <- IRanges:::isNumericOrNAs
 .gaps <- function(x, start=NA, end=NA)
@@ -195,7 +209,13 @@ isNumericOrNAs <- IRanges:::isNumericOrNAs
         all(elementLengths(runValue(strand(x))) == 1L)) {
         flat <- unlist(x, use.names=FALSE)
         gaps <- gaps(ranges(x), start, end)
-
+### FIXME: this makes this function more of an 'introns' than a .gaps.
+### FIXME: this breaks when the GRangesList is not ordered by position
+        if (!is.null(values(x)$query.break)) {
+          insert_gaps <- split(ranges(insertGaps(x)), seq_len(length(x)))
+          gaps <- setdiff(gaps, insert_gaps)
+        }
+        
         idx <- elementLengths(gaps) != 0
         ## FIXME : can't handle lists with empty elements 
         ##         'start' and 'end' not quite right here
@@ -205,8 +225,10 @@ isNumericOrNAs <- IRanges:::isNumericOrNAs
         gr <- relist(GRanges(seqnms, unlist(gaps, use.names=FALSE), strand), gaps)
         gr
     } else {
-       psetdiff(range(x), x)
+### FIXME: does not handle query.break column yet
+        psetdiff(range(x), x)
     }
+    
 }
 
 .rangeForSorted <- function(x) {
