@@ -460,11 +460,11 @@ setMethod("follow", c("GenomicRanges", "missing"),
 
 .nearest <- function(x, subject, ignore.strand, ...)
 {
-    p <- precede(x, subject, ignore.strand, select="arbitrary")
-    f <- follow(x, subject, ignore.strand, select="arbitrary")
+    p <- precede(x, subject, "arbitrary", ignore.strand)
+    f <- follow(x, subject, "arbitrary", ignore.strand)
     midx <- !is.na(p) & !is.na(f)
-    pdist <- distance(x[midx], subject[p[midx]])
-    fdist <- distance(x[midx], subject[f[midx]])
+    pdist <- distance(x[midx], subject[p[midx]], ignore.strand)
+    fdist <- distance(x[midx], subject[f[midx]], ignore.strand)
 
     ## choose nearest or not missing 
     ans <- rep.int(NA_integer_, length(x))

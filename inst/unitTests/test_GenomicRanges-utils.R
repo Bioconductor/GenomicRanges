@@ -221,6 +221,13 @@ test_GenomicRanges_nearest <- function()
     checkEquals(follow(g), precede(g))
     checkEquals(nearest(r), follow(g))
     checkEquals(follow(g), nearest(g))
+
+    q <- GRanges("chr1", IRanges(5, width=1), "+")
+    s <- GRanges("chr1", IRanges(c(10, 8), width=1), "-")
+    res <- nearest(q, s, ignore.strand=FALSE)
+    checkEquals(res, NA_integer_)
+    res <- nearest(q, s, ignore.strand=TRUE)
+    checkEquals(res, 2L)
 }
 
 test_GenomicRanges_distance <- function()
