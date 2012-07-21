@@ -360,7 +360,9 @@ setMethod("disjointBins", "GenomicRanges",
     }
 
     ## sentinels marking seqlevels ends
-    maxend <- max(max(end(query)), max(end(subject))) + 1
+    endq <- start(query) + width(query) # end(query) incorrect for 0-width
+    ends <- start(subject) + width(subject)
+    maxend <- max(max(endq), max(ends)) + 1
     lvls <- union(seqlevels(query), seqlevels(subject))
     offset <- setNames((seq_along(lvls) - 1) * maxend, lvls)
     stopifnot(typeof(offset) == "double")      # avoid integer overflow
@@ -369,12 +371,12 @@ setMethod("disjointBins", "GenomicRanges",
     ## offset for sentinels
     queryOff <- unname(offset[as.character(seqnames(query))])
     queryStart <- start(query) + queryOff
-    queryEnd <- end(query) + queryOff
+    queryEnd <- endq + queryOff
     qid <- seq_along(query)
 
     subjectOff <- unname(offset[as.character(seqnames(subject))])
     subjectStart <- start(subject) + subjectOff
-    subjectEnd <- end(subject) + subjectOff
+    subjectEnd <- ends + subjectOff
     spid <- which(strand(subject) != "-")
     smid <- which(strand(subject) != "+")
 

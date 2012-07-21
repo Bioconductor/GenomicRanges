@@ -193,6 +193,18 @@ test_GenomicRanges_precede_follow_ties <- function()
     checkIdentical(c(1L, 4L, 1L), precede(query, rev(subject)))
 }
 
+test_GenomicRanges_precede_follow_0width <- function()
+{
+    a <- GRanges("A", IRanges(100, width=0), "*")
+    b <- GRanges("A", IRanges(20, 25), "+")
+    checkIdentical(NA_integer_, precede(a, b))
+    checkIdentical(1L, precede(b, a))
+    checkIdentical(1L, follow(a, b))
+    checkIdentical(NA_integer_, follow(b, a))
+    checkIdentical(1L, nearest(a, b))
+    checkIdentical(1L, nearest(b, a))
+}
+
 test_GenomicRanges_ignore_strand <- function()
 {
     query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
