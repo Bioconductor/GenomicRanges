@@ -468,6 +468,13 @@ setMethod("isDisjoint", "GRangesList",
     }
 )
 
+setMethod("disjoin", "GRangesList",
+    function(x, ...)
+{
+    gr <- deconstructGRLintoGR(x)
+    d <- disjoin(gr, ...)
+    reconstructGRLfromGR(d, x)
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Vector methods.

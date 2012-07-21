@@ -40,6 +40,7 @@
 \alias{width<-,GRangesList-method}
 \alias{shift,GRangesList-method}
 \alias{isDisjoint,GRangesList-method}
+\alias{disjoin,GRangesList-method}
 
 % Vector methods:
 \alias{[,GRangesList-method}
@@ -228,6 +229,11 @@
       \code{isDisjoint(x)} Return a vector of logical values indicating
       whether the ranges of each element of \code{x} are disjoint
       (i.e. non-overlapping). 
+    }
+    \item{}{
+      \code{disjoin(x, ...)} Returns an object of the same type as
+      \code{x} containing disjoint ranges calculated on each element of
+      \code{x}.
     }
   }
 }
@@ -507,6 +513,9 @@ as(grl, "IRangesList")
 
 ## isDisjoint():
 isDisjoint(grl)
+
+## disjoin():
+disjoin(grl)  # elementMetadata and order are NOT preserved
 
 ## Construction with makeGRangesListFromFeatureFragments():
 filepath <- system.file("extdata", "feature_frags.txt",
