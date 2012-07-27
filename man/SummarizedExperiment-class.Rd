@@ -85,7 +85,7 @@
 ## Constructors
 
 SummarizedExperiment(assays, ...)
-\S4method{SummarizedExperiment}{SimpleList}(assays, rowData = GRanges(),
+\S4method{SummarizedExperiment}{SimpleList}(assays, rowData = GRangesList(),
     colData = DataFrame(), exptData = SimpleList(), ...,
     verbose = FALSE)
 \S4method{SummarizedExperiment}{missing}(assays, ...)

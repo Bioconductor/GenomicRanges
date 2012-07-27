@@ -36,13 +36,30 @@ setValidity2("SummarizedExperiment", .valid.SummarizedExperiment)
 setGeneric("SummarizedExperiment",
     function(assays, ...) standardGeneric("SummarizedExperiment"))
 
+.GRangesList_assays <-
+    function(assays)
+{
+    m <- assays[[1]]
+    n <- nrow(m)
+    names <- rownames(m)
+    elementMetadata <- new("DataFrame", nrows=n)
+    IRanges:::newCompressedList("GRangesList", GRanges(), 
+        end = integer(n), NAMES=names, elementMetadata=elementMetadata)
+}
+
 setMethod(SummarizedExperiment, "SimpleList",
-    function(assays, rowData=GRanges(),
-             colData=DataFrame(), exptData=SimpleList(), ...,
+    function(assays, rowData=GRangesList(), colData=DataFrame(),
+             exptData=SimpleList(), ...,
              verbose=FALSE)
 {
-    if (missing(colData) && 0L != length(assays))
-        colData <- DataFrame(row.names=colnames(assays[[1]]))
+    if (missing(rowData) && 0L != length(assays))
+        rowData <- .GRangesList_assays(assays)
+    if (missing(colData) && 0L != length(assays)) {
+        nms <- colnames(assays[[1]])
+        if (is.null(nms) && 0L != ncol(assays[[1]]))
+            stop("SummarizedExperiment assay colnames must not be NULL")
+        colData <- DataFrame(row.names=nms)
+    }
     ## FIXME: warn if dimnames(assays) != list( verbose=TRUE
     if (!all(sapply(assays, function(x) is.null(dimnames(x)))))
         assays <- endoapply(assays, "dimnames<-", NULL)
