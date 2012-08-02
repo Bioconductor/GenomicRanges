@@ -75,15 +75,26 @@ Union <- function(reads, features, ignore.strand=FALSE, ...)
 
 IntersectionStrict <- function(reads, features, ignore.strand = FALSE, ...)
 {
-    co <- countOverlaps(reads, features, type="within",
+    queryseq <- seqlevels(reads)
+    circular <- isCircular(features)
+    circNames <- intersect(queryseq, names(circular)[circular])
+    if (0L != length(circNames)) {
+        warning("circular sequence(s) in reads '",
+                paste(circNames, sep="' '"), "' ignored")
+        if (any(keep <- !seqlevels(reads) %in% circNames))
+            reads <- keepSeqlevels(reads, seqlevels(reads)[keep])
+        else
+            return(integer(length(features)))
+    }
+ 
+    fo <- findOverlaps(reads, features, type="within",
         ignore.strand=ignore.strand)
-    idx <- co == 1
-    if (sum(co == 1) == 0)
+    ## omit reads that hit >1 feature
+    co <- tabulate(queryHits(fo), length(reads))
+    if (!any(co == 1L))
         return(integer(length(features)))
-
-    fo <- findOverlaps(reads[idx], features, type="within",
-        ignore.strand=ignore.strand)
-    rle <- Rle(sort(subjectHits(fo)))
+    unqfo <- fo[queryHits(fo) %in% seq_along(reads)[co == 1L]]
+    rle <- Rle(sort(subjectHits(unqfo)))
     counts <- rep(0, length(features))
     counts[runValue(rle)] <- runLength(rle)
     names(counts) <- names(features)
