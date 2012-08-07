@@ -221,6 +221,8 @@ setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 ### Combining and Splitting
 ###
 
+setMethod("splitAs", "GRanges", function(x) "GRangesList")
+
 setMethod("split", "GRanges",
     function(x, f, drop = FALSE, ...)
     {
@@ -234,7 +236,7 @@ setMethod("split", "GRanges",
         nrows <- nlevels(f)
         if (nrows == 0)
             nrows <- sum(!is.na(unique(f)))
-        IRanges:::newCompressedList("GRangesList", x, splitFactor = f,
+        IRanges:::newCompressedList(splitAs(x), x, splitFactor = f,
                                     drop = drop,
                                     elementMetadata =
                                     new("DataFrame", nrows = nrows))

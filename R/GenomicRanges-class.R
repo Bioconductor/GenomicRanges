@@ -490,38 +490,28 @@ setReplaceMethod("width", "GenomicRanges",
 setMethod("[", "GenomicRanges",
     function(x, i, j, ..., drop)
     {
-        if (!missing(i)) {
-            iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
-            if (!is.null(iInfo[["msg"]]))
-                stop(iInfo[["msg"]])
+        if (length(list(...)) > 0L)
+            stop("invalid subsetting")
+        if (missing(i) && missing(j))
+            return(x)
+        x_elementMetadata <- elementMetadata(x, FALSE)
+        if (missing(i)) {
+            ans_elementMetadata <- x_elementMetadata[ , j, drop=FALSE]
+            return(clone(x, elementMetadata=ans_elementMetadata))
         }
-        if (missing(i) || !iInfo[["useIdx"]]) {
-            if (!missing(j)) {
-                elementMetadata <- elementMetadata(x, FALSE)[ , j, drop=FALSE]
-                x <- clone(x, elementMetadata=elementMetadata)
-            }
+        i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+        ans_seqnames <- seqnames(x)[i]
+        ans_ranges <- ranges(x)[i]
+        ans_strand <- strand(x)[i]
+        if (missing(j)) {
+            ans_elementMetadata <- x_elementMetadata[i, , drop=FALSE]
         } else {
-            i <- iInfo[["idx"]]
-            if (missing(j))
-                elementMetadata <- elementMetadata(x, FALSE)[i, , drop=FALSE]
-            else
-                elementMetadata <- elementMetadata(x, FALSE)[i, j, drop=FALSE]
-            ranges <- ranges(x)[i]
-            nms <- names(ranges)
-            if (!is.null(nms)) {
-                whichEmpty <- which(nms == "")
-                nms[whichEmpty] <- as.character(whichEmpty)
-                nms2 <- make.unique(nms)
-                if (length(whichEmpty) > 0L || !identical(nms, nms2))
-                    names(ranges) <- nms2
-            }
-            x <- clone(x,
-                       seqnames=seqnames(x)[i],
-                       ranges=ranges,
-                       strand=strand(x)[i],
-                       elementMetadata=elementMetadata)
+            ans_elementMetadata <- x_elementMetadata[i, j, drop=FALSE]
         }
-        x
+        clone(x, seqnames=ans_seqnames,
+                 ranges=ans_ranges,
+                 strand=ans_strand,
+                 elementMetadata=ans_elementMetadata)
     }
 )
 
@@ -604,14 +594,6 @@ setMethod("seqselect", "GenomicRanges",
             return(x)
         ir <- irInfo[["idx"]]
         ranges <- seqselect(ranges(x), ir)
-        nms <- names(ranges)
-        if (!is.null(nms)) {
-            whichEmpty <- which(nms == "")
-            nms[whichEmpty] <- as.character(whichEmpty)
-            nms2 <- make.unique(nms)
-            if (length(whichEmpty) > 0L || !identical(nms, nms2))
-                names(ranges) <- nms2
-        }
         clone(x,
               seqnames=seqselect(seqnames(x), ir),
               ranges=ranges,

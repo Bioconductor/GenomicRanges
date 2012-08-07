@@ -392,8 +392,10 @@ setMethod("unlist", "GappedAlignmentPairs",
         ans_nelt2 <- x_elt_lens[c(FALSE, TRUE)]
     }
     ans_elt_lens <- ans_nelt1 + ans_nelt2
-    ans_skeleton <- PartitioningByWidth(ans_elt_lens)
-    ans <- relist(x@unlistData, skeleton=ans_skeleton)
+    ans_partitioning <- PartitioningByEnd(cumsum(ans_elt_lens))
+    ans <- IRanges:::newCompressedList0(class(x),
+                                        x@unlistData,
+                                        ans_partitioning)
     elementMetadata(ans) <- DataFrame(nelt1=ans_nelt1, nelt2=ans_nelt2)
     ans
 }
