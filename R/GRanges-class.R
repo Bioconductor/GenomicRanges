@@ -221,5 +221,5 @@ setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 ### Combining and Splitting
 ###
 
-setMethod("splitAs", "GRanges", function(x) "GRangesList")
+setMethod("splitAsListReturnedClass", "GRanges", function(x) "GRangesList")
 

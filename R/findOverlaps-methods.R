@@ -173,9 +173,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 {
     f <- paste(by[,1], by[,2], sep="|")
     f <- factor(f, levels=unique(f))
-    cil <- IRanges:::newCompressedList("CompressedIntegerList",
-                       unlistData=x,
-                       splitFactor=f)
+    cil <- splitAsList(x, f)  # CompressedIntegerList
     v <- Views(cil@unlistData, cil@partitioning)
     viewSums(v)
 }

@@ -31,9 +31,7 @@ setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
 
 minStartPerGRangesSequence <- function(x)
 {
-    cil <- IRanges:::newCompressedList("CompressedIntegerList",
-                       unlistData=start(x),
-                       splitFactor=seqnames(x))
+    cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
     v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
     ans <- viewMins(v)
     ans[width(v) == 0L] <- NA_integer_
@@ -43,9 +41,7 @@ minStartPerGRangesSequence <- function(x)
 
 maxEndPerGRangesSequence <- function(x)
 {
-    cil <- IRanges:::newCompressedList("CompressedIntegerList",
-                       unlistData=end(x),
-                       splitFactor=seqnames(x))
+    cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
     v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
     ans <- viewMaxs(v)
     ans[width(v) == 0L] <- NA_integer_

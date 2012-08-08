@@ -89,7 +89,7 @@ exportMethods(
     "ranges<-", "elementMetadata<-",
     start, end, width, "start<-", "end<-", "width<-",
     "[", "[<-", c, seqselect, "seqselect<-", "$", "$<-", "[[", "[[<-",
-    splitAs,
+    splitAsListReturnedClass,
     split, window,
     duplicated, unique, order, sort, rank, "==", "<=", ">=", "<", ">",
     shift, narrow, flank, resize, Ops, restrict,

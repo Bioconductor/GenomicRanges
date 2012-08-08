@@ -42,9 +42,7 @@ setGeneric("SummarizedExperiment",
     m <- assays[[1]]
     n <- nrow(m)
     names <- rownames(m)
-    elementMetadata <- new("DataFrame", nrows=n)
-    IRanges:::newCompressedList("GRangesList", GRanges(), 
-        end = integer(n), NAMES=names, elementMetadata=elementMetadata)
+    splitAsList(GRanges(), PartitioningByEnd(integer(n), names=names))
 }
 
 setMethod(SummarizedExperiment, "SimpleList",
