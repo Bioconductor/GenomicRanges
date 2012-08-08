@@ -223,23 +223,3 @@ setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 
 setMethod("splitAs", "GRanges", function(x) "GRangesList")
 
-setMethod("split", "GRanges",
-    function(x, f, drop = FALSE, ...)
-    {
-        if (missing(f)) {
-            nms <- names(x)
-            if (is.null(nms))
-                f <- seq_len(length(x))
-            else
-                f <- factor(nms, levels = nms)
-        }
-        nrows <- nlevels(f)
-        if (nrows == 0)
-            nrows <- sum(!is.na(unique(f)))
-        IRanges:::newCompressedList(splitAs(x), x, splitFactor = f,
-                                    drop = drop,
-                                    elementMetadata =
-                                    new("DataFrame", nrows = nrows))
-    }
-)
-

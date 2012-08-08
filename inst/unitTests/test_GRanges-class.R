@@ -276,14 +276,6 @@ test_GRanges_Vector <- function() {
     ## split
     gr <- make_test_GRanges()
     checkException(split(gr, NULL), silent = TRUE)
-    checkIdentical(split(unname(gr)),
-                   GRangesList(lapply(structure(seq_len(length(gr)),
-                                names = as.character(seq_len(length(gr)))),
-                                      function(i) unname(gr)[i])))
-    checkIdentical(split(gr),
-                   GRangesList(lapply(structure(seq_len(length(gr)),
-                                                names = names(gr)),
-                                      function(i) gr[i])))
     checkIdentical(split(gr, rep(c("a", "b"), each=5)),
                    GRangesList(a = head(gr, 5), b = tail(gr, 5)))
 
