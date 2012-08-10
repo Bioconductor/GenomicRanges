@@ -402,7 +402,7 @@ setMethod("grglist", "GappedAlignmentPairs",
     function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
         if (!isTRUEorFALSE(order.as.in.query))
-            stop("'reorder.ranges.from5to3' must be TRUE or FALSE")
+            stop("'order.as.in.query' must be TRUE or FALSE")
         x_elt_metadata <- elementMetadata(x)
         if ("query.break" %in% colnames(x_elt_metadata))
             stop("'elementMetadata(x)' cannot have ",
