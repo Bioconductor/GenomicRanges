@@ -19,7 +19,7 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         } else if (lx == 0L) {
             ans_rownames <- character(0)
         } else {
-            ans_rownames <- paste("[", seq_len(lx), "]", sep="")
+            ans_rownames <- paste0("[", seq_len(lx), "]")
         }
     } else {
         top_idx <- 1:9
@@ -34,9 +34,9 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         if (!is.null(nms)) {
             ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
         } else {
-            ans_rownames <- c(paste("[", top_idx, "]", sep=""),
+            ans_rownames <- c(paste0("[", top_idx, "]"),
                               "...",
-                              paste("[", bottom_idx, "]", sep=""))
+                              paste0("[", bottom_idx, "]"))
         }
     }
     rownames(ans) <- format(ans_rownames, justify="right")
@@ -51,11 +51,11 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     left_brackets <- right_brackets <- character(length(col2class))
     left_brackets[!no_bracket] <- "<"
     right_brackets[!no_bracket] <- ">"
-    ans <- paste(left_brackets, col2class, right_brackets, sep="")
+    ans <- paste0(left_brackets, col2class, right_brackets)
     names(ans) <- ans_names
     if (ncol(elementMetadata(x)) > 0L) {
         tmp <- sapply(elementMetadata(x),
-                      function(xx) paste("<", class(xx), ">", sep=""))
+                      function(xx) paste0("<", class(xx), ">"))
         ans <- c(ans, `|`="|", tmp)
     }
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))

@@ -507,7 +507,7 @@ showGappedAlignmentPairs <- function(x, margin="",
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste(margin, rownames(out), sep="")
+        rownames(out) <- paste0(margin, rownames(out))
     print(out, quote=FALSE, right=TRUE)
     if (print.seqlengths) {
         cat(margin, "---\n", sep="")

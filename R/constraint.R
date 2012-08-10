@@ -103,7 +103,7 @@ suppressWarnings(
         for (i in seq_len(nrow(signatures))) {
             sig <- signatures[i, ]
             sigString <- paste(names(sig),
-                               paste("\"", sig, "\"", sep=""),
+                               paste0('"', sig, '"'),
                                sep="=", collapse=", ")
             if (verbose)
                 message("Calling \"checkConstraint\" method for\n",
@@ -111,8 +111,8 @@ suppressWarnings(
             method <- getMethod("checkConstraint", sig)
             errors <- method(x, constraint)
             if (length(errors) != 0L) {
-                errors <- paste("from \"checkConstraint\" method for c(",
-                                sigString, "): ", errors, sep="")
+                errors <- paste0("from \"checkConstraint\" method for c(",
+                                 sigString, "): ", errors)
                 ## If a constraint is not satisfied, we don't check the
                 ## remaining constraints (so when implementing a constraint
                 ## a developper can assume that the less specific constraints

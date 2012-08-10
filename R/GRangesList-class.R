@@ -568,13 +568,13 @@ setMethod("show", "GRangesList",
             cat("<0 elements>\n\n")
         } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
             nms <- names(object)
-            defnms <- paste("[[", seq_len(k), "]]", sep="")
+            defnms <- paste0("[[", seq_len(k), "]]")
             if (is.null(nms)) {
                 nms <- defnms
             } else {
                 empty <- nchar(nms) == 0L
                 nms[empty] <- defnms[empty]
-                nms[!empty] <- paste("$", nms[!empty], sep="")
+                nms[!empty] <- paste0("$", nms[!empty])
             }
             for (i in seq_len(k)) {
                 cat(nms[i], "\n")
@@ -594,13 +594,13 @@ setMethod("show", "GRangesList",
                 showK <- 1
             diffK <- k - showK
             nms <- names(object)[seq_len(showK)]
-            defnms <- paste("[[", seq_len(showK), "]]", sep="")
+            defnms <- paste0("[[", seq_len(showK), "]]")
             if (is.null(nms)) {
                 nms <- defnms
             } else {
                 empty <- nchar(nms) == 0L
                 nms[empty] <- defnms[empty]
-                nms[!empty] <- paste("$", nms[!empty], sep="")
+                nms[!empty] <- paste0("$", nms[!empty])
             }
             for (i in seq_len(showK)) {
                 cat(nms[i], "\n")

@@ -115,7 +115,7 @@ setMethod("elementMetadata", "GenomicRanges",
         !identical(levels(runValue(strand(x))), levels(strand())))
     {
         msg <- c("'strand' should be a 'factor' Rle with levels c(",
-                 paste('"', levels(strand()), '"', sep="", collapse=", "),
+                 paste0('"', levels(strand()), '"', collapse=", "),
                  ")")
         return(paste(msg, collapse=""))
     }
@@ -134,7 +134,7 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
 {    
     if (any(INVALID.GR.COLNAMES %in% colnames(elementMetadata(x)))) {
         msg <- c("slot 'elementMetadata' cannot use",
-                 paste("\"", INVALID.GR.COLNAMES, "\"", sep="", collapse=", "),
+                 paste0("\"", INVALID.GR.COLNAMES, "\"", collapse=", "),
                  "as column names")
         return(paste(msg, collapse=" "))
     }
@@ -710,7 +710,7 @@ showGenomicRanges <- function(x, margin="",
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste(margin, rownames(out), sep="")
+        rownames(out) <- paste0(margin, rownames(out))
     print(out, quote=FALSE, right=TRUE)
     if (print.seqlengths) {
         cat(margin, "---\n", sep="")

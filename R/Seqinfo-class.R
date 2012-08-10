@@ -417,7 +417,7 @@ showCompactDataFrame <- function(x, rownames.label="", left.margin="")
     showme <- .showOutputAsCharacter(compactdf)
     if (label_nchar != 0L)
         substr(showme[1L], 1L, label_nchar) <- rownames.label
-    cat(paste(left.margin, showme, sep=""), sep="\n")
+    cat(paste0(left.margin, showme), sep="\n")
 }
 
 setMethod("show", "Seqinfo",
