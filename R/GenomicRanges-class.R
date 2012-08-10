@@ -306,7 +306,7 @@ setReplaceMethod("ranges", "GenomicRanges",
                 stop(k, " elements in value to replace ", n, "elements")
             value <- rep(value, length.out=n)
         }
-        update(x, ranges=value)
+        update(x, ranges=value, check=FALSE)
     }
 )
 
@@ -330,7 +330,11 @@ setReplaceMethod("strand", "GenomicRanges",
     function(x, value) 
     {
         value <- normargGenomicRangesStrand(value, length(x))
-        update(x, strand=value)
+        x <- update(x, strand=value, check=FALSE)
+        msg <- .valid.GenomicRanges.strand(x)
+        if (!is.null(msg))
+            stop(msg)
+        x
     }
 )
 
@@ -338,7 +342,11 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
     function(x, ..., value)
     {
         value <- mk_elementMetadataReplacementValue(x, value)
-        update(x, elementMetadata=value)
+        x <- update(x, elementMetadata=value, check=FALSE)
+        msg <- .valid.GenomicRanges.elementMetadata(x)
+        if (!is.null(msg))
+            stop(msg)
+        x
     }
 )
 
@@ -434,7 +442,7 @@ setReplaceMethod("start", "GenomicRanges",
             }
         }
         start(ranges, check=check) <- starts
-        update(x, ranges=ranges)
+        update(x, ranges=ranges, check=FALSE)
     }
 )
 
@@ -458,7 +466,7 @@ setReplaceMethod("end", "GenomicRanges",
             }
         }
         end(ranges, check=check) <- ends
-        update(x, ranges=ranges)
+        update(x, ranges=ranges, check=FALSE)
     }
 )
 
@@ -472,7 +480,7 @@ setReplaceMethod("width", "GenomicRanges",
         } else {
             ranges <- ranges(x)
             width(ranges, check=check) <- value
-            x <- update(x, ranges=ranges)
+            x <- update(x, ranges=ranges, check=FALSE)
         }
         x
     }

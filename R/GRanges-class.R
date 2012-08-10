@@ -128,6 +128,35 @@ GRanges <-
                   strand = strand, ..., seqlengths = seqlengths)
 }
 
+unsafe.update.GRanges <- function(x, ...)
+{
+    valid_argnames <- c("seqnames", "ranges", "strand",
+                        "elementMetadata", "seqinfo", "metadata")
+    args <- IRanges:::extraArgsAsList(valid_argnames, ...)
+    firstTime <- TRUE
+    for (nm in names(args)) {
+        if (firstTime) {
+            slot(x, nm, FALSE) <- args[[nm]]
+            firstTime <- FALSE
+        } else {
+            `slot<-`(x, nm, FALSE, args[[nm]])
+        }
+    }
+    x
+}
+
+setMethod(update, "GRanges",
+    function(object, ..., check=TRUE)
+    {
+        if (!isTRUEorFALSE(check)) 
+            stop("'check' must be TRUE or FALSE")
+        object <- unsafe.update.GRanges(object, ...)
+        if (check)
+            validObject(object)
+        object
+    }
+)
+
 setMethod("updateObject", "GRanges",
     function(object, ..., verbose=FALSE)
     {
