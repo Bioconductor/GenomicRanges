@@ -145,7 +145,7 @@ unsafe.update.GRanges <- function(x, ...)
     x
 }
 
-setMethod(update, "GRanges",
+setMethod("update", "GRanges",
     function(object, ..., check=TRUE)
     {
         if (!isTRUEorFALSE(check)) 

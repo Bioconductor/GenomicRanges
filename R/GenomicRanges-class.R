@@ -399,7 +399,7 @@ setMethod("score", "GenomicRanges", function(x) values(x)$score)
 ### external representations need further customization.
 
 setMethod("update", "GenomicRanges",
-    function(object, ...)
+    function(object, ..., check=TRUE)
     {
         initialize(object, ...)
     }
