@@ -127,8 +127,15 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
 .dispatchOverlaps <-
     function(reads, features, mode, ignore.strand, ...)
 {
-    if (ignore.strand)
-           strand(reads) <- "*"
+    if (ignore.strand) {
+        if (class(reads) == "GRangesList") {
+            r <- unlist(reads)
+            strand(r) <- "*"
+            reads <- split(r, togroup(reads))
+        } else {
+            strand(reads) <- "*"
+        } 
+    }
     mode(reads, features, ignore.strand)
 }
 
