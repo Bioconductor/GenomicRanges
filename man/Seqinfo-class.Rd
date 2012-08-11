@@ -45,7 +45,7 @@
   A Seqinfo object is a table-like object that contains basic information
   about a set of genomic sequences. The table has 1 row per sequence and
   1 column per sequence attribute.  Currently the only attributes are the
-  length, circularity flagi, and genome provenance (e.g. hg19) of the
+  length, circularity flag, and genome provenance (e.g. hg19) of the
   sequence, but more attributes might be added in the future as the need
   arises.
 }

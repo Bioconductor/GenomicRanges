@@ -86,6 +86,8 @@
       \code{"seqlevels"}, \code{"seqlengths"}, \code{"isCircular"},
       \code{"genome"}, \code{"start"}, \code{"end"}, \code{"width"},
       or \code{"element"}.}
+    \item{\code{seqinfo}}{a \link{Seqinfo} object containing information
+      about the set of genomic sequences present in the GRanges object.}
   }
 }
 
@@ -94,10 +96,7 @@
     \item{}{
       \code{GRanges(seqnames = Rle(), ranges = IRanges(),
                     strand = Rle("*", length(seqnames)),
-                    ...,
-                    seqlengths =
-                    structure(rep(NA_integer_, length(levels(seqnames))),
-                              names = levels(seqnames)))}:
+                    ..., seqinfo)}:
       Creates a GRanges object.
       \describe{
         \item{\code{seqnames}}{Rle object, character vector, or factor
@@ -105,11 +104,14 @@
         \item{\code{ranges}}{IRanges object containing the ranges.}
         \item{\code{strand}}{Rle object, character vector, or factor
           containing the strand information.}
-        \item{\code{seqlengths}}{a named integer vector containing the
-          sequence lengths for each \code{level(seqnames)}.}
+        \item{\code{seqinfo}}{a Seqinfo object containing allowed
+          sequence names and lengths (or NA) for each
+          \code{level(seqnames)}.}
         \item{\code{\ldots}}{Optional annotation columns for the
           \code{elementMetadata} slot. These columns cannot be named
-          \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
+          \code{"start"}, \code{"end"}, \code{"width"}, or
+          \code{"element"}. A named integer vector \code{"seqlength"}
+	  can be used instead of \code{seqinfo}.}
       }
     }
   }

@@ -52,12 +52,13 @@ setValidity2("GRanges", .valid.GRanges)
 ### TODO: Revisit this constructor to make it more user friendly.
 ### Also provide a way to supply the sequence circularity flags.
 newGRanges <- ## hidden constructor shared with other GRanges-like objects
-function(class, seqnames = Rle(), ranges = IRanges(),
-         strand = Rle("*", length(seqnames)),
-         ...,
-         seqlengths =
-         structure(rep(NA_integer_, length(levels(seqnames))),
-                   names = levels(seqnames)))
+    function(class, seqnames = Rle(), ranges = IRanges(),
+             strand = Rle("*", length(seqnames)),
+             ...,
+             seqlengths = setNames(
+               rep(NA_integer_, length(levels(seqnames))),
+               levels(seqnames)),
+             seqinfo = Seqinfo(names(seqlengths), seqlengths))
 {
     ## occurs first for generation of default seqlengths
     if (!is(seqnames, "Rle"))
@@ -65,7 +66,6 @@ function(class, seqnames = Rle(), ranges = IRanges(),
     if (!is.factor(runValue(seqnames))) 
         runValue(seqnames) <- factor(runValue(seqnames))
 
-    ranges <- force(ranges)
     if (class(ranges) != "IRanges")
         ranges <- as(ranges, "IRanges")
 
@@ -89,12 +89,8 @@ function(class, seqnames = Rle(), ranges = IRanges(),
             strand <- rep(strand, lx)
     }
 
-    if (!is.integer(seqlengths))
-        seqlengths <-
-          structure(as.integer(seqlengths), names = names(seqlengths))
-    seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
     ## in case we have seqlengths for unrepresented sequences
-    runValue(seqnames) <- factor(runValue(seqnames), names(seqlengths))
+    runValue(seqnames) <- factor(runValue(seqnames), seqnames(seqinfo))
 
     if (!is.null(elementMetadata(ranges))) {
         warning("'ranges' has element metadata, dropping them")
@@ -116,16 +112,15 @@ function(class, seqnames = Rle(), ranges = IRanges(),
 GRanges <-
   function(seqnames = Rle(), ranges = IRanges(),
            strand = Rle("*", length(seqnames)),
-           ...,
-           seqlengths = # this default is more accurate than in newGRanges
-           structure(rep(NA_integer_, length(unique(seqnames))),
-                     names = levels(as.factor(runValue(as(seqnames, "Rle"))))))
+           ..., seqinfo)
 {
-  if (missing(seqlengths)) # avoid potentially expensive seqnames conversion
-    newGRanges("GRanges", seqnames = seqnames, ranges = ranges, strand = strand,
-               ...)
-  else newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
-                  strand = strand, ..., seqlengths = seqlengths)
+    if (missing(seqinfo)) {
+        newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
+                   strand = strand, ...)
+    } else {
+        newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
+                   strand = strand, ..., seqinfo = seqinfo)
+    }
 }
 
 unsafe.update.GRanges <- function(x, ...)

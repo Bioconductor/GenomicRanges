@@ -52,6 +52,10 @@ test_GRanges_construction <- function() {
                              c(1, 2, 2, 3, 2)),
                            score = 1:10, GC = seq(1, 0, length=10)),
                    make_test_GRanges())
+
+    seqinfo <- Seqinfo(letters, rep(1000L, length(letters)))
+    checkIdentical(seqinfo(GRanges(seqinfo=seqinfo)), seqinfo)
+    checkIdentical(seqinfo(GRanges(seqlengths = seqlengths(seqinfo))), seqinfo)
 }
 
 test_GRanges_coercion <- function() {
