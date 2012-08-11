@@ -414,35 +414,40 @@
 }
 
 \examples{
+  seqinfo <- Seqinfo(paste0("chr", 1:3), c(1000, 2000, 1500), NA, "mock1")
   gr <-
     GRanges(seqnames =
             Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-            ranges =
-            IRanges(1:10, width = 10:1, names = head(letters,10)),
-            strand =
-            Rle(strand(c("-", "+", "*", "+", "-")),
-                c(1, 2, 2, 3, 2)),
+            ranges = IRanges(
+              1:10, width = 10:1, names = head(letters,10)),
+            strand = Rle(
+              strand(c("-", "+", "*", "+", "-")),
+              c(1, 2, 2, 3, 2)),
             score = 1:10,
-            GC = seq(1, 0, length=10))
+            GC = seq(1, 0, length=10),
+            seqinfo=seqinfo)
   gr
 
-  # Summarizing elements
+  ## Summarizing elements
   table(seqnames(gr))
   sum(width(gr))
   summary(elementMetadata(gr)[,"score"]) # or values(gr)
 
-  # Renaming the underlying sequences
+  ## Renaming the underlying sequences
   seqlevels(gr)
   seqlevels(gr) <- sub("chr", "Chrom", seqlevels(gr))
   gr
+  seqlevels(gr) <- sub("Chrom", "chr", seqlevels(gr)) # revert
 
-  # Combining objects
-  gr2 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 3, 4)),
+  ## Combining objects
+  gr2 <- GRanges(seqnames=Rle(c('chr1', 'chr2', 'chr3'), c(3, 3, 4)),
                  IRanges(1:10, width=5), strand='-',
-                 score=101:110, GC = runif(10))
-  gr3 <- GRanges(seqnames=Rle(c('Chrom1', 'Chrom2', 'Chrom3'), c(3, 4, 3)),
+                 score=101:110, GC = runif(10),
+                 seqinfo=seqinfo)
+  gr3 <- GRanges(seqnames=Rle(c('chr1', 'chr2', 'chr3'), c(3, 4, 3)),
                  IRanges(101:110, width=10), strand='-',
-                 score=21:30)
+                 score=21:30,
+                 seqinfo=seqinfo)
   some.gr <- c(gr, gr2)
  
   ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
