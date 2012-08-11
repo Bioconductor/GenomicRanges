@@ -245,20 +245,20 @@ setMethod("as.data.frame", "GenomicRanges",
     }
 )
 
-setAs("Seqinfo", "GenomicRanges",
-    function(from)
-    {
-        if (any(is.na(seqlengths(from))))
-            stop("cannot create a GenomicRanges from a Seqinfo ",
-                 "with NA seqlengths")
-        gr <- GRanges(seqnames(from),
-                      IRanges(1L, width=seqlengths(from)),
-                      seqlengths=seqlengths(from))
-        seqinfo(gr) <- from
-        names(gr) <- seqnames(gr)
-        gr
-    }
-)
+.fromSeqinfoToGRanges <- function(from)
+{
+    if (any(is.na(seqlengths(from))))
+        stop("cannot create a GenomicRanges from a Seqinfo ",
+             "with NA seqlengths")
+    GRanges(seqnames(from),
+            IRanges(rep(1L, length(from)),
+                    width=seqlengths(from),
+                    names=seqnames(from)),
+            seqinfo=from)
+}
+
+setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
+setAs("Seqinfo", "GenomicRanges", .fromSeqinfoToGRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
