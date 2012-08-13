@@ -257,7 +257,6 @@ setMethod("as.data.frame", "GenomicRanges",
             seqinfo=from)
 }
 
-setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
 setAs("Seqinfo", "GenomicRanges", .fromSeqinfoToGRanges)
 
 

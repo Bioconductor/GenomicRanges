@@ -232,6 +232,8 @@ setAs("RleViewsList", "GRanges", function(from) {
   as(as(from, "RangedData"), "GRanges")
 })
 
+setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Slot getters and setters.
 ###
