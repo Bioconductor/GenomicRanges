@@ -203,10 +203,46 @@ setMethod("gaps", "GenomicRanges",
     }
 )
 
+.interIntervalSplitVariable <- function(x, ignore.strand=FALSE)
+{
+    f1 <- seqnames(x)
+    runValue(f1) <- 3L * (as.integer(runValue(f1)) - 1L)
+    if (ignore.strand)
+       return(f1)
+    f2 <- strand(x)
+    runValue(f2) <- as.integer(runValue(f2)) - 1L
+    f1 + f2
+}
+
+.interIntervalGenomicRanges2 <- function(x, FUN, ignore.strand=FALSE, ...)
+{
+    x <- clone(x)
+    elementMetadata(x) <- NULL
+    f <- .interIntervalSplitVariable(x, ignore.strand=ignore.strand)
+    xIRangesList <- split(unname(ranges(x)), f)
+    ansIRangesList <- FUN(xIRangesList, ...)
+    k <- elementLengths(ansIRangesList)
+    x_seqlevels <- seqlevels(x)
+    strand_levels <- levels(strand())
+    ansIRangesList_names <- as.integer(names(ansIRangesList))
+    i1 <- ansIRangesList_names %/% 3L + 1L
+    ans_seqnames <- Rle(factor(x_seqlevels[i1], levels=x_seqlevels), k)
+    if (ignore.strand) {
+        ans_strand <- Rle(strand("*"), k)
+    } else {
+        i2 <- ansIRangesList_names %% 3L + 1L
+        ans_strand <- Rle(factor(strand_levels[i2], levels=strand_levels), k)
+    }
+    update(x, seqnames=ans_seqnames,
+           ranges=unlist(ansIRangesList, use.names=FALSE),
+           strand=ans_strand,
+           elementMetadata=new("DataFrame", nrows=length(ans_seqnames)))
+}
+
 setMethod("range", "GenomicRanges",
     function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
-        .interIntervalGenomicRanges(unname(c(x, ...)), range, 
-                                    ignore.strand=ignore.strand)
+        .interIntervalGenomicRanges2(unname(c(x, ...)), range, 
+                                     ignore.strand=ignore.strand)
 )
 
 setMethod("reduce", "GenomicRanges",
@@ -220,9 +256,9 @@ setMethod("reduce", "GenomicRanges",
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- "*"
-        .interIntervalGenomicRanges(x, reduce,
-                                    drop.empty.ranges=drop.empty.ranges,
-                                    min.gapwidth=min.gapwidth)
+        .interIntervalGenomicRanges2(x, reduce,
+                                     drop.empty.ranges=drop.empty.ranges,
+                                     min.gapwidth=min.gapwidth)
     }
 )
 
@@ -252,7 +288,7 @@ setMethod("isDisjoint", "GenomicRanges",
 
 setMethod("disjoin", "GenomicRanges",
     function(x, ignore.strand=FALSE)
-        .interIntervalGenomicRanges(x, disjoin, ignore.strand=ignore.strand)
+        .interIntervalGenomicRanges2(x, disjoin, ignore.strand=ignore.strand)
 )
 
 setMethod("disjointBins", "GenomicRanges",

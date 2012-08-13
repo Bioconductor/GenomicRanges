@@ -437,7 +437,7 @@ setMethod("shift", "GRangesList",
 setMethod("isDisjoint", "GRangesList",
     function(x, ignore.strand = FALSE)
     {
-        gr <- GenomicRanges:::deconstructGRLintoGR(x)
+        gr <- deconstructGRLintoGR(x)
 
         if (ignore.strand) 
             xIRangesList <- split(unname(ranges(gr)), paste(seqnames(gr),
