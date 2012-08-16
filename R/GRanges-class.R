@@ -193,8 +193,8 @@ setAs("RangedData", "GRanges",
         if (is.na(whichStrand)) {
             ans_strand <- Rle(strand("*"), length(ans_ranges))
         } else {
-            ans_mcols <- ans_mcols[-whichStrand]
             ans_strand <- Rle(strand(from))
+            ans_mcols <- ans_mcols[-whichStrand]
         }
         ans <- GRanges(seqnames=space(from),
                        ranges=ans_ranges,
