@@ -88,7 +88,7 @@ setMethod("elementMetadata", "GenomicRanges",
     n <- length(seqnames(x))
     if ((length(ranges(x)) != n)
      || (length(strand(x)) != n)
-     || (nrow(elementMetadata(x)) != n))
+     || (nrow(mcols(x)) != n))
         return("slot lengths are not all equal")
     NULL
 }
@@ -130,12 +130,11 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
                          "seqlevels", "seqlengths", "isCircular", "genome",
                          "start", "end", "width", "element")
 
-.valid.GenomicRanges.elementMetadata <- function(x)
+.valid.GenomicRanges.mcols <- function(x)
 {    
-    if (any(INVALID.GR.COLNAMES %in% colnames(elementMetadata(x)))) {
-        msg <- c("slot 'elementMetadata' cannot use",
-                 paste0("\"", INVALID.GR.COLNAMES, "\"", collapse=", "),
-                 "as column names")
+    if (any(INVALID.GR.COLNAMES %in% colnames(mcols(x)))) {
+        msg <- c("names of metadata columns cannot be one of ",
+                 paste0("\"", INVALID.GR.COLNAMES, "\"", collapse=", "))
         return(paste(msg, collapse=" "))
     }
     NULL
@@ -180,7 +179,7 @@ valid.GenomicRanges.seqinfo <- function(x)
       .valid.GenomicRanges.seqnames(x),
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
-      .valid.GenomicRanges.elementMetadata(x),
+      .valid.GenomicRanges.mcols(x),
       valid.GenomicRanges.seqinfo(x))
       #checkConstraint(x, constraint(x)))
 }
@@ -196,11 +195,10 @@ setAs("GenomicRanges", "RangedData",
     function(from)
     {
         rd <- RangedData(ranges(from), strand=strand(from),
-                         elementMetadata(from), space=seqnames(from))
-        elementMetadata(ranges(rd)) <- DataFrame(
-                                         seqlengths=seqlengths(from),
-                                         isCircular=isCircular(from),
-                                         genome=genome(from))
+                         mcols(from), space=seqnames(from))
+        mcols(ranges(rd)) <- DataFrame(seqlengths=seqlengths(from),
+                                       isCircular=isCircular(from),
+                                       genome=genome(from))
         metadata(ranges(rd)) <- metadata(from)
         metadata(ranges(rd))$seqinfo <- seqinfo(from)
         rd
@@ -211,15 +209,15 @@ setAs("GenomicRanges", "RangesList",
     function(from)
     {
         rl <- split(ranges(from), seqnames(from))
-        emd <- split(DataFrame(strand=strand(from), elementMetadata(from)),
-                     seqnames(from))
+        mcols_list <- split(DataFrame(strand=strand(from), mcols(from)),
+                            seqnames(from))
         rl <- mendoapply(function(ranges, metadata) {
-          elementMetadata(ranges) <- metadata
+          mcols(ranges) <- metadata
           ranges
-        }, rl, emd)
-        elementMetadata(rl) <- DataFrame(seqlengths=seqlengths(from),
-                                         isCircular=isCircular(from),
-                                         genome=genome(from))
+        }, rl, mcols_list)
+        mcols(rl) <- DataFrame(seqlengths=seqlengths(from),
+                               isCircular=isCircular(from),
+                               genome=genome(from))
         metadata(rl) <- metadata(from)
         metadata(rl)$seqinfo <- seqinfo(from)
         rl
@@ -239,7 +237,7 @@ setMethod("as.data.frame", "GenomicRanges",
                    end=end(x),
                    width=width(x),
                    strand=as.factor(strand(x)),
-                   as.data.frame(elementMetadata(x), ...),
+                   as.data.frame(mcols(x), ...),
                    row.names=row.names,
                    stringsAsFactors=FALSE)
     }
@@ -342,7 +340,7 @@ setReplaceMethod("elementMetadata", "GenomicRanges",
     {
         value <- mk_elementMetadataReplacementValue(x, value)
         x <- update(x, elementMetadata=value, check=FALSE)
-        msg <- .valid.GenomicRanges.elementMetadata(x)
+        msg <- .valid.GenomicRanges.mcols(x)
         if (!is.null(msg))
             stop(msg)
         x
@@ -370,7 +368,7 @@ setReplaceMethod("seqinfo", "GenomicRanges",
     }
 )
 
-setMethod("score", "GenomicRanges", function(x) values(x)$score)
+setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
 
 #setReplaceMethod("constraint", "GenomicRanges",
 #    function(x, value)
@@ -497,24 +495,24 @@ setMethod("[", "GenomicRanges",
             stop("invalid subsetting")
         if (missing(i) && missing(j))
             return(x)
-        x_elementMetadata <- elementMetadata(x, FALSE)
+        x_mcols <- mcols(x, FALSE)
         if (missing(i)) {
-            ans_elementMetadata <- x_elementMetadata[ , j, drop=FALSE]
-            return(clone(x, elementMetadata=ans_elementMetadata))
+            ans_mcols <- x_mcols[ , j, drop=FALSE]
+            return(clone(x, elementMetadata=ans_mcols))
         }
         i <- IRanges:::normalizeSingleBracketSubscript(i, x)
         ans_seqnames <- seqnames(x)[i]
         ans_ranges <- ranges(x)[i]
         ans_strand <- strand(x)[i]
         if (missing(j)) {
-            ans_elementMetadata <- x_elementMetadata[i, , drop=FALSE]
+            ans_mcols <- x_mcols[i, , drop=FALSE]
         } else {
-            ans_elementMetadata <- x_elementMetadata[i, j, drop=FALSE]
+            ans_mcols <- x_mcols[i, j, drop=FALSE]
         }
         clone(x, seqnames=ans_seqnames,
                  ranges=ans_ranges,
                  strand=ans_strand,
-                 elementMetadata=ans_elementMetadata)
+                 elementMetadata=ans_mcols)
     }
 )
 
@@ -527,7 +525,7 @@ setReplaceMethod("[", "GenomicRanges",
         seqnames <- seqnames(x)
         ranges <- ranges(x)
         strand <- strand(x)
-        elementMetadata <- elementMetadata(x, FALSE)
+        ans_mcols <- mcols(x, FALSE)
         if (!missing(i)) {
             iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
             if (!is.null(iInfo[["msg"]]))
@@ -538,40 +536,50 @@ setReplaceMethod("[", "GenomicRanges",
             ranges[] <- ranges(value)
             strand[] <- strand(value)
             if (missing(j))
-                elementMetadata[ , ] <- elementMetadata(value, FALSE)
+                ans_mcols[ , ] <- mcols(value, FALSE)
             else
-                elementMetadata[ , j] <- elementMetadata(value, FALSE)
+                ans_mcols[ , j] <- mcols(value, FALSE)
         } else {
             i <- iInfo[["idx"]]
             seqnames[i] <- seqnames(value)
             ranges[i] <- ranges(value)
             strand[i] <- strand(value)
             if (missing(j))
-                elementMetadata[i, ] <- elementMetadata(value, FALSE)
+                ans_mcols[i, ] <- mcols(value, FALSE)
             else
-                elementMetadata[i, j] <- elementMetadata(value, FALSE)
+                ans_mcols[i, j] <- mcols(value, FALSE)
         }
         update(x, seqnames=seqnames, ranges=ranges,
-               strand=strand, elementMetadata=elementMetadata)
+               strand=strand, elementMetadata=ans_mcols)
     }
 )
 
 setMethod("c", "GenomicRanges",
-    function(x, ..., .ignoreElementMetadata=FALSE, recursive=FALSE)
+    function(x, ..., ignore.mcols=FALSE, .ignoreElementMetadata=FALSE,
+             recursive=FALSE)
     {
-        if (recursive)
-            stop("'recursive' mode not supported")
+        if (!identical(recursive, FALSE))
+            stop("'recursive' argument not supported")
+        if (!isTRUEorFALSE(ignore.mcols))
+            stop("'ignore.mcols' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(.ignoreElementMetadata))
+            stop("'.ignoreElementMetadata' must be TRUE or FALSE")
+        if (.ignoreElementMetadata) {
+            msg <- c("the '.ignoreElementMetadata' argument is deprecated, ",
+                     "please use 'ignore.mcols'\n  instead")
+            .Deprecated(msg=msg)
+            ignore.mcols <- TRUE
+        }
         args <- unname(list(x, ...))
         ans_seqinfo <- do.call(merge, lapply(args, seqinfo))
         ans_seqnames <- do.call(c, lapply(args, seqnames))
         ans_ranges <- do.call(c, lapply(args, ranges))
         ans_strand <- do.call(c, lapply(args, strand))
         
-        if (.ignoreElementMetadata) {
-          ans_elementMetadata <- new("DataFrame", nrows=length(ans_ranges))
+        if (ignore.mcols) {
+          ans_mcols <- new("DataFrame", nrows=length(ans_ranges))
         } else {
-          ans_elementMetadata <- do.call(rbind,
-                                         lapply(args, elementMetadata, FALSE))
+          ans_mcols <- do.call(rbind, lapply(args, mcols, FALSE))
         }
         
         ans_names <- names(ans_ranges)
@@ -580,7 +588,7 @@ setMethod("c", "GenomicRanges",
               ranges=ans_ranges,
               strand=ans_strand,
               seqinfo=ans_seqinfo,
-              elementMetadata=ans_elementMetadata)
+              elementMetadata=ans_mcols)
     }
 )
 
@@ -631,14 +639,14 @@ setReplaceMethod("seqselect", "GenomicRanges",
             seqnames <- as.factor(seqnames(x))
             ranges <- ranges(x)
             strand <- as.factor(strand(x))
-            elementMetadata <- elementMetadata(x, FALSE)
+            mcols <- mcols(x, FALSE)
             seqselect(seqnames, ir) <- as.factor(seqnames(value))
             seqselect(ranges, ir) <- ranges(value)
             seqselect(strand, ir) <- as.factor(strand(value))
-            seqselect(elementMetadata, ir) <- elementMetadata(value)
+            seqselect(mcols, ir) <- mcols(value)
             update(x, seqnames=Rle(seqnames), ranges=ranges, 
                    strand=Rle(strand),
-                   elementMetadata=elementMetadata)
+                   elementMetadata=mcols)
         }
     }
 )
@@ -666,18 +674,44 @@ setMethod("window", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### $ and $<- methods
+###
+### Provided as a convenience, for GenomicRanges *only*, and as the result
+### of strong popular demand.
+### Note that those methods are not consistent with the other $ and $<-
+### methods in the IRanges/GenomicRanges infrastructure, and might confuse
+### some users by making them believe that a GenomicRanges object can be
+### manipulated as a data.frame-like object.
+### Therefore we recommend using them only interactively, and we discourage
+### their use in scripts or packages. For the latter, use 'mcols(x)$name'
+### instead of 'x$name'.
+###
+
+.DollarNames.GenomicRanges <- function(x, pattern)
+    grep(pattern, names(mcols(x)), value=TRUE)
+
+setMethod("$", "GenomicRanges",
+    function(x, name) mcols(x)[[name]]
+)
+
+setReplaceMethod("$", "GenomicRanges",
+    function(x, name, value) {mcols(x)[[name]] <- value; x}
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### "show" method.
 ###
 
 .makeNakedMatFromGenomicRanges <- function(x)
 {
     lx <- length(x)
-    nc <- ncol(elementMetadata(x))
+    nc <- ncol(mcols(x))
     ans <- cbind(seqnames=as.character(seqnames(x)),
                  ranges=IRanges:::showAsCell(ranges(x)),
                  strand=as.character(strand(x)))
     if (nc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(elementMetadata(x),
+        tmp <- do.call(data.frame, c(lapply(mcols(x),
                                             IRanges:::showAsCell),
                                      list(check.names=FALSE)))
         ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
@@ -689,11 +723,11 @@ showGenomicRanges <- function(x, margin="",
                               with.classinfo=FALSE, print.seqlengths=FALSE)
 {
     lx <- length(x)
-    nc <- ncol(elementMetadata(x))
+    nc <- ncol(mcols(x))
     cat(class(x), " with ",
         lx, " ", ifelse(lx == 1L, "range", "ranges"),
         " and ",
-        nc, " elementMetadata ", ifelse(nc == 1L, "col", "cols"),
+        nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)

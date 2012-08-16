@@ -25,7 +25,7 @@
 
 \title{Overlap encodings}
 \author{Herv\'e Pag\`es}
-\date{Last modified: May 2012; Compiled: \today}
+\date{Last modified: August 2012; Compiled: \today}
 
 \begin{document}
 
@@ -290,7 +290,7 @@ i.e. not all BAM files have them):
 <<U1.GAL_qseq>>=
 param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
 U1.GAL <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
-U1.GAL_qseq <- elementMetadata(U1.GAL)$seq
+U1.GAL_qseq <- mcols(U1.GAL)$seq
 names(U1.GAL_qseq) <- names(U1.GAL)
 head(U1.GAL_qseq)
 @
@@ -383,7 +383,7 @@ the N CIGAR operations, it should actually be the same as the former.
 We confirm this for the 500 edit distances computed in \Rcode{U1.GAL\_nedit500}:
 
 <<U1.GAL-nedit-vs-NM>>=
-U1.GAL_NM <- elementMetadata(U1.GAL)$NM
+U1.GAL_NM <- mcols(U1.GAL)$NM
 stopifnot(all(U1.GAL_NM[1:500] == U1.GAL_nedit500))
 @
 
@@ -418,8 +418,8 @@ U3.GALP <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=par
 Let's extract the {\it first} and {\it last} sequences from \Rcode{U3.GALP}:
 
 <<U3.GALP-qseq1-and-qseq2>>=
-U3.GALP_qseq1 <- elementMetadata(first(U3.GALP))$seq
-U3.GALP_qseq2 <- elementMetadata(last(U3.GALP))$seq
+U3.GALP_qseq1 <- mcols(first(U3.GALP))$seq
+U3.GALP_qseq2 <- mcols(last(U3.GALP))$seq
 names(U3.GALP_qseq1) <- names(U3.GALP_qseq2) <- names(U3.GALP)
 head(U3.GALP_qseq1)
 head(U3.GALP_qseq2)
@@ -514,10 +514,10 @@ We confirm this for the 500 edit distances computed in
 \Rcode{U3.GALP\_first\_nedit500} and \Rcode{U3.GALP\_last\_nedit500}:
 
 <<U3.GALP-nedit-vs-NM>>=
-U3.GALP_first_NM <- elementMetadata(first(U3.GALP))$NM
+U3.GALP_first_NM <- mcols(first(U3.GALP))$NM
 stopifnot(all(U3.GALP_first_NM[1:500] == U3.GALP_first_nedit500))
 
-U3.GALP_last_NM <- elementMetadata(last(U3.GALP))$NM
+U3.GALP_last_NM <- mcols(last(U3.GALP))$NM
 stopifnot(all(U3.GALP_last_NM[1:500] == U3.GALP_last_nedit500))
 @
 
@@ -622,7 +622,7 @@ then we construct a named factor that represents the mapping:
 <<exbytx2gene>>=
 tx <- transcripts(txdb, columns=c("tx_name", "gene_id"))
 head(tx)
-df <- elementMetadata(tx)
+df <- mcols(tx)
 exbytx2gene <- as.character(df$gene_id)
 exbytx2gene <- factor(exbytx2gene, levels=unique(exbytx2gene))
 names(exbytx2gene) <- df$tx_name
@@ -668,7 +668,7 @@ Number of transcripts for each alignment in \Rcode{U1.GAL}:
 
 <<U1.GAL_ntx>>=
 U1.GAL_ntx <- nhitPerQuery(U1.OV00)
-elementMetadata(U1.GAL)$ntx <- U1.GAL_ntx
+mcols(U1.GAL)$ntx <- U1.GAL_ntx
 head(U1.GAL)
 table(U1.GAL_ntx)
 mean(U1.GAL_ntx >= 1)
@@ -743,7 +743,7 @@ Number of transcripts for each alignment pair in \Rcode{U3.GALP}:
 
 <<U3.GALP_ntx>>=
 U3.GALP_ntx <- nhitPerQuery(U3.OV00)
-elementMetadata(U3.GALP)$ntx <- U3.GALP_ntx
+mcols(U3.GALP)$ntx <- U3.GALP_ntx
 head(U3.GALP)
 table(U3.GALP_ntx)
 mean(U3.GALP_ntx >= 1)
@@ -995,7 +995,7 @@ Number of ``compatible'' transcripts for each alignment in \Rcode{U1.GAL}:
 
 <<U1.GAL_ncomptx>>=
 U1.GAL_ncomptx <- nhitPerQuery(U1.compOV00)
-elementMetadata(U1.GAL)$ncomptx <- U1.GAL_ncomptx
+mcols(U1.GAL)$ncomptx <- U1.GAL_ncomptx
 head(U1.GAL)
 table(U1.GAL_ncomptx)
 mean(U1.GAL_ncomptx >= 1)
@@ -1136,7 +1136,7 @@ Number of ``compatible'' transcripts for each alignment pair in
 
 <<U3.GALP_ncomptx>>=
 U3.GALP_ncomptx <- nhitPerQuery(U3.compOV00)
-elementMetadata(U3.GALP)$ncomptx <- U3.GALP_ncomptx
+mcols(U3.GALP)$ncomptx <- U3.GALP_ncomptx
 head(U3.GALP)
 table(U3.GALP_ncomptx)
 mean(U3.GALP_ncomptx >= 1)
@@ -1470,7 +1470,7 @@ transcripts):
 
 <<which.txseq, eval=FALSE>>=
 chr4tx <- transcripts(txdb, vals=list(tx_chrom="chr4"))
-chr4txnames <- elementMetadata(chr4tx)$tx_name
+chr4txnames <- mcols(chr4tx)$tx_name
 which.txseq <- match(chr4txnames, names(txseq))
 @
 
@@ -1638,7 +1638,7 @@ Number of ``almost compatible'' transcripts for each alignment in
 
 <<U1.GAL_nacomptx>>=
 U1.GAL_nacomptx <- nhitPerQuery(U1.acompOV00)
-elementMetadata(U1.GAL)$nacomptx <- U1.GAL_nacomptx
+mcols(U1.GAL)$nacomptx <- U1.GAL_nacomptx
 head(U1.GAL)
 table(U1.GAL_nacomptx)
 mean(U1.GAL_nacomptx >= 1)
@@ -1732,7 +1732,7 @@ Number of ``almost compatible'' transcripts for each alignment pair in
 
 <<U3.GALP_nacomptx>>=
 U3.GALP_nacomptx <- nhitPerQuery(U3.acompOV00)
-elementMetadata(U3.GALP)$nacomptx <- U3.GALP_nacomptx
+mcols(U3.GALP)$nacomptx <- U3.GALP_nacomptx
 head(U3.GALP)
 table(U3.GALP_nacomptx)
 mean(U3.GALP_nacomptx >= 1)

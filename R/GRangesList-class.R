@@ -19,32 +19,33 @@ setClass("GRangesList",
 ### Validity.
 ###
 
-.valid.GRangesList.elementMetadata <- function(x)
+.valid.GRangesList.mcols <- function(x)
 {
     msg <- NULL
-    if (nrow(x@elementMetadata) != length(x))
-        msg <- "slot 'elementMetadata' has an incorrect number of rows"
+    x_mcols <- x@elementMetadata
+    if (nrow(x_mcols) != length(x))
+        msg <- "'mcols(x)' has an incorrect number of rows"
     if (any(c("seqnames", "ranges", "strand", "start", "end", "width",
-              "element") %in% colnames(x@elementMetadata)))
+              "element") %in% colnames(x_mcols)))
         msg <-
           c(msg,
-            paste("slot 'elementMetadata' cannot use \"seqnames\", \"ranges\",",
-                  "\"strand\", \"start\", \"end\", \"width\", or \"element\"",
-                  "as column names"))
-    if (any(colnames(x@elementMetadata) %in%
+            paste("'mcols(x)' cannot have columns named \"seqnames\", ",
+                  "\"ranges\", \"strand\", \"start\", \"end\", \"width\", ",
+                  "or \"element\""))
+    if (any(colnames(x_mcols) %in%
             colnames(x@unlistData@elementMetadata)))
         msg <-
           c(msg,
-            paste("slot 'elementMetadata' cannot use the same names for",
-                  "columns as unlisted GRanges elementMetadata"))
-    if (!is.null(rownames(x@elementMetadata)))
-        msg <- c(msg, "slot 'elementMetadata' cannot contain row names")
+            paste("'mcols(x)' cannot have columns named as metadata ",
+                  "columns of unlisted GRanges"))
+    if (!is.null(rownames(x_mcols)))
+        msg <- c(msg, "'mcols(x)' cannot have row names")
     msg
 }
 
 .valid.GRangesList <- function(x)
 {
-    c(.valid.GRangesList.elementMetadata(x))
+    c(.valid.GRangesList.mcols(x))
 }
 
 setValidity2("GRangesList", .valid.GRangesList)
@@ -354,7 +355,7 @@ setReplaceMethod("seqinfo", "GRangesList",
 )
 
 setMethod("score", "GRangesList", function(x) {
-  values(x)$score
+  mcols(x)$score
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -483,12 +484,12 @@ setMethod("[", "GRangesList",
                 stop("'j' must be a character vector")
             withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
             if (any(withinLevel) && !all(withinLevel))
-                stop("'j' cannot mix between and within column names")
+                stop("'j' cannot mix between and within metadata column names")
             if (any(withinLevel)) {
-                elementMetadata(x, level="within") <-
-                  elementMetadata(x, level="within")[, j, drop=FALSE]
+                mcols(x, level="within") <-
+                  mcols(x, level="within")[, j, drop=FALSE]
             } else {
-                elementMetadata(x) <- elementMetadata(x)[, j, drop=FALSE]
+                mcols(x) <- mcols(x)[, j, drop=FALSE]
             }
         }
         x
@@ -511,20 +512,20 @@ setReplaceMethod("[", "GRangesList",
                 stop("'j' must be a character vector")
             withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
             if (any(withinLevel) && !all(withinLevel))
-                stop("'j' cannot mix between and within column names")
+                stop("'j' cannot mix between and within metadata column names")
             if (missing(i)) {
                 if (any(withinLevel)) {
-                    elementMetadata(x, level="within")[, j] <-
-                      elementMetadata(x, level="within")
+                    mcols(x, level="within")[, j] <-
+                      mcols(x, level="within")
                 } else {
-                    elementMetadata(x)[, j] <- elementMetadata(x)
+                    mcols(x)[, j] <- mcols(x)
                 }
             } else {
                 if (any(withinLevel)) {
-                    elementMetadata(x, level="within")[i, j] <-
-                            elementMetadata(x, level="within")
+                    mcols(x, level="within")[i, j] <-
+                            mcols(x, level="within")
                 } else {
-                    elementMetadata(x)[i, j] <- elementMetadata(x)
+                    mcols(x)[i, j] <- mcols(x)
                 }
             }
         }
@@ -674,7 +675,7 @@ deconstructGRLintoGR <- function(x, expand.levels=FALSE)
 ### More precisely, reconstructGRLfromGR() transforms GRanges object 'gr'
 ### with sequence names in the "f1|f2" format (as produced by
 ### deconstructGRLintoGR() above) back into a GRangesList object with the
-### same length & names & elementMetadata & seqinfo as 'x'.
+### same length & names & metadata columns & seqinfo as 'x'.
 ### The fundamental property of this deconstruction/reconstruction mechanism
 ### is that, for any GRangesList object 'x':
 ###
@@ -699,7 +700,7 @@ reconstructGRLfromGR <- function(gr, x)
     ans <- split(gr, factor(f1, levels=seq_len(length(x))))
     names(ans) <- names(x)
     metadata(ans) <- metadata(x)
-    elementMetadata(ans) <- elementMetadata(x)
+    mcols(ans) <- mcols(x)
     ans
 }
 
@@ -711,7 +712,7 @@ reconstructGRLfromGR <- function(gr, x)
 ### to 'endoapply(x, range)' and 'endoapply(x, reduce)', respectively.
 ### This makes them isomorphisms, that is, they are endomorphisms (i.e. they
 ### preserve the class of 'x') who also preserve the length & names &
-### elementMetadata of 'x'. In addition, the seqinfo is preserved too.
+### metadata columns of 'x'. In addition, the seqinfo is preserved too.
 ###
 ### However, using endoapply() for the implementation would be too
 ### inefficient. The fast implementation below takes advantage of the

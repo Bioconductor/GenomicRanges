@@ -24,7 +24,7 @@
 
 \title{Counting with \Rfunction{summarizeOverlaps}}
 \author{Valerie Obenchain}
-\date{Edited: July 2012; Compiled: \today}
+\date{Edited: August 2012; Compiled: \today}
 
 \begin{document}
 
@@ -202,7 +202,7 @@ the highest list-levels are treated as different features
 and the multiple list elements are considered part of the same 
 features. Counts are returned for each group. 
 <<lst>>=
-lst <- split(features, values(features)[["group_id"]])
+lst <- split(features, mcols(features)[["group_id"]])
 length(lst)
 @
 <<GRangesList>>=
@@ -258,13 +258,13 @@ gff0 <- import(gffFile, asRangedData=FALSE)
 Subset on the protein-coding, exon regions of chromosome 4
 and split by gene id.
 <<gff_parse, eval=FALSE>>=
-idx <- values(gff0)$source == "protein_coding" & 
-           values(gff0)$type == "exon" & 
+idx <- mcols(gff0)$source == "protein_coding" & 
+           mcols(gff0)$type == "exon" & 
            seqnames(gff0) == "4"
 gff <- gff0[idx]
 ## adjust seqnames to match Bam files
 seqlevels(gff) <- paste("chr", seqlevels(gff), sep="")
-chr4genes <- split(gff, values(gff)$gene_id)
+chr4genes <- split(gff, mcols(gff)$gene_id)
 @
 
 \subsection{counting}
@@ -326,7 +326,7 @@ sampleNames(geneCDS) = colnames(genehits)
 If the primary interest is to count by transcript instead of by gene, 
 the annotation file can be split on transcript id. 
 <<pasilla_genes, eval=FALSE>>=
-chr4tx <- split(gff, values(gff)$transcript_id)
+chr4tx <- split(gff, mcols(gff)$transcript_id)
 txhits <- summarizeOverlaps(chr4tx, bamlst)
 txCDS <- newCountDataSet(assays(txhits)$counts, design) 
 experimentData(txCDS) <- expdata

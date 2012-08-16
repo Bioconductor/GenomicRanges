@@ -58,6 +58,10 @@
 \alias{seqselect<-,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
 
+% $ and $<- methods:
+\alias{$,GenomicRanges-method}
+\alias{$<-,GenomicRanges-method}
+
 % "show" method:
 \alias{show,GenomicRanges-method}
 
@@ -71,8 +75,8 @@
 \details{
   The GRanges class stores the sequences of genomic locations and associated
   annotations. Each element in the sequence is comprised of a sequence name,
-  an interval, a \link{strand}, and optional element metadata (e.g. score, GC
-  content, etc.). This information is stored in four slots:
+  an interval, a \link{strand}, and optional metadata columns (e.g. score, GC
+  content, etc.). This information is stored in four components:
   \describe{
     \item{\code{seqnames}}{a 'factor' \link[IRanges]{Rle} object
       containing the sequence names.}
@@ -80,8 +84,8 @@
       the ranges.}
     \item{\code{strand}}{a 'factor' \link[IRanges]{Rle} object containing
       the \link{strand} information.}
-    \item{\code{elementMetadata}}{a \link[IRanges]{DataFrame} object
-      containing the annotation columns. Columns cannot be named
+    \item{\code{mcols}}{a \link[IRanges]{DataFrame} object
+      containing the metadata columns. Columns cannot be named
       \code{"seqnames"}, \code{"ranges"}, \code{"strand"},
       \code{"seqlevels"}, \code{"seqlengths"}, \code{"isCircular"},
       \code{"genome"}, \code{"start"}, \code{"end"}, \code{"width"},
@@ -107,8 +111,8 @@
         \item{\code{seqinfo}}{a Seqinfo object containing allowed
           sequence names and lengths (or NA) for each
           \code{level(seqnames)}.}
-        \item{\code{\ldots}}{Optional annotation columns for the
-          \code{elementMetadata} slot. These columns cannot be named
+        \item{\code{\ldots}}{Optional metadata columns.
+          These columns cannot be named
           \code{"start"}, \code{"end"}, \code{"width"}, or
           \code{"element"}. A named integer vector \code{"seqlength"}
 	  can be used instead of \code{seqinfo}.}
@@ -128,34 +132,34 @@
     \item{}{
       \code{as(from, "RangedData")}:
       Creates a RangedData object from a GRanges
-      object. The \code{strand} and the values become columns in the
-      result. The \code{seqlengths(from)}, \code{isCircular(from)},
-      and \code{genome(from)} vectors are stored in the element metadata
+      object. The \code{strand} and metadata columns become columns
+      in the result. The \code{seqlengths(from)}, \code{isCircular(from)},
+      and \code{genome(from)} vectors are stored in the metadata columns
       of \code{ranges(rd)}.
     }
     \item{}{
       \code{as(from, "RangesList")}:
       Creates a RangesList object from a GRanges
-      object. The \code{strand} and values become element metadata on the
-      ranges. The \code{seqlengths(from)}, \code{isCircular(from)},
-      and \code{genome(from)} vectors are stored in the element metadata.
+      object. The \code{strand} and metadata columns become \emph{inner}
+      metadata columns (i.e. metadata columns on the ranges).
+      The \code{seqlengths(from)}, \code{isCircular(from)}, and
+      \code{genome(from)} vectors become the metadata columns.
     }
     \item{}{
       \code{as(from, "GappedAlignments")}:
-      Creates a GappedAlignments object from a GRanges object. The values 
-      become element metadata on the ranges. cigar values are created 
-      from the sequence width unless a "cigar" element metadata column 
-      already exists in \code{from}.
+      Creates a GappedAlignments object from a GRanges object. The metadata
+      columns are propagated. cigar values are created from the sequence
+      width unless a "cigar" metadata column already exists in \code{from}.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE, ...)}:
       Creates a data.frame with columns \code{seqnames} (factor),
       \code{start} (integer), \code{end} (integer), \code{width} (integer),
-      \code{strand} (factor), as well as the additional columns stored in
-      \code{elementMetadata(x)}. Pass an explicit
+      \code{strand} (factor), as well as the additional metadata columns
+      stored in \code{mcols(x)}. Pass an explicit
       \code{stringsAsFactors=TRUE/FALSE} argument via \code{\ldots} to
-      override the default conversions for the columns in
-      \code{elementMetadata(x)}.
+      override the default conversions for the metadata columns in
+      \code{mcols(x)}.
     }
   }
 }
@@ -192,13 +196,15 @@
       vector, or factor.
     }
     \item{}{
-      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
-      Gets or sets the optional data columns. \code{value} can be a DataFrame,
-      data.frame object, or NULL.
+      \code{mcols(x)}, \code{mcols(x) <- value}:
+      Gets or sets the metadata columns.
+      \code{value} can be \code{NULL}, or a data.frame-like object (i.e.
+      \link{DataFrame} or data.frame) holding element-wise metadata.
     }
     \item{}{
-      \code{values(x), values(x) <- value}:
-      Alternative to \code{elementMetadata} functions.
+       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
+       \code{values(x)}, \code{values(x) <- value}:
+       Alternatives to \code{mcols} functions. Their use is discouraged.
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
@@ -277,13 +283,13 @@
       The result is an object of the same class as \code{x}.
     }
     \item{}{
-      \code{c(x, ..., .ignoreElementMetadata=TRUE)}
-      If the \code{GRanges} objects have associated \code{\link{elementMetadata}}
-      (also known as \code{\link{values}}), each such \code{\linkS4class{DataFrame}}
-      must have the same columns in order to combine successfully. In order to circumvent
-      this restraint, you can pass in an \code{.ignoreElementMetadata=TRUE} argument
+      \code{c(x, ..., ignore.mcols=FALSE)}
+      If the \code{GRanges} objects have metadata columns (represented as one
+      \link{DataFrame} per object), each such \link{DataFrame} must have the
+      same columns in order to combine successfully. In order to circumvent
+      this restraint, you can pass in an \code{ignore.mcols=TRUE} argument
       which will combine all the objects into one and drop all of their
-      \code{elementMetadata}.
+      metadata columns.
     }
     \item{}{
       \code{split(x, f, drop=FALSE)}:
@@ -307,13 +313,13 @@
   \describe{
     \item{}{
       \code{x[i, j]}, \code{x[i, j] <- value}:
-      Gets or sets elements \code{i} with optional elementMetadata columns
-      \code{elementMetadata(x)[,j]}, where \code{i} can be missing; an NA-free
+      Gets or sets elements \code{i} with optional metadata columns
+      \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
       logical, numeric, or character vector; or a 'logical' Rle object.
     }
     \item{}{
       \code{x[i,j] <- value}:
-      Replaces elements \code{i} and optional elementMetadata columns \code{j}
+      Replaces elements \code{i} and optional metadata columns \code{j}
       with \code{value}.
     }
     \item{}{
@@ -395,6 +401,20 @@
       the length of \code{x}, depending on how the length of the left
       subsequence window compares to the length of \code{value}.
     }
+    \item{}{
+      \code{x$name}, \code{x$name <- value}:
+      Shortcuts for \code{mcols(x)$name} and \code{mcols(x)$name <- value},
+      respectively. Provided as a convenience, for GRanges objects *only*,
+      and as the result of strong popular demand.
+      Note that those methods are not consistent with the other \code{$}
+      and \code{$<-} methods in the IRanges/GenomicRanges infrastructure,
+      and might confuse some users by making them believe that a GRanges
+      object can be manipulated as a data.frame-like object.
+      Therefore we recommend using them only interactively, and we discourage
+      their use in scripts or packages. For the latter, use
+      \code{mcols(x)$name} and \code{mcols(x)$name <- value}, instead
+      of \code{x$name} and \code{x$name <- value}, respectively.
+    }
   }
 }
 
@@ -431,7 +451,7 @@
   ## Summarizing elements
   table(seqnames(gr))
   sum(width(gr))
-  summary(elementMetadata(gr)[,"score"]) # or values(gr)
+  summary(mcols(gr)[,"score"])
 
   ## Renaming the underlying sequences
   seqlevels(gr)
@@ -451,5 +471,5 @@
   some.gr <- c(gr, gr2)
  
   ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
-  all.gr <- c(gr, gr2, gr3, .ignoreElementMetadata=TRUE)
+  all.gr <- c(gr, gr2, gr3, ignore.mcols=TRUE)
 }

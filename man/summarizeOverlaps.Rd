@@ -206,7 +206,7 @@ colSums(rowsAsFeatures)
 ##
 
 ## Each highest list-level is a feature the read can 'hit'.
-lst <- split(features, values(features)[["group_id"]])
+lst <- split(features, mcols(features)[["group_id"]])
 listAsFeatures <- data.frame(
     union = assays(summarizeOverlaps(lst, reads))$counts, 
     intStrict = assays(summarizeOverlaps(lst, reads, 

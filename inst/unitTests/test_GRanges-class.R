@@ -147,29 +147,29 @@ test_GRanges_accessors <- function() {
     strand(gr) <- val
     checkIdentical(strand(gr), Rle(val))
 
-    ## elementMetadata
-    checkException(elementMetadata(gr) <- DataFrame(strand = 1:length(gr)),
+    ## mcols
+    checkException(mcols(gr) <- DataFrame(strand = 1:length(gr)),
                    silent = TRUE)
-    checkException(elementMetadata(gr) <- DataFrame(score = letters),
+    checkException(mcols(gr) <- DataFrame(score = letters),
                    silent = TRUE)
 
     gr <- make_test_GRanges()
-    elementMetadata(gr) <- NULL
-    checkIdentical(elementMetadata(gr),
+    mcols(gr) <- NULL
+    checkIdentical(mcols(gr),
                    new("DataFrame", nrows = length(gr)))
 
     gr <- make_test_GRanges()
     val <- DataFrame(x = 1:length(gr), y = head(letters, length(gr)))
-    elementMetadata(gr) <- val
+    mcols(gr) <- val
     checkTrue(validObject(gr))
-    checkIdentical(elementMetadata(gr), val)
+    checkIdentical(mcols(gr), val)
     rownames(val) <- names(gr)
-    checkIdentical(elementMetadata(gr, row.names=TRUE), val)
-    elementMetadata(gr) <- val
+    checkIdentical(mcols(gr, row.names=TRUE), val)
+    mcols(gr) <- val
     checkTrue(validObject(gr))
-    checkIdentical(elementMetadata(gr, row.names=TRUE), val)
+    checkIdentical(mcols(gr, row.names=TRUE), val)
     rownames(val) <- NULL
-    checkIdentical(elementMetadata(gr), val)
+    checkIdentical(mcols(gr), val)
 
     ## names
     checkException(names(gr) <- letters, silent = TRUE)
@@ -300,20 +300,20 @@ test_GRanges_combine <- function() {
   
   ## Check the combined data frames -- the rownaming is different when
   ## combining using these two strategies, so ignore them for now.
-  vc1 <- as.data.frame(values(gc1))
+  vc1 <- as.data.frame(mcols(gc1))
   rownames(vc1) <- NULL
-  vc.orig <- as.data.frame(rbind(values(gr1), values(gr2)))
+  vc.orig <- as.data.frame(rbind(mcols(gr1), mcols(gr2)))
   rownames(vc.orig) <- NULL
   checkIdentical(vc1, vc.orig)
   
   #############################################################################
-  ## Combining GRanges objects with differing elementMetadata
-  colnames(values(gr1))[1] <- 'illegal'
+  ## Combining GRanges objects with differing metadata columns
+  colnames(mcols(gr1))[1] <- 'illegal'
   checkException(c(gr1, gr2), silent=TRUE)
   
-  ## Ignore elementMetadata
-  gc2 <- c(gr1, gr2, .ignoreElementMetadata=TRUE)
-  em2 <- elementMetadata(gc2)
+  ## Ignore mcols
+  gc2 <- c(gr1, gr2, ignore.mcols=TRUE)
+  em2 <- mcols(gc2)
   checkIdentical(nrow(em2), length(gc2))
   checkIdentical(ncol(em2), 0L)
 }

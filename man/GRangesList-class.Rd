@@ -89,8 +89,8 @@
       Creates a data.frame with columns \code{element} (character),
       \code{seqnames} (factor), \code{start} (integer),
       \code{end} (integer), \code{width} (integer), \code{strand} (factor),
-      as well as the additional columns stored in
-      \code{elementMetadata(unlist(x))}.
+      as well as the additional metadata columns (accessed with
+      \code{mcols(unlist(x))}).
     }
     \item{}{\code{as.list(x, use.names = TRUE)}:
       Creates a list containing the elements of \code{x}.
@@ -130,13 +130,15 @@
       an RleList or CharacterList object.
     }
     \item{}{
-      \code{elementMetadata(x)}, \code{elementMetadata(x) <- value}:
-      Gets or sets the optional data columns for the GRangesList elements.
-      \code{value} can be a DataFrame, data.frame object, or NULL.
+      \code{mcols(x)}, \code{mcols(x) <- value}:
+      Gets or sets the metadata columns.
+      \code{value} can be \code{NULL}, or a data.frame-like object (i.e.
+      \link{DataFrame} or data.frame) holding element-wise metadata.
     }
     \item{}{
-      \code{values(x), values(x) <- value}:
-      Alternative to \code{elementMetadata} functions.
+       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
+       \code{values(x)}, \code{values(x) <- value}:
+       Alternatives to \code{mcols} functions. Their use is discouraged.
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
@@ -267,8 +269,8 @@
   \describe{
     \item{}{
       \code{x[i, j]}, \code{x[i, j] <- value}:
-      Gets or sets elements \code{i} with optional values columns
-      \code{values(x)[,j]}, where \code{i} can be missing; an NA-free
+      Gets or sets elements \code{i} with optional metadata columns
+      \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
       logical, numeric, or character vector; a 'logical' Rle object, or
       an AtomicList object.
     }
@@ -425,7 +427,7 @@
   In the code snippets below, \code{x} is a GRangesList object.
   The methods in this section are isomorphisms, that is, they are endomorphisms
   (i.e. they preserve the class of \code{x}) who also preserve the length &
-  names & elementMetadata of \code{x}. In addition, the seqinfo is preserved
+  names & metadata columns of \code{x}. In addition, the seqinfo is preserved
   too.
 
   \describe{
@@ -515,7 +517,7 @@ as(grl, "IRangesList")
 isDisjoint(grl)
 
 ## disjoin():
-disjoin(grl)  # elementMetadata and order are NOT preserved
+disjoin(grl)  # metadata columns and order NOT preserved
 
 ## Construction with makeGRangesListFromFeatureFragments():
 filepath <- system.file("extdata", "feature_frags.txt",

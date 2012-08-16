@@ -494,7 +494,7 @@ setMethod("rglist", "GappedAlignments",
         if (order.as.in.query)
             ans <- revElements(ans, strand(x) == "-")
         names(ans) <- names(x)
-        elementMetadata(ans) <- elementMetadata(x)
+        mcols(ans) <- mcols(x)
         ans
     }
 )
@@ -527,8 +527,8 @@ setMethod("as.data.frame", "GappedAlignments",
                           check.rows=TRUE,
                           check.names=FALSE,
                           stringsAsFactors=FALSE)
-        if (ncol(elementMetadata(x)))
-            ans <- cbind(ans, as.data.frame(elementMetadata(x)))
+        if (ncol(mcols(x)))
+            ans <- cbind(ans, as.data.frame(mcols(x)))
         return(ans)
     }
 )
@@ -537,15 +537,15 @@ setAs("GenomicRanges", "GappedAlignments",
       function(from) {
         ga <-
           GappedAlignments(seqnames(from), start(from),
-                           if (!is.null(values(from)[["cigar"]]))
-                             values(from)[["cigar"]]
+                           if (!is.null(mcols(from)[["cigar"]]))
+                             mcols(from)[["cigar"]]
                            else paste0(width(from), "M"),
                            strand(from),
                            if (!is.null(names(from))) names(from)
-                           else values(from)$name,
+                           else mcols(from)$name,
                            seqlengths(from),
-                           values(from)[setdiff(colnames(values(from)),
-                                                c("cigar", "name"))])
+                           mcols(from)[setdiff(colnames(mcols(from)),
+                                               c("cigar", "name"))])
         metadata(ga) <- metadata(from)
         seqinfo(ga) <- seqinfo(from)
         ga
@@ -602,7 +602,7 @@ setMethod("[", "GappedAlignments",
 .makeNakedMatFromGappedAlignments <- function(x)
 {
     lx <- length(x)
-    nc <- ncol(elementMetadata(x))
+    nc <- ncol(mcols(x))
     ans <- cbind(seqnames=as.character(seqnames(x)),
                  strand=as.character(strand(x)),
                  cigar=cigar(x),
@@ -612,7 +612,7 @@ setMethod("[", "GappedAlignments",
                  width=width(x),
                  ngap=ngap(x))
     if (nc > 0L) {
-        tmp <- do.call(data.frame, lapply(elementMetadata(x),
+        tmp <- do.call(data.frame, lapply(mcols(x),
                                           IRanges:::showAsCell))
         ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
     }
@@ -623,11 +623,11 @@ showGappedAlignments <- function(x, margin="",
                                  with.classinfo=FALSE, print.seqlengths=FALSE)
 {
     lx <- length(x)
-    nc <- ncol(elementMetadata(x))
+    nc <- ncol(mcols(x))
     cat(class(x), " with ",
         lx, " ", ifelse(lx == 1L, "alignment", "alignments"),
         " and ",
-        nc, " elementMetadata ", ifelse(nc == 1L, "col", "cols"),
+        nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGappedAlignments)

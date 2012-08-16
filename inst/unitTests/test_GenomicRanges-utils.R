@@ -49,7 +49,7 @@ test_GenomicRanges_intra_interval_ops <- function()
     st <- structure(c(4,5), names = c("chr1", "chr2"))
     en <-  structure(c(8,9), names = c("chr2", "chr3"))
     res <- restrict(gr, start = st, end = en)
-    checkIdentical(elementMetadata(gr), elementMetadata(res))
+    checkIdentical(mcols(gr), mcols(res))
     checkIdentical(seqnames(gr), seqnames(res))
     checkIdentical(seqinfo(gr), seqinfo(res))
     target <- IRanges(start=c(4, 5, 5, 5, 5, 6, 7, 8, 9, 10),

@@ -172,7 +172,7 @@
                              cigar=character(0),
                              strand=NULL, names=NULL, seqlengths=NULL, ...)}:
       Low-level GappedAlignments constructor. Generally not used directly.
-      Named arguments in \code{...} are used as elementMetadata.
+      Named arguments in \code{...} are used as metadata columns.
     }
   }
 }

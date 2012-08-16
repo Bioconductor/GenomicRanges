@@ -150,9 +150,9 @@ gr
 ## EXAMPLE 1: The HasRangeTypeCol constraint.
 ## ---------------------------------------------------------------------
 ## The HasRangeTypeCol constraint checks that the constrained object
-## has a unique "rangeType" column in its elementMetadata part and that
-## this column is a 'factor' Rle with no NAs and with the following
-## levels (in this order): gene, transcript, exon, cds, 5utr, 3utr.
+## has a unique "rangeType" metadata column and that this column
+## is a 'factor' Rle with no NAs and with the following levels
+## (in this order): gene, transcript, exon, cds, 5utr, 3utr.
 
 setClass("HasRangeTypeCol", contains="Constraint")
 
@@ -162,20 +162,20 @@ setClass("HasRangeTypeCol", contains="Constraint")
 setMethod("checkConstraint", c("GenomicRanges", "HasRangeTypeCol"),
     function(x, constraint, verbose=FALSE)
     {
-        emd <- elementMetadata(x)
-        idx <- match("rangeType", colnames(emd))
+        x_mcols <- mcols(x)
+        idx <- match("rangeType", colnames(x_mcols))
         if (length(idx) != 1L || is.na(idx)) {
-            msg <- c("'elementMetadata(x)' must have exactly 1 column ",
+            msg <- c("'mcols(x)' must have exactly 1 column ",
                      "named \"rangeType\"")
             return(paste(msg, collapse=""))
         }
-        rangeType <- emd[[idx]]
+        rangeType <- x_mcols[[idx]]
         .LEVELS <- c("gene", "transcript", "exon", "cds", "5utr", "3utr")
         if (!is(rangeType, "Rle") ||
             IRanges:::anyMissing(runValue(rangeType)) ||
             !identical(levels(rangeType), .LEVELS))
         {
-            msg <- c("'elementMetadata(x)$rangeType' must be a ",
+            msg <- c("'mcols(x)$rangeType' must be a ",
                      "'factor' Rle with no NAs and with levels: ",
                      paste(.LEVELS, collapse=", "))
             return(paste(msg, collapse=""))
@@ -191,16 +191,16 @@ checkConstraint(gr, new("HasRangeTypeCol"))  # with GenomicRanges >= 1.7.9
 
 levels <- c("gene", "transcript", "exon", "cds", "5utr", "3utr")
 rangeType <- Rle(factor(c("cds", "gene"), levels=levels), c(8, 2))
-elementMetadata(gr)$rangeType <- rangeType
+mcols(gr)$rangeType <- rangeType
 #constraint(gr) <- "HasRangeTypeCol"  # OK
 checkConstraint(gr, new("HasRangeTypeCol"))  # with GenomicRanges >= 1.7.9
 
 ## Use is() to check whether the object has a given constraint or not:
 #is(constraint(gr), "HasRangeTypeCol")  # TRUE
 #\dontrun{
-#elementMetadata(gr)$rangeType[3] <- NA  # will fail
+#mcols(gr)$rangeType[3] <- NA  # will fail
 #}
-elementMetadata(gr)$rangeType[3] <- NA
+mcols(gr)$rangeType[3] <- NA
 checkConstraint(gr, new("HasRangeTypeCol"))  # with GenomicRanges >= 1.7.9
 
 ## ---------------------------------------------------------------------
@@ -218,9 +218,9 @@ setClass("GeneRanges", contains="HasRangeTypeCol")
 setMethod("checkConstraint", c("GenomicRanges", "GeneRanges"),
     function(x, constraint, verbose=FALSE)
     {
-        rangeType <- elementMetadata(x)$rangeType
+        rangeType <- mcols(x)$rangeType
         if (!all(rangeType == "gene")) {
-            msg <- c("all elements in 'elementMetadata(x)$rangeType' ",
+            msg <- c("all elements in 'mcols(x)$rangeType' ",
                      "must be equal to \"gene\"")
             return(paste(msg, collapse=""))
         }
@@ -233,7 +233,7 @@ setMethod("checkConstraint", c("GenomicRanges", "GeneRanges"),
 #}
 checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
 
-elementMetadata(gr)$rangeType[] <- "gene"
+mcols(gr)$rangeType[] <- "gene"
 ## This replace the previous constraint (HasRangeTypeCol):
 #constraint(gr) <- "GeneRanges"  # OK
 checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
@@ -244,37 +244,36 @@ checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
 ## constraint):
 #is(constraint(gr), "HasRangeTypeCol")  # TRUE
 #\dontrun{
-#elementMetadata(gr)$rangeType[] <- "exon"  # will fail
+#mcols(gr)$rangeType[] <- "exon"  # will fail
 #}
-elementMetadata(gr)$rangeType[] <- "exon"
+mcols(gr)$rangeType[] <- "exon"
 checkConstraint(gr, new("GeneRanges"))  # with GenomicRanges >= 1.7.9
 
 ## ---------------------------------------------------------------------
 ## EXAMPLE 3: The HasGCCol constraint.
 ## ---------------------------------------------------------------------
 ## The HasGCCol constraint checks that the constrained object has a
-## unique "GC" column in its elementMetadata part, that this column is
-## of type numeric, with no NAs, and that all the values in that column
-## are >= 0 and <= 1.
+## unique "GC" metadata column, that this column is of type numeric,
+## with no NAs, and that all the values in that column are >= 0 and <= 1.
 
 setClass("HasGCCol", contains="Constraint")
 
 setMethod("checkConstraint", c("GenomicRanges", "HasGCCol"),
     function(x, constraint, verbose=FALSE)
     {
-        emd <- elementMetadata(x)
-        idx <- match("GC", colnames(emd))
+        x_mcols <- mcols(x)
+        idx <- match("GC", colnames(x_mcols))
         if (length(idx) != 1L || is.na(idx)) {
-            msg <- c("'elementMetadata(x)' must have exactly ",
+            msg <- c("'mcols(x)' must have exactly ",
                      "one column named \"GC\"")
             return(paste(msg, collapse=""))
         }
-        GC <- emd[[idx]]
+        GC <- x_mcols[[idx]]
         if (!is.numeric(GC) ||
             IRanges:::anyMissing(GC) ||
             any(GC < 0) || any(GC > 1))
         {
-            msg <- c("'elementMetadata(x)$GC' must be a numeric vector ",
+            msg <- c("'mcols(x)$GC' must be a numeric vector ",
                      "with no NAs and with values between 0 and 1")
             return(paste(msg, collapse=""))
         }
@@ -305,9 +304,9 @@ setClass("HighGCRanges", contains="HasGCCol")
 setMethod("checkConstraint", c("GenomicRanges", "HighGCRanges"),
     function(x, constraint, verbose=FALSE)
     {
-        GC <- elementMetadata(x)$GC
+        GC <- mcols(x)$GC
         if (!all(GC >= 0.5)) {
-            msg <- c("all elements in 'elementMetadata(x)$GC' ",
+            msg <- c("all elements in 'mcols(x)$GC' ",
                      "must be >= 0.5")
             return(paste(msg, collapse=""))
         }
@@ -319,7 +318,7 @@ setMethod("checkConstraint", c("GenomicRanges", "HighGCRanges"),
 #constraint(gr) <- "HighGCRanges"  # will fail
 #}
 checkConstraint(gr, new("HighGCRanges"))  # with GenomicRanges >= 1.7.9
-elementMetadata(gr)$GC[6:10] <- 0.5
+mcols(gr)$GC[6:10] <- 0.5
 #constraint(gr) <- "HighGCRanges"  # OK
 checkConstraint(gr, new("HighGCRanges"))  # with GenomicRanges >= 1.7.9
 

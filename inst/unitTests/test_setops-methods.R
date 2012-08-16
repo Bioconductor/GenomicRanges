@@ -37,7 +37,7 @@ test_union <- function()
     checkException(union(grlist, grlist), silent = TRUE)
 
     expect <- gr
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     expect <- reduce(gr)
     checkIdentical(union(gr, gr), expect)
 
@@ -54,7 +54,7 @@ test_intersect <- function()
     checkException(intersect(grlist, grlist), silent = TRUE)
 
     expect <- gr
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     expect <- reduce(gr)
     checkIdentical(intersect(gr, gr), expect)
 
@@ -114,7 +114,7 @@ test_punion <- function()
     checkException(punion(grlist, grlist), silent = TRUE)
 
     expect <- gr
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     checkIdentical(punion(gr, gr), expect)
 }
 
@@ -124,11 +124,11 @@ test_pintersect <- function()
     grlist <- make_test_GRangesList()
 
     expect <- reduce(grlist) 
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     checkIdentical(pintersect(grlist, grlist), expect)
 
     expect <- gr
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     checkIdentical(pintersect(gr, gr), expect)
     checkIdentical(pintersect(gr[1:2], grlist), pintersect(grlist, gr[1:2]))
 
@@ -151,11 +151,11 @@ test_psetdiff <- function()
 
     expect <- gr
     width(expect) <- 0L
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     checkIdentical(psetdiff(gr, gr), expect)
 
     expect <- gr
-    elementMetadata(expect) <- NULL
+    mcols(expect) <- NULL
     strand(expect) <- Rle(c("-", "+", "-"), c(1, 7, 2))
     end(expect)[5:6] <- c(5, 5)
     checkIdentical(psetdiff(gr, rev(gr)), expect)

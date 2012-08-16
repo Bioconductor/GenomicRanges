@@ -87,7 +87,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   of non-compatible reads for novel splice events is under construction.
 
   The output is a \link[IRanges]{Hits} object with
-  elementMetadata columns defined below. Each column is a \code{logical} 
+  the metadata columns defined below. Each column is a \code{logical} 
   indicating if the read (query) met the criteria. 
 
   \itemize{
@@ -134,7 +134,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   sehits <- findSpliceOverlaps(se, exbytx, cds=cdsbytx, param=param)
 
   ## Tally the reads by category to get an idea of read distribution.
-  lst <- lapply(values(sehits), table)
+  lst <- lapply(mcols(sehits), table)
   nms <- names(lst) %in% c("compatible", "unique")
   tbl <- do.call(rbind, lst[nms]) 
   tbl

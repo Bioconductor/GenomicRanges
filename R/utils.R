@@ -53,8 +53,8 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     right_brackets[!no_bracket] <- ">"
     ans <- paste0(left_brackets, col2class, right_brackets)
     names(ans) <- ans_names
-    if (ncol(elementMetadata(x)) > 0L) {
-        tmp <- sapply(elementMetadata(x),
+    if (ncol(mcols(x)) > 0L) {
+        tmp <- sapply(mcols(x),
                       function(xx) paste0("<", class(xx), ">"))
         ans <- c(ans, `|`="|", tmp)
     }

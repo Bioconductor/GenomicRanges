@@ -488,7 +488,7 @@ this:
 txs <- transcripts(txdb, 
                    vals=list(tx_id=names(highScoreGenes)), 
                    columns=c("tx_id","gene_id"))
-systNames <- as.vector(unlist(elementMetadata(txs)[["gene_id"]]))
+systNames <- as.vector(unlist(mcols(txs)[["gene_id"]]))
 @
 
 Once you know the gene id, you can use gene-centric annotation data

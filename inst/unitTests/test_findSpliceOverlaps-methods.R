@@ -1,4 +1,4 @@
-.extract <- function(x, col) as.logical(values(x)[[col]])
+.extract <- function(x, col) as.logical(mcols(x)[[col]])
 
 test_findSpliceOverlaps_compatible <- function()
 {

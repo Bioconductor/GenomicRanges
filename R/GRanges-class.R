@@ -26,20 +26,21 @@ setClass("GRanges",
 .valid.GRanges.ranges <- function(x)
 {
     if (!is.null(x@ranges@elementMetadata))
-        return("slot 'ranges' cannot have element metadata")
+        return("slot 'ranges' cannot have metadata columns")
     NULL
 }
 
-.valid.GRanges.elementMetadata <- function(x)
+.valid.GRanges.mcols <- function(x)
 {
-    if (!is.null(rownames(x@elementMetadata)))
-        return("slot 'elementMetadata' cannot contain row names")
+    x_mcols <- x@elementMetadata
+    if (!is.null(rownames(x_mcols)))
+        return("'mcols(x)' cannot have row names")
     NULL
 }
 
 .valid.GRanges <- function(x)
 {
-    c(.valid.GRanges.ranges(x), .valid.GRanges.elementMetadata(x))
+    c(.valid.GRanges.ranges(x), .valid.GRanges.mcols(x))
 }
 
 setValidity2("GRanges", .valid.GRanges)
@@ -92,21 +93,21 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
     ## in case we have seqlengths for unrepresented sequences
     runValue(seqnames) <- factor(runValue(seqnames), seqnames(seqinfo))
 
-    if (!is.null(elementMetadata(ranges))) {
-        warning("'ranges' has element metadata, dropping them")
-        elementMetadata(ranges) <- NULL
+    if (!is.null(mcols(ranges))) {
+        warning("'ranges' has metadata columns, dropping them")
+        mcols(ranges) <- NULL
     }
-    elementMetadata <- DataFrame(...)
-    if (ncol(elementMetadata) == 0L)
-        elementMetadata <- new("DataFrame", nrows = length(seqnames))
-    if (!is.null(rownames(elementMetadata))) {
+    mcols <- DataFrame(...)
+    if (ncol(mcols) == 0L)
+        mcols <- new("DataFrame", nrows = length(seqnames))
+    if (!is.null(rownames(mcols))) {
         if (!is.null(names(ranges)))
-            names(ranges) <- rownames(elementMetadata)
-        rownames(elementMetadata) <- NULL
+            names(ranges) <- rownames(mcols)
+        rownames(mcols) <- NULL
     }
 
     new(class, seqnames = seqnames, ranges = ranges, strand = strand,
-        seqinfo = seqinfo, elementMetadata = elementMetadata)
+        seqinfo = seqinfo, elementMetadata = mcols)
 }
 
 GRanges <-
@@ -185,25 +186,25 @@ setMethod("updateObject", "GRanges",
 setAs("RangedData", "GRanges",
     function(from)
     {
-        ranges <- unlist(ranges(from), use.names=FALSE)
-        values <- unlist(values(from), use.names=FALSE)
+        ans_ranges <- unlist(ranges(from), use.names=FALSE)
+        ans_mcols <- unlist(values(from), use.names=FALSE)
         nms <- rownames(from)
-        rownames(values) <- NULL
-        whichStrand <- which(colnames(values) == "strand")
+        rownames(ans_mcols) <- NULL
+        whichStrand <- which(colnames(ans_mcols) == "strand")
         if (length(whichStrand) > 0)
-            values <- values[-whichStrand]
+            ans_mcols <- ans_mcols[-whichStrand]
         gr <- GRanges(seqnames = space(from),
-                      ranges = ranges,
+                      ranges = ans_ranges,
                       strand = Rle(strand(from)),
-                      values)
+                      ans_mcols)
         seqinfo(gr) <- seqinfo(from)
         metadata(gr) <- metadata(from)
         gr
     }
 )
 
-### Does NOT propagate the ranges names and elementMetadata i.e. always
-### returns an unnamed GRanges object with no elementMetadata.
+### Does NOT propagate the ranges names and metadata columns i.e. always
+### returns an unnamed GRanges object with no metadata columns.
 setAs("RangesList", "GRanges",
       function(from)
       {

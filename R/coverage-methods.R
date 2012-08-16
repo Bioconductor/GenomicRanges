@@ -72,12 +72,12 @@ setMethod("coverage", "GenomicRanges",
         shift <- .coverage.normargShiftOrWeight(shift, "shift", x)
         width <- .coverage.normargWidth(width, x)
         if (isSingleString(weight)) {
-            x_elementMetadata <- elementMetadata(x)
-            if (!is(x_elementMetadata, "DataTable")
-             || sum(colnames(x_elementMetadata) == weight) != 1L)
-                stop("'elementMetadata(x)' has 0 or more than 1 \"",
+            x_mcols <- mcols(x)
+            if (!is(x_mcols, "DataTable")
+             || sum(colnames(x_mcols) == weight) != 1L)
+                stop("'mcols(x)' has 0 or more than 1 \"",
                      weight, "\" columns")
-            weight <- x_elementMetadata[[weight]]
+            weight <- x_mcols[[weight]]
         }
         weight <- .coverage.normargShiftOrWeight(weight, "weight", x)
         seqlevels <- seqlevels(x)

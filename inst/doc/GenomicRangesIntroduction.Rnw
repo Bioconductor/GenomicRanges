@@ -98,8 +98,8 @@ creates a \Rclass{GRanges} object with 10 single interval features.
 The output of the \Rclass{GRanges} \Rmethod{show} method separates the
 information into a left and right hand region that are separated by
 \Rcode{|} symbols. The genomic coordinates (seqnames, ranges, and strand)
-are located on the left-hand side and the element metadata (annotation)
-columns are located on the right. For this example, the metadata is
+are located on the left-hand side and the metadata columns (annotation)
+are located on the right. For this example, the metadata is
 comprised of \Rcode{score} and \Rcode{GC} information, but almost
 anything can be stored in the metadata portion of a \Rclass{GRanges}
 object.
@@ -115,12 +115,11 @@ strand(gr)
 @
 
 Stored annotations for these coordinates can be extracted as a
-\Rclass{DataFrame} object using the \Rmethod{elementMetadata} or the
-\Rmethod{values} accessor.
+\Rclass{DataFrame} object using the \Rmethod{mcols} accessor.
 
 <<metadataAccess>>=
-elementMetadata(gr)[,"score"]
-values(gr)
+mcols(gr)
+mcols(gr)$score
 @
 
 Finally, the total lengths of the various sequences that the ranges
@@ -173,7 +172,7 @@ gr[2:3]
 @
 
 A second argument to the \Rmethod{[} subset operator can be used
-to specify which elementMetadata columns to extract from the
+to specify which metadata columns to extract from the
 \Rclass{GRanges} object. For example,
 
 <<subset2>>=
@@ -404,15 +403,14 @@ isEmpty(grl)
 @
 
 Finally, in the context of a \Rclass{GRangesList} object, the
-\Rmethod{elementMetadata} and \Rmethod{values} methods perform a similar
-operations to what they do on a \Rclass{GRanges} object. However, this
-metadata refers to information at the list level instead of the level of
-the individual \Rclass{GRanges} objects.
+\Rmethod{mcols} method performs a similar operation to what it
+does on a \Rclass{GRanges} object. However, this metadata now
+refers to information at the list level instead of the level
+of the individual \Rclass{GRanges} objects.
 
-<<elementMetadataGRL>>=
-elementMetadata(grl) <- c("Transcript A","Transcript B")
-elementMetadata(grl)
-values(grl)
+<<mcolsGRL>>=
+mcols(grl) <- c("Transcript A","Transcript B")
+mcols(grl)
 @
 
 
@@ -476,7 +474,7 @@ grl$txB
 
 But in addition to this, when subsetting a \Rclass{GRangesList}, you
 can also pass in a second parameter (as with a \Rclass{GRanges} object)
-to again specify which of the elementMetadata columns you wish to select.
+to again specify which of the metadata columns you wish to select.
 
 <<subsetGRL2>>=
 grl[1, "score"]

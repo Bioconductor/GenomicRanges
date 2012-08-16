@@ -57,7 +57,7 @@ NEW FEATURES
  
 SIGNIFICANT USER-LEVEL CHANGES
 
-    o grglist,GappedAlignments now carries over element metadata.
+    o grglist,GappedAlignments now carries over metadata columns.
 
     o Names are no longer forced to be unique when unlisting a
       GRangesList with use.names=TRUE.

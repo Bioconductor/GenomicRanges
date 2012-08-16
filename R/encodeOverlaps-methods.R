@@ -104,10 +104,10 @@ flipQuery <- function(x, i)
         i <- IRanges:::normalizeSingleBracketSubscript(i, x)
     xi <- x[i]
     x[i] <- invertRleListStrand(revElements(xi))
-    xi_query.break <- elementMetadata(xi)$query.break
+    xi_query.break <- mcols(xi)$query.break
     if (!is.null(xi_query.break)) {
         revxi_query.break <- elementLengths(xi) - xi_query.break
-        elementMetadata(x)$query.break[i] <- revxi_query.break
+        mcols(x)$query.break[i] <- revxi_query.break
     }
     x
 }
@@ -149,7 +149,7 @@ flipQuery <- function(x, i)
     } else {
         flip.query <- NULL
     }
-    query.breaks <- elementMetadata(query)$query.break
+    query.breaks <- mcols(query)$query.break
     RangesList_encodeOverlaps(as.list(start(query)),
                               as.list(width(query)),
                               as.list(start(subject)),
@@ -187,7 +187,7 @@ selectEncodingWithCompatibleStrand <- function(ovencA, ovencB,
     }
     ans <- ovencA
     names(ans) <- NULL
-    elementMetadata(ans) <- NULL
+    mcols(ans) <- NULL
     is_wrong_strand <- query.strand != subject.strand
     idx <- which(is_wrong_strand)
     ans@Loffset[idx] <- ovencB@Loffset[idx]
@@ -722,10 +722,10 @@ extractQueryStartInTranscript <- function(query, subject,
     ## in each top-level element of 'query'.
     qii1 <- start(query@partitioning)
     if (for.query.right.end) {
-        query.break <- elementMetadata(query)$query.break
+        query.break <- mcols(query)$query.break
         if (is.null(query.break))
             stop("using 'for.query.right.end=TRUE' requires that ",
-                 "'elementMetadata(query)' has a \"query.break\" column ",
+                 "'mcols(query)' has a \"query.break\" column ",
                  "indicating for each paired-end read the position of the ",
                  "break between the ranges coming from one end and those ",
                  "coming from the other end")

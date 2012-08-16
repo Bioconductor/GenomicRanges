@@ -180,7 +180,7 @@ test_summarizeOverlaps_features <- function()
             width = c(500, 500, 300, 500, 900, 500, 500, 
             900, 500, 600, 300)), "+",
         group = c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H"))
-    ftslst <- split(fts, values(fts)[["group"]])
+    ftslst <- split(fts, mcols(fts)[["group"]])
 
     rds <- GappedAlignments(c(rep(c("chr1", "chr2"), 3), "chr1"),
         as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),

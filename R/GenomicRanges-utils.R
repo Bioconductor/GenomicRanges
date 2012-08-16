@@ -140,8 +140,7 @@ setMethod("restrict", "GenomicRanges",
     {
         if (is.null(names(start)) && is.null(names(end)))
             return(.restrictRngs(x, start, end,keep.all.ranges, use.names))
-        elementMetadata(x) <- cbind(elementMetadata(x),
-                                    DataFrame(posIndx=seq_len(length(x))))
+        mcols(x) <- cbind(mcols(x), DataFrame(posIndx=seq_len(length(x))))
         splt <- split(x, seqnames(x))
         start <- .checkParms(x, start)
         end <- .checkParms(x, end) 
@@ -152,11 +151,11 @@ setMethod("restrict", "GenomicRanges",
                       })
         names(res) <- names(splt)
         ord <- unlist(GRangesList(res), use.names=FALSE)
-        df <- data.frame(orig=elementMetadata(ord)$posIndx,
+        df <- data.frame(orig=mcols(ord)$posIndx,
                          final=seq_len(length(ord)))
         indx <- with(df, order(orig, final))
         ord <- ord[indx, ]
-        elementMetadata(ord) <- subset(elementMetadata(ord), select=-c(posIndx))
+        mcols(ord) <- subset(mcols(ord), select=-c(posIndx))
         ord
     }
 )
@@ -169,7 +168,7 @@ setMethod("restrict", "GenomicRanges",
 .interIntervalGenomicRanges <- function(x, FUN, ignore.strand=FALSE, ...)
 {
     x <- clone(x)
-    elementMetadata(x) <- NULL
+    mcols(x) <- NULL
     if (ignore.strand)
        f <- paste(seqnames(x), Rle(factor("*"), length(x)), sep="\r")
     else
@@ -217,7 +216,7 @@ setMethod("gaps", "GenomicRanges",
 .interIntervalGenomicRanges2 <- function(x, FUN, ignore.strand=FALSE, ...)
 {
     x <- clone(x)
-    elementMetadata(x) <- NULL
+    mcols(x) <- NULL
     f <- .interIntervalSplitVariable(x, ignore.strand=ignore.strand)
     xIRangesList <- split(unname(ranges(x)), f)
     ansIRangesList <- FUN(xIRangesList, ...)

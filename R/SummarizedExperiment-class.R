@@ -161,18 +161,21 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
     x
 })
 
-setMethod(values, "SummarizedExperiment",
+setMethod(mcols, "SummarizedExperiment",
     function(x, ...)
 {
-    values(rowData(x), ...)
+    mcols(rowData(x), ...)
 })
 
-setReplaceMethod("values", "SummarizedExperiment",
+setReplaceMethod("mcols", "SummarizedExperiment",
     function(x, ..., value)
 {
-    values(rowData(x), ...) <- value
+    mcols(rowData(x), ...) <- value
     x
 })
+
+### mcols() is the recommended way for accessing the metadata columns.
+### Use of values() or elementMetadata() is discouraged.
 
 setMethod(elementMetadata, "SummarizedExperiment",
     function(x, ...)
@@ -184,6 +187,19 @@ setReplaceMethod("elementMetadata", "SummarizedExperiment",
     function(x, ..., value)
 {
     elementMetadata(rowData(x), ...) <- value
+    x
+})
+
+setMethod(values, "SummarizedExperiment",
+    function(x, ...)
+{
+    values(rowData(x), ...)
+})
+
+setReplaceMethod("values", "SummarizedExperiment",
+    function(x, ..., value)
+{
+    values(rowData(x), ...) <- value
     x
 })
 
@@ -469,8 +485,8 @@ setMethod(show, "SummarizedExperiment",
     dlen <- sapply(dimnames, length)
     if (dlen[[1]]) scat("rownames(%d): %s\n", dimnames[[1]])
     else scat("rownames: NULL\n")
-    scat("rowData values names(%d): %s\n",
-         names(values(rowData(object))))
+    scat("rowData metadata column names(%d): %s\n",
+         names(mcols(rowData(object))))
     if (dlen[[2]]) scat("colnames(%d): %s\n", dimnames[[2]])
     else cat("colnames: NULL\n")
     scat("colData names(%d): %s\n", names(colData(object)))

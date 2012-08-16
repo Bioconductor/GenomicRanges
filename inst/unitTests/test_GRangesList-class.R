@@ -72,8 +72,8 @@ test_GRangesList_accessors <- function() {
     checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges)))
     checkIdentical(strand(grl), RleList(lapply(grl, strand), compress=TRUE))
     checkIdentical(seqlengths(grl), seqlengths(grl@unlistData))
-    checkIdentical(elementMetadata(grl, level="within"),
-                   SplitDataFrameList(lapply(grl, elementMetadata)))
+    checkIdentical(mcols(grl, level="within"),
+                   SplitDataFrameList(lapply(grl, mcols)))
 }
 
 test_GRangesList_RangesList <- function() {

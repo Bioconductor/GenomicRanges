@@ -394,7 +394,7 @@ setMethod("unlist", "GappedAlignmentPairs",
     ans_elt_lens <- ans_nelt1 + ans_nelt2
     ans_partitioning <- PartitioningByEnd(cumsum(ans_elt_lens))
     ans <- splitAsList(x@unlistData, ans_partitioning)
-    elementMetadata(ans) <- DataFrame(nelt1=ans_nelt1, nelt2=ans_nelt2)
+    mcols(ans) <- DataFrame(nelt1=ans_nelt1, nelt2=ans_nelt2)
     ans
 }
 
@@ -403,10 +403,9 @@ setMethod("grglist", "GappedAlignmentPairs",
     {
         if (!isTRUEorFALSE(order.as.in.query))
             stop("'order.as.in.query' must be TRUE or FALSE")
-        x_elt_metadata <- elementMetadata(x)
-        if ("query.break" %in% colnames(x_elt_metadata))
-            stop("'elementMetadata(x)' cannot have ",
-                 "reserved column \"query.break\"")
+        x_mcols <- mcols(x)
+        if ("query.break" %in% colnames(x_mcols))
+            stop("'mcols(x)' cannot have reserved column \"query.break\"")
         x_first <- x@first
         x_last <- invertRleStrand(x@last)
         ## Not the same as doing 'unlist(x, use.names=FALSE)'.
@@ -415,17 +414,17 @@ setMethod("grglist", "GappedAlignmentPairs",
                        order.as.in.query=TRUE,
                        drop.D.ranges=drop.D.ranges)
         ans <- .shrinkByHalf(grl)
-        ans_nelt1 <- elementMetadata(ans)$nelt1
+        ans_nelt1 <- mcols(ans)$nelt1
         if (!order.as.in.query) {
-            ans_nelt2 <- elementMetadata(ans)$nelt2
+            ans_nelt2 <- mcols(ans)$nelt2
             ## Yes, we reorder *again* when 'order.as.in.query' is FALSE.
             i <- which(strand(x) == "-")
             ans <- revElements(ans, i)
             ans_nelt1[i] <- ans_nelt2[i]
         }
         names(ans) <- names(x)
-        x_elt_metadata$query.break <- ans_nelt1
-        elementMetadata(ans) <- x_elt_metadata
+        x_mcols$query.break <- ans_nelt1
+        mcols(ans) <- x_mcols
         ans
     }
 )
@@ -440,7 +439,7 @@ setMethod("introns", "GappedAlignmentPairs",
         ans <- c(first_introns, last_introns)
         ans <- ans[.makePickupIndex(length(x))]
         ans <- .shrinkByHalf(ans)
-        elementMetadata(ans) <- NULL
+        mcols(ans) <- NULL
         ans
     }
 )
@@ -455,7 +454,7 @@ setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
 .makeNakedMatFromGappedAlignmentPairs <- function(x)
 {
     lx <- length(x)
-    nc <- ncol(elementMetadata(x))
+    nc <- ncol(mcols(x))
     pair_cols <- cbind(seqnames=as.character(seqnames(x)),
                        strand=as.character(strand(x)))
     x_first <- x@first
@@ -468,7 +467,7 @@ setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
                  `--`=rep.int("--", lx),
                  last_cols)
     if (nc > 0L) {
-        tmp <- do.call(data.frame, lapply(elementMetadata(x),
+        tmp <- do.call(data.frame, lapply(mcols(x),
                                           IRanges:::showAsCell))
         ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
     }
@@ -480,11 +479,11 @@ showGappedAlignmentPairs <- function(x, margin="",
                                         print.seqlengths=FALSE)
 {
     lx <- length(x)
-    nc <- ncol(elementMetadata(x))
+    nc <- ncol(mcols(x))
     cat(class(x), " with ",
         lx, " alignment ", ifelse(lx == 1L, "pair", "pairs"),
         " and ",
-        nc, " elementMetadata ", ifelse(nc == 1L, "col", "cols"),
+        nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGappedAlignmentPairs)

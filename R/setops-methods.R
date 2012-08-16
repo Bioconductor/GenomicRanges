@@ -11,7 +11,7 @@ setMethod("union", c("GRanges", "GRanges"),
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- strand(y) <- "*"
-        values(x) <- values(y) <- NULL  # so we can do 'c(x, y)' below
+        mcols(x) <- mcols(y) <- NULL  # so we can do 'c(x, y)' below
         reduce(c(x, y), drop.empty.ranges=TRUE)
     }
 )
@@ -23,7 +23,7 @@ setMethod("intersect", c("GRanges", "GRanges"),
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- strand(y) <- "*"
-        values(x) <- values(y) <- NULL
+        mcols(x) <- mcols(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
         ## it twice.
@@ -44,7 +44,7 @@ setMethod("setdiff", c("GRanges", "GRanges"),
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(x) <- strand(y) <- "*"
-        values(x) <- values(y) <- NULL
+        mcols(x) <- mcols(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
         ## it twice.
@@ -96,7 +96,7 @@ setMethod("punion", c("GRanges", "GRanges"),
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand) 
             strand(y) <- strand(x)
-        values(x) <- NULL
+        mcols(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (!allCompatibleSeqnamesAndStrand(x, y))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",
@@ -121,8 +121,8 @@ setMethod("punion", c("GRangesList", "GRanges"),
         n <- length(x)
         if (n != length(y)) 
             stop("'x' and 'y' must have the same length")
-        elementMetadata(x@unlistData) <- NULL
-        elementMetadata(y) <- NULL
+        mcols(x@unlistData) <- NULL
+        mcols(y) <- NULL
         ans <-
           split(c(x@unlistData, y), 
                 c(Rle(seq_len(n), elementLengths(x)), Rle(seq_len(n))))
@@ -149,7 +149,7 @@ setMethod("pintersect", c("GRanges", "GRanges"),
         if (ignore.strand)
             strand(y) <- strand(x)
         resolve.empty <- match.arg(resolve.empty)
-        values(x) <- NULL
+        mcols(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (!allCompatibleSeqnamesAndStrand(x, y))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",
@@ -198,10 +198,10 @@ setMethod("pintersect", c("GRangesList", "GRanges"),
         ok <-
           new2("CompressedLogicalList", unlistData=as.vector(ok),
                partitioning=x@partitioning)
-        if (ncol(elementMetadata(x@unlistData)) > 0L)
-            elementMetadata(x@unlistData) <- NULL
-        if (ncol(elementMetadata(y)) > 0L)
-            elementMetadata(y) <- NULL
+        if (ncol(mcols(x@unlistData)) > 0L)
+            mcols(x@unlistData) <- NULL
+        if (ncol(mcols(y)) > 0L)
+            mcols(y) <- NULL
         x <- x[ok]
         y <- rep(y, sum(ok))
         x@unlistData@ranges <-
@@ -262,7 +262,7 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
             strand(y) <- strand(x)
-        values(x) <- NULL
+        mcols(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ok <- compatibleSeqnames(seqnames(x), seqnames(y)) &
               compatibleStrand(strand(x), strand(y))
@@ -307,10 +307,7 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
         ansGRanges <-
           GRanges(ansSeqnames, unlist(ansRanges, use.names=FALSE), ansStrand)
         seqinfo(ansGRanges) <- ansSeqinfo
-        new2("GRangesList",
-             elementMetadata=new("DataFrame", nrows=length(x)),
-             unlistData=ansGRanges, partitioning=ansRanges@partitioning,
-             check=FALSE)
+        splitAsList(ansGRanges, ansRanges@partitioning)
     }
 )
 
@@ -338,7 +335,7 @@ setMethod("pgap", c("GRanges", "GRanges"),
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand) 
             strand(y) <- strand(x) 
-        values(x) <- NULL
+        mcols(x) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         if (!allCompatibleSeqnamesAndStrand(x, y))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",

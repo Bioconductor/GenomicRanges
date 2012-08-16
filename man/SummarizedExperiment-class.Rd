@@ -36,6 +36,8 @@
 \alias{rowData<-,SummarizedExperiment,GRangesList-method}
 \alias{seqinfo,SummarizedExperiment-method}
 \alias{seqinfo<-,SummarizedExperiment-method}
+\alias{mcols,SummarizedExperiment-method}
+\alias{mcols<-,SummarizedExperiment-method}
 \alias{elementMetadata,SummarizedExperiment-method}
 \alias{elementMetadata<-,SummarizedExperiment-method}
 \alias{values,SummarizedExperiment-method}
@@ -102,10 +104,8 @@ rowData(x, ...)
 rowData(x, ...) <- value
 \S4method{seqinfo}{SummarizedExperiment}(x)
 \S4method{seqinfo}{SummarizedExperiment}(x, new2old=NULL, force=FALSE) <- value
-\S4method{elementMetadata}{SummarizedExperiment}(x, ...)
-\S4method{elementMetadata}{SummarizedExperiment}(x, ...) <- value
-\S4method{values}{SummarizedExperiment}(x, ...)
-\S4method{values}{SummarizedExperiment}(x, ...) <- value
+\S4method{mcols}{SummarizedExperiment}(x, ...)
+\S4method{mcols}{SummarizedExperiment}(x, ...) <- value
 colData(x, ...)
 colData(x, ...) <- value
 exptData(x, ...)
@@ -224,7 +224,7 @@ exptData(x, ...) <- value
   \code{SummarizedExperiment}. Columns of the \code{DataFrame} represent
   different sample attributes, e.g., tissue of origin, etc. Columns of
   the \code{DataFrame} can themselves be annotated (via the
-  \code{\link{values}} function) in a fashion similar to the
+  \code{\link{mcols}} function) in a fashion similar to the
   \code{varMetadata} facilities of the \code{eSet} class. Column names
   typically provide a short identifier unique to each sample.
 
@@ -297,9 +297,10 @@ exptData(x, ...) <- value
       seqinfo of the row data; the \code{seqlengths} and \code{genome}
       accessors are also enabled.}
 
-    \item{\code{elementMetadata(x)}, \code{elementMetadata(x) <-
-      value}:}{Get or set the element metadata of the row data; the
-      \code{values} accessors are also enabled.}
+    \item{\code{mcols(x)}, \code{mcols(x) <-
+      value}:}{Get or set the metadata columns of the row data; the
+      \code{elementMetadata} and \code{values} accessors are also enabled
+      but their use is discouraged.}
 
     \item{\code{colData(x)}, \code{colData(x) <- value}:}{Get or set the
       column data. \code{value} is a \code{DataFrame} instance. Row

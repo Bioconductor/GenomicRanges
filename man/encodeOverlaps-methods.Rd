@@ -177,7 +177,7 @@ exbytx <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, by="tx", use.names=TRUE)
 
 ## Number of "compatible" transcripts per alignment in 'gal':
 gal_ncomptx <- countCompatibleOverlaps(gal, exbytx)
-elementMetadata(gal)$ncomptx <- gal_ncomptx
+mcols(gal)$ncomptx <- gal_ncomptx
 table(gal_ncomptx)
 mean(gal_ncomptx >= 1)
 ## --> 33% of the alignments in 'gal' are "compatible" with at least

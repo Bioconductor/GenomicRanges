@@ -44,7 +44,7 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
 .findSpliceOverlaps <- function(query, subject, ignore.strand=FALSE, cds=NULL)
 {
     ## adjust strand based on 'XS'
-    if (!is.null(xs <- values(query)$XS)) {
+    if (!is.null(xs <- mcols(query)$XS)) {
         strand <- ifelse(!is.na(xs), xs, "*")
         strand(query) <- relist(Rle(strand, elementLengths(query)), 
                                 query)
@@ -71,7 +71,7 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
     compatible <- .compatibleTranscription(query, subject, splice)
     unique <- .oneMatch(compatible, queryHits(olap))
     strandSpecific <- all(strand(query) != "*")[queryHits(olap)]
-    values(olap) <- DataFrame(compatible, unique, coding, strandSpecific)
+    mcols(olap) <- DataFrame(compatible, unique, coding, strandSpecific)
     olap 
 }
 

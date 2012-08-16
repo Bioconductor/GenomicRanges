@@ -37,6 +37,6 @@ setAs("RangedDataList", "GenomicRangesList",
 
 setMethod("stack", "GenomicRangesList", function(x, indName = "sample") {
   x_flat <- unlist(x, use.names = FALSE)
-  values(x_flat) <- cbind(IRanges:::.stack.ind(x, indName), values(x_flat))
+  mcols(x_flat) <- cbind(IRanges:::.stack.ind(x, indName), mcols(x_flat))
   x_flat
 })

@@ -142,11 +142,11 @@ optional arguments.
 
 \code{range} returns an object of the same type as \code{x}
 containing range bounds for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the meta columns in \code{x} are dropped.
+The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
 
 \code{reduce} returns an object of the same type as \code{x}
 containing reduced ranges for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the meta columns in \code{x} are dropped.
+The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
 See \code{?\link[IRanges:RangesList-utils]{reduce}} for more information
 about range reduction and for a description of the optional arguments.
 
@@ -155,7 +155,7 @@ in \code{x} are disjoint (i.e. non-overlapping).
 
 \code{disjoin} returns an object of the same type as \code{x}
 containing disjoint ranges for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the meta columns in \code{x} are dropped.
+The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
 
 \code{disjointBins} returns bin indexes for the ranges in \code{x}, such
 that ranges in the same bin do not overlap. If \code{ignore.strand=FALSE},

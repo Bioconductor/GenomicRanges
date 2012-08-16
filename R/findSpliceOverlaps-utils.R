@@ -139,7 +139,7 @@
   intronflt <- unlist(intron, use.names = FALSE)
   regions <- setdiff(intronflt, txflt, ignore.strand = TRUE)
   #map <- findOverlaps(regions, intronflt)
-  #values(regions)$tx_id <-
+  #mcols(regions)$tx_id <-
   #  seqsplit(names(tx)[togroup(introns)][subjectHits(intronic_to_tx)],
   #           queryHits(intronic_to_tx))
   regions
@@ -155,28 +155,28 @@
              "novelExon", "novelRetention")
     ## full result
     if (!is.null(nc)) {
-        values(hits) <- DataFrame(compatible, unique, coding, strandSpecific,
+        mcols(hits) <- DataFrame(compatible, unique, coding, strandSpecific,
                                   novelTSS, novelTSE, novelSite, novelJunction,
                                   novelExon, novelRetention)
         hits
     ## no overlaps 
     } else if (is.null(compatible)) {
         mat <- matrix(logical(0), length(hits), length(nms))
-        values(hits) <- DataFrame(mat)
-        names(values(hits)) <- nms
+        mcols(hits) <- DataFrame(mat)
+        names(mcols(hits)) <- nms
         hits
     ## no compatible overlaps 
     } else {
         mat <- matrix(FALSE, length(hits), length(nms))
-        values(hits) <- DataFrame(cbind(compatible, unique, coding,
+        mcols(hits) <- DataFrame(cbind(compatible, unique, coding,
                                   strandSpecific, mat))
-        names(values(hits)) <- nms
+        names(mcols(hits)) <- nms
         hits
     }
 }
 
 insertGaps <- function(reads) {
-  query.break <- values(reads)$query.break
+  query.break <- mcols(reads)$query.break
   if (is.null(query.break))
     stop("missing 'query.break' metadata variable: reads not paired?")
   reads_flat <- unlist(reads, use.names = FALSE)
@@ -211,7 +211,7 @@ isNumericOrNAs <- IRanges:::isNumericOrNAs
         gaps <- gaps(ranges(x), start, end)
 ### FIXME: this makes this function more of an 'introns' than a .gaps.
 ### FIXME: this breaks when the GRangesList is not ordered by position
-        if (!is.null(values(x)$query.break)) {
+        if (!is.null(mcols(x)$query.break)) {
           insert_gaps <- split(ranges(insertGaps(x)), seq_len(length(x)))
           gaps <- setdiff(gaps, insert_gaps)
         }
