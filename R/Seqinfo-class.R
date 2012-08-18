@@ -514,7 +514,9 @@ setMethod("merge", c("Seqinfo", "Seqinfo"),
     function(x, y, ...) .Seqinfo.merge(x, y, ...)
 )
 
-
+setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
+  merge(x, y)[intersect(seqnames(x), seqnames(y))]
+})
 
 
 ## Need getters of seqnameStyle() to deduce this from seqinfo class.
