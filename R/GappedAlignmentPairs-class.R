@@ -393,7 +393,7 @@ setMethod("unlist", "GappedAlignmentPairs",
     }
     ans_elt_lens <- ans_nelt1 + ans_nelt2
     ans_partitioning <- PartitioningByEnd(cumsum(ans_elt_lens))
-    ans <- splitAsList(x@unlistData, ans_partitioning)
+    ans <- relist(x@unlistData, ans_partitioning)
     mcols(ans) <- DataFrame(nelt1=ans_nelt1, nelt2=ans_nelt2)
     ans
 }

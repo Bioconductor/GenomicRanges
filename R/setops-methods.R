@@ -307,7 +307,7 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
         ansGRanges <-
           GRanges(ansSeqnames, unlist(ansRanges, use.names=FALSE), ansStrand)
         seqinfo(ansGRanges) <- ansSeqinfo
-        splitAsList(ansGRanges, ansRanges@partitioning)
+        relist(ansGRanges, PartitioningByEnd(ansRanges))
     }
 )
 

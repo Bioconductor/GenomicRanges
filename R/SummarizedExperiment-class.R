@@ -42,7 +42,7 @@ setGeneric("SummarizedExperiment",
     m <- assays[[1]]
     n <- nrow(m)
     names <- rownames(m)
-    splitAsList(GRanges(), PartitioningByEnd(integer(n), names=names))
+    relist(GRanges(), PartitioningByEnd(integer(n), names=names))
 }
 
 setMethod(SummarizedExperiment, "SimpleList",

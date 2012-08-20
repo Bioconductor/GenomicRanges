@@ -67,8 +67,7 @@ GRangesList <- function(...)
             stop("all elements in '...' must be GRanges objects")
         unlistData <- suppressWarnings(do.call("c", unname(listData)))
     }
-    f <- PartitioningByEnd(listData)
-    splitAsList(unlistData, f)
+    relist(unlistData, PartitioningByEnd(listData))
 }
 
 ### TODO: Use this in GenomicFeatures::transcriptLocs2refLocs() and remove
@@ -146,8 +145,8 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
         strand <- rep.int(strand, nfrag_per_feature)
     }
     unlistData <- GRanges(seqnames=seqnames, ranges=ranges, strand=strand)
-    f <- PartitioningByEnd(cumsum(nfrag_per_feature), names=NULL)
-    splitAsList(unlistData, f)
+    partitioning <- PartitioningByEnd(cumsum(nfrag_per_feature), names=NULL)
+    relist(unlistData, partitioning)
 }
 
 setMethod("updateObject", "GRangesList",

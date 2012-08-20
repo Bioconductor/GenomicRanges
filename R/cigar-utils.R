@@ -200,10 +200,10 @@ cigarToRleList <- function(cigar)
     splitCigars <- splitCigar(cigar)
     splitRawValues <- unname(lapply(splitCigars, "[[", 1L))
     splitLengths <- unname(lapply(splitCigars, "[[", 2L))
-    f <- PartitioningByEnd(cumsum(unlist(lapply(splitLengths, sum))))
-    splitAsList(Rle(rawToChar(unlist(splitRawValues), multiple=TRUE),
-                    unlist(splitLengths)),
-                f)
+    partitioning <- PartitioningByEnd(cumsum(unlist(lapply(splitLengths, sum))))
+    relist(Rle(rawToChar(unlist(splitRawValues), multiple=TRUE),
+               unlist(splitLengths)),
+           partitioning)
 }
 
 cigarToCigarTable <- function(cigar) {
