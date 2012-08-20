@@ -162,9 +162,9 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
 })
 
 setMethod(mcols, "SummarizedExperiment",
-    function(x, ...)
+    function(x, use.names=FALSE, ...)
 {
-    mcols(rowData(x), ...)
+    mcols(rowData(x), use.names=use.names, ...)
 })
 
 setReplaceMethod("mcols", "SummarizedExperiment",
@@ -178,9 +178,9 @@ setReplaceMethod("mcols", "SummarizedExperiment",
 ### Use of values() or elementMetadata() is discouraged.
 
 setMethod(elementMetadata, "SummarizedExperiment",
-    function(x, ...)
+    function(x, use.names=FALSE, ...)
 {
-    elementMetadata(rowData(x), ...)
+    elementMetadata(rowData(x), use.names=use.names, ...)
 })
 
 setReplaceMethod("elementMetadata", "SummarizedExperiment",

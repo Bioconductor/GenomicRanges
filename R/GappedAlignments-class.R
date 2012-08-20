@@ -108,18 +108,6 @@ setMethod("ngap", "GappedAlignments",
     function(x) {unname(elementLengths(rglist(x))) - 1L}
 )
 
-setMethod("elementMetadata", "GappedAlignments",
-    function(x, row.names=FALSE, ...)
-    {
-        if (!isTRUEorFALSE(row.names))
-            stop("'row.names' must be TRUE or FALSE")
-        ans <- x@elementMetadata
-        if (row.names)
-            rownames(ans) <- names(x)
-        ans
-    }
-)
-
 setMethod("seqinfo", "GappedAlignments", function(x) x@seqinfo)
 
 

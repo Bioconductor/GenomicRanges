@@ -164,10 +164,10 @@ test_GRanges_accessors <- function() {
     checkTrue(validObject(gr))
     checkIdentical(mcols(gr), val)
     rownames(val) <- names(gr)
-    checkIdentical(mcols(gr, row.names=TRUE), val)
+    checkIdentical(mcols(gr, use.names=TRUE), val)
     mcols(gr) <- val
     checkTrue(validObject(gr))
-    checkIdentical(mcols(gr, row.names=TRUE), val)
+    checkIdentical(mcols(gr, use.names=TRUE), val)
     rownames(val) <- NULL
     checkIdentical(mcols(gr), val)
 

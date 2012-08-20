@@ -297,7 +297,7 @@ exptData(x, ...) <- value
       seqinfo of the row data; the \code{seqlengths} and \code{genome}
       accessors are also enabled.}
 
-    \item{\code{mcols(x)}, \code{mcols(x) <-
+    \item{\code{mcols(x, use.names=FALSE)}, \code{mcols(x) <-
       value}:}{Get or set the metadata columns of the row data; the
       \code{elementMetadata} and \code{values} accessors are also enabled
       but their use is discouraged.}

@@ -31,7 +31,6 @@
 \alias{end,GappedAlignments-method}
 \alias{width,GappedAlignments-method}
 \alias{ngap,GappedAlignments-method}
-\alias{elementMetadata,GappedAlignments-method}
 \alias{elementMetadata<-,GappedAlignments-method}
 \alias{seqinfo,GappedAlignments-method}
 \alias{seqinfo<-,GappedAlignments-method}

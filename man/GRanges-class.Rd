@@ -33,7 +33,6 @@
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GenomicRanges-method}
-\alias{elementMetadata,GenomicRanges-method}
 \alias{elementMetadata<-,GenomicRanges-method}
 \alias{names,GenomicRanges-method}
 \alias{names<-,GenomicRanges-method}
@@ -170,11 +169,11 @@
   \describe{
     \item{}{
       \code{length(x)}:
-      Gets the number of elements.
+      Get the number of elements.
     }
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Gets or sets the sequence names.
+      Get or set the sequence names.
       \code{value} can be an \link[IRanges]{Rle} object, a character vector,
       or a factor.
     }
@@ -184,22 +183,26 @@
     }
     \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:
-      Gets or sets the ranges. \code{value} can be a Ranges object.
+      Get or set the ranges. \code{value} can be a Ranges object.
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
-      Gets or sets the names of the elements.
+      Get or set the names of the elements.
     }
     \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
-      Gets or sets the strand. \code{value} can be an Rle object, character
+      Get or set the strand. \code{value} can be an Rle object, character
       vector, or factor.
     }
     \item{}{
-      \code{mcols(x)}, \code{mcols(x) <- value}:
-      Gets or sets the metadata columns.
-      \code{value} can be \code{NULL}, or a data.frame-like object (i.e.
-      \link{DataFrame} or data.frame) holding element-wise metadata.
+      \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
+      Get or set the metadata columns.
+      If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
+      then the names of \code{x} are propagated as the row names of the
+      returned \link{DataFrame} object.
+      When setting the metadata columns, the supplied value must be \code{NULL}
+      or a data.frame-like object (i.e. \link{DataTable} or data.frame)
+      object holding element-wise metadata.
     }
     \item{}{
        \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
@@ -208,12 +211,12 @@
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
-      Gets or sets the information about the underlying sequences.
+      Get or set the information about the underlying sequences.
       \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
       \code{seqlevels(x)}, \code{seqlevels(x, force=FALSE) <- value}:
-      Gets or sets the sequence levels.
+      Get or set the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a GRanges object.
@@ -222,25 +225,25 @@
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the sequence lengths.
+      Get or set the sequence lengths.
       \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
       \code{value} can be a named non-negative integer or numeric vector
       eventually with NAs.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Gets or sets the circularity flags.
+      Get or set the circularity flags.
       \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
     }
     \item{}{
       \code{genome(x)}, \code{genome(x) <- value}:
-      Gets or sets the genome identifier or assembly name for each sequence.
+      Get or set the genome identifier or assembly name for each sequence.
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
     }
     \item{}{
-      \code{score(x)}: Gets the \dQuote{score} column from the element
+      \code{score(x)}: Get the \dQuote{score} column from the element
       metadata, if any.
     }
   }
@@ -252,15 +255,15 @@
   \describe{
     \item{}{
       \code{start(x)}, \code{start(x) <- value}:
-      Gets or sets \code{start(ranges(x))}.
+      Get or set \code{start(ranges(x))}.
     }
     \item{}{
       \code{end(x)}, \code{end(x) <- value}:
-      Gets or sets \code{end(ranges(x))}.
+      Get or set \code{end(ranges(x))}.
     }
     \item{}{
       \code{width(x)}, \code{width(x) <- value}:
-      Gets or sets \code{width(ranges(x))}.
+      Get or set \code{width(ranges(x))}.
     }
   }
 }
@@ -313,7 +316,7 @@
   \describe{
     \item{}{
       \code{x[i, j]}, \code{x[i, j] <- value}:
-      Gets or sets elements \code{i} with optional metadata columns
+      Get or set elements \code{i} with optional metadata columns
       \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
       logical, numeric, or character vector; or a 'logical' Rle object.
     }

@@ -27,7 +27,6 @@
 \alias{ngap,GappedAlignmentPairs-method}
 \alias{isProperPair}
 \alias{isProperPair,GappedAlignmentPairs-method}
-\alias{elementMetadata,GappedAlignmentPairs-method}
 \alias{elementMetadata<-,GappedAlignmentPairs-method}
 \alias{seqinfo,GappedAlignmentPairs-method}
 \alias{seqinfo<-,GappedAlignmentPairs-method}

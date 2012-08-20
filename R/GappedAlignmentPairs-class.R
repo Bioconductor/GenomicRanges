@@ -137,18 +137,6 @@ setMethod("isProperPair", "GappedAlignmentPairs",
     function(x) x@isProperPair
 )
 
-setMethod("elementMetadata", "GappedAlignmentPairs",
-    function(x, row.names=FALSE, ...)
-    {
-        if (!isTRUEorFALSE(row.names))
-            stop("'row.names' must be TRUE or FALSE")
-        ans <- x@elementMetadata
-        if (row.names)
-            rownames(ans) <- names(x)
-        ans
-    }
-)
-
 setMethod("seqinfo", "GappedAlignmentPairs",
     function(x) seqinfo(x@first)
 )

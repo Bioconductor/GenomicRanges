@@ -58,18 +58,6 @@ setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
-setMethod("elementMetadata", "GenomicRanges",
-    function(x, row.names=FALSE, ...)
-    {
-        if (!isTRUEorFALSE(row.names))
-            stop("'row.names' must be TRUE or FALSE")
-        ans <- x@elementMetadata
-        if (row.names)
-            rownames(ans) <- names(x)
-        ans
-    }
-)
-
 #setMethod("constraint", "GenomicRanges", function(x) x@constraint)
 
 

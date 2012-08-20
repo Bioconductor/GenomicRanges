@@ -229,18 +229,18 @@ setMethod("strand", "GRangesList",
              check=FALSE))
 
 setMethod("elementMetadata", "GRangesList",
-    function(x, row.names=FALSE, level=c("between", "within"), ...)
+    function(x, use.names=FALSE, level=c("between", "within"), ...)
     {
-        if (!isTRUEorFALSE(row.names))
-            stop("'row.names' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
         level <- match.arg(level)
         if (level == "between") {
             ans <- x@elementMetadata
-            if (row.names)
+            if (use.names)
                 rownames(ans) <- names(x)
         } else {
             elementMetadata <- x@unlistData@elementMetadata
-            if (row.names)
+            if (use.names)
                 rownames(elementMetadata) <- names(x@unlistData)
             ans <-
               new2("CompressedSplitDataFrameList", unlistData = elementMetadata,
