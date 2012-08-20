@@ -83,7 +83,7 @@ setMethod("coverage", "GenomicRanges",
         seqlevels <- seqlevels(x)
         xSplitRanges <- splitRanges(seqnames(x))
         xRanges <- unname(ranges(x))
-        ans <- IRanges:::newSimpleList("SimpleRleList",
+        ans <- IRanges:::newList("SimpleRleList",
                  lapply(structure(seqlevels, names = seqlevels),
                         function(i) {
                           rg <- seqselect(xRanges, xSplitRanges[[i]])
