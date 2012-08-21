@@ -99,7 +99,8 @@
 \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"),
-    select = c("all", "first"), ignore.strand = FALSE)
+    select = c("all", "first", "last", "arbitrary"),
+    ignore.strand = FALSE)
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"), 
@@ -170,7 +171,7 @@
 
 \value{
   For \code{findOverlaps} either a \link[IRanges]{Hits} object when
-  \code{select = "all"} or an integer vector when \code{select = "first"}. 
+  \code{select = "all"} or an integer vector otherwise. 
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
@@ -223,8 +224,8 @@ gr
 
 ## GRangesList object:
 gr1 <-
-  GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
-          strand = "+", score = 5L, GC = 0.45)
+  GRanges(seqnames = "chr2", ranges = IRanges(4:3, 6),
+          strand = "+", score = 5:4, GC = 0.45)
 gr2 <-
   GRanges(seqnames = c("chr1", "chr1"),
           ranges = IRanges(c(7,13), width = 3),
@@ -233,7 +234,7 @@ gr3 <-
   GRanges(seqnames = c("chr1", "chr2"),
           ranges = IRanges(c(1, 4), c(3, 9)),
           strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
-grlist <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 
 ## Overlapping two GRanges objects:
 table(gr \%in\% gr1)
@@ -246,6 +247,7 @@ findOverlaps(gr, gr1, type = "start")
 subsetByOverlaps(gr, gr1, type = "start")
 
 findOverlaps(gr, gr1, select = "first")
+findOverlaps(gr, gr1, select = "last")
 
 findOverlaps(gr1, gr)
 findOverlaps(gr1, gr, type = "start")
@@ -253,19 +255,19 @@ findOverlaps(gr1, gr, type = "within")
 findOverlaps(gr1, gr, type = "equal")
 
 ## Overlapping a GRanges and a GRangesList object:
-table(grlist \%in\% gr)
-countOverlaps(grlist, gr)
-findOverlaps(grlist, gr)
-subsetByOverlaps(grlist, gr)
-countOverlaps(grlist, gr, type = "start")
-findOverlaps(grlist, gr, type = "start")
-subsetByOverlaps(grlist, gr, type = "start")
-findOverlaps(grlist, gr, select = "first")
+table(grl \%in\% gr)
+countOverlaps(grl, gr)
+findOverlaps(grl, gr)
+subsetByOverlaps(grl, gr)
+countOverlaps(grl, gr, type = "start")
+findOverlaps(grl, gr, type = "start")
+subsetByOverlaps(grl, gr, type = "start")
+findOverlaps(grl, gr, select = "first")
 
 ## Overlapping two GRangesList objects:
-countOverlaps(grlist, rev(grlist))
-findOverlaps(grlist, rev(grlist))
-subsetByOverlaps(grlist, rev(grlist))
+countOverlaps(grl, rev(grl))
+findOverlaps(grl, rev(grl))
+subsetByOverlaps(grl, rev(grl))
 
 ## ---------------------------------------------------------------------
 ## WITH A GappedAlignments OBJECT
