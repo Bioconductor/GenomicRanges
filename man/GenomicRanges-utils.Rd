@@ -72,6 +72,12 @@
 \S4method{follow}{GenomicRanges,missing}(x, subject,
         select=c("arbitrary", "all"), ignore.strand=FALSE, ...)
 
+\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject,
+        select=c("arbitrary", "all"), ignore.strand=FALSE, ...)
+
+\S4method{nearest}{GenomicRanges,missing}(x, subject,
+        select=c("arbitrary", "all"), ignore.strand=FALSE, ...)
+
 \S4method{distance}{GenomicRanges,GenomicRanges}(x, y, ignore.strand=FALSE, ...)
 
 \S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject,
@@ -200,12 +206,10 @@ the \code{precede} above for details of strand matching.
 \code{nearest} does conventional nearest neighbor finding. It returns an
 integer vector containing the index of the nearest neightbor range in
 \code{subject} for each range in \code{x}. If there is no nearest neighbor
-\code{NA} is returned. See the \code{\link[IRanges]{nearest}} man page in
-the \code{IRanges} package for a description of the algorithm used.
-If \code{ignore.strand=TRUE}, both \code{x} and \code{subject} strand
-are set to \code{"+"}. \code{nearest} calls \code{precede} and \code{follow}
-and thus the strand matching for \code{*} follows the conventions documented
-under those functions. 
+\code{NA} is returned. If \code{ignore.strand=TRUE}, both \code{x} and 
+\code{subject} strand are set to \code{"+"}. \code{nearest} calls 
+\code{precede} and \code{follow} and thus the strand matching for \code{*} 
+follows the conventions documented under those functions. 
 
 \code{distance} calculates the number of positions separating two features.
 The value is zero if the features overlap and \code{NA} if the features
@@ -238,34 +242,39 @@ gr <- GRanges(
       )
 gr
 
+## ------------------------------------------
 ## Intra-interval operations:
+## ------------------------------------------
 shift(gr, 1)
 narrow(gr[-10], start=2, end=-2)
 flank(gr, 10)
 resize(gr, 10)
 restrict(gr, start=3, end=7)
 
+## ------------------------------------------
 ## Inter-interval operations:
+## ------------------------------------------
 gaps(gr, start = 1, end = 10)
 range(gr)
 reduce(gr)
 
+## ------------------------------------------
 ## isDisjoint(), disjoin(), disjointBins():
+## ------------------------------------------
 isDisjoint(gr)
 disjoin(gr)
 disjointBins(gr)
 stopifnot(all(sapply(split(gr, disjointBins(gr)), isDisjoint)))
 
+## ------------------------------------------
 ## precede() and follow():
-
-## query on "+" strand
+## ------------------------------------------
 query <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
 subject <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
                         strand=c("+", "+", "-", "-"))
 precede(query, subject)
 follow(query, subject)
 
-## query on "+" strand
 strand(query) <- "-"
 precede(query, subject)
 follow(query, subject)
@@ -276,6 +285,24 @@ subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
                         rep(c("+", "-", "*"), 2))
 precede(query, subject)
 precede(query, rev(subject))
-}
 
+## ------------------------------------------
+## nearest():
+## ------------------------------------------
+## When multiple ranges overlap an "arbitrary" range is chosen
+query <- GRanges("A", IRanges(5, 15))
+subject <- GRanges("A", IRanges(c(1, 15), c(5, 19)))
+nearest(query, subject)
+
+## select="all" returns all hits
+nearest(query, subject, select="all")
+
+## Ranges in 'x' will self-select when 'subject' is present
+query <- GRanges("A", IRanges(c(1, 10), width=5))
+nearest(query, query)
+
+## Ranges in 'x' will not self-select when 'subject' is missing
+nearest(query)
+}
+ 
 \keyword{utilities}

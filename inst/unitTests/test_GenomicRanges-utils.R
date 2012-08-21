@@ -218,6 +218,7 @@ test_GenomicRanges_ignore_strand <- function()
 
 test_GenomicRanges_nearest <- function()
 {
+    ## no self-hits
     r <- IRanges(c(1,5,10), c(2,7,12))
     g <- GRanges("chr1", r, "+")
     checkEquals(precede(r), precede(g))
@@ -227,13 +228,52 @@ test_GenomicRanges_nearest <- function()
     g <- GRanges("chr1", r, "-")
     checkEquals(follow(r), precede(g))
     checkEquals(precede(r), follow(g))
-    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(rev(r)), nearest(g))
 
     g <- GRanges("chr1", r, "*")
     checkEquals(follow(g), precede(g))
     checkEquals(nearest(r), follow(g))
     checkEquals(follow(g), nearest(g))
 
+    ## self-hits
+    r <- IRanges(c(1,10), c(5,15))
+    g <- GRanges("chr1", r, "+")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r, r), nearest(g, g))
+    g <- GRanges("chr1", r, "-")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r, r), nearest(g, g))
+    g <- GRanges("chr1", r, "*")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r, r), nearest(g, g))
+
+    r <- IRanges(c(1,4,8), c(6,10,12))
+    g <- GRanges("chr1", r, "+")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(c(2, 3, 3), nearest(g, g))
+    checkEquals(c(3, 3, 2), nearest(g, rev(g)))
+    g <- GRanges("chr1", r, "-")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(c(2, 3, 3), nearest(g, g))
+    checkEquals(c(3, 3, 2), nearest(g, rev(g)))
+    g <- GRanges("chr1", r, "*")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(c(2, 3, 3), nearest(g, g))
+    checkEquals(c(3, 3, 2), nearest(g, rev(g)))
+
+    q <- GRanges("chr1", IRanges(1, 15), "+")
+    s <- GRanges("chr1", IRanges(c(1, 1, 10), c(5, 15, 15)), "+")
+    target <- nearest(q, s, select="arbitrary")
+    checkEquals(3, target)
+    strand(q) <- "-"
+    strand(s) <- "-"
+    target <- nearest(q, s, select="arbitrary")
+    checkEquals(3, target)
+    target1 <- nearest(ranges(q), ranges(s), select="all")
+    target2 <- nearest(q, s, select="all")
+    checkEquals(target1, target2)
+
+    ## ignore.strand
     q <- GRanges("chr1", IRanges(5, width=1), "+")
     s <- GRanges("chr1", IRanges(c(10, 8), width=1), "-")
     res <- nearest(q, s, ignore.strand=FALSE)

@@ -495,40 +495,96 @@ setMethod("follow", c("GenomicRanges", "missing"),
     }
 )
 
-.nearest <- function(x, subject, ignore.strand, ...)
-{
-    p <- precede(x, subject, "arbitrary", ignore.strand)
-    f <- follow(x, subject, "arbitrary", ignore.strand)
-    midx <- !is.na(p) & !is.na(f)
-    pdist <- distance(x[midx], subject[p[midx]], ignore.strand)
-    fdist <- distance(x[midx], subject[f[midx]], ignore.strand)
-
-    ## choose nearest or not missing 
-    ans <- rep.int(NA_integer_, length(x))
-    ans[midx] <- ifelse(pdist > fdist, p[midx], f[midx])
-    ans[!midx] <- ifelse(is.na(p[!midx]), f[!midx], p[!midx])
-
-    ## if tie, choose lowest index 
-    didx <- pdist == fdist
-    if (any(na.omit(didx)))
-        ans[midx[didx]] <- pmin(p[midx[didx]], f[midx[didx]])
-
-    ans
-}
 
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, ignore.strand=FALSE, ...)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE, 
+             ...)
     {
-        .nearest(x, subject, ignore.strand, ...) 
+        select <- match.arg(select)
+        .nearest(x, subject, select=select, ignore.strand=ignore.strand, ...)
     }
 )
 
 setMethod("nearest", c("GenomicRanges", "missing"),
-    function(x, subject, ignore.strand=FALSE, ...)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE, 
+             ...)
     {
-        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...)
+        callGeneric(x, subject=x, select=select, ignore.strand=ignore.strand, 
+                    ignoreSelf=TRUE, ...)
     }
 )
+
+.nearest <- function(x, subject, select, ignore.strand, ignoreSelf=FALSE, ...)
+{
+    ## overlapping ranges
+    if (ignoreSelf) {
+        fo <- findOverlaps(x, subject, select="all",
+                           ignore.strand=ignore.strand)
+        ol <- IRanges:::processSelfMatching(fo, select, ignoreSelf=TRUE)
+    } else {
+        ol <- findOverlaps(x, subject, select=select,
+                           ignore.strand=ignore.strand)
+    }
+    if (select == "all") {
+        m <- as.matrix(ol)
+        olv <- IRanges:::.hitsMatrixToVector(m, length(x))
+    } else {
+        olv <- ol
+    }
+
+    ## non-overlapping ranges
+    if (length(x <- x[is.na(olv)]) != 0) {
+        p <- precede(x, subject, select, ignore.strand)
+        f <- follow(x, subject, select, ignore.strand)
+
+        if (select == "all") {
+            pmat <- as.matrix(p)
+            fmat <- as.matrix(f)
+            p <- IRanges:::.hitsMatrixToVector(as.matrix(pmat), length(x))
+            f <- IRanges:::.hitsMatrixToVector(as.matrix(fmat), length(x))
+        }
+
+        ## choose nearest or not missing
+        pdist <- start(subject)[p] - end(x)
+        fdist <- start(x) - end(subject)[f] 
+        pnearest <- pdist < fdist
+        pnearest[is.na(pnearest)] <- is.na(f)[is.na(pnearest)]
+
+        if (select == "all") {
+            map <- which(is.na(olv))
+            pnearest[pdist == fdist] <- TRUE
+            m <- rbind(m, .filterMatchMatrix(pmat, pnearest), 
+                .filterMatchMatrix(fmat, !pnearest))
+            m <- m[IRanges:::orderIntegerPairs(m[, 1L], m[, 2L]), , 
+                drop = FALSE]
+            ol@queryHits <- unname(m[, 1L])
+            ol@subjectHits <- unname(m[, 2L])
+        } else {
+            olv[is.na(olv)] <- ifelse(pnearest, p, f) 
+            ol <- olv
+        }
+    }
+    ol
+}
+
+.pOverlapDistance <- function(x, y)
+{
+    left <- abs(start(x) - start(y))
+    right <- abs(end(x) - end(y))
+    left + right
+}
+
+.filterMatchMatrix <- function(m, i) 
+{
+    qrle <- Rle(m[, 1L])
+    qstart <- qend <- integer(length(i))
+    qstart[runValue(qrle)] <- start(qrle)
+    qend[runValue(qrle)] <- end(qrle)
+    rows <- as.integer(IRanges(qstart[i], qend[i]))
+    m <- m[rows, , drop = FALSE]
+    m[, 1L] <- map[m[, 1L]]
+    m
+}
 
 setMethod("distance", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE, ...)
