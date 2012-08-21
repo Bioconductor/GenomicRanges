@@ -18,6 +18,10 @@
 
 \usage{
 \S4method{coverage}{GenomicRanges}(x, shift=0L, width=NULL, weight=1L, ...)
+\S4method{coverage}{GappedAlignments}(x, shift=0L, width=NULL,
+                    drop.D.ranges = FALSE, weight=1L, ...)
+\S4method{coverage}{GappedAlignmentPairs}(x, shift=0L, width=NULL,
+                    drop.D.ranges = FALSE, weight=1L, ...)
 }
 
 \arguments{
@@ -28,6 +32,10 @@
   \item{shift, width, weight, ...}{
     See \code{\link[IRanges]{coverage}} in the IRanges package for
     a description of these optional arguments.
+  }
+  \item{drop.D.ranges}{
+    Whether the coverage calculation should ignore ranges corresponding
+    to D (deletion) in the CIGAR string.
   }
 }
 
