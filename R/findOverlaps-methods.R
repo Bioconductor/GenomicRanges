@@ -2,6 +2,13 @@
 ### findOverlaps methods
 ### -------------------------------------------------------------------------
 
+.putRangesOnFirstCircle <- function(x, circle.length)
+{
+    x_start0 <- start(x) - 1L  # 0-based start
+    x_shift0 <- x_start0 %% circle.length - x_start0
+    shift(x, x_shift0)
+}
+
 ### 'circle.length' must be NA (if the underlying sequence is linear) or the
 ### length of the underlying circular sequence (integer vector of length 1
 ### with the name of the sequence).
@@ -11,52 +18,46 @@
 {
     if (is.na(circle.length))
         return(findOverlaps(query, subject,
-                            maxgap = maxgap, minoverlap = minoverlap,
-                            type = type, select = "all"))
+                            maxgap=maxgap, minoverlap=minoverlap,
+                            type=type, select="all"))
     if (type != "any")
         stop("overlap type \"", type, "\" is not yet supported ",
              "for circular sequence ", names(circle.length))
-    subject.shift0 <- (start(subject) - 1L) %% circle.length +
-                      1L - start(subject)
-    subject0 <- shift(subject, subject.shift0)
+    subject0 <- .putRangesOnFirstCircle(subject, circle.length)
     inttree0 <- IntervalTree(subject0)
-    query.shift0 <- (start(query) - 1L) %% circle.length +
-                    1L - start(query)
-    query0 <- shift(query, query.shift0)
-    overlaps00 <- findOverlaps(query0, inttree0,
-                               maxgap = maxgap, minoverlap = minoverlap,
-                               type = type, select = "all")
+    query0 <- .putRangesOnFirstCircle(query, circle.length)
+    hits00 <- findOverlaps(query0, inttree0,
+                           maxgap=maxgap, minoverlap=minoverlap,
+                           type=type, select="all")
     query1 <- shift(query0, circle.length)
-    overlaps10 <- findOverlaps(query1, inttree0,
-                               maxgap = maxgap, minoverlap = minoverlap,
-                               type = type, select = "all")
+    hits10 <- findOverlaps(query1, inttree0,
+                           maxgap=maxgap, minoverlap=minoverlap,
+                           type=type, select="all")
     subject1 <- shift(subject0, circle.length)
-    overlaps01 <- findOverlaps(query0, subject1,
-                               maxgap = maxgap, minoverlap = minoverlap,
-                               type = type, select = "all")
-    ## Merge 'overlaps00', 'overlaps10' and 'overlaps01'.
-    qHits <- c(queryHits(overlaps00),
-               queryHits(overlaps10),
-               queryHits(overlaps01))
-    sHits <- c(subjectHits(overlaps00),
-               subjectHits(overlaps10),
-               subjectHits(overlaps01))
-    is_dup <- IRanges:::duplicatedIntegerPairs(qHits, sHits)
-    new("Hits",
-        queryHits = qHits[!is_dup],
-        subjectHits = sHits[!is_dup],
-        queryLength = overlaps00@queryLength,
-        subjectLength = overlaps00@subjectLength)
+    hits01 <- findOverlaps(query0, subject1,
+                           maxgap=maxgap, minoverlap=minoverlap,
+                           type=type, select="all")
+    ## Merge 'hits00', 'hits10' and 'hits01'.
+    union(union(hits00, hits10), hits01)
+}
+
+### 'x' must be 'strand(query)' or 'strand(subject)'.
+.strandAsSignedNumber <- function(x)
+{
+    tmp <- as.integer(runValue(x))
+    idx <- tmp >= 2L
+    tmp[idx] <- tmp[idx] - 3L
+    runValue(x) <- tmp
+    as.vector(x)
 }
 
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
-    function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end", "within", "equal"),
-             select = c("all", "first"), ignore.strand = FALSE)
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
     {
-        #        if (!identical(minoverlap, 1L))
-        #    warning("'minoverlap' argument is ignored")
-        if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
+        if (!isSingleNumber(maxgap) || maxgap < 0L)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
@@ -64,84 +65,82 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         ## merge() also checks that 'query' and 'subject' are based on the
         ## same reference genome.
         seqinfo <- merge(seqinfo(query), seqinfo(subject))
-        DIM <- c(length(query), length(subject))
-        if (min(DIM) == 0L) {
-            matchMatrix <-
-              matrix(integer(0), nrow = 0L, ncol = 2L,
-                     dimnames = list(NULL, c("queryHits", "subjectHits")))
+
+        q_len <- length(query)
+        s_len <- length(subject)
+        q_seqnames <- seqnames(query)
+        s_seqnames <- seqnames(subject)
+        q_seqlevels <- levels(q_seqnames)
+        s_seqlevels <- levels(s_seqnames)
+        q_splitranges <- splitRanges(q_seqnames)
+        s_splitranges <- splitRanges(s_seqnames)
+        q_ranges <- unname(ranges(query))
+        s_ranges <- unname(ranges(subject))
+        if (ignore.strand) {
+            q_strand <- rep.int(1L, q_len)
+            s_strand <- rep.int(1L, s_len)
         } else {
-            querySeqnames <- seqnames(query)
-            querySplitRanges <- splitRanges(querySeqnames)
-            uniqueQuerySeqnames <- names(querySplitRanges)
-
-            subjectSeqnames <- seqnames(subject)
-            subjectSplitRanges <- splitRanges(subjectSeqnames)
-            uniqueSubjectSeqnames <- names(subjectSplitRanges)
-
-            commonSeqnames <-
-              intersect(uniqueQuerySeqnames, uniqueSubjectSeqnames)
-             
-            if (ignore.strand) {
-                queryStrand <- rep.int(1L, length(query))
-                subjectStrand <- rep.int(1L, length(subject))
-            } else {
-                queryStrand <- strand(query)
-                levels(queryStrand) <- c("1", "-1", "0")
-                queryStrand@values <-
-                as.integer(as.character(runValue(queryStrand)))
-                queryStrand <- as.vector(queryStrand)
-                
-                subjectStrand <- strand(subject)
-                levels(subjectStrand) <- c("1", "-1", "0")
-                subjectStrand@values <-
-                as.integer(as.character(runValue(subjectStrand)))
-                subjectStrand <- as.vector(subjectStrand)
-            }
-            queryRanges <- unname(ranges(query))
-            subjectRanges <- unname(ranges(subject))
-
-            matchMatrix <-
-              do.call(rbind,
-                      lapply(commonSeqnames, function(seqnm)
-                      {
-                          if (isCircular(seqinfo)[seqnm] %in% TRUE)
-                              circle.length <- seqlengths(seqinfo)[seqnm]
-                          else
-                              circle.length <- NA
-                          qIdxs <- querySplitRanges[[seqnm]]
-                          sIdxs <- subjectSplitRanges[[seqnm]]
-                          overlaps <- .findOverlaps.circle(
-                                          circle.length,
-                                          seqselect(queryRanges, qIdxs),
-                                          seqselect(subjectRanges, sIdxs),
-                                          maxgap, minoverlap, type)
-                          qHits <- queryHits(overlaps)
-                          sHits <- subjectHits(overlaps)
-                          matches <-
-                            cbind(queryHits = as.integer(qIdxs)[qHits],
-                                  subjectHits = as.integer(sIdxs)[sHits])
-                          matches[which(seqselect(queryStrand, qIdxs)[qHits] *
-                                        seqselect(subjectStrand, sIdxs)[sHits] != -1L), ,
-                                  drop=FALSE]
-                      }))
-            if (is.null(matchMatrix)) {
-                matchMatrix <-
-                  matrix(integer(0), nrow = 0L, ncol = 2L,
-                         dimnames = list(NULL, c("queryHits", "subjectHits")))
-            }
-            matchMatrix <-
-              matchMatrix[IRanges:::orderIntegerPairs(matchMatrix[ , 1L],
-                                                      matchMatrix[ , 2L]), ,
-                          drop=FALSE]
+            q_strand <- .strandAsSignedNumber(strand(query))
+            s_strand <- .strandAsSignedNumber(strand(subject))
         }
-        if (select == "all") {
-            new("Hits",
-                queryHits = unname(matchMatrix[ , 1L]),
-                subjectHits = unname(matchMatrix[ , 2L]), 
-                queryLength = DIM[1], subjectLength = DIM[2])
-        } else {
-            IRanges:::.hitsMatrixToVector(matchMatrix, length(query))
+
+        common_seqlevels <- intersect(q_seqlevels, s_seqlevels)
+        results <- lapply(common_seqlevels,
+            function(seqlevel)
+            {
+                if (isCircular(seqinfo)[seqlevel] %in% TRUE) {
+                    circle.length <- seqlengths(seqinfo)[seqlevel]
+                } else {
+                    circle.length <- NA
+                }
+                q_idx <- q_splitranges[[seqlevel]]
+                s_idx <- s_splitranges[[seqlevel]]
+                hits <- .findOverlaps.circle(circle.length,
+                                             seqselect(q_ranges, q_idx),
+                                             seqselect(s_ranges, s_idx),
+                                             maxgap, minoverlap, type)
+                q_hits <- queryHits(hits)
+                s_hits <- subjectHits(hits)
+                compatible_strand <- seqselect(q_strand, q_idx)[q_hits] *
+                                     seqselect(s_strand, s_idx)[s_hits] != -1L
+                hits <- hits[compatible_strand]
+                remapHits(hits, query.map=as.integer(q_idx),
+                                new.queryLength=q_len,
+                                subject.map=as.integer(s_idx),
+                                new.subjectLength=s_len)
+            })
+
+        ## Combine the results.
+        q_hits <- unlist(lapply(results, queryHits))
+        if (is.null(q_hits))
+            q_hits <- integer(0)
+
+        s_hits <- unlist(lapply(results, subjectHits))
+        if (is.null(s_hits))
+            s_hits <- integer(0)
+
+        if (select == "arbitrary") {
+            ans <- rep.int(NA_integer_, q_len)
+            ans[q_hits] <- s_hits
+            return(ans)
         }
+        if (select == "first") {
+            ans <- rep.int(NA_integer_, q_len)
+            oo <- IRanges:::orderIntegerPairs(q_hits, s_hits, decreasing=TRUE)
+            ans[q_hits[oo]] <- s_hits[oo]
+            return(ans)
+        }
+        oo <- IRanges:::orderIntegerPairs(q_hits, s_hits)
+        q_hits <- q_hits[oo]
+        s_hits <- s_hits[oo]
+        if (select == "last") {
+            ans <- rep.int(NA_integer_, q_len)
+            ans[q_hits] <- s_hits
+            return(ans)
+        }
+        new2("Hits", queryHits=q_hits, subjectHits=s_hits,
+                     queryLength=q_len, subjectLength=s_len,
+                     check=FALSE)
     }
 )
 
