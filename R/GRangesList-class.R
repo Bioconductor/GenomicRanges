@@ -781,7 +781,21 @@ setMethod("flank", "GRangesList",
   shifted
 }
 
+.orderElementsByTranscription <- function(x) {
+  gr <- unlist(x, use.names = FALSE)
+  gr <- gr[order(togroup(x), start(gr))]
+  part <- PartitioningByWidth(x)
+  neg <- strand(gr)[start(part)] == "-"
+  ord <- IRanges:::mseq(ifelse(neg, end(part), start(part)),
+                          ifelse(neg, start(part), end(part)))
+  relist(gr[ord], x)
+}
+
 setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
+  ## make sure 'to' is properly sorted by strand
+  to <- .orderElementsByTranscription(to)
+  
+  ## find overlaps
   gr <- unlist(to, use.names=FALSE)
   ol <- findOverlaps(from, gr, type = "within")
   shits <- subjectHits(ol)
@@ -795,15 +809,15 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
                         width = width(local)[neg])
   
-  ## location wrt transcript 
+  ## location wrt transcript
   cumsums <- .listCumsumShifted(width(to))
   local <- shift(local, 1L + cumsums[shits])
   
-  toInd <- rep(seq(length(to)), elementLengths(to))[shits]
+  toInd <- togroup(to)[shits]
   matching <- new("Hits",
                   queryHits = qhits, subjectHits = toInd,
                   queryLength = length(from), subjectLength = length(to))
-  space <- names(to)[shits]
+  space <- names(to)[toInd]
   if (is.null(space))
     space <- as.character(seq_len(length(to))[subjectHits(ol)])
   new("RangesMapping", hits = matching, ranges = local,
