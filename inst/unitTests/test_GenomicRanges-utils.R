@@ -218,35 +218,52 @@ test_GenomicRanges_ignore_strand <- function()
 
 test_GenomicRanges_nearest <- function()
 {
-    ## no self-hits
+    ## adjacent 
+    r <- IRanges(c(1,6), c(5,10))
+    g <- GRanges("chr1", r, "+")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r, r), nearest(g, g))
+    g <- GRanges("chr1", r, "-")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r, r), nearest(g, g))
+    g <- GRanges("chr1", r, "*")
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r, r), nearest(g, g))
+
+    ## separated by 1
+    r <- IRanges(c(1,7), c(5,11))
+    g <- GRanges("chr1", r, "+")
+    checkEquals(follow(r), follow(g))
+    checkEquals(precede(r), precede(g))
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r,r), nearest(g,g))
+    g <- GRanges("chr1", r, "-")
+    checkEquals(follow(r), precede(g))
+    checkEquals(precede(r), follow(g))
+    checkEquals(nearest(rev(r)), nearest(g))
+    checkEquals(nearest(rev(r), rev(r)), nearest(g,g))
+    g <- GRanges("chr1", r, "*")
+    checkEquals(follow(g), precede(g))
+    checkEquals(nearest(r), follow(g))
+    checkEquals(nearest(r), nearest(g))
+    checkEquals(nearest(r,r), nearest(g,g))
+
+    ## separated by > 1
     r <- IRanges(c(1,5,10), c(2,7,12))
     g <- GRanges("chr1", r, "+")
     checkEquals(precede(r), precede(g))
     checkEquals(follow(r), follow(g))
     checkEquals(nearest(r), nearest(g))
-
     g <- GRanges("chr1", r, "-")
     checkEquals(follow(r), precede(g))
     checkEquals(precede(r), follow(g))
     checkEquals(nearest(rev(r)), nearest(g))
-
     g <- GRanges("chr1", r, "*")
     checkEquals(follow(g), precede(g))
     checkEquals(nearest(r), follow(g))
     checkEquals(follow(g), nearest(g))
 
-    ## self-hits
-    r <- IRanges(c(1,10), c(5,15))
-    g <- GRanges("chr1", r, "+")
-    checkEquals(nearest(r), nearest(g))
-    checkEquals(nearest(r, r), nearest(g, g))
-    g <- GRanges("chr1", r, "-")
-    checkEquals(nearest(r), nearest(g))
-    checkEquals(nearest(r, r), nearest(g, g))
-    g <- GRanges("chr1", r, "*")
-    checkEquals(nearest(r), nearest(g))
-    checkEquals(nearest(r, r), nearest(g, g))
-
+    ## overlapping
     r <- IRanges(c(1,4,8), c(6,10,12))
     g <- GRanges("chr1", r, "+")
     checkEquals(nearest(r), nearest(g))
