@@ -19,9 +19,9 @@
 \usage{
 \S4method{coverage}{GenomicRanges}(x, shift=0L, width=NULL, weight=1L, ...)
 \S4method{coverage}{GappedAlignments}(x, shift=0L, width=NULL,
-                    drop.D.ranges = FALSE, weight=1L, ...)
+         weight=1L, drop.D.ranges=FALSE, ...)
 \S4method{coverage}{GappedAlignmentPairs}(x, shift=0L, width=NULL,
-                    drop.D.ranges = FALSE, weight=1L, ...)
+         weight=1L, drop.D.ranges=FALSE, ...)
 }
 
 \arguments{

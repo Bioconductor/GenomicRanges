@@ -104,7 +104,7 @@ rowData(x, ...)
 rowData(x, ...) <- value
 \S4method{seqinfo}{SummarizedExperiment}(x)
 \S4method{seqinfo}{SummarizedExperiment}(x, new2old=NULL, force=FALSE) <- value
-\S4method{mcols}{SummarizedExperiment}(x, ...)
+\S4method{mcols}{SummarizedExperiment}(x, use.names=FALSE, ...)
 \S4method{mcols}{SummarizedExperiment}(x, ...) <- value
 colData(x, ...)
 colData(x, ...) <- value

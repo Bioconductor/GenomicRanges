@@ -49,7 +49,7 @@
 }
 
 \arguments{
-  \item{x, subject}{\link{GenomicRanges} objects.}
+  \item{x, subject, y}{\link{GenomicRanges} objects.}
   \item{select}{See \code{?`\link[IRanges]{nearest-methods}`}.}
   \item{ignore.strand}{
     \code{TRUE} or \code{FALSE}. Whether the strand of the input ranges
