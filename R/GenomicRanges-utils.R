@@ -395,8 +395,9 @@ setMethod("disjointBins", "GenomicRanges",
     }
 
     ## sentinels marking seqlevels ends
-    endq <- start(query) + width(query) # end(query) incorrect for 0-width
-    ends <- start(subject) + width(subject)
+    ## end(query) incorrect for 0-width
+    endq <- ifelse(width(query) == 0L, start(query), end(query)) 
+    ends <- ifelse(width(subject) == 0L, start(subject), end(subject))
     maxend <- max(max(endq), max(ends)) + 1
     lvls <- union(seqlevels(query), seqlevels(subject))
     offset <- setNames((seq_along(lvls) - 1) * maxend, lvls)
