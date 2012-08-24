@@ -33,22 +33,24 @@ Collate: utils.R
 	GenomicRanges-class.R
 	GRanges-class.R
 	GenomicRanges-comparison.R
-	GenomicRanges-utils.R
 	GenomicRangesList-class.R
 	GRangesList-class.R
 	GappedAlignments-class.R
 	GappedAlignmentPairs-class.R
 	SummarizedExperiment-class.R
-	coverage-methods.R
-	setops-methods.R
-	findOverlaps-methods.R
-	encodeOverlaps-methods.R
 	countGenomicOverlaps.R
 	seqlevels-utils.R
 	resolveHits-methods.R
 	summarizeOverlaps.R
 	RangesMapping-methods.R
 	RangedData-methods.R
+	intra-range-methods.R
+	inter-range-methods.R
+	setops-methods.R
+	findOverlaps-methods.R
+	nearest-methods.R
+	encodeOverlaps-methods.R
+	coverage-methods.R
 	findSpliceOverlaps-methods.R
 	findSpliceOverlaps-utils.R
 	test_GenomicRanges_package.R

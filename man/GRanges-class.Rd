@@ -430,10 +430,12 @@
   \link[IRanges]{Ranges-class},
   \link[IRanges]{Rle-class},
   \link[IRanges]{DataFrame-class},
-  \link{GenomicRanges-utils},
-  \link{coverage-methods},
-  \link{setops-methods},
-  \link{findOverlaps-methods}
+  \link[GenomicRanges]{intra-range-methods},
+  \link[GenomicRanges]{inter-range-methods},
+  \link[GenomicRanges]{setops-methods},
+  \link[GenomicRanges]{findOverlaps-methods},
+  \link[GenomicRanges]{nearest-methods},
+  \link[GenomicRanges]{coverage-methods}
 }
 
 \examples{
