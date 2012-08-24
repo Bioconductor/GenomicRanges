@@ -121,7 +121,7 @@ both \code{x} and \code{subject} strand are set to \code{"+"}.
     \item The \link[IRanges]{Ranges} and \link[IRanges]{Hits} classes in the
           IRanges package.
     \item The \link[IRanges]{nearest-methods} man page in the IRanges package.
-    \item \link[GenomicRanges]{findOverlaps-methods}} for finding just the
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding just the
           overlapping ranges.
   }
 }
