@@ -126,12 +126,22 @@ test_GenomicRanges_nearest <- function()
     ## adjacent 
     r <- IRanges(c(1,6), c(5,10))
     g <- GRanges("chr1", r, "+")
+    checkEquals(follow(r), follow(g))
+    checkEquals(precede(r), precede(g))
     checkEquals(nearest(r), nearest(g))
+    checkEquals(follow(r, r), follow(g, g))
+    checkEquals(precede(r, r), precede(g, g))
     checkEquals(nearest(r, r), nearest(g, g))
+
     g <- GRanges("chr1", r, "-")
+    checkEquals(follow(r), precede(g))
+    checkEquals(precede(r), follow(g))
     checkEquals(nearest(r), nearest(g))
+    checkEquals(follow(r, r), precede(g, g))
+    checkEquals(precede(r, r), follow(g, g))
     checkEquals(nearest(r, r), nearest(g, g))
     g <- GRanges("chr1", r, "*")
+    ## FIXME: precede / follow relationships?
     checkEquals(nearest(r), nearest(g))
     checkEquals(nearest(r, r), nearest(g, g))
 

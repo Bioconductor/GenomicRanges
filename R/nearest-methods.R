@@ -97,9 +97,8 @@
     }
 
     ## sentinels marking seqlevels ends
-    ## end(query) incorrect for 0-width
-    endq <- ifelse(width(query) == 0L, start(query), end(query)) 
-    ends <- ifelse(width(subject) == 0L, start(subject), end(subject))
+    endq <- start(query) + width(query) # end(query) incorrect for 0-width
+    ends <- start(subject) + width(subject)
     maxend <- max(max(endq), max(ends)) + 1
     lvls <- union(seqlevels(query), seqlevels(subject))
     offset <- setNames((seq_along(lvls) - 1) * maxend, lvls)
@@ -109,12 +108,12 @@
     ## offset for sentinels
     queryOff <- unname(offset[as.character(seqnames(query))])
     queryStart <- start(query) + queryOff
-    queryEnd <- endq + queryOff
+    queryEnd <- end(query) + queryOff   # true end + offset
     qid <- seq_along(query)
 
     subjectOff <- unname(offset[as.character(seqnames(subject))])
     subjectStart <- start(subject) + subjectOff
-    subjectEnd <- ends + subjectOff
+    subjectEnd <- end(subject) + subjectOff # true end + offset
     spid <- which(strand(subject) != "-")
     smid <- which(strand(subject) != "+")
 
