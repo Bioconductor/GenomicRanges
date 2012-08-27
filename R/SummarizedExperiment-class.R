@@ -372,14 +372,23 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
 {
     if (1L != length(drop) || (!missing(drop) && drop))
         warning("'drop' ignored '[,SummarizedExperiment,ANY,ANY-method'")
-    if (missing(i) && missing(j))
+    if (missing(i) && missing(j)) {
         x
-    else if (missing(i))
-        .SummarizedExperiment.subset(x, TRUE, j, ...)
-    else if (missing(j))
-        .SummarizedExperiment.subset(x, i, TRUE, ...)
-    else
+    } else if (missing(i)) {
+        if (nrow(x) == 0L)
+            i <- logical(0)
+        else
+            i <- TRUE 
         .SummarizedExperiment.subset(x, i, j, ...)
+    } else if (missing(j)) {
+        if (ncol(x) == 0L)
+            j <- logical(0)
+        else
+            j <- TRUE
+        .SummarizedExperiment.subset(x, i, j, ...)
+    } else {
+        .SummarizedExperiment.subset(x, i, j, ...)
+    }
 })
 
 .SummarizedExperiment.subsetassign <-
@@ -419,14 +428,23 @@ setReplaceMethod("[",
     c("SummarizedExperiment", "ANY", "ANY", "SummarizedExperiment"),
     function(x, i, j, ..., value)
 {
-    if (missing(i) && missing(j))
+    if (missing(i) && missing(j)) {
         x
-    else if (missing(i))
-        .SummarizedExperiment.subsetassign(x, TRUE, j, ..., value=value)
-    else if (missing(j))
-        .SummarizedExperiment.subsetassign(x, i, TRUE, ..., value=value)
-    else
+    } else if (missing(i)) {
+        if (nrow(x) == 0L)
+            i <- logical(0)
+        else
+            i <- TRUE 
         .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
+    } else if (missing(j)) {
+        if (ncol(x) == 0L)
+            j <- logical(0)
+        else
+            j <- TRUE
+        .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
+    } else {
+        .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
+    }
 })
 
 ## $, $<-, [[, [[<- for colData access
