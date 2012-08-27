@@ -190,6 +190,13 @@ test_SummarizedExperiment_subset <- function()
         ss2 <- ss1[,idx]
         checkIdentical(colData(ss1)[idx,,drop=FALSE], colData(ss2))
     }
+
+    ## 0 columns
+    se <- SummarizedExperiment(rowData=GRanges("chr1", IRanges(1:10, width=1)))
+    checkIdentical(dim(se[1:5, ]), c(5L, 0L)) 
+    ## 0 rows 
+    se <- SummarizedExperiment(colData=DataFrame(samples=1:10))
+    checkIdentical(dim(se[ ,1:5]), c(0L, 5L)) 
 }
 
 test_SummarizedExperiment_subsetassign <- function()
