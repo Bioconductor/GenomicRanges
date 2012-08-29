@@ -191,6 +191,8 @@ exptData(x, ...) <- value
 
   \item{new2old, force}{See \code{\link{seqinfo<-}}.}
 
+  \item{use.names}{See \code{\link{mcols}}.}
+
   \item{value}{An instance of a class specified in the S4 method
     signature or as outlined in \sQuote{Details}.}
 
