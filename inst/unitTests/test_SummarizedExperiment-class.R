@@ -221,4 +221,9 @@ test_SummarizedExperiment_subsetassign <- function()
         checkIdentical(rowData(sset), rowData(ss1))
         checkIdentical(c(exptData(sset), exptData(sset)), exptData(ss1))
     }
+    ## full replacement
+    ss1 <- ss2 <- ssetList[[1]]
+    rowData(ss2) <- rev(rowData(ss2))
+    ss1[,] <- ss2
+    checkIdentical(ss1, ss2)
 }

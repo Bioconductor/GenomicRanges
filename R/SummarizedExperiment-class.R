@@ -344,63 +344,79 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     idx
 }
 
-.SummarizedExperiment.subset <-
-    function(x, i, j, ...)
-{
-    if (is.character(i)) {
-        msg <- "<SummarizedExperiment>[i,] index out of bounds: %s"
-        i <- .SummarizedExperiment.charbound(i, rownames(x), msg)
-    }
-    if (is.character(j)) {
-        msg <- "<SummarizedExperiment>[,j] index out of bounds: %s"
-        j <- .SummarizedExperiment.charbound(j, colnames(x), msg)
-    }
-
-    assays <- endoapply(assays(x, withDimnames=FALSE), function(elt) {
-                  if (class(elt) == "array")
-                     elt[i, j, , drop=FALSE]
-                  else
-                     elt[i, j, drop=FALSE]
-              })
-    initialize(x, rowData=rowData(x)[i,,drop=FALSE],
-               colData=colData(x)[j,,drop=FALSE],
-               assays=assays)
-}
-
 setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     function(x, i, j, ..., drop=TRUE)
 {
     if (1L != length(drop) || (!missing(drop) && drop))
-        warning("'drop' ignored '[,SummarizedExperiment,ANY,ANY-method'")
-    if (missing(i) && missing(j)) {
-        x
-    } else if (missing(i)) {
-        if (nrow(x) == 0L)
-            i <- logical(0)
-        else
-            i <- TRUE 
-        .SummarizedExperiment.subset(x, i, j, ...)
-    } else if (missing(j)) {
-        if (ncol(x) == 0L)
-            j <- logical(0)
-        else
-            j <- TRUE
-        .SummarizedExperiment.subset(x, i, j, ...)
-    } else {
-        .SummarizedExperiment.subset(x, i, j, ...)
+        warning("'drop' ignored '[,", class(x), ",ANY,ANY-method'")
+
+    if (missing(i)) {
+        if (missing(j))
+            return(x)
+        i <- !logical(nrow(x))
+    } else if (is.character(i)) {
+        fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
+        i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
     }
+
+    if (missing(j))
+        j <- !logical(ncol(x))
+    else if (is.character(j)) {
+        fmt <- paste0("<", class(x), ">[,j] index out of bounds: %s")
+        j <- .SummarizedExperiment.charbound(j, colnames(x), fmt)
+    }
+
+    fun <- function(elt, i, j) {
+        if (class(elt) == "array")
+            elt[i, j, , drop=FALSE]
+        else
+            elt[i, j, drop=FALSE]
+    }
+    assays <- endoapply(assays(x, withDimnames=FALSE), fun, i, j)
+
+    initialize(x, rowData=rowData(x)[i,,drop=FALSE],
+               colData=colData(x)[j,,drop=FALSE],
+               assays=assays, ...)
 })
 
 .SummarizedExperiment.subsetassign <-
     function(x, i, j, ..., value)
 {
     if (is.character(i)) {
-        msg <- "<SummarizedExperiment>[i,]<- index out of bounds: %s"
-        i <- .SummarizedExperiment.charbound(i, rownames(x), msg)
+        fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
+        i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
     }
     if (is.character(j)) {
-        msg <- "<SummarizedExperiment>[,j]<- index out of bounds: %s"
-        j <- .SummarizedExperiment.charbound(j, colnames(x), msg)
+        fmt <- paste0("<", class(x), ">[,j] index out of bounds: %s")
+        j <- .SummarizedExperiment.charbound(j, colnames(x), fmt)
+    }
+
+}
+
+setReplaceMethod("[",
+    c("SummarizedExperiment", "ANY", "ANY", "SummarizedExperiment"),
+    function(x, i, j, ..., value)
+{
+    if (missing(i))
+        i <- !logical(nrow(x))
+    else if (is.character(i)) {
+        fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
+        i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
+    }
+
+    if (missing(j))
+        j <- !logical(ncol(x))
+    else if (is.character(j)) {
+        fmt <- paste0("<", class(x), ">[,j] index out of bounds: %s")
+        j <- .SummarizedExperiment.charbound(j, colnames(x), fmt)
+    }
+
+    fun <- function(x, ..., value) {
+        if (class(x) == "array")
+            x[i, j, ] <- value
+        else
+            x[i, j] <- value
+        x
     }
     initialize(x,
                exptData=c(exptData(x), exptData(value)),
@@ -417,34 +433,8 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
                }), assays=local({
                    a <- assays(x, withDimnames=FALSE)
                    v <- assays(value, withDimnames=FALSE)
-                   mendoapply(function(x, ..., value) {
-                       x[i,j] <- value
-                       x
-                   }, x=a, value=v, ...)
-               }))
-}
-
-setReplaceMethod("[",
-    c("SummarizedExperiment", "ANY", "ANY", "SummarizedExperiment"),
-    function(x, i, j, ..., value)
-{
-    if (missing(i) && missing(j)) {
-        x
-    } else if (missing(i)) {
-        if (nrow(x) == 0L)
-            i <- logical(0)
-        else
-            i <- TRUE 
-        .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
-    } else if (missing(j)) {
-        if (ncol(x) == 0L)
-            j <- logical(0)
-        else
-            j <- TRUE
-        .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
-    } else {
-        .SummarizedExperiment.subsetassign(x, i, j, ..., value=value)
-    }
+                   mendoapply(fun, x=a, value=v, ...)
+               }), ...)
 })
 
 ## $, $<-, [[, [[<- for colData access
