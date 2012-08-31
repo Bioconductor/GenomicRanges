@@ -8,27 +8,42 @@ setClass("SummarizedExperiment",
         assays="SimpleList"),                 # Data -- e.g., list of matricies
     prototype(rowData=GRanges()))
 
+.valid.SummarizedExperiment.assays_class <- function(x)
+{
+    ok <- sapply(x@assays, function(cl) {
+        is(cl, "matrix") || is(cl, "array") || is(cl, "Matrix")
+    })
+    if (!all(ok))
+        return("'assays' must be class 'matrix', 'array', or 'Matrix'")
+    NULL
+}
+
+.valid.SummarizedExperiment.rowData_dims <- function(x)
+{
+    if (!all(sapply(x@assays, nrow) == length(x@rowData)))
+        return("'rowData' length differs from 'assays' nrow")
+    NULL
+}
+
+.valid.SummarizedExperiment.colData_dims <- function(x)
+{
+    if (!all(sapply(x@assays, ncol) == nrow(x@colData)))
+        return("'colData' nrow differs from 'assays' ncol")
+    NULL
+}
+
+.valid.SummarizedExperiment.assays_dims <- function(x)
+{
+    c(.valid.SummarizedExperiment.rowData_dims(x),
+      .valid.SummarizedExperiment.colData_dims(x))
+}
+
 .valid.SummarizedExperiment <- function(x)
 {
-    msg <- NULL
-    msg1 <-
-        "\n   assays(<SummarizedExperiment>)[[%d]] must be a matrix or array" 
-    msg2 <-
-        "\n   dim(<SummarizedExperiment>) does not equal dim(assays(<SummarizedExperiment>)[[%d]])"
-
-    xdim <- dim(x)
-    assays <- assays(x)
-    for (i in seq_len(length(assays))) {
-        if (!is(assays[[i]], "matrix") & !is(assays[[i]], "array")) {
-            msg <- c(msg, sprintf(msg1, i))
-            next
-        }
-        edim <- dim(assays[[i]])[1:2]
-        if (is.null(edim) || !all(xdim == edim))
-            msg <- c(msg, sprintf(msg2, i))
-    }
-
-    msg
+    c(msg <- .valid.SummarizedExperiment.assays_class(x),
+      if (is.null(msg)) {
+          .valid.SummarizedExperiment.assays_dims(x)
+      } else NULL)
 }
 
 setValidity2("SummarizedExperiment", .valid.SummarizedExperiment)
@@ -55,7 +70,7 @@ setMethod(SummarizedExperiment, "SimpleList",
     if (missing(colData) && 0L != length(assays)) {
         nms <- colnames(assays[[1]])
         if (is.null(nms) && 0L != ncol(assays[[1]]))
-            stop("SummarizedExperiment assay colnames must not be NULL")
+            stop("'SummarizedExperiment' assay colnames must not be NULL")
         colData <- DataFrame(row.names=nms)
     }
     ## FIXME: warn if dimnames(assays) != list( verbose=TRUE
@@ -83,7 +98,26 @@ setMethod(SummarizedExperiment, "matrix",
     SummarizedExperiment(SimpleList(assays), ...)
 })
 
-## FIXME: MTM thinks that generics do not belong with class definitions
+## update / clone, see GenomicRanges-class.R
+
+setMethod("clone", "SummarizedExperiment",
+    function(x, ...)
+{
+    ## dput(slotNames("SummarizedExperiment"))
+    valid_argnames <- c("exptData", "rowData", "colData", "assays")
+    args <- IRanges:::extraArgsAsList(valid_argnames, ...)
+    firstTime <- TRUE
+    for (nm in names(args)) {
+        if (firstTime) {
+            slot(x, nm, FALSE) <- args[[nm]]
+            firstTime <- FALSE
+        }
+        else {
+            `slot<-`(x, nm, FALSE, args[[nm]])
+        }
+    }
+    x
+})
 
 setGeneric("exptData", function(x, ...) standardGeneric("exptData"))
 
@@ -123,29 +157,33 @@ setMethod(exptData, "SummarizedExperiment",
 setReplaceMethod("exptData", c("SummarizedExperiment", "SimpleList"),
     function(x, ..., value)
 {
-    initialize(x, ..., exptData=value)
+    clone(x, ..., exptData=value)
 })
 
 setReplaceMethod("exptData", c("SummarizedExperiment", "list"),
     function(x, ..., value)
 {
-    initialize(x, ..., exptData=SimpleList(value))
+    clone(x, ..., exptData=SimpleList(value))
 })
 
 setMethod(rowData, "SummarizedExperiment",
     function(x, ...) slot(x, "rowData"))
 
-setReplaceMethod("rowData", c("SummarizedExperiment", "GenomicRanges"),
+.SummarizedExperiment.rowData.replace <-
     function(x, ..., value)
 {
-    initialize(x, ..., rowData=value)
-})
+    x <- clone(x, ..., rowData=value)
+    msg <- .valid.SummarizedExperiment.rowData_dims(x)
+    if (!is.null(msg))
+        stop(msg)
+    x
+}
+
+setReplaceMethod("rowData", c("SummarizedExperiment", "GenomicRanges"),
+    .SummarizedExperiment.rowData.replace)
 
 setReplaceMethod("rowData", c("SummarizedExperiment", "GRangesList"),
-    function(x, ..., value)
-{
-    initialize(x, ..., rowData=value)
-})
+    .SummarizedExperiment.rowData.replace)
 
 ## also seqlevels, genome, seqlevels<-, genome<-
 setMethod(seqinfo, "SummarizedExperiment",
@@ -170,8 +208,11 @@ setMethod(mcols, "SummarizedExperiment",
 setReplaceMethod("mcols", "SummarizedExperiment",
     function(x, ..., value)
 {
-    mcols(rowData(x), ...) <- value
-    x
+    clone(x, rowData=local({
+        r <- rowData(x)
+        mcols(r) <- value
+        r
+    }))
 })
 
 ### mcols() is the recommended way for accessing the metadata columns.
@@ -209,11 +250,15 @@ setMethod(colData, "SummarizedExperiment",
 setReplaceMethod("colData", c("SummarizedExperiment", "DataFrame"),
     function(x, ..., value)
 {
-    initialize(x, ..., colData=value)
+    x <- clone(x, ..., colData=value)
+    msg <- .valid.SummarizedExperiment.colData_dims(x)
+    if (!is.null(msg))
+        stop(msg)
+    x
 })
 
 setMethod(assays, "SummarizedExperiment",
-function(x, ..., withDimnames=TRUE) 
+    function(x, ..., withDimnames=TRUE)
 {
     if (withDimnames)
         endoapply(slot(x, "assays"), "dimnames<-", dimnames(x))
@@ -221,17 +266,25 @@ function(x, ..., withDimnames=TRUE)
         slot(x, "assays")
 })
 
-setReplaceMethod("assays", c("SummarizedExperiment", "SimpleList"),
+.SummarizedExperiment.assays.replace <-
     function(x, ..., value)
 {
-    initialize(x, ..., assays=value)
-})
+    x <- clone(x, ..., assays=value)
+    msg <- .valid.SummarizedExperiment(x)
+    if (!is.null(msg))
+        stop(msg)
+    x
+}
+
+setReplaceMethod("assays", c("SummarizedExperiment", "SimpleList"),
+    .SummarizedExperiment.assays.replace)
 
 setReplaceMethod("assays", c("SummarizedExperiment", "list"),
     function(x, ..., value)
 {
     value <- lapply(x, "dimnames<-", NULL)
-    initialize(x, ..., assays=SimpleList(value))
+    .SummarizedExperiment.assays.replace(x, ...,
+                                         value=SimpleList(value))
 })
 
 ## convenience for common use case 
@@ -240,36 +293,34 @@ setMethod(assay, c("SummarizedExperiment", "missing"),
 {
     assays <- assays(x, ...)
     if (0L == length(assays))
-    {
-        msg <- 'assay(<SummarizedExperiment>, i="missing", ...) length(assays(<SummarizedExperiment>)) is 0'
-        stop(msg)
-    }
+        stop("'assay(<", class(x), ">, i=\"missing\", ...) ",
+             "length(assays(<SummarizedExperiment>)) is 0'")
     assays[[1]]
 })
 
 setMethod(assay, c("SummarizedExperiment", "numeric"),
     function(x, i, ...) 
 {
-    msg <- 'assay(<SummarizedExperiment>, i="numeric", ...) invalid subscript "i"'
     tryCatch({
         assays(x, ...)[[i]]
     }, error=function(err) {
-        stop(msg, "\n", conditionMessage(err))
+        stop("'assay(<", class(x), ">, i=\"numeric\", ...)' ",
+             "invalid subscript 'i'\n", conditionMessage(err))
     })
 })
 
 setMethod(assay, c("SummarizedExperiment", "character"),
     function(x, i = names(x)[1], ...) 
 {
-    msg <- 'assay(<SummarizedExperiment>, i="character", ...) invalid subscript "i"'
-    res <-
-        tryCatch({
-            assays(x, ...)[[i]]
-        }, error=function(err) {
-            stop(msg, "\n", conditionMessage(err))
-        })
-    if (is.null(res)) 
-        stop(msg, "\n    '", i, "' not in names(assays(<SummarizedExperiment>))")
+    msg <- paste0("'assay(<", class(x), ">, i=\"character\", ...)' ",
+                  "invalid subscript 'i'")
+    res <- tryCatch({
+        assays(x, ...)[[i]]
+    }, error=function(err) {
+        stop(msg, "\n", conditionMessage(err))
+    })
+    if (is.null(res))
+        stop(msg, "\n'i' not in names(assays(<", class(x), ">))")
     res
 })
 
@@ -277,10 +328,8 @@ setReplaceMethod("assay", c("SummarizedExperiment", "missing", "matrix"),
     function(x, i, ..., value)
 {
     if (0L == length(assays(x)))
-    {
-        msg <- "'assay(<SummarizedExperiment>) <- value' length(assays(<SummarizedExperiment>)) is 0"
-        stop(msg)
-    }
+        stop("'assay(<", class(x), ">) <- value' ", "length(assays(<",
+             class(x), ">)) is 0")
     assays(x)[[1]] <- value
     x
 })
@@ -306,12 +355,16 @@ setReplaceMethod("assay",
 ## construction, or added from assays if row/col names are NULL in
 ## <SummarizedExperiment> but not assays. dimnames need to be added on
 ## to assays when assays() invoked
-setMethod(dim, "SummarizedExperiment", function(x) {
-        c(length(rowData(x)), nrow(colData(x)))
+setMethod(dim, "SummarizedExperiment",
+    function(x) 
+{
+    c(length(rowData(x)), nrow(colData(x)))
 })
 
-setMethod(dimnames, "SummarizedExperiment", function(x) {
-        list(names(rowData(x)), rownames(colData(x)))
+setMethod(dimnames, "SummarizedExperiment",
+    function(x)
+{
+    list(names(rowData(x)), rownames(colData(x)))
 })
 
 setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
@@ -321,13 +374,14 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
     names(rowData) <- value[[1]]
     colData <- colData(x)
     rownames(colData) <- value[[2]]
-    initialize(x, rowData=rowData, colData=colData)
+    clone(x, rowData=rowData, colData=colData)
 })
  
 setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     function(x, value)
 {
-    callNextMethod(x, value=list(NULL, NULL))
+    dimnames(x) <- list(NULL, NULL)
+    x
 })
 
 ## Subset -- array-like
@@ -350,91 +404,147 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     if (1L != length(drop) || (!missing(drop) && drop))
         warning("'drop' ignored '[,", class(x), ",ANY,ANY-method'")
 
-    if (missing(i)) {
-        if (missing(j))
-            return(x)
-        i <- !logical(nrow(x))
-    } else if (is.character(i)) {
+    if (missing(i) && missing(j))
+        return(x)
+
+    if (!missing(i) && is.character(i)) {
         fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
         i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
     }
-
-    if (missing(j))
-        j <- !logical(ncol(x))
-    else if (is.character(j)) {
+    if (!missing(j) && is.character(j)) {
         fmt <- paste0("<", class(x), ">[,j] index out of bounds: %s")
         j <- .SummarizedExperiment.charbound(j, colnames(x), fmt)
     }
 
-    fun <- function(elt, i, j) {
-        if (class(elt) == "array")
-            elt[i, j, , drop=FALSE]
-        else
-            elt[i, j, drop=FALSE]
+    if (!missing(i) && !missing(j)) {
+        fun <- function(elt)
+        {
+            if (length(dim(elt)) == 2L)
+                elt[i, j, drop=FALSE]
+            else
+                elt[i, j, , drop=FALSE]
+        }
+        x <- clone(x, ..., rowData=rowData(x)[i],
+            colData=colData(x)[j, , drop=FALSE],
+            assays=endoapply(assays(x, withDimnames=FALSE), fun))
+    } else if (missing(i)) {
+        fun <- function(elt)
+        {
+            if (length(dim(elt)) == 2L)
+                elt[, j, drop=FALSE]
+            else
+                elt[, j, , drop=FALSE]
+        }
+        x <- clone(x, ..., colData=colData(x)[j, , drop=FALSE],
+            assays=endoapply(assays(x, withDimnames=FALSE), fun))
+    } else {                            # missing(j)
+        fun <- function(elt)
+        {
+            if (length(dim(elt)) == 2L)
+                elt[i, , drop=FALSE]
+            else
+                elt[i, , , drop=FALSE]
+        }
+        x <- clone(x, ..., rowData=rowData(x)[i],
+            assays=endoapply(assays(x, withDimnames=FALSE), fun))
     }
-    assays <- endoapply(assays(x, withDimnames=FALSE), fun, i, j)
-
-    initialize(x, rowData=rowData(x)[i,,drop=FALSE],
-               colData=colData(x)[j,,drop=FALSE],
-               assays=assays, ...)
+    x
 })
-
-.SummarizedExperiment.subsetassign <-
-    function(x, i, j, ..., value)
-{
-    if (is.character(i)) {
-        fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
-        i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
-    }
-    if (is.character(j)) {
-        fmt <- paste0("<", class(x), ">[,j] index out of bounds: %s")
-        j <- .SummarizedExperiment.charbound(j, colnames(x), fmt)
-    }
-
-}
 
 setReplaceMethod("[",
     c("SummarizedExperiment", "ANY", "ANY", "SummarizedExperiment"),
     function(x, i, j, ..., value)
 {
-    if (missing(i))
-        i <- !logical(nrow(x))
-    else if (is.character(i)) {
+    if (missing(i) && missing(j))
+        return(value)
+    
+    if (!missing(i) && is.character(i)) {
         fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
         i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
     }
 
-    if (missing(j))
-        j <- !logical(ncol(x))
-    else if (is.character(j)) {
+    if (!missing(j) && is.character(j)) {
         fmt <- paste0("<", class(x), ">[,j] index out of bounds: %s")
         j <- .SummarizedExperiment.charbound(j, colnames(x), fmt)
     }
 
     fun <- function(x, ..., value) {
-        if (class(x) == "array")
-            x[i, j, ] <- value
-        else
+        if (length(dim(x)) == 2)
             x[i, j] <- value
+        else
+            x[i, j, ] <- value
         x
     }
-    initialize(x,
-               exptData=c(exptData(x), exptData(value)),
-               rowData=local({
-                   r <- rowData(x)
-                   r[i,] <- rowData(value)
-                   names(r)[i] <- names(rowData(value))
-                   r
-               }), colData=local({
-                   c <- colData(x)
-                   c[j,] <- colData(value)
-                   rownames(c)[j] <- rownames(colData(value))
-                   c
-               }), assays=local({
-                   a <- assays(x, withDimnames=FALSE)
-                   v <- assays(value, withDimnames=FALSE)
-                   mendoapply(fun, x=a, value=v, ...)
-               }), ...)
+
+    if (!missing(i) && !missing(j)) {
+        fun <- function(x, ..., value) {
+            if (length(dim(x)) == 2)
+                x[i, j] <- value
+            else
+                x[i, j, ] <- value
+            x
+        }
+        x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
+            rowData=local({
+                r <- rowData(x)
+                r[i] <- rowData(value)
+                names(r)[i] <- names(rowData(value))
+                r
+            }), colData=local({
+                c <- colData(x)
+                c[j,] <- colData(value)
+                rownames(c)[j] <- rownames(colData(value))
+                c
+            }), assays=local({
+                a <- assays(x, withDimnames=FALSE)
+                v <- assays(value, withDimnames=FALSE)
+                mendoapply(fun, x=a, value=v)
+            }))
+        msg <- .valid.SummarizedExperiment.assays_dims(x)
+    } else if (missing(i)) {
+        fun <- function(x, ..., value) {
+            if (length(dim(x)) == 2)
+                x[, j] <- value
+            else
+                x[, j, ] <- value
+            x
+        }
+        x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
+            colData=local({
+                c <- colData(x)
+                c[j,] <- colData(value)
+                rownames(c)[j] <- rownames(colData(value))
+                c
+            }), assays=local({
+                a <- assays(x, withDimnames=FALSE)
+                v <- assays(value, withDimnames=FALSE)
+                mendoapply(fun, x=a, value=v)
+            }))
+        msg <- .valid.SummarizedExperiment.colData_dims(x)
+    } else {                            # missing(j)
+        fun <- function(x, ..., value) {
+            if (length(dim(x)) == 2)
+                x[i, ] <- value
+            else
+                x[i, , ] <- value
+            x
+        }
+        x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
+            rowData=local({
+                r <- rowData(x)
+                r[i] <- rowData(value)
+                names(r)[i] <- names(rowData(value))
+                r
+            }), assays=local({
+                a <- assays(x, withDimnames=FALSE)
+                v <- assays(value, withDimnames=FALSE)
+                mendoapply(fun, x=a, value=v)
+            }))
+        msg <- .valid.SummarizedExperiment.rowData_dims(x)
+    }
+    if (!is.null(msg))
+        stop(msg)
+    x
 })
 
 ## $, $<-, [[, [[<- for colData access
