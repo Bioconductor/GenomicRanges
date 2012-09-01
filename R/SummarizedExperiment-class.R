@@ -8,7 +8,7 @@ setClass("SummarizedExperiment",
 
 .valid.SummarizedExperiment.assays_class <- function(x)
 {
-    ok <- sapply(x@assays, function(cl) {
+    ok <- sapply(assays(x, withDimnames=FALSE), function(cl) {
         is(cl, "matrix") || is(cl, "array") || is(cl, "Matrix")
     })
     if (!all(ok))
@@ -18,14 +18,16 @@ setClass("SummarizedExperiment",
 
 .valid.SummarizedExperiment.rowData_dims <- function(x)
 {
-    if (!all(sapply(x@assays, nrow) == length(x@rowData)))
+    if (!all(sapply(assays(x, withDimnames=FALSE), nrow) ==
+             length(rowData(x))))
         return("'rowData' length differs from 'assays' nrow")
     NULL
 }
 
 .valid.SummarizedExperiment.colData_dims <- function(x)
 {
-    if (!all(sapply(x@assays, ncol) == nrow(x@colData)))
+    if (!all(sapply(assays(x, withDimnames=FALSE), ncol) ==
+             nrow(colData(x))))
         return("'colData' nrow differs from 'assays' ncol")
     NULL
 }
