@@ -1,5 +1,3 @@
-setClassUnion("GenomicRangesORGRangesList", c("GenomicRanges", "GRangesList"))
-
 setClass("SummarizedExperiment",
     representation(
         exptData="SimpleList",                # overall description

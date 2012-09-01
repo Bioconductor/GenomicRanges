@@ -14,6 +14,7 @@ setClass("GRangesList",
     )
 )
 
+setClassUnion("GenomicRangesORGRangesList", c("GenomicRanges", "GRangesList"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
