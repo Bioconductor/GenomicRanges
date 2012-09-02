@@ -116,6 +116,7 @@ exportMethods(
     keepSeqlevels, renameSeqlevels,
     summarizeOverlaps,
     findSpliceOverlaps,
-    seqnameStyle
+    seqnameStyle,
+    updateObject
 )
 

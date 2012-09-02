@@ -13,6 +13,7 @@
 \alias{SummarizedExperiment,SimpleList-method}
 
 % Coercion methods:
+\alias{updateObject,SummarizedExperiment-method}
 
 % Accessor methods:
 \alias{assays}
@@ -127,6 +128,10 @@ exptData(x, ...) <- value
 \S4method{[[}{SummarizedExperiment,ANY,missing}(x, i, j, ...)
 \S4method{[[}{SummarizedExperiment,ANY,missing,ANY}(x, i, j, ...) <- value
 
+## Coercion
+
+\S4method{updateObject}{SummarizedExperiment}(object, ..., verbose=FALSE)
+
 }
 
 \arguments{
@@ -164,7 +169,7 @@ exptData(x, ...) <- value
   \item{verbose}{A \code{logical(1)} indicating whether messages
     about data coercion during construction should be printed.}
 
-  \item{x}{An instance of \code{SummarizedExperiment}-class.}
+  \item{x, object}{An instance of \code{SummarizedExperiment}-class.}
 
   \item{i, j}{For \code{assay}, \code{assay<-}, \code{i} is a integer or
     numeric scalar; see \sQuote{Details} for additional constraints.
@@ -269,7 +274,15 @@ exptData(x, ...) <- value
 
 }
 
-% \section{Coercion}{}
+\section{Coercion}{
+
+  Package version 1.9.59 introduced a new way of representing
+  \sQuote{assays}. If you have a serialized instance \code{x} of a
+  \code{SummarizedExperiment} (e.g., from using the \code{save} function
+  with a verion of GenomicRanges prior to 1.9.59), it should be updated
+  by invoking \code{x <- updateObject(x)}.
+
+}
 
 \section{Accessors}{
 

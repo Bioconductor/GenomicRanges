@@ -1,10 +1,46 @@
+## 
+## Helper classes: Assays, ShallowData, ShallowSimpleListAssays
+
+setClass("Assays")
+
+.ShallowData <- setRefClass("ShallowData",
+    fields = list( data = "ANY" ))
+
+setMethod("clone", "ShallowData",
+    function(x, ...)
+{
+    args <- list(...)
+    x <- x$copy()
+    for (nm in names(args))
+        x$field(nm, args[[nm]])
+    x
+})
+
+.ShallowSimpleListAssays <- setRefClass("ShallowSimpleListAssays",
+    fields = list( data = "SimpleList" ),
+    contains = c("ShallowData", "Assays"))
+
+## 
+## SummarizedExperiment
+
 setClass("SummarizedExperiment",
     representation(
         exptData="SimpleList",                # overall description
         rowData="GenomicRangesORGRangesList", # rows and their annotations
         colData="DataFrame",                  # columns and their annotations
-        assays="SimpleList"),                 # Data -- e.g., list of matricies
-    prototype(rowData=GRanges()))
+        assays="Assays"),                     # Data -- e.g., list of matricies
+    prototype(
+        rowData=GRanges(),
+        assays=.ShallowSimpleListAssays$new(data=SimpleList())))
+
+## validity
+
+.valid.SummarizedExperiment.assays_current <- function(x)
+{
+    if (!is(slot(x, "assays"), "Assays"))
+        return("'assays' is out-of-date; use updateObject()")
+    NULL
+}
 
 .valid.SummarizedExperiment.assays_class <- function(x)
 {
@@ -40,7 +76,8 @@ setClass("SummarizedExperiment",
 
 .valid.SummarizedExperiment <- function(x)
 {
-    c(msg <- .valid.SummarizedExperiment.assays_class(x),
+    c(.valid.SummarizedExperiment.assays_current(x),
+      msg <- .valid.SummarizedExperiment.assays_class(x),
       if (is.null(msg)) {
           .valid.SummarizedExperiment.assays_dims(x)
       } else NULL)
@@ -73,11 +110,14 @@ setMethod(SummarizedExperiment, "SimpleList",
             stop("'SummarizedExperiment' assay colnames must not be NULL")
         colData <- DataFrame(row.names=nms)
     }
-    ## FIXME: warn if dimnames(assays) != list( verbose=TRUE
+
     if (!all(sapply(assays, function(x) is.null(dimnames(x)))))
         assays <- endoapply(assays, "dimnames<-", NULL)
-    new("SummarizedExperiment", exptData=exptData,
-        rowData=rowData, colData=colData, assays=assays, ...)
+    if (!is(assays, "Assays"))
+        assays <- .ShallowSimpleListAssays$new(data=assays)
+
+    new("SummarizedExperiment", exptData=exptData, rowData=rowData,
+        colData=colData, assays=assays, ...)
 })
 
 setMethod(SummarizedExperiment, "missing",
@@ -98,26 +138,43 @@ setMethod(SummarizedExperiment, "matrix",
     SummarizedExperiment(SimpleList(assays), ...)
 })
 
-## update / clone, see GenomicRanges-class.R
+## update / clone
 
 setMethod("clone", "SummarizedExperiment",
     function(x, ...)
 {
-    ## dput(slotNames("SummarizedExperiment"))
-    valid_argnames <- c("exptData", "rowData", "colData", "assays")
-    args <- IRanges:::extraArgsAsList(valid_argnames, ...)
+    ## IRanges:::extraArgsAsList would prevent using clone on
+    ## subclasses
+    args <- list(...)
     firstTime <- TRUE
     for (nm in names(args)) {
+        s <- slot(x, nm)
+        v <- args[[nm]]
+        if (is(s, "ShallowData"))
+            v <- clone(s, data=v)
         if (firstTime) {
-            slot(x, nm, FALSE) <- args[[nm]]
+            slot(x, nm, FALSE) <- v
             firstTime <- FALSE
-        }
-        else {
-            `slot<-`(x, nm, FALSE, args[[nm]])
+        } else {
+            `slot<-`(x, nm, FALSE, v)
         }
     }
     x
 })
+
+setGeneric("value", function(x, name, ...) standardGeneric("value"),
+    signature = "x")
+
+setMethod("value", "SummarizedExperiment",
+    function(x, name, ...)
+{
+    s <- slot(x, name)
+    if (is(s, "ShallowData"))
+        s <- s$data
+    s
+})
+
+## getter / setter generics
 
 setGeneric("exptData", function(x, ...) standardGeneric("exptData"))
 
@@ -152,7 +209,7 @@ setGeneric("assay<-",
 ## Simple 'getters' / 'setters'
 
 setMethod(exptData, "SummarizedExperiment",
-    function(x, ...) slot(x, "exptData"))
+    function(x, ...) value(x, "exptData"))
 
 setReplaceMethod("exptData", c("SummarizedExperiment", "SimpleList"),
     function(x, ..., value)
@@ -167,7 +224,7 @@ setReplaceMethod("exptData", c("SummarizedExperiment", "list"),
 })
 
 setMethod(rowData, "SummarizedExperiment",
-    function(x, ...) slot(x, "rowData"))
+    function(x, ...) value(x, "rowData"))
 
 .SummarizedExperiment.rowData.replace <-
     function(x, ..., value)
@@ -245,7 +302,7 @@ setReplaceMethod("values", "SummarizedExperiment",
 })
 
 setMethod(colData, "SummarizedExperiment",
-    function(x, ...) slot(x, "colData"))
+    function(x, ...) value(x, "colData"))
 
 setReplaceMethod("colData", c("SummarizedExperiment", "DataFrame"),
     function(x, ..., value)
@@ -261,9 +318,9 @@ setMethod(assays, "SummarizedExperiment",
     function(x, ..., withDimnames=TRUE)
 {
     if (withDimnames)
-        endoapply(slot(x, "assays"), "dimnames<-", dimnames(x))
+        endoapply(value(x, "assays"), "dimnames<-", dimnames(x))
     else
-        slot(x, "assays")
+        value(x, "assays")
 })
 
 .SummarizedExperiment.assays.replace <-
@@ -294,7 +351,7 @@ setMethod(assay, c("SummarizedExperiment", "missing"),
     assays <- assays(x, ...)
     if (0L == length(assays))
         stop("'assay(<", class(x), ">, i=\"missing\", ...) ",
-             "length(assays(<SummarizedExperiment>)) is 0'")
+             "length(assays(<", class(x), ">)) is 0'")
     assays[[1]]
 })
 
@@ -574,6 +631,17 @@ setReplaceMethod("$", c("SummarizedExperiment", "ANY"),
 {
     colData(x)[[name]] <- value
     x
+})
+
+## compatibility
+
+setMethod(updateObject, "SummarizedExperiment",
+    function(object, ..., verbose=FALSE)
+{
+    s <- slot(object, "assays")
+    if (is(s, "SimpleList"))
+        slot(object, "assays") <- .ShallowSimpleListAssays$new(data=s)
+    object
 })
 
 ## show
