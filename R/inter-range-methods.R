@@ -33,7 +33,7 @@
     i1 <- ansIRangesList_names %/% 3L + 1L
     ans_seqnames <- Rle(factor(x_seqlevels[i1], levels=x_seqlevels), k)
     if (ignore.strand) {
-        ans_strand <- Rle(strand("*"), k)
+        ans_strand <- Rle(strand("*"), sum(k))
     } else {
         i2 <- ansIRangesList_names %% 3L + 1L
         ans_strand <- Rle(factor(strand_levels[i2], levels=strand_levels), k)

@@ -24,6 +24,7 @@ test_GenomicRanges_inter_interval_ops <- function()
                    GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
                            ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
                            strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
+    checkTrue(validObject(range(gr, ignore.strand=TRUE)))
 
     ## reduce
     gr <- unname(make_test_GRanges())[ , character(0)]
