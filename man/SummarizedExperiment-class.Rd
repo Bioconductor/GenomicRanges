@@ -4,6 +4,7 @@
 % Class
 \alias{SummarizedExperiment-class}
 \alias{SummarizedExperiment}
+\alias{Assays-class}
 
 % Constructor-like function:
 \alias{SummarizedExperiment}
@@ -368,6 +369,58 @@ exptData(x, ...) <- value
     replace column \code{i} in \code{x}.}
 
   }
+
+}
+
+\section{Implementation and Extension}{
+
+  This section contains advanced material meant for package developers.
+
+  \code{SummarizedExperiment} is implemented as an S4 class, and can be
+  extended in the usual way, using
+  \code{contains="SummarizedExperiment"} in the new class definition.
+
+  In addition, the representation of the \code{assays} slot of
+  \code{SummarizedExperiment} is as a virtual class \code{Assays}. This
+  allows derived classes (\code{contains="Assays"}) to easily implement
+  alternative requirements for the assays, e.g., backed by file-based
+  storage like NetCDF or the \code{ff} package, while re-using the
+  existing \code{SummarizedExperiment} class without modification. The
+  requirements on \code{Assays} are list-like semantics (e.g.,
+  \code{sapply}, \code{[[} subsetting, \code{names}) with elements
+  having matrix- or array-like semantics (e.g., \code{dim},
+  \code{dimnames}). These requirements can be made more precise if
+  developers express interest.
+
+  The current \code{assays} slot is implemented as a reference class
+  that has copy-on-change semantics. This means that modifying non-assay
+  slots does not copy the (large) assay data, and at the same time the
+  user is not surprised by reference-based semantics. Updates to
+  non-assay slots are very fast; updating the assays slot itself can be
+  5x or more faster than with an S4 instance in the slot.
+
+  In a little more detail, a small reference class hierarchy (not
+  exported from the GenomicRanges name space) defines a reference class
+  \code{ShallowData} with a single field \code{data} of type \code{ANY},
+  and a derived class \code{ShallowSimpleListAssays} that specializes
+  the type of \code{data} as \code{SimpleList}, and
+  \code{contains=c("ShallowData", "Assays")}. The assays slot contains
+  an instance of \code{ShallowSimpleListAssays}. Invoking
+  \code{assays()} on a \code{SummarizedExperiment} re-dispatches from
+  the \code{assays} slot to retrieve the \code{SimpleList} from the
+  field of the reference class. This was achieved by implementing a
+  generic (not exported) \code{value(x, name, ...)}, with a method
+  implemented on \code{SummarizedExperiment} that retrieves a slot when
+  \code{name} is a slot containing an S4 object in \code{x}, and a field
+  when \code{name} is a slot containing a \code{ShallowData} instance in
+  \code{x}. Copy-on-change semantics is maintained by implementing the
+  \code{clone} method (\code{clone} methods are supposed to do a deep
+  copy, \code{update} methods a shallow copy; the \code{clone} generic
+  is introduced, and not exported, in the GenomicRanges package). The
+  \sQuote{getter} and \sQuote{setter} code for methods implemented on
+  \code{SummarizedExperiment} use \code{value} for slot access, and
+  \code{clone} for replacement. This makes it easy to implement
+  \code{ShallowData} instances for other slots if the need arises.
 
 }
 

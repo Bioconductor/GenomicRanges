@@ -12,8 +12,9 @@ exportClasses(
     Constraint, ConstraintORNULL,
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
+    GenomicRangesORGRangesList,
     GappedAlignments, GappedAlignmentPairs,
-    SummarizedExperiment, GenomicRangesORGRangesList,
+    SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
 )
 
