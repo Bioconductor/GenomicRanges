@@ -236,3 +236,30 @@ test_GenomicRanges_distance <- function()
     checkTrue(is.na(current))
 }
 
+test_GenomicRanges_distanceToNearest <- function()
+{
+    x <- GRanges("chr1", IRanges(c(1, 5, 10), width=1))
+    subject <- GRanges("chr1", IRanges(c(3, 12), width=1))
+    current <- distanceToNearest(x, subject)
+    target <- c(1L, 1L, 2L) 
+    checkIdentical(target, current$subjectHits)
+
+    strand(x) <- "+"
+    strand(subject) <- c("+", "-")
+    current <- distanceToNearest(x, subject)
+    target <- c(1L, 1L, 1L) 
+    checkIdentical(target, current$subjectHits)
+    current <- distanceToNearest(x, subject, ignore.strand=TRUE)
+    target <- c(1L, 1L, 2L) 
+    checkIdentical(target, current$subjectHits)
+
+    ## no self-hits
+    current <- distanceToNearest(x)
+    target <- c(2L, 1L, 2L) 
+    checkIdentical(target, current$subjectHits)
+
+    ## self-hits
+    current <- distanceToNearest(x, x)
+    target <- c(1L, 2L, 3L) 
+    checkIdentical(target, current$subjectHits)
+}

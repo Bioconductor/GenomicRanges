@@ -324,23 +324,29 @@ setMethod("distanceToNearest", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
         x_nearest <- nearest(x, subject, ignore.strand=ignore.strand)
-        if (identical(integer(0), x_nearest)) {
-            DataFrame(queryHits=integer(), subjectHits=integer(),
-                      distance=integer())
-        } else {
-            queryHits=seq(length(x))[!is.na(x_nearest)]
-            subjectHits=na.omit(x_nearest)
-            distance=distance(x[!is.na(x_nearest)], subject[na.omit(x_nearest)],
-                              ignore.strand=ignore.strand)
-            DataFrame(queryHits, subjectHits, distance)
-        }
+        .distanceToNearest(x_nearest, x, subject, ignore.strand=ignore.strand)
     }
 )
 
 setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
-        callGeneric(x, subject=x, ignore.strand=ignore.strand, ...)
+        x_nearest <- nearest(x, ignore.strand=ignore.strand)
+        .distanceToNearest(x_nearest, x, x, ignore.strand=ignore.strand)
     }
 )
+
+.distanceToNearest <- function(x_nearest, x, subject, ignore.strand)
+{ 
+    if (identical(integer(0), x_nearest)) {
+        DataFrame(queryHits=integer(), subjectHits=integer(),
+                  distance=integer())
+    } else {
+        queryHits=seq(length(x))[!is.na(x_nearest)]
+        subjectHits=na.omit(x_nearest)
+        distance=distance(x[!is.na(x_nearest)], subject[na.omit(x_nearest)],
+                          ignore.strand=ignore.strand)
+        DataFrame(queryHits, subjectHits, distance)
+    }
+}
 
