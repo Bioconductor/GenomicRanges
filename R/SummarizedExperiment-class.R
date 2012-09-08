@@ -460,8 +460,6 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
 {
     ## need to expand Rle's for subsetting standard matrix
     if (!missing(i) && !missing(j)) {
-        i <- as.vector(i)
-        j <- as.vector(j)
         fun <- function(x) {
             if (length(dim(x)) == 2L)
                 x[i, j, drop=FALSE]
@@ -469,7 +467,6 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
                 x[i, j, , drop=FALSE]
         }
     } else if (!missing(i)) {
-        i <- as.vector(i)
         fun <- function(x) {
             if (length(dim(x)) == 2L)
                 x[i, , drop=FALSE]
@@ -477,7 +474,6 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
                 x[i, , , drop=FALSE]
         }
     } else if (!missing(j)) {
-        j <- as.vector(j)
         fun <- function(x) {
             if (length(dim(x)) == 2L)
                 x[, j, drop=FALSE]
@@ -507,15 +503,19 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     }
 
     if (!missing(i) && !missing(j)) {
+        ii <- as.vector(i)
+        jj <- as.vector(j)
         x <- clone(x, ..., rowData=rowData(x)[i],
             colData=colData(x)[j, , drop=FALSE],
-            assays=.SummarizedExperiment.assays.subset(x, i, j))
+            assays=.SummarizedExperiment.assays.subset(x, ii, jj))
     } else if (missing(i)) {
+        jj <- as.vector(j)
         x <- clone(x, ..., colData=colData(x)[j, , drop=FALSE],
-            assays=.SummarizedExperiment.assays.subset(x, j=j))
+            assays=.SummarizedExperiment.assays.subset(x, j=jj))
     } else {                            # missing(j)
+        ii <- as.vector(i)
         x <- clone(x, ..., rowData=rowData(x)[i],
-            assays=.SummarizedExperiment.assays.subset(x, i))
+            assays=.SummarizedExperiment.assays.subset(x, ii))
     }
     x
 })
@@ -525,8 +525,6 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
 {
     ## need to expand Rle's for subsetting standard matrix
     if (!missing(i) && !missing(j)) {
-        i <- as.vector(i)
-        j <- as.vector(j)
         fun <- function(x, ..., value) {
             if (length(dim(x)) == 2L)
                 x[i, j] <- value
@@ -535,7 +533,6 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
             x
         }
     } else if (!missing(i)) {
-        i <- as.vector(i)
         fun <- function(x, ..., value) {
             if (length(dim(x)) == 2L)
                 x[i, ] <- value
@@ -544,7 +541,6 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
             x
         }
     } else if (!missing(j)) {
-        j <- as.vector(j)
         fun <- function(x, ..., value) {
             if (length(dim(x)) == 2L)
                 x[, j] <- value
@@ -576,38 +572,42 @@ setReplaceMethod("[",
     }
 
     if (!missing(i) && !missing(j)) {
+        ii <- as.vector(i)
+        jj <- as.vector(j)
         x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
             rowData=local({
                 r <- rowData(x)
                 r[i] <- rowData(value)
-                names(r)[as.vector(i)] <- names(rowData(value))
+                names(r)[ii] <- names(rowData(value))
                 r
             }), colData=local({
                 c <- colData(x)
                 c[j,] <- colData(value)
-                rownames(c)[as.vector(j)] <- rownames(colData(value))
+                rownames(c)[jj] <- rownames(colData(value))
                 c
-            }), assays=.SummarizedExperiment.assays.subsetgets(x, i, j,
+            }), assays=.SummarizedExperiment.assays.subsetgets(x, ii, jj,
                   ..., value=value))
         msg <- .valid.SummarizedExperiment.assays_dims(x)
     } else if (missing(i)) {
+        jj <- as.vector(j)
         x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
             colData=local({
                 c <- colData(x)
                 c[j,] <- colData(value)
-                rownames(c)[as.vector(j)] <- rownames(colData(value))
+                rownames(c)[jj] <- rownames(colData(value))
                 c
-            }), assays=.SummarizedExperiment.assays.subsetgets(x, j=j,
+            }), assays=.SummarizedExperiment.assays.subsetgets(x, j=jj,
                   ..., value=value))
         msg <- .valid.SummarizedExperiment.colData_dims(x)
     } else {                            # missing(j)
+        ii <- as.vector(i)
         x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
             rowData=local({
                 r <- rowData(x)
                 r[i] <- rowData(value)
-                names(r)[as.vector(i)] <- names(rowData(value))
+                names(r)[ii] <- names(rowData(value))
                 r
-            }), assays=.SummarizedExperiment.assays.subsetgets(x, i,
+            }), assays=.SummarizedExperiment.assays.subsetgets(x, ii,
                   ..., value=value))
         msg <- .valid.SummarizedExperiment.rowData_dims(x)
     }
