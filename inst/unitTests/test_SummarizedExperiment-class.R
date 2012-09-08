@@ -189,6 +189,12 @@ test_SummarizedExperiment_subset <- function()
         checkIdentical(rowData(ss1)[idx,,drop=FALSE], rowData(ss2))
         ss2 <- ss1[,idx]
         checkIdentical(colData(ss1)[idx,,drop=FALSE], colData(ss2))
+
+        ## Rle
+        ss1 <- sset
+        rle <- rep(c(TRUE, FALSE), each=3, length.out=nrow(ss1))
+        checkIdentical(rowData(ss1[rle]), rowData(ss1[Rle(rle)]))
+        checkIdentical(assays(ss1[rle]), assays(ss1[Rle(rle)]))
     }
 
     ## 0 columns
@@ -205,13 +211,23 @@ test_SummarizedExperiment_subsetassign <- function()
         sset <- ssetList[[i]] 
         dimnames(sset) <- list(LETTERS[seq_len(nrow(sset))],
                                letters[seq_len(ncol(sset))])
+
+        ## rows
         ss1 <- sset
         ss1[1:2,] <- ss1[2:1,]
         checkIdentical(rowData(sset)[2:1,], rowData(ss1)[1:2,])
         checkIdentical(rowData(sset[-(1:2),]), rowData(ss1)[-(1:2),])
         checkIdentical(colData(sset), colData(ss1))
         checkIdentical(c(exptData(sset), exptData(sset)), exptData(ss1))
+        ## Rle
+        ss1rle <- ss1Rle <- sset
+        rle <- rep(c(TRUE, FALSE), each=3, length.out=nrow(ss1))
+        ss1rle[rle,] <- ss1rle[rle,]
+        ss1Rle[Rle(rle),] <- ss1Rle[Rle(rle),]
+        checkIdentical(rowData(ss1rle), rowData(ss1Rle))
+        checkIdentical(assays(ss1rle), assays(ss1Rle))
 
+        ## cols
         ss1 <- sset
         ss1[,1:2] <- ss1[,2:1,drop=FALSE]
         checkIdentical(colData(sset)[2:1,,drop=FALSE],
