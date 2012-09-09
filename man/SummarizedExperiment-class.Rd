@@ -36,14 +36,6 @@
 \alias{rowData<-}
 \alias{rowData<-,SummarizedExperiment,GenomicRanges-method}
 \alias{rowData<-,SummarizedExperiment,GRangesList-method}
-\alias{seqinfo,SummarizedExperiment-method}
-\alias{seqinfo<-,SummarizedExperiment-method}
-\alias{mcols,SummarizedExperiment-method}
-\alias{mcols<-,SummarizedExperiment-method}
-\alias{elementMetadata,SummarizedExperiment-method}
-\alias{elementMetadata<-,SummarizedExperiment-method}
-\alias{values,SummarizedExperiment-method}
-\alias{values<-,SummarizedExperiment-method}
 \alias{colData}
 \alias{colData,SummarizedExperiment-method}
 \alias{colData<-}
@@ -67,6 +59,68 @@
 \alias{[[,SummarizedExperiment,ANY,missing-method}
 \alias{[[<-,SummarizedExperiment,ANY,missing,ANY-method}
 \alias{[[<-,SummarizedExperiment,ANY,missing-method}
+
+% GenomicRanges compatibility methods
+\alias{compare,ANY,SummarizedExperiment-method}
+\alias{compare,SummarizedExperiment,ANY-method}
+\alias{compare,SummarizedExperiment,SummarizedExperiment-method}
+\alias{countOverlaps,ANY,SummarizedExperiment-method}
+\alias{countOverlaps,SummarizedExperiment,ANY-method}
+\alias{countOverlaps,SummarizedExperiment,SummarizedExperiment-method}
+\alias{coverage,SummarizedExperiment-method}
+\alias{disjointBins,SummarizedExperiment-method}
+\alias{distance,ANY,SummarizedExperiment-method}
+\alias{distance,SummarizedExperiment,ANY-method}
+\alias{distance,SummarizedExperiment,SummarizedExperiment-method}
+\alias{distanceToNearest,ANY,SummarizedExperiment-method}
+\alias{distanceToNearest,SummarizedExperiment,ANY-method}
+\alias{distanceToNearest,SummarizedExperiment,SummarizedExperiment-method}
+\alias{duplicated,SummarizedExperiment-method}
+\alias{elementMetadata,SummarizedExperiment-method}
+\alias{elementMetadata<-,SummarizedExperiment-method}
+\alias{end,SummarizedExperiment-method}
+\alias{end<-,SummarizedExperiment-method}
+\alias{findOverlaps,ANY,SummarizedExperiment-method}
+\alias{findOverlaps,SummarizedExperiment,ANY-method}
+\alias{findOverlaps,SummarizedExperiment,SummarizedExperiment-method}
+\alias{flank,SummarizedExperiment-method}
+\alias{follow,ANY,SummarizedExperiment-method}
+\alias{follow,SummarizedExperiment,ANY-method}
+\alias{follow,SummarizedExperiment,SummarizedExperiment-method}
+\alias{granges,SummarizedExperiment-method}
+\alias{isDisjoint,SummarizedExperiment-method}
+\alias{match,ANY,SummarizedExperiment-method}
+\alias{match,SummarizedExperiment,ANY-method}
+\alias{match,SummarizedExperiment,SummarizedExperiment-method}
+\alias{mcols,SummarizedExperiment-method}
+\alias{mcols<-,SummarizedExperiment-method}
+\alias{narrow,SummarizedExperiment-method}
+\alias{nearest,ANY,SummarizedExperiment-method}
+\alias{nearest,SummarizedExperiment,ANY-method}
+\alias{nearest,SummarizedExperiment,SummarizedExperiment-method}
+\alias{nearest,SummarizedExperiment,missing-method}
+\alias{order,SummarizedExperiment-method}
+\alias{precede,ANY,SummarizedExperiment-method}
+\alias{precede,SummarizedExperiment,ANY-method}
+\alias{precede,SummarizedExperiment,SummarizedExperiment-method}
+\alias{ranges,SummarizedExperiment-method}
+\alias{ranges<-,SummarizedExperiment-method}
+\alias{rank,SummarizedExperiment-method}
+\alias{resize,SummarizedExperiment-method}
+\alias{restrict,SummarizedExperiment-method}
+\alias{seqinfo,SummarizedExperiment-method}
+\alias{seqinfo<-,SummarizedExperiment-method}
+\alias{seqnames,SummarizedExperiment-method}
+\alias{shift,SummarizedExperiment-method}
+\alias{sort,SummarizedExperiment-method}
+\alias{start,SummarizedExperiment-method}
+\alias{start<-,SummarizedExperiment-method}
+\alias{strand,SummarizedExperiment-method}
+\alias{strand<-,SummarizedExperiment-method}
+\alias{values,SummarizedExperiment-method}
+\alias{values<-,SummarizedExperiment-method}
+\alias{width,SummarizedExperiment-method}
+\alias{width<-,SummarizedExperiment-method}
 
 % show method:
 \alias{show,SummarizedExperiment-method}
@@ -104,10 +158,6 @@ assay(x, i, ...)
 assay(x, i, ...) <- value
 rowData(x, ...)
 rowData(x, ...) <- value
-\S4method{seqinfo}{SummarizedExperiment}(x)
-\S4method{seqinfo}{SummarizedExperiment}(x, new2old=NULL, force=FALSE) <- value
-\S4method{mcols}{SummarizedExperiment}(x, use.names=FALSE, ...)
-\S4method{mcols}{SummarizedExperiment}(x, ...) <- value
 colData(x, ...)
 colData(x, ...) <- value
 exptData(x, ...)
@@ -117,17 +167,20 @@ exptData(x, ...) <- value
 \S4method{dimnames}{SummarizedExperiment,NULL}(x) <- value
 \S4method{dimnames}{SummarizedExperiment,list}(x) <- value
 
-## Subsetting
-
-\S4method{[}{SummarizedExperiment}(x, i, j, ..., drop=TRUE)
-\S4method{[}{SummarizedExperiment,ANY,ANY,SummarizedExperiment}(x, i, j) <- value
-
 ## colData access
 
 \S4method{$}{SummarizedExperiment}(x, name)
 \S4method{$}{SummarizedExperiment,ANY}(x, name) <- value
 \S4method{[[}{SummarizedExperiment,ANY,missing}(x, i, j, ...)
 \S4method{[[}{SummarizedExperiment,ANY,missing,ANY}(x, i, j, ...) <- value
+
+## rowData access
+## see 'GRanges compatibility', below
+
+## Subsetting
+
+\S4method{[}{SummarizedExperiment}(x, i, j, ..., drop=TRUE)
+\S4method{[}{SummarizedExperiment,ANY,ANY,SummarizedExperiment}(x, i, j) <- value
 
 ## Coercion
 
@@ -194,10 +247,6 @@ exptData(x, ...) <- value
     should be applied to extracted assay elements.}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
-
-  \item{new2old, force}{See \code{\link{seqinfo<-}}.}
-
-  \item{use.names}{See \code{\link{mcols}}.}
 
   \item{value}{An instance of a class specified in the S4 method
     signature or as outlined in \sQuote{Details}.}
@@ -280,7 +329,7 @@ exptData(x, ...) <- value
   Package version 1.9.59 introduced a new way of representing
   \sQuote{assays}. If you have a serialized instance \code{x} of a
   \code{SummarizedExperiment} (e.g., from using the \code{save} function
-  with a verion of GenomicRanges prior to 1.9.59), it should be updated
+  with a version of GenomicRanges prior to 1.9.59), it should be updated
   by invoking \code{x <- updateObject(x)}.
 
 }
@@ -308,16 +357,7 @@ exptData(x, ...) <- value
       row data. \code{value} is a \code{GenomicRanges} instance. Row
       names of \code{value} must be NULL or consistent with the existing
       row names of \code{x}.}
-
-    \item{\code{seqinfo(x)}, \code{seqinfo(x) <- value}:}{Get or set the
-      seqinfo of the row data; the \code{seqlengths} and \code{genome}
-      accessors are also enabled.}
-
-    \item{\code{mcols(x, use.names=FALSE)}, \code{mcols(x) <-
-      value}:}{Get or set the metadata columns of the row data; the
-      \code{elementMetadata} and \code{values} accessors are also enabled
-      but their use is discouraged.}
-
+   
     \item{\code{colData(x)}, \code{colData(x) <- value}:}{Get or set the
       column data. \code{value} is a \code{DataFrame} instance. Row
       names of \code{value} must be NULL or consistent with the existing
@@ -339,6 +379,38 @@ exptData(x, ...) <- value
       and \code{colnames<-} are all available.}
 
   }
+}
+
+
+\section{GRanges compatibility (rowData access)}{
+
+  Many \code{\link{GRanges}-class} operations are supported on
+  \sQuote{SummarizedExperiment} and derived instances, using
+  \code{rowData}.
+
+  Supported operations include: \code{\link{compare}},
+  \code{\link{countOverlaps}}, \code{\link{coverage}},
+  \code{\link{disjointBins}}, \code{\link{distance}},
+  \code{\link{distanceToNearest}}, \code{\link{duplicated}},
+  \code{\link{end}}, \code{\link{end<-}}, \code{\link{findOverlaps}},
+  \code{\link{flank}}, \code{\link{follow}}, \code{\link{granges}},
+  \code{\link{isDisjoint}}, \code{\link{match}}, \code{\link{mcols}},
+  \code{\link{mcols<-}}, \code{\link{narrow}}, \code{\link{nearest}},
+  \code{\link{order}}, \code{\link{precede}}, \code{\link{ranges}},
+  \code{\link{ranges<-}}, \code{\link{rank}}, \code{\link{resize}},
+  \code{\link{restrict}}, \code{\link{seqinfo}},
+  \code{\link{seqinfo<-}}, \code{\link{seqnames}}, \code{\link{shift}},
+  \code{\link{sort}}, \code{\link{start}}, \code{\link{start<-}},
+  \code{\link{strand}}, \code{\link{strand<-}}, \code{\link{width}},
+  \code{\link{width<-}}.
+
+  Not all \code{\link{GRanges}-class} operations are supported, because
+  they do not make sense for \sQuote{SummarizedExperiment} objects
+  (e.g., length, name, as.data.frame, c, splitAsList), involve
+  non-trivial combination or splitting of rows (e.g., disjoin, gaps,
+  reduce, unique), or have not yet been implemented (Ops, resolveHits,
+  map, seqselect, seqselect<-, window, window<-).
+
 }
 
 \section{Subsetting}{

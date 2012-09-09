@@ -1,3 +1,16 @@
+CHANGES IN VERSION 1.10.0
+------------------------
+
+NEW FEATURES
+
+    o SummarizedExperiment gains direct GRanges / GRangesList
+      interface to rowData.
+ 
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o SummarizedExperiment rowData and assays operations have
+      significant performance improvements.
+
 CHANGES IN VERSION 1.8.0
 ------------------------
 

@@ -549,6 +549,42 @@ setMethod("findOverlaps", c("GappedAlignmentPairs", "ANY"),
     }
 )
 
+setMethod("findOverlaps", c("SummarizedExperiment", "ANY"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(rowData(query), subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
+setMethod("findOverlaps", c("ANY", "SummarizedExperiment"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(query, rowData(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
+setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(rowData(query), rowData(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
 
 ### =========================================================================
 ### findOverlaps-based methods
@@ -630,17 +666,19 @@ setMethod("findOverlaps", c("GappedAlignmentPairs", "ANY"),
     c("GappedAlignments", "ANY"),
     c("ANY", "GappedAlignments"),
     c("GappedAlignments", "GappedAlignments"),
-    c("GappedAlignmentPairs", "ANY")
+    c("GappedAlignmentPairs", "ANY"),
+    c("SummarizedExperiment", "ANY"),
+    c("ANY", "SummarizedExperiment"),
+    c("SummarizedExperiment", "SummarizedExperiment")
 )
 
 for (sig in .signatures) {
     setMethod("countOverlaps", sig, .countOverlaps.default)
     if (sig[1L] == "RangesList")
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps2)
-    else if (sig[1L] == "RangedData")
+    else if (sig[1L] %in% c("RangedData", "SummarizedExperiment"))
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps3)
     else
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps.default)
     setMethod("match", sig, .match.default)
 }
-

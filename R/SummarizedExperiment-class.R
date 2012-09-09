@@ -242,65 +242,6 @@ setReplaceMethod("rowData", c("SummarizedExperiment", "GenomicRanges"),
 setReplaceMethod("rowData", c("SummarizedExperiment", "GRangesList"),
     .SummarizedExperiment.rowData.replace)
 
-## also seqlevels, genome, seqlevels<-, genome<-
-setMethod(seqinfo, "SummarizedExperiment",
-    function(x)
-{
-    seqinfo(rowData(x))
-})
-
-setReplaceMethod("seqinfo", "SummarizedExperiment",
-    function(x, new2old = NULL, force = FALSE, value)
-{
-    seqinfo(rowData(x), new2old=new2old, force=force) <- value
-    x
-})
-
-setMethod(mcols, "SummarizedExperiment",
-    function(x, use.names=FALSE, ...)
-{
-    mcols(rowData(x), use.names=use.names, ...)
-})
-
-setReplaceMethod("mcols", "SummarizedExperiment",
-    function(x, ..., value)
-{
-    clone(x, rowData=local({
-        r <- rowData(x)
-        mcols(r) <- value
-        r
-    }))
-})
-
-### mcols() is the recommended way for accessing the metadata columns.
-### Use of values() or elementMetadata() is discouraged.
-
-setMethod(elementMetadata, "SummarizedExperiment",
-    function(x, use.names=FALSE, ...)
-{
-    elementMetadata(rowData(x), use.names=use.names, ...)
-})
-
-setReplaceMethod("elementMetadata", "SummarizedExperiment",
-    function(x, ..., value)
-{
-    elementMetadata(rowData(x), ...) <- value
-    x
-})
-
-setMethod(values, "SummarizedExperiment",
-    function(x, ...)
-{
-    values(rowData(x), ...)
-})
-
-setReplaceMethod("values", "SummarizedExperiment",
-    function(x, ..., value)
-{
-    values(rowData(x), ...) <- value
-    x
-})
-
 setMethod(colData, "SummarizedExperiment",
     function(x, ...) value(x, "colData"))
 
