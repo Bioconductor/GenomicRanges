@@ -466,7 +466,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
 {
     ## need to expand Rle's for subsetting standard matrix
     if (!missing(i) && !missing(j)) {
-        fun <- function(x, ..., value) {
+        fun <- function(x, value) {
             if (length(dim(x)) == 2L)
                 x[i, j] <- value
             else
@@ -474,7 +474,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
             x
         }
     } else if (!missing(i)) {
-        fun <- function(x, ..., value) {
+        fun <- function(x, value) {
             if (length(dim(x)) == 2L)
                 x[i, ] <- value
             else
@@ -482,7 +482,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
             x
         }
     } else if (!missing(j)) {
-        fun <- function(x, ..., value) {
+        fun <- function(x, value) {
             if (length(dim(x)) == 2L)
                 x[, j] <- value
             else
@@ -492,7 +492,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     }
     a <- assays(x, withDimnames=FALSE)
     v <- assays(value, withDimnames=FALSE)
-    mendoapply(fun, x=a, value=v, ...)
+    mendoapply(fun, x=a, value=v)
 }
 
 setReplaceMethod("[",
