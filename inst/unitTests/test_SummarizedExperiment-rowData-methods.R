@@ -68,14 +68,15 @@ test_SummarizedExperiment_GRanges_API <- function() {
 test_SummarizedExperiment_GRanges_values <- function()
 {
     x <- ssetList[[1]]
+    invisible(x@assays$copy())         # HACK: copy touches each field
     isAssign <- grep("<-$", .singleDispatch, value=TRUE)
     needArgs <- c("flank", "resize")
     .funs <- setdiff(.singleDispatch, c(isAssign, needArgs))
     ## 'exp' created after manual inspection of results
     exp <- setNames(c("d8c3a", "35e2c", "02dde", "80339", "11954",
-                      "72f53", "361c6", "86757", "361c6", "da311",
-                      "fa247", "361c6", "35e2c", "df03b", "3c90a"),
-                    .funs)
+                      "72f53", "77fca", "86757", "77fca", "da311",
+                      "fa247", "77fca", "35e2c", "df03b", "3c90a"),
+                      .funs)
     obs <- sapply(.funs, function(.fun) {
         substr(digest(getGeneric(.fun)(x)), 1, 5)
     })
