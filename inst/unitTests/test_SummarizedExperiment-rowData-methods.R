@@ -68,15 +68,15 @@ test_SummarizedExperiment_GRanges_API <- function() {
 test_SummarizedExperiment_GRanges_values <- function()
 {
     x <- ssetList[[1]]
-    invisible(x@assays$copy())         # HACK: copy touches each field
     isAssign <- grep("<-$", .singleDispatch, value=TRUE)
     needArgs <- c("flank", "resize")
-    .funs <- setdiff(.singleDispatch, c(isAssign, needArgs))
+    isEndomorphism <- c("narrow", "restrict", "shift")
+    .funs <- setdiff(.singleDispatch,
+                     c(isAssign, needArgs, isEndomorphism))
     ## 'exp' created after manual inspection of results
     exp <- setNames(c("d8c3a", "35e2c", "02dde", "80339", "11954",
-                      "72f53", "77fca", "86757", "77fca", "da311",
-                      "fa247", "77fca", "35e2c", "df03b", "3c90a"),
-                      .funs)
+                      "72f53", "86757", "da311", "fa247", "35e2c",
+                      "df03b", "3c90a"), .funs)
     obs <- sapply(.funs, function(.fun) {
         substr(digest(getGeneric(.fun)(x)), 1, 5)
     })
@@ -96,6 +96,13 @@ test_SummarizedExperiment_GRanges_values <- function()
         generic <- getGeneric(.fun)
         x1 <- x; rowData(x1) <- generic(rowData(x1), 5)
         checkIdentical(x1, generic(x, 5))
+    }
+    ## isEndomorphism
+    for (.fun in isEndomorphism) {
+        generic <- getGeneric(.fun)
+        obs <- generic(x)
+        checkIdentical(generic(rowData(x)), rowData(obs))
+        checkIdentical(assays(x), assays(obs))
     }
 
     .funs <- c(.twoDispatch[.twoDispatch != "subsetByOverlaps"],
