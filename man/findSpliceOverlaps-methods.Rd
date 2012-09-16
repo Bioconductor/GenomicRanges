@@ -32,10 +32,10 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## Methods in Rsamtools : 
   \describe{
     \item{}{
-      findSpliceOverlaps,character,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), pairedEnd=FALSE, cds=NULL)
+      findSpliceOverlaps,character,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), singleEnd=TRUE, cds=NULL)
     }
     \item{}{
-      findSpliceOverlaps,BamFile,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), pairedEnd=FALSE, cds=NULL)
+      findSpliceOverlaps,BamFile,ANY(query, subject, ignore.strand=FALSE, ..., param=ScanBamParam(), singleEnd=TRUE, cds=NULL)
     }
   }
 }
@@ -46,7 +46,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     \linkS4class{GappedAlignments}, \linkS4class{GappedAlignmentPairs} 
     or a \linkS4class{GRangesList} object containing the reads.
 
-    Single or paired-end reads are specified with the \code{pairedEnd} 
+    Single or paired-end reads are specified with the \code{singleEnd} 
     argument (default FALSE). Paired-end reads can be supplied in a Bam 
     file or \linkS4class{GappedAlignmentPairs} object. Single-end are
     expected to be in a Bam file, \linkS4class{GappedAlignments} or 
@@ -156,10 +156,10 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## ----------------------------------------------------------------------- 
   ## Paired-end reads :
   ## ----------------------------------------------------------------------- 
-  ## The 'pairedEnd' argument is set to TRUE for a Bam file with
+  ## The 'singleEnd' argument is set to FALSE for a Bam file with
   ## paired-end reads.
   pe <- untreated3_chr4()
-  hits2 <- findSpliceOverlaps(pe, txdb, pairedEnd=TRUE, param=param)
+  hits2 <- findSpliceOverlaps(pe, txdb, singleEnd=FALSE, param=param)
  
   ## In addition to Bam files, paired-end reads can be supplied in a 
   ## GappedAlignmentPairs object. 
