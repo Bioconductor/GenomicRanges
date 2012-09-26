@@ -234,3 +234,28 @@ setReplaceMethod("genome", "ANY",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### seqnameStyle() getter and setter.
+###
+
+setGeneric("seqnameStyle", function(x) standardGeneric("seqnameStyle"))
+
+### Default "seqnameStyle" method works on any object 'x' with a working
+### "seqinfo" method.
+setMethod("seqnameStyle", "ANY", function(x) seqnameStyle(seqinfo(x)))
+
+setGeneric("seqnameStyle<-", signature="x",
+    function(x, value) standardGeneric("seqnameStyle<-")
+)
+
+### Default "seqnameStyle<-" method works on any object 'x' with working
+### "seqinfo" and "seqinfo<-" methods.
+setReplaceMethod("seqnameStyle", "ANY",
+    function(x, value)
+    {
+        seqnameStyle(seqinfo(x)) <- value
+        x
+    }
+)
+

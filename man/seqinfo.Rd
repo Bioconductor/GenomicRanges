@@ -20,6 +20,10 @@
 \alias{genome,ANY-method}
 \alias{genome<-}
 \alias{genome<-,ANY-method}
+\alias{seqnameStyle}
+\alias{seqnameStyle,ANY-method}
+\alias{seqnameStyle<-}
+\alias{seqnameStyle<-,ANY-method}
 
 \alias{seqinfo,List-method}
 \alias{seqinfo<-,List-method}
@@ -54,6 +58,9 @@ isCircular(x) <- value
 
 genome(x)
 genome(x) <- value
+
+seqnameStyle(x)
+seqnameStyle(x) <- value
 }
 
 \arguments{
@@ -106,22 +113,24 @@ genome(x) <- value
   \itemize{
   \item It has methods for all those generics (except \code{seqinfo}).
         That is, the \code{seqnames}, \code{seqlevels}, \code{seqlengths},
-        \code{isCircular} and \code{genome} getters and setters are
-        defined for \link{Seqinfo} objects.
+        \code{isCircular}, \code{genome} and \code{seqnameStyle} getters
+        and setters are defined for \link{Seqinfo} objects.
 
-  \item Classes that implement the \code{seqinfo} getter are typically
-        expected to return a \link{Seqinfo} object.
+  \item For classes that implement it, the \code{seqinfo} getter should
+        return a \link{Seqinfo} object.
 
-  \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular}
-        and \code{genome} getters and setters are provided.
+  \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular},
+        \code{genome}, and \code{seqnameStyle} getters and setters are
+        provided.
         By default, \code{seqlevels(x)} does \code{seqlevels(seqinfo(x))},
         \code{seqlengths(x)} does \code{seqlengths(seqinfo(x))},
         \code{isCircular(x)} does \code{isCircular(seqinfo(x))},
-        and \code{genome(x)} does \code{genome(seqinfo(x))}.
-        So any class with a \code{seqinfo} getter that returns a
-        \link{Seqinfo} object will have all those getters work
-        out-of-the-box. If, in addition, the class defines a \code{seqinfo}
-        setter, then all the related setters will also work out-of-the-box.
+        \code{genome(x)} does \code{genome(seqinfo(x))},
+        and \code{seqnameStyle(x)} does \code{seqnameStyle(seqinfo(x))}.
+        So any class with a \code{seqinfo} getter will have all the above
+        getters work out-of-the-box. If, in addition, the class defines
+        a \code{seqinfo} setter, then all the corresponding setters will
+        also work out-of-the-box.
 
         See the \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
         and \link{GappedAlignmentPairs} classes for examples of classes that

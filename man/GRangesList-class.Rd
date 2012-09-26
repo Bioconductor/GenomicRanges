@@ -20,7 +20,6 @@
 % Accessor methods:
 \alias{seqnames,GRangesList-method}
 \alias{seqnames<-,GRangesList-method}
-\alias{seqnameStyle,GRangesList-method}
 \alias{ranges,GRangesList-method}
 \alias{ranges<-,GRangesList-method}
 \alias{strand,GRangesList-method}
@@ -116,10 +115,6 @@
       can be an RleList or CharacterList.
     }
     \item{}{
-      \code{seqnameStyle(x)}:
-      Lists the matching seqname styles for \code{x}.
-    }
-    \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:
       Get or set the ranges in the form of a CompressedIRangesList.
       \code{value} can be a RangesList object.
@@ -172,6 +167,14 @@
       Get or set the genome identifier or assembly name for each sequence.
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}:
+      List the matching seqname styles for \code{x}.
+      \code{seqnameStyle(x)} is equivalent to \code{seqnameStyle(seqinfo(x))}.
+      Note that this information is not stored in \code{x} but inferred
+      by looking up \code{seqlevels(x)} against a seqname style database
+      stored in the seqnames.db metadata package (required).
     }
     \item{}{
       \code{score(x)}: Get the \dQuote{score} column from the element

@@ -24,8 +24,6 @@
 \alias{isCircular<-,Seqinfo-method}
 \alias{genome,Seqinfo-method}
 \alias{genome<-,Seqinfo-method}
-\alias{seqnameStyle}
-\alias{seqnameStyle,ANY-method}
 \alias{seqnameStyle,Seqinfo-method}
 \alias{[,Seqinfo-method}
 \alias{coerce,Seqinfo,GRanges-method}
@@ -73,11 +71,11 @@
   \describe{
     \item{}{
       \code{length(x)}:
-      Gets the number of sequences in \code{x}.
+      Return the number of sequences in \code{x}.
     }
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Gets/sets the names of the sequences in \code{x}.
+      Get/set the names of the sequences in \code{x}.
       Those names must be non-NA, non-empty and unique.
       They are also called the \emph{sequence levels} or the \emph{keys}
       of the Seqinfo object.
@@ -122,20 +120,23 @@
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets/sets the length for each sequence in \code{x}.
+      Get/set the length for each sequence in \code{x}.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Gets/sets the circularity flag for each sequence in \code{x}.
+      Get/set the circularity flag for each sequence in \code{x}.
     }
     \item{}{
       \code{genome(x)}, \code{genome(x) <- value}:
-      Gets/sets the genome identifier or assembly name for each sequence
+      Get/set the genome identifier or assembly name for each sequence
       in \code{x}.
     }
     \item{}{
       \code{seqnameStyle(x)}:
-      Lists the matching seqname styles for \code{x}.
+      List the matching seqname styles for \code{x}.
+      Note that this information is not stored in \code{x} but inferred
+      by looking up \code{seqnames(x)} against a seqname style database
+      stored in the seqnames.db metadata package (required).
     }
   }
 }
@@ -218,7 +219,14 @@
                seqlengths=c(100, 200, NA, 15),
                isCircular=c(NA, FALSE, FALSE, TRUE),
                genome="toy")
-  x
+  length(x)
+  seqnames(x)
+  names(x)
+  seqlevels(x)
+  seqlengths(x)
+  isCircular(x)
+  genome(x)
+  seqnameStyle(x)  # UCSC
 
   x[c("chrY", "chr3", "chr1")]  # subset by names
 

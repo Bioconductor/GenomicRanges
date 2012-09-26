@@ -518,9 +518,8 @@ setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
   merge(x, y)[intersect(seqnames(x), seqnames(y))]
 })
 
-
-## Need getters of seqnameStyle() to deduce this from seqinfo class.
-## Once I have that, I can just extend that to Granges, GRangesList, GappedAlignments etc.  In fact I think I can just say "ANY" like above once I have this 1st method put together.
+## Long comment by Marc
+## --------------------
 
 ## To make this work I need to do some kind of 'fuzzy matching'.  What that means mostly is just that a lot of things DO NOT MATTER HERE.  For example, I don't care if I have the organism wrong for this getter!  Not only am I not returning the organism, but I only need to match to *A* seqnameStyle such that all the things in my seqinfo are accounted for.  Also, it doesn't matter if my seqnameStyle is not the perfect one, because I only need one that works for all the fields that the user has in their seqinfo.
 
@@ -530,11 +529,13 @@ setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
 ## 1) Go down the seqnames vector and find things that match NOTHING in the DB.  Throw those things away. We don't want to even try to match those.  If the vector is not length 0, then error out.
 ## 2) Find the best match you can of the remaining things.  If there are multiple best matches, keep the 1st one of them and return the name of that seqnameStyle.  If the set of things that each have the same number of best matches have "match indices" that are not identical, then issue a warning.
 
-## Generic has to be moved down from GenomicFeatures.
-setGeneric("seqnameStyle",
-           function(x) standardGeneric("seqnameStyle"))
-
-.getSeqnameStyle  <- function(x) {
+.getSeqnameStyle  <- function(x)
+{
+  ## We load GenomicFeatures to get supportedSeqnames() and
+  ## listAllSupportedSeqnameStyles(), which are currently defined in
+  ## AnnotationDbi but should really be in GenomicFeatures (where the code
+  ## for generating seqnames.db is).
+  library(GenomicFeatures)
   seqnames <- seqnames(x)
   ## Get vector of ALL possible chromosome names
   allNames <- supportedSeqnames()  
@@ -567,21 +568,4 @@ setGeneric("seqnameStyle",
 setMethod("seqnameStyle", "Seqinfo",
           function(x) .getSeqnameStyle(x)
 )
-
-## Can I still use ANY? (concerned about TranscriptDbs)
-setMethod("seqnameStyle", "ANY", function(x)  seqnameStyle(seqinfo(x)) )
-
-
-## Test:
-## library(GenomicFeatures);
-## gr <-GRanges(seqnames =
-##              Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-##              ranges =
-##              IRanges(1:10, width = 10:1, names = head(letters,10)),
-##              strand =
-##              Rle(strand(c("-", "+", "*", "+", "-")),
-##                  c(1, 2, 2, 3, 2)),
-##              score = 1:10,
-##              GC = seq(1, 0, length=10))
-## seqnameStyle(gr)
 

@@ -22,7 +22,6 @@
 \alias{right}
 \alias{right,GappedAlignmentPairs-method}
 \alias{seqnames,GappedAlignmentPairs-method}
-\alias{seqnameStyle,GappedAlignmentPairs-method}
 \alias{strand,GappedAlignmentPairs-method}
 \alias{ngap,GappedAlignmentPairs-method}
 \alias{isProperPair}
@@ -109,18 +108,18 @@
   \describe{
     \item{}{
       \code{length(x)}:
-      Returns the number of alignment pairs in \code{x}.
+      Return the number of alignment pairs in \code{x}.
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
-      Gets or sets the names of \code{x}.
+      Get or sets the names of \code{x}.
       See \code{readGappedAlignmentPairs} above for how to automatically
       extract and set the names from the file to read.
     }
     \item{}{
       \code{first(x, invert.strand=FALSE)},
       \code{last(x, invert.strand=FALSE)}:
-      Gets the "first" or "last" alignment for each alignment pair in
+      Get the "first" or "last" alignment for each alignment pair in
       \code{x}.
       The result is a \link{GappedAlignments} object of the same length
       as \code{x}.
@@ -129,7 +128,7 @@
     }
     \item{}{
       \code{left(x)}:
-      Gets the "left" alignment for each alignment pair in \code{x}.
+      Get the "left" alignment for each alignment pair in \code{x}.
       By definition, the "left" alignment in a pair is the alignment that
       is on the + strand. If this is the "first" alignment, then it's returned
       as-is by \code{left(x)}, but if this is the "last" alignment, then it's
@@ -137,7 +136,7 @@
     }
     \item{}{
       \code{right(x)}:
-      Gets the "right" alignment for each alignment pair in \code{x}.
+      Get the "right" alignment for each alignment pair in \code{x}.
       By definition, the "right" alignment in a pair is the alignment that
       is on the - strand. If this is the "first" alignment, then it's returned
       as-is by \code{right(x)}, but if this is the "last" alignment, then it's
@@ -145,7 +144,7 @@
     }
     \item{}{
       \code{seqnames(x)}:
-      Gets the name of the reference sequence for each alignment pair
+      Get the name of the reference sequence for each alignment pair
       in \code{x}. This comes from the RNAME field of the BAM file and
       has the same value for the 2 records in a pair
       (\code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
@@ -153,12 +152,8 @@
       doing the pairing, rejects pairs with incompatible RNAME values).
     }
     \item{}{
-      \code{seqnameStyle(x)}:
-      Lists the matching seqname styles for \code{x}.
-    }
-    \item{}{
       \code{strand(x)}:
-      Gets the strand for each alignment pair in \code{x}. By definition
+      Get the strand for each alignment pair in \code{x}. By definition
       the strand of an alignment pair is the strand of the \emph{"first"}
       alignment in the pair. In a GappedAlignmentPairs object, the strand
       of the "last" alignment in a pair is \emph{always} the opposite of the
@@ -174,17 +169,17 @@
     }
     \item{}{
       \code{isProperPair(x)}:
-      Gets the "isProperPair" flag bit (bit 0x2 in SAM Spec) set by
+      Get the "isProperPair" flag bit (bit 0x2 in SAM Spec) set by
       the aligner for each alignment pair in \code{x}.
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
-      Gets or sets the information about the underlying sequences.
+      Get or set the information about the underlying sequences.
       \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
       \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
-      Gets or sets the sequence levels.
+      Get or set the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a
@@ -194,22 +189,30 @@
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the sequence lengths.
+      Get or set the sequence lengths.
       \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
       \code{value} can be a named non-negative integer or numeric vector
       eventually with NAs.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Gets or sets the circularity flags.
+      Get or set the circularity flags.
       \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
     }
     \item{}{
       \code{genome(x)}, \code{genome(x) <- value}:
-      Gets or sets the genome identifier or assembly name for each sequence.
+      Get or set the genome identifier or assembly name for each sequence.
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}:
+      List the matching seqname styles for \code{x}.
+      \code{seqnameStyle(x)} is equivalent to \code{seqnameStyle(seqinfo(x))}.
+      Note that this information is not stored in \code{x} but inferred
+      by looking up \code{seqlevels(x)} against a seqname style database
+      stored in the seqnames.db metadata package (required).
     }
   }
 }
@@ -220,7 +223,7 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new GappedAlignmentPairs object made of the selected
+      Return a new GappedAlignmentPairs object made of the selected
       alignment pairs. 
     }
   }
@@ -238,7 +241,7 @@
     }
     \item{}{
       \code{unlist(x, use.names=TRUE)}:
-      Returns the \link{GappedAlignments} object conceptually defined
+      Return the \link{GappedAlignments} object conceptually defined
       by \code{c(x[[1]], x[[2]], ..., x[[length(x)]])}.
       \code{use.names} determines whether \code{x} names should be
       propagated to the result or not.
@@ -253,7 +256,7 @@
     \item{}{
       \code{grglist(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)}:
 
-      Returns a \link{GRangesList} object of length \code{length(x)}
+      Return a \link{GRangesList} object of length \code{length(x)}
       where the i-th element represents the ranges (with respect to the
       reference) of the i-th alignment pair in \code{x}.
 

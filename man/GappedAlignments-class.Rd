@@ -14,7 +14,6 @@
 \alias{length,GappedAlignments-method}
 \alias{names,GappedAlignments-method}
 \alias{seqnames,GappedAlignments-method}
-\alias{seqnameStyle,GappedAlignments-method}
 \alias{rname}
 \alias{rname,GappedAlignments-method}
 \alias{strand,GappedAlignments-method}
@@ -182,25 +181,21 @@
   \describe{
     \item{}{
       \code{length(x)}:
-      Returns the number of alignments in \code{x}.
+      Return the number of alignments in \code{x}.
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
-      Gets or sets the names of \code{x}.
+      Get or set the names of \code{x}.
       See \code{readGappedAlignments} above for how to automatically extract
       and set the names from the file to read.
     }
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Gets or sets the name of the reference sequence for each alignment
+      Get or set the name of the reference sequence for each alignment
       in \code{x} (see Details section above for more information about
       the RNAME field of a SAM/BAM file).
       \code{value} can be a factor, or a 'factor' \link[IRanges]{Rle},
       or a character vector.
-    }
-    \item{}{
-      \code{seqnameStyle(x)}:
-      Lists the matching seqname styles for \code{x}.
     }
     \item{}{
       \code{rname(x)}, \code{rname(x) <- value}:
@@ -208,7 +203,7 @@
     }
     \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
-      Gets or sets the strand for each alignment in \code{x} (see Details
+      Get or set the strand for each alignment in \code{x} (see Details
       section above for more information about the strand of an alignment).
       \code{value} can be a factor (with levels +, - and *), or a 'factor'
       \link[IRanges]{Rle}, or a character vector.
@@ -252,12 +247,12 @@
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
-      Gets or sets the information about the underlying sequences.
+      Get or set the information about the underlying sequences.
       \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
       \code{seqlevels(x)}, \code{seqlevels(x) <- value}:
-      Gets or sets the sequence levels.
+      Get or set the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a GappedAlignments
@@ -266,22 +261,30 @@
     }
     \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Gets or sets the sequence lengths.
+      Get or set the sequence lengths.
       \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
       \code{value} can be a named non-negative integer or numeric vector
       eventually with NAs.
     }
     \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Gets or sets the circularity flags.
+      Get or set the circularity flags.
       \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
     }
     \item{}{
       \code{genome(x)}, \code{genome(x) <- value}:
-      Gets or sets the genome identifier or assembly name for each sequence.
+      Get or set the genome identifier or assembly name for each sequence.
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
+    }
+    \item{}{
+      \code{seqnameStyle(x)}:
+      List the matching seqname styles for \code{x}.
+      \code{seqnameStyle(x)} is equivalent to \code{seqnameStyle(seqinfo(x))}.
+      Note that this information is not stored in \code{x} but inferred
+      by looking up \code{seqlevels(x)} against a seqname style database
+      stored in the seqnames.db metadata package (required).
     }
   }
 }
@@ -296,7 +299,7 @@
       \code{rglist(x, order.as.in.query=FALSE,
                       drop.D.ranges=FALSE)}:
 
-      Returns either a \link{GRangesList} or a \link[IRanges]{RangesList}
+      Return either a \link{GRangesList} or a \link[IRanges]{RangesList}
       object of length \code{length(x)} where the i-th element represents
       the ranges (with respect to the reference) of the i-th alignment in
       \code{x}.
@@ -330,7 +333,7 @@
     }
     \item{}{
       \code{granges(x)}, \code{ranges(x)}:
-      Returns either a \link{GRanges} or a \link[IRanges]{Ranges}
+      Return either a \link{GRanges} or a \link[IRanges]{Ranges}
       object of length \code{length(x)} where each element represents the
       regions in the reference to which a query is aligned.
 
@@ -360,7 +363,7 @@
   \describe{
     \item{}{
       \code{x[i]}:
-      Returns a new GappedAlignments object made of the selected
+      Return a new GappedAlignments object made of the selected
       alignments. \code{i} can be a numeric or logical vector.
     }
   }
@@ -381,7 +384,7 @@
     \item{}{
       \code{qnarrow(x, start=NA, end=NA, width=NA)}:
       \code{x} is a GappedAlignments object.
-      Returns a new GappedAlignments object of the same length as \code{x}
+      Return a new GappedAlignments object of the same length as \code{x}
       describing how the narrowed query sequences align to the reference.
       The \code{start}/\code{end}/\code{width} arguments describe how
       to narrow the query sequences. They must be vectors of integers.
@@ -392,7 +395,7 @@
     \item{}{
       \code{narrow(x, start=NA, end=NA, width=NA)}:
       \code{x} is a GappedAlignments object.
-      Returns a new GappedAlignments object of the same length as \code{x}
+      Return a new GappedAlignments object of the same length as \code{x}
       describing the narrowed alignments. Unlike with \code{qnarrow}
       now the \code{start}/\code{end}/\code{width} arguments describe
       the narrowing on the reference side, not the query side.

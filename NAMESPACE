@@ -37,8 +37,8 @@ export(
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     genome, "genome<-",
+    seqnameStyle, "seqnameStyle<-",
     Seqinfo,
-    seqnameStyle,
 
     GRanges, GRangesList, GenomicRangesList,
     .DollarNames.GenomicRanges,
@@ -83,6 +83,7 @@ exportMethods(
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     genome, "genome<-",
+    seqnameStyle, "seqnameStyle<-",
     strand, "strand<-",
     score,
     merge,
@@ -117,7 +118,6 @@ exportMethods(
     keepSeqlevels, renameSeqlevels,
     summarizeOverlaps,
     findSpliceOverlaps,
-    seqnameStyle,
     updateObject
 )
 
