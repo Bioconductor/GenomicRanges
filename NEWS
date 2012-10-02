@@ -1,15 +1,113 @@
 CHANGES IN VERSION 1.10.0
-------------------------
+-------------------------
 
 NEW FEATURES
 
     o SummarizedExperiment gains direct GRanges / GRangesList
       interface to rowData.
- 
+
+    o Add "distanceToNearest" method for GenomicRanges objects.
+
+    o SummarizedExperiment class can now be subset by row when there are no
+      'columns', and by column when there are no 'rows'.
+
+    o Add 'drop.D.ranges' argument to coverage,GappedAlignments and
+      coverage,GappedAlignmentPairs methods.
+
+    o findOverlaps() now supports 'select="last"' and 'select="arbitrary"' (in
+      addition to 'select="all"' and 'select="first"') on GenomicRanges
+      objects.
+
+    o summarizeOverlaps(..., mode="IntersectionStrict") now handles circular
+      chromosomes. A warning is issued and circular chromosomes in 'reads' are
+      omitted from counting.
+
+    o Add disjoin,GRangesList method.
+
+    o Add findSpliceOverlaps() for identifyng ranges (reads) that are
+      compatible with a specific transcript isoform (the non-compatible
+      ranges are analyzed for the presence of novel splice events).
+
+    o Add ngap,GappedAlignmentPairs method.
+
+    o Add introns() generic with methods for GappedAlignments and
+      GappedAlignmentPairs objects.
+
+    o No more arbitrary max of 3 gaps per read in isCompatibleWithSplicing()
+      and isCompatibleWithSkippedExons(). 
+
+    o Add findCompatibleOverlaps() and countCompatibleOverlaps().
+
+    o Passing '...' down through as.data.frame(GRanges, ...) so user can tweak
+      stringsAsFactors default for metadata columns.
+
+    o Add extractSteppedExonRanks(), extractSpannedExonRanks() and
+      extractQueryStartInTranscript() utilities (work with single- and
+      paired-end reads).
+
+    o Add 'flip.query.if.wrong.strand' arg (FALSE by default) to
+      "encodeOverlaps" method for GRangesList objects.
+
+    o Add makeSeqnameIds() low-level utility.
+
 SIGNIFICANT USER-LEVEL CHANGES
 
     o SummarizedExperiment rowData and assays operations have
       significant performance improvements.
+
+    o mcols() is now the preferred way (over elementMetadata() or values()) to
+      access the metadata columns of a GenomicRanges, GRangesList,
+      GappedAlignments, GappedAlignmentPairs, SummarizedExperiment object,
+      or any Vector object. elementMetadata() and values() might go away at
+      some point in the (not so close) future.
+
+    o Add "$" and "$<-" methods for GenomicRanges *only*. Provided as a
+      convenience and as the result of strong popular demand. Note that those
+      methods are not consistent with the other "$" and "$<-" methods in the
+      IRanges/GenomicRanges infrastructure, and might confuse some users by
+      making them believe that a GenomicRanges object can be manipulated as a
+      data.frame-like object. It is therefore recommended to use them only
+      interactively, and their use in scripts or packages is discouraged.
+      For the latter, use 'mcols(x)$name' instead of 'x$name'.
+
+    o No more warning when doing as(x, "GRanges") on a RangedData object with
+      no "strand" column.
+
+    o Refactor "[" method for GenomicRanges objects. The new implementation
+      always preserves the names of the selected elements instead of trying
+      to return a GenomicRanges object with unique names. This new behavior
+      is consistent with subsetting of ordinary vectors and other Vector
+      objects defined in IRanges/GenomicRanges. Also modify "seqselect" method
+      for GenomicRanges objects so it also preserves the names of the selected
+      elements (and thus remains consistent with new behavior of "[" method for
+      GenomicRanges objects).
+
+    o No more names on the integer vector returned by "ngap" method for
+      GappedAlignments objects.
+
+    o Many improvements to the "Overlap encodings" vignette.
+
+    o Remove 'param' argument from summarizeOverlaps() generic.
+
+DEPRECATED AND DEFUNCT
+
+    o Defunct previously deprecated grg() function.
+
+    o Defunct previously deprecated countGenomicOverlaps() generic and methods.
+
+BUG FIXES
+
+    o Fix several issues with "precede", "follow", "nearest", and "distance"
+      methods for GenomicRanges objects.
+
+    o Fix bug in summarizeOverlaps(..., ignore.strand=TRUE).
+
+    o 6x speedup (and a 6x memory footprint reduction) or more when using
+      encodeOverlaps() on big GRangesList objects.
+
+    o Fix bug in renameSeqlevels() wrt order of rename vector.
+
+    o Fix bug in selectEncodingWithCompatibleStrand().
 
 CHANGES IN VERSION 1.8.0
 ------------------------
