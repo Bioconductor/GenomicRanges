@@ -115,61 +115,61 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 }
 
 \examples{
-  ## ----------------------------------------------------------------------- 
-  ## Isoform expression :
-  ## ----------------------------------------------------------------------- 
-  ## findSpliceOverlaps() can assist in quantifying isoform expression
-  ## by identifying reads that map compatibly and uniquely to a 
-  ## transcript isoform.
-  library(Rsamtools)
-  library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
-  txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
-  library(pasillaBamSubset)
-  ## untreated1_chr4() contains single-end reads
-  se <- untreated1_chr4()
-  exbytx <- exonsBy(txdb, "tx")
-  cdsbytx <- cdsBy(txdb, "tx")
-  param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,3e5)))
-  sehits <- findSpliceOverlaps(se, exbytx, cds=cdsbytx, param=param)
+## ----------------------------------------------------------------------- 
+## Isoform expression :
+## ----------------------------------------------------------------------- 
+## findSpliceOverlaps() can assist in quantifying isoform expression
+## by identifying reads that map compatibly and uniquely to a 
+## transcript isoform.
+library(Rsamtools)
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
+library(pasillaBamSubset)
+## untreated1_chr4() contains single-end reads
+se <- untreated1_chr4()
+exbytx <- exonsBy(txdb, "tx")
+cdsbytx <- cdsBy(txdb, "tx")
+param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,3e5)))
+sehits <- findSpliceOverlaps(se, exbytx, cds=cdsbytx, param=param)
 
-  ## Tally the reads by category to get an idea of read distribution.
-  lst <- lapply(mcols(sehits), table)
-  nms <- names(lst) %in% c("compatible", "unique")
-  tbl <- do.call(rbind, lst[nms]) 
-  tbl
+## Tally the reads by category to get an idea of read distribution.
+lst <- lapply(mcols(sehits), table)
+nms <- names(lst) %in% c("compatible", "unique")
+tbl <- do.call(rbind, lst[nms]) 
+tbl
 
-  ## Reads compatible with one or more transcript isoforms.
-  rnms <- rownames(tbl)
-  tbl[rnms == "compatible","TRUE"]/sum(tbl[rnms == "compatible",])
+## Reads compatible with one or more transcript isoforms.
+rnms <- rownames(tbl)
+tbl[rnms == "compatible","TRUE"]/sum(tbl[rnms == "compatible",])
 
-  ## Reads compatible with a single isoform. 
-  tbl[rnms == "unique","TRUE"]/sum(tbl[rnms == "unique",])
+## Reads compatible with a single isoform. 
+tbl[rnms == "unique","TRUE"]/sum(tbl[rnms == "unique",])
 
-  ## All reads fall in a coding region as defined by 
-  ## the txdb annotation.
-  lst[["coding"]] 
+## All reads fall in a coding region as defined by 
+## the txdb annotation.
+lst[["coding"]] 
 
-  ## Check : Total number of reads should be the same across categories.
-  lapply(lst, sum)
+## Check : Total number of reads should be the same across categories.
+lapply(lst, sum)
  
-  ## ----------------------------------------------------------------------- 
-  ## Paired-end reads :
-  ## ----------------------------------------------------------------------- 
-  ## The 'singleEnd' argument is set to FALSE for a Bam file with
-  ## paired-end reads.
-  pe <- untreated3_chr4()
-  hits2 <- findSpliceOverlaps(pe, exbytx, singleEnd=FALSE, param=param)
+## ----------------------------------------------------------------------- 
+## Paired-end reads :
+## ----------------------------------------------------------------------- 
+## The 'singleEnd' argument is set to FALSE for a Bam file with
+## paired-end reads.
+pe <- untreated3_chr4()
+hits2 <- findSpliceOverlaps(pe, exbytx, singleEnd=FALSE, param=param)
  
-  ## In addition to Bam files, paired-end reads can be supplied in a 
-  ## GappedAlignmentPairs object. 
-  genes <- GRangesList(
-      GRanges("chr1", IRanges(c(5, 20), c(10, 25)), "+"),
-      GRanges("chr1", IRanges(c(5, 22), c(15, 25)), "+"))
-  galp <- GappedAlignmentPairs(
-      GappedAlignments("chr1", 5L, "11M4N6M", strand("+")),
-      GappedAlignments("chr1", 50L, "6M", strand("-")),
-      isProperPair=TRUE)
-  findSpliceOverlaps(galp, genes)
+## In addition to Bam files, paired-end reads can be supplied in a 
+## GappedAlignmentPairs object. 
+genes <- GRangesList(
+    GRanges("chr1", IRanges(c(5, 20), c(10, 25)), "+"),
+    GRanges("chr1", IRanges(c(5, 22), c(15, 25)), "+"))
+galp <- GappedAlignmentPairs(
+    GappedAlignments("chr1", 5L, "11M4N6M", strand("+")),
+    GappedAlignments("chr1", 50L, "6M", strand("-")),
+    isProperPair=TRUE)
+findSpliceOverlaps(galp, genes)
 }
 
 \keyword{methods}

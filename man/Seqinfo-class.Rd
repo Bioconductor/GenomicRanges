@@ -212,54 +212,54 @@
 }
 
 \examples{
-  ## Note that all the arguments (except 'genome') must have the
-  ## same length. 'genome' can be of length 1, whatever the lengths
-  ## of the other arguments are.
-  x <- Seqinfo(seqnames=c("chr1", "chr2", "chr3", "chrM"),
-               seqlengths=c(100, 200, NA, 15),
-               isCircular=c(NA, FALSE, FALSE, TRUE),
-               genome="toy")
-  length(x)
-  seqnames(x)
-  names(x)
-  seqlevels(x)
-  seqlengths(x)
-  isCircular(x)
-  genome(x)
-  seqnameStyle(x)  # UCSC
+## Note that all the arguments (except 'genome') must have the
+## same length. 'genome' can be of length 1, whatever the lengths
+## of the other arguments are.
+x <- Seqinfo(seqnames=c("chr1", "chr2", "chr3", "chrM"),
+             seqlengths=c(100, 200, NA, 15),
+             isCircular=c(NA, FALSE, FALSE, TRUE),
+             genome="toy")
+length(x)
+seqnames(x)
+names(x)
+seqlevels(x)
+seqlengths(x)
+isCircular(x)
+genome(x)
+seqnameStyle(x)  # UCSC
 
-  x[c("chrY", "chr3", "chr1")]  # subset by names
+x[c("chrY", "chr3", "chr1")]  # subset by names
 
-  ## Rename, drop, add and/or reorder the sequence levels:
-  xx <- x
-  seqlevels(xx) <- sub("chr", "ch", seqlevels(xx))  # rename
-  xx
-  seqlevels(xx) <- rev(seqlevels(xx))  # reorder
-  xx
-  seqlevels(xx) <- c("ch1", "ch2", "chY")  # drop/add/reorder
-  xx
-  seqlevels(xx) <- c(chY="Y", ch1="1", "22")  # rename/reorder/drop/add
-  xx
+## Rename, drop, add and/or reorder the sequence levels:
+xx <- x
+seqlevels(xx) <- sub("chr", "ch", seqlevels(xx))  # rename
+xx
+seqlevels(xx) <- rev(seqlevels(xx))  # reorder
+xx
+seqlevels(xx) <- c("ch1", "ch2", "chY")  # drop/add/reorder
+xx
+seqlevels(xx) <- c(chY="Y", ch1="1", "22")  # rename/reorder/drop/add
+xx
 
-  y <- Seqinfo(seqnames=c("chr3", "chr4", "chrM"),
-               seqlengths=c(300, NA, 15))
-  y
-  merge(x, y)  # rows for chr3 and chrM are merged
-  suppressWarnings(merge(x, y))
+y <- Seqinfo(seqnames=c("chr3", "chr4", "chrM"),
+             seqlengths=c(300, NA, 15))
+y
+merge(x, y)  # rows for chr3 and chrM are merged
+suppressWarnings(merge(x, y))
 
-  ## Note that, strictly speaking, merging 2 Seqinfo objects is not
-  ## a commutative operation, i.e., in general 'z1 <- merge(x, y)'
-  ## is not identical to 'z2 <- merge(y, x)'. However 'z1' and 'z2'
-  ## are guaranteed to contain the same information (i.e. the same
-  ## rows, but typically not in the same order):
-  suppressWarnings(merge(y, x))
+## Note that, strictly speaking, merging 2 Seqinfo objects is not
+## a commutative operation, i.e., in general 'z1 <- merge(x, y)'
+## is not identical to 'z2 <- merge(y, x)'. However 'z1' and 'z2'
+## are guaranteed to contain the same information (i.e. the same
+## rows, but typically not in the same order):
+suppressWarnings(merge(y, x))
 
-  ## This contradicts what 'x' says about circularity of chr3 and chrM:
-  isCircular(y)[c("chr3", "chrM")] <- c(TRUE, FALSE)
-  y
-  if (interactive()) {
-    merge(x, y)  # raises an error
-  }
+## This contradicts what 'x' says about circularity of chr3 and chrM:
+isCircular(y)[c("chr3", "chrM")] <- c(TRUE, FALSE)
+y
+if (interactive()) {
+  merge(x, y)  # raises an error
+}
 }
 
 \keyword{methods}
