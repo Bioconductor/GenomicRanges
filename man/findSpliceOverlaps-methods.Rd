@@ -121,7 +121,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## findSpliceOverlaps() can assist in quantifying isoform expression
   ## by identifying reads that map compatibly and uniquely to a 
   ## transcript isoform.
-  \dontrun{
   library(Rsamtools)
   library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
   txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
@@ -159,7 +158,7 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   ## The 'singleEnd' argument is set to FALSE for a Bam file with
   ## paired-end reads.
   pe <- untreated3_chr4()
-  hits2 <- findSpliceOverlaps(pe, txdb, singleEnd=FALSE, param=param)
+  hits2 <- findSpliceOverlaps(pe, exbytx, singleEnd=FALSE, param=param)
  
   ## In addition to Bam files, paired-end reads can be supplied in a 
   ## GappedAlignmentPairs object. 
@@ -171,7 +170,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
       GappedAlignments("chr1", 50L, "6M", strand("-")),
       isProperPair=TRUE)
   findSpliceOverlaps(galp, genes)
-}
 }
 
 \keyword{methods}
