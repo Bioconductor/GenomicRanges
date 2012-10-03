@@ -36,7 +36,7 @@
 \alias{merge,Seqinfo,NULL-method}
 \alias{merge,NULL,Seqinfo-method}
 \alias{merge,Seqinfo,Seqinfo-method}
-
+\alias{intersect,Seqinfo,Seqinfo-method}
 
 \title{Seqinfo objects}
 
@@ -201,6 +201,13 @@
       in the other. The purpose of these checks is to try to detect situations
       where the user might be combining or comparing objects based on
       different reference genomes.
+    }
+    \item{}{
+      \code{intersect(x, y)}: Finds the intersection between
+      two \code{Seqinfo} objects by merging them and subsetting for the
+      intersection of their sequence names. This makes it easy to avoid
+      warnings about the objects not being subsets of each other during
+      overlap operations.
     }
   }
 }
