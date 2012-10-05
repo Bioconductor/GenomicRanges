@@ -759,15 +759,22 @@ setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
   to_grl <- grglist(to, drop.D.ranges=TRUE)
   from_ol <- findOverlaps(from, to_grl, ignore.strand=TRUE, type="within")
   to_hits <- to[subjectHits(from_ol)]
-  starts <- .Call("ref_locs_to_query_locs", start(from)[queryHits(from_ol)],
-                  cigar(to_hits), start(to_hits), PACKAGE="GenomicRanges")
-  ends <- .Call("ref_locs_to_query_locs", end(from)[queryHits(from_ol)],
-                cigar(to_hits), start(to_hits), PACKAGE="GenomicRanges")
+  from_hits <- ranges(from)[queryHits(from_ol)]
+  ranges <- pmap(from_hits, to_hits)
   space <- names(to_hits)
   if (is.null(space))
     space <- as.character(seq_len(length(to))[subjectHits(from_ol)])
-  new("RangesMapping", hits=from_ol, space=Rle(space),
-      ranges=IRanges(starts, ends))
+  new("RangesMapping", hits = from_ol, space = Rle(space),
+      ranges = ranges)
+})
+
+setMethod("pmap", c("Ranges", "GappedAlignments"), function(from, to) {
+  starts <- .Call("ref_locs_to_query_locs", start(from),
+                  cigar(to), start(to), FALSE, PACKAGE="GenomicRanges")
+  ends <- .Call("ref_locs_to_query_locs", end(from),
+                cigar(to), start(to), TRUE, PACKAGE="GenomicRanges")
+  ends <- pmax(ends, starts - 1L)
+  IRanges(starts, ends)
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

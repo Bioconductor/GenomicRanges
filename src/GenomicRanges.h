@@ -46,7 +46,8 @@ SEXP cigar_to_list_of_IRanges_by_rname(
 SEXP ref_locs_to_query_locs(
         SEXP ref_locs,
         SEXP cigar,
-        SEXP pos
+        SEXP pos,
+        SEXP narrow_left
 );
 
 /* transcript_utils.c */

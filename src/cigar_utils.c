@@ -1083,10 +1083,12 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
  * positions actually occur in the read alignment region, outside of
  * any deletions or insertions. 
  */
-SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
+SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos,
+                            SEXP narrow_left)
 {
   int nlocs, i;
   SEXP query_locs;
+  Rboolean _narrow_left = asLogical(narrow_left);
   
   nlocs = LENGTH(ref_locs);
   PROTECT(query_locs = allocVector(INTSXP, nlocs));
@@ -1113,8 +1115,19 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos)
         break;
         /* Deletion from the reference */
       case 'D':
-      case 'N': /* Skipped region from the reference */
-        query_loc -= OPL;
+      case 'N': /* Skipped region from reference; narrow to query */
+        {
+          Rboolean query_loc_past_gap = query_loc - query_consumed > OPL;
+          if (query_loc_past_gap) {
+            query_loc -= OPL;
+          } else {
+            if (_narrow_left) {
+              query_loc = query_consumed;
+            } else {
+              query_loc = query_consumed + 1;
+            }
+          }
+        }
         break;
        /* Hard clip on the read */
       case 'H':
