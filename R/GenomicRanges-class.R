@@ -555,8 +555,7 @@ setMethod("c", "GenomicRanges",
         if (.ignoreElementMetadata) {
             msg <- c("the '.ignoreElementMetadata' argument is deprecated, ",
                      "please use 'ignore.mcols'\n  instead")
-            .Deprecated(msg=msg)
-            ignore.mcols <- TRUE
+            .Defunct(msg=msg)
         }
         args <- unname(list(x, ...))
         ans_seqinfo <- do.call(merge, lapply(args, seqinfo))
