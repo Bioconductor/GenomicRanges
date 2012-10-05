@@ -64,9 +64,6 @@
 \alias{qnarrow,GappedAlignments-method}
 \alias{narrow,GappedAlignments-method}
 
-% Old stuff (deprecated or defunct):
-\alias{grg}
-
 
 \title{GappedAlignments objects}
 

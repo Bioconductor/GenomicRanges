@@ -45,7 +45,7 @@ export(
     makeGRangesListFromFeatureFragments,
     compare,
     rname, "rname<-", cigar, qwidth,
-    grglist, granges, introns, grg, rglist,
+    grglist, granges, introns, rglist,
     qnarrow,
     GappedAlignments, readGappedAlignments,
     first, last, left, right, isProperPair,
@@ -61,8 +61,6 @@ export(
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
     extractQueryStartInTranscript,
     findCompatibleOverlaps, countCompatibleOverlaps,
-
-    countGenomicOverlaps,
 
     keepSeqlevels, renameSeqlevels,
 

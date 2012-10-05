@@ -777,12 +777,3 @@ setMethod("pmap", c("Ranges", "GappedAlignments"), function(from, to) {
   IRanges(starts, ends)
 })
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Old stuff (deprecated or defunct).
-###
-
-grg <- function(x, ...)
-{
-    .Defunct("granges")
-}
-

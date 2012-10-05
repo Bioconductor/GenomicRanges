@@ -181,10 +181,6 @@ queryLocs2refLocs <- function(qlocs, cigar, pos, flag=NULL)
     stop("NOT IMPLEMENTED YET, SORRY!")
 }
 
-globalToQuery <- function(global, ga) {
-  .Defunct("map")
-}
-
 splitCigar <- function(cigar)
 {
     if (!is.character(cigar)) {

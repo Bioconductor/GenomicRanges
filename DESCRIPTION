@@ -39,7 +39,6 @@ Collate: utils.R
 	GappedAlignmentPairs-class.R
 	SummarizedExperiment-class.R
 	SummarizedExperiment-rowData-methods.R
-	countGenomicOverlaps.R
 	seqlevels-utils.R
 	resolveHits-methods.R
 	summarizeOverlaps.R
