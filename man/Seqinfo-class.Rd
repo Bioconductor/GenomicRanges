@@ -25,6 +25,7 @@
 \alias{genome,Seqinfo-method}
 \alias{genome<-,Seqinfo-method}
 \alias{seqnameStyle,Seqinfo-method}
+\alias{seqnameStyle<-,Seqinfo-method}
 \alias{[,Seqinfo-method}
 \alias{coerce,Seqinfo,GRanges-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
@@ -133,10 +134,12 @@
     }
     \item{}{
       \code{seqnameStyle(x)}:
-      List the matching seqname styles for \code{x}.
+      Get/set the seqname style for \code{x}.
       Note that this information is not stored in \code{x} but inferred
       by looking up \code{seqnames(x)} against a seqname style database
       stored in the seqnames.db metadata package (required).
+      The getter can return more than 1 seqname style (with a warning)
+      in case the style cannot be determined unambiguously.
     }
   }
 }
@@ -234,6 +237,11 @@ seqlengths(x)
 isCircular(x)
 genome(x)
 seqnameStyle(x)  # UCSC
+seqnameStyle(x) <- "NCBI"
+seqlevels(x)
+seqnameStyle(x)  # NCBI (ambiguous)
+seqnameStyle(x) <- "UCSC"
+seqlevels(x)
 
 x[c("chrY", "chr3", "chr1")]  # subset by names
 

@@ -277,11 +277,13 @@
     }
     \item{}{
       \code{seqnameStyle(x)}:
-      List the matching seqname styles for \code{x}.
-      \code{seqnameStyle(x)} is equivalent to \code{seqnameStyle(seqinfo(x))}.
+      Get or set the seqname style for \code{x}.
       Note that this information is not stored in \code{x} but inferred
-      by looking up \code{seqlevels(x)} against a seqname style database
+      by looking up \code{seqnames(x)} against a seqname style database
       stored in the seqnames.db metadata package (required).
+      \code{seqnameStyle(x)} is equivalent to \code{seqnameStyle(seqinfo(x))}
+      and can return more than 1 seqname style (with a warning)
+      in case the style cannot be determined unambiguously.
     }
   }
 }

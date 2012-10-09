@@ -531,21 +531,19 @@ setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
 
 .getSeqnameStyle  <- function(x)
 {
-  ## We load GenomicFeatures to get supportedSeqnames() and
-  ## listAllSupportedSeqnameStyles(), which are currently defined in
-  ## AnnotationDbi but should really be in GenomicFeatures (where the code
-  ## for generating seqnames.db is).
-  library(GenomicFeatures)
+  ## We load AnnotationDbi to get supportedSeqnames() and
+  ## listAllSupportedSeqnameStyles().
+  library(AnnotationDbi)
   seqnames <- seqnames(x)
   ## Get vector of ALL possible chromosome names
-  allNames <- supportedSeqnames()  
+  allNames <- AnnotationDbi::supportedSeqnames()  
   ## compare to seqnames and filter out things that can never match
   seqnames <- seqnames[seqnames %in% allNames]
   if(length(seqnames)==0){
     stop("It is not possibe to match the seqnameStyle of this object to the seqnames.db database")
   }
   ## now compare to all, one style at a time.
-  allseqnameStyles <- listAllSupportedSeqnameStyles()
+  allseqnameStyles <- AnnotationDbi::listAllSupportedSeqnameStyles()
   ## (get match indices for each style)
   .getIndices <- function(style, seqnames){
     match(seqnames, style)
@@ -565,7 +563,35 @@ setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
   res
 }
 
-setMethod("seqnameStyle", "Seqinfo",
-          function(x) .getSeqnameStyle(x)
+setMethod("seqnameStyle", "Seqinfo", .getSeqnameStyle)
+
+setReplaceMethod("seqnameStyle", "Seqinfo",
+    function(x, value)
+    {
+        ## We load AnnotationDbi to get findSequenceRenamingMaps().
+        library(AnnotationDbi)
+        x_seqnames <- seqnames(x)
+        renaming_maps <- AnnotationDbi::findSequenceRenamingMaps(x_seqnames,
+                                                                 value,
+                                                                 drop=FALSE)
+        if (nrow(renaming_maps) == 0L) {
+            msg <- c("found no sequence renaming map compatible ",
+                     "with seqname style \"", value, "\" for this object")
+            stop(msg)
+        }
+        ## Use 1st best renaming map.
+        if (nrow(renaming_maps) != 1L) {
+            msg <- c("found more than one best sequence renaming map ",
+                     "compatible with seqname style \"", value, "\" for ",
+                     "this object, using the first one")
+            warning(msg)
+            renaming_maps <- renaming_maps[1L, , drop=FALSE]
+        }
+        new_seqnames <- as.vector(renaming_maps)
+        na_idx <- which(is.na(new_seqnames))
+        new_seqnames[na_idx] <- x_seqnames[na_idx]
+        seqnames(x) <- new_seqnames
+        x
+    }
 )
 

@@ -254,7 +254,10 @@ setGeneric("seqnameStyle<-", signature="x",
 setReplaceMethod("seqnameStyle", "ANY",
     function(x, value)
     {
-        seqnameStyle(seqinfo(x)) <- value
+        x_seqinfo <- seqinfo(x)
+        seqnameStyle(x_seqinfo) <- value
+        new2old <- seq_len(length(x_seqinfo))
+        seqinfo(x, new2old=new2old) <- x_seqinfo
         x
     }
 )
