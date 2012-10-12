@@ -2,7 +2,13 @@
 ### nearest (and related) methods
 ### -------------------------------------------------------------------------
 ###
-
+### Dependency tree :
+###
+###  distanceToNearest
+###          |
+###       nearest
+###       |     | 
+###  precede   follow
 
 .orderNumeric <- function(x)            # unstable order
     sort.list(x, na.last=NA, method="quick")
@@ -250,8 +256,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
         }
 
         ## choose nearest or not missing
-        pdist <- start(subject)[p] - end(x)
-        fdist <- start(x) - end(subject)[f] 
+        pdist <- abs(start(subject)[p] - end(x))
+        fdist <- abs(start(x) - end(subject)[f]) 
         pnearest <- pdist < fdist
         pnearest[is.na(pnearest)] <- is.na(f)[is.na(pnearest)]
 
