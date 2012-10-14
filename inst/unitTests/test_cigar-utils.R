@@ -121,7 +121,7 @@ test_refLocs2queryLocs <- function() {
   pos <- 525842L
   ref <- 43425L + pos - 1L
   query <- 238L
-  ans <-
-    .Call("ref_locs_to_query_locs", ref, cigar, pos, PACKAGE="GenomicRanges")
+  ans <- .Call("ref_locs_to_query_locs", ref, cigar, pos, FALSE,
+               PACKAGE="GenomicRanges")
   checkIdentical(ans, query)
 }
