@@ -59,58 +59,75 @@
 }
 
 \details{
-\code{precede} identifies which subject(s) the query precedes. Returns the
-index of the range in \code{subject} that is directly preceded by the range
-in \code{x}. When \code{ignore.strand=TRUE}, the strand for both \code{x}
-and \code{subject} are set to \code{"+"}. When \code{select="arbitrary"}
-an integer vector is returned with a single match per \code{x}. If no match
-is found an \code{NA} is returned. When \code{select="all"} a
-\link[IRanges]{Hits} object is returned with all matches for \code{x}.
-If \code{x} does not have a match in \code{subject} the \code{x} is not
-included in the \code{Hits} object. Overlapping ranges are excluded.
-Matching by strand :
-\itemize{
-  \item{}{x on + strand can match to ranges on both + and 
-    * strands. In the case of a tie the first range by order 
-    is chosen.
-  } 
-  \item{}{x on - strand can match to ranges on both - and 
-    * strands. In the case of a tie the first range by order 
-    is chosen.
-  } 
-  \item{}{x on * strand can match to ranges on any of +, 
-    - or * strands. In the case of a tie the first range by
-    order is chosen.
+  \itemize{
+    \item{Orientation and Strand: }{
+      The relevant orientation for \code{precede} and \code{follow} 
+      is 5' to 3', consistent with the direction of translation. 
+      Because positional numbering along a chromosome is from left to 
+      right and transcription takes place from 5' to 3', \code{precede} and 
+      \code{follow} can appear to have 'opposite' behavior on the \code{+}
+      and \code{-} strand. Using positions 5 and 6 as an example, 5 precedes 
+      6 on the \code{+} strand but follows 6 on the '-' strand.
+
+      A range with strand \code{*} can be compared to ranges on either the
+      '+' or '-' strand. Below we outline the priority when ranges 
+      on multiple strands are compared. When \code{ignore.strand=TRUE} all 
+      ranges are treated as if on the '+' strand. 
+      \itemize{
+        \item{}{x on + strand can match to ranges on both + and 
+          * strands. In the case of a tie the first range by order 
+          is chosen.
+        } 
+        \item{}{x on - strand can match to ranges on both - and 
+          * strands. In the case of a tie the first range by order 
+          is chosen.
+        } 
+        \item{}{x on * strand can match to ranges on any of +, 
+          - or * strands. In the case of a tie the first range by
+          order is chosen.
+        }
+      }
+    }
+    \item{precede(): }{Identifies which subject(s) the query precedes. 
+      Returns the index of the range in \code{subject} that is directly 
+      preceded by the range in \code{x}. When \code{ignore.strand=TRUE}, 
+      the strand for both \code{x} and \code{subject} are set to \code{+}. 
+      When \code{select="arbitrary"} an integer vector is returned with a 
+      single match per \code{x}. If no match is found an \code{NA} is returned. 
+      When \code{select="all"} a \link[IRanges]{Hits} object is returned with 
+      all matches for \code{x}. If \code{x} does not have a match in 
+      \code{subject} the \code{x} is not included in the \code{Hits} object. 
+      Overlapping ranges are excluded.
+    }
+    \item{follow(): }{Identifies which subject(s) the query follows. Returns the
+      index of the interval in \code{subject} that is directly followed by the
+      range in \code{x}. When \code{ignore.strand=TRUE}, both \code{x} and
+      \code{subject} strand are set to \code{+}. When \code{select="arbitrary"}
+      an integer vector is returned with a single match per \code{x}. If no 
+      match is found an \code{NA} is returned. When \code{select="all"} a
+      \link[IRanges]{Hits} object is returned with all matches for \code{x}.
+      If \code{x} does not have a match in \code{subject} the \code{x} is not
+      included in the \code{Hits} object. Overlapping ranges are excluded. See
+      the \code{precede} above for details of strand matching.
+    }
+    \item{nearest(): }{Performs conventional nearest neighbor finding. It returns 
+      an integer vector containing the index of the nearest neightbor range in
+      \code{subject} for each range in \code{x}. If there is no nearest neighbor
+      \code{NA} is returned. If \code{ignore.strand=TRUE}, both \code{x} and 
+      \code{subject} strand are set to \code{"+"}. \code{nearest} calls 
+      \code{precede} and \code{follow} and thus the strand matching for \code{*} 
+      follows the conventions documented under those functions. 
+    }
+    \item{distance(): }{Calculates the number of positions separating two 
+      features. The value is zero if the features overlap and \code{NA} if the 
+      features are on different sequences, or different strands (if 
+      \code{ignore.strand} is \code{FALSE}).
+    }
+    \item{distanceToNearest(): }{Returns the distance for each range in \code{x}
+      to its nearest neighbor in the \code{subject}. If \code{ignore.strand=TRUE},
+      both \code{x} and \code{subject} strand are set to \code{+}. 
+    }
   }
-}
-
-\code{follow} identifies which subject(s) the query follows. Returns the
-index of the interval in \code{subject} that is directly followed by the
-range in \code{x}. When \code{ignore.strand=TRUE}, both \code{x} and
-\code{subject} strand are set to \code{"+"}.  When \code{select="arbitrary"}
-an integer vector is returned with a single match per \code{x}. If no match
-is found an \code{NA} is returned. When \code{select="all"} a
-\link[IRanges]{Hits} object is returned with all matches for \code{x}.
-If \code{x} does not have a match in \code{subject} the \code{x} is not
-included in the \code{Hits} object. Overlapping ranges are excluded. See
-the \code{precede} above for details of strand matching.
-
-\code{nearest} does conventional nearest neighbor finding. It returns an
-integer vector containing the index of the nearest neightbor range in
-\code{subject} for each range in \code{x}. If there is no nearest neighbor
-\code{NA} is returned. If \code{ignore.strand=TRUE}, both \code{x} and 
-\code{subject} strand are set to \code{"+"}. \code{nearest} calls 
-\code{precede} and \code{follow} and thus the strand matching for \code{*} 
-follows the conventions documented under those functions. 
-
-\code{distance} calculates the number of positions separating two features.
-The value is zero if the features overlap and \code{NA} if the features
-are on different sequences, or different strands (if \code{ignore.strand} is
-\code{FALSE}).
-
-\code{distanceToNearest} returns the distance for each range in \code{x}
-to its nearest neighbor in the \code{subject}. If \code{ignore.strand=TRUE},
-both \code{x} and \code{subject} strand are set to \code{"+"}. 
 }
 
 \author{P. Aboyoun and V. Obenchain <vobencha@fhcrc.org>}
@@ -146,6 +163,11 @@ subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
                         rep(c("+", "-", "*"), 2))
 precede(query, subject)
 precede(query, rev(subject))
+
+## ignore.strand=TRUE treats all ranges as '+'
+precede(query[1], subject[4:6], select="all", ignore.strand=FALSE)
+precede(query[1], subject[4:6], select="all", ignore.strand=TRUE)
+
 
 ## ------------------------------------------
 ## nearest()
