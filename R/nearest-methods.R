@@ -306,8 +306,6 @@ setMethod("distance", c("GenomicRanges", "GenomicRanges"),
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
-        if (length(x) != length(y))
-            stop("'x' and 'y' must have the same length")
         d <- distance(ranges(x), ranges(y))
         mismtch <- as.character(seqnames(x)) != as.character(seqnames(y))
         if (any(mismtch))

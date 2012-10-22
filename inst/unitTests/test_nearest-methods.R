@@ -217,8 +217,13 @@ test_GenomicRanges_nearest <- function()
     checkEquals(nearest(q, s), 1L) 
 }
 
+quiet <- suppressWarnings
 test_GenomicRanges_distance <- function()
 {
+    ## empty
+    checkException(quiet(distance(GRanges())), silent=TRUE)
+    checkIdentical(quiet(distance(GRanges(), GRanges())), integer()) 
+
     g1 <- GRanges(seqnames = c(rep("chr1", 3), rep("chr2", 2)),
         ranges = IRanges(rep(1, 5),  width=3),
         strand = c("+", "-", "*", "*", "*"))
@@ -227,43 +232,68 @@ test_GenomicRanges_distance <- function()
         ranges = IRanges(rep(5, 5),  width=3),
         strand = c("+", "-", "*", "-", "+"))
 
-    current <- distance(g1, g2)
-    target <- c(2L, 2L, 2L, 2L, 2L)
+    current <- quiet(distance(g1, g2))
+    target <- rep(1L, length(current))
     checkIdentical(current, target)
 
     strand(g2[1]) <- "-"
-    current <- distance(g1[1], g2[1])
+    current <- quiet(distance(g1[1], g2[1]))
     checkTrue(is.na(current))
 
     seqnames(g2[4]) <- factor("chr1", levels=c("chr1", "chr2")) 
-    current <- distance(g1[4], g2[4])
+    current <- quiet(distance(g1[4], g2[4]))
     checkTrue(is.na(current))
+
+    ## adjacent, overlap, separated by 1
+    query <- GRanges("A", IRanges(c(1, 3, 9), c(2, 7, 10)))
+    subject <- GRanges("A", IRanges(c(3, 5, 12), c(3, 6, 12)))
+    checkIdentical(quiet(distance(query, subject)), c(0L, 0L, 1L))
+
+    ## recycling
+    checkIdentical(quiet(distance(query[1:2], subject)),
+                   c(0L, 0L, 9L))
+
+    ## zero-width
+    target <- abs(-3:3)
+    current <- sapply(-3:3, function(i)
+                   quiet(distance(shift(IRanges(4,3), i), IRanges(4,3))))
+    checkIdentical(current, target)
+    query <- GRanges("A", IRanges(4,3))
+    subject <-  GRanges("A", IRanges(3,4))
+    current <- quiet(distance(query, subject))
+    checkIdentical(current, 0L)
 }
 
 test_GenomicRanges_distanceToNearest <- function()
 {
+    target <- DataFrame(queryHits=integer(),
+                        subjectHits=integer(),
+                        distance=integer())
+    current <- quiet(distanceToNearest(GRanges()))
+    checkIdentical(current, target)
+
     x <- GRanges("chr1", IRanges(c(1, 5, 10), width=1))
     subject <- GRanges("chr1", IRanges(c(3, 12), width=1))
-    current <- distanceToNearest(x, subject)
+    current <- quiet(distanceToNearest(x, subject))
     target <- c(1L, 1L, 2L) 
     checkIdentical(target, current$subjectHits)
 
     strand(x) <- "+"
     strand(subject) <- c("+", "-")
-    current <- distanceToNearest(x, subject)
+    current <- quiet(distanceToNearest(x, subject))
     target <- c(1L, 1L, 1L) 
     checkIdentical(target, current$subjectHits)
-    current <- distanceToNearest(x, subject, ignore.strand=TRUE)
+    current <- quiet(distanceToNearest(x, subject, ignore.strand=TRUE))
     target <- c(1L, 1L, 2L) 
     checkIdentical(target, current$subjectHits)
 
     ## no self-hits
-    current <- distanceToNearest(x)
+    current <- quiet(distanceToNearest(x))
     target <- c(2L, 1L, 2L) 
     checkIdentical(target, current$subjectHits)
 
     ## self-hits
-    current <- distanceToNearest(x, x)
+    current <- quiet(distanceToNearest(x, x))
     target <- c(1L, 2L, 3L) 
     checkIdentical(target, current$subjectHits)
 }
