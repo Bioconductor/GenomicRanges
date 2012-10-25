@@ -204,6 +204,13 @@ test_GenomicRanges_nearest <- function()
     target2 <- nearest(q, s, select="all")
     checkEquals(target1, target2)
 
+    ## select = 'all'
+    q <- GRanges("chr1", IRanges(1, 1))
+    s <- GRanges("chr1", IRanges(5, 5), strand="-")
+    target1 <- nearest(ranges(q), ranges(s), select="all")
+    target2 <- nearest(q, s, select="all")
+    checkEquals(target1, target2) 
+
     ## ignore.strand
     q <- GRanges("chr1", IRanges(5, width=1), "+")
     s <- GRanges("chr1", IRanges(c(10, 8), width=1), "-")
@@ -214,7 +221,8 @@ test_GenomicRanges_nearest <- function()
 
     q <- GRanges("chr1", IRanges(5, 5))
     s <- GRanges("chr1", IRanges(c(6,7), c(6,7)), c("+", "-"))
-    checkEquals(nearest(q, s), 1L) 
+    checkEquals(nearest(q, s), 1L)
+
 }
 
 quiet <- suppressWarnings
