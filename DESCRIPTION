@@ -6,7 +6,7 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.11.5
+Version: 1.11.6
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
@@ -18,7 +18,7 @@ Suggests: AnnotationDbi (>= 1.21.1),  Biostrings (>= 2.25.3),
 	VariantAnnotation, edgeR, DESeq, DEXSeq,
 	EatonEtAlChIPseq (>= 0.0.3), leeBamViews,
 	pasilla, pasillaBamSubset,
-	org.Sc.sgd.db, TxDb.Dmelanogaster.UCSC.dm3.ensGene,
+	org.Sc.sgd.db, TxDb.Dmelanogaster.UCSC.dm3.ensGene, seqnames.db,
 	BSgenome.Scerevisiae.UCSC.sacCer2, BSgenome.Dmelanogaster.UCSC.dm3, 
 	RUnit, digest
 License: Artistic-2.0

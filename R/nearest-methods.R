@@ -4,9 +4,9 @@
 ###
 ### Dependency tree :
 ###
-###  distanceToNearest
-###          |
-###       nearest
+###        distanceToNearest
+###          |          |
+###       nearest    distance
 ###       |     | 
 ###  precede   follow
 
@@ -213,7 +213,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
 ### nearest()
 ###
 
-.filterMatchMatrix <- function(m, i) 
+.filterMatchMatrix <- function(m, i, map) 
 {
     qrle <- Rle(m[, 1L])
     qstart <- qend <- integer(length(i))
@@ -264,8 +264,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
         if (select == "all") {
             map <- which(is.na(olv))
             pnearest[pdist == fdist] <- TRUE
-            m <- rbind(m, .filterMatchMatrix(pmat, pnearest), 
-                .filterMatchMatrix(fmat, !pnearest))
+            m <- rbind(m, .filterMatchMatrix(pmat, pnearest, map), 
+                .filterMatchMatrix(fmat, !pnearest, map))
             m <- m[IRanges:::orderIntegerPairs(m[, 1L], m[, 2L]), , 
                 drop = FALSE]
             ol@queryHits <- unname(m[, 1L])
