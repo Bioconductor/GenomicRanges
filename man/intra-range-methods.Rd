@@ -8,6 +8,7 @@
 \alias{resize,GenomicRanges-method}
 \alias{Ops,GenomicRanges,numeric-method}
 \alias{restrict,GenomicRanges-method}
+\alias{trim,GenomicRanges-method}
 
 
 \title{Intra range transformations of a GenomicRanges object}
@@ -39,6 +40,8 @@
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE,
         use.names=TRUE)
+
+\S4method{trim}{GenomicRanges}(x, use.names=TRUE)
 }
 
 \arguments{
@@ -86,6 +89,10 @@ ranges to be resticted or a numeric vector or length 1 if the restriction
 operation is to be applied to all the sequences in \code{x}.
 See \code{?`\link[IRanges]{intra-range-methods}`} for more information
 about range restriction and for a description of the optional arguments.
+
+\code{trim} subsets the ranges in \code{x} to fall within the valid
+seqlengths. If no seqlenths are present, negative start values are set 
+to 1L and end values are not touched.
 }
 
 \author{P. Aboyoun}

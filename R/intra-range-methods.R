@@ -12,15 +12,24 @@ setMethod("shift", "GenomicRanges",
     function(x, shift=0L, use.names=TRUE)
     {
         ranges <- shift(ranges(x), shift, use.names=use.names)
-        if (!IRanges:::anyMissing(seqlengths(x))) {
-            end(x, check=FALSE) <- end(ranges)
-            start(x) <- pmin.int(start(ranges), end(x))
-        } else {
-            x <- clone(x, ranges=ranges)
-        }
-        x
+
+        withCallingHandlers({
+            clone(x, ranges=ranges) 
+        }, warning=function(warn) {
+            msg <- conditionMessage(warn)
+            exp <- gettext("'ranges' contains values outside of sequence bounds",
+                           domain="R")
+            if (msg == exp) {
+                msg <- paste0(msg, ". See ?trim to subset ranges within",
+                              " sequence bounds.")
+                warning(simpleWarning(msg, conditionCall(warn)))
+                invokeRestart("muffleWarning")
+            } else {
+                warn
+            }
+        })
     }
-)
+) 
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,6 +108,25 @@ setMethod("resize", "GenomicRanges",
         } else {
             x <- clone(x, ranges=ranges)
         }
+        x
+    }
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### trim()
+###
+
+setMethod("trim", "GenomicRanges",
+    function(x, use.names=TRUE)
+    {
+        end <- NA
+        if (any(!is.na(seqlengths(x)))) {
+            idx <- match(as.character(seqnames(x)), names(seqlengths(x)))
+            end <- seqlengths(x)[idx]
+        }
+        x@ranges <- restrict(ranges(x), start=1L, end=end,
+                             keep.all.ranges=TRUE,
+                             use.names=use.names)
         x
     }
 )

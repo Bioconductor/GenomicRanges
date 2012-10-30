@@ -134,20 +134,22 @@ minus strand and vice versa with those alignments on the minus strand.
 
 This filtering process can be achieved through an interval overlap
 operation between the starts of the alignments on the minus strand
-and the projected end of the alignments on the plus strand, where
-the former can be derived by the code
 
 <<EatonNegStarts>>=
 negRangesRep1 <- rangesRep1[strand(rangesRep1) == "-"]
 negStartsRep1 <- resize(negRangesRep1, 1)
 @
 
-\noindent
-and the latter by the code
+\noindent 
+and the projected end of the alignments on the plus strand.
+Note: As of GenomicRanges >= 1.11.7, shift() no longer
+trims out of bound ranges. Because of this, we have a little
+more work to do for the positive strand ends.
 
 <<EatonPossibleEnds>>=
 posRangesRep1 <- rangesRep1[strand(rangesRep1) == "+"]
 posEndsRep1 <- shift(posRangesRep1, 99)
+posEndsRep1 <- trim(posRangesRep1)
 posEndsRep1 <- resize(posEndsRep1, 100)
 strand(posEndsRep1) <- "-"
 @
