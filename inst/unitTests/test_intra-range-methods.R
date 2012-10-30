@@ -25,13 +25,21 @@ test_GenomicRanges_shift <- function()
 
     ## seqlength and circularity
     gr <- GRanges("chr1", IRanges(5, width=6))
-    seqlengths(gr) <- 20 
-    checkIdentical(start(shift(gr, -10)), -5L)
     isCircular(gr) <- TRUE 
-    seqlengths(gr) <- NA
     checkIdentical(start(shift(gr, -10)), -5L)
 
     seqlengths(gr) <- 20 
+    isCircular(gr) <- NA
+    warn <- FALSE 
+    res <- withCallingHandlers({
+        shift(gr, -10) 
+    }, warning=function(w) {
+        warn <<- TRUE 
+        invokeRestart("muffleWarning")
+    })
+    checkTrue(warn == TRUE)
+    checkIdentical(start(res), -5L)
+
     isCircular(gr) <- FALSE 
     warn <- FALSE 
     res <- withCallingHandlers({

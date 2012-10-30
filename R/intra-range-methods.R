@@ -119,14 +119,13 @@ setMethod("resize", "GenomicRanges",
 setMethod("trim", "GenomicRanges",
     function(x, use.names=TRUE)
     {
-        end <- NA
+        end <- NA_integer_
         if (any(!is.na(seqlengths(x)))) {
             idx <- match(as.character(seqnames(x)), names(seqlengths(x)))
             end <- seqlengths(x)[idx]
         }
-        x@ranges <- restrict(ranges(x), start=1L, end=end,
-                             keep.all.ranges=TRUE,
-                             use.names=use.names)
+        x@ranges <- restrict(ranges(x), start=1L, end=end, 
+                             keep.all.ranges=TRUE, use.names=use.names)
         x
     }
 )

@@ -145,10 +145,8 @@ valid.GenomicRanges.seqinfo <- function(x)
         return("'seqlengths(x)' contains negative values")
     ## We check only the ranges that are on a non-circular sequence with
     ## a known length.
-    #x_isCircular <- isCircular(x_seqinfo) & is.na(isCircular(x_seqinfo))
-    notna <- !is.na(isCircular(x_seqinfo))
-    x_isCircular <- isCircular(x_seqinfo)[notna]
-    non_circ_seqs <- names(x_isCircular)[!x_isCircular]
+    x_isCircular <- isCircular(x_seqinfo)
+    non_circ_seqs <- names(x_isCircular)[!(x_isCircular %in% TRUE)]
     ncswkl <- intersect(non_circ_seqs, seqs_with_known_length)
     if (length(ncswkl) == 0L)
         return(NULL)
