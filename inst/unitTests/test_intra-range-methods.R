@@ -23,7 +23,7 @@ test_GenomicRanges_shift <- function()
     checkIdentical(IRanges(8, 18), ranges(shift(gr, -12)))
     checkIdentical(IRanges(98, 108), ranges(shift(gr, 78)))
 
-    ## seqlength and circularity
+    ## seqlength and circularity combos
     gr <- GRanges("chr1", IRanges(5, width=6))
     isCircular(gr) <- TRUE 
     checkIdentical(start(shift(gr, -10)), -5L)
@@ -56,20 +56,35 @@ test_GenomicRanges_trim <- function()
 {
     checkIdentical(trim(GRanges()), GRanges())
 
-    gr <- GRanges("chr1", IRanges(5, width=6))
-    seqlengths(gr) <- 20 
-    s <- suppressWarnings(shift(gr, -20))
-    checkIdentical(width(trim(s)), 0L)
-    s <- suppressWarnings(shift(gr, -7)) 
-    checkIdentical(start(trim(s)), 1L)
+    ## no seqlengths
+    gr <- make_test_GRanges()
+    checkIdentical(trim(gr), gr)
 
-    gr <- GRanges(c("chr1", "chr2", "chr3"), IRanges(1:3, width=10))
+    ## seqlengths, isCircular NA and FALSE
     seqlengths(gr) <- c(10, NA, 20)
-    s <- suppressWarnings(shift(gr, 5))
-    checkIdentical(start(trim(s)), start(s))
-    checkIdentical(end(trim(s)), c(10L, 16L, 17L)) 
-}
+    spos <- suppressWarnings(shift(gr, 5))
+    tend <- end(trim(spos))
+    checkIdentical(tend, c(10L, rep(15L, 3), 10L, 10L, rep(15L, 4)))
+    isCircular(gr)["chr1"] <- FALSE
+    spos <- suppressWarnings(shift(gr, 5))
+    tend <- end(trim(spos))
+    checkIdentical(tend, c(10L, rep(15L, 3), 10L, 10L, rep(15L, 4)))
 
+    ## seqlengths, isCircular TRUE 
+    gr <- make_test_GRanges()
+    seqlengths(gr) <- c(10, NA, 20)
+    isCircular(gr)["chr1"] <- TRUE 
+    spos <- suppressWarnings(shift(gr, 5))
+    tend <- end(trim(spos))
+    checkIdentical(tend, end(spos))
+    spos <- suppressWarnings(shift(gr, 15))
+    tend <- end(trim(spos))
+    checkIdentical(tend, c(rep(25L, 6), rep(20L, 4)))
+    isCircular(gr)["chr3"] <- TRUE 
+    spos <- suppressWarnings(shift(gr, 15))
+    tend <- end(trim(spos))
+    checkIdentical(tend, end(spos))
+}
 
 test_GenomicRanges_flank <- function()
 {
