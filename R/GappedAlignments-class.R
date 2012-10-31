@@ -777,3 +777,13 @@ setMethod("pmap", c("Ranges", "GappedAlignments"), function(from, to) {
   IRanges(starts, ends)
 })
 
+setGeneric("prmap", function(from, to) standardGeneric("prmap"))
+
+setMethod("prmap", c("Ranges", "GappedAlignments"), function(from, to) {
+  starts <- .Call("query_locs_to_ref_locs", start(from),
+                  cigar(to), start(to), FALSE, PACKAGE="GenomicRanges")
+  ends <- .Call("query_locs_to_ref_locs", end(from),
+                cigar(to), start(to), TRUE, PACKAGE="GenomicRanges")
+  ends <- pmax(ends, starts - 1L)
+  IRanges(starts, ends)
+})

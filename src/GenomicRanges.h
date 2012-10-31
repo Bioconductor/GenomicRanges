@@ -50,6 +50,13 @@ SEXP ref_locs_to_query_locs(
         SEXP narrow_left
 );
 
+SEXP query_locs_to_ref_locs(
+        SEXP query_locs,
+        SEXP cigar,
+        SEXP pos,
+        SEXP narrow_left
+);
+
 /* transcript_utils.c */
 
 SEXP transcript_widths(

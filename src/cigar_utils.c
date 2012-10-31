@@ -1079,6 +1079,7 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
  *   cigar: character string containing the extended CIGAR;
  *   pos: reference position at which the query alignment begins
  *        (after clip)
+ *   narrow_left: whether to narrow to the left (or right) side of a gap
  * Returns the local query positions. This assumes that the reference
  * positions actually occur in the read alignment region, outside of
  * any deletions or insertions. 
@@ -1147,4 +1148,86 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos,
 
   UNPROTECT(1);
   return query_locs;
+}
+
+
+/****************************************************************************
+ * --- .Call ENTRY POINT ---
+ * Args:
+ *   query_locs: local positions in the read that we will map
+ *   cigar: character string containing the extended CIGAR;
+ *   pos: reference position at which the query alignment begins
+ *        (after clip)
+ *   narrow_left: whether to narrow to the left (or right) side of a gap
+ * Returns the local query positions. This assumes that the reference
+ * positions actually occur in the read alignment region, outside of
+ * any deletions or insertions. 
+ */
+SEXP query_locs_to_ref_locs(SEXP query_locs, SEXP cigar, SEXP pos,
+                            SEXP narrow_left)
+{
+  int nlocs, i;
+  SEXP ref_locs;
+  Rboolean _narrow_left = asLogical(narrow_left);
+  
+  nlocs = LENGTH(query_locs);
+  PROTECT(ref_locs = allocVector(INTSXP, nlocs));
+  
+  for (i = 0; i < nlocs; i++) {
+    int query_loc_i = INTEGER(query_locs)[i];
+    int ref_loc = query_loc_i + INTEGER(pos)[i] - 1;
+    int n, offset = 0, OPL, query_consumed = 0;
+    char OP;
+    const char *cig0 = CHAR(STRING_ELT(cigar, i));
+    while (query_consumed < query_loc_i &&
+           (n = get_next_cigar_OP(cig0, offset, &OPL, &OP)))
+      {
+        switch (OP) {
+          /* Alignment match (can be a sequence match or mismatch) */
+        case 'M': case '=': case 'X':
+          query_consumed += OPL;
+          break;
+          /* Insertion to the reference */
+        case 'I': {
+          /* Soft clip on the read */
+          int width_from_insertion_start = query_loc_i - query_consumed;
+          Rboolean query_loc_past_insertion = width_from_insertion_start > OPL;
+          if (query_loc_past_insertion) {
+            ref_loc -= OPL;
+          } else {
+            ref_loc -= width_from_insertion_start;
+            if (!_narrow_left) {
+              ref_loc += 1;
+            }
+          }
+          query_consumed += OPL;
+          break;
+        }
+        case 'S':
+          query_consumed += OPL;
+          ref_loc -= OPL;
+          break;
+          /* Deletion from the reference */
+        case 'D':
+        case 'N': /* Skipped region from reference; narrow to query */
+          ref_loc += OPL;
+          break;
+          /* Hard clip on the read */
+        case 'H':
+          break;
+          /* Silent deletion from the padded reference */
+        case 'P':
+          break;
+        default:
+          break;
+        }
+        offset += n;
+      }
+    if (n == 0)
+      error("hit end of cigar string %d: %s", i + 1, cig0);
+    INTEGER(ref_locs)[i] = ref_loc;
+  }
+
+  UNPROTECT(1);
+  return ref_locs;
 }
