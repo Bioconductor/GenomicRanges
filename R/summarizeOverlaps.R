@@ -2,7 +2,6 @@
 ## summarizeOverlaps methods and related utilities
 ## -------------------------------------------------------------------------
 
-
 setGeneric("summarizeOverlaps", signature=c("features", "reads"),
     function(features, reads, mode=Union, ignore.strand=FALSE, ...)
 {
@@ -20,6 +19,8 @@ setGeneric("summarizeOverlaps", signature=c("features", "reads"),
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
+    if (all(strand(reads) == "*"))
+        ignore.strand <- TRUE
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
@@ -29,6 +30,8 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
 setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
+    if (all(strand(reads) == "*"))
+        ignore.strand <- TRUE
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
@@ -42,6 +45,8 @@ setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
 setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
+    if (all(strand(reads) == "*"))
+        ignore.strand <- TRUE
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
@@ -51,6 +56,8 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
 setMethod("summarizeOverlaps", c("GRanges", "GappedAlignmentPairs"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
+    if (all(strand(reads) == "*"))
+        ignore.strand <- TRUE
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
@@ -73,7 +80,7 @@ Union <- function(reads, features, ignore.strand=FALSE, ...)
     counts 
 }
 
-IntersectionStrict <- function(reads, features, ignore.strand = FALSE, ...)
+IntersectionStrict <- function(reads, features, ignore.strand=FALSE, ...)
 {
     queryseq <- seqlevels(reads)
     circular <- isCircular(features)
@@ -143,7 +150,7 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
 {
     ## unique disjoint regions
     if (class(features) == "GRangesList")
-        d <- disjoin(features@unlistData)
+        d <- disjoin(features@unlistData, ignore.strand=ignore.strand)
     else
         d <- disjoin(features)
     coUnq <- countOverlaps(d, features, ignore.strand=ignore.strand)

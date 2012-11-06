@@ -124,7 +124,19 @@ test_summarizeOverlaps_IntersectionNotEmpty_single <- function()
     checkIdentical(c(1L, 0L), .getCounts(res)) 
     ann <- GRanges("chr1", IRanges(c(5, 12), c(18, 25)), "+") 
     res <- summarizeOverlaps(ann, ga, mode)
-    checkIdentical(c(0L, 0L), .getCounts(res)) 
+    checkIdentical(c(0L, 0L), .getCounts(res))
+
+    ann <- GRanges(rep("chr1", 3), IRanges(c(1L, 20L, 20L), 
+        width=c(50, 11, 11)), c("+", "+", "-")) 
+    ga <- GappedAlignments("chr1", 23L, "5M", strand("*"))
+    res <- summarizeOverlaps(ann, ga, mode)
+    checkIdentical(c(0L, 0L, 0L), .getCounts(res))
+    strand(ga) <- "-"
+    res <- summarizeOverlaps(ann, ga, mode)
+    checkIdentical(c(0L, 0L, 1L), .getCounts(res))
+    ga <- GappedAlignments("chr1", 28L, "5M", strand("+"))
+    res <- summarizeOverlaps(ann, ga, mode)
+    checkIdentical(c(1L, 0L, 0L), .getCounts(res))
 }
 
 test_summarizeOverlaps_IntersectionNotEmpty_paired <- function()
