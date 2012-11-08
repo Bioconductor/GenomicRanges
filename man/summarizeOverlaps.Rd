@@ -47,8 +47,8 @@
     can handle single or paired-end reads by appropriately specifying the
     \code{singleEnd} argument. Currently \code{singleEnd} is set once for 
     all files in the list (i.e., the list cannot contain both single and 
-    paired-end read files.). 
-    See ?\code{summerizeOverlaps,GRanges,BamFileList-method}.
+    paired-end read files.). For examples of iterating over Bam files 
+    See ?\code{summarizeOverlaps,GRanges,BamFileList-method}.
   }
   \item{mode}{
     Character name of a function that defines the counting method to be used. 
