@@ -295,13 +295,17 @@ test_GenomicRanges_distanceToNearest <- function()
     target <- c(1L, 1L, 2L) 
     checkIdentical(target, current$subjectHits)
 
-    ## no self-hits
+    ## no self-hits / self-hits
     current <- quiet(distanceToNearest(x))
     target <- c(2L, 1L, 2L) 
     checkIdentical(target, current$subjectHits)
-
-    ## self-hits
     current <- quiet(distanceToNearest(x, x))
     target <- c(1L, 2L, 3L) 
     checkIdentical(target, current$subjectHits)
+
+    ## retain NAs
+    x <- GRanges(c("chr1", "chr2"), IRanges(c(1, 5), width=1))
+    current <- quiet(distanceToNearest(x, x[1]))
+    checkIdentical(c(1L, NA), current$subjectHits)
+    checkIdentical(c(0L, NA), current$distance)
 }

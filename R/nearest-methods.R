@@ -346,10 +346,12 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
         DataFrame(queryHits=integer(), subjectHits=integer(),
                   distance=integer())
     } else {
-        queryHits=seq(length(x))[!is.na(x_nearest)]
-        subjectHits=na.omit(x_nearest)
-        distance=distance(x[!is.na(x_nearest)], subject[na.omit(x_nearest)],
-                          ignore.strand=ignore.strand)
+        idx <- !is.na(x_nearest) 
+        queryHits=seq_len(length(x_nearest))
+        subjectHits=x_nearest
+        distance <- rep(NA_integer_, length(x_nearest))
+        distance[idx]=distance(x[idx], subject[na.omit(x_nearest)],
+                               ignore.strand=ignore.strand)
         DataFrame(queryHits, subjectHits, distance)
     }
 }

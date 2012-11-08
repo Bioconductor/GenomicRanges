@@ -152,9 +152,9 @@
 }
 
 \examples{
-  ## ------------------------------------------
+  ## -----------------------------------------------------------
   ## precede() and follow()
-  ## ------------------------------------------
+  ## -----------------------------------------------------------
   query <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
   subject <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
                           strand=c("+", "+", "-", "-"))
@@ -177,9 +177,9 @@
   precede(query[1], subject[4:6], select="all", ignore.strand=TRUE)
 
 
-  ## ------------------------------------------
+  ## -----------------------------------------------------------
   ## nearest()
-  ## ------------------------------------------
+  ## -----------------------------------------------------------
   ## When multiple ranges overlap an "arbitrary" range is chosen
   query <- GRanges("A", IRanges(5, 15))
   subject <- GRanges("A", IRanges(c(1, 15), c(5, 19)))
@@ -195,9 +195,9 @@
   ## Ranges in 'x' will not self-select when 'subject' is missing
   nearest(query)
 
-  ## ------------------------------------------
-  ## distance()
-  ## ------------------------------------------
+  ## -----------------------------------------------------------
+  ## distance(), distanceToNearest()
+  ## -----------------------------------------------------------
   ## Adjacent, overlap, separated by 1
   query <- GRanges("A", IRanges(c(1, 2, 10), c(5, 8, 11)))
   subject <- GRanges("A", IRanges(c(6, 5, 13), c(10, 10, 15)))
@@ -209,7 +209,11 @@
   ## zero-width ranges
   zw <- GRanges("A", IRanges(4,3))
   stopifnot(distance(zw, GRanges("A", IRanges(3,4))) == 0L)
-  sapply(-3:3, function(i) distance(shift(zw, i), GRanges("A", IRanges(4,3))))
+  sapply(-3:3, function(i) 
+      distance(shift(zw, i), GRanges("A", IRanges(4,3))))
+
+  query <- GRanges(c("A", "B"), IRanges(c(1, 5), width=1))
+  distanceToNearest(query, subject)
 }
  
 \keyword{utilities}
