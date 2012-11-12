@@ -86,8 +86,7 @@
       containing the metadata columns. Columns cannot be named
       \code{"seqnames"}, \code{"ranges"}, \code{"strand"},
       \code{"seqlevels"}, \code{"seqlengths"}, \code{"isCircular"},
-      \code{"genome"}, \code{"start"}, \code{"end"}, \code{"width"},
-      or \code{"element"}.}
+      \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
     \item{\code{seqinfo}}{a \link{Seqinfo} object containing information
       about the set of genomic sequences present in the GRanges object.}
   }

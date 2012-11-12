@@ -112,10 +112,13 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
     NULL
 }
 
-## NOTE: This list is also included in the man page for GRanges objects.
-## Keep the 2 lists in sync!
+### NOTE: This list is also included in the man page for GRanges objects.
+### Keep the 2 lists in sync!
+### We don't put "genome" in that list in order to facilitate import of GFF3
+### files as GRanges objects (see ?import.gff3 in rtracklayer).
 INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
-                         "seqlevels", "seqlengths", "isCircular", "genome",
+                         "seqlevels", "seqlengths", "isCircular",
+                         #"genome",
                          "start", "end", "width", "element")
 
 .valid.GenomicRanges.mcols <- function(x)
