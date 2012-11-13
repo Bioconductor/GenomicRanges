@@ -12,24 +12,9 @@ setMethod("shift", "GenomicRanges",
     function(x, shift=0L, use.names=TRUE)
     {
         ranges <- shift(ranges(x), shift, use.names=use.names)
-
-        withCallingHandlers({
-            clone(x, ranges=ranges) 
-        }, warning=function(warn) {
-            msg <- conditionMessage(warn)
-            exp <- gettext("'ranges' contains values outside of sequence bounds",
-                           domain="R")
-            if (msg == exp) {
-                msg <- paste0(msg, ". See ?trim to subset ranges within",
-                              " sequence bounds.")
-                warning(simpleWarning(msg, conditionCall(warn)))
-                invokeRestart("muffleWarning")
-            } else {
-                warn
-            }
-        })
+        clone(x, ranges=ranges) 
     }
-) 
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

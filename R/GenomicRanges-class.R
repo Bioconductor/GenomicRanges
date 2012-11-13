@@ -160,7 +160,8 @@ valid.GenomicRanges.seqinfo <- function(x)
     if (any(minStarts[ncswkl] < 1L, na.rm=TRUE)
      || any(maxEnds[ncswkl] >
             seqlengths(x)[ncswkl], na.rm=TRUE))
-        warning("'ranges' contains values outside of sequence bounds")
+        warning("'ranges' contains values outside of sequence bounds. ",
+                "See ?trim to subset ranges.")
     NULL
 }
 
