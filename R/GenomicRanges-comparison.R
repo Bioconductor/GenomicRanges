@@ -164,24 +164,11 @@ setMethod("compare", c("GenomicRanges", "GenomicRanges"),
     function(x, y) .GenomicRanges.compare(x, y)
 )
 
-### There is a "!=" method for ANY,ANY defined in IRanges.
 setMethod("==", signature(e1="GenomicRanges", e2="GenomicRanges"),
     function(e1, e2) { .GenomicRanges.compare(e1, e2) == 0L }
 )
 
 setMethod("<=", signature(e1="GenomicRanges", e2="GenomicRanges"),
     function(e1, e2) { .GenomicRanges.compare(e1, e2) <= 0L }
-)
-
-### TODO: Define methods for ANY,ANY (in IRanges) instead of the 3 following
-### methods.
-setMethod(">=", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { e2 <= e1 }
-)
-setMethod("<", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { !(e2 <= e1) }
-)
-setMethod(">", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { !(e1 <= e2) }
 )
 
