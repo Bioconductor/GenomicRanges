@@ -65,8 +65,9 @@
 
 .coverage.seq <- function(seqlength, isCircular, rg, shift, width, weight)
 {
-    if (length(rg) == 0L)
-        return(Rle(0L, if (is.na(width)) 0L else width))
+    ## A shortcut for a common situation. Is it worth it?
+    if (length(rg) == 0L && is.na(width))
+        return(Rle(weight, 0L))
     if (isCircular %in% TRUE)
         circle.length <- seqlength
     else
