@@ -52,15 +52,28 @@
 .coverage.circle <- function(circle.length, rg, shift, width, weight)
 {
     if (is.na(circle.length))
-        return(coverage(rg, shift = shift, width = width, weight = weight))
-    cvg <- fold(coverage(rg, weight = weight),
-                circle.length, from = 1L - shift)
+        return(coverage(rg, shift=shift, width=width, weight=weight))
+    cvg <- fold(coverage(rg, weight=weight),
+                circle.length, from=1L-shift)
     if (is.null(width))
         return(cvg)
     if (width > length(cvg))
         stop("invalid width (", width, ") ",
              "for circular sequence ", names(circle.length))
     cvg[seq_len(width)]
+}
+
+.coverage.seq <- function(seqlength, isCircular, rg, shift, width, weight)
+{
+    if (length(rg) == 0L)
+        return(Rle(0L, if (is.na(width)) 0L else width))
+    if (isCircular %in% TRUE)
+        circle.length <- seqlength
+    else
+        circle.length <- NA
+    if (is.na(width))
+        width <- NULL
+    .coverage.circle(circle.length, rg, shift, width, weight)
 }
 
 setMethod("coverage", "GenomicRanges",
@@ -80,24 +93,20 @@ setMethod("coverage", "GenomicRanges",
             weight <- x_mcols[[weight]]
         }
         weight <- .coverage.normargShiftOrWeight(weight, "weight", x)
-        seqlevels <- seqlevels(x)
-        xSplitRanges <- splitRanges(seqnames(x))
-        xRanges <- unname(ranges(x))
-        ans <- IRanges:::newList("SimpleRleList",
-                 lapply(structure(seqlevels, names = seqlevels),
-                        function(i) {
-                          rg <- seqselect(xRanges, xSplitRanges[[i]])
-                          if (isCircular(x)[i] %in% TRUE)
-                            circle.length <- seqlengths(x)[i]
-                          else
-                            circle.length <- NA
-                          width_i <- width[[i]]
-                          if (is.na(width_i))
-                            width_i <- NULL
-                          .coverage.circle(circle.length, rg,
-                                           shift[[i]], width_i, weight[[i]])
-                        }))
-        ans
+        x_seqlevels <- seqlevels(x)
+        x_seqlengths <- seqlengths(x)
+        x_isCircular <- isCircular(x)
+        x_ranges_by_seq <- split(unname(ranges(x)), seqnames(x))
+        ii <- seq_len(length(x_seqlevels))
+        names(ii) <- x_seqlevels
+        ans_listData <- lapply(ii, function(i)
+                               .coverage.seq(x_seqlengths[[i]],
+                                             x_isCircular[[i]],
+                                             x_ranges_by_seq[[i]],
+                                             shift[[i]],
+                                             width[[i]],
+                                             weight[[i]]))
+        IRanges:::newList("SimpleRleList", ans_listData)
     }
 )
 
