@@ -213,9 +213,13 @@ setReplaceMethod("seqinfo", "GappedAlignments",
                                   seqlevels(value))
         if (length(dangling_seqlevels) != 0L)
             x <- x[!(seqnames(x) %in% dangling_seqlevels)]
+        old_seqinfo <- seqinfo(x)
         x@seqnames <- makeNewSeqnames(x, new2old, seqlevels(value))
         x@seqinfo <- value
-        validObject(x)
+        geom_has_changed <- sequenceGeometryHasChanged(seqinfo(x), old_seqinfo,
+                                                       new2old=new2old)
+        if (any(geom_has_changed, na.rm=TRUE))
+            validObject(x)
         x
     }
 )

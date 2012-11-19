@@ -3,6 +3,7 @@
 ### -------------------------------------------------------------------------
 
 
+### Validate and reverse the 'new2old' mapping.
 .reverseNew2old <- function(new2old, new_N, old_N)
 {
     if (is.null(new2old))
@@ -99,6 +100,33 @@ getSeqlevelsReplacementMode <- function(new_seqlevels, old_seqlevels)
     if (length(tmp) != 0L)
         return(-2L)
     return(-1L)
+}
+
+### Returns a logical vector of the same length as 'new_seqinfo' indicating
+### whether the length or circularity flag of the corresponding sequence has
+### changed. Assumes that the 'new2old' mapping is valid (see .reverseNew2old()
+### function above for what this means exactly). NAs in 'new2old' are
+### propagated to the result.
+sequenceGeometryHasChanged <- function(new_seqinfo, old_seqinfo, new2old=NULL)
+{
+    ans_len <- length(new_seqinfo)
+    if (is.null(new2old)) {
+        idx1 <- idx2 <- seq_len(ans_len)
+    } else {
+        idx1 <- which(!is.na(new2old))
+        idx2 <- new2old[idx1]
+    }
+    new_seqlengths <- seqlengths(new_seqinfo)[idx1]
+    old_seqlengths <- seqlengths(old_seqinfo)[idx2]
+    new_isCircular <- isCircular(new_seqinfo)[idx1]
+    old_isCircular <- isCircular(old_seqinfo)[idx2]
+    hasNotChanged <- function(x, y)
+        (is.na(x) & is.na(y)) | (is.na(x) == is.na(y) & x == y)
+    ans <- logical(ans_len)
+    ans[] <- NA
+    ans[idx1] <- !(hasNotChanged(new_seqlengths, old_seqlengths) &
+                   hasNotChanged(new_isCircular, old_isCircular))
+    ans
 }
 
 

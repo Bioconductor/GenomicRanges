@@ -124,18 +124,21 @@ GRanges <-
     }
 }
 
-unsafe.update.GRanges <- function(x, ...)
+.unsafe.update.GRanges <- function(x, ...)
 {
-    valid_argnames <- c("seqnames", "ranges", "strand",
-                        "elementMetadata", "seqinfo", "metadata")
+    valid_argnames <- slotNames(x)
     args <- IRanges:::extraArgsAsList(valid_argnames, ...)
     firstTime <- TRUE
     for (nm in names(args)) {
+        if (identical(slot(x, nm), args[[nm]]))
+            next
         if (firstTime) {
-            slot(x, nm, FALSE) <- args[[nm]]
+            ## Triggers a copy.
+            slot(x, nm, check=FALSE) <- args[[nm]]
             firstTime <- FALSE
         } else {
-            `slot<-`(x, nm, FALSE, args[[nm]])
+            ## In-place modification (i.e. no copy).
+            `slot<-`(x, nm, check=FALSE, args[[nm]])
         }
     }
     x
@@ -146,7 +149,7 @@ setMethod("update", "GRanges",
     {
         if (!isTRUEorFALSE(check)) 
             stop("'check' must be TRUE or FALSE")
-        object <- unsafe.update.GRanges(object, ...)
+        object <- .unsafe.update.GRanges(object, ...)
         if (check)
             validObject(object)
         object
@@ -238,6 +241,7 @@ setAs("RleViewsList", "GRanges", function(from) {
 
 setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Slot getters and setters.
 ###
@@ -246,6 +250,7 @@ setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining and Splitting

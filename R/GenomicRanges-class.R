@@ -349,13 +349,16 @@ setReplaceMethod("seqinfo", "GenomicRanges",
                                   seqlevels(value))
         if (length(dangling_seqlevels) != 0L)
             x <- x[!(seqnames(x) %in% dangling_seqlevels)]
-        x <- update(x, seqnames=makeNewSeqnames(x, new2old, seqlevels(value)),
-                       seqinfo=value)
-        ## The ranges in 'x' need to be validated against
-        ## the new sequence information (e.g. the sequence
-        ## lengths might have changed).
-        if (is.character(msg <- valid.GenomicRanges.seqinfo(x)))
-          stop(msg)
+        old_seqinfo <- seqinfo(x)
+        new_seqnames <- makeNewSeqnames(x, new2old=new2old, seqlevels(value))
+        x <- update(x, seqnames=new_seqnames, seqinfo=value, check=FALSE)
+        geom_has_changed <- sequenceGeometryHasChanged(seqinfo(x), old_seqinfo,
+                                                       new2old=new2old)
+        if (any(geom_has_changed, na.rm=TRUE)) {
+            msg <- valid.GenomicRanges.seqinfo(x)
+            if (!is.null(msg))
+                stop(msg)
+        }
         x
     }
 )
