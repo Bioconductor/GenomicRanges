@@ -103,7 +103,7 @@ getSeqlevelsReplacementMode <- function(new_seqlevels, old_seqlevels)
 }
 
 ### Returns a logical vector of the same length as 'new_seqinfo' indicating
-### whether the length or circularity flag of the corresponding sequence has
+### whether the length or circularity flag of the corresponding sequence have
 ### changed. Assumes that the 'new2old' mapping is valid (see .reverseNew2old()
 ### function above for what this means exactly). NAs in 'new2old' are
 ### propagated to the result.
