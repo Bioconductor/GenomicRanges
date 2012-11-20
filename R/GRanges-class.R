@@ -130,8 +130,12 @@ GRanges <-
     args <- IRanges:::extraArgsAsList(valid_argnames, ...)
     firstTime <- TRUE
     for (nm in names(args)) {
-        if (identical(slot(x, nm), args[[nm]]))
-            next
+        ## Too risky! identical() is not reliable enough e.g. with objects
+        ## that contain external pointers. For example, DNAStringSet("A") and
+        ## DNAStringSet("T") are considered to be identical! identical() needs
+        ## to be fixed first.
+        #if (identical(slot(x, nm), args[[nm]]))
+        #    next
         if (firstTime) {
             ## Triggers a copy.
             slot(x, nm, check=FALSE) <- args[[nm]]
