@@ -4,14 +4,9 @@
 
 \alias{==,GenomicRanges,GenomicRanges-method}
 \alias{duplicated,GenomicRanges-method}
-\alias{unique,GenomicRanges-method}
 
 \alias{<=,GenomicRanges,GenomicRanges-method}
-\alias{>=,GenomicRanges,GenomicRanges-method}
-\alias{<,GenomicRanges,GenomicRanges-method}
-\alias{>,GenomicRanges,GenomicRanges-method}
 \alias{order,GenomicRanges-method}
-\alias{sort,GenomicRanges-method}
 \alias{rank,GenomicRanges-method}
 
 \alias{compare,GenomicRanges,GenomicRanges-method}
@@ -27,9 +22,8 @@
 \details{
   Two elements of a \link{GenomicRanges} object (i.e. two genomic ranges) are
   considered equal iff they are on the same underlying sequence and strand,
-  and have the same start and width.
-  The \code{duplicated} and \code{unique} methods for GenomicRanges objects
-  are using this equality.
+  and have the same start and width. \code{duplicated()} and \code{unique()}
+  on a \link{GenomicRanges} object are conforming to this.
 
   The "natural order" for the elements of a \link{GenomicRanges} object is to
   order them (a) first by sequence level, (b) then by strand, (c) then by
@@ -40,8 +34,8 @@
   and (d) for regular ranges (see \code{?`\link[IRanges]{Ranges-comparison}`}),
   genomic ranges that belong to the same underlying sequence and strand are
   ordered like regular ranges.
-  The \code{order}, \code{sort} and \code{rank} methods for \link{GenomicRanges}
-  objects are using this "natural order".
+  \code{order()}, \code{sort()}, and \code{rank()} on a \link{GenomicRanges}
+  object are using this "natural order".
 
   Also the \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<} and \code{>}
   operators between 2 \link{GenomicRanges} objects are using this "natural

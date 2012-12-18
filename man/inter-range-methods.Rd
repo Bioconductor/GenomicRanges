@@ -65,17 +65,17 @@ The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
 \code{reduce} returns an object of the same type as \code{x}
 containing reduced ranges for each distinct (seqname, strand) pairing.
 The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
-See \code{?\link[IRanges:RangesList-utils]{reduce}} for more information
-about range reduction and for a description of the optional arguments.
+See \code{?\link[IRanges]{reduce}} for more information about range
+reduction and for a description of the optional arguments.
 
 \code{gaps} returns an object of the same type as \code{x}
 containing complemented ranges for each distinct (seqname, strand) pairing.
 The names (\code{names(x)}) and the columns in \code{x} are dropped.
 For the start and end arguments of this gaps method, it is expected that
 the user will supply a named integer vector (where the names correspond to
-the appropriate seqlevels). See \code{?\link[IRanges:RangesList-utils]{gaps}}
-for more information about range complements and for a description of the
-optional arguments.
+the appropriate seqlevels). See \code{?\link[IRanges]{gaps}} for more
+information about range complements and for a description of the optional
+arguments.
 
 \code{disjoin} returns an object of the same type as \code{x}
 containing disjoint ranges for each distinct (seqname, strand) pairing.
@@ -89,7 +89,7 @@ that ranges in the same bin do not overlap. If \code{ignore.strand=FALSE},
 the two features cannot overlap if they are on different strands.
 }
 
-\author{P. Aboyoun}
+\author{H. Pages and P. Aboyoun}
 
 \seealso{
   \itemize{

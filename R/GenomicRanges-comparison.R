@@ -6,9 +6,8 @@
 ### ---------------------------------------------------------------
 ### Two elements of a GenomicRanges object (i.e. two genomic ranges) are
 ### considered equal iff they are on the same underlying sequence and strand,
-### and have the same start and width.
-### The "duplicated" and "unique" methods for GenomicRanges objects are
-### using this equality.
+### and have the same start and width. duplicated() and unique() on a
+### GenomicRanges object are conforming to this.
 ###
 ### II. ORDERING THE ELEMENTS OF A GenomicRanges OBJECT
 ### ---------------------------------------------------
@@ -20,8 +19,8 @@
 ### implicitly. Also, note that, because we already do (c) and (d) for regular
 ### ranges, genomic ranges that belong to the same underlying sequence
 ### and strand are ordered like regular ranges.
-### The "order", "sort" and "rank" methods for GenomicRanges objects are using
-### this "natural order".
+### order(), sort(), and rank() on a GenomicRanges object are using this
+### "natural order".
 ###
 ### III. ELEMENT-WISE (AKA "PARALLEL") COMPARISON OF 2 GenomicRanges OBJECTS
 ### ------------------------------------------------------------------------
@@ -64,16 +63,6 @@ setMethod("duplicated", "GenomicRanges",
     }
 )
 
-### Relies on a "[" method for 'x'.
-setMethod("unique", "GenomicRanges",
-    function(x, incomparables=FALSE, fromLast=FALSE,
-             method=c("auto", "quick", "hash"), ...)
-    {
-        x[!duplicated(x, incomparables=incomparables,
-                         fromLast=fromLast, method=method, ...)]
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### II. ORDERING THE ELEMENTS OF A GenomicRanges OBJECT
@@ -102,15 +91,6 @@ setMethod("order", "GenomicRanges",
         order_args[idx - 1L] <- lapply(args, start)
         order_args[idx] <- lapply(args, width)
         do.call(order, c(order_args, list(decreasing=decreasing)))
-    }
-)
-
-### Relies on a "[" method for 'x'.
-### TODO: Define a "sort" method for ANY (in IRanges) instead of this.
-setMethod("sort", "GenomicRanges",
-    function(x, decreasing=FALSE, ...) 
-    {
-        x[order(x, decreasing=decreasing)]
     }
 )
 

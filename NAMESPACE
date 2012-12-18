@@ -95,7 +95,7 @@ exportMethods(
     "[", "[<-", c, seqselect, "seqselect<-", "$", "$<-", "[[", "[[<-",
     splitAsListReturnedClass,
     split, window,
-    duplicated, unique, order, sort, rank, "==", "<=", ">=", "<", ">",
+    duplicated, order, sort, rank, "==", "<=",
     shift, narrow, flank, promoters, resize, Ops, restrict,
     gaps, range, reduce, isDisjoint, disjoin, disjointBins,
     precede, follow, nearest, distance, distanceToNearest,
