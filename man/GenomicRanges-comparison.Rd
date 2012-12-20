@@ -2,14 +2,18 @@
 
 \alias{GenomicRanges-comparison}
 
+\alias{compare,GenomicRanges,GenomicRanges-method}
+
 \alias{==,GenomicRanges,GenomicRanges-method}
+\alias{<=,GenomicRanges,GenomicRanges-method}
+
 \alias{duplicated,GenomicRanges-method}
 
-\alias{<=,GenomicRanges,GenomicRanges-method}
+\alias{match,GenomicRanges,GenomicRanges-method}
+\alias{\%in\%,GenomicRanges,GenomicRanges-method}
+
 \alias{order,GenomicRanges-method}
 \alias{rank,GenomicRanges-method}
-
-\alias{compare,GenomicRanges,GenomicRanges-method}
 
 
 \title{Comparing and ordering genomic ranges}
@@ -17,6 +21,86 @@
 \description{
   Methods for comparing and ordering the elements in one or more
   \link{GenomicRanges} objects.
+}
+
+\usage{
+## Element-wise (aka "parallel") comparison of 2 GenomicRanges objects
+## -------------------------------------------------------------------
+
+\S4method{==}{GenomicRanges,GenomicRanges}(e1, e2)
+
+\S4method{<=}{GenomicRanges,GenomicRanges}(e1, e2)
+
+## duplicated()
+## ------------
+
+\S4method{duplicated}{GenomicRanges}(x, incomparables=FALSE, fromLast=FALSE,
+           method=c("auto", "quick", "hash"))
+
+## match()
+## -------
+
+\S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch=NA_integer_, incomparables=NULL,
+      method=c("auto", "quick", "hash"), match.if.overlap=FALSE)
+
+## order() and related methods
+## ----------------------------
+
+\S4method{order}{GenomicRanges}(..., na.last=TRUE, decreasing=FALSE)
+
+\S4method{rank}{GenomicRanges}(x, na.last=TRUE,
+     ties.method=c("average", "first", "random", "max", "min"))
+
+## Generalized element-wise (aka "parallel") comparison of 2 GenomicRanges
+## objects
+## ------------------------------------------------------------------------
+
+\S4method{compare}{GenomicRanges,GenomicRanges}(x, y)
+}
+
+\arguments{
+  \item{e1, e2, x, table, y}{
+    \link{GenomicRanges} objects.
+  }
+  \item{incomparables}{
+    Not supported.
+  }
+  \item{fromLast, method, nomatch}{
+    See \code{?`\link[IRanges]{Ranges-comparison}`} in the IRanges
+    package for a description of these arguments.
+  }
+  \item{match.if.overlap}{
+    You temporarily need to explicitly provide this argument otherwise
+    \code{match()} will issue a warning.
+
+    Starting with BioC 2.12, the default behavior of \code{match()} on
+    \link{GenomicRanges} objects has changed to use \emph{equality} instead
+    of \emph{overlap} for comparing elements between \link{GenomicRanges}
+    objects \code{x} and \code{table}. Now \code{x[i]} and \code{table[j]} are
+    considered to match when they are equal (i.e. \code{x[i] == table[j]}),
+    instead of when they overlap. This new behavior is consistent with
+    \code{base::\link[base]{match}()}.
+
+    If you need the new behavior, use \code{match.if.overlap=FALSE}.
+
+    If you need the old behavior, you can either do:
+    \code{findOverlaps(x, table, select="first")}
+    which is the recommended way. Alternatively, you can call \code{match()}
+    with \code{match.if.overlap=TRUE}.
+  }
+  \item{...}{
+    Additional \link{GenomicRanges} objects used for breaking ties.
+  }
+  \item{na.last}{
+    Ignored.
+  }
+  \item{decreasing}{
+    \code{TRUE} or \code{FALSE}.
+  }
+  \item{ties.method}{
+    A character string specifying how ties are treated. Only \code{"first"}
+    is supported for now.
+  }
 }
 
 \details{
@@ -42,9 +126,14 @@
   order".
 }
 
+\author{H. Pages}
+
 \seealso{
-  \link{GenomicRanges-class},
-  \link[IRanges]{Ranges-comparison}
+  \itemize{
+    \item The \link{GenomicRanges} class.
+    \item \link[IRanges]{Ranges-comparison} in the IRanges
+          package for comparing and ordering genomic ranges.
+  }
 }
 
 \examples{

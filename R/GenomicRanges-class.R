@@ -390,16 +390,16 @@ setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
 ### initialize. Reference classes will want to override 'update'. Other
 ### external representations need further customization.
 
-setMethod("update", "GenomicRanges",
+setMethod("update", "GenomicRanges",  # not exported
     function(object, ..., check=TRUE)
     {
         initialize(object, ...)
     }
 )
 
-setGeneric("clone", function(x, ...) standardGeneric("clone"))
+setGeneric("clone", function(x, ...) standardGeneric("clone"))  # not exported
 
-setMethod("clone", "ANY",
+setMethod("clone", "ANY",  # not exported
     function(x, ...)
     {
         if (nargs() > 1L)

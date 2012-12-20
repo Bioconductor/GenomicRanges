@@ -602,15 +602,13 @@ element in the subject.
 subsetByOverlaps(gr,grl)
 @
 
-Finally, you can also call the standard \Rmethod{match} methods on
-these objects.
+Finally, you can use the \Rcode{select} argument to get the index
+of the first overlapping element in the subject for each element
+in the query.
 
 <<match>>=
-match(gr,grl)
-match(grl,gr)
-
-gr %in% grl
-grl %in% gr
+findOverlaps(gr, grl, select="first")
+findOverlaps(grl, gr, select="first")
 @
 
 

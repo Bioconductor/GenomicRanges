@@ -494,7 +494,7 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     }
 )
 
-setMethod("findOverlaps", c("GappedAlignments", "ANY"),
+setMethod("findOverlaps", c("GappedAlignments", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -506,7 +506,7 @@ setMethod("findOverlaps", c("GappedAlignments", "ANY"),
     }
 )
 
-setMethod("findOverlaps", c("ANY", "GappedAlignments"),
+setMethod("findOverlaps", c("Vector", "GappedAlignments"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -537,7 +537,7 @@ setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
     }
 )
 
-setMethod("findOverlaps", c("GappedAlignmentPairs", "ANY"),
+setMethod("findOverlaps", c("GappedAlignmentPairs", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -549,7 +549,7 @@ setMethod("findOverlaps", c("GappedAlignmentPairs", "ANY"),
     }
 )
 
-setMethod("findOverlaps", c("SummarizedExperiment", "ANY"),
+setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -561,7 +561,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "ANY"),
     }
 )
 
-setMethod("findOverlaps", c("ANY", "SummarizedExperiment"),
+setMethod("findOverlaps", c("Vector", "SummarizedExperiment"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -642,12 +642,24 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
 .match.default <- function(x, table,
                            nomatch = NA_integer_, incomparables = NULL)
 {
-    if (length(nomatch) != 1L)
-        stop("'nomatch' must be of length 1")
-    ans <- findOverlaps(x, table, select = "first")
-    if (!is.na(nomatch) && IRanges:::anyMissing(ans))
-        ans[is.na(ans)] <- nomatch
-    ans
+    if (!identical(nomatch, NA_integer_))
+        stop("'nomatch' arg is not supported")
+    msg <- c("match() between a ", class(x), " and a ", class(table),
+             " object is deprecated.\nPlease use '",
+             "findOverlaps(x, table, select=\"first\")",
+             "' instead.")
+    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
+    findOverlaps(x, table, select="first")
+}
+
+`.%in%.default` <- function(x, table)
+{
+    msg <- c("%in% between a ", class(x), " and a ", class(table),
+             " object is deprecated.\nPlease use '",
+             "!is.na(findOverlaps(x, table, select=\"first\"))",
+             "' instead.")
+    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
+    !is.na(findOverlaps(x, table, select="first"))
 }
 
 .signatures <- list(
@@ -663,12 +675,12 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     c("RangedData", "GRangesList"),
     c("GenomicRanges", "RangedData"),
     c("GRangesList", "RangedData"),
-    c("GappedAlignments", "ANY"),
-    c("ANY", "GappedAlignments"),
+    c("GappedAlignments", "Vector"),
+    c("Vector", "GappedAlignments"),
     c("GappedAlignments", "GappedAlignments"),
-    c("GappedAlignmentPairs", "ANY"),
-    c("SummarizedExperiment", "ANY"),
-    c("ANY", "SummarizedExperiment"),
+    c("GappedAlignmentPairs", "Vector"),
+    c("SummarizedExperiment", "Vector"),
+    c("Vector", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment")
 )
 
@@ -680,5 +692,13 @@ for (sig in .signatures) {
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps3)
     else
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps.default)
-    setMethod("match", sig, .match.default)
+    ## All "match" and "%in% methods (except methods for GenomicRanges objects)
+    ## are deprecated in BioC 2.12 and will be defunct in BioC 2.13.
+    ## Methods for GenomicRanges have been moved to GenomicRanges-comparison.R
+    ## and their behavior changed to do equality instead of overlaps.
+    if (!identical(sig, c("GenomicRanges", "GenomicRanges"))) {
+        setMethod("match", sig, .match.default)
+        setMethod("%in%", sig, `.%in%.default`)
+    }
 }
+

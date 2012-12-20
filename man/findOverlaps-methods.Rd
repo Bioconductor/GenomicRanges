@@ -13,10 +13,10 @@
 \alias{findOverlaps,RangedData,GRangesList-method}
 \alias{findOverlaps,GenomicRanges,RangedData-method}
 \alias{findOverlaps,GRangesList,RangedData-method}
-\alias{findOverlaps,GappedAlignments,ANY-method}
-\alias{findOverlaps,ANY,GappedAlignments-method}
+\alias{findOverlaps,GappedAlignments,Vector-method}
+\alias{findOverlaps,Vector,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{findOverlaps,GappedAlignmentPairs,ANY-method}
+\alias{findOverlaps,GappedAlignmentPairs,Vector-method}
 
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{countOverlaps,GRangesList,GenomicRanges-method}
@@ -30,10 +30,10 @@
 \alias{countOverlaps,RangedData,GRangesList-method}
 \alias{countOverlaps,GenomicRanges,RangedData-method}
 \alias{countOverlaps,GRangesList,RangedData-method}
-\alias{countOverlaps,GappedAlignments,ANY-method}
-\alias{countOverlaps,ANY,GappedAlignments-method}
+\alias{countOverlaps,GappedAlignments,Vector-method}
+\alias{countOverlaps,Vector,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{countOverlaps,GappedAlignmentPairs,ANY-method}
+\alias{countOverlaps,GappedAlignmentPairs,Vector-method}
 
 \alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
@@ -47,12 +47,11 @@
 \alias{subsetByOverlaps,RangedData,GRangesList-method}
 \alias{subsetByOverlaps,GenomicRanges,RangedData-method}
 \alias{subsetByOverlaps,GRangesList,RangedData-method}
-\alias{subsetByOverlaps,GappedAlignments,ANY-method}
-\alias{subsetByOverlaps,ANY,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignments,Vector-method}
+\alias{subsetByOverlaps,Vector,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignmentPairs,ANY-method}
+\alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
 
-\alias{match,GenomicRanges,GenomicRanges-method}
 \alias{match,GRangesList,GenomicRanges-method}
 \alias{match,GenomicRanges,GRangesList-method}
 \alias{match,GRangesList,GRangesList-method}
@@ -64,12 +63,11 @@
 \alias{match,RangedData,GRangesList-method}
 \alias{match,GenomicRanges,RangedData-method}
 \alias{match,GRangesList,RangedData-method}
-\alias{match,GappedAlignments,ANY-method}
-\alias{match,ANY,GappedAlignments-method}
+\alias{match,GappedAlignments,Vector-method}
+\alias{match,Vector,GappedAlignments-method}
 \alias{match,GappedAlignments,GappedAlignments-method}
-\alias{match,GappedAlignmentPairs,ANY-method}
+\alias{match,GappedAlignmentPairs,Vector-method}
 
-\alias{\%in\%,GenomicRanges,GenomicRanges-method}
 \alias{\%in\%,GRangesList,GenomicRanges-method}
 \alias{\%in\%,GenomicRanges,GRangesList-method}
 \alias{\%in\%,GRangesList,GRangesList-method}
@@ -81,10 +79,10 @@
 \alias{\%in\%,RangedData,GRangesList-method}
 \alias{\%in\%,GenomicRanges,RangedData-method}
 \alias{\%in\%,GRangesList,RangedData-method}
-\alias{\%in\%,GappedAlignments,ANY-method}
-\alias{\%in\%,ANY,GappedAlignments-method}
+\alias{\%in\%,GappedAlignments,Vector-method}
+\alias{\%in\%,Vector,GappedAlignments-method}
 \alias{\%in\%,GappedAlignments,GappedAlignments-method}
-\alias{\%in\%,GappedAlignmentPairs,ANY-method}
+\alias{\%in\%,GappedAlignmentPairs,Vector-method}
 
 
 \title{GRanges, GRangesList, GappedAlignments and GappedAlignmentPairs
@@ -109,17 +107,14 @@
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"),
     ignore.strand = FALSE)
-\S4method{match}{GenomicRanges,GenomicRanges}(x, table,
-    nomatch = NA_integer_, incomparables = NULL)
-# Also:  x \%in\% table
 }
 
 \arguments{
-  \item{query, subject, x, table}{
+  \item{query, subject}{
     A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments} or
     \link{GappedAlignmentPairs} object. \link[IRanges]{RangesList}
     and \link[IRanges]{RangedData} are also accepted for one of \code{query}
-    or \code{subject} (\code{x} or \code{table} for \code{match}).
+    or \code{subject}.
   }
   \item{maxgap, minoverlap, type, select}{
     See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
@@ -128,12 +123,6 @@
   \item{ignore.strand}{
     When set to \code{TRUE}, the strand information is ignored in the
     overlap calculations.
-  }
-  \item{nomatch}{
-    The integer value to be returned in the case when no match is found.
-  }
-  \item{incomparables}{
-    This value is ignored.
   }
 }
 
@@ -178,11 +167,6 @@
 
   For \code{subsetByOverlaps} an object of the same class as \code{query}
   containing the subset that overlapped at least one entity in \code{subject}.
-
-  For \code{match} same as \code{findOverlaps} when \code{select = "first"}.
-
-  For \code{\%in\%} the logical vector produced by
-  \code{!is.na(match(x, table))}.
 
   For \code{RangedData} and \code{RangesList}, with the exception of
   \code{subsetByOverlaps}, the results align to the unlisted
@@ -237,7 +221,7 @@ gr3 <-
 grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 
 ## Overlapping two GRanges objects:
-table(gr \%in\% gr1)
+table(!is.na(findOverlaps(gr, gr1, select="arbitrary")))
 countOverlaps(gr, gr1)
 findOverlaps(gr, gr1)
 subsetByOverlaps(gr, gr1)
@@ -255,7 +239,7 @@ findOverlaps(gr1, gr, type = "within")
 findOverlaps(gr1, gr, type = "equal")
 
 ## Overlapping a GRanges and a GRangesList object:
-table(grl \%in\% gr)
+table(!is.na(findOverlaps(grl, gr, select="first")))
 countOverlaps(grl, gr)
 findOverlaps(grl, gr)
 subsetByOverlaps(grl, gr)
@@ -287,10 +271,11 @@ galn[8:10]
 countOverlaps(galn[8:10], subject)
 countOverlaps(galn[8:10], subject, ignore.strand=TRUE)
 
-## Advanced examples:
+## Count alignments in 'galn' that DO overlap with 'subject' vs those
+## that do NOT:
+table(!is.na(findOverlaps(galn, subject, select="first")))
+## Extract those that DO:
 subsetByOverlaps(galn, subject)
-table(match(galn, subject), useNA = "ifany")
-table(galn \%in\% subject)
 }
 
 \keyword{methods}

@@ -148,7 +148,7 @@ GRanges <-
     x
 }
 
-setMethod("update", "GRanges",
+setMethod("update", "GRanges",  # not exported
     function(object, ..., check=TRUE)
     {
         if (!isTRUEorFALSE(check)) 

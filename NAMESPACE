@@ -18,6 +18,73 @@ exportClasses(
     GenomicRangesList, SimpleGenomicRangesList
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S3 methods
+###
+
+S3method(duplicated, GenomicRanges)
+
+### We also export them thru the export() directive so that (a) they can be
+### called directly, (b) tab-completion on the name of the generic shows them,
+### and (c) methods() doesn't asterisk them.
+export(
+    duplicated.GenomicRanges
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 methods for generics not defined in GenomicRanges
+###
+
+exportMethods(
+    length,
+    names, "names<-",
+    "dimnames<-",
+    "[", "[<-", "[[", "[[<-", "$", "$<-",
+    as.data.frame,
+    coerce,
+    c,
+    show,
+    "==", "<=",
+    duplicated, match, "%in%",
+    order, sort, rank,
+    union, intersect, setdiff,
+    start, end,
+    split, unlist,
+    window,
+    range,
+    Ops,
+    merge,
+    updateObject,
+    strand, "strand<-",
+
+    ## Generics defined in IRanges:
+    elementMetadata, "elementMetadata<-",
+    mcols, "mcols<-",
+    values, "values<-",
+    seqselect, "seqselect<-",
+    splitAsListReturnedClass,
+    width, "start<-", "width<-", "end<-",
+    compare,
+    ranges, "ranges<-",
+    map,
+    ngap,
+    score,
+    shift, narrow, flank, resize, promoters, restrict,
+    reduce, gaps, disjoin, isDisjoint, disjointBins,
+    punion, pintersect, psetdiff, pgap,
+    findOverlaps, countOverlaps, subsetByOverlaps,
+    precede, follow, nearest, distance, distanceToNearest,
+    encodeOverlaps,
+    coverage
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export non-generic functions
+###
+
 export(
     phicoef,
 
@@ -27,10 +94,32 @@ export(
     queryLoc2refLoc, queryLocs2refLocs,
     splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
 
-    constraint, "constraint<-",
+    makeSeqnameIds,
+    Seqinfo,
+    GRanges, GRangesList, GenomicRangesList,
+    .DollarNames.GenomicRanges,
+    makeGRangesListFromFeatureFragments,
+    GappedAlignments, readGappedAlignments,
+    GappedAlignmentPairs, readGappedAlignmentPairs,
+    flipQuery,
+    selectEncodingWithCompatibleStrand,
+    extractQueryStartInTranscript,
+    countCompatibleOverlaps,
+    Union, IntersectionNotEmpty, IntersectionStrict
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 generics defined in GenomicRanges + export corresponding
+### methods
+###
+
+export(
+    ## constraint.R:
+    #constraint, "constraint<-",
     checkConstraint,
 
-    makeSeqnameIds,
+    ## seqinfo.R:
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlevels, "seqlevels<-",
@@ -38,41 +127,39 @@ export(
     isCircular, "isCircular<-",
     genome, "genome<-",
     seqnameStyle, "seqnameStyle<-",
-    Seqinfo,
 
-    GRanges, GRangesList, GenomicRangesList,
-    .DollarNames.GenomicRanges,
-    makeGRangesListFromFeatureFragments,
-    compare,
-    rname, "rname<-", cigar, qwidth,
+    ## GappedAlignments-class.R:
+    rname, "rname<-", cigar, qwidth, qnarrow,
     grglist, granges, introns, rglist,
-    qnarrow,
-    GappedAlignments, readGappedAlignments,
+
+    ## GappedAlignmentPairs-class.R:
     first, last, left, right, isProperPair,
-    GappedAlignmentPairs, readGappedAlignmentPairs,
 
+    ## SummarizedExperiment-class.R:
     SummarizedExperiment,
-    assays, "assays<-", assay, "assay<-", rowData, "rowData<-",
-    colData, "colData<-", exptData, "exptData<-",
+    exptData, "exptData<-",
+    rowData, "rowData<-",
+    colData, "colData<-",
+    assays, "assays<-",
+    assay, "assay<-",
 
-    flipQuery,
-    selectEncodingWithCompatibleStrand,
-    isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
-    extractQueryStartInTranscript,
-    findCompatibleOverlaps, countCompatibleOverlaps,
-
+    ## seqlevels-utils.R:
     keepSeqlevels, renameSeqlevels,
 
+    ## summarizeOverlaps.R:
     summarizeOverlaps,
-    Union, IntersectionNotEmpty, IntersectionStrict,
 
+    ## encodeOverlaps-methods.R:
+    isCompatibleWithSplicing, isCompatibleWithSkippedExons,
+    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
+    findCompatibleOverlaps,
+
+    ## findSpliceOverlaps-methods.R:
     findSpliceOverlaps
 )
 
+### Exactly the same list as above.
 exportMethods(
-    length,
-    names, "names<-",
     #constraint, "constraint<-",
     checkConstraint,
     seqinfo, "seqinfo<-",
@@ -82,40 +169,20 @@ exportMethods(
     isCircular, "isCircular<-",
     genome, "genome<-",
     seqnameStyle, "seqnameStyle<-",
-    strand, "strand<-",
-    score,
-    merge,
-    coerce, as.data.frame, unlist,
-    elementMetadata, "elementMetadata<-",
-    mcols, "mcols<-",
-    "$", "$<-",
-    values, "values<-",
-    ranges, "ranges<-",
-    start, end, width, "start<-", "end<-", "width<-",
-    "[", "[<-", c, seqselect, "seqselect<-", "$", "$<-", "[[", "[[<-",
-    splitAsListReturnedClass,
-    split, window,
-    duplicated, order, sort, rank, "==", "<=",
-    shift, narrow, flank, promoters, resize, Ops, restrict,
-    gaps, range, reduce, isDisjoint, disjoin, disjointBins,
-    precede, follow, nearest, distance, distanceToNearest,
-    map,
-    coverage,
-    union, intersect, setdiff,
-    punion, pintersect, psetdiff, pgap,
-    findOverlaps, countOverlaps, match, "%in%",
-    encodeOverlaps, isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
-    findCompatibleOverlaps,
-    show,
-    rname, "rname<-", cigar, qwidth,
-    grglist, granges, rglist, introns, ngap,
-    qnarrow,
+    rname, "rname<-", cigar, qwidth, qnarrow,
+    grglist, granges, introns, rglist,
     first, last, left, right, isProperPair,
-    dimnames, "dimnames<-",
+    SummarizedExperiment,
+    exptData, "exptData<-",
+    rowData, "rowData<-",
+    colData, "colData<-",
+    assays, "assays<-",
+    assay, "assay<-",
     keepSeqlevels, renameSeqlevels,
     summarizeOverlaps,
-    findSpliceOverlaps,
-    updateObject
+    isCompatibleWithSplicing, isCompatibleWithSkippedExons,
+    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
+    findCompatibleOverlaps,
+    findSpliceOverlaps
 )
 

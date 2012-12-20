@@ -6,7 +6,7 @@ setClass("Assays")
 .ShallowData <- setRefClass("ShallowData",
     fields = list( data = "ANY" ))
 
-setMethod("clone", "ShallowData",
+setMethod("clone", "ShallowData",  # not exported
     function(x, ...)
 {
     args <- list(...)
@@ -140,7 +140,7 @@ setMethod(SummarizedExperiment, "matrix",
 
 ## update / clone
 
-setMethod("clone", "SummarizedExperiment",
+setMethod("clone", "SummarizedExperiment",  # not exported
     function(x, ...)
 {
     ## IRanges:::extraArgsAsList would prevent using clone on
@@ -162,10 +162,11 @@ setMethod("clone", "SummarizedExperiment",
     x
 })
 
-setGeneric("value", function(x, name, ...) standardGeneric("value"),
+setGeneric("value",  # not exported
+    function(x, name, ...) standardGeneric("value"),
     signature = "x")
 
-setMethod("value", "SummarizedExperiment",
+setMethod("value", "SummarizedExperiment", # not exported
     function(x, name, ...)
 {
     s <- slot(x, name)

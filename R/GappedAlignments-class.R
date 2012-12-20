@@ -74,7 +74,7 @@ setGeneric("cigar", function(x) standardGeneric("cigar"))
 
 setGeneric("qwidth", function(x) standardGeneric("qwidth"))
 
-setGeneric("updateCigarAndStart",
+setGeneric("updateCigarAndStart",  # not exported
     function(x, cigar=NULL, start=NULL) standardGeneric("updateCigarAndStart")
 )
 
@@ -703,7 +703,7 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive=FALSE) {
 ### For internal use only (not exported).
 ###
 
-setMethod("updateCigarAndStart", "GappedAlignments",
+setMethod("updateCigarAndStart", "GappedAlignments",  # not exported
     function(x, cigar=NULL, start=NULL)
     {
         if (is.null(cigar)) {
@@ -779,9 +779,10 @@ setMethod("pmap", c("Ranges", "GappedAlignments"), function(from, to) {
   IRanges(starts, ends)
 })
 
-setGeneric("prmap", function(from, to) standardGeneric("prmap"))
+setGeneric("prmap", function(from, to) standardGeneric("prmap")) # not exported
 
-setMethod("prmap", c("Ranges", "GappedAlignments"), function(from, to) {
+setMethod("prmap", c("Ranges", "GappedAlignments"), # not exported
+  function(from, to) {
   starts <- .Call("query_locs_to_ref_locs", start(from),
                   cigar(to), start(to), FALSE, PACKAGE="GenomicRanges")
   ends <- .Call("query_locs_to_ref_locs", end(from),

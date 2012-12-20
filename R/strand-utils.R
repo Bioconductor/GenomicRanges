@@ -66,11 +66,11 @@ setReplaceMethod("strand", "DataTable", function(x, value) {
   x
 })
 
-setGeneric("compatibleStrand", signature=c("x","y"),
+setGeneric("compatibleStrand", signature=c("x","y"),  # not exported
     function(x, y) standardGeneric("compatibleStrand")
 )
 
-setMethod("compatibleStrand", c("factor", "factor"),
+setMethod("compatibleStrand", c("factor", "factor"),  # not exported
     function(x, y)
     {
         lvls <- levels(strand())
@@ -96,7 +96,7 @@ setMethod("compatibleStrand", c("factor", "factor"),
     }
 )
 
-setMethod("compatibleStrand", c("Rle", "Rle"),
+setMethod("compatibleStrand", c("Rle", "Rle"),  # not exported
     function(x, y)
     {
         lvls <- levels(strand())

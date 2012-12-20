@@ -2,7 +2,7 @@
 ### resolveHits methods
 ### -------------------------------------------------------------------------
 
-setGeneric("resolveHits", signature = c("query", "subject"),
+setGeneric("resolveHits", signature = c("query", "subject"),  # not exported
            function(query, subject, readValue,
                     type = c("any", "start", "end", "within", "equal"),
                     resolution = c("divide", "uniqueDisjoint"),
@@ -10,7 +10,7 @@ setGeneric("resolveHits", signature = c("query", "subject"),
            standardGeneric("resolveHits")
 )
 
-setMethod("resolveHits", c("GenomicRanges", "GenomicRanges"),
+setMethod("resolveHits", c("GenomicRanges", "GenomicRanges"),  # not exported
           function(query, subject, readValue,
               type = c("any", "start", "end", "within", "equal"),
               resolution = c("divide", "uniqueDisjoint"), 

@@ -10,7 +10,7 @@ library(digest)
 .twoDispatch <- c("nearest", "precede", "follow", "distance",
            "distanceToNearest",
            ## FIXME: "findOverlaps", "countOverlaps",
-           "match", "subsetByOverlaps")
+           "subsetByOverlaps")
 
 .otherFuns <- c("order", "rank", "sort")
 

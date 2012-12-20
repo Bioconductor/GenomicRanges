@@ -64,8 +64,8 @@
 \alias{compare,ANY,SummarizedExperiment-method}
 \alias{compare,SummarizedExperiment,ANY-method}
 \alias{compare,SummarizedExperiment,SummarizedExperiment-method}
-\alias{countOverlaps,ANY,SummarizedExperiment-method}
-\alias{countOverlaps,SummarizedExperiment,ANY-method}
+\alias{countOverlaps,Vector,SummarizedExperiment-method}
+\alias{countOverlaps,SummarizedExperiment,Vector-method}
 \alias{countOverlaps,SummarizedExperiment,SummarizedExperiment-method}
 \alias{coverage,SummarizedExperiment-method}
 \alias{disjointBins,SummarizedExperiment-method}
@@ -80,8 +80,8 @@
 \alias{elementMetadata<-,SummarizedExperiment-method}
 \alias{end,SummarizedExperiment-method}
 \alias{end<-,SummarizedExperiment-method}
-\alias{findOverlaps,ANY,SummarizedExperiment-method}
-\alias{findOverlaps,SummarizedExperiment,ANY-method}
+\alias{findOverlaps,Vector,SummarizedExperiment-method}
+\alias{findOverlaps,SummarizedExperiment,Vector-method}
 \alias{findOverlaps,SummarizedExperiment,SummarizedExperiment-method}
 \alias{flank,SummarizedExperiment-method}
 \alias{follow,ANY,SummarizedExperiment-method}
@@ -89,9 +89,12 @@
 \alias{follow,SummarizedExperiment,SummarizedExperiment-method}
 \alias{granges,SummarizedExperiment-method}
 \alias{isDisjoint,SummarizedExperiment-method}
-\alias{match,ANY,SummarizedExperiment-method}
-\alias{match,SummarizedExperiment,ANY-method}
+\alias{match,Vector,SummarizedExperiment-method}
+\alias{match,SummarizedExperiment,Vector-method}
 \alias{match,SummarizedExperiment,SummarizedExperiment-method}
+\alias{\%in\%,Vector,SummarizedExperiment-method}
+\alias{\%in\%,SummarizedExperiment,Vector-method}
+\alias{\%in\%,SummarizedExperiment,SummarizedExperiment-method}
 \alias{mcols,SummarizedExperiment-method}
 \alias{mcols<-,SummarizedExperiment-method}
 \alias{narrow,SummarizedExperiment-method}

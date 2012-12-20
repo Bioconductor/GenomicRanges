@@ -118,7 +118,7 @@
 \author{P. Aboyoun}
 
 \seealso{
-  \link[IRanges]{IRanges-setops},
+  \link[IRanges]{setops-methods},
   \link{GRanges-class},
   \link{GRangesList-class},
   \link{GappedAlignments-class},
