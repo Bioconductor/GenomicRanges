@@ -18,18 +18,12 @@
 \alias{findOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignmentPairs,Vector-method}
 
+\alias{countOverlaps,GenomicRanges,Vector-method}
+\alias{countOverlaps,Vector,GenomicRanges-method}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
-\alias{countOverlaps,GRangesList,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,GRangesList-method}
+\alias{countOverlaps,GRangesList,Vector-method}
+\alias{countOverlaps,Vector,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
-\alias{countOverlaps,RangesList,GenomicRanges-method}
-\alias{countOverlaps,RangesList,GRangesList-method}
-\alias{countOverlaps,GenomicRanges,RangesList-method}
-\alias{countOverlaps,GRangesList,RangesList-method}
-\alias{countOverlaps,RangedData,GenomicRanges-method}
-\alias{countOverlaps,RangedData,GRangesList-method}
-\alias{countOverlaps,GenomicRanges,RangedData-method}
-\alias{countOverlaps,GRangesList,RangedData-method}
 \alias{countOverlaps,GappedAlignments,Vector-method}
 \alias{countOverlaps,Vector,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}

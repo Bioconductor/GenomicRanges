@@ -602,6 +602,26 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     structure(tabulate(counts, NROW(query)), names=names(query))
 }
 
+.signatures <- list(
+    c("GenomicRanges", "Vector"),
+    c("Vector", "GenomicRanges"),
+    c("GenomicRanges", "GenomicRanges"),
+    c("GRangesList", "Vector"),
+    c("Vector", "GRangesList"),
+    c("GRangesList", "GRangesList"),
+    c("GappedAlignments", "Vector"),
+    c("Vector", "GappedAlignments"),
+    c("GappedAlignments", "GappedAlignments"),
+    c("GappedAlignmentPairs", "Vector"),
+    c("SummarizedExperiment", "Vector"),
+    c("Vector", "SummarizedExperiment"),
+    c("SummarizedExperiment", "SummarizedExperiment")
+)
+
+for (sig in .signatures) {
+    setMethod("countOverlaps", sig, .countOverlaps.default)
+}
+
 .subsetByOverlaps.default <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
         type = c("any", "start", "end", "within", "equal"), 
@@ -685,7 +705,6 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
 )
 
 for (sig in .signatures) {
-    setMethod("countOverlaps", sig, .countOverlaps.default)
     if (sig[1L] == "RangesList")
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps2)
     else if (sig[1L] %in% c("RangedData", "SummarizedExperiment"))
