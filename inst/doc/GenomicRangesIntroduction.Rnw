@@ -606,7 +606,7 @@ Finally, you can use the \Rcode{select} argument to get the index
 of the first overlapping element in the subject for each element
 in the query.
 
-<<match>>=
+<<select-first>>=
 findOverlaps(gr, grl, select="first")
 findOverlaps(grl, gr, select="first")
 @

@@ -74,7 +74,7 @@ exportMethods(
     shift, narrow, flank, resize, promoters, restrict,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     punion, pintersect, psetdiff, pgap,
-    findOverlaps, countOverlaps, subsetByOverlaps,
+    findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
     encodeOverlaps,
     coverage

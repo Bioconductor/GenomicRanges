@@ -29,22 +29,22 @@
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignmentPairs,Vector-method}
 
-\alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
-\alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
-\alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
-\alias{subsetByOverlaps,GRangesList,GRangesList-method}
-\alias{subsetByOverlaps,RangesList,GenomicRanges-method}
-\alias{subsetByOverlaps,RangesList,GRangesList-method}
-\alias{subsetByOverlaps,GenomicRanges,RangesList-method}
-\alias{subsetByOverlaps,GRangesList,RangesList-method}
-\alias{subsetByOverlaps,RangedData,GenomicRanges-method}
-\alias{subsetByOverlaps,RangedData,GRangesList-method}
-\alias{subsetByOverlaps,GenomicRanges,RangedData-method}
-\alias{subsetByOverlaps,GRangesList,RangedData-method}
-\alias{subsetByOverlaps,GappedAlignments,Vector-method}
-\alias{subsetByOverlaps,Vector,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{overlapsAny,GenomicRanges,GenomicRanges-method}
+\alias{overlapsAny,GRangesList,GenomicRanges-method}
+\alias{overlapsAny,GenomicRanges,GRangesList-method}
+\alias{overlapsAny,GRangesList,GRangesList-method}
+\alias{overlapsAny,RangesList,GenomicRanges-method}
+\alias{overlapsAny,RangesList,GRangesList-method}
+\alias{overlapsAny,GenomicRanges,RangesList-method}
+\alias{overlapsAny,GRangesList,RangesList-method}
+\alias{overlapsAny,RangedData,GenomicRanges-method}
+\alias{overlapsAny,RangedData,GRangesList-method}
+\alias{overlapsAny,GenomicRanges,RangedData-method}
+\alias{overlapsAny,GRangesList,RangedData-method}
+\alias{overlapsAny,GappedAlignments,Vector-method}
+\alias{overlapsAny,Vector,GappedAlignments-method}
+\alias{overlapsAny,GappedAlignments,GappedAlignments-method}
+\alias{overlapsAny,GappedAlignmentPairs,Vector-method}
 
 \alias{match,GRangesList,GenomicRanges-method}
 \alias{match,GenomicRanges,GRangesList-method}
@@ -78,6 +78,23 @@
 \alias{\%in\%,GappedAlignments,GappedAlignments-method}
 \alias{\%in\%,GappedAlignmentPairs,Vector-method}
 
+\alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
+\alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
+\alias{subsetByOverlaps,GRangesList,GRangesList-method}
+\alias{subsetByOverlaps,RangesList,GenomicRanges-method}
+\alias{subsetByOverlaps,RangesList,GRangesList-method}
+\alias{subsetByOverlaps,GenomicRanges,RangesList-method}
+\alias{subsetByOverlaps,GRangesList,RangesList-method}
+\alias{subsetByOverlaps,RangedData,GenomicRanges-method}
+\alias{subsetByOverlaps,RangedData,GRangesList-method}
+\alias{subsetByOverlaps,GenomicRanges,RangedData-method}
+\alias{subsetByOverlaps,GRangesList,RangedData-method}
+\alias{subsetByOverlaps,GappedAlignments,Vector-method}
+\alias{subsetByOverlaps,Vector,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
+
 
 \title{GRanges, GRangesList, GappedAlignments and GappedAlignmentPairs
        Interval Overlaps}
@@ -94,6 +111,10 @@
     select = c("all", "first", "last", "arbitrary"),
     ignore.strand = FALSE)
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
+    maxgap = 0L, minoverlap = 1L,
+    type = c("any", "start", "end", "within", "equal"), 
+    ignore.strand = FALSE)
+\S4method{overlapsAny}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"), 
     ignore.strand = FALSE)
@@ -158,6 +179,10 @@
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
+
+  For \code{overlapsAny} a logical vector of length equal to the number of
+  ranges in \code{query} indicating those that overlap any of the ranges
+  in \code{subject}.
 
   For \code{subsetByOverlaps} an object of the same class as \code{query}
   containing the subset that overlapped at least one entity in \code{subject}.
@@ -267,7 +292,7 @@ countOverlaps(galn[8:10], subject, ignore.strand=TRUE)
 
 ## Count alignments in 'galn' that DO overlap with 'subject' vs those
 ## that do NOT:
-table(!is.na(findOverlaps(galn, subject, select="first")))
+table(overlapsAny(galn, subject))
 ## Extract those that DO:
 subsetByOverlaps(galn, subject)
 }

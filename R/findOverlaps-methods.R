@@ -590,7 +590,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
 ### findOverlaps-based methods
 ### -------------------------------------------------------------------------
 
-.countOverlaps.default <- function(query, subject,
+.countOverlaps.definition <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
         type = c("any", "start", "end", "within", "equal"),
         ignore.strand = FALSE)
@@ -618,11 +618,35 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment")
 )
 
-for (sig in .signatures) {
-    setMethod("countOverlaps", sig, .countOverlaps.default)
+for (sig in .signatures)
+    setMethod("countOverlaps", sig, .countOverlaps.definition)
+
+.match.definition <- function(x, table,
+                              nomatch = NA_integer_, incomparables = NULL)
+{
+    if (!identical(nomatch, NA_integer_))
+        stop("'nomatch' arg is not supported")
+    msg <- c("match() between a ", class(x), " and a ", class(table),
+             " object is deprecated.\nPlease use '",
+             "findOverlaps(x, table, select=\"first\")",
+             "' instead.")
+    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
+    findOverlaps(x, table, select="first")
 }
 
-.subsetByOverlaps.default <- function(query, subject,
+.overlapsAny.definition <- function(query, subject,
+        maxgap = 0L, minoverlap = 1L,
+        type = c("any", "start", "end", "within", "equal"),
+        ignore.strand = FALSE)
+{
+    !is.na(findOverlaps(query, subject, maxgap = maxgap,
+                        minoverlap = minoverlap,
+                        type = match.arg(type),
+                        select = "first",
+                        ignore.strand = ignore.strand))
+}
+
+.subsetByOverlaps.definition1 <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
         type = c("any", "start", "end", "within", "equal"), 
         ignore.strand = FALSE)
@@ -634,7 +658,7 @@ for (sig in .signatures) {
                               ignore.strand = ignore.strand))]
 }
 
-.subsetByOverlaps2 <- function(query, subject,
+.subsetByOverlaps.definition2 <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
         type = c("any", "start", "end", "within", "equal"), 
         ignore.strand = FALSE)
@@ -647,7 +671,7 @@ for (sig in .signatures) {
     query[seqsplit(i, space(query), drop=FALSE)]
 }
 
-.subsetByOverlaps3 <- function(query, subject,
+.subsetByOverlaps.definition3 <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
         type = c("any", "start", "end", "within", "equal"), 
         ignore.strand = FALSE)
@@ -657,29 +681,6 @@ for (sig in .signatures) {
                               type = match.arg(type),
                               select = "first",
                               ignore.strand = ignore.strand)),]
-}
-
-.match.default <- function(x, table,
-                           nomatch = NA_integer_, incomparables = NULL)
-{
-    if (!identical(nomatch, NA_integer_))
-        stop("'nomatch' arg is not supported")
-    msg <- c("match() between a ", class(x), " and a ", class(table),
-             " object is deprecated.\nPlease use '",
-             "findOverlaps(x, table, select=\"first\")",
-             "' instead.")
-    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
-    findOverlaps(x, table, select="first")
-}
-
-`.%in%.default` <- function(x, table)
-{
-    msg <- c("%in% between a ", class(x), " and a ", class(table),
-             " object is deprecated.\nPlease use '",
-             "!is.na(findOverlaps(x, table, select=\"first\"))",
-             "' instead.")
-    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
-    !is.na(findOverlaps(x, table, select="first"))
 }
 
 .signatures <- list(
@@ -705,19 +706,20 @@ for (sig in .signatures) {
 )
 
 for (sig in .signatures) {
-    if (sig[1L] == "RangesList")
-        setMethod("subsetByOverlaps", sig, .subsetByOverlaps2)
-    else if (sig[1L] %in% c("RangedData", "SummarizedExperiment"))
-        setMethod("subsetByOverlaps", sig, .subsetByOverlaps3)
-    else
-        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.default)
+    setMethod("overlapsAny", sig, .overlapsAny.definition)
     ## All "match" and "%in% methods (except methods for GenomicRanges objects)
     ## are deprecated in BioC 2.12 and will be defunct in BioC 2.13.
     ## Methods for GenomicRanges have been moved to GenomicRanges-comparison.R
     ## and their behavior changed to do equality instead of overlaps.
     if (!identical(sig, c("GenomicRanges", "GenomicRanges"))) {
-        setMethod("match", sig, .match.default)
-        setMethod("%in%", sig, `.%in%.default`)
+        setMethod("match", sig, .match.definition)
+        setMethod("%in%", sig, IRanges:::`.%in%.definition`)
     }
+    if (sig[1L] == "RangesList")
+        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition2)
+    else if (sig[1L] %in% c("RangedData", "SummarizedExperiment"))
+        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition3)
+    else
+        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition1)
 }
 

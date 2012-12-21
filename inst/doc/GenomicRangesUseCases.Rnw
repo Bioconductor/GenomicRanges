@@ -521,7 +521,7 @@ annotated transcripts?
 
 Isolate regions not present in the annotation.
 <<noOlap>>=
-noOlap <- aligns[!aligns %in% exonRanges]
+noOlap <- aligns[!overlapsAny(aligns, exonRanges)]
 @
 
 Perform a \Rcode{findOverlaps} to confirm no ranges overlap.
