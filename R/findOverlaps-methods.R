@@ -618,8 +618,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment")
 )
 
-for (sig in .signatures)
-    setMethod("countOverlaps", sig, .countOverlaps.definition)
+setMethods("countOverlaps", .signatures, .countOverlaps.definition)
 
 .match.definition <- function(x, table,
                               nomatch = NA_integer_, incomparables = NULL)
