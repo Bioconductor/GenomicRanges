@@ -602,7 +602,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     structure(tabulate(counts, NROW(query)), names=names(query))
 }
 
-.signatures <- list(
+.signatures1 <- list(
     c("GenomicRanges", "Vector"),
     c("Vector", "GenomicRanges"),
     c("GenomicRanges", "GenomicRanges"),
@@ -618,20 +618,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment")
 )
 
-setMethods("countOverlaps", .signatures, .countOverlaps.definition)
-
-.match.definition <- function(x, table,
-                              nomatch = NA_integer_, incomparables = NULL)
-{
-    if (!identical(nomatch, NA_integer_))
-        stop("'nomatch' arg is not supported")
-    msg <- c("match() between a ", class(x), " and a ", class(table),
-             " object is deprecated.\nPlease use '",
-             "findOverlaps(x, table, select=\"first\")",
-             "' instead.")
-    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
-    findOverlaps(x, table, select="first")
-}
+setMethods("countOverlaps", .signatures1, .countOverlaps.definition)
 
 .overlapsAny.definition <- function(query, subject,
         maxgap = 0L, minoverlap = 1L,
@@ -682,7 +669,7 @@ setMethods("countOverlaps", .signatures, .countOverlaps.definition)
                               ignore.strand = ignore.strand)),]
 }
 
-.signatures <- list(
+.signatures2 <- list(
     c("GenomicRanges", "GenomicRanges"),
     c("GRangesList", "GenomicRanges"),
     c("GenomicRanges", "GRangesList"),
@@ -704,16 +691,8 @@ setMethods("countOverlaps", .signatures, .countOverlaps.definition)
     c("SummarizedExperiment", "SummarizedExperiment")
 )
 
-for (sig in .signatures) {
+for (sig in .signatures2) {
     setMethod("overlapsAny", sig, .overlapsAny.definition)
-    ## All "match" and "%in% methods (except methods for GenomicRanges objects)
-    ## are deprecated in BioC 2.12 and will be defunct in BioC 2.13.
-    ## Methods for GenomicRanges have been moved to GenomicRanges-comparison.R
-    ## and their behavior changed to do equality instead of overlaps.
-    if (!identical(sig, c("GenomicRanges", "GenomicRanges"))) {
-        setMethod("match", sig, .match.definition)
-        setMethod("%in%", sig, IRanges:::`.%in%.definition`)
-    }
     if (sig[1L] == "RangesList")
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition2)
     else if (sig[1L] %in% c("RangedData", "SummarizedExperiment"))
@@ -721,4 +700,57 @@ for (sig in .signatures) {
     else
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition1)
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### match(), %in%, findMatches(), and countMatches()
+###
+### All "match" and "%in% methods (except methods for GenomicRanges objects)
+### are deprecated in BioC 2.12 and will be defunct in BioC 2.13.
+### Methods for GenomicRanges have been moved to GenomicRanges-comparison.R
+### and their behavior changed to do equality instead of overlaps.
+
+.signatures3 <- .signatures2[-1L]
+
+.match.definition <- function(x, table,
+                              nomatch = NA_integer_, incomparables = NULL)
+{
+    if (!identical(nomatch, NA_integer_))
+        stop("'nomatch' arg is not supported")
+    msg <- c("match() between a ", class(x), " and a ", class(table),
+             " object is deprecated.\nPlease use '",
+             "findOverlaps(x, table, select=\"first\")",
+             "' instead.")
+    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
+    findOverlaps(x, table, select="first")
+}
+
+setMethods("match", .signatures3, .match.definition)
+
+setMethods("%in%", .signatures3, IRanges:::`.%in%.definition`)
+
+### The only reason for defining the methods below is to prevent the default
+### "findMatches" or "countMatches" methods to be called and return something
+### wrong (and the reason they would return something wrong is because they
+### are based on match() which does overlaps instead of equality).
+### TODO: Remove these methods in BioC 2.14 when the "match" methods for all
+### the signatures in '.signatures3' are gone.
+
+setMethods("findMatches", .signatures3,
+    function(x, table, select=c("all", "first", "last"), ...)
+    {
+        msg <- c("findMatches() between a ", class(x), " and a ",
+                 class(table), " object is not supported")
+        stop(msg)
+    }
+)
+
+setMethods("countMatches", .signatures3,
+    function(x, table, ...)
+    {
+        msg <- c("countMatches() between a ", class(x), " and a ",
+                 class(table), " object is not supported")
+        stop(msg)
+    }
+)
 

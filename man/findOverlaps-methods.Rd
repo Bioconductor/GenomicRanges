@@ -46,6 +46,23 @@
 \alias{overlapsAny,GappedAlignments,GappedAlignments-method}
 \alias{overlapsAny,GappedAlignmentPairs,Vector-method}
 
+\alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
+\alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
+\alias{subsetByOverlaps,GRangesList,GRangesList-method}
+\alias{subsetByOverlaps,RangesList,GenomicRanges-method}
+\alias{subsetByOverlaps,RangesList,GRangesList-method}
+\alias{subsetByOverlaps,GenomicRanges,RangesList-method}
+\alias{subsetByOverlaps,GRangesList,RangesList-method}
+\alias{subsetByOverlaps,RangedData,GenomicRanges-method}
+\alias{subsetByOverlaps,RangedData,GRangesList-method}
+\alias{subsetByOverlaps,GenomicRanges,RangedData-method}
+\alias{subsetByOverlaps,GRangesList,RangedData-method}
+\alias{subsetByOverlaps,GappedAlignments,Vector-method}
+\alias{subsetByOverlaps,Vector,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
+\alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
+
 \alias{match,GRangesList,GenomicRanges-method}
 \alias{match,GenomicRanges,GRangesList-method}
 \alias{match,GRangesList,GRangesList-method}
@@ -78,26 +95,41 @@
 \alias{\%in\%,GappedAlignments,GappedAlignments-method}
 \alias{\%in\%,GappedAlignmentPairs,Vector-method}
 
-\alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
-\alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
-\alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
-\alias{subsetByOverlaps,GRangesList,GRangesList-method}
-\alias{subsetByOverlaps,RangesList,GenomicRanges-method}
-\alias{subsetByOverlaps,RangesList,GRangesList-method}
-\alias{subsetByOverlaps,GenomicRanges,RangesList-method}
-\alias{subsetByOverlaps,GRangesList,RangesList-method}
-\alias{subsetByOverlaps,RangedData,GenomicRanges-method}
-\alias{subsetByOverlaps,RangedData,GRangesList-method}
-\alias{subsetByOverlaps,GenomicRanges,RangedData-method}
-\alias{subsetByOverlaps,GRangesList,RangedData-method}
-\alias{subsetByOverlaps,GappedAlignments,Vector-method}
-\alias{subsetByOverlaps,Vector,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{findMatches,GRangesList,GenomicRanges-method}
+\alias{findMatches,GenomicRanges,GRangesList-method}
+\alias{findMatches,GRangesList,GRangesList-method}
+\alias{findMatches,RangesList,GenomicRanges-method}
+\alias{findMatches,RangesList,GRangesList-method}
+\alias{findMatches,GenomicRanges,RangesList-method}
+\alias{findMatches,GRangesList,RangesList-method}
+\alias{findMatches,RangedData,GenomicRanges-method}
+\alias{findMatches,RangedData,GRangesList-method}
+\alias{findMatches,GenomicRanges,RangedData-method}
+\alias{findMatches,GRangesList,RangedData-method}
+\alias{findMatches,GappedAlignments,Vector-method}
+\alias{findMatches,Vector,GappedAlignments-method}
+\alias{findMatches,GappedAlignments,GappedAlignments-method}
+\alias{findMatches,GappedAlignmentPairs,Vector-method}
+
+\alias{countMatches,GRangesList,GenomicRanges-method}
+\alias{countMatches,GenomicRanges,GRangesList-method}
+\alias{countMatches,GRangesList,GRangesList-method}
+\alias{countMatches,RangesList,GenomicRanges-method}
+\alias{countMatches,RangesList,GRangesList-method}
+\alias{countMatches,GenomicRanges,RangesList-method}
+\alias{countMatches,GRangesList,RangesList-method}
+\alias{countMatches,RangedData,GenomicRanges-method}
+\alias{countMatches,RangedData,GRangesList-method}
+\alias{countMatches,GenomicRanges,RangedData-method}
+\alias{countMatches,GRangesList,RangedData-method}
+\alias{countMatches,GappedAlignments,Vector-method}
+\alias{countMatches,Vector,GappedAlignments-method}
+\alias{countMatches,GappedAlignments,GappedAlignments-method}
+\alias{countMatches,GappedAlignmentPairs,Vector-method}
 
 
-\title{GRanges, GRangesList, GappedAlignments and GappedAlignmentPairs
-       Interval Overlaps}
+\title{findOverlaps (and related) methods for GRanges, GRangesList,
+       GappedAlignments, and GappedAlignmentPairs objects}
 
 \description{
   Finds interval overlaps between a GRanges, GRangesList, GappedAlignments

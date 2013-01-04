@@ -12,6 +12,9 @@
 \alias{match,GenomicRanges,GenomicRanges-method}
 \alias{\%in\%,GenomicRanges,GenomicRanges-method}
 
+\alias{findMatches,GenomicRanges,GenomicRanges-method}
+\alias{countMatches,GenomicRanges,GenomicRanges-method}
+
 \alias{order,GenomicRanges-method}
 \alias{rank,GenomicRanges-method}
 
@@ -41,7 +44,7 @@
 ## -------
 
 \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch=NA_integer_, incomparables=NULL,
-      method=c("auto", "quick", "hash"), match.if.overlap=FALSE)
+      method=c("auto", "quick", "hash"), ignore.strand=FALSE, match.if.overlap=FALSE)
 
 ## order() and related methods
 ## ----------------------------
@@ -68,6 +71,10 @@
   \item{fromLast, method, nomatch}{
     See \code{?`\link[IRanges]{Ranges-comparison}`} in the IRanges
     package for a description of these arguments.
+  }
+  \item{ignore.strand}{
+    Whether or not the strand should be ignored when comparing 2 genomic
+    ranges.
   }
   \item{match.if.overlap}{
     You temporarily need to explicitly provide this argument otherwise
@@ -133,30 +140,80 @@
     \item The \link{GenomicRanges} class.
     \item \link[IRanges]{Ranges-comparison} in the IRanges
           package for comparing and ordering genomic ranges.
+    \item \link[GenomicRanges]{intra-range-methods} and
+          \link[GenomicRanges]{inter-range-methods} for
+          intra and inter range transformations.
+    \item \link[GenomicRanges]{setops-methods} for set operations on
+          \link{GenomicRanges} objects.
+    \item \code{\link[GenomicRanges]{findOverlaps}} for finding overlapping
+          ranges.
   }
 }
 
 \examples{
-gr <- GRanges(
+gr0 <- GRanges(
         seqnames=Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-        ranges=IRanges(1:10, end=10),
+        ranges=IRanges(c(1:9,7L), end=10),
         strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
         seqlengths=c(chr1=11, chr2=12, chr3=13))
+gr <- c(gr0, gr0[7:3])
 
-duplicated(gr)
-duplicated(c(gr[4], gr))
-unique(gr)
-unique(c(gr[4], gr))
-order(gr)
-sort(gr)
-rank(gr)
-
+## ---------------------------------------------------------------------
+## A. ELEMENT-WISE (AKA "PARALLEL") COMPARISON OF 2 GenomicRanges OBJECTS
+## ---------------------------------------------------------------------
 gr[2] == gr[2]  # TRUE
 gr[2] == gr[5]  # FALSE
 gr == gr[4]
 gr >= gr[3]
-compare(gr, gr[3])
-rangeComparisonCodeToLetter(compare(gr, gr[3]))
+
+## ---------------------------------------------------------------------
+## B. duplicated(), unique()
+## ---------------------------------------------------------------------
+duplicated(gr)
+unique(gr)
+
+## ---------------------------------------------------------------------
+## C. match(), %in%
+## ---------------------------------------------------------------------
+table <- gr[1:7]
+match(gr, table)  # Warning! The warning will be removed in BioC 2.13.
+
+## In the meantime, specify 'match.if.overlap=FALSE' to suppress the warning:
+match(gr, table, match.if.overlap=FALSE)
+match(gr, table, ignore.strand=TRUE, match.if.overlap=FALSE)
+
+gr \%in\% table  # Warning! The warning will be removed in BioC 2.13.
+## In the meantime, use suppressWarnings() to suppress the warning:
+suppressWarnings(gr \%in\% table)
+
+## ---------------------------------------------------------------------
+## D. findMatches(), countMatches()
+## ---------------------------------------------------------------------
+findMatches(gr, table)
+countMatches(gr, table)
+
+findMatches(gr, table, ignore.strand=TRUE)
+countMatches(gr, table, ignore.strand=TRUE)
+
+gr_levels <- unique(gr)
+countMatches(gr_levels, gr)
+
+## ---------------------------------------------------------------------
+## E. order() AND RELATED METHODS
+## ---------------------------------------------------------------------
+order(gr)
+sort(gr)
+rank(gr)
+
+## ---------------------------------------------------------------------
+## F. GENERALIZED ELEMENT-WISE COMPARISON OF 2 GenomicRanges OBJECTS
+## ---------------------------------------------------------------------
+gr2 <- GRanges(c(rep("chr1", 12), "chr2"), IRanges(c(1:11, 6:7), width=3))
+strand(gr2)[12] <- "+"
+gr3 <- GRanges("chr1", IRanges(5, 9))
+
+compare(gr2, gr3)
+rangeComparisonCodeToLetter(compare(gr2, gr3))
 }
 
 \keyword{methods}

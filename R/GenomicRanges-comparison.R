@@ -140,7 +140,7 @@ setMethod("duplicated", "GenomicRanges", .duplicated.GenomicRanges)
 setMethod("match", c("GenomicRanges", "GenomicRanges"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL,
                        method=c("auto", "quick", "hash"),
-                       match.if.overlap=FALSE)
+                       ignore.strand=FALSE, match.if.overlap=FALSE)
     {
         if (!isSingleNumberOrNA(nomatch))
             stop("'nomatch' must be a single number or NA")
@@ -149,24 +149,35 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
         if (!is.null(incomparables))
             stop("\"match\" method for GenomicRanges objects ",
                  "only accepts 'incomparables=NULL'")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
         if (missing(match.if.overlap))
             warning(IRanges:::match.if.overlap.warning.msg("GenomicRanges"))
         if (!isTRUEorFALSE(match.if.overlap))
             stop("'match.if.overlap' must be TRUE or FALSE")
         if (match.if.overlap) {
-            ans <- findOverlaps(x, table, select="first")
+            ans <- findOverlaps(x, table,
+                                select="first", ignore.strand=ignore.strand)
             if (!is.na(nomatch) && anyMissing(ans))
                 ans[is.na(ans)] <- nomatch
             return(ans)
         }
+        ## Calling merge() is the way to check that 'x' and 'table' are based
+        ## on the same reference genome.
+        merge(seqinfo(x), seqinfo(table))
+        if (ignore.strand) {
+            x_strand <- integer(length(x))
+            table_strand <- integer(length(table))
+        } else {
+            x_strand <- as.factor(strand(x))
+            table_strand <- as.factor(strand(table))
+        }
         ## Equivalent to (but faster than):
         ##     findOverlaps(x, table, type="equal", select="first")
         ## except when 'x' and 'table' both contain empty ranges.
-        IRanges:::matchIntegerQuads(as.factor(seqnames(x)),
-                                    as.factor(strand(x)),
+        IRanges:::matchIntegerQuads(as.factor(seqnames(x)), x_strand,
                                     start(x), width(x),
-                                    as.factor(seqnames(table)),
-                                    as.factor(strand(table)),
+                                    as.factor(seqnames(table)), table_strand,
                                     start(table), width(table),
                                     nomatch=nomatch, method=method)
     }
@@ -182,6 +193,35 @@ setMethod("%in%", c("GenomicRanges", "GenomicRanges"),
         warning(IRanges:::`%in%.warning.msg`("GenomicRanges"))
         !is.na(match(x, table, match.if.overlap=FALSE))
     }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### findMatches(), countMatches()
+###
+### The only reason for defining these methods is to prevent the warnings
+### that otherwise would be issued when the user calls findMatches() or
+### countMatches() on GenomicRanges objects.
+### TODO: Remove these methods in BioC 2.14 when the 'match.if.overlap' arg
+### of match() is gone.
+
+setMethod("findMatches", c("GenomicRanges", "GenomicRanges"),
+    function(x, table, select=c("all", "first", "last"), ...)
+    {
+        select <- match.arg(select)
+        if (select != "all")
+            stop("'select' is not supported yet. Note that you can use ",
+                 "match() if you want to do 'select=\"first\"'. Otherwise ",
+                 "you're welcome to request this on the Bioconductor ",
+                 "mailing list.")
+        IRanges:::.findAllMatchesInSmallTable(x, table,
+                                              match.if.overlap=FALSE, ...)
+    }
+)
+
+setMethod("countMatches", c("GenomicRanges", "GenomicRanges"),
+    function(x, table, ...)
+        IRanges:::.countMatches.default(x, table, match.if.overlap=FALSE, ...)
 )
 
 
