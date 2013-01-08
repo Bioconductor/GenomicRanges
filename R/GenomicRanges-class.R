@@ -549,40 +549,43 @@ setReplaceMethod("[", "GenomicRanges",
     }
 )
 
+### Not exported. 'x' *must* be an unnamed list of length >= 1 (not checked).
+.unlist_list_of_GenomicRanges <- function(x, ignore.mcols=FALSE)
+{
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+    ans_class <- class(x[[1L]])
+    ans_seqinfo <- do.call(merge, lapply(x, seqinfo))
+    ans_seqnames <- do.call(c, lapply(x, seqnames))
+    ans_ranges <- do.call(c, lapply(x, ranges))
+    ans_strand <- do.call(c, lapply(x, strand))
+    if (ignore.mcols) {
+        ans_mcols <- new("DataFrame", nrows=length(ans_ranges))
+    } else {
+        ans_mcols <- do.call(rbind, lapply(x, mcols, FALSE))
+    }
+    new(ans_class, seqnames=ans_seqnames, ranges=ans_ranges, strand=ans_strand,
+                   elementMetadata=ans_mcols, seqinfo=ans_seqinfo)
+}
+
 setMethod("c", "GenomicRanges",
     function(x, ..., ignore.mcols=FALSE, .ignoreElementMetadata=FALSE,
              recursive=FALSE)
     {
         if (!identical(recursive, FALSE))
             stop("'recursive' argument not supported")
-        if (!isTRUEorFALSE(ignore.mcols))
-            stop("'ignore.mcols' must be TRUE or FALSE")
         if (!isTRUEorFALSE(.ignoreElementMetadata))
             stop("'.ignoreElementMetadata' must be TRUE or FALSE")
         if (.ignoreElementMetadata) {
-            msg <- c("the '.ignoreElementMetadata' argument is deprecated, ",
+            msg <- c("the '.ignoreElementMetadata' argument is defunct, ",
                      "please use 'ignore.mcols'\n  instead")
             .Defunct(msg=msg)
         }
-        args <- unname(list(x, ...))
-        ans_seqinfo <- do.call(merge, lapply(args, seqinfo))
-        ans_seqnames <- do.call(c, lapply(args, seqnames))
-        ans_ranges <- do.call(c, lapply(args, ranges))
-        ans_strand <- do.call(c, lapply(args, strand))
-        
-        if (ignore.mcols) {
-          ans_mcols <- new("DataFrame", nrows=length(ans_ranges))
-        } else {
-          ans_mcols <- do.call(rbind, lapply(args, mcols, FALSE))
-        }
-        
-        ans_names <- names(ans_ranges)
-        clone(x,
-              seqnames=ans_seqnames,
-              ranges=ans_ranges,
-              strand=ans_strand,
-              seqinfo=ans_seqinfo,
-              elementMetadata=ans_mcols)
+        if (missing(x))
+            args <- unname(list(...))
+        else
+            args <- unname(list(x, ...))
+        .unlist_list_of_GenomicRanges(args, ignore.mcols=ignore.mcols)
     }
 )
 
