@@ -225,11 +225,14 @@ in differential expression methods offered in the \Rpackage{DESeq}
 package. 
 
 \subsection{source files}
-BAM files were downloaded from \url{http://www.embl.de/~reyes/Graveley/bam}.
-Of the seven files available, 3 are single-reads and 4 are paired-end.
-Smaller versions of untreated1 (single-end) and untreated2 (paired-end)
-have been made available in the \Rpackage{pasillaBamSubset} package. This 
-subset includes chromosome 4 only.
+Files are available through NCBI Gene Expression Omnibus (GEO), accession 
+number GSE18508.
+\url{http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE18508}.
+SAM files can be converted to BAM with the \Rfunction{asBam} function
+in the \Rpackage{Rsamtools} package. Of the seven files available, 3 
+are single-reads and 4 are paired-end. Smaller versions of untreated1 
+(single-end) and untreated2 (paired-end) have been made available in the 
+\Rpackage{pasillaBamSubset} package. This subset includes chromosome 4 only.
 
 \Rfunction{summarizeOverlaps} is capable of counting paired-end reads in
 both a \Rcode{BamFile}-method (set argument \Rcode{singleEnd=TRUE}) or a
