@@ -9,7 +9,7 @@
 ##   unique.
 ## 'legacy' data types / functions: as "RangedData", as "RangesList",
 ##   renameSeqlevels, keepSeqlevels.
-## Possile to implement, but not yet: Ops, resolveHits, map,
+## Possile to implement, but not yet: Ops, map,
 ##   seqselect, seqselect<-, window, window<-
 
 ## mcols

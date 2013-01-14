@@ -411,7 +411,7 @@ exptData(x, ...) <- value
   they do not make sense for \sQuote{SummarizedExperiment} objects
   (e.g., length, name, as.data.frame, c, splitAsList), involve
   non-trivial combination or splitting of rows (e.g., disjoin, gaps,
-  reduce, unique), or have not yet been implemented (Ops, resolveHits,
+  reduce, unique), or have not yet been implemented (Ops,
   map, seqselect, seqselect<-, window, window<-).
 
 }
