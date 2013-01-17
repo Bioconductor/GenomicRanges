@@ -44,7 +44,7 @@
 \arguments{
   \item{x}{A \link{GenomicRanges} object.}
   \item{drop.empty.ranges, min.gapwidth, with.mapping, with.inframe.attrib, start, end}{
-    See \code{?`\link[IRanges]{inter-range-methods}`}.
+    See \code{?`\link[IRanges]{inter-range-methods}`} in the IRanges package.
   } 
   \item{ignore.strand}{
     \code{TRUE} or \code{FALSE}. Whether the strand of the input ranges
