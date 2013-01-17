@@ -145,7 +145,7 @@
           intra and inter range transformations.
     \item \link[GenomicRanges]{setops-methods} for set operations on
           \link{GenomicRanges} objects.
-    \item \code{\link[GenomicRanges]{findOverlaps-methods}} for finding
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding
           overlapping genomic ranges.
   }
 }
