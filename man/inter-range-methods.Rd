@@ -30,7 +30,7 @@
 \S4method{range}{GenomicRanges}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-        with.inframe.attrib=FALSE, ignore.strand=FALSE)
+        with.mapping=FALSE, with.inframe.attrib=FALSE, ignore.strand=FALSE)
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
@@ -43,7 +43,7 @@
 
 \arguments{
   \item{x}{A \link{GenomicRanges} object.}
-  \item{start, end, drop.empty.ranges, min.gapwidth, with.inframe.attrib}{
+  \item{drop.empty.ranges, min.gapwidth, with.mapping, with.inframe.attrib, start, end}{
     See \code{?`\link[IRanges]{inter-range-methods}`}.
   } 
   \item{ignore.strand}{
@@ -97,6 +97,8 @@ the two features cannot overlap if they are on different strands.
     \item The \link[IRanges]{Ranges} class in the IRanges package.
     \item The \link[IRanges]{inter-range-methods} man page in the
           IRanges package.
+    \item \link{GenomicRanges-comparison} for comparing and ordering
+          genomic ranges.
   }
 }
 
@@ -110,11 +112,64 @@ gr <- GRanges(
       )
 gr
 
+## ---------------------------------------------------------------------
+## range()
+## ---------------------------------------------------------------------
 range(gr)
+
+# ---------------------------------------------------------------------
+## reduce()
+## ---------------------------------------------------------------------
 reduce(gr)
+
+gr2 <- reduce(gr, with.mapping=TRUE)
+mapping <- mcols(gr2)$mapping  # an IntegerList
+
+## Use the mapping from reduced to original ranges to group the original
+## ranges by reduced range:
+relist(gr[unlist(mapping)], mapping)
+
+## Or use it to split the DataFrame of original metadata columns by
+## reduced range:
+relist(mcols(gr)[unlist(mapping), ], mapping)  # a SplitDataFrameList
+
+## [For advanced users] Use the mapping to compare the reduced ranges
+## with the ranges they originate from:
+expanded_gr2 <- rep(gr2, elementLengths(mapping))
+reordered_gr <- gr[unlist(mapping)]
+codes <- compare(expanded_gr2, reordered_gr)
+## All the codes should translate to "d", "e", "g", or "h" (the 4 letters
+## indicating that the range on the left contains the range on the right):
+alphacodes <- rangeComparisonCodeToLetter(compare(expanded_gr2, reordered_gr))
+stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
+
+## On a big GRanges object with a lot of seqlevels:
+mcols(gr) <- NULL
+biggr <- c(gr, GRanges("chr1", IRanges(c(4, 1), c(5, 2)), strand="+"))
+seqlevels(biggr) <- paste0("chr", 1:2000)
+biggr <- rep(biggr, 25000)
+set.seed(33)
+seqnames(biggr) <- sample(factor(seqlevels(biggr), levels=seqlevels(biggr)),
+                          length(biggr), replace=TRUE)
+
+biggr2 <- reduce(biggr, with.mapping=TRUE)
+mapping <- mcols(biggr2)$mapping
+expanded_biggr2 <- rep(biggr2, elementLengths(mapping))
+reordered_biggr <- biggr[unlist(mapping)]
+codes <- compare(expanded_biggr2, reordered_biggr)
+alphacodes <- rangeComparisonCodeToLetter(compare(expanded_biggr2,
+                                                  reordered_biggr))
+stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
+table(alphacodes)
+
+## ---------------------------------------------------------------------
+## gaps()
+## ---------------------------------------------------------------------
 gaps(gr, start = 1, end = 10)
 
-## disjoin(), isDisjoint(), disjointBins():
+## ---------------------------------------------------------------------
+## disjoin(), isDisjoint(), disjointBins()
+## ---------------------------------------------------------------------
 disjoin(gr)
 isDisjoint(gr)
 stopifnot(isDisjoint(disjoin(gr)))
