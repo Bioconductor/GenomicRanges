@@ -128,8 +128,7 @@
 \alias{countMatches,GappedAlignmentPairs,Vector-method}
 
 
-\title{findOverlaps (and related) methods for GRanges, GRangesList,
-       GappedAlignments, and GappedAlignmentPairs objects}
+\title{Finding overlapping genomic ranges}
 
 \description{
   Finds interval overlaps between a GRanges, GRangesList, GappedAlignments
