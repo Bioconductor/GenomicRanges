@@ -131,8 +131,9 @@
 \title{Finding overlapping genomic ranges}
 
 \description{
-  Finds interval overlaps between a GRanges, GRangesList, GappedAlignments
-  or GappedAlignmentPairs object and another object containing ranges.
+  Finds interval overlaps between a \link{GRanges}, \link{GRangesList},
+  \link{GappedAlignments}, or \link{GappedAlignmentPairs} object, and
+  another object containing ranges.
 }
 
 \usage{
