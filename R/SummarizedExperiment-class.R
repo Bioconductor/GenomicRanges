@@ -111,8 +111,11 @@ setMethod(SummarizedExperiment, "SimpleList",
         colData <- DataFrame(row.names=nms)
     }
 
-    if (!all(sapply(assays, function(x) is.null(dimnames(x)))))
-        assays <- endoapply(assays, "dimnames<-", NULL)
+    FUN <- function(x)
+        ## dimnames as NULL or list(NULL, NULL)
+        all(sapply(dimnames(x), is.null))
+    if (!all(sapply(assays, FUN)))
+        assays <- endoapply(assays, unname)
     if (!is(assays, "Assays"))
         assays <- .ShallowSimpleListAssays$new(data=assays)
 
