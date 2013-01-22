@@ -103,6 +103,9 @@
 \alias{nearest,SummarizedExperiment,SummarizedExperiment-method}
 \alias{nearest,SummarizedExperiment,missing-method}
 \alias{order,SummarizedExperiment-method}
+\alias{overlapsAny,SummarizedExperiment,SummarizedExperiment-method}
+\alias{overlapsAny,SummarizedExperiment,Vector-method}
+\alias{overlapsAny,Vector,SummarizedExperiment-method}
 \alias{precede,ANY,SummarizedExperiment-method}
 \alias{precede,SummarizedExperiment,ANY-method}
 \alias{precede,SummarizedExperiment,SummarizedExperiment-method}
@@ -116,10 +119,14 @@
 \alias{seqnames,SummarizedExperiment-method}
 \alias{shift,SummarizedExperiment-method}
 \alias{sort,SummarizedExperiment-method}
+\alias{splitAsListReturnedClass,GRanges-method}
 \alias{start,SummarizedExperiment-method}
 \alias{start<-,SummarizedExperiment-method}
 \alias{strand,SummarizedExperiment-method}
 \alias{strand<-,SummarizedExperiment-method}
+\alias{subsetByOverlaps,SummarizedExperiment,SummarizedExperiment-method}
+\alias{subsetByOverlaps,SummarizedExperiment,Vector-method}
+\alias{subsetByOverlaps,Vector,SummarizedExperiment-method}
 \alias{values,SummarizedExperiment-method}
 \alias{values<-,SummarizedExperiment-method}
 \alias{width,SummarizedExperiment-method}
@@ -399,12 +406,15 @@ exptData(x, ...) <- value
   \code{\link{flank}}, \code{\link{follow}}, \code{\link{granges}},
   \code{\link{isDisjoint}}, \code{\link{match}}, \code{\link{mcols}},
   \code{\link{mcols<-}}, \code{\link{narrow}}, \code{\link{nearest}},
-  \code{\link{order}}, \code{\link{precede}}, \code{\link{ranges}},
+  \code{\link{order}}, \code{\link{overlapsAny}}, \code{\link{precede}},
+  \code{\link{ranges}},
   \code{\link{ranges<-}}, \code{\link{rank}}, \code{\link{resize}},
   \code{\link{restrict}}, \code{\link{seqinfo}},
   \code{\link{seqinfo<-}}, \code{\link{seqnames}}, \code{\link{shift}},
-  \code{\link{sort}}, \code{\link{start}}, \code{\link{start<-}},
-  \code{\link{strand}}, \code{\link{strand<-}}, \code{\link{width}},
+  \code{\link{sort}}, \code{splitAsListReturnedClass},
+  \code{\link{start}}, \code{\link{start<-}},
+  \code{\link{strand}}, \code{\link{strand<-}},
+  \code{\link{subsetByOverlaps}}, \code{\link{width}},
   \code{\link{width<-}}.
 
   Not all \code{\link{GRanges}-class} operations are supported, because
