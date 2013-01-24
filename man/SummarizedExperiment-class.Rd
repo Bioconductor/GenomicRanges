@@ -60,6 +60,10 @@
 \alias{[[<-,SummarizedExperiment,ANY,missing,ANY-method}
 \alias{[[<-,SummarizedExperiment,ANY,missing-method}
 
+% Combine methods 
+\alias{cbind,SummarizedExperiment-method}
+\alias{rbind,SummarizedExperiment-method}
+
 % GenomicRanges compatibility methods
 \alias{compare,ANY,SummarizedExperiment-method}
 \alias{compare,SummarizedExperiment,ANY-method}
@@ -192,6 +196,11 @@ exptData(x, ...) <- value
 \S4method{[}{SummarizedExperiment}(x, i, j, ..., drop=TRUE)
 \S4method{[}{SummarizedExperiment,ANY,ANY,SummarizedExperiment}(x, i, j) <- value
 
+## Combining 
+
+\S4method{cbind}{SummarizedExperiment}(..., deparse.level=1)
+\S4method{rbind}{SummarizedExperiment}(..., deparse.level=1)
+
 ## Coercion
 
 \S4method{updateObject}{SummarizedExperiment}(object, ..., verbose=FALSE)
@@ -225,6 +234,9 @@ exptData(x, ...) <- value
 
     For \code{assay}, \code{...} may contain \code{withNames}, which is
     forwarded to \code{assays}.
+
+    For \code{cbind, rbind}, \code{...} contains \code{SummarizedExperiment}
+    objects to be combined.
 
     For other accessors, ignored.
 
@@ -260,6 +272,9 @@ exptData(x, ...) <- value
 
   \item{value}{An instance of a class specified in the S4 method
     signature or as outlined in \sQuote{Details}.}
+
+  \item{deparse.level}{See \code{?base::\link[base]{cbind}} for a description of
+    this argument.}
 
 }
 
@@ -457,6 +472,33 @@ exptData(x, ...) <- value
 
 }
 
+\section{Combining}{
+
+  In the code snippets below, \code{...} are \code{SummarizedExperiment}
+  instances to be combined.
+
+  \describe{
+
+    \item{\code{cbind(...)}, \code{rbind(...)}:}{
+      \code{cbind} combines objects with identical ranges (\code{rowData}) 
+      but different samples (columns in \code{assays}). Objects with a 
+      different number of rows or different rownames will not be
+      combined.
+
+      \code{rbind} combines objects with different ranges (\code{rowData}) 
+      and the same subjects (columns in \code{assays}). Objects with a
+      different number of columns or different colnames will not be
+      combined.
+
+      Currently \code{exptData} from all objects are combined into a
+      single \code{SimpleList} without checking for data duplication.
+
+    }
+
+  }
+
+}
+
 \section{Implementation and Extension}{
 
   This section contains advanced material meant for package developers.
@@ -532,4 +574,19 @@ exptData(x, ...) <- value
   head(assay(sset))
 
   sset[, sset$Treatment == "ChIP"]
+
+  ## cbind is appropriate for combining objects with the same ranges and 
+  ## different samples.
+  se1 <- sset
+  se2 <- se1[,1:3]
+  colnames(se2) <- letters[1:ncol(se2)] 
+  cmb1 <- cbind(se1, se2)
+
+  ## rbind is appropriate for combining objects with the same samples and
+  ## different ranges.
+  se1 <- sset
+  se2 <- se1[1:50,]
+  rownames(se2) <- letters[1:nrow(se2)] 
+  cmb2 <- rbind(se1, se2)
+
 }

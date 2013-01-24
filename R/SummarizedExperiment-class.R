@@ -505,7 +505,7 @@ setReplaceMethod("[",
 {
     if (missing(i) && missing(j))
         return(value)
-    
+ 
     if (!missing(i) && is.character(i)) {
         fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
         i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
@@ -560,6 +560,80 @@ setReplaceMethod("[",
         stop(msg)
     x
 })
+
+## rbind and cbind
+
+## Appropriate for objects with different ranges and same samples.
+setMethod("rbind", "SummarizedExperiment",
+    function(..., deparse.level=1)
+{
+    args <- unname(list(...))
+    if (!.compare(lapply(args, ncol)))
+        stop("'...' objects must have the same number of samples (columns)")
+    if (!.compare(lapply(args, colnames)))
+            stop("'...' objects must have the same colnames")
+
+    rowData <- do.call(c, lapply(args, rowData)) 
+    assays <- .bind_assays(args, rbind)
+    colData <- colData(args[[1]]) ## assume all colData the same 
+    exptData <- do.call(c, lapply(args, exptData))
+
+    SummarizedExperiment(assays=assays, rowData=rowData, 
+                         colData=colData, exptData=exptData) 
+})
+
+## Appropriate for objects with same ranges and different samples.
+setMethod("cbind", "SummarizedExperiment",
+    function(..., deparse.level=1)
+{
+    args <- unname(list(...))
+    if (!.compare(lapply(args, nrow)))
+        stop("'...' objects must have the same number of ranges (rows)")
+    if (!.compare(lapply(args, rownames)))
+            stop("'...' objects must have the same rownames")
+
+    meta <- do.call(cbind, lapply(args, function(i) mcols(rowData(i)))) 
+    rowData <- rowData(args[[1]]) ## assume all ranges the same
+    mcols(rowData) <- meta
+    assays <- .bind_assays(args, cbind)
+    colData <- .bind_colData(args, rbind)
+    exptData <- do.call(c, lapply(args, exptData))
+
+    SummarizedExperiment(assays=assays, rowData=rowData,
+                         colData=colData, exptData=exptData) 
+})
+
+.compare <- function(x) 
+{
+    if (class(x) != "list")
+        x <- as.list(x)
+    all(sapply(x[-1], function(xelt) 
+        all(identical(xelt, x[[1]]))))
+}
+
+.bind_colData <- function(args, bind)
+{
+    lst <- lapply(args, colData)
+    if (!.compare(lapply(lst, names)))
+        stop("columns in colData() must have the same names")
+    nms <- names(lst[[1]])
+    colData <- DataFrame(lapply(nms, function(n) 
+                  do.call(bind, lapply(lst, "[", n))))
+    names(colData) <- nms
+    colData
+}
+
+.bind_assays <- function(args, bind)
+{
+    lst <- lapply(args, assays)
+    if (!.compare(lapply(lst, names)))
+        stop("list elements in assays() must have the same names")
+    nms <- names(lst[[1]])
+    assays <- SimpleList(lapply(nms, function(n)
+                  do.call(bind, lapply(lst, "[[", n))))
+    names(assays) <- nms
+    assays
+}
 
 ## $, $<-, [[, [[<- for colData access
 

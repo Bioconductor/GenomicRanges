@@ -45,6 +45,8 @@ exportMethods(
     as.data.frame,
     coerce,
     c,
+    cbind,
+    rbind,
     show,
     "==", "<=",
     duplicated, match, "%in%",

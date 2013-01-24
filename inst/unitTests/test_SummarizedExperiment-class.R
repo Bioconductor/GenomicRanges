@@ -211,7 +211,6 @@ test_SummarizedExperiment_subsetassign <- function()
         sset <- ssetList[[i]] 
         dimnames(sset) <- list(LETTERS[seq_len(nrow(sset))],
                                letters[seq_len(ncol(sset))])
-
         ## rows
         ss1 <- sset
         ss1[1:2,] <- ss1[2:1,]
@@ -226,7 +225,6 @@ test_SummarizedExperiment_subsetassign <- function()
         ss1Rle[Rle(rle),] <- ss1Rle[Rle(rle),]
         checkIdentical(rowData(ss1rle), rowData(ss1Rle))
         checkIdentical(assays(ss1rle), assays(ss1Rle))
-
         ## cols
         ss1 <- sset
         ss1[,1:2] <- ss1[,2:1,drop=FALSE]
@@ -243,3 +241,73 @@ test_SummarizedExperiment_subsetassign <- function()
     ss1[,] <- ss2
     checkIdentical(ss1, ss2)
 }
+
+test_SummarizedExperiment_cbind <- function()
+## objects with same ranges with different samples
+{
+    ## empty
+    se <- SummarizedExperiment()
+    res <- cbind(se, se)
+    checkIdentical(assays(res), assays(se))
+    checkIdentical(rowData(res), rowData(se))
+    checkIdentical(colData(res), colData(se))
+    checkIdentical(exptData(res), exptData(se))
+    se1 <- ssetList[[1]]
+    assays(se1) <- SimpleList()
+    res <- cbind(se1, se1)
+    checkTrue(nrow(res) == 5)
+    checkTrue(ncol(res) == 6)
+
+    ## different samples
+    se1 <- ssetList[[1]]
+    dimnames(se1) <- list(LETTERS[seq_len(nrow(se1))],
+                          letters[seq_len(ncol(se1))])
+    se2 <- se1[,2]
+    colnames(se2) <- month.name[seq_len(ncol(se2))]
+    res <- cbind(se1, se2)
+    checkTrue(ncol(res) == 4)
+    checkTrue(nrow(res) == 5)
+    checkTrue(nrow(colData(res)) == 4)
+
+    ## different ranges 
+    se2 <- se1[2:4]
+    rownames(se2) <- month.name[seq_len(nrow(se2))]
+    checkException(cbind(se1, se2), silent=TRUE)
+}
+
+test_SummarizedExperiment_rbind <- function()
+## objects with different ranges with same samples
+{
+    ## empty
+    se <- SummarizedExperiment()
+    res <- rbind(se, se)
+    checkIdentical(assays(res), assays(se))
+    checkIdentical(rowData(res), rowData(se))
+    checkIdentical(colData(res), colData(se))
+    checkIdentical(exptData(res), exptData(se))
+    se1 <- ssetList[[1]]
+    assays(se1) <- SimpleList()
+    res <- rbind(se1, se1)
+    checkTrue(nrow(res) == 10)
+    checkTrue(ncol(res) == 3)
+
+    ## different ranges 
+    se1 <- ssetList[[1]]
+    dimnames(se1) <- list(LETTERS[seq_len(nrow(se1))],
+                          letters[seq_len(ncol(se1))])
+    se2 <- se1[2:4,]
+    rownames(se2) <- month.name[seq_len(nrow(se2))]
+    res <- rbind(se1, se2)
+    checkTrue(ncol(res) == 3)
+    checkTrue(nrow(res) == 8)
+    checkTrue(nrow(colData(res)) == 3)
+
+    ## different samples 
+    se2 <- se1[,2]
+    colnames(se2) <- month.name[seq_len(ncol(se2))]
+    checkException(rbind(se1, se2), silent=TRUE)
+}
+
+
+
+
