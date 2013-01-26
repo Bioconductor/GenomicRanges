@@ -16,6 +16,7 @@
 \alias{updateObject,GRanges-method}
 
 % Coercion:
+\alias{splitAsListReturnedClass,GRange}
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}

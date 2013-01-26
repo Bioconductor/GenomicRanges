@@ -119,3 +119,12 @@ test_SummarizedExperiment_GRanges_values <- function()
     checkIdentical(subsetByOverlaps(rowData(x1), rowData(x1)[3]),
                    rowData(subsetByOverlaps(x1, x1[3])))
 }
+
+test_SummarizedExperiment_split <- function() {
+    gr <- GRanges(Rle(c("A", "B"), c(2, 3)), IRanges(1:5, 10))
+    se <- SummarizedExperiment(m, rowData=gr, colData=colData)
+    ## FIXME: unname should not be necessary
+    obs <- split(se, seqnames(se))
+    exp <- SimpleList(A=se[1:2], B=se[3:5])
+    checkEquals(obs, exp)
+}

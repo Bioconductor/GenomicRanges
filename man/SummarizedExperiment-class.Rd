@@ -121,9 +121,12 @@
 \alias{seqinfo,SummarizedExperiment-method}
 \alias{seqinfo<-,SummarizedExperiment-method}
 \alias{seqnames,SummarizedExperiment-method}
+\alias{seqselect,SummarizedExperiment-method}
+\alias{seqselect<-,SummarizedExperiment-method}
 \alias{shift,SummarizedExperiment-method}
 \alias{sort,SummarizedExperiment-method}
-\alias{splitAsListReturnedClass,GRanges-method}
+\alias{split,SummarizedExperiment-method}
+\alias{splitAsListReturnedClass,SummarizedExperiment-method}
 \alias{start,SummarizedExperiment-method}
 \alias{start<-,SummarizedExperiment-method}
 \alias{strand,SummarizedExperiment-method}
@@ -425,8 +428,9 @@ exptData(x, ...) <- value
   \code{\link{ranges}},
   \code{\link{ranges<-}}, \code{\link{rank}}, \code{\link{resize}},
   \code{\link{restrict}}, \code{\link{seqinfo}},
-  \code{\link{seqinfo<-}}, \code{\link{seqnames}}, \code{\link{shift}},
-  \code{\link{sort}}, \code{splitAsListReturnedClass},
+  \code{\link{seqinfo<-}}, \code{\link{seqnames}},
+  \code{\link{seqselect}}, \code{\link{seqselect<-}}, \code{\link{shift}},
+  \code{\link{sort}}, \code{split}, \code{splitAsListReturnedClass},
   \code{\link{start}}, \code{\link{start<-}},
   \code{\link{strand}}, \code{\link{strand<-}},
   \code{\link{subsetByOverlaps}}, \code{\link{width}},

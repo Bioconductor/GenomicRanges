@@ -4,13 +4,11 @@
 ## Not supported:
 ## 
 ## Not consistent SummarizedExperiment structure: length, names,
-##   as.data.frame, c, splitAsListReturnedClass.
-## Length-changing endomorphisms: disjoin, gaps, reduce,
-##   unique.
+##   as.data.frame, c.
+## Length-changing endomorphisms: disjoin, gaps, reduce, unique.
 ## 'legacy' data types / functions: as "RangedData", as "RangesList",
 ##   renameSeqlevels, keepSeqlevels.
-## Possile to implement, but not yet: Ops, map,
-##   seqselect, seqselect<-, window, window<-
+## Possile to implement, but not yet: Ops, map, window, window<-
 
 ## mcols
 setMethod(mcols, "SummarizedExperiment",
@@ -249,4 +247,30 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
     if (is.character(msg <- .valid.SummarizedExperiment(x)))
         stop(msg)
     x
+})
+
+## seqselect, seqselect<-
+
+setMethod(seqselect, "SummarizedExperiment",
+    function(x, start = NULL, end = NULL, width = NULL)
+{
+    ridx <- seqselect(seq_len(nrow(x)), start=start, end=end, width=width)
+    x[ridx,]
+})
+
+setReplaceMethod("seqselect", "SummarizedExperiment",
+    function (x, start = NULL, end = NULL, width = NULL, value)
+{
+    ridx <- seqselect(seq_len(nrow(x)), start=start, end=end, width=width)
+    x[ridx,] <- value
+    x
+})
+
+setMethod(splitAsListReturnedClass, "SummarizedExperiment",
+    function(x) "SimpleList")
+
+setMethod(split, "SummarizedExperiment",
+    function(x, f, drop=FALSE, ...) 
+{
+    splitAsList(x, f, drop=drop)
 })
