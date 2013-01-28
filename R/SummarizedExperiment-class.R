@@ -567,50 +567,41 @@ setReplaceMethod("[",
 setMethod("rbind", "SummarizedExperiment",
     function(..., deparse.level=1)
 {
-    .rbind.SummarizedExperiment(...)
-})
-
-.rbind.SummarizedExperiment <- function(...)
-{
     args <- unname(list(...))
     if (!.compare(lapply(args, colnames)))
             stop("'...' objects must have the same colnames")
     if (!.compare(lapply(args, ncol)))
             stop("'...' objects must have the same number of samples")
-
-    rowData <- do.call(c, lapply(args, 
-                   function(i) slot(i, "rowData"))) 
-    assays <- .bind.arrays(args, rbind, "assays")
-    colData <- .bind.DataFrame(args, cbind, "colData")
-    exptData <- do.call(c, lapply(args, exptData))
-
-    SummarizedExperiment(assays=assays, rowData=rowData, 
-                         colData=colData, exptData=exptData) 
-}
+    .bind.SummarizedExperiment(args, rbind)
+})
 
 ## Appropriate for objects with same ranges and different samples.
 setMethod("cbind", "SummarizedExperiment",
     function(..., deparse.level=1)
 {
-    .cbind.SummarizedExperiment(...)
-})
-
-.cbind.SummarizedExperiment <- function(...)
-{
     args <- unname(list(...))
     if (!.compare(lapply(args, rowData), TRUE))
         stop("'...' object ranges (rows) are not compatible")
+    .bind.SummarizedExperiment(args, cbind)
+})
 
-    rowData <- rowData(args[[1]])
-    meta <- .bind.DataFrame(args, cbind, "mcols")
-    mcols(rowData) <- meta
-    assays <- .bind.arrays(args, cbind, "assays")
-    colData <- .bind.DataFrame(args, rbind, "colData")
+.bind.SummarizedExperiment <- function(args, bind)
+{
+    if (identical(bind, cbind)) {
+        rowData <- rowData(args[[1]])
+        mcols(rowData) <- .bind.DataFrame(args, cbind, "mcols")
+        colData <- .bind.DataFrame(args, rbind, "colData")
+    } else {
+        rowData <- do.call(c, lapply(args, 
+            function(i) slot(i, "rowData"))) 
+        colData <- .bind.DataFrame(args, cbind, "colData")
+    }
+    assays <- .bind.arrays(args, bind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    SummarizedExperiment(assays=assays, rowData=rowData,
-                         colData=colData, exptData=exptData)
-} 
+    SummarizedExperiment(assays=assays, rowData=rowData, 
+                         colData=colData, exptData=exptData) 
+}
 
 .compare <- function(x, GenomicRanges=FALSE) 
 {
