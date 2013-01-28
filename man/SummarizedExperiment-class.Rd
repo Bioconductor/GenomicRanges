@@ -486,11 +486,13 @@ exptData(x, ...) <- value
     \item{\code{cbind(...)}, \code{rbind(...)}:}{
       \code{cbind} combines objects with identical ranges (\code{rowData}) 
       but different samples (columns in \code{assays}). The colnames in
-      \code{colData} must match or an error is thrown. 
+      \code{colData} must match or an error is thrown. Duplicate columns
+      of \code{mcols(rowData(SummarizedExperiment))} must contain the same
+      data. 
 
       \code{rbind} combines objects with different ranges (\code{rowData}) 
-      and the same subjects (columns in \code{assays}). Non-matching
-      columns in \code{colData} are concatenated. 
+      and the same subjects (columns in \code{assays}). Duplicate columns
+      of \code{colData} must contain the same data. 
 
       \code{exptData} from all objects are combined into a
       \code{SimpleList} with no name checking.
