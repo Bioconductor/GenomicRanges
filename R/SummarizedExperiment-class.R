@@ -620,17 +620,38 @@ setMethod("cbind", "SummarizedExperiment",
 .bind.DataFrame <- function(args, bind, slotname)
 {
     lst <- lapply(args, eval(slotname))
+    ## cbind
     if (identical(bind, cbind)) {
-        ## compatible data
         if (!.compare(lst)) {
-            warning(paste0("Columns in " , slotname,
-                    " did not match and were concatenated."))
-            do.call(cbind, lst)
+            if (identical(slotname, "fixed")) {
+                stop("data in 'fixed(VCF)' must match.")
+            } else {
+                nms <- lapply(lst, names)
+                nmsv <- unlist(nms, use.names=FALSE)
+                names(nmsv) <- rep(seq_len(length(nms)), elementLengths(nms))
+                ## check duplicates are the same 
+                dups <- nmsv[duplicated(nmsv)]
+                lapply(dups, function(d) {
+                    if (!.compare(lapply(lst, "[", d)))
+                        stop(paste0("duplicate '", unname(d), 
+                             "' columns in '", slotname, 
+                             "' must match"))})
+                ## extract duplicates
+                dupsDF <- Map(function(idx, name)
+                              lst[[idx]][name], 
+                          as.list(as.integer(names(dups))), as.list(dups))
+                ## extract non-duplicates
+                ndups <- nmsv[!nmsv %in% dups]
+                ndupsDF <- Map(function(idx, name)
+                               lst[[idx]][name], 
+                           as.list(as.integer(names(ndups))), as.list(ndups))
+                DataFrame(c(dupsDF, ndupsDF))
+            }
         } else {
             lst[[1]]
         }
+    ## rbind
     } else {
-        ## compatible names 
         if (!.compare(lapply(lst, names))) {
             stop(paste0("columns in ", slotname,
                  " must have the same names"))
