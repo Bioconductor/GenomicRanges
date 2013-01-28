@@ -485,17 +485,15 @@ exptData(x, ...) <- value
 
     \item{\code{cbind(...)}, \code{rbind(...)}:}{
       \code{cbind} combines objects with identical ranges (\code{rowData}) 
-      but different samples (columns in \code{assays}). Objects with a 
-      different number of rows or different rownames will not be
-      combined.
+      but different samples (columns in \code{assays}). The colnames in
+      \code{colData} must match or an error is thrown. 
 
       \code{rbind} combines objects with different ranges (\code{rowData}) 
-      and the same subjects (columns in \code{assays}). Objects with a
-      different number of columns or different colnames will not be
-      combined.
+      and the same subjects (columns in \code{assays}). Non-matching
+      columns in \code{colData} are concatenated. 
 
-      Currently \code{exptData} from all objects are combined into a
-      single \code{SimpleList} without checking for data duplication.
+      \code{exptData} from all objects are combined into a
+      \code{SimpleList} with no name checking.
 
     }
 
@@ -579,15 +577,13 @@ exptData(x, ...) <- value
 
   sset[, sset$Treatment == "ChIP"]
 
-  ## cbind is appropriate for combining objects with the same ranges and 
-  ## different samples.
+  ## cbind combines objects with the same ranges and different samples.
   se1 <- sset
   se2 <- se1[,1:3]
   colnames(se2) <- letters[1:ncol(se2)] 
   cmb1 <- cbind(se1, se2)
 
-  ## rbind is appropriate for combining objects with the same samples and
-  ## different ranges.
+  ## rbind combins objects with the same samples and different ranges.
   se1 <- sset
   se2 <- se1[1:50,]
   rownames(se2) <- letters[1:nrow(se2)] 

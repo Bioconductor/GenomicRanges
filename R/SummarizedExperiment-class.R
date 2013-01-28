@@ -98,7 +98,7 @@ setGeneric("SummarizedExperiment",
 }
 
 setMethod(SummarizedExperiment, "SimpleList",
-    function(assays, rowData=GRangesList(), colData=DataFrame(),
+   function(assays, rowData=GRangesList(), colData=DataFrame(),
              exptData=SimpleList(), ...,
              verbose=FALSE)
 {
@@ -561,78 +561,133 @@ setReplaceMethod("[",
     x
 })
 
-## rbind and cbind
+## rbind, cbind
 
 ## Appropriate for objects with different ranges and same samples.
 setMethod("rbind", "SummarizedExperiment",
     function(..., deparse.level=1)
 {
+    .rbind.SummarizedExperiment(...)
+})
+
+.rbind.SummarizedExperiment <- function(...)
+{
     args <- unname(list(...))
-    if (!.compare(lapply(args, ncol)))
-        stop("'...' objects must have the same number of samples (columns)")
     if (!.compare(lapply(args, colnames)))
             stop("'...' objects must have the same colnames")
+    if (!.compare(lapply(args, ncol)))
+            stop("'...' objects must have the same number of samples")
 
-    rowData <- do.call(c, lapply(args, rowData)) 
-    assays <- .bind_assays(args, rbind)
-    colData <- colData(args[[1]]) ## assume all colData the same 
+    rowData <- do.call(c, lapply(args, 
+                   function(i) slot(i, "rowData"))) 
+    assays <- .bind.arrays(args, rbind, "assays")
+    colData <- .bind.DataFrame(args, cbind, "colData")
     exptData <- do.call(c, lapply(args, exptData))
 
     SummarizedExperiment(assays=assays, rowData=rowData, 
                          colData=colData, exptData=exptData) 
-})
+}
 
 ## Appropriate for objects with same ranges and different samples.
 setMethod("cbind", "SummarizedExperiment",
     function(..., deparse.level=1)
 {
-    args <- unname(list(...))
-    if (!.compare(lapply(args, nrow)))
-        stop("'...' objects must have the same number of ranges (rows)")
-    if (!.compare(lapply(args, rownames)))
-            stop("'...' objects must have the same rownames")
+    .cbind.SummarizedExperiment(...)
+})
 
-    meta <- do.call(cbind, lapply(args, function(i) mcols(rowData(i)))) 
-    rowData <- rowData(args[[1]]) ## assume all ranges the same
+.cbind.SummarizedExperiment <- function(...)
+{
+    args <- unname(list(...))
+    if (!.compare(lapply(args, rowData), TRUE))
+        stop("'...' object ranges (rows) are not compatible")
+
+    rowData <- rowData(args[[1]])
+    meta <- .bind.DataFrame(args, cbind, "mcols")
     mcols(rowData) <- meta
-    assays <- .bind_assays(args, cbind)
-    colData <- .bind_colData(args, rbind)
+    assays <- .bind.arrays(args, cbind, "assays")
+    colData <- .bind.DataFrame(args, rbind, "colData")
     exptData <- do.call(c, lapply(args, exptData))
 
     SummarizedExperiment(assays=assays, rowData=rowData,
-                         colData=colData, exptData=exptData) 
-})
+                         colData=colData, exptData=exptData)
+} 
 
-.compare <- function(x) 
+.compare <- function(x, GenomicRanges=FALSE) 
 {
-    if (class(x) != "list")
-        x <- as.list(x)
-    all(sapply(x[-1], function(xelt) 
-        all(identical(xelt, x[[1]]))))
+    if (GenomicRanges) {
+        if (is(x[[1]], "GRangesList"))
+            x <- lapply(x, unlist) 
+        cmp <- lapply(x[-1], function(xelt)
+                   xelt == x[[1]])
+        all(do.call(c, cmp))
+    } else {
+        all(sapply(as.list(x[-1]), 
+            function(xelt) all(identical(xelt, x[[1]]))))
+    }
 }
 
-.bind_colData <- function(args, bind)
+.bind.DataFrame <- function(args, bind, slotname)
 {
-    lst <- lapply(args, colData)
-    if (!.compare(lapply(lst, names)))
-        stop("columns in colData() must have the same names")
-    nms <- names(lst[[1]])
-    colData <- DataFrame(lapply(nms, function(n) 
-                  do.call(bind, lapply(lst, "[", n))))
-    names(colData) <- nms
-    colData
+    lst <- lapply(args, eval(slotname))
+    if (identical(bind, cbind)) {
+        ## compatible data
+        if (!.compare(lst)) {
+            warning(paste0("Columns in " , slotname,
+                    " did not match and were concatenated."))
+            do.call(cbind, lst)
+        } else {
+            lst[[1]]
+        }
+    } else {
+        ## compatible names 
+        if (!.compare(lapply(lst, names))) {
+            stop(paste0("columns in ", slotname,
+                 " must have the same names"))
+        } else {
+            DF <- do.call(rbind, lst)
+            names(DF) <- names(lst[[1]])
+            DF
+        }
+    }
 }
 
-.bind_assays <- function(args, bind)
+.bind.arrays <- function(args, bind, slotname)
 {
-    lst <- lapply(args, assays)
-    if (!.compare(lapply(lst, names)))
-        stop("list elements in assays() must have the same names")
-    nms <- names(lst[[1]])
-    assays <- SimpleList(lapply(nms, function(n)
-                  do.call(bind, lapply(lst, "[[", n))))
-    names(assays) <- nms
-    assays
+    lst <- lapply(args, eval(slotname))
+    var <- lapply(lst,  names)
+    if (is.null(uvar <- unique(unlist(var))))
+        return(SimpleList())
+    if (!.compare(var))
+        stop(paste0("elements in ", slotname, 
+             " must have the same names"))
+
+    ## extract variable
+    l1 <- lapply(uvar, function(v) {
+        l2 <- lapply(lst, "[[", v)
+        dim <- .assay.dimension(l2, bind)
+        if (!is.na(dim[3])) {
+            ## assay: combine each dimension of each element in l2
+            l3 <- lapply(1:dim[3], 
+                      function(i) do.call(bind, lapply(l2, "[", ,,i)))
+            array(do.call(c, l3), dim=dim)
+        } else {
+            ## matrix: combine each element of l2
+            do.call(bind, l2)
+        }
+    })
+    names(l1) <- uvar
+    SimpleList(l1)
+}
+
+.assay.dimension <- function(lst, bind)
+{
+    dim <- lapply(lst, dim)
+    if (!.compare(lapply(dim, "[", 3)))
+        stop("elements in assays must have the same dimension")
+    if (identical(bind, cbind))
+        c(dim[[1]][1], do.call(sum, lapply(dim, "[", 2)), dim[[1]][3])
+    else
+        c(do.call(sum, lapply(dim, "[", 1)), dim[[1]][2], dim[[1]][3])
 }
 
 ## $, $<-, [[, [[<- for colData access

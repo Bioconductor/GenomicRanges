@@ -242,72 +242,91 @@ test_SummarizedExperiment_subsetassign <- function()
     checkIdentical(ss1, ss2)
 }
 
+quiet <- suppressWarnings
 test_SummarizedExperiment_cbind <- function()
-## objects with same ranges with different samples
+## requires matching ranges
 {
     ## empty
     se <- SummarizedExperiment()
-    res <- cbind(se, se)
-    checkIdentical(assays(res), assays(se))
-    checkIdentical(rowData(res), rowData(se))
-    checkIdentical(colData(res), colData(se))
-    checkIdentical(exptData(res), exptData(se))
-    se1 <- ssetList[[1]]
-    assays(se1) <- SimpleList()
-    res <- cbind(se1, se1)
-    checkTrue(nrow(res) == 5)
-    checkTrue(ncol(res) == 6)
-
-    ## different samples
-    se1 <- ssetList[[1]]
-    dimnames(se1) <- list(LETTERS[seq_len(nrow(se1))],
-                          letters[seq_len(ncol(se1))])
-    se2 <- se1[,2]
-    colnames(se2) <- month.name[seq_len(ncol(se2))]
-    res <- cbind(se1, se2)
-    checkTrue(ncol(res) == 4)
-    checkTrue(nrow(res) == 5)
-    checkTrue(nrow(colData(res)) == 4)
+    empty <- cbind(se, se)
+    checkTrue(all.equal(se, empty))
 
     ## different ranges 
+    se1 <- ssetList[[1]]
     se2 <- se1[2:4]
     rownames(se2) <- month.name[seq_len(nrow(se2))]
-    checkException(cbind(se1, se2), silent=TRUE)
+    checkException(quiet(cbind(se1, se2)), silent=TRUE)
+
+    ## same ranges 
+    se1 <- ssetList[[1]]
+    se2 <- se1[,1:2]
+    colnames(se2) <- month.name[seq_len(ncol(se2))]
+    res <- cbind(se1, se2)
+    checkTrue(nrow(res) == 5)
+    checkTrue(ncol(res) == 5)
+    ## rowData
+    mcols(se1) <- DataFrame("one"=1:5)
+    mcols(se2) <- DataFrame("two"=6:10)
+    res <- quiet(cbind(se1, se2))
+    checkIdentical(names(mcols(rowData(res))), c("one", "two"))
+    ## colData
+    checkTrue(nrow(colData(res)) == 5)
+    ## assays 
+    assays(se1) <- SimpleList("m"=matrix(rep("m", 15), nrow=5),
+                              "a"=array(rep("a", 30), c(5,3,2)))
+    assays(se2) <- SimpleList("m"=matrix(LETTERS[1:10], nrow=5),
+                              "a"=array(LETTERS[1:20], c(5,2,2)))
+    res <- cbind(se1, se2) ## same variables
+    checkTrue(nrow(res) == 5)
+    checkTrue(ncol(res) == 5)
+    checkTrue(all.equal(dim(assays(res)$m), c(5L, 5L)))
+    checkTrue(all.equal(dim(assays(res)$a), c(5L, 5L, 2L)))
+    names(assays(se1)) <- c("mm", "aa")
+    checkException(cbind(se1, se2), silent=TRUE) ## different variables
 }
 
 test_SummarizedExperiment_rbind <- function()
-## objects with different ranges with same samples
+## requires matching samples 
 {
     ## empty
     se <- SummarizedExperiment()
-    res <- rbind(se, se)
-    checkIdentical(assays(res), assays(se))
-    checkIdentical(rowData(res), rowData(se))
-    checkIdentical(colData(res), colData(se))
-    checkIdentical(exptData(res), exptData(se))
-    se1 <- ssetList[[1]]
-    assays(se1) <- SimpleList()
-    res <- rbind(se1, se1)
-    checkTrue(nrow(res) == 10)
-    checkTrue(ncol(res) == 3)
-
-    ## different ranges 
-    se1 <- ssetList[[1]]
-    dimnames(se1) <- list(LETTERS[seq_len(nrow(se1))],
-                          letters[seq_len(ncol(se1))])
-    se2 <- se1[2:4,]
-    rownames(se2) <- month.name[seq_len(nrow(se2))]
-    res <- rbind(se1, se2)
-    checkTrue(ncol(res) == 3)
-    checkTrue(nrow(res) == 8)
-    checkTrue(nrow(colData(res)) == 3)
+    empty <- rbind(se, se)
+    checkTrue(all.equal(se, empty))
 
     ## different samples 
-    se2 <- se1[,2]
-    colnames(se2) <- month.name[seq_len(ncol(se2))]
+    se1 <- ssetList[[1]]
+    se2 <- se1[,1]
+    checkException(quiet(rbind(se1, se2)), silent=TRUE)
+
+    ## same samples 
+    se1 <- ssetList[[1]]
+    se2 <- se1
+    rownames(se2) <- LETTERS[seq_len(nrow(se2))]
+    res <- rbind(se1, se2)
+    checkTrue(nrow(res) == 10)
+    checkTrue(ncol(res) == 3)
+    ## rowData
+    mcols(se1) <- DataFrame("one"=1:5)
+    mcols(se2) <- DataFrame("two"=6:10)
     checkException(rbind(se1, se2), silent=TRUE)
+    ## colDat
+    se1 <- ssetList[[1]]
+    se2 <- se1
+    colData(se2) <- DataFrame("one"=1:3, "two"=4:6)    
+    res <- quiet(rbind(se1, se2))
+    checkTrue(ncol(colData(res)) == 3)
+    ## assays 
+    se1 <- ssetList[[1]]
+    se2 <- se1
+    assays(se1) <- SimpleList("m"=matrix(rep("m", 15), nrow=5),
+                              "a"=array(rep("a", 30), c(5,3,2)))
+    assays(se2) <- SimpleList("m"=matrix(LETTERS[1:15], nrow=5),
+                              "a"=array(LETTERS[1:30], c(5,3,2)))
+    res <- rbind(se1, se2) ## same variables
+    checkTrue(nrow(res) == 10)
+    checkTrue(ncol(res) == 3)
+    checkTrue(all.equal(dim(assays(res)$m), c(10L, 3L)))
+    checkTrue(all.equal(dim(assays(res)$a), c(10L, 3L, 2L)))
+    names(assays(se1)) <- c("mm", "aa")
+    checkException(rbind(se1, se2), silent=TRUE) ## different variables
 }
-
-
-
-
