@@ -568,35 +568,41 @@ setMethod("rbind", "SummarizedExperiment",
     function(..., deparse.level=1)
 {
     args <- unname(list(...))
+    .rbind.SummarizedExperiment(args)
+})
+
+.rbind.SummarizedExperiment <- function(args)
+{
     if (!.compare(lapply(args, colnames)))
             stop("'...' objects must have the same colnames")
     if (!.compare(lapply(args, ncol)))
             stop("'...' objects must have the same number of samples")
-    .bind.SummarizedExperiment(args, rbind)
-})
+    rowData <- do.call(c, lapply(args, 
+        function(i) slot(i, "rowData"))) 
+    colData <- .cbind.DataFrame(args, colData, "colData")
+    assays <- .bind.arrays(args, rbind, "assays")
+    exptData <- do.call(c, lapply(args, exptData))
+
+    SummarizedExperiment(assays=assays, rowData=rowData, 
+                         colData=colData, exptData=exptData) 
+}
 
 ## Appropriate for objects with same ranges and different samples.
 setMethod("cbind", "SummarizedExperiment",
     function(..., deparse.level=1)
 {
     args <- unname(list(...))
-    if (!.compare(lapply(args, rowData), TRUE))
-        stop("'...' object ranges (rows) are not compatible")
-    .bind.SummarizedExperiment(args, cbind)
+    .cbind.SummarizedExperiment(args)
 })
 
-.bind.SummarizedExperiment <- function(args, bind)
+.cbind.SummarizedExperiment <- function(args)
 {
-    if (identical(bind, cbind)) {
-        rowData <- rowData(args[[1]])
-        mcols(rowData) <- .bind.DataFrame(args, cbind, "mcols")
-        colData <- .bind.DataFrame(args, rbind, "colData")
-    } else {
-        rowData <- do.call(c, lapply(args, 
-            function(i) slot(i, "rowData"))) 
-        colData <- .bind.DataFrame(args, cbind, "colData")
-    }
-    assays <- .bind.arrays(args, bind, "assays")
+    if (!.compare(lapply(args, rowData), TRUE))
+        stop("'...' object ranges (rows) are not compatible")
+    rowData <- rowData(args[[1]])
+    mcols(rowData) <- .cbind.DataFrame(args, mcols, "mcols")
+    colData <- .rbind.DataFrame(args, colData, "colData")
+    assays <- .bind.arrays(args, cbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
     SummarizedExperiment(assays=assays, rowData=rowData, 
@@ -617,73 +623,73 @@ setMethod("cbind", "SummarizedExperiment",
     }
 }
 
-.bind.DataFrame <- function(args, bind, slotname)
+.cbind.DataFrame <- function(args, accessor, accessorName)
 {
-    lst <- lapply(args, eval(slotname))
-    ## cbind
-    if (identical(bind, cbind)) {
-        if (!.compare(lst)) {
-            if (identical(slotname, "fixed")) {
-                stop("data in 'fixed(VCF)' must match.")
-            } else {
-                nms <- lapply(lst, names)
-                nmsv <- unlist(nms, use.names=FALSE)
-                names(nmsv) <- rep(seq_len(length(nms)), elementLengths(nms))
-                ## check duplicates are the same 
-                dups <- nmsv[duplicated(nmsv)]
-                lapply(dups, function(d) {
-                    if (!.compare(lapply(lst, "[", d)))
-                        stop(paste0("duplicate '", unname(d), 
-                             "' columns in '", slotname, 
-                             "' must match"))})
-                ## extract duplicates
-                dupsDF <- Map(function(idx, name)
-                              lst[[idx]][name], 
-                          as.list(as.integer(names(dups))), as.list(dups))
-                ## extract non-duplicates
-                ndups <- nmsv[!nmsv %in% dups]
-                ndupsDF <- Map(function(idx, name)
-                               lst[[idx]][name], 
-                           as.list(as.integer(names(ndups))), as.list(ndups))
-                DataFrame(c(dupsDF, ndupsDF))
-            }
+    lst <- lapply(args, accessor)
+    if (!.compare(lst)) {
+        if (identical(accessorName, "fixed")) {
+            stop("data in 'fixed(VCF)' must match.")
         } else {
-            lst[[1]]
+            nms <- lapply(lst, names)
+            nmsv <- unlist(nms, use.names=FALSE)
+            names(nmsv) <- rep(seq_len(length(nms)), elementLengths(nms))
+            ## check duplicates are the same 
+            dups <- nmsv[duplicated(nmsv)]
+            lapply(dups, function(d) {
+                if (!.compare(lapply(lst, "[", d)))
+                    stop("duplicate '", unname(d), 
+                         "' columns in ", sQuote(accessorName), 
+                         " must match")})
+            ## extract duplicates
+            dupsDF <- Map(function(idx, name)
+                          lst[[idx]][name], 
+                      as.integer(names(dups)), dups)
+            ## extract non-duplicates
+            ndups <- nmsv[!nmsv %in% dups]
+            ndupsDF <- Map(function(idx, name)
+                           lst[[idx]][name], 
+                       as.integer(names(ndups)), ndups)
+            DataFrame(c(dupsDF, ndupsDF))
         }
-    ## rbind
     } else {
-        if (!.compare(lapply(lst, names))) {
-            stop(paste0("columns in ", slotname,
-                 " must have the same names"))
-        } else {
-            DF <- do.call(rbind, lst)
-            names(DF) <- names(lst[[1]])
-            DF
-        }
+        lst[[1]]
     }
 }
 
-.bind.arrays <- function(args, bind, slotname)
+.rbind.DataFrame <- function(args, accessor, accessorName)
 {
-    lst <- lapply(args, eval(slotname))
+    lst <- lapply(args, accessor)
+    if (!.compare(lapply(lst, names))) {
+        stop("columns in ", sQuote(accessorName),
+             " must have the same names")
+    } else {
+        DF <- do.call(rbind, lst)
+        names(DF) <- names(lst[[1]])
+        DF
+    }
+}
+
+.bind.arrays <- function(args, bind, accessor, accessorName)
+{
+    lst <- lapply(args, accessor)
     var <- lapply(lst,  names)
     if (is.null(uvar <- unique(unlist(var))))
         return(SimpleList())
     if (!.compare(var))
-        stop(paste0("elements in ", slotname, 
-             " must have the same names"))
+        stop("elements in ", sQuote(accessorName), 
+             " must have the same names")
 
     ## extract variable
     l1 <- lapply(uvar, function(v) {
         l2 <- lapply(lst, "[[", v)
         dim <- .assay.dimension(l2, bind)
         if (!is.na(dim[3])) {
-            ## assay: combine each dimension of each element in l2
+            ## assay: combine each dimension of each element
             l3 <- lapply(1:dim[3], 
                       function(i) do.call(bind, lapply(l2, "[", ,,i)))
             array(do.call(c, l3), dim=dim)
         } else {
-            ## matrix: combine each element of l2
+            ## matrix: combine each element
             do.call(bind, l2)
         }
     })
