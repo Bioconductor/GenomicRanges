@@ -578,8 +578,9 @@ setMethod("rbind", "SummarizedExperiment",
     if (!.compare(lapply(args, ncol)))
             stop("'...' objects must have the same number of samples")
     rowData <- do.call(c, lapply(args, 
-        function(i) slot(i, "rowData"))) 
-    colData <- .cbind.DataFrame(args, colData, "colData")
+        function(i) slot(i, "rowData")))
+    cdlst <- lapply(args, colData) 
+    colData <- .cbind.DataFrame(args, colData, "colData") 
     assays <- .bind.arrays(args, rbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
@@ -601,7 +602,7 @@ setMethod("cbind", "SummarizedExperiment",
         stop("'...' object ranges (rows) are not compatible")
     rowData <- rowData(args[[1]])
     mcols(rowData) <- .cbind.DataFrame(args, mcols, "mcols")
-    colData <- .rbind.DataFrame(args, colData, "colData")
+    colData <- do.call(rbind, lapply(args, colData))
     assays <- .bind.arrays(args, cbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
@@ -611,14 +612,22 @@ setMethod("cbind", "SummarizedExperiment",
 
 .compare <- function(x, GenomicRanges=FALSE) 
 {
+    x1 <- x[[1]]
     if (GenomicRanges) {
-        if (is(x[[1]], "GRangesList"))
+        if (is(x1, "GRangesList")) {
             x <- lapply(x, unlist) 
-        cmp <- lapply(x[-1], function(xelt)
-                   xelt == x[[1]])
-        all(do.call(c, cmp))
+            x1 <- x[[1]]
+        }
+        for (i in seq_along(x[-1])) {
+            if (length(x1) != length(x[[i]]))
+                return(FALSE)
+            ok <- x1 == x[[i]]
+            if (!all(ok))
+                return(FALSE)
+        }
+        return(TRUE) 
     } else {
-        all(sapply(as.list(x[-1]), 
+        all(sapply(x[-1], 
             function(xelt) all(identical(xelt, x[[1]]))))
     }
 }
@@ -627,45 +636,23 @@ setMethod("cbind", "SummarizedExperiment",
 {
     lst <- lapply(args, accessor)
     if (!.compare(lst)) {
-        if (identical(accessorName, "fixed")) {
-            stop("data in 'fixed(VCF)' must match.")
-        } else {
-            nms <- lapply(lst, names)
-            nmsv <- unlist(nms, use.names=FALSE)
-            names(nmsv) <- rep(seq_len(length(nms)), elementLengths(nms))
-            ## check duplicates are the same 
-            dups <- nmsv[duplicated(nmsv)]
-            lapply(dups, function(d) {
-                if (!.compare(lapply(lst, "[", d)))
-                    stop("duplicate '", unname(d), 
-                         "' columns in ", sQuote(accessorName), 
-                         " must match")})
-            ## extract duplicates
-            dupsDF <- Map(function(idx, name)
-                          lst[[idx]][name], 
-                      as.integer(names(dups)), dups)
-            ## extract non-duplicates
-            ndups <- nmsv[!nmsv %in% dups]
-            ndupsDF <- Map(function(idx, name)
-                           lst[[idx]][name], 
-                       as.integer(names(ndups)), ndups)
-            DataFrame(c(dupsDF, ndupsDF))
-        }
+        nms <- lapply(lst, names)
+        nmsv <- unlist(nms, use.names=FALSE)
+        names(nmsv) <- rep(seq_along(nms), elementLengths(nms))
+        dups <- duplicated(nmsv)
+        ## no duplicates 
+        if (!any(dups))
+            return(do.call(cbind, lst))
+        ## confirm duplicates are the same 
+        lapply(nmsv[duplicated(nmsv)], function(d) {
+            if (!.compare(lapply(lst, "[", d)))
+                stop("column(s) '", unname(d),
+                     "' in ", sQuote(accessorName),
+                     " are duplicated and the data do not match")})
+        ## remove duplicates
+        do.call(cbind, lst)[,!dups]
     } else {
         lst[[1]]
-    }
-}
-
-.rbind.DataFrame <- function(args, accessor, accessorName)
-{
-    lst <- lapply(args, accessor)
-    if (!.compare(lapply(lst, names))) {
-        stop("columns in ", sQuote(accessorName),
-             " must have the same names")
-    } else {
-        DF <- do.call(rbind, lst)
-        names(DF) <- names(lst[[1]])
-        DF
     }
 }
 

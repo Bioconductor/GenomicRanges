@@ -269,9 +269,13 @@ test_SummarizedExperiment_cbind <- function()
     mcols(se2) <- DataFrame("two"=6:10)
     res <- quiet(cbind(se1, se2))
     checkIdentical(names(mcols(rowData(res))), c("one", "two"))
+    mcols(se2) <- DataFrame("one"=6:10, "two"=6:10)
+    checkException(cbind(se1, se2), silent=TRUE)
     ## colData
     checkTrue(nrow(colData(res)) == 5)
     ## assays 
+    se1 <- ssetList[[1]]
+    se2 <- se1[,1:2]
     assays(se1) <- SimpleList("m"=matrix(rep("m", 15), nrow=5),
                               "a"=array(rep("a", 30), c(5,3,2)))
     assays(se2) <- SimpleList("m"=matrix(LETTERS[1:10], nrow=5),
