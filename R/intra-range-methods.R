@@ -74,7 +74,7 @@ setMethod("flank", "GenomicRanges",
 setMethod("resize", "GenomicRanges",
     function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
     {
-        if (!missing(fix) &&
+        if (!missing(fix) && length(x) > 0L && 
             (length(fix) > length(x) || length(x) %% length(fix) > 0L))
             stop("'x' is not a multiple of 'fix' length")
         if (!isTRUEorFALSE(ignore.strand))
