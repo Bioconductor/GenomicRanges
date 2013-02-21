@@ -55,7 +55,7 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     names(ans) <- ans_names
     if (ncol(mcols(x)) > 0L) {
         tmp <- sapply(mcols(x),
-                      function(xx) paste0("<", class(xx), ">"))
+                      function(xx) paste0("<", classNameForDisplay(xx), ">"))
         ans <- c(ans, `|`="|", tmp)
     }
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))
