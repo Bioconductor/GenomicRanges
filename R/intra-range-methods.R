@@ -82,8 +82,10 @@ setMethod("resize", "GenomicRanges",
         if (ignore.strand) {
             fix <- Rle(rep.int(fix, length(x)))
         } else {
-            revFix <- c(start="end", end="start", center="center")       
-            fix <- ifelse(strand(x) == "-", revFix[fix], fix)
+            revFix <- c(start="end", end="start", center="center")
+            if (length(x) == 0L)
+              fix <- character()
+            else fix <- ifelse(strand(x) == "-", revFix[fix], fix)
         }
         ranges <-
             resize(ranges(x), width=width, fix=fix, use.names=use.names)
