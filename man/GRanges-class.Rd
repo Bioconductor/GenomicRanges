@@ -98,7 +98,8 @@
     \item{}{
       \code{GRanges(seqnames = Rle(), ranges = IRanges(),
                     strand = Rle("*", length(seqnames)),
-                    ..., seqinfo)}:
+                    ...,
+                    seqlengths = NULL, seqinfo = NULL)}:
       Creates a GRanges object.
       \describe{
         \item{\code{seqnames}}{Rle object, character vector, or factor
@@ -106,14 +107,17 @@
         \item{\code{ranges}}{IRanges object containing the ranges.}
         \item{\code{strand}}{Rle object, character vector, or factor
           containing the strand information.}
-        \item{\code{seqinfo}}{a Seqinfo object containing allowed
-          sequence names and lengths (or NA) for each
-          \code{level(seqnames)}.}
         \item{\code{\ldots}}{Optional metadata columns.
           These columns cannot be named
           \code{"start"}, \code{"end"}, \code{"width"}, or
           \code{"element"}. A named integer vector \code{"seqlength"}
 	  can be used instead of \code{seqinfo}.}
+        \item{\code{seqlengths}}{an integer vector named with the
+          sequence names and containing the lengths (or NA) for each
+          \code{level(seqnames)}.}
+        \item{\code{seqinfo}}{a Seqinfo object containing allowed
+          sequence names and lengths (or NA) for each
+          \code{level(seqnames)}.}
       }
     }
   }

@@ -55,11 +55,8 @@ setValidity2("GRanges", .valid.GRanges)
 newGRanges <- ## hidden constructor shared with other GRanges-like objects
     function(class, seqnames = Rle(), ranges = IRanges(),
              strand = Rle("*", length(seqnames)),
-             ...,
-             seqlengths = setNames(
-               rep(NA_integer_, length(levels(seqnames))),
-               levels(seqnames)),
-             seqinfo = Seqinfo(names(seqlengths), seqlengths))
+             mcols = list(),
+             seqlengths = NULL, seqinfo = NULL)
 {
     ## occurs first for generation of default seqlengths
     if (!is(seqnames, "Rle"))
@@ -90,6 +87,13 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
             strand <- rep(strand, lx)
     }
 
+    if (is.null(seqlengths))
+        seqlengths <- setNames(rep(NA_integer_, length(levels(seqnames))),
+                               levels(seqnames))
+
+    if (is.null(seqinfo))
+        seqinfo <- Seqinfo(names(seqlengths), seqlengths)
+
     ## in case we have seqlengths for unrepresented sequences
     runValue(seqnames) <- factor(runValue(seqnames), seqnames(seqinfo))
 
@@ -97,7 +101,7 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
         warning("'ranges' has metadata columns, dropping them")
         mcols(ranges) <- NULL
     }
-    mcols <- DataFrame(...)
+    mcols <- as(mcols, "DataFrame")
     if (ncol(mcols) == 0L)
         mcols <- new("DataFrame", nrows = length(seqnames))
     if (!is.null(rownames(mcols))) {
@@ -113,15 +117,14 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
 GRanges <-
   function(seqnames = Rle(), ranges = IRanges(),
            strand = Rle("*", length(seqnames)),
-           ..., seqinfo)
+           ...,
+           seqlengths = NULL, seqinfo = NULL)
 {
-    if (missing(seqinfo)) {
-        newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
-                   strand = strand, ...)
-    } else {
-        newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
-                   strand = strand, ..., seqinfo = seqinfo)
-    }
+    newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
+                          strand = strand,
+                          mcols = list(...),
+                          seqlengths = seqlengths,
+                          seqinfo = seqinfo)
 }
 
 .unsafe.update.GRanges <- function(x, ...)
