@@ -23,6 +23,7 @@
 \alias{right,GappedAlignmentPairs-method}
 \alias{seqnames,GappedAlignmentPairs-method}
 \alias{strand,GappedAlignmentPairs-method}
+\alias{strand<-,GappedAlignmentPairs-method}
 \alias{ngap,GappedAlignmentPairs-method}
 \alias{isProperPair}
 \alias{isProperPair,GappedAlignmentPairs-method}
@@ -112,7 +113,7 @@
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
-      Get or sets the names of \code{x}.
+      Get or set the names of \code{x}.
       See \code{readGappedAlignmentPairs} above for how to automatically
       extract and set the names from the file to read.
     }
@@ -152,16 +153,18 @@
       doing the pairing, rejects pairs with incompatible RNAME values).
     }
     \item{}{
-      \code{strand(x)}:
-      Get the strand for each alignment pair in \code{x}. By definition
-      the strand of an alignment pair is the strand of the \emph{"first"}
-      alignment in the pair. In a GappedAlignmentPairs object, the strand
-      of the "last" alignment in a pair is \emph{always} the opposite of the
-      strand of the "first" alignment
-      (\code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
+      \code{strand(x)}, \code{strand(x) <- value}:
+      Get or set the strand for each alignment pair in \code{x}.
+      By definition (and in a somewhat arbitrary way) the strand of an
+      alignment pair is the strand of the \emph{"first"} alignment in the pair.
+      In a GappedAlignmentPairs object, the strand of the "last" alignment in
+      a pair is typically (but not \emph{always}) the opposite of the strand
+      of the "first" alignment. Note that, currently
+      \code{\link[Rsamtools]{makeGappedAlignmentPairs}}, the function
       used by \code{\link[Rsamtools]{readBamGappedAlignmentPairs}} for
       doing the pairing, rejects pairs where the "first" and "last"
-      alignments are on the same strand).
+      alignments are on the same strand, but those pairs might be supported
+      in the future.
     }
     \item{}{
       \code{ngap(x)}:

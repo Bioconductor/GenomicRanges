@@ -157,6 +157,28 @@ setReplaceMethod("names", "GappedAlignmentPairs",
     }
 )
 
+setReplaceMethod("strand", "GappedAlignmentPairs",
+    function(x, value)
+    {
+        x_first_strand <- strand(x@first)
+        x_last_strand <- strand(x@last)
+        same_strand <- runValue(x_first_strand == x_last_strand)
+        if (length(same_strand) >= 2L)
+            stop("direct setting of the strand of a GappedAlignmentPairs ",
+                 "object is only supported if 'strand(first(x))' and ",
+                 "'strand(last(x))' are either (1) opposite for all pairs ",
+                 "in 'x', or (2) the same for all pairs in 'x'")
+        if (length(same_strand) == 0L)
+            return(x)
+        strand(x@first) <- value
+        tmp <- strand(x@first)
+        if (!same_strand)
+            runValue(tmp) <- strand(runValue(tmp) == "+")
+        strand(x@last) <- tmp
+        x
+    }
+)
+
 setReplaceMethod("elementMetadata", "GappedAlignmentPairs",
     function(x, ..., value)
     {
