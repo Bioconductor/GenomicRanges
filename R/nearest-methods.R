@@ -256,9 +256,11 @@ setMethod("follow", c("GenomicRanges", "missing"),
         }
 
         ## choose nearest or not missing
-        pdist <- abs(start(subject)[p] - end(x))
-        fdist <- abs(start(x) - end(subject)[f]) 
+        pdist <- .nearestDistance(x, subject, p)
+        fdist <- .nearestDistance(x, subject, f)
         pnearest <- pdist < fdist
+        if (any(!is.na(eq <- pdist == fdist)))
+            pnearest[eq & (p < f)] <- TRUE 
         pnearest[is.na(pnearest)] <- is.na(f)[is.na(pnearest)]
 
         if (select == "all") {
@@ -277,6 +279,14 @@ setMethod("follow", c("GenomicRanges", "missing"),
     }
     ol
 }
+
+.nearestDistance <- function(x, subject, index)
+{
+    maxStart <- pmax.int(start(x), start(subject)[index])
+    minEnd <- pmin.int(end(x), end(subject)[index])
+    pmax.int(maxStart - minEnd - 1L, 0L)
+}
+
 
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE, 
