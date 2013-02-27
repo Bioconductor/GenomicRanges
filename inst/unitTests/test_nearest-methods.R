@@ -223,6 +223,11 @@ test_GenomicRanges_nearest <- function()
     s <- GRanges("chr1", IRanges(c(6,7), c(6,7)), c("+", "-"))
     checkEquals(nearest(q, s), 1L)
 
+    q <- GRanges("chr1", IRanges(105, 105), "-")
+    s <- GRanges("chr1", IRanges(c(1,120), c(100, 125)), c("-", "-"))
+    pos <- nearest(q, s, ignore.strand=TRUE)
+    neg <- nearest(q, s, ignore.strand=FALSE)
+    checkEquals(pos, neg)
 }
 
 quiet <- suppressWarnings
