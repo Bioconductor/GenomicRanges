@@ -258,10 +258,9 @@ setMethod("follow", c("GenomicRanges", "missing"),
         ## choose nearest or not missing
         pdist <- .nearestDistance(x, subject, p)
         fdist <- .nearestDistance(x, subject, f)
-        pnearest <- pdist < fdist
-        if (any(!is.na(eq <- pdist == fdist)))
-            pnearest[eq & (p < f)] <- TRUE 
-        pnearest[is.na(pnearest)] <- is.na(f)[is.na(pnearest)]
+        pnearest <- ifelse(pdist == fdist, p < f, pdist < fdist)
+        isNA <- is.na(pnearest)
+        pnearest[isNA] <- is.na(f[isNA])
 
         if (select == "all") {
             map <- which(is.na(olv))
