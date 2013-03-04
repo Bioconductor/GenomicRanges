@@ -146,12 +146,12 @@
 
 \description{
 
-  The SummarizedExperiment class is an eSet-like container where rows
-  represent ranges of interest (as a \code{\linkS4class{GRanges}-class})
-  and columns represent samples (with sample data summarized as a
-  \code{\linkS4class{DataFrame}-class}). A \code{SummarizedExperiment}
-  contains one or more assays, each represented by a matrix of numeric
-  or other mode.
+  The SummarizedExperiment class is a matrix-like container where rows
+  represent ranges of interest (as a \code{\linkS4class{GRanges} or
+  \linkS4class{GRangesList}-class}) and columns represent samples (with
+  sample data summarized as a \code{\linkS4class{DataFrame}-class}). A
+  \code{SummarizedExperiment} contains one or more assays, each
+  represented by a matrix of numeric or other mode.
 
 }
 
@@ -213,9 +213,9 @@ exptData(x, ...) <- value
 \arguments{
 
   \item{assays}{A \code{list} or \code{SimpleList} of matrix elements,
-    or a \code{matrix}. Each element of the list must have the same
+    or a \code{matrix}. All elements of the list must have the same
     dimensions, and dimension names (if present) must be consistent
-    across elements and with the row names of \code{rowData},
+    across elements and with the row names of \code{rowData} and
     \code{colData}.}
 
   \item{rowData}{A \code{GRanges} or \code{GRangesList} instance describing 
@@ -285,19 +285,21 @@ exptData(x, ...) <- value
 
   The \code{SummarizedExperiment} class is meant for numeric and other
   data types derived from a sequencing experiment. The structure is
-  rectangular, like an \code{eSet} in \pkg{Biobase}.
+  rectangular like a \code{matrix}, but with additional annotations on
+  the rows and columns, and with the possibility to manage several
+  assays simultaneously.
 
   The rows of a \code{SummarizedExperiment} instance represent ranges
   (in genomic coordinates) of interest. The ranges of interest are
-  described by a \code{\linkS4class{GRanges}-class} or a 
-  \code{\linkS4class{GRangesList}-class} instance, accessible
-  using the \code{rowData} function, described below. The \code{GRanges}
-  and \code{GRangesList} classes contains sequence (e.g., chromosome) name, 
-  genomic coordinates, and strand information. Each range can be annotated 
-  with additional data; this data might be used to describe the range 
-  (analogous to annotations associated with genes in a \code{eSet}) or to 
-  summarize results (e.g., statistics of differential abundance) relevant to the
-  range. Rows may or may not have row names; they often will not.
+  described by a \code{\linkS4class{GRanges}-class} or a
+  \code{\linkS4class{GRangesList}-class} instance, accessible using the
+  \code{rowData} function, described below. The \code{GRanges} and
+  \code{GRangesList} classes contains sequence (e.g., chromosome) name,
+  genomic coordinates, and strand information. Each range can be
+  annotated with additional data; this data might be used to describe
+  the range or to summarize results (e.g., statistics of differential
+  abundance) relevant to the range. Rows may or may not have row names;
+  they often will not.
 
   Each column of a \code{SummarizedExperiment} instance represents a
   sample.  Information about the samples are stored in a
@@ -309,9 +311,8 @@ exptData(x, ...) <- value
   \code{SummarizedExperiment}. Columns of the \code{DataFrame} represent
   different sample attributes, e.g., tissue of origin, etc. Columns of
   the \code{DataFrame} can themselves be annotated (via the
-  \code{\link{mcols}} function) in a fashion similar to the
-  \code{varMetadata} facilities of the \code{eSet} class. Column names
-  typically provide a short identifier unique to each sample.
+  \code{\link{mcols}} function). Column names typically provide a short
+  identifier unique to each sample.
 
   A \code{SummarizedExperiment} can also contain information about the
   overall experiment, for instance the lab in which it was conducted,
@@ -409,10 +410,10 @@ exptData(x, ...) <- value
   }
 }
 
-
 \section{GRanges compatibility (rowData access)}{
 
-  Many \code{\link{GRanges}-class} operations are supported on
+  Many \code{\linkS4class{GRanges}-class} and
+  \code{\linkS4class{GRangesList}-class} operations are supported on
   \sQuote{SummarizedExperiment} and derived instances, using
   \code{rowData}.
 
@@ -440,8 +441,8 @@ exptData(x, ...) <- value
   they do not make sense for \sQuote{SummarizedExperiment} objects
   (e.g., length, name, as.data.frame, c, splitAsList), involve
   non-trivial combination or splitting of rows (e.g., disjoin, gaps,
-  reduce, unique), or have not yet been implemented (Ops,
-  map, seqselect, seqselect<-, window, window<-).
+  reduce, unique), or have not yet been implemented (Ops, map, window,
+  window<-).
 
 }
 
