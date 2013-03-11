@@ -1,0 +1,73 @@
+
+noGaps <- GappedAlignments(
+    seqnames=Rle(factor(c("chr1", "chr2", "chr1", "chr3")), 
+        c(1, 3, 2, 4)), 
+    pos=1:10, cigar=paste0(10:1, "M"),
+    strand=Rle(strand(c("-", "+", "*", "+", "-")), 
+        c(1, 2, 2, 3, 2)),
+    names=head(letters, 10), score=1:10)
+
+Gaps <- GappedAlignments(
+    seqnames=Rle(factor(c("chr2", "chr4")), c(3, 4)), pos=1:7,
+    cigar=c("5M", "3M2N3M2N3M", "5M", "10M", "5M1N4M", "8M2N1M", "5M"), 
+    strand=Rle(strand(c("-", "+")), c(4, 3)),
+    names=tail(letters, 7), score=1:7)
+
+
+test_GAlignmentsList_construction <- function() {
+    checkTrue(validObject(GAlignmentsList()))
+    checkTrue(validObject(new("GAlignmentsList")))
+    checkTrue(validObject(GAlignmentsList(noGaps, Gaps)))
+    checkTrue(validObject(GAlignmentsList(GappedAlignments())))
+    checkTrue(validObject(GAlignmentsList(a=GappedAlignments())))
+    checkException(GAlignmentsList(GRanges()), silent = TRUE)
+}
+
+test_GAlignmentsList_coercion <- function() {
+    ir <- IRanges(1:3, c(10, 10, 10), names=head(letters,3))
+    mcols(ir) <- DataFrame(score=1:3)
+    IRList <- IRangesList(a=ir, b=ir)$unlistData
+    GAList <- GAlignmentsList(a=noGaps[1:3], b=noGaps[1:3])
+    checkTrue(all.equal(ranges(GAList)$unlistData, IRList))
+    checkTrue(all.equal(as(GAList, "IRangesList")$unlistData, IRList))
+
+    gr <- GRanges(c(rep("chr2", 3), rep("chr4", 4)), 
+                  IRanges(1:7, width=c(5, 13, 5, 10, 10, 11, 5), 
+                          names=tail(letters,7)), 
+                  strand=Rle(strand(c("-", "+")), c(4, 3))) 
+    GRList <- GRangesList(a=gr, b=gr)
+    GAList <- GAlignmentsList(a=Gaps, b=Gaps)
+    targetAttr <- attributes(GRList)$unlistData
+    currentAttr <- attributes(granges(GAList))$unlistData
+    checkTrue(all.equal(currentAttr, targetAttr))
+    currentAttr <- attributes(as(GAList, "GRangesList"))$unlistData
+    checkTrue(all.equal(currentAttr, targetAttr))
+
+    df <- data.frame(element=rep(c("a", "b"), each=2),
+                     seqnames=c("chr1", rep("chr2", 3)), 
+                     strand=c("-", "+", "-", "-"),
+                     cigar=c("10M", "9M", "5M", "3M2N3M2N3M"),
+                     qwidth=c(10, 9 , 5, 9), start=c(1, 2, 1, 2),
+                     end=c(10, 10, 5, 14), width=c(10, 9, 5, 13),
+                     ngap=c(0, 0, 0, 2), score=c(1, 2, 1, 2), 
+                     row.names=c("a", "b", "t", "u"),
+                     stringsAsFactors=FALSE)
+    GAList <- GAlignmentsList(a=noGaps[1:2], b=Gaps[1:2])
+    checkTrue(all.equal(as.data.frame(GAList), df))
+}
+
+test_GAlignmentsList_accessors <- function() {
+    GAList <- GAlignmentsList(noGaps, Gaps) 
+    target <- RleList(lapply(GAList, seqnames), compress=TRUE)
+    checkIdentical(seqnames(GAList), target) 
+    target <- RleList(lapply(GAList, rname), compress=TRUE)
+    checkIdentical(rname(GAList), target)
+    target <- CharacterList(lapply(GAList, cigar), compress=TRUE)
+    checkIdentical(cigar(GAList), target) 
+    target <- RleList(lapply(GAList, strand), compress=TRUE)
+    checkIdentical(strand(GAList), target) 
+    target <- IntegerList(lapply(GAList, width))
+    checkIdentical(width(GAList), target)
+    target <- SplitDataFrameList(lapply(GAList, mcols))
+    checkIdentical(mcols(GAList, level="within"), target)
+}

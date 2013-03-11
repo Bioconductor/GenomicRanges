@@ -13,7 +13,7 @@ exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
     GenomicRangesORGRangesList,
-    GappedAlignments, GappedAlignmentPairs,
+    GappedAlignments, GappedAlignmentPairs, GAlignmentsList,
     SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -101,8 +101,10 @@ export(
     GRanges, GRangesList, GenomicRangesList,
     .DollarNames.GenomicRanges,
     makeGRangesListFromFeatureFragments,
+    makeGAlignmentsListFromFeatureFragments,
     GappedAlignments, readGappedAlignments,
     GappedAlignmentPairs, readGappedAlignmentPairs,
+    GAlignmentsList,
     flipQuery,
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,

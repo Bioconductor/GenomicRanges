@@ -695,6 +695,9 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive=FALSE) {
              elementMetadata=new_elementMetadata)
 })
 
+setMethod("splitAsListReturnedClass", "GappedAlignments", 
+    function(x) "GAlignmentsList"
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "updateCigarAndStart" method.
@@ -735,23 +738,20 @@ setMethod("updateCigarAndStart", "GappedAlignments",  # not exported
 
 setMethod("qnarrow", "GappedAlignments",
     function(x, start=NA, end=NA, width=NA)
-    {
-        ans_cigar <- cigarQNarrow(cigar(x),
-                                  start=start, end=end, width=width)
-        ans_start <- start(x) + attr(ans_cigar, "rshift")
-        updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
-    }
-)
+        .narrowGAlignments(x, start, end, width, cigarQNarrow)
+) 
 
 setMethod("narrow", "GappedAlignments",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        ans_cigar <- cigarNarrow(cigar(x),
-                                 start=start, end=end, width=width)
-        ans_start <- start(x) + attr(ans_cigar, "rshift")
-        updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
-    }
+        .narrowGAlignments(x, start, end, width, cigarNarrow)
 )
+
+.narrowGAlignments <- function(x, start, end, width, narrowFunction)
+{
+    ans_cigar <- narrowFunction(cigar(x), start=start, end=end, width=width)
+    ans_start <- start(x) + attr(ans_cigar, "rshift")
+    updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Mapping

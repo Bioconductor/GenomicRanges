@@ -229,46 +229,45 @@ setMethod("strand", "GRangesList",
              unlistData = x@unlistData@strand, partitioning = x@partitioning,
              check=FALSE))
 
-setMethod("elementMetadata", "GRangesList",
-    function(x, use.names=FALSE, level=c("between", "within"), ...)
-    {
-        if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
-        level <- match.arg(level)
-        if (level == "between") {
-            ans <- x@elementMetadata
-            if (use.names)
-                rownames(ans) <- names(x)
-        } else {
-            elementMetadata <- x@unlistData@elementMetadata
-            if (use.names)
-                rownames(elementMetadata) <- names(x@unlistData)
-            ans <-
-              new2("CompressedSplitDataFrameList", unlistData = elementMetadata,
-                   partitioning = x@partitioning, check=FALSE)
-        }
-        ans
+.getElementMetadataList <- 
+    function(x, use.names=FALSE, level = c("between", "within"), ...)
+{
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    level <- match.arg(level)
+    if (level == "between") {
+        ans <- x@elementMetadata
+        if (use.names)
+            rownames(ans) <- names(x)
+    } else {
+        elementMetadata <- x@unlistData@elementMetadata
+        if (use.names)
+            rownames(elementMetadata) <- names(x@unlistData)
+        ans <-
+          new2("CompressedSplitDataFrameList", unlistData = elementMetadata,
+               partitioning = x@partitioning, check=FALSE)
     }
-)
+    ans
+}
+setMethod("elementMetadata", "GRangesList", .getElementMetadataList)
 
 setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
 
-setReplaceMethod("seqnames", "GRangesList",
-    function(x, value) 
-    {
-        if (!is(value, "AtomicList") ||
-            !identical(elementLengths(x), elementLengths(value)))
-            stop("replacement 'value' is not an AtomicList with the same ",
-                 "elementLengths as 'x'")
-        value <- unlist(value, use.names = FALSE)
-        if (!is(value, "Rle"))
-            value <- Rle(factor(value))
-        else if (!is.factor(runValue(value)))
-            runValue(value) <- factor(runValue(value))
-        seqnames(x@unlistData) <- value
-        x
-    }
-)
+.replaceSeqnamesList <- function(x, value)
+{
+    if (!is(value, "AtomicList") ||
+        !identical(elementLengths(x), elementLengths(value)))
+        stop("replacement 'value' is not an AtomicList with the same ",
+             "elementLengths as 'x'")
+    value <- unlist(value, use.names = FALSE)
+    if (!is(value, "Rle"))
+        value <- Rle(factor(value))
+    else if (!is.factor(runValue(value)))
+        runValue(value) <- factor(runValue(value))
+    seqnames(x@unlistData) <- value
+    x
+}
+setReplaceMethod("seqnames", "GRangesList", .replaceSeqnamesList)
 
 setReplaceMethod("ranges", "GRangesList",
     function(x, value) 
@@ -282,77 +281,75 @@ setReplaceMethod("ranges", "GRangesList",
     }
 )
 
-setReplaceMethod("strand", "GRangesList",
-    function(x, value) 
-    {
-        if (!is(value, "AtomicList") ||
-            !identical(elementLengths(x), elementLengths(value)))
-            stop("replacement 'value' is not an AtomicList with the same ",
-                 "elementLengths as 'x'")
-        value <- unlist(value, use.names = FALSE)
-        if (!is(value, "Rle"))
-            value <- Rle(strand(value))
-        else if (!is.factor(runValue(value)) ||
-                 !identical(levels(runValue(value)), levels(strand())))
-            runValue(value) <- strand(runValue(value))
-        strand(x@unlistData) <- value
-        x
-    }
-)
+.replaceStrandList <- function(x, value)
+{
+    if (!is(value, "AtomicList") ||
+        !identical(elementLengths(x), elementLengths(value)))
+        stop("replacement 'value' is not an AtomicList with the same ",
+             "elementLengths as 'x'")
+    value <- unlist(value, use.names = FALSE)
+    if (!is(value, "Rle"))
+        value <- Rle(strand(value))
+    else if (!is.factor(runValue(value)) ||
+             !identical(levels(runValue(value)), levels(strand())))
+        runValue(value) <- strand(runValue(value))
+    strand(x@unlistData) <- value
+    x
+}
+setReplaceMethod("strand", "GRangesList", .replaceStrandList)
 
-setReplaceMethod("elementMetadata", "GRangesList",
-    function(x, level = c("between", "within"), ..., value) 
-    {
+.replaceElementMetadataList <- 
+    function(x, level = c("between", "within"), ..., value)
+{
         level <- match.arg(level)
-        if (level == "between") {
-            if (is.null(value))
-                value <- new("DataFrame", nrows = length(x))
-            else if (!is(value, "DataFrame"))
-                value <- DataFrame(value)
-            if (!is.null(rownames(value)))
-                rownames(value) <- NULL
-            n <- length(x)
-            k <- nrow(value)
-            if (k != n) {
-                if ((k == 0) || (k > n) || (n %% k != 0))
-                    stop(k, " rows in value to replace ", n, "rows")
-                value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
-            }
-            x@elementMetadata <- value
+    if (level == "between") {
+        if (is.null(value))
+            value <- new("DataFrame", nrows = length(x))
+        else if (!is(value, "DataFrame"))
+            value <- DataFrame(value)
+        if (!is.null(rownames(value)))
+            rownames(value) <- NULL
+        n <- length(x)
+        k <- nrow(value)
+        if (k != n) {
+            if ((k == 0) || (k > n) || (n %% k != 0))
+                stop(k, " rows in value to replace ", n, "rows")
+            value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
+        }
+        x@elementMetadata <- value
+    } else {
+        if (is.null(value)) {
+            value <- new("DataFrame", nrows = length(x@unlistData))
         } else {
-            if (is.null(value)) {
-                value <- new("DataFrame", nrows = length(x@unlistData))
-            } else {
-                if (!is(value, "SplitDataFrameList") ||
-                    !identical(elementLengths(x), elementLengths(value))) {
-                    stop("replacement 'value' is not a SplitDataFrameList with ",
-                            "the same elementLengths as 'x'")
-                }
-                value <- unlist(value, use.names = FALSE)
+            if (!is(value, "SplitDataFrameList") ||
+                !identical(elementLengths(x), elementLengths(value))) {
+                stop("replacement 'value' is not a SplitDataFrameList with ",
+                        "the same elementLengths as 'x'")
             }
-            elementMetadata(x@unlistData) <- value
+            value <- unlist(value, use.names = FALSE)
         }
-        x
+        elementMetadata(x@unlistData) <- value
     }
-)
+    x
+}
+setReplaceMethod("elementMetadata", "GRangesList", .replaceElementMetadataList)
 
-setReplaceMethod("seqinfo", "GRangesList",
-    function(x, new2old=NULL, force=FALSE, value)
-    {
-        if (!is(value, "Seqinfo"))
-            stop("the supplied 'seqinfo' must be a Seqinfo object")
-        unlisted <- x@unlistData
-        dangling_seqlevels <- getDanglingSeqlevels(unlisted,
-                                  new2old=new2old, force=force,
-                                  seqlevels(value))
-        if (length(dangling_seqlevels) != 0L) {
-            dropme <- which(seqnames(unlisted) %in% dangling_seqlevels)
-            x <- x[-unique(togroup(x, j=dropme))]
-        }
-        seqinfo(x@unlistData, new2old=new2old) <- value
-        x
+.replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE, value)
+{
+    if (!is(value, "Seqinfo"))
+        stop("the supplied 'seqinfo' must be a Seqinfo object")
+    unlisted <- x@unlistData
+    dangling_seqlevels <- getDanglingSeqlevels(unlisted,
+                              new2old=new2old, force=force,
+                              seqlevels(value))
+    if (length(dangling_seqlevels) != 0L) {
+        dropme <- which(seqnames(unlisted) %in% dangling_seqlevels)
+        x <- x[-unique(togroup(x, j=dropme))]
     }
-)
+    seqinfo(x@unlistData, new2old=new2old) <- value
+    x
+}
+setReplaceMethod("seqinfo", "GRangesList", .replaceSeqinfoList)
 
 setMethod("score", "GRangesList", function(x) {
   mcols(x)$score
@@ -473,85 +470,82 @@ setMethod("disjoin", "GRangesList",
 ### Vector methods.
 ###
 
-setMethod("[", "GRangesList",
-    function(x, i, j, ..., drop)
-    {
-        if (!missing(i)) {
-            x <- callNextMethod(x = x, i = i)
-        }
-        if (!missing(j)) {
-            if (!is.character(j))
-                stop("'j' must be a character vector")
-            withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
-            if (any(withinLevel) && !all(withinLevel))
-                stop("'j' cannot mix between and within metadata column names")
-            if (any(withinLevel)) {
-                mcols(x, level="within") <-
-                  mcols(x, level="within")[, j, drop=FALSE]
-            } else {
-                mcols(x) <- mcols(x)[, j, drop=FALSE]
-            }
-        }
-        x
+.sBracketSubsetGRList <- function(x, i, j, ..., drop)
+{
+    if (!missing(i)) {
+        x <- callNextMethod(x = x, i = i)
     }
-)
-
-setReplaceMethod("[", "GRangesList",
-    function(x, i, j, ..., value)
-    {
-        if (!is(value, "GRangesList"))
-            stop("replacement value must be a GRangesList object")
-        if (!missing(i)) {
-            iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
-            if (!is.null(iInfo[["msg"]]))
-                stop(iInfo[["msg"]])
-            i <- iInfo[["idx"]]
-        }
-        if (!missing(j)) {
-            if (!is.character(j))
-                stop("'j' must be a character vector")
-            withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
-            if (any(withinLevel) && !all(withinLevel))
-                stop("'j' cannot mix between and within metadata column names")
-            if (missing(i)) {
-                if (any(withinLevel)) {
-                    mcols(x, level="within")[, j] <-
-                      mcols(x, level="within")
-                } else {
-                    mcols(x)[, j] <- mcols(x)
-                }
-            } else {
-                if (any(withinLevel)) {
-                    mcols(x, level="within")[i, j] <-
-                            mcols(x, level="within")
-                } else {
-                    mcols(x)[i, j] <- mcols(x)
-                }
-            }
-        }
-        callNextMethod(x = x, i = i, value = value)
-    }
-)
-
-setReplaceMethod("[[", "GRangesList",
-    function(x, i, j, ..., value)
-    {
-        nameValue <- if (is.character(i)) i else ""
-        i <- IRanges:::normargSubset2_iOnly(x, i, j, ...,
-                 .conditionPrefix="[[<-,GRangesList-method: ")
-        len <- length(x)
-        if (i > len) {
-            value <- list(value)
-            if (nzchar(nameValue))
-                names(value) <- nameValue
-            x <- c(x, do.call(getFunction(class(x)), value))
+    if (!missing(j)) {
+        if (!is.character(j))
+            stop("'j' must be a character vector")
+        withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
+        if (any(withinLevel) && !all(withinLevel))
+            stop("'j' cannot mix between and within metadata column names")
+        if (any(withinLevel)) {
+            mcols(x, level="within") <-
+              mcols(x, level="within")[, j, drop=FALSE]
         } else {
-            x <- callNextMethod(x, i, ..., value=value)
+            mcols(x) <- mcols(x)[, j, drop=FALSE]
         }
-        validObject(x)
-        x
     }
-)
+    x
+}
+setMethod("[", "GRangesList", .sBracketSubsetGRList)
+
+.sBracketReplaceGRList <- function(x, i, j, ..., value)
+{
+    if (!is(value, class(x)[1]))
+        stop(paste0("replacement value must be a ", class(x)[1], " object"))
+    if (!missing(i)) {
+        iInfo <- IRanges:::.bracket.Index(i, length(x), names(x))
+        if (!is.null(iInfo[["msg"]]))
+            stop(iInfo[["msg"]])
+        i <- iInfo[["idx"]]
+    }
+    if (!missing(j)) {
+        if (!is.character(j))
+            stop("'j' must be a character vector")
+        withinLevel <- (j %in% colnames(x@unlistData@elementMetadata))
+        if (any(withinLevel) && !all(withinLevel))
+            stop("'j' cannot mix between and within metadata column names")
+        if (missing(i)) {
+            if (any(withinLevel)) {
+                mcols(x, level="within")[, j] <-
+                  mcols(x, level="within")
+            } else {
+                mcols(x)[, j] <- mcols(x)
+            }
+        } else {
+            if (any(withinLevel)) {
+                mcols(x, level="within")[i, j] <-
+                        mcols(x, level="within")
+            } else {
+                mcols(x)[i, j] <- mcols(x)
+            }
+        }
+    }
+    callNextMethod(x = x, i = i, value = value)
+}
+setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
+
+.dBracketReplaceGRList <- function(x, i, j, ..., value)
+{
+    nameValue <- if (is.character(i)) i else ""
+    i <- IRanges:::normargSubset2_iOnly(x, i, j, ...,
+             .conditionPrefix=paste0("[[<-,", class(x)[1], "-method: "))
+    len <- length(x)
+    if (i > len) {
+        value <- list(value)
+        if (nzchar(nameValue))
+            names(value) <- nameValue
+        x <- c(x, do.call(getFunction(class(x)), value))
+    } else {
+        x <- callNextMethod(x, i, ..., value=value)
+    }
+    validObject(x)
+    x
+}
+setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.
@@ -559,68 +553,71 @@ setReplaceMethod("[[", "GRangesList",
 
 setMethod("show", "GRangesList",
     function(object)
-    {
-        k <- length(object)
-        cumsumN <- cumsum(elementLengths(object))
-        N <- tail(cumsumN, 1)
-        cat(class(object), " of length ", k, ":\n", sep = "")
-        with.classinfo <- TRUE
-        if (k == 0L) {
-            cat("<0 elements>\n\n")
-        } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
-            nms <- names(object)
-            defnms <- paste0("[[", seq_len(k), "]]")
-            if (is.null(nms)) {
-                nms <- defnms
-            } else {
-                empty <- nchar(nms) == 0L
-                nms[empty] <- defnms[empty]
-                nms[!empty] <- paste0("$", nms[!empty])
-            }
-            for (i in seq_len(k)) {
-                cat(nms[i], "\n")
-                showGenomicRanges(object[[i]], margin="  ",
-                                  with.classinfo=with.classinfo)
-                if (with.classinfo)
-                    with.classinfo <- FALSE
-                cat("\n")
-            }
-        } else {
-            sketch <- function(x) c(head(x, 3), "...", tail(x, 3))
-            if (k >= 3 && cumsumN[3L] <= 20)
-                showK <- 3
-            else if (k >= 2 && cumsumN[2L] <= 20)
-                showK <- 2
-            else
-                showK <- 1
-            diffK <- k - showK
-            nms <- names(object)[seq_len(showK)]
-            defnms <- paste0("[[", seq_len(showK), "]]")
-            if (is.null(nms)) {
-                nms <- defnms
-            } else {
-                empty <- nchar(nms) == 0L
-                nms[empty] <- defnms[empty]
-                nms[!empty] <- paste0("$", nms[!empty])
-            }
-            for (i in seq_len(showK)) {
-                cat(nms[i], "\n")
-                showGenomicRanges(object[[i]], margin="  ",
-                                  with.classinfo=with.classinfo)
-                if (with.classinfo)
-                    with.classinfo <- FALSE
-                cat("\n")
-            }
-            if (diffK > 0) {
-                cat("...\n<", k - showK,
-                    ifelse(diffK == 1, " more element>\n", " more elements>\n"),
-                    sep="")
-            }
-        }
-        cat("---\n")
-        showSeqlengths(object)
-    }
+        .showList(object, showGenomicRanges, TRUE)
 )
+
+.showList <- function(object, showFunction, with.classinfo, ...)
+{
+    k <- length(object)
+    cumsumN <- cumsum(elementLengths(object))
+    N <- tail(cumsumN, 1)
+    cat(class(object), " of length ", k, ":\n", sep = "")
+    #with.classinfo <- TRUE
+    if (k == 0L) {
+        cat("<0 elements>\n\n")
+    } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
+        nms <- names(object)
+        defnms <- paste0("[[", seq_len(k), "]]")
+        if (is.null(nms)) {
+            nms <- defnms
+        } else {
+            empty <- nchar(nms) == 0L
+            nms[empty] <- defnms[empty]
+            nms[!empty] <- paste0("$", nms[!empty])
+        }
+        for (i in seq_len(k)) {
+            cat(nms[i], "\n")
+            showFunction(object[[i]], margin="  ",
+                         with.classinfo=with.classinfo)
+            if (with.classinfo)
+                with.classinfo <- FALSE
+            cat("\n")
+        }
+    } else {
+        sketch <- function(x) c(head(x, 3), "...", tail(x, 3))
+        if (k >= 3 && cumsumN[3L] <= 20)
+            showK <- 3
+        else if (k >= 2 && cumsumN[2L] <= 20)
+            showK <- 2
+        else
+            showK <- 1
+        diffK <- k - showK
+        nms <- names(object)[seq_len(showK)]
+        defnms <- paste0("[[", seq_len(showK), "]]")
+        if (is.null(nms)) {
+            nms <- defnms
+        } else {
+            empty <- nchar(nms) == 0L
+            nms[empty] <- defnms[empty]
+            nms[!empty] <- paste0("$", nms[!empty])
+        }
+        for (i in seq_len(showK)) {
+            cat(nms[i], "\n")
+            showFunction(object[[i]], margin="  ",
+                              with.classinfo=with.classinfo)
+            if (with.classinfo)
+                with.classinfo <- FALSE
+            cat("\n")
+        }
+        if (diffK > 0) {
+            cat("...\n<", k - showK,
+                ifelse(diffK == 1, " more element>\n", " more elements>\n"),
+                sep="")
+        }
+    }
+    cat("---\n")
+    showSeqlengths(object)
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
