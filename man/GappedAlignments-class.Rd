@@ -63,6 +63,7 @@
 \alias{qnarrow}
 \alias{qnarrow,GappedAlignments-method}
 \alias{narrow,GappedAlignments-method}
+\alias{splitAsListReturnedClass,GappedAlignments-method}
 
 
 \title{GappedAlignments objects}

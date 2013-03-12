@@ -1,6 +1,5 @@
-
 noGaps <- GappedAlignments(
-    seqnames=Rle(factor(c("chr1", "chr2", "chr1", "chr3")), 
+    Rle(factor(c("chr1", "chr2", "chr1", "chr3")), 
         c(1, 3, 2, 4)), 
     pos=1:10, cigar=paste0(10:1, "M"),
     strand=Rle(strand(c("-", "+", "*", "+", "-")), 
@@ -8,7 +7,7 @@ noGaps <- GappedAlignments(
     names=head(letters, 10), score=1:10)
 
 Gaps <- GappedAlignments(
-    seqnames=Rle(factor(c("chr2", "chr4")), c(3, 4)), pos=1:7,
+    Rle(factor(c("chr2", "chr4")), c(3, 4)), pos=1:7,
     cigar=c("5M", "3M2N3M2N3M", "5M", "10M", "5M1N4M", "8M2N1M", "5M"), 
     strand=Rle(strand(c("-", "+")), c(4, 3)),
     names=tail(letters, 7), score=1:7)
@@ -70,4 +69,23 @@ test_GAlignmentsList_accessors <- function() {
     checkIdentical(width(GAList), target)
     target <- SplitDataFrameList(lapply(GAList, mcols))
     checkIdentical(mcols(GAList, level="within"), target)
+}
+
+test_GAlignments_subset_combine <- function()
+{
+    GAList <- GAlignmentsList(noGaps, Gaps)
+    score <- 1:length(togroup(GAList))
+    meta <- DataFrame(score=score, more=score+10) 
+    mcols(GAList@unlistData) <- meta
+
+    ## 'c' 
+    checkIdentical(GAlignmentsList(), 
+                   c(GAlignmentsList(), GAlignmentsList()))
+    checkIdentical(GAlignmentsList(noGaps, Gaps), 
+                   c(GAlignmentsList(noGaps), GAlignmentsList(Gaps)))
+
+    ## '['
+    checkIdentical(GAList, GAList[])
+    checkIdentical(GAList, GAList[Rle(TRUE)])
+    checkIdentical(GAList[c(TRUE, FALSE),], GAList[1])
 }

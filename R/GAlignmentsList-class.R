@@ -286,25 +286,12 @@ setMethod("granges", "GAlignmentsList",
     }
 )
 
+setMethod("as.data.frame", "GAlignmentsList", .GRangesListAsdataframe)
+
 setAs("GAlignmentsList", "RangesList", function(from) ranges(from))
 
 setAs("GAlignmentsList", "GRangesList", function(from) granges(from))
 
-setMethod("as.data.frame", "GAlignmentsList",
-    function(x, row.names=NULL, optional=FALSE, ...)
-    {
-        if (missing(row.names))
-            row.names <- names(x@unlistData)
-        if (is.null(names(x)))
-            element <- rep.int(seq_len(length(x)), elementLengths(x))
-        else
-            element <- rep.int(names(x), elementLengths(x))
-        data.frame(element=element,
-                   as.data.frame(unlist(x, use.names=FALSE),
-                                 row.names=row.names),
-                   stringsAsFactors=FALSE)
-    }
-)
 
 .GAlignmentsListAsCompressedIRangesList <- function(from)
 {

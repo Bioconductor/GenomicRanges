@@ -17,6 +17,9 @@
 \alias{findOverlaps,Vector,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{findOverlaps,GAlignmentsList,Vector-method}
+\alias{findOverlaps,Vector,GAlignmentsList-method}
+\alias{findOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 \alias{countOverlaps,GenomicRanges,Vector-method}
 \alias{countOverlaps,Vector,GenomicRanges-method}
@@ -28,6 +31,9 @@
 \alias{countOverlaps,Vector,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{countOverlaps,GAlignmentsList,Vector-method}
+\alias{countOverlaps,Vector,GAlignmentsList-method}
+\alias{countOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 \alias{overlapsAny,GenomicRanges,GenomicRanges-method}
 \alias{overlapsAny,GRangesList,GenomicRanges-method}
@@ -45,6 +51,9 @@
 \alias{overlapsAny,Vector,GappedAlignments-method}
 \alias{overlapsAny,GappedAlignments,GappedAlignments-method}
 \alias{overlapsAny,GappedAlignmentPairs,Vector-method}
+\alias{overlapsAny,GAlignmentsList,Vector-method}
+\alias{overlapsAny,Vector,GAlignmentsList-method}
+\alias{overlapsAny,GAlignmentsList,GAlignmentsList-method}
 
 \alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
@@ -62,6 +71,9 @@
 \alias{subsetByOverlaps,Vector,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{subsetByOverlaps,GAlignmentsList,Vector-method}
+\alias{subsetByOverlaps,Vector,GAlignmentsList-method}
+\alias{subsetByOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 \alias{match,GRangesList,GenomicRanges-method}
 \alias{match,GenomicRanges,GRangesList-method}
@@ -78,6 +90,9 @@
 \alias{match,Vector,GappedAlignments-method}
 \alias{match,GappedAlignments,GappedAlignments-method}
 \alias{match,GappedAlignmentPairs,Vector-method}
+\alias{match,GAlignmentsList,Vector-method}
+\alias{match,Vector,GAlignmentsList-method}
+\alias{match,GAlignmentsList,GAlignmentsList-method}
 
 \alias{\%in\%,GRangesList,GenomicRanges-method}
 \alias{\%in\%,GenomicRanges,GRangesList-method}
@@ -94,6 +109,9 @@
 \alias{\%in\%,Vector,GappedAlignments-method}
 \alias{\%in\%,GappedAlignments,GappedAlignments-method}
 \alias{\%in\%,GappedAlignmentPairs,Vector-method}
+\alias{\%in\%,GAlignmentsList,Vector-method}
+\alias{\%in\%,Vector,GAlignmentsList-method}
+\alias{\%in\%,GAlignmentsList,GAlignmentsList-method}
 
 \alias{findMatches,GRangesList,GenomicRanges-method}
 \alias{findMatches,GenomicRanges,GRangesList-method}
@@ -110,6 +128,9 @@
 \alias{findMatches,Vector,GappedAlignments-method}
 \alias{findMatches,GappedAlignments,GappedAlignments-method}
 \alias{findMatches,GappedAlignmentPairs,Vector-method}
+\alias{findMatches,GAlignmentsList,Vector-method}
+\alias{findMatches,Vector,GAlignmentsList-method}
+\alias{findMatches,GAlignmentsList,GAlignmentsList-method}
 
 \alias{countMatches,GRangesList,GenomicRanges-method}
 \alias{countMatches,GenomicRanges,GRangesList-method}
@@ -126,14 +147,17 @@
 \alias{countMatches,Vector,GappedAlignments-method}
 \alias{countMatches,GappedAlignments,GappedAlignments-method}
 \alias{countMatches,GappedAlignmentPairs,Vector-method}
+\alias{countMatches,GAlignmentsList,Vector-method}
+\alias{countMatches,Vector,GAlignmentsList-method}
+\alias{countMatches,GAlignmentsList,GAlignmentsList-method}
 
 
 \title{Finding overlapping genomic ranges}
 
 \description{
   Finds interval overlaps between a \link{GRanges}, \link{GRangesList},
-  \link{GappedAlignments}, or \link{GappedAlignmentPairs} object, and
-  another object containing ranges.
+  \link{GappedAlignments}, \link{GAlignmentsList}, or \link{GappedAlignmentPairs} 
+  object, and another object containing ranges.
 }
 
 \usage{
@@ -158,10 +182,10 @@
 
 \arguments{
   \item{query, subject}{
-    A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments} or
-    \link{GappedAlignmentPairs} object. \link[IRanges]{RangesList}
-    and \link[IRanges]{RangedData} are also accepted for one of \code{query}
-    or \code{subject}.
+    A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
+    \link{GAlignmentsList}, or \link{GappedAlignmentPairs} object. 
+    \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
+    also accepted for one of \code{query} or \code{subject}.
   }
   \item{maxgap, minoverlap, type, select}{
     See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
@@ -198,7 +222,9 @@
   When the query or the subject (or both) is a \link{GappedAlignments}
   object, it is first turned into a \link{GRangesList} object (with
   \code{as( , "GRangesList")}) and then the rules described previously
-  apply.
+  apply. \link{GAlignmentsList} objects are coerced to \link{GappedAlignments}
+  then to a \link{GRangesList}. Feature indices are mapped back to the 
+  original \link{GAlignmentsList} list elements.
 
   When the query is a \link{GappedAlignmentPairs} object, it is first
   turned into a \link{GRangesList} object (with \code{as( , "GRangesList")})
@@ -235,6 +261,7 @@
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
     \item \link{GappedAlignments-class}.
+    \item \link{GAlignmentsList-class}.
     \item \link{GappedAlignmentPairs-class}.
   }
 }
@@ -305,7 +332,7 @@ findOverlaps(grl, rev(grl))
 subsetByOverlaps(grl, rev(grl))
 
 ## ---------------------------------------------------------------------
-## WITH A GappedAlignments OBJECT
+## WITH GappedAlignments AND/OR GAlignmentsList OBJECTS
 ## ---------------------------------------------------------------------
 library(Rsamtools)  # because file ex1.bam is in this package
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
@@ -327,6 +354,17 @@ countOverlaps(galn[8:10], subject, ignore.strand=TRUE)
 table(overlapsAny(galn, subject))
 ## Extract those that DO:
 subsetByOverlaps(galn, subject)
+
+## GAlignmentsList
+galist <- GAlignmentsList(galn[8:10], galn[3000:3002])
+gr <- GRanges(c("seq1", "seq1", "seq2"), 
+              IRanges(c(15, 18, 1233), width=1),
+              strand=c("-", "+", "+"))
+
+countOverlaps(galist, gr)
+countOverlaps(galist, gr, ignore.strand=TRUE)
+findOverlaps(galist, gr)
+findOverlaps(galist, gr, ignore.strand=TRUE)
 }
 
 \keyword{methods}

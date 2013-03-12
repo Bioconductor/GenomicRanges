@@ -64,6 +64,9 @@
 % "show" method:
 \alias{show,GenomicRanges-method}
 
+% other methods:
+\alias{splitAsListReturnedClass,GRanges-method}
+
 \title{GRanges objects}
 
 \description{

@@ -63,8 +63,8 @@
 
 \details{
   A GAlignmentsList object contains a list of GappedAlignments. The
-  majority of operations on this page are described in greater detail
-  on the GappedAlignments man page (?\code{GappedAlignments}).
+  majority of operations on this page are described in more detail
+  on the GappedAlignments man page, see ?\code{GappedAlignments}.
 } 
 
 \section{Constructors}{
@@ -268,44 +268,44 @@ gal2 <- GappedAlignments(
     strand=Rle(strand(c("-", "+")), c(4, 3)),
     names=tail(letters, 7), score=1:7)
 
-gaList <- GAlignmentsList(noGaps=gal1, Gaps=gal2)
+galist <- GAlignmentsList(noGaps=gal1, Gaps=gal2)
 
 
 ## ---------------------------------------------------------------------
 ## A. BASIC MANIPULATION
 ## ---------------------------------------------------------------------
-length(gaList)
-names(gaList)
-seqnames(gaList)
-strand(gaList)
-head(cigar(gaList))
-head(qwidth(gaList))
-head(start(gaList))
-head(end(gaList))
-head(width(gaList))
-head(ngap(gaList))
-seqlevels(gaList)
+length(galist)
+names(galist)
+seqnames(galist)
+strand(galist)
+head(cigar(galist))
+head(qwidth(galist))
+head(start(galist))
+head(end(galist))
+head(width(galist))
+head(ngap(galist))
+seqlevels(galist)
 
 ## Rename the reference sequences:
-seqlevels(gaList) <- sub("chr", "seq", seqlevels(gaList))
-seqlevels(gaList)
+seqlevels(galist) <- sub("chr", "seq", seqlevels(galist))
+seqlevels(galist)
 
-granges(gaList)  # a GRangesList object
-ranges(gaList)   # an IRanges object
+granges(galist)  # a GRangesList object
+ranges(galist)   # an IRanges object
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING
 ## ---------------------------------------------------------------------
 
-gaList[strand(gaList) == "-"]
-gaps <- sapply(gaList, function(x) any(grepl("N", cigar(x), fixed=TRUE)))
-gaList[gaps]
+galist[strand(galist) == "-"]
+gaps <- sapply(galist, function(x) any(grepl("N", cigar(x), fixed=TRUE)))
+galist[gaps]
 
 ## Different ways to subset:
-gaList[2]             # a GappedAlignments object of length 1
-gaList[[2]]           # a GappedAlignments object of length 1
-granges(gaList)[[2]]  # a GRanges object of length 1
-ranges(gaList)[[2]]   # a NormalIRanges object of length 1
+galist[2]             # a GappedAlignments object of length 1
+galist[[2]]           # a GappedAlignments object of length 1
+granges(galist)[[2]]  # a GRanges object of length 1
+ranges(galist)[[2]]   # a NormalIRanges object of length 1
 
 ## ---------------------------------------------------------------------
 ## C. mcols()/elementMetadata()
@@ -316,8 +316,8 @@ ranges(gaList)[[2]]   # a NormalIRanges object of length 1
 ## which extracts metadata set on the GAlignmentsList. Using 'level=within' 
 ## will extract the metadata on the GappedAliginments.
 
-mcols(gaList) ## no metadata on the GAlignmentsList object
-mcols(gaList, level="within")
+mcols(galist) ## no metadata on the GAlignmentsList object
+mcols(galist, level="within")
 }
 
 \keyword{methods}
