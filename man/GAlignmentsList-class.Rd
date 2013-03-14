@@ -10,6 +10,7 @@
 \alias{GAlignmentsList}
 \alias{makeGAlignmentsListFromFeatureFragments}
 \alias{updateObject,GAlignmentsList-method}
+\alias{readGAlignmentsList}
 
 % Accessors:
 \alias{names,GAlignmentsList-method}
@@ -73,6 +74,28 @@
       \code{GAlignmentsList(...)}:
       Creates a GAlignmentsList from a list of GappedAlignments objects.
     }
+    \item{}{
+      \code{readGAlignmentsList(file, format="BAM", use.names=FALSE, ...)}:
+      Read a file containing aligned reads as a GAlignmentsList object.
+      Note that this function is just a front-end that delegates to the
+      \code{\link[Rsamtools]{readBamGAlignmentsList}} function defined
+      in the Rsamtools package. 
+      See \code{?\link[Rsamtools]{readBamGAlignmentsList}} for
+      more information.
+ 
+      The \code{param} and \code{asProperPairs} arguments described on the
+      \code{\link[Rsamtools]{readBamGAlignmentsList}} man page fine tune the 
+      records are returned. \code{param} is specifed by the standard
+      \code{ScanBamParam()} options. When \code{asProperPairs=TRUE} (default), 
+      only the proper pairs are returned. This is the same QC filtering that 
+      is done by \code{readBamGappedAlignmentsPairs} but the records are
+      returned in a \code{GAlignmentsList} instead of
+      \code{GappedAlignmentsPairs} object. If \code{asProperPairs=FALSE}, all 
+      records in the file are retained (i.e., no QC) and the list structure is 
+      split by read id (QNAME in SAM/BAM). This format allows the flexibility 
+      to retain singletons, pairs, and multi-fragment reads in a single class. 
+    }
+
     \item{}{
       \code{makeGAlignmentsListFromFeatureFragments(seqnames=Rle(factor()), 
                                                     fragmentPos=list(),
@@ -242,15 +265,11 @@
 
 \seealso{
   \itemize{
+    \item \link{GappedAlignments-class}.
     \item \link{GappedAlignmentPairs-class}.
     \item \code{\link[Rsamtools]{readBamGappedAlignments}}.
-    \item \link{GRangesList-class}.
-    \item \link{GRanges-class}.
+    \item \code{\link[Rsamtools]{readBamGappedAlignmentsPairs}}.
     \item \link{findOverlaps-methods}.
-    \item \link{coverage-methods}.
-    \item \code{\link{seqinfo}}.
-    \item \link[IRanges]{CompressedIRangesList-class}.
-    \item \link{setops-methods}.
   }
 }
 
@@ -274,6 +293,7 @@ galist <- GAlignmentsList(noGaps=gal1, Gaps=gal2)
 ## ---------------------------------------------------------------------
 ## A. BASIC MANIPULATION
 ## ---------------------------------------------------------------------
+
 length(galist)
 names(galist)
 seqnames(galist)
@@ -318,6 +338,17 @@ ranges(galist)[[2]]   # a NormalIRanges object of length 1
 
 mcols(galist) ## no metadata on the GAlignmentsList object
 mcols(galist, level="within")
+
+## ---------------------------------------------------------------------
+## D. readBamGAlignmentsList() 
+## ---------------------------------------------------------------------
+
+library(pasillaBamSubset)
+library(Rsamtools)
+fl <- sortBam(untreated3_chr4(), tempfile(), byQname=TRUE)
+bf <- BamFile(fl, index=character(0), yieldSize=50, obeyQname=TRUE)
+galist <- readGAlignmentsList(bf, asProperPairs=FALSE)
+galist
 }
 
 \keyword{methods}
