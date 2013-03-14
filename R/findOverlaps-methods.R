@@ -549,6 +549,18 @@ setMethod("findOverlaps", c("GappedAlignmentPairs", "Vector"),
     }
 )
 
+setMethod("findOverlaps", c("Vector", "GappedAlignmentPairs"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(query, as(subject, "GRangesList"),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
 setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
@@ -654,6 +666,7 @@ setMethod("findOverlaps", c("GAlignmentsList", "GAlignmentsList"),
     c("Vector", "GappedAlignments"),
     c("GappedAlignments", "GappedAlignments"),
     c("GappedAlignmentPairs", "Vector"),
+    c("Vector", "GappedAlignmentPairs"),
     c("SummarizedExperiment", "Vector"),
     c("Vector", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment"),
@@ -730,6 +743,7 @@ setMethods("countOverlaps", .signatures1, .countOverlaps.definition)
     c("Vector", "GappedAlignments"),
     c("GappedAlignments", "GappedAlignments"),
     c("GappedAlignmentPairs", "Vector"),
+    c("Vector", "GappedAlignmentPairs"),
     c("SummarizedExperiment", "Vector"),
     c("Vector", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment"),

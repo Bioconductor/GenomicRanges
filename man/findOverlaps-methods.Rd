@@ -17,6 +17,7 @@
 \alias{findOverlaps,Vector,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{findOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{findOverlaps,Vector,GappedAlignmentPairs-method}
 \alias{findOverlaps,GAlignmentsList,Vector-method}
 \alias{findOverlaps,Vector,GAlignmentsList-method}
 \alias{findOverlaps,GAlignmentsList,GAlignmentsList-method}
@@ -31,6 +32,7 @@
 \alias{countOverlaps,Vector,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{countOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{countOverlaps,Vector,GappedAlignmentPairs-method}
 \alias{countOverlaps,GAlignmentsList,Vector-method}
 \alias{countOverlaps,Vector,GAlignmentsList-method}
 \alias{countOverlaps,GAlignmentsList,GAlignmentsList-method}
@@ -51,6 +53,7 @@
 \alias{overlapsAny,Vector,GappedAlignments-method}
 \alias{overlapsAny,GappedAlignments,GappedAlignments-method}
 \alias{overlapsAny,GappedAlignmentPairs,Vector-method}
+\alias{overlapsAny,Vector,GappedAlignmentPairs-method}
 \alias{overlapsAny,GAlignmentsList,Vector-method}
 \alias{overlapsAny,Vector,GAlignmentsList-method}
 \alias{overlapsAny,GAlignmentsList,GAlignmentsList-method}
@@ -71,6 +74,7 @@
 \alias{subsetByOverlaps,Vector,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
 \alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
+\alias{subsetByOverlaps,Vector,GappedAlignmentPairs-method}
 \alias{subsetByOverlaps,GAlignmentsList,Vector-method}
 \alias{subsetByOverlaps,Vector,GAlignmentsList-method}
 \alias{subsetByOverlaps,GAlignmentsList,GAlignmentsList-method}
@@ -90,6 +94,7 @@
 \alias{match,Vector,GappedAlignments-method}
 \alias{match,GappedAlignments,GappedAlignments-method}
 \alias{match,GappedAlignmentPairs,Vector-method}
+\alias{match,Vector,GappedAlignmentPairs-method}
 \alias{match,GAlignmentsList,Vector-method}
 \alias{match,Vector,GAlignmentsList-method}
 \alias{match,GAlignmentsList,GAlignmentsList-method}
@@ -109,6 +114,7 @@
 \alias{\%in\%,Vector,GappedAlignments-method}
 \alias{\%in\%,GappedAlignments,GappedAlignments-method}
 \alias{\%in\%,GappedAlignmentPairs,Vector-method}
+\alias{\%in\%,Vector,GappedAlignmentPairs-method}
 \alias{\%in\%,GAlignmentsList,Vector-method}
 \alias{\%in\%,Vector,GAlignmentsList-method}
 \alias{\%in\%,GAlignmentsList,GAlignmentsList-method}
@@ -128,6 +134,7 @@
 \alias{findMatches,Vector,GappedAlignments-method}
 \alias{findMatches,GappedAlignments,GappedAlignments-method}
 \alias{findMatches,GappedAlignmentPairs,Vector-method}
+\alias{findMatches,Vector,GappedAlignmentPairs-method}
 \alias{findMatches,GAlignmentsList,Vector-method}
 \alias{findMatches,Vector,GAlignmentsList-method}
 \alias{findMatches,GAlignmentsList,GAlignmentsList-method}
@@ -147,6 +154,7 @@
 \alias{countMatches,Vector,GappedAlignments-method}
 \alias{countMatches,GappedAlignments,GappedAlignments-method}
 \alias{countMatches,GappedAlignmentPairs,Vector-method}
+\alias{countMatches,Vector,GappedAlignmentPairs-method}
 \alias{countMatches,GAlignmentsList,Vector-method}
 \alias{countMatches,Vector,GAlignmentsList-method}
 \alias{countMatches,GAlignmentsList,GAlignmentsList-method}
