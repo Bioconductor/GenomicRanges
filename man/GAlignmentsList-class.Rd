@@ -88,7 +88,7 @@
       records are returned. \code{param} is specifed by the standard
       \code{ScanBamParam()} options. When \code{asProperPairs=TRUE} (default), 
       only the proper pairs are returned. This is the same QC filtering that 
-      is done by \code{readBamGappedAlignmentsPairs} but the records are
+      is done by \code{readBamGappedAlignmentPairs} but the records are
       returned in a \code{GAlignmentsList} instead of
       \code{GappedAlignmentsPairs} object. If \code{asProperPairs=FALSE}, all 
       records in the file are retained (i.e., no QC) and the list structure is 
@@ -268,7 +268,7 @@
     \item \link{GappedAlignments-class}.
     \item \link{GappedAlignmentPairs-class}.
     \item \code{\link[Rsamtools]{readBamGappedAlignments}}.
-    \item \code{\link[Rsamtools]{readBamGappedAlignmentsPairs}}.
+    \item \code{\link[Rsamtools]{readBamGappedAlignmentPairs}}.
     \item \link{findOverlaps-methods}.
   }
 }
