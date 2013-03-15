@@ -179,9 +179,10 @@ reads <- GappedAlignments(
 
 features <- GRanges(
     seqnames = c(rep("chr1", 7), rep("chr2", 4)), strand = "+", 
-    ranges = IRanges(c(1000, 3000, 3600, 4000, 4000, 5000, 5400, 2000, 
-        3000, 7000, 7500), width = c(500, 500, 300, 500, 900, 500, 500, 
-        900, 500, 600, 300)), 
+    ranges = IRanges(c(1000, 3000, 3600, 4000, 4000, 5000, 5400, 
+                       2000, 3000, 7000, 7500), 
+                     width = c(500, 500, 300, 500, 900, 500, 500, 
+                               900, 500, 600, 300)), 
     group_id = c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H"))
 
 
@@ -219,41 +220,46 @@ listAsFeatures <- data.frame(
 ## 'reads' as BamFileList 
 ##
 
+## Examples of using summarizeOverlaps with Bam files are found
+## at ?BamFile or ?'summarizeOverlaps,GRanges,BamFileList-method'
+
 ## Count BAM files and prepare output for DESeq or edgeR analysis
 library(Rsamtools)
-library(DESeq)
-library(edgeR)
-
 fls <- list.files(system.file("extdata",package="GenomicRanges"),
-    recursive=TRUE, pattern="*bam$", full=TRUE)
+                  recursive=TRUE, pattern="*bam$", full=TRUE)
 names(fls) <- basename(fls)
-bfl <- BamFileList(fls, index=character())
-
+bf <- BamFileList(fls, index=character())
 features <- GRanges(
     seqnames = c(rep("chr2L", 4), rep("chr2R", 5), rep("chr3L", 2)),
-    ranges = IRanges(c(1000, 3000, 4000, 7000, 2000, 3000, 3600, 4000, 
-        7500, 5000, 5400), width=c(rep(500, 3), 600, 900, 500, 300, 900, 
-        300, 500, 500)), "-",
+    ranges = IRanges(c(1000, 3000, 4000, 7000, 2000, 3000, 3600, 
+                       4000, 7500, 5000, 5400), 
+                     width=c(rep(500, 3), 600, 900, 500, 300, 900, 
+                             300, 500, 500)), "-",
     group_id=c(rep("A", 4), rep("B", 5), rep("C", 2)))
 
-solap <- summarizeOverlaps(features, bfl)
+se <- summarizeOverlaps(features, bf)
 
-deseq <- newCountDataSet(assays(solap)$counts, rownames(colData(solap)))
+library(DESeq)
+deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
 
-edger <- DGEList(assays(solap)$counts, group=rownames(colData(solap)))
+library(edgeR)
+edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 
 ## ---------------------------------------------------------------------
 ## paired-end reads 
 ##
 
+## When paired-end reads are counted in a Bam file, the 'singleEnd'
+## argument must be set to 'FALSE'. See the examples on the
+## ?BamFile man page.
+
+## Paired-end can also be counted in a GappedAlignmentPairs object.
+## The readGappedAlignmentPairs() function outputs a GappedAliginmentPairs.
 library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
 exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
 fl <- system.file("extdata", "untreated3_chr4.bam", 
-    package="pasillaBamSubset") 
-
-## Paired-end reads are stored in a GappedAlignmentPairs object
+                  package="pasillaBamSubset") 
 reads <- readGappedAlignmentPairs(fl)
-
 res <- summarizeOverlaps(exbygene, reads, "Union")
 stopifnot(length(assays(res)$counts) == length(exbygene))
 }
