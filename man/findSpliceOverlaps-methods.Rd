@@ -91,14 +91,14 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
   indicating if the read (query) met the criteria. 
 
   \itemize{
-    \item{compatible }{Every splice (N) in a read alignment matches
+    \item{compatible: }{Every splice (N) in a read alignment matches
       an intron in an annotated transcript. The read does not
       extend into an intron or outside the transcript bounds.
     }
-    \item{unique }{The read is compatible with only one annotated 
+    \item{unique: }{The read is compatible with only one annotated 
       transcript.
     }
-    \item{strandSpecific}{The query (read) was stranded. 
+    \item{strandSpecific: }{The query (read) was stranded. 
     }
   }
 }
@@ -123,10 +123,9 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 ## transcript isoform.
 library(Rsamtools)
 library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
-txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
 library(pasillaBamSubset)
-## untreated1_chr4() contains single-end reads
-se <- untreated1_chr4()
+se <- untreated1_chr4() ## single-end reads
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
 exbytx <- exonsBy(txdb, "tx")
 cdsbytx <- cdsBy(txdb, "tx")
 param <- ScanBamParam(which=GRanges("chr4", IRanges(1e5,3e5)))
@@ -155,8 +154,7 @@ lapply(lst, sum)
 ## ----------------------------------------------------------------------- 
 ## Paired-end reads :
 ## ----------------------------------------------------------------------- 
-## The 'singleEnd' argument is set to FALSE for a Bam file with
-## paired-end reads.
+## 'singleEnd' is set to FALSE for a Bam file with paired-end reads.
 pe <- untreated3_chr4()
 hits2 <- findSpliceOverlaps(pe, exbytx, singleEnd=FALSE, param=param)
  

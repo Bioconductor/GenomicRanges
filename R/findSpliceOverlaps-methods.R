@@ -70,7 +70,7 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
     
     compatible <- .compatibleTranscription(query, subject, splice)
     unique <- .oneMatch(compatible, queryHits(olap))
-    strandSpecific <- all(strand(query) != "*")[queryHits(olap)]
+    strandSpecific <- all(strand(query) != "*")
     mcols(olap) <- DataFrame(compatible, unique, coding, strandSpecific)
     olap 
 }
