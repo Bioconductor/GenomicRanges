@@ -39,6 +39,7 @@ setClass("GappedAlignmentPairs",
 ###   ngap(x)     - same as 'ngap(first(x)) + ngap(last(x))'.
 ###   isProperPair(x) - returns "isProperPair" slot.
 ###   seqinfo(x)  - returns 'seqinfo(first(x))' (same as 'seqinfo(last(x))').
+###   granges(x)  - GRanges object of the same length as 'x'.
 ###   grglist(x)  - GRangesList object of the same length as 'x'.
 ###   introns(x)  - Extract the N gaps in a GRangesList object of the same
 ###                 length as 'x'.
@@ -431,6 +432,18 @@ setMethod("grglist", "GappedAlignmentPairs",
     }
 )
 
+setMethod("granges", "GappedAlignmentPairs",
+    function (x)
+    {
+        rg <- range(grglist(x))
+        if (!all(elementLengths(rg) == 1L))
+            stop("For some pairs in 'x', the first and last alignments ",
+                 "are not aligned to the same chromosome and strand. ",
+                 "Cannot extract a single range for them.")
+        unlist(rg)
+    }
+)
+
 setMethod("introns", "GappedAlignmentPairs",
     function(x)
     {
@@ -447,6 +460,7 @@ setMethod("introns", "GappedAlignmentPairs",
 )
 
 setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
+setAs("GappedAlignmentPairs", "GRanges", function(from) granges(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

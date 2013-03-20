@@ -40,8 +40,10 @@
 
 % Coercion:
 \alias{grglist,GappedAlignmentPairs-method}
+\alias{granges,GappedAlignmentPairs-method}
 \alias{introns,GappedAlignmentPairs-method}
 \alias{coerce,GappedAlignmentPairs,GRangesList-method}
+\alias{coerce,GappedAlignmentPairs,GRanges-method}
 
 % "show" method:
 \alias{show,GappedAlignmentPairs-method}
@@ -306,6 +308,11 @@
       corresponding to deletions are dropped.
     }
     \item{}{
+      \code{granges(x)}: Return a \link{GRanges} object of length
+      \code{length(x)} where each range is obtained by merging all the
+      ranges within the corresponding top-level element in \code{grglist(x)}.
+    }
+    \item{}{
       \code{introns(x)}: Extract the gaps (i.e. N operations in the CIGAR)
       of the "first" and "last" alignments of each pair as a
       \link{GRangesList} object of the same length as \code{x}.
@@ -317,8 +324,9 @@
       }
     }
     \item{}{
-      \code{as(x, "GRangesList")}:
-      An alternate way of doing \code{grglist(x)}.
+      \code{as(x, "GRangesList")}, \code{as(x, "GRanges")}:
+      Alternate ways of doing \code{grglist(x)} and \code{granges(x)},
+      respectively.
     }
   }
 }
@@ -369,6 +377,9 @@ unlist(galp)
 grglist(galp)  # a GRangesList object
 grglist(galp, order.as.in.query=TRUE)
 stopifnot(identical(unname(elementLengths(grglist(galp))), ngap(galp) + 2L))
+
+granges(galp)  # a GRanges object
+
 introns(galp)  # a GRangesList object
 stopifnot(identical(unname(elementLengths(introns(galp))), ngap(galp)))
 }
