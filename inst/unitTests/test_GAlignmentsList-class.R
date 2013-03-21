@@ -1,3 +1,5 @@
+quiet <- suppressWarnings
+
 noGaps <- GappedAlignments(
     Rle(factor(c("chr1", "chr2", "chr1", "chr3")), 
         c(1, 3, 2, 4)), 
@@ -23,25 +25,36 @@ test_GAlignmentsList_construction <- function() {
 }
 
 test_GAlignmentsList_coercion <- function() {
-    ir <- IRanges(1:3, c(10, 10, 10), names=head(letters,3))
-    mcols(ir) <- DataFrame(score=1:3)
-    IRList <- IRangesList(a=ir, b=ir)$unlistData
-    GAList <- GAlignmentsList(a=noGaps[1:3], b=noGaps[1:3])
-    checkTrue(all.equal(ranges(GAList)$unlistData, IRList))
-    checkTrue(all.equal(as(GAList, "IRangesList")$unlistData, IRList))
+    GAList <- GAlignmentsList(a=noGaps[seqnames(noGaps) == "chr3"], 
+                              b=Gaps[seqnames(Gaps) == "chr4"])
+    ## Lists
+    rgl <- rglist(GAList)
+    grl <- grglist(GAList)
+    checkIdentical(length(rgl), length(GAList))
+    checkIdentical(length(grl), length(GAList))
+    checkIdentical(elementLengths(rgl), elementLengths(grl))
+    checkIdentical(elementLengths(rgl)[1], elementLengths(GAList)[1])
+    checkIdentical(elementLengths(grl)[1], elementLengths(GAList)[1])
 
-    gr <- GRanges(c(rep("chr2", 3), rep("chr4", 4)), 
-                  IRanges(1:7, width=c(5, 13, 5, 10, 10, 11, 5), 
-                          names=tail(letters,7)), 
-                  strand=Rle(strand(c("-", "+")), c(4, 3))) 
-    GRList <- GRangesList(a=gr, b=gr)
-    GAList <- GAlignmentsList(a=Gaps, b=Gaps)
-    targetAttr <- attributes(GRList)$unlistData
-    currentAttr <- attributes(granges(GAList))$unlistData
-    checkTrue(all.equal(currentAttr, targetAttr))
-    currentAttr <- attributes(as(GAList, "GRangesList"))$unlistData
-    checkTrue(all.equal(currentAttr, targetAttr))
+    ## Ranges
+    checkIdentical(length(ranges(GAList)), 
+                   length(ranges(GAList[1])) +
+                   length(ranges(GAList[2])))
+    checkIdentical(length(quiet(granges(GAList))), 
+                   length(quiet(granges(GAList[1]))) +
+                   length(quiet(granges(GAList[2]))))
+    checkIdentical(length(granges(GAList, ignore.strand=TRUE)), 
+                   length(granges(GAList[1], ignore.strand=TRUE)) +
+                   length(granges(GAList[2], ignore.strand=TRUE)))
 
+    gr <- granges(GAList, ignore.strand=TRUE)
+    ir <- ranges(GAList)
+    checkIdentical(length(gr), length(ir))
+    gr <- quiet(granges(GAList, ignore.strand=FALSE))
+    checkTrue(length(gr) == 4L)
+
+
+    ## data.frame
     df <- data.frame(element=rep(c("a", "b"), each=2),
                      seqnames=c("chr1", rep("chr2", 3)), 
                      strand=c("-", "+", "-", "-"),
@@ -82,7 +95,7 @@ test_GAlignments_subset_combine <- function()
     checkIdentical(GAlignmentsList(), 
                    c(GAlignmentsList(), GAlignmentsList()))
     checkIdentical(GAlignmentsList(noGaps, Gaps), 
-                   c(GAlignmentsList(noGaps), GAlignmentsList(Gaps)))
+                   quiet(c(GAlignmentsList(noGaps), GAlignmentsList(Gaps))))
 
     ## '['
     checkIdentical(GAList, GAList[])

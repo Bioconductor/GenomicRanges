@@ -27,8 +27,12 @@ setClass("GAlignmentsList",
 ###   start(x), end(x), width(x) - integer vectors of the same length as 'x'.
 ###   ngap(x)     - integer vector of the same length as 'x'.
 
-###   ranges(x)   - IRangesList object of the same length as 'x'.
-###   granges(x)  - GRangesList object of the same length as 'x'.
+###   grglist(x)  - GRangesList object of the same length as 'x'.
+###   granges(x)  - GRanges object of the same length as 'x'.
+###   introns(x)  - Extract the N gaps in a GAlignmentsList object of the same
+###                 length as 'x'.
+###   rglist(x)   - CompressedIRangesList object of the same length as 'x'.
+###   ranges(x)   - IRanges object of the same length as 'x'.
 ###   as.data.frame(x) - data.frame with 1 row per alignment in 'x'.
 
 ###   show(x)     - compact display in a data.frame-like fashion.
@@ -51,9 +55,6 @@ setClass("GAlignmentsList",
 ### Not implemented:
 ###   introns(x)  - Extract the N gaps in a GRangesList object of the same
 ###                 length as 'x'.
-###   grglist(x)  - CompressedList (of GRangesList objects) the same 
-###                 length as 'x'.
-###   rglist(x)   - CompressedIRangesList object of the same length as 'x'.
 ###   No coercion to RangedDataList
 ###   qnarrow(x, start=NA, end=NA, width=NA) - GAlignmentsList object of the
 ###                 same length and class as 'x' (endomorphism).
@@ -277,55 +278,97 @@ readGAlignmentsList <- function(file, format="BAM", use.names=FALSE, ...)
 ### Coercion.
 ###
 
-setMethod("ranges", "GAlignmentsList",
-    function(x, ...) 
+setMethod("grglist", "GAlignmentsList",
+    function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE,
+             ignore.strand=FALSE) 
     {
-        unlistData <- IRanges(start=x@unlistData@start, 
-                          width=width(x@unlistData), 
-                          names=x@unlistData@NAMES) 
-        new2("CompressedIRangesList",
-             unlistData=unlistData, partitioning=x@partitioning,
-             elementMetadata=x@elementMetadata, check=FALSE)
+        if (ignore.strand)
+            strand(x@unlistData) <- "*"
+        rgl <- rglist(x@unlistData,
+                      order.as.in.query=order.as.in.query,
+                      drop.D.ranges=drop.D.ranges)
+        eltlen <- elementLengths(rgl)
+        gr <- GRanges(rep.int(seqnames(x@unlistData), eltlen), 
+                      ranges=unlist(rgl), 
+                      strand=rep.int(strand(x@unlistData), eltlen),
+                      seqinfo=seqinfo(x@unlistData))
+        relist(gr, .shiftPartition(x@partitioning, rgl@partitioning))
     }
 )
-
+       
 setMethod("granges", "GAlignmentsList",
-    function(x) 
+    function(x, ignore.strand=FALSE) 
     {
-        unlistData <- .GappedAlignmentsToGRanges(seqnames(x@unlistData), 
-            start(x@unlistData), width(x@unlistData), strand(x@unlistData), 
-            seqinfo(x@unlistData), names(x@unlistData))
-        new2("GRangesList", unlistData=unlistData,
-            partitioning=x@partitioning, elementMetadata=x@elementMetadata)
+        if (ignore.strand)
+            strand(x@unlistData) <- "*"
+        gr <- range(grglist(x))@unlistData
+        if (length(gr) != length(x))
+            warning("Some ranges could not be combined. ",
+                    "Consider using 'ignore.strand=TRUE'.")
+        gr
     }
 )
 
-setMethod("as.data.frame", "GAlignmentsList", .GRangesListAsdataframe)
+#setMethod("introns", "GAlignmentsList",
+#    function(x, ignore.strand=FALSE)
+#    {
+#        if (ignore.strand)
+#            strand(x@unlistData) <- "*"
+#        grl <- introns(x@unlistData)
+#        f <- rep(seq_along(x@partitioning), width(X@partitioning))
+#        splitAsList(grl@unlistData, f) 
+#        #relist(grl@unlistData, 
+#        #       .shiftPartition(x@partitioning, grl@partitioning))
+#    }
+#)
 
-setAs("GAlignmentsList", "RangesList", function(from) ranges(from))
+setMethod("rglist", "GAlignmentsList",
+    function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
+    {
+        rgl <- rglist(x@unlistData)
+        partitioning <- .shiftPartition(x@partitioning, rgl@partitioning) 
+        relist(rgl@unlistData, partitioning) 
+    }
+)
 
-setAs("GAlignmentsList", "GRangesList", function(from) granges(from))
-
-
-.GAlignmentsListAsCompressedIRangesList <- function(from)
+## This function adjusts the widths of 'partition1'
+## to accomodate the splits that occurred in 'partition2'.
+## The return value is a PartitioningByEnd object the same 
+## length as 'partition1'.
+.shiftPartition <- function(partition1, partition2)
 {
-    ans_ranges <- IRanges(start=from@unlistData@start,
-                          width=width(from@unlistData),
-                          names=from@unlistData@NAMES)
-    ans_ranges@elementMetadata <- from@unlistData@elementMetadata
-    new("CompressedIRangesList",
-        unlistData=ans_ranges,
-        partitioning=from@partitioning,
-        elementMetadata=from@elementMetadata)
+    f <- rep(seq_along(partition1), width(partition1))
+    w <- sapply(split(width(partition2), f), sum)
+    wdiff <- w - width(partition1)
+    if (any(w < 0))
+        stop("width of 'partition2' cannot be negative")
+    PartitioningByEnd(end(partition1) + wdiff, names=names(partition1))
 }
 
-setAs("GAlignmentsList", "CompressedIRangesList",
-    .GAlignmentsListAsCompressedIRangesList
+## FIXME: ranges are not strand aware, do we need ignore.strand?
+setMethod("ranges", "GAlignmentsList",
+    function(x) 
+    {
+        rgl <- rglist(x@unlistData)
+        lst <- relist(unlist(rgl), 
+                      .shiftPartition(x@partitioning, rgl@partitioning))
+        unlist(range(lst), use.names=FALSE)
+    }
 )
 
-setAs("GAlignmentsList", "IRangesList",
-    .GAlignmentsListAsCompressedIRangesList
+setAs("GAlignmentList", "GRangesList", 
+    function(from) grglist(from, ignore.strand=ignore.strand)
 )
+setAs("GAlignmentsList", "GRanges", 
+    function(from) granges(from, ignore.strand=ignore.strand)
+)
+setAs("GAlignmentsList", "RangesList", 
+    function(from) rglist(from, ignore.strand=ignore.strand)
+)
+setAs("GAlignmentsList", "Ranges", 
+    function(from) ranges(from, ignore.strand=ignore.strand)
+)
+setMethod("as.data.frame", "GAlignmentsList", .GRangesListAsdataframe)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.

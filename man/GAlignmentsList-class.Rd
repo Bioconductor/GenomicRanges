@@ -34,11 +34,13 @@
 
 % Coercion:
 \alias{as.data.frame,GAlignmentsList-method}
-\alias{coerce,GAlignmentsList,CompressedIRangesList-method}
-\alias{coerce,GAlignmentsList,IRangesList-method}
 \alias{coerce,GAlignmentsList,GRangesList-method}
+\alias{coerce,GAlignmentsList,GRanges-method}
 \alias{coerce,GAlignmentsList,RangesList-method}
+\alias{coerce,GAlignmentsList,Ranges-method}
+\alias{grglist,GAlignmentsList-method}
 \alias{granges,GAlignmentsList-method}
+\alias{rglist,GAlignmentsList-method}
 \alias{ranges,GAlignmentsList-method}
 
 % Subsetting:
@@ -205,23 +207,26 @@
 
   \describe{
     \item{}{
-      \code{granges(x)}, \code{ranges(x)}:
+      \code{granges(x, ignore.strand=FALSE)}, 
+      \code{ranges(x, ignore.strand=FALSE)}:
+      Return either a \link{GRanges} or a \link[IRanges]{IRanges}
+      object of length \code{length(x)}. Note this coercion IGNORES 
+      the cigar information. The resulting ranges span the entire
+      range, including any gaps or spaces between paired-end reads.
+    }
+    \item{}{
+      \code{grglist(x, ignore.strand=FALSE)}, 
+      \code{rglist(x, ignore.strand=FALSE)}:
       Return either a \link{GRangesList} or a \link[IRanges]{IRangesList}
-      object of length \code{length(x)} where each element is a 
-      \link{GRanges} or \link{IRanges} object.
-
-      Note that the gap information (cigar) is lost when a GappedAlignments
-      is coerced to GRanges or IRanges. 
+      object of length \code{length(x)}. This coercion RESPECTS the cigar 
+      information. The resulting ranges are fragments of the original ranges 
+      that do not include gaps or spaces between paired-end reads. 
     }
     \item{}{
       \code{as(x, "GRangesList")}, \code{as(x, "GRanges")},
-      \code{as(x, "IRangesList")}, \code{as(x, "Ranges")}:
-      Alternate ways of doing \code{granges(x)}, \code{ranges(x)},
-      respectively.
-    }
-    \item{}{
-      \code{as(x, "CompressedIRangesList")}:
-      Coerce a GAlignmentsList to CompressedIRangesList.
+      \code{as(x, "RangesList")}, \code{as(x, "Ranges")}:
+      Alternate ways of doing \code{grglist(x)}, \code{granges(x)},
+      \code{rglist(x)}, \code{ranges(x)}, respectively.
     }
   }
 }
@@ -310,8 +315,8 @@ seqlevels(galist)
 seqlevels(galist) <- sub("chr", "seq", seqlevels(galist))
 seqlevels(galist)
 
-granges(galist)  # a GRangesList object
-ranges(galist)   # an IRanges object
+grglist(galist)  # a GRangesList object
+rglist(galist)   # an IRangesList object
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING
@@ -324,8 +329,8 @@ galist[gaps]
 ## Different ways to subset:
 galist[2]             # a GappedAlignments object of length 1
 galist[[2]]           # a GappedAlignments object of length 1
-granges(galist)[[2]]  # a GRanges object of length 1
-ranges(galist)[[2]]   # a NormalIRanges object of length 1
+grglist(galist[2])  # a GRangesList object of length 1
+rglist(galist[2])   # a NormalIRangesList object of length 1
 
 ## ---------------------------------------------------------------------
 ## C. mcols()/elementMetadata()
@@ -339,6 +344,7 @@ ranges(galist)[[2]]   # a NormalIRanges object of length 1
 mcols(galist) ## no metadata on the GAlignmentsList object
 mcols(galist, level="within")
 
+
 ## ---------------------------------------------------------------------
 ## D. readBamGAlignmentsList() 
 ## ---------------------------------------------------------------------
@@ -349,7 +355,16 @@ fl <- sortBam(untreated3_chr4(), tempfile(), byQname=TRUE)
 bf <- BamFile(fl, index=character(0), yieldSize=50, obeyQname=TRUE)
 galist <- readGAlignmentsList(bf, asProperPairs=FALSE)
 galist
+
+## Paired-end reads are often aligned to opposite strands. In
+## this case, 'ignore.strand' should be TRUE before coercing or 
+## using introns().
+granges(galist[1], ignore.strand=TRUE)
+
+## When 'ignore.strand=FALSE' ranges from opposite strands are not combined.
+granges(galist[1], ignore.strand=FALSE)
 }
 
 \keyword{methods}
 \keyword{classes}
+
