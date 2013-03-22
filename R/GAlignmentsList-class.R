@@ -356,7 +356,7 @@ setMethod("ranges", "GAlignmentsList",
     }
 )
 
-setAs("GAlignmentList", "GRangesList", 
+setAs("GAlignmentsList", "GRangesList", 
     function(from) grglist(from, ignore.strand=ignore.strand)
 )
 setAs("GAlignmentsList", "GRanges", 

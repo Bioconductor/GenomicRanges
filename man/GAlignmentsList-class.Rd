@@ -208,15 +208,18 @@
   \describe{
     \item{}{
       \code{granges(x, ignore.strand=FALSE)}, 
-      \code{ranges(x, ignore.strand=FALSE)}:
+      \code{ranges(x)}:
       Return either a \link{GRanges} or a \link[IRanges]{IRanges}
       object of length \code{length(x)}. Note this coercion IGNORES 
       the cigar information. The resulting ranges span the entire
       range, including any gaps or spaces between paired-end reads.
+
+      The \code{granges} coercion supports \code{ignore.strand} to
+      allow ranges of opposite strand to be combined (see examples).
     }
     \item{}{
-      \code{grglist(x, ignore.strand=FALSE)}, 
-      \code{rglist(x, ignore.strand=FALSE)}:
+      \code{grglist(x)}, 
+      \code{rglist(x)}:
       Return either a \link{GRangesList} or a \link[IRanges]{IRangesList}
       object of length \code{length(x)}. This coercion RESPECTS the cigar 
       information. The resulting ranges are fragments of the original ranges 
@@ -257,7 +260,7 @@
   \describe{
     \item{}{
       \code{c(...)}:
-      Concatenates the GAlignmentList objects in \code{...}.
+      Concatenates the GAlignmentsList objects in \code{...}.
     }
   }
 }
@@ -336,10 +339,10 @@ rglist(galist[2])   # a NormalIRangesList object of length 1
 ## C. mcols()/elementMetadata()
 ## ---------------------------------------------------------------------
 
-## Metadata can exist for both the individual GappedAlignments objects 
+## Metadata can be defined on the individual GappedAlignment elements
 ## and the overall GAlignmentsList object. By default, 'level=between' 
-## which extracts metadata set on the GAlignmentsList. Using 'level=within' 
-## will extract the metadata on the GappedAliginments.
+## extracts the GALignmentsList metadata. Using 'level=within' 
+## will extract the metadata on the individual GappedAliginments.
 
 mcols(galist) ## no metadata on the GAlignmentsList object
 mcols(galist, level="within")
@@ -356,13 +359,21 @@ bf <- BamFile(fl, index=character(0), yieldSize=50, obeyQname=TRUE)
 galist <- readGAlignmentsList(bf, asProperPairs=FALSE)
 galist
 
-## Paired-end reads are often aligned to opposite strands. In
-## this case, 'ignore.strand' should be TRUE before coercing or 
-## using introns().
-granges(galist[1], ignore.strand=TRUE)
+## ---------------------------------------------------------------------
+## E. COERCION 
+## ---------------------------------------------------------------------
 
-## When 'ignore.strand=FALSE' ranges from opposite strands are not combined.
+## The granges() coercion supports 'ignore.strand' to allow ranges
+## from different strand to be combined. In this example paired-end
+## reads aligned to opposite strands were read into a GAlignmentsList. 
+## If the desired operation is to combine these ranges, reguardless of 
+## gaps or the space between pairs, 'ignore.strand' must be TRUE.
+granges(galist[1], ignore.strand=TRUE)
 granges(galist[1], ignore.strand=FALSE)
+
+## grglist() splits ranges by gap and the space bein each list element
+galist <- GAlignmentsList(noGaps=gal1, Gaps=gal2)
+grglist(galist)
 }
 
 \keyword{methods}
