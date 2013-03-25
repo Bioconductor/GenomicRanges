@@ -433,6 +433,21 @@
   }
 }
 
+\section{Other methods}{
+
+  \describe{
+    \item{}{
+      \code{show(x)}:
+      The number of lines displayed in the show method are controlled 
+      with global options \code{showHeadLines} and \code{showTailLines}.
+      If the sum of the two options is greater than the object length
+      the full object is displayed. When these options are set they affect
+      the display of GRanges, GappedAlignments, GappedAlignmentPairs, 
+      Ranges and XString objects.
+    }
+  }
+}
+
 \author{P. Aboyoun}
 
 \seealso{
@@ -489,4 +504,18 @@ some.gr <- c(gr, gr2)
  
 ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
 all.gr <- c(gr, gr2, gr3, ignore.mcols=TRUE)
+
+## By default, the 'show' method for GRanges displays
+## the full object if the length is less than 20.
+## For larger objects, the number of lines displayed 
+## can be controlled with two global options.
+longGR <- c(gr[,"score"], gr2[,"score"], gr3)
+longGR
+options("showHeadLines"=7)
+options("showTailLines"=2)
+longGR
+
+## Revert to default values
+options("showHeadLines"=NULL)
+options("showTailLines"=NULL)
 }

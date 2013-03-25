@@ -11,8 +11,13 @@
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
     lx <- length(x)
+    if (is.null(nhead <- getOption("showHeadLines")))
+        nhead <- 5L
+    if (is.null(ntail <- getOption("showTailLines")))
+        ntail <- 5L
+
     nms <- names(x)
-    if (lx < 20L) {
+    if (lx < 20L | ((nhead + ntail) >= lx)) {
         ans <- makeNakedMat.FUN(x)
         if (!is.null(nms)) {
             ans_rownames <- nms
@@ -22,8 +27,12 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
             ans_rownames <- paste0("[", seq_len(lx), "]")
         }
     } else {
-        top_idx <- 1:9
-        bottom_idx <- (lx-8L):lx
+        top_idx <- 1:nhead
+        if (nhead == 0)
+            top_idx <- 0 
+        bottom_idx=(lx-(ntail - 1L)):lx
+        if (ntail == 0)
+            bottom_idx <- 0 
         top <- x[top_idx]
         bottom <- x[bottom_idx]
         ans_top <- makeNakedMat.FUN(top)
@@ -31,16 +40,21 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         ans <- rbind(ans_top,
                      matrix(rep.int("...", ncol(ans_top)), nrow=1L),
                      ans_bottom)
-        if (!is.null(nms)) {
+        if (!is.null(nms)) 
             ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
-        } else {
-            ans_rownames <- c(paste0("[", top_idx, "]"),
-                              "...",
-                              paste0("[", bottom_idx, "]"))
-        }
+        else
+            ans_rownames <- c(.rownames(top_idx), "...", .rownames(bottom_idx))
     }
     rownames(ans) <- format(ans_rownames, justify="right")
     ans
+}
+
+.rownames <- function(index)
+{
+    if (all(index == 0))
+        character(0)
+    else
+        paste0("[", index, "]")
 }
 
 makeClassinfoRowForCompactPrinting <- function(x, col2class)

@@ -324,7 +324,7 @@
       \emph{always} ordered consistently with the original "query template",
       that is, in the order defined by walking the "query template" from the
       beginning to the end.
-      
+ 
       If \code{drop.D.ranges} is \code{TRUE}, then deletions (D operations
       in the CIGAR) are treated like gaps (N operations in the CIGAR),
       that is, the ranges corresponding to deletions are dropped.
@@ -404,6 +404,15 @@
       rules of the SEW (Start/End/Width) interface (see
       \code{?\link[IRanges]{solveUserSEW}} for the details).
     }
+    \item{}{
+      \code{show(x)}:
+      The number of lines displayed in the show method are controlled 
+      with global options \code{showHeadLines} and \code{showTailLines}.
+      If the sum of the two options is greater than the object length
+      the full object is displayed. When these options are set they affect
+      the display of GRanges, GappedAlignments, GappedAlignmentPairs, 
+      Ranges and XString objects.
+    }
   }
 }
 
@@ -464,6 +473,15 @@ stopifnot(identical(unname(elementLengths(rglist(gal))), ngap(gal) + 1L))
 ranges(gal)   # an IRanges object
 introns(gal)  # a GRangesList object
 stopifnot(identical(unname(elementLengths(introns(gal))), ngap(gal)))
+
+## Modify the number of lines in 'show'
+options("showHeadLines"=3)
+options("showTailLines"=2)
+gal
+
+## Revert to default
+options("showHeadLines"=NULL)
+options("showTailLines"=NULL)
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING

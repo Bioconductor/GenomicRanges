@@ -331,6 +331,22 @@
   }
 }
 
+\section{Other methods}{
+  In the code snippets below, \code{x} is a GappedAlignmentPairs object.
+
+  \describe{
+    \item{}{
+      \code{show(x)}:
+      The number of lines displayed in the show method are controlled 
+      with global options \code{showHeadLines} and \code{showTailLines}.
+      If the sum of the two options is greater than the object length
+      the full object is displayed. When these options are set they affect
+      the display of GRanges, GappedAlignments, GappedAlignmentPairs, 
+      Ranges and XString objects.
+    }
+  }
+}
+
 \author{
   H. Pages
 }

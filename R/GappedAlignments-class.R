@@ -560,7 +560,8 @@ setMethod("[", "GappedAlignments",
         if (!is.atomic(i))
             stop("invalid subscript type")
         lx <- length(x)
-        if (length(i) == 0L) {
+        #if (length(i) == 0L) {
+        if (length(i) == 0L | all(i == 0)) {
             i <- integer(0)
         } else if (is.numeric(i)) {
             if (min(i) < 0L)
