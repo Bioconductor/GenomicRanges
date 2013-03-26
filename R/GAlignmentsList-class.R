@@ -52,17 +52,12 @@ setClass("GAlignmentsList",
 ###                 GappedAlignments objects.
 ###
 
-### Not implemented:
-###   introns(x)  - Extract the N gaps in a GRangesList object of the same
-###                 length as 'x'.
-###   No coercion to RangedDataList
 ###   qnarrow(x, start=NA, end=NA, width=NA) - GAlignmentsList object of the
 ###                 same length and class as 'x' (endomorphism).
 ###
 ###   narrow(x, start=NA, end=NA, width=NA) - GAlignmentsList object of the
 ###                 same length and class as 'x' (endomorphism).
 ###
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
@@ -295,7 +290,7 @@ setMethod("grglist", "GAlignmentsList",
         relist(gr, .shiftPartition(x@partitioning, rgl@partitioning))
     }
 )
-       
+ 
 setMethod("granges", "GAlignmentsList",
     function(x, ignore.strand=FALSE) 
     {
@@ -309,18 +304,17 @@ setMethod("granges", "GAlignmentsList",
     }
 )
 
-#setMethod("introns", "GAlignmentsList",
-#    function(x, ignore.strand=FALSE)
-#    {
-#        if (ignore.strand)
-#            strand(x@unlistData) <- "*"
-#        grl <- introns(x@unlistData)
-#        f <- rep(seq_along(x@partitioning), width(X@partitioning))
-#        splitAsList(grl@unlistData, f) 
-#        #relist(grl@unlistData, 
-#        #       .shiftPartition(x@partitioning, grl@partitioning))
-#    }
-#)
+setMethod("introns", "GAlignmentsList",
+    function(x, ignore.strand=FALSE)
+    {
+        if (ignore.strand)
+            strand(x@unlistData) <- "*"
+        grl <- introns(x@unlistData)
+        f <- rep(seq_along(x@partitioning), width(x@partitioning))
+        relist(grl@unlistData, 
+               .shiftPartition(x@partitioning, grl@partitioning))
+    }
+)
 
 setMethod("rglist", "GAlignmentsList",
     function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
@@ -331,21 +325,20 @@ setMethod("rglist", "GAlignmentsList",
     }
 )
 
-## This function adjusts the widths of 'partition1'
-## to accomodate the splits that occurred in 'partition2'.
+## Adjust the widths of 'partition1' to accomodate the 
+## increased / decreased number of splits in 'partition2'.
 ## The return value is a PartitioningByEnd object the same 
 ## length as 'partition1'.
 .shiftPartition <- function(partition1, partition2)
 {
     f <- rep(seq_along(partition1), width(partition1))
     w <- sapply(split(width(partition2), f), sum)
-    wdiff <- w - width(partition1)
     if (any(w < 0))
         stop("width of 'partition2' cannot be negative")
-    PartitioningByEnd(end(partition1) + wdiff, names=names(partition1))
+    wdiff <- w - width(partition1)
+    PartitioningByEnd(end(partition1) + cumsum(wdiff), names=names(partition1))
 }
 
-## FIXME: ranges are not strand aware, do we need ignore.strand?
 setMethod("ranges", "GAlignmentsList",
     function(x) 
     {
@@ -387,3 +380,23 @@ setMethod("show", "GAlignmentsList",
         .showList(object, showGappedAlignments, FALSE)
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "qnarrow" and "narrow" methods.
+###
+
+setMethod("qnarrow", "GAlignmentsList",
+    function(x, start=NA, end=NA, width=NA) 
+    {
+        gal <- qnarrow(x@unlistData, start=start, end=end, width=width)
+        relist(gal, x@partitioning)
+    }
+)
+
+setMethod("narrow", "GAlignmentsList",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        gal <- narrow(x@unlistData, start=start, end=end, width=width,
+                      use.names=use.names)
+        relist(gal, x@partitioning)
+    }
+)
