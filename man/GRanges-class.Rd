@@ -505,10 +505,8 @@ some.gr <- c(gr, gr2)
 ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
 all.gr <- c(gr, gr2, gr3, ignore.mcols=TRUE)
 
-## By default, the 'show' method for GRanges displays
-## the full object if the length is less than 20.
-## For larger objects, the number of lines displayed 
-## can be controlled with two global options.
+## The number of lines displayed in the 'show' method
+## are controlled with two global options.
 longGR <- c(gr[,"score"], gr2[,"score"], gr3)
 longGR
 options("showHeadLines"=7)

@@ -10,22 +10,16 @@
 ### 'makeNakedMat.FUN' must be a function returning a character matrix.
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
+    nhalf <- 5L
     lx <- length(x)
     if (is.null(nhead <- getOption("showHeadLines")))
-        nhead <- 5L
+        nhead <- nhalf 
     if (is.null(ntail <- getOption("showTailLines")))
-        ntail <- 5L
+        ntail <- nhalf 
 
-    nms <- names(x)
-    if (lx < 20L | ((nhead + ntail) >= lx)) {
+    if (lx < (nhalf*2 + 1L) | (lx < (nhead + ntail + 1L))) {
         ans <- makeNakedMat.FUN(x)
-        if (!is.null(nms)) {
-            ans_rownames <- nms
-        } else if (lx == 0L) {
-            ans_rownames <- character(0)
-        } else {
-            ans_rownames <- paste0("[", seq_len(lx), "]")
-        }
+        ans_rownames <- .rownames(names(x), lx)
     } else {
         top_idx <- 1:nhead
         if (nhead == 0)
@@ -33,28 +27,37 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         bottom_idx=(lx-(ntail - 1L)):lx
         if (ntail == 0)
             bottom_idx <- 0 
-        top <- x[top_idx]
-        bottom <- x[bottom_idx]
-        ans_top <- makeNakedMat.FUN(top)
-        ans_bottom <- makeNakedMat.FUN(bottom)
+        ans_top <- makeNakedMat.FUN(x[top_idx])
+        ans_bottom <- makeNakedMat.FUN(x[bottom_idx])
         ans <- rbind(ans_top,
                      matrix(rep.int("...", ncol(ans_top)), nrow=1L),
                      ans_bottom)
-        if (!is.null(nms)) 
-            ans_rownames <- c(nms[top_idx], "...", nms[bottom_idx])
-        else
-            ans_rownames <- c(.rownames(top_idx), "...", .rownames(bottom_idx))
+        ans_rownames <- .rownames(names(x), lx, top_idx, bottom_idx)
     }
     rownames(ans) <- format(ans_rownames, justify="right")
     ans
 }
 
-.rownames <- function(index)
+.rownames <- function(names=NULL, len=NULL, tindex=NULL, bindex=NULL)
 {
-    if (all(index == 0))
-        character(0)
-    else
-        paste0("[", index, "]")
+    if (is.null(tindex) & is.null(bindex)) {
+        ## all lines
+        if (len == 0L)
+            character(0)
+        else if (is.null(names))
+            paste0("[", seq_len(len), "]")
+        else
+            names
+    } else {
+        ## head and tail 
+        if (!is.null(names)) {
+            c(names[tindex], "...", names[bindex])
+        } else {
+            if (all(tindex == 0)) tindex <- character(0)
+            if (all(bindex == 0)) bindex <- character(0)
+            c(paste0("[", tindex, "]"), "...", paste0("[", bindex, "]"))
+        }
+    }
 }
 
 makeClassinfoRowForCompactPrinting <- function(x, col2class)
