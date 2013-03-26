@@ -442,8 +442,7 @@
       with global options \code{showHeadLines} and \code{showTailLines}.
       If the sum of the two options is greater than the object length
       the full object is displayed. When these options are set they affect
-      the display of GRanges, GappedAlignments, GappedAlignmentPairs, 
-      Ranges and XString objects.
+      the display of GRanges, GappedAlignments, Ranges and XString objects.
     }
   }
 }
