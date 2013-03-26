@@ -24,7 +24,7 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         top_idx <- 1:nhead
         if (nhead == 0)
             top_idx <- 0 
-        bottom_idx=(lx-(ntail - 1L)):lx
+        bottom_idx=(lx - (ntail - 1L)):lx
         if (ntail == 0)
             bottom_idx <- 0 
         ans_top <- makeNakedMat.FUN(x[top_idx])
@@ -53,9 +53,13 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         if (!is.null(names)) {
             c(names[tindex], "...", names[bindex])
         } else {
-            if (all(tindex == 0)) tindex <- character(0)
-            if (all(bindex == 0)) bindex <- character(0)
-            c(paste0("[", tindex, "]"), "...", paste0("[", bindex, "]"))
+            s1 <- paste0("[", tindex, "]")
+            s2 <- paste0("[", bindex, "]")
+            if (all(tindex == 0)) 
+                s1 <- character(0) 
+            if (all(bindex == 0)) 
+                s2 <- character(0) 
+            c(s1, "...", s2)
         }
     }
 }
