@@ -438,11 +438,12 @@
   \describe{
     \item{}{
       \code{show(x)}:
-      The number of lines displayed in the show method are controlled 
-      with global options \code{showHeadLines} and \code{showTailLines}.
-      If the sum of the two options is greater than the object length
-      the full object is displayed. When these options are set they affect
-      the display of GRanges, GappedAlignments, Ranges and XString objects.
+      By default the \code{show} method displays 5 head and 5 tail
+      lines. The number of lines can be altered by setting the global
+      options \code{showHeadLines} and \code{showTailLines}. If the 
+      object length is less than (5*2+1) or less than the sum of the 
+      options, the full object is displayed. These options affect the
+      display of GRanges, GappedAlignments, Ranges and XString objects.
     }
   }
 }
