@@ -4,6 +4,8 @@ import(methods)
 
 import(utils)  # for as.roman()
 
+importFrom(stats, setNames)
+
 import(BiocGenerics)
 
 import(IRanges)
