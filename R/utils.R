@@ -24,7 +24,7 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         top_idx <- 1:nhead
         if (nhead == 0)
             top_idx <- 0 
-        bottom_idx=(lx - (ntail-1L)):lx
+        bottom_idx=(lx-ntail+1L):lx
         if (ntail == 0)
             bottom_idx <- 0 
         ans_top <- makeNakedMat.FUN(x[top_idx])

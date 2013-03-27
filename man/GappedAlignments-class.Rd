@@ -409,9 +409,9 @@
       By default the \code{show} method displays 5 head and 5 tail
       lines. The number of lines can be altered by setting the global
       options \code{showHeadLines} and \code{showTailLines}. If the 
-      object length is less than (5*2+1) or less than the sum of the 
-      options, the full object is displayed. These options affect the
-      display of GRanges, GappedAlignments, Ranges and XString objects.
+      object length is less than the sum of the options, the full object 
+      is displayed. These options affect GRanges, GappedAlignments, 
+      Ranges and XString objects.
     }
   }
 }
