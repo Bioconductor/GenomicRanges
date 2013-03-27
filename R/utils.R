@@ -17,14 +17,14 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
     if (is.null(ntail <- getOption("showTailLines")))
         ntail <- nhalf 
 
-    if (lx < (nhalf*2 + 1L) | (lx < (nhead + ntail + 1L))) {
+    if (lx < (nhalf*2+1L) | (lx < (nhead+ntail+1L))) {
         ans <- makeNakedMat.FUN(x)
         ans_rownames <- .rownames(names(x), lx)
     } else {
         top_idx <- 1:nhead
         if (nhead == 0)
             top_idx <- 0 
-        bottom_idx=(lx - (ntail - 1L)):lx
+        bottom_idx=(lx - (ntail-1L)):lx
         if (ntail == 0)
             bottom_idx <- 0 
         ans_top <- makeNakedMat.FUN(x[top_idx])
