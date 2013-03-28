@@ -42,6 +42,7 @@
 \alias{granges,GAlignmentsList-method}
 \alias{rglist,GAlignmentsList-method}
 \alias{ranges,GAlignmentsList-method}
+\alias{introns,GAlignmentsList-method}
 
 % Subsetting:
 \alias{[,GAlignmentsList-method}
@@ -56,6 +57,8 @@
 \alias{show,GAlignmentsList-method}
 
 % Other methods:
+\alias{narrow,GAlignmentsList-method}
+\alias{qnarrow,GAlignmentsList-method}
 
 \title{GAlignmentsList objects}
 

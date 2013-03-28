@@ -8,6 +8,7 @@
 \alias{<=,GenomicRanges,GenomicRanges-method}
 
 \alias{duplicated,GenomicRanges-method}
+\alias{duplicated.GenomicRanges}
 
 \alias{match,GenomicRanges,GenomicRanges-method}
 \alias{\%in\%,GenomicRanges,GenomicRanges-method}
