@@ -130,9 +130,9 @@
   vector of indices in \code{subject}, or a \code{\linkS4class{Hits}} if 
   \code{select="all"}.
 
-  For \code{distanceToNearest}, a \code{DataFrame} with a column for
-  the \code{query} index, \code{subject} index and \code{distance}
-  between the pair.
+  For \code{distanceToNearest}, a \code{Hits} object with a column for
+  the \code{query} index (queryHits), \code{subject} index (subjectHits)
+  and the \code{distance} between the pair.
 
   For \code{distance}, an integer vector of distances between the ranges
   in \code{x} and \code{y}.

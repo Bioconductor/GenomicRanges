@@ -2,7 +2,7 @@
 ### nearest (and related) methods
 ### -------------------------------------------------------------------------
 ###
-### Dependency tree :
+### Dependencies :
 ###
 ###        distanceToNearest
 ###          |          |
@@ -361,7 +361,10 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
         distance <- rep(NA_integer_, length(x_nearest))
         distance[idx]=distance(x[idx], subject[na.omit(x_nearest)],
                                ignore.strand=ignore.strand)
-        DataFrame(queryHits, subjectHits, distance)
+        new("Hits", queryHits=queryHits, subjectHits=subjectHits,
+                    queryLength=length(x), 
+                    subjectLength=length(subject),
+                    elementMetadata=DataFrame(distance=distance))
     }
 }
 

@@ -1,3 +1,4 @@
+quiet <- suppressWarnings
 test_GenomicRanges_findNearest0 <- function()
 {
     .findNearest <- GenomicRanges:::.GenomicRanges_findNearest0
@@ -230,7 +231,6 @@ test_GenomicRanges_nearest <- function()
     checkEquals(pos, neg)
 }
 
-quiet <- suppressWarnings
 test_GenomicRanges_distance <- function()
 {
     ## empty
@@ -289,28 +289,28 @@ test_GenomicRanges_distanceToNearest <- function()
     subject <- GRanges("chr1", IRanges(c(3, 12), width=1))
     current <- quiet(distanceToNearest(x, subject))
     target <- c(1L, 1L, 2L) 
-    checkIdentical(target, current$subjectHits)
+    checkIdentical(target, subjectHits(current))
 
     strand(x) <- "+"
     strand(subject) <- c("+", "-")
     current <- quiet(distanceToNearest(x, subject))
     target <- c(1L, 1L, 1L) 
-    checkIdentical(target, current$subjectHits)
+    checkIdentical(target, subjectHits(current))
     current <- quiet(distanceToNearest(x, subject, ignore.strand=TRUE))
     target <- c(1L, 1L, 2L) 
-    checkIdentical(target, current$subjectHits)
+    checkIdentical(target, subjectHits(current))
 
     ## no self-hits / self-hits
     current <- quiet(distanceToNearest(x))
     target <- c(2L, 1L, 2L) 
-    checkIdentical(target, current$subjectHits)
+    checkIdentical(target, subjectHits(current))
     current <- quiet(distanceToNearest(x, x))
     target <- c(1L, 2L, 3L) 
-    checkIdentical(target, current$subjectHits)
+    checkIdentical(target, subjectHits(current))
 
     ## retain NAs
     x <- GRanges(c("chr1", "chr2"), IRanges(c(1, 5), width=1))
     current <- quiet(distanceToNearest(x, x[1]))
-    checkIdentical(c(1L, NA), current$subjectHits)
-    checkIdentical(c(0L, NA), current$distance)
+    checkIdentical(c(1L, NA), subjectHits(current))
+    checkIdentical(c(0L, NA), mcols(current)$distance)
 }
