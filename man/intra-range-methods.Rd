@@ -5,8 +5,7 @@
 \alias{shift,GenomicRanges-method}
 \alias{narrow,GenomicRanges-method}
 \alias{flank,GenomicRanges-method}
-\alias{promoters,GRanges-method}
-\alias{promoters,GRangesList-method}
+\alias{promoters,GenomicRanges-method}
 \alias{resize,GenomicRanges-method}
 \alias{Ops,GenomicRanges,numeric-method}
 \alias{restrict,GenomicRanges-method}
@@ -37,8 +36,7 @@
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE,
         use.names=TRUE, ignore.strand=FALSE)
 
-\S4method{promoters}{GRanges}(x, upstream=2000, downstream=200, ...)
-\S4method{promoters}{GRangesList}(x, upstream=2000, downstream=200, ...)
+\S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, ...)
 
 \S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE,
         ignore.strand=FALSE)
@@ -88,13 +86,12 @@
       point, with \code{width} positions on either side.
     }
     \item{}{
-      \code{promoters} generates promoter ranges for each range in 
-      \code{x} relative to the transcription start site (TSS), where TSS is
-      \code{start(x)}. The promoter range is expanded around the TSS 
-      according to the \code{upsteam} and \code{downstream} arguments.
-      \code{upstream} represents the number of nucleotides in the 5' 
-      direction and \code{downstream} the number in the 3' direction. 
-      The full range is defined as,
+      \code{promoters} returns an object of the same type and length
+      as \code{x} containing promoter ranges. Promoter ranges extend
+      around the transcription start site (TSS) which is defined as
+      \code{start(x)}. The \code{upsteam} and \code{downstream} arguments 
+      define the number of nucleotides in the 5' and 3' direction, 
+      respectively. The full range is defined as,
 
       (start(x) - upstream) to (start(x) + downstream - 1).
 

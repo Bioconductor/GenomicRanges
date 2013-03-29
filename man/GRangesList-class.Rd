@@ -55,6 +55,7 @@
 \alias{reduce,GRangesList-method}
 \alias{restrict,GRangesList-method}
 \alias{flank,GRangesList-method}
+\alias{promoters,GRangesList-method}
 \title{GRangesList objects}
 
 \description{

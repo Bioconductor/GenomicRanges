@@ -411,7 +411,7 @@
       options \code{showHeadLines} and \code{showTailLines}. If the 
       object length is less than the sum of the options, the full object 
       is displayed. These options affect GRanges, GappedAlignments, 
-      Ranges and XString objects.
+      Ranges, DataTable and XString objects.
     }
   }
 }

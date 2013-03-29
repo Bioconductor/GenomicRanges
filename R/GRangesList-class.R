@@ -548,6 +548,19 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### intra-range methods.
+###
+
+setMethod("promoters", "GRangesList",
+    function(x, upstream=2000, downstream=200, ...)
+    {
+        x@unlistData <- promoters(x@unlistData, upstream=upstream,
+                                  downstream=downstream)
+        x
+    }
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.
 ###
 

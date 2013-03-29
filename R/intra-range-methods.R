@@ -124,15 +124,7 @@ setMethod("trim", "GenomicRanges",
 ### promoters()
 ###
 
-setMethod("promoters", "GRangesList",
-    function(x, upstream=2000, downstream=200, ...)
-    {
-        x@unlistData <- promoters(x@unlistData, upstream=upstream,
-                                  downstream=downstream)
-    }
-)
-
-setMethod("promoters", "GRanges",
+setMethod("promoters", "GenomicRanges",
     function(x, upstream=2000, downstream=200, ...)
     {
         if (!isSingleNumber(upstream))
