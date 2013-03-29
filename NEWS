@@ -1,3 +1,20 @@
+CHANGES IN VERSION 1.12.0
+-------------------------
+
+NEW FEATURES
+
+    o Add GAlignmentsList class.
+
+    o Add readBamGAlignmentsList().
+ 
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Add global options 'showHeadLines' and 'showTailLines' to
+      control the number of head/tails lines displayed in
+      show,GRanges and show,GappedAlignments methods. 
+
+
 CHANGES IN VERSION 1.10.0
 -------------------------
 
@@ -50,13 +67,6 @@ NEW FEATURES
 
     o Add makeSeqnameIds() low-level utility.
 
-    o Add GAlignmentsList class.
-
-    o Add readBamGAlignmentsList().
- 
-    o Add global options 'showHeadLines' and 'showTailLines' to
-      control the number of head/tails lines displayed in
-      show,GRanges and show,GappedAlignments methods. 
 
 SIGNIFICANT USER-LEVEL CHANGES
 
