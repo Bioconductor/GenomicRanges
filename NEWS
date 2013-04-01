@@ -3,17 +3,96 @@ CHANGES IN VERSION 1.12.0
 
 NEW FEATURES
 
-    o Add GAlignmentsList class.
+    o Implement "seqnameStyle" replacement method for Seqinfo object.
+      'seqnameStyle(x) <- style' works on any object with a "seqinfo"
+      replacement method.
 
-    o Add readBamGAlignmentsList().
+    o Add trim,GenomicRanges-method to trim out of bound ranges. 
+
+    o Add promoters,GenomicRanges and promoters,GRangesList methods. 
  
+    o Add "overlapsAny" methods as a replacement for the deprecated
+      "%in%" methods. 
+
+    o Add 'ignore.strand' argument to match,GenomicRanges-method. 
+
+    o Add 'with.mapping' argument to "reduce" method for GenomicRanges
+      objects.
+
+    o Add "unname" method to remove dimnames from SummarizedExperiment. 
+
+    o Add "cbind" and "rbind" methods for SummarizedExperiment. 
+
+    o Add "seqselect", "seqselect<-" and "split" methods for 
+      SummarizedExperiment. 
+
+    o Add GAlignmentsList class.
+ 
+    o Add readGAlignmentsList generic and methods. 
 
 SIGNIFICANT USER-LEVEL CHANGES
 
+    o Change the behavior of "distance". Previously adjacent ranges
+      had a distance of 1 and overlapping had a distance of 0. Now
+      both adjacent AND overlapping have a distance of 0.
+
+    o shift,GenomicRanges-method no longer trims out of bound ranges.
+
+    o "distanceToNearest" no longer drops ranges that have no hit
+      but returns 'NA' for 'subjectHits' and 'distance'. 
+
+    o "genome" is no longer an invalid metadata colname for GenomicRanges
+      objects.
+
+    o 4x-8x speedup for doing coverage() on a GRanges or GRangesList with 
+      many seqlevels.
+
+    o Remove ">=", "<", and ">" methods for GenomicRanges objects.
+
+    o Speedup "seqinfo" setters for GenomicRanges and GappedAlignments
+      by avoiding validation when not necessary. 
+
+    o readGappedAlignments can now pass a BamFile to readBamGappedAlignments. 
+
+    o Remove unneeded "unique" and "sort" methods for GenomicRanges objects. 
+ 
+    o Change behavior of "match" and "%in%" on GenomicRanges objects to use
+      equality instead of overlap for comparing elements between GenomicRanges
+      objects 'x' and 'table'.
+
+    o match,GenomicRanges-method gets the same 'method' argumnet as the 
+      "duplicated" method for these objects. 
+ 
+    o Remove unneeded "countOverlaps" methods. 
+ 
+    o "classNameForDisplay" shortens the name of data type when displayed.
+ 
     o Add global options 'showHeadLines' and 'showTailLines' to
       control the number of head/tails lines displayed in
       show,GRanges and show,GappedAlignments methods. 
 
+    o "distanceToNearest" now returns a Hits object instead of DataFrame.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove defunct countGenomicOverlaps(), grg(), and globalToQuery()
+
+    o Defunct previously deprecated '.ignoreElementMetadata' argmuent
+      of c,GenomicRanges-method.
+ 
+    o Deprecate all "match" and "%in%" methods in the package except for
+      those with the GenomicRanges,GenomicRanges signature.
+
+    o Deprecate "resolveHits" methods.
+ 
+BUG FIXES
+
+    o Several bug fixes to "nearest". 
+
+    o resize,GenomicRanges-method now handles zero-length 'x'. 
+
+    o Output of "findSpliceOverlaps" now displays 'NA' for ranges with 
+      no hits.
 
 CHANGES IN VERSION 1.10.0
 -------------------------
