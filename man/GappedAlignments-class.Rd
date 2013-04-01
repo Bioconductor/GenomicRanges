@@ -62,7 +62,6 @@
 % Other methods:
 \alias{qnarrow}
 \alias{qnarrow,GappedAlignments-method}
-\alias{narrow,GappedAlignments-method}
 \alias{splitAsListReturnedClass,GappedAlignments-method}
 
 
@@ -388,18 +387,6 @@
       describing how the narrowed query sequences align to the reference.
       The \code{start}/\code{end}/\code{width} arguments describe how
       to narrow the query sequences. They must be vectors of integers.
-      NAs and negative values are accepted and "solved" according to the
-      rules of the SEW (Start/End/Width) interface (see
-      \code{?\link[IRanges]{solveUserSEW}} for the details).
-    }
-    \item{}{
-      \code{narrow(x, start=NA, end=NA, width=NA)}:
-      \code{x} is a GappedAlignments object.
-      Return a new GappedAlignments object of the same length as \code{x}
-      describing the narrowed alignments. Unlike with \code{qnarrow}
-      now the \code{start}/\code{end}/\code{width} arguments describe
-      the narrowing on the reference side, not the query side.
-      Like with \code{qnarrow}, they must be vectors of integers.
       NAs and negative values are accepted and "solved" according to the
       rules of the SEW (Start/End/Width) interface (see
       \code{?\link[IRanges]{solveUserSEW}} for the details).

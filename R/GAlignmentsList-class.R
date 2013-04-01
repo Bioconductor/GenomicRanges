@@ -169,13 +169,10 @@ setReplaceMethod("seqnames", "GAlignmentsList", .replaceSeqnamesList)
 ### Validity.
 ###
 
-.valid.GAlignmentsList.mcols <- function(x)
-{
-}
-
 .valid.GAlignmentsList <- function(x)
 {
-    c(.valid.GAlignmentsList.mcols(x))
+   ## Known pitfalls are caught by
+   ## GappedAlignments validity. 
 }
 
 setValidity2("GAlignmentsList", .valid.GAlignmentsList)
@@ -381,22 +378,13 @@ setMethod("show", "GAlignmentsList",
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "qnarrow" and "narrow" methods.
+### "qnarrow" method.
 ###
 
 setMethod("qnarrow", "GAlignmentsList",
     function(x, start=NA, end=NA, width=NA) 
     {
         gal <- qnarrow(x@unlistData, start=start, end=end, width=width)
-        relist(gal, x@partitioning)
-    }
-)
-
-setMethod("narrow", "GAlignmentsList",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        gal <- narrow(x@unlistData, start=start, end=end, width=width,
-                      use.names=use.names)
         relist(gal, x@partitioning)
     }
 )

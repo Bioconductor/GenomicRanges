@@ -51,7 +51,6 @@ setClassUnion("GenomicRangesORGRangesList", c("GenomicRanges", "GRangesList"))
 
 setValidity2("GRangesList", .valid.GRangesList)
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
 ###
@@ -164,11 +163,9 @@ setMethod("updateObject", "GRangesList",
     }
 )
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###
-
 
 .GRangesListAsdataframe <- function(x, row.names=NULL, optional=FALSE, ...)
 {
@@ -205,7 +202,6 @@ setAs("GRangesList", "IRangesList",
 
 setAs("RangedDataList", "GRangesList",
       function(from) GRangesList(lapply(from, as, "GRanges")))
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
@@ -416,56 +412,6 @@ setReplaceMethod("width", "GRangesList",
     }
 )
 
-setMethod("shift", "GRangesList",
-    function(x, shift=0L, use.names=TRUE)
-    {
-        if (is(shift, "IntegerList")) {
-            if (length(shift) != length(x) ||
-                any(elementLengths(shift) != elementLengths(x))) {
-                stop("IntegerList 'shift' not of same dimension as 'x'")
-            }
-            shift <- unlist(shift, use.names=FALSE)
-        }
-        ranges(x@unlistData) <-
-          shift(x@unlistData@ranges, shift, use.names=use.names)
-        x
-    }
-)
-
-setMethod("isDisjoint", "GRangesList",
-    function(x, ignore.strand = FALSE)
-    {
-        gr <- deconstructGRLintoGR(x)
-
-        if (ignore.strand) 
-            xIRangesList <- split(unname(ranges(gr)), paste(seqnames(gr),
-                           Rle(factor(rep("+", length(gr)))), sep = "\r"))
-        else 
-            xIRangesList <- split(unname(ranges(gr)),
-                                  paste(seqnames(gr), strand(gr), sep = "\r"))
-         
-        ansIRanges <- isDisjoint(xIRangesList)
-        splitListNames <- strsplit(names(ansIRanges), split="\r")
-        snames <- strsplit(unlist(lapply(splitListNames, "[[", 1L)), "|",
-                           fixed=TRUE)
-        m12 <- matrix(as.integer(unlist(snames)), ncol=2, byrow=TRUE)
-        
-        ansIRangesList <- split(ansIRanges,
-                                factor(m12[, 1L], levels=seq_len(length(x))))
-        ans <-  unlist(lapply(ansIRangesList, all))
-        names(ans) <- names(x)
-        ans
-    }
-)
-
-setMethod("disjoin", "GRangesList",
-    function(x, ...)
-{
-    gr <- deconstructGRLintoGR(x)
-    d <- disjoin(gr, ...)
-    reconstructGRLfromGR(d, x)
-})
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Vector methods.
 ###
@@ -548,19 +494,6 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### intra-range methods.
-###
-
-setMethod("promoters", "GRangesList",
-    function(x, upstream=2000, downstream=200, ...)
-    {
-        x@unlistData <- promoters(x@unlistData, upstream=upstream,
-                                  downstream=downstream)
-        x
-    }
-)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.
 ###
 
@@ -575,7 +508,6 @@ setMethod("show", "GRangesList",
     cumsumN <- cumsum(elementLengths(object))
     N <- tail(cumsumN, 1)
     cat(class(object), " of length ", k, ":\n", sep = "")
-    #with.classinfo <- TRUE
     if (k == 0L) {
         cat("<0 elements>\n\n")
     } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
@@ -631,7 +563,6 @@ setMethod("show", "GRangesList",
     cat("---\n")
     showSeqlengths(object)
 }
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Deconstruction/reconstruction of a GRangesList into/from a GRanges
@@ -714,68 +645,9 @@ reconstructGRLfromGR <- function(gr, x)
     ans
 }
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "range" and "reduce" methods.
-###
-### For a GRangesList object 'x', 'range(x)' and 'reduce(x)' are equivalent
-### to 'endoapply(x, range)' and 'endoapply(x, reduce)', respectively.
-### This makes them isomorphisms, that is, they are endomorphisms (i.e. they
-### preserve the class of 'x') who also preserve the length & names &
-### metadata columns of 'x'. In addition, the seqinfo is preserved too.
-###
-### However, using endoapply() for the implementation would be too
-### inefficient. The fast implementation below takes advantage of the
-### fact that we already have fast "range" and "reduce" methods for GRanges
-### objects. Depending on the size of 'x', the implementation below is 50x or
-### 1000x faster (or more) than the implementation using endoapply().
-
-setMethod("range", "GRangesList",
-    function(x, ..., na.rm=FALSE)
-    {
-        if (length(list(...)) != 0L)
-            stop("\"range\" method for GRangesList objects only ",
-                 "takes a single object")
-        gr <- deconstructGRLintoGR(x)
-        ## "range" method for GRanges objects is fast.
-        gr <- range(gr)
-        reconstructGRLfromGR(gr, x)
-    }
-)
-
-setMethod("reduce", "GRangesList",
-    function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-             with.inframe.attrib=FALSE)
-    {
-        if (!identical(with.inframe.attrib, FALSE)) 
-            stop("'with.inframe.attrib' argument is not supported ", 
-                 "when reducing a GRangesList object")
-        gr <- deconstructGRLintoGR(x)
-        ## "reduce" method for GRanges objects is fast.
-        gr <- reduce(gr, drop.empty.ranges=drop.empty.ranges,
-                         min.gapwidth=min.gapwidth)
-        reconstructGRLfromGR(gr, x)
-    }
-)
-
-setMethod("restrict", "GRangesList",
-    function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
-    {
-        endoapply(x, restrict, start=start, end=end,keep.all.ranges=keep.all.ranges
-               , use.names=use.names )
-
-    })
-
-setMethod("flank", "GRangesList",
-    function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
-             ignore.strand=FALSE)
-    {
-        x@unlistData <- flank(x@unlistData, width = width, start = start,
-                              both = both, use.names = use.names,
-                              ignore.strand = ignore.strand)
-        x
-    })
-
+### "map" methods. 
+### 
 
 .listCumsum <- function(x) {
   x_unlisted <- unlist(x, use.names=FALSE)

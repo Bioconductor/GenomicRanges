@@ -4,6 +4,8 @@
 
 \alias{shift,GenomicRanges-method}
 \alias{narrow,GenomicRanges-method}
+\alias{narrow,GappedAlignments-method}
+\alias{narrow,GAlignmentsList-method}
 \alias{flank,GenomicRanges-method}
 \alias{promoters,GenomicRanges-method}
 \alias{resize,GenomicRanges-method}
@@ -32,6 +34,8 @@
 \S4method{shift}{GenomicRanges}(x, shift=0L, use.names=TRUE)
 
 \S4method{narrow}{GenomicRanges}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+\S4method{narrow}{GappedAlignments}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+\S4method{narrow}{GAlignmentsList}(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE,
         use.names=TRUE, ignore.strand=FALSE)
@@ -68,9 +72,19 @@
       \link[IRanges]{Ranges} objects. See 
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
-    \item(){\code{narrow} behaves like the \code{narrow} method for 
-      \link[IRanges]{Ranges} objects. See 
+    \item(){\code{narrow} on GenomicRanges objects behaves like the 
+      \code{narrow} method for \link[IRanges]{Ranges} objects. See 
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
+
+      When \code{x} is a GappedAlignments object, \code{narrow(x)} 
+      returns a new GappedAlignments object the same length as \code{x}
+      describing the narrowed alignments. Unlike with \code{qnarrow}
+      now the \code{start}/\code{end}/\code{width} arguments describe
+      the narrowing on the reference side, not the query side.
+      Like with \code{qnarrow}, they must be vectors of integers.
+      NAs and negative values are accepted and "solved" according to the
+      rules of the SEW (Start/End/Width) interface (see
+      \code{?\link[IRanges]{solveUserSEW}} for the details).
     }
     \item{}{\code{flank} returns an object of the same type and length 
       as \code{x} containing intervals of width \code{width} that flank 

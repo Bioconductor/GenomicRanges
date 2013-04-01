@@ -57,7 +57,6 @@
 \alias{show,GAlignmentsList-method}
 
 % Other methods:
-\alias{narrow,GAlignmentsList-method}
 \alias{qnarrow,GAlignmentsList-method}
 
 \title{GAlignmentsList objects}
@@ -264,6 +263,23 @@
     \item{}{
       \code{c(...)}:
       Concatenates the GAlignmentsList objects in \code{...}.
+    }
+  }
+}
+
+\section{Other methods}{
+  In the code snippets below, \code{x} is a GAlignmentsList object.
+
+  \describe{
+    \item{}{
+      \code{qnarrow(x, start=NA, end=NA, width=NA)}:
+      Return a new GAlignmentsList object of the same length as \code{x}
+      describing how the narrowed query sequences align to the reference.
+      The \code{start}/\code{end}/\code{width} arguments describe how
+      to narrow the query sequences. They must be vectors of integers.
+      NAs and negative values are accepted and "solved" according to the
+      rules of the SEW (Start/End/Width) interface (see
+      \code{?\link[IRanges]{solveUserSEW}} for the details).
     }
   }
 }

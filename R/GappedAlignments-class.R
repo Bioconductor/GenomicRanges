@@ -732,9 +732,8 @@ setMethod("updateCigarAndStart", "GappedAlignments",  # not exported
     }
 )
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "qnarrow" and "narrow" methods.
+### "qnarrow" method.
 ###
 
 setMethod("qnarrow", "GappedAlignments",
@@ -742,10 +741,6 @@ setMethod("qnarrow", "GappedAlignments",
         .narrowGAlignments(x, start, end, width, cigarQNarrow)
 ) 
 
-setMethod("narrow", "GappedAlignments",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowGAlignments(x, start, end, width, cigarNarrow)
-)
 
 .narrowGAlignments <- function(x, start, end, width, narrowFunction)
 {

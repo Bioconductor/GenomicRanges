@@ -3,6 +3,17 @@
 ### -------------------------------------------------------------------------
 ###
 
+### The methods documented in this page on this page are consistent with
+### those in IRanges intra-range-methods.R
+### shift()
+### narrow() 
+### flank()
+### reflect()
+### resize()
+### trim()
+### promoters()
+### restrict()
+### zoom()
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### shift()
@@ -16,6 +27,21 @@ setMethod("shift", "GenomicRanges",
     }
 )
 
+setMethod("shift", "GRangesList",
+    function(x, shift=0L, use.names=TRUE)
+    {
+        if (is(shift, "IntegerList")) {
+            if (length(shift) != length(x) ||
+                any(elementLengths(shift) != elementLengths(x))) {
+                stop("IntegerList 'shift' not of same dimension as 'x'")
+            }
+            shift <- unlist(shift, use.names=FALSE)
+        }
+        ranges(x@unlistData) <-
+          shift(x@unlistData@ranges, shift, use.names=use.names)
+        x
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### narrow()
@@ -31,6 +57,19 @@ setMethod("narrow", "GenomicRanges",
     }
 )
 
+setMethod("narrow", "GappedAlignments",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+        .narrowGAlignments(x, start, end, width, cigarNarrow)
+)
+
+setMethod("narrow", "GAlignmentsList",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        gal <- narrow(x@unlistData, start=start, end=end, width=width,
+                      use.names=use.names)
+        relist(gal, x@partitioning)
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### flank()
@@ -59,6 +98,55 @@ setMethod("flank", "GenomicRanges",
     }
 )
 
+setMethod("flank", "GRangesList",
+    function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
+             ignore.strand=FALSE)
+    {
+        x@unlistData <- flank(x@unlistData, width = width, start = start,
+                              both = both, use.names = use.names,
+                              ignore.strand = ignore.strand)
+        x
+    })
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### promoters()
+###
+
+setMethod("promoters", "GenomicRanges",
+    function(x, upstream=2000, downstream=200, ...)
+    {
+        if (!isSingleNumber(upstream))
+            stop("'upstream' must be a single integer")
+        if (!is.integer(upstream))
+            upstream <- as.numeric(upstream)
+        if (!isSingleNumber(downstream))
+            stop("'downstream' must be a single integer")
+        if (!is.integer(downstream))
+            downstream <- as.numeric(downstream)
+        if (upstream < 0 | downstream < 0)
+            stop("'upstream' and 'downstream' must be integers >= 0")
+        if (any(strand(x) == "*"))
+            warning("'*' ranges were treated as '+'")
+        on_plus <- which(strand(x) == "+" | strand(x) == "*")
+        on_plus_TSS <- start(x)[on_plus]
+        start(x)[on_plus] <- on_plus_TSS - upstream
+        end(x)[on_plus] <- on_plus_TSS + downstream - 1L
+        on_minus <- which(strand(x) == "-")
+        on_minus_TSS <- end(x)[on_minus]
+        end(x)[on_minus] <- on_minus_TSS + upstream
+        start(x)[on_minus] <- on_minus_TSS - downstream + 1L
+        x
+    }
+)
+
+setMethod("promoters", "GRangesList",
+    function(x, upstream=2000, downstream=200, ...)
+    {
+        x@unlistData <- promoters(x@unlistData, upstream=upstream,
+                                  downstream=downstream)
+        x
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reflect()
@@ -119,39 +207,6 @@ setMethod("trim", "GenomicRanges",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### promoters()
-###
-
-setMethod("promoters", "GenomicRanges",
-    function(x, upstream=2000, downstream=200, ...)
-    {
-        if (!isSingleNumber(upstream))
-            stop("'upstream' must be a single integer")
-        if (!is.integer(upstream))
-            upstream <- as.numeric(upstream)
-        if (!isSingleNumber(downstream))
-            stop("'downstream' must be a single integer")
-        if (!is.integer(downstream))
-            downstream <- as.numeric(downstream)
-        if (upstream < 0 | downstream < 0)
-            stop("'upstream' and 'downstream' must be integers >= 0")
-        if (any(strand(x) == "*"))
-            warning("'*' ranges were treated as '+'")
-        on_plus <- which(strand(x) == "+" | strand(x) == "*")
-        on_plus_TSS <- start(x)[on_plus]
-        start(x)[on_plus] <- on_plus_TSS - upstream
-        end(x)[on_plus] <- on_plus_TSS + downstream - 1L
-        on_minus <- which(strand(x) == "-")
-        on_minus_TSS <- end(x)[on_minus]
-        end(x)[on_minus] <- on_minus_TSS + upstream
-        start(x)[on_minus] <- on_minus_TSS - downstream + 1L
-        x
-    }
-)
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### restrict()
 ###
@@ -210,6 +265,13 @@ setMethod("restrict", "GenomicRanges",
     }
 )
 
+setMethod("restrict", "GRangesList",
+    function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
+    {
+        endoapply(x, restrict, start=start, end=end,keep.all.ranges=keep.all.ranges
+               , use.names=use.names )
+
+    })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Zooming (symmetrically scales the width).

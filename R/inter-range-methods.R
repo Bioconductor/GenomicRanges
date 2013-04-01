@@ -3,6 +3,15 @@
 ### -------------------------------------------------------------------------
 ###
 
+### The methods documented in this page on this page are consistent with
+### those in IRanges inter-range-methods.R
+### range()
+### reduce()
+### gaps()
+### disjoin()
+### isDisjoint()
+### disjointBins()
+
 
 .interIntervalSplitVariable <- function(x, ignore.strand=FALSE)
 {
@@ -78,6 +87,26 @@
               elementMetadata=ans_mcols)
 }
 
+.interIntervalGenomicRanges <- function(x, FUN, ignore.strand=FALSE, ...)
+{
+    x <- clone(x)
+    mcols(x) <- NULL
+    if (ignore.strand)
+       f <- paste(seqnames(x), Rle(factor("*"), length(x)), sep="\r")
+    else
+       f <- paste(seqnames(x), strand(x), sep="\r")
+    xIRangesList <- split(unname(ranges(x)), f)
+    ansIRangesList <- FUN(xIRangesList, ...)
+    k <- elementLengths(ansIRangesList)
+    splitListNames <- strsplit(names(ansIRangesList), split="\r", fixed=TRUE)
+    listNameMatrix <- matrix(as.character(unlist(splitListNames)), nrow=2L)
+    ansSeqnames <- Rle(factor(listNameMatrix[1L, ], levels=seqlevels(x)), k)
+    ansStrand <- Rle(strand(listNameMatrix[2L, ]), k)
+    update(x, seqnames=ansSeqnames,
+           ranges=unlist(ansIRangesList, use.names=FALSE),
+           strand=ansStrand,
+           elementMetadata=new("DataFrame", nrows=length(ansSeqnames)))
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### range()
@@ -89,6 +118,18 @@ setMethod("range", "GenomicRanges",
                                      ignore.strand=ignore.strand)
 )
 
+setMethod("range", "GRangesList",
+    function(x, ..., na.rm=FALSE)
+    {
+        if (length(list(...)) != 0L)
+            stop("\"range\" method for GRangesList objects only ",
+                 "takes a single object")
+        gr <- deconstructGRLintoGR(x)
+        ## "range" method for GRanges objects is fast.
+        gr <- range(gr)
+        reconstructGRLfromGR(gr, x)
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reduce()
@@ -112,27 +153,20 @@ setMethod("reduce", "GenomicRanges",
     }
 )
 
-.interIntervalGenomicRanges <- function(x, FUN, ignore.strand=FALSE, ...)
-{
-    x <- clone(x)
-    mcols(x) <- NULL
-    if (ignore.strand)
-       f <- paste(seqnames(x), Rle(factor("*"), length(x)), sep="\r")
-    else
-       f <- paste(seqnames(x), strand(x), sep="\r")
-    xIRangesList <- split(unname(ranges(x)), f)
-    ansIRangesList <- FUN(xIRangesList, ...)
-    k <- elementLengths(ansIRangesList)
-    splitListNames <- strsplit(names(ansIRangesList), split="\r", fixed=TRUE)
-    listNameMatrix <- matrix(as.character(unlist(splitListNames)), nrow=2L)
-    ansSeqnames <- Rle(factor(listNameMatrix[1L, ], levels=seqlevels(x)), k)
-    ansStrand <- Rle(strand(listNameMatrix[2L, ]), k)
-    update(x, seqnames=ansSeqnames,
-           ranges=unlist(ansIRangesList, use.names=FALSE),
-           strand=ansStrand,
-           elementMetadata=new("DataFrame", nrows=length(ansSeqnames)))
-}
-
+setMethod("reduce", "GRangesList",
+    function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
+             with.inframe.attrib=FALSE)
+    {
+        if (!identical(with.inframe.attrib, FALSE)) 
+            stop("'with.inframe.attrib' argument is not supported ", 
+                 "when reducing a GRangesList object")
+        gr <- deconstructGRLintoGR(x)
+        ## "reduce" method for GRanges objects is fast.
+        gr <- reduce(gr, drop.empty.ranges=drop.empty.ranges,
+                         min.gapwidth=min.gapwidth)
+        reconstructGRLfromGR(gr, x)
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### gaps()
@@ -153,7 +187,6 @@ setMethod("gaps", "GenomicRanges",
         .interIntervalGenomicRanges(x, gaps, start=start, end=end)
     }
 )
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### disjoin()
@@ -176,6 +209,13 @@ applyOnRangesBySpace <- function(x, FUN, ..., ignore.strand = FALSE) {
   ans
 }
 
+setMethod("disjoin", "GRangesList",
+    function(x, ...)
+{
+    gr <- deconstructGRLintoGR(x)
+    d <- disjoin(gr, ...)
+    reconstructGRLfromGR(d, x)
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isDisjoint()
@@ -188,6 +228,31 @@ setMethod("isDisjoint", "GenomicRanges",
     }
 )
 
+setMethod("isDisjoint", "GRangesList",
+    function(x, ignore.strand = FALSE)
+    {
+        gr <- deconstructGRLintoGR(x)
+
+        if (ignore.strand) 
+            xIRangesList <- split(unname(ranges(gr)), paste(seqnames(gr),
+                           Rle(factor(rep("+", length(gr)))), sep = "\r"))
+        else 
+            xIRangesList <- split(unname(ranges(gr)),
+                                  paste(seqnames(gr), strand(gr), sep = "\r"))
+ 
+        ansIRanges <- isDisjoint(xIRangesList)
+        splitListNames <- strsplit(names(ansIRanges), split="\r")
+        snames <- strsplit(unlist(lapply(splitListNames, "[[", 1L)), "|",
+                           fixed=TRUE)
+        m12 <- matrix(as.integer(unlist(snames)), ncol=2, byrow=TRUE)
+
+        ansIRangesList <- split(ansIRanges,
+                                factor(m12[, 1L], levels=seq_len(length(x))))
+        ans <-  unlist(lapply(ansIRangesList, all))
+        names(ans) <- names(x)
+        ans
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### disjointBins()
