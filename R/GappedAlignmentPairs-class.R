@@ -495,6 +495,7 @@ fillGaps <- function(x)
     relist(ans_unlistData, ans_partitioning)
 }
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### "show" method.
 ###
