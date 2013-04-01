@@ -464,6 +464,38 @@ setAs("GappedAlignmentPairs", "GRanges", function(from) granges(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### fillGaps()
+###
+### Not exported. Used in the SplicingGraphs package.
+###
+
+fillGaps <- function(x)
+{
+    if (!is(x, "GRangesList"))
+        stop("'x' must be a GRangesList object")
+    query.breaks <- mcols(x)$query.break
+    if (is.null(query.breaks))
+        stop("'x' must be a GRangesList object with a \"query.breaks\" ",
+             "metadata column")
+    offsets <- end(x@partitioning)
+    if (length(x) != 0L) 
+        offsets <- c(0L, offsets[-length(offsets)])
+    idx <- IRanges:::fancy_mseq(query.breaks, offsets)
+    half1_partitioning <- PartitioningByEnd(cumsum(query.breaks))
+    half1 <- relist(x@unlistData[idx], half1_partitioning)
+    half1 <- range(half1)@unlistData
+    half2_eltlens <- elementLengths(x) - query.breaks
+    half2_partitioning <- PartitioningByEnd(cumsum(half2_eltlens))
+    half2 <- relist(x@unlistData[-idx], half2_partitioning)
+    half2 <- range(half2)@unlistData
+    idx <- .makePickupIndex(length(x))
+    ans_unlistData <- c(half1, half2)[idx]
+    ans_partitioning <- PartitioningByEnd(2L * seq_along(x),
+                                          names=names(x))
+    relist(ans_unlistData, ans_partitioning)
+}
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### "show" method.
 ###
 
