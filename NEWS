@@ -32,6 +32,11 @@ NEW FEATURES
 
 SIGNIFICANT USER-LEVEL CHANGES
 
+    o resize,GenomicRanges method no longer checks that 'fix' is 
+      length-compatible with 'x' when 'x' is length zero. This
+      allows for resize(x, w, fix = "end") without worrying about 
+      'x' being zero-length.
+
     o Change the behavior of "distance". Previously adjacent ranges
       had a distance of 1 and overlapping had a distance of 0. Now
       both adjacent AND overlapping have a distance of 0.
@@ -88,8 +93,6 @@ DEPRECATED AND DEFUNCT
 BUG FIXES
 
     o Several bug fixes to "nearest". 
-
-    o resize,GenomicRanges-method now handles zero-length 'x'. 
 
     o Output of "findSpliceOverlaps" now displays 'NA' for ranges with 
       no hits.
