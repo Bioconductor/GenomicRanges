@@ -67,15 +67,16 @@ setMethod("genome", "Seqinfo",
 ### Validity.
 ###
 
-.valid.Seqinfo.seqnames <- function(x)
+.valid.Seqinfo.seqnames <- function(x_seqnames, what="'seqnames(x)'")
 {
-    x_seqnames <- seqnames(x)
-    if (!is.character(x_seqnames)
-     || !is.null(names(x_seqnames))
-     || IRanges:::anyMissing(x_seqnames))
-        return("'seqnames(x)' must be an unnamed character vector with no NAs")
-    if (any(x_seqnames %in% "") || any(duplicated(x_seqnames)))
-        return("'seqnames(x)' cannot contain zero-length or duplicated names")
+    if (!is.character(x_seqnames))
+        return(paste0(what, " must be a character vector"))
+    if (!is.null(names(x_seqnames)))
+        return(paste0(what, " must be unnamed"))
+    if (any(x_seqnames %in% c(NA, "")))
+        return(paste0(what, " cannot contain NAs or empty strings (\"\")"))
+    if (anyDuplicated(x_seqnames))
+        return(paste0(what, " cannot contain duplicated sequence names"))
     NULL
 }
 
@@ -119,7 +120,7 @@ setMethod("genome", "Seqinfo",
 
 .valid.Seqinfo <- function(x)
 {
-    c(.valid.Seqinfo.seqnames(x),
+    c(.valid.Seqinfo.seqnames(seqnames(x)),
       .valid.Seqinfo.seqlengths(x),
       .valid.Seqinfo.isCircular(x),
       .valid.Seqinfo.genome(x))
@@ -141,9 +142,11 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 {
     if (is.null(seqnames))
         return(character(0))
-    if (!is.character(seqnames))
-        stop("bad supplied 'seqnames' vector")
-    unname(seqnames)
+    seqnames <- unname(seqnames)
+    errmsg <- .valid.Seqinfo.seqnames(seqnames, what="supplied 'seqnames'")
+    if (!is.null(errmsg))
+        stop(errmsg)
+    seqnames
 }
 
 ### Make sure this always returns an *unnamed* integer vector.
