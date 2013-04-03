@@ -35,8 +35,7 @@ test_renameSeqlevels <- function()
     checkIdentical(c("CHR1", "CHR2", "CHR3"), seqlevels(renameSeqlevels(grl, 
         c(chr1="CHR1", chr2="CHR2", chr3="CHR3"))))
 
-    checkIdentical(c("chr1", "chr1"), 
-        seqlevels(suppressWarnings(renameSeqlevels(gr1, c(chr2="chr1")))))
+    checkException(renameSeqlevels(gr1, c(chr2="chr1")), silent=TRUE)
 }
 
 test_renameSeqlevels_reorder <- function()
