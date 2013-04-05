@@ -55,7 +55,7 @@ setValidity2("GRanges", .valid.GRanges)
 newGRanges <- ## hidden constructor shared with other GRanges-like objects
     function(class, seqnames = Rle(), ranges = IRanges(),
              strand = Rle("*", length(seqnames)),
-             mcols = list(),
+             mcols = DataFrame(),
              seqlengths = NULL, seqinfo = NULL)
 {
     ## occurs first for generation of default seqlengths
@@ -101,11 +101,13 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
         warning("'ranges' has metadata columns, dropping them")
         mcols(ranges) <- NULL
     }
-    mcols <- as(mcols, "DataFrame")
-    if (ncol(mcols) == 0L)
+
+    if (!is(mcols, "DataFrame"))  # should never happen when calling GRanges()
+        stop("'mcols' must be a DataFrame object")
+    if (ncol(mcols) == 0L) {
         mcols <- new("DataFrame", nrows = length(seqnames))
-    if (!is.null(rownames(mcols))) {
-        if (!is.null(names(ranges)))
+    } else if (!is.null(rownames(mcols))) {
+        if (is.null(names(ranges)))
             names(ranges) <- rownames(mcols)
         rownames(mcols) <- NULL
     }
@@ -122,7 +124,7 @@ GRanges <-
 {
     newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
                           strand = strand,
-                          mcols = list(...),
+                          mcols = DataFrame(...),
                           seqlengths = seqlengths,
                           seqinfo = seqinfo)
 }
