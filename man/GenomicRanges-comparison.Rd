@@ -78,23 +78,11 @@
     ranges.
   }
   \item{match.if.overlap}{
-    You temporarily need to explicitly provide this argument otherwise
-    \code{match()} will issue a warning.
-
-    Starting with BioC 2.12, the default behavior of \code{match()} on
-    \link{GenomicRanges} objects has changed to use \emph{equality} instead
-    of \emph{overlap} for comparing elements between \link{GenomicRanges}
-    objects \code{x} and \code{table}. Now \code{x[i]} and \code{table[j]} are
-    considered to match when they are equal (i.e. \code{x[i] == table[j]}),
-    instead of when they overlap. This new behavior is consistent with
-    \code{base::\link[base]{match}()}.
-
-    If you need the new behavior, use \code{match.if.overlap=FALSE}.
-
-    If you need the old behavior, you can either do:
-    \code{findOverlaps(x, table, select="first")}
-    which is the recommended way. Alternatively, you can call \code{match()}
-    with \code{match.if.overlap=TRUE}.
+    This argument is deprecated in BioC 2.13 and won't be supported
+    anymore in BioC 2.14. Please use
+    \code{findOverlaps(x, table, select="first", ignore.strand=ignore.strand)}
+    instead of
+    \code{match(x, table, ignore.strand=ignore.strand, match.if.overlap=TRUE)}.
   }
   \item{...}{
     Additional \link{GenomicRanges} objects used for breaking ties.
@@ -177,13 +165,10 @@ unique(gr)
 ## C. match(), %in%
 ## ---------------------------------------------------------------------
 table <- gr[1:7]
-match(gr, table)  # Warning! The warning will be removed in BioC 2.13.
+match(gr, table)
+match(gr, table, ignore.strand=TRUE)
 
-## In the meantime, specify 'match.if.overlap=FALSE' to suppress the warning:
-match(gr, table, match.if.overlap=FALSE)
-match(gr, table, ignore.strand=TRUE, match.if.overlap=FALSE)
-
-gr \%in\% table  # Warning! The warning will be removed in BioC 2.13.
+gr \%in\% table  # Warning! The warning will be removed in BioC 2.14.
 ## In the meantime, use suppressWarnings() to suppress the warning:
 suppressWarnings(gr \%in\% table)
 
