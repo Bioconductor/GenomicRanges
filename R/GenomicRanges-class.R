@@ -569,18 +569,10 @@ setReplaceMethod("[", "GenomicRanges",
 }
 
 setMethod("c", "GenomicRanges",
-    function(x, ..., ignore.mcols=FALSE, .ignoreElementMetadata=FALSE,
-             recursive=FALSE)
+    function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
         if (!identical(recursive, FALSE))
             stop("'recursive' argument not supported")
-        if (!isTRUEorFALSE(.ignoreElementMetadata))
-            stop("'.ignoreElementMetadata' must be TRUE or FALSE")
-        if (.ignoreElementMetadata) {
-            msg <- c("the '.ignoreElementMetadata' argument is defunct, ",
-                     "please use 'ignore.mcols'\n  instead")
-            .Defunct(msg=msg)
-        }
         if (missing(x))
             args <- unname(list(...))
         else
