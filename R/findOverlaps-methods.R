@@ -767,7 +767,7 @@ for (sig in .signatures2) {
 ### match(), %in%, findMatches(), and countMatches()
 ###
 ### All "match" and "%in% methods (except methods for GenomicRanges objects)
-### are deprecated in BioC 2.12 and will be defunct in BioC 2.13.
+### are defunct in BioC 2.13.
 ### Methods for GenomicRanges have been moved to GenomicRanges-comparison.R
 ### and their behavior changed to do equality instead of overlaps.
 
@@ -779,11 +779,10 @@ for (sig in .signatures2) {
     if (!identical(nomatch, NA_integer_))
         stop("'nomatch' arg is not supported")
     msg <- c("match() between a ", class(x), " and a ", class(table),
-             " object is deprecated.\nPlease use '",
+             " object is defunct.\nPlease use '",
              "findOverlaps(x, table, select=\"first\")",
              "' instead.")
-    .Deprecated(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
-    findOverlaps(x, table, select="first")
+    .Defunct(msg=msg)  # deprecated in BioC 2.12, defunct in BioC 2.13
 }
 
 setMethods("match", .signatures3, .match.definition)
