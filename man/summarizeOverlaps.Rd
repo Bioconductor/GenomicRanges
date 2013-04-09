@@ -89,9 +89,9 @@
             regions each of which belong to a single feature. 
             Simple and gapped reads are counted if,
 
-            \itemize{
-              \item  the read or exactly 1 of the read fragments overlaps a unique
-                     disjoint region
+            \enumerate{
+              \item the read or exactly 1 of the read fragments overlaps a 
+                    unique disjoint region
               \item the read or >1 read fragments overlap >1 unique disjoint
                     region from the same feature
             }
@@ -99,10 +99,10 @@
       \item User supplied function : The function must meet the following
             requirements:
 
-            \itemize{
-              \item Have 3 arguments that correspond to `features', `reads' and 
-                    `ignore.strand', in that order.
-              \item Return a vector of counts the same length as `features'.
+            \enumerate{
+              \item have 3 arguments that correspond to `features', `reads' and 
+                    `ignore.strand', in that order
+              \item return a vector of counts the same length as `features'
             }
     } 
   }
@@ -226,7 +226,7 @@ listAsFeatures <- data.frame(
 
 
 ## ---------------------------------------------------------------------
-## `reads' in Bam files
+## `reads' as Bam files
 ##
 
 ## See also  ?BamFile.
