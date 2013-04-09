@@ -12,6 +12,7 @@
 
 % Coercion
 \alias{coerce,RangedDataList,GenomicRangesList-method}
+\alias{coerce,GenomicRangesList,RangedDataList-method}
 
 \title{GenomicRangesList objects}
 
@@ -42,6 +43,14 @@
       \describe{
         \item{RangedDataList}{Each element of \code{from} is coerced to
           a \code{GenomicRanges}.}
+      }
+    }
+    \item{}{
+      \code{as(from, "RangedDataList")}: Supported \code{from} types
+      include:
+      \describe{
+        \item{GenomicRangesList}{Each element of \code{from} is coerced to
+          a \code{RangedData}.}
       }
     }
   }
