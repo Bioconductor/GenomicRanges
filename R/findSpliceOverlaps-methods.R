@@ -12,14 +12,14 @@ setGeneric("findSpliceOverlaps", signature=c("query", "subject"),
 ## subject as GRangesList 
 ##
 
-setMethod("findSpliceOverlaps", c("GappedAlignments", "GRangesList"),
+setMethod("findSpliceOverlaps", c("GAlignments", "GRangesList"),
     function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 {
     callGeneric(grglist(query, order.as.in.query=TRUE), subject, 
                 ignore.strand, ..., cds=cds)
 })
 
-setMethod("findSpliceOverlaps", c("GappedAlignmentPairs", "GRangesList"),
+setMethod("findSpliceOverlaps", c("GAlignmentPairs", "GRangesList"),
     function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 {
 ### FIXME: order.as.in.query = FALSE needed for insertGaps(). If we
@@ -30,7 +30,7 @@ setMethod("findSpliceOverlaps", c("GappedAlignmentPairs", "GRangesList"),
 ### instead of relying on query.break column, maybe we should add a
 ### 'splice = .gaps(query)' argument to .findSpliceOverlaps that we
 ### set to introns(query) here. The downside is that a GRangesList
-### derived from GappedAlignmentPairs will no longer work.
+### derived from GAlignmentPairs will no longer work.
     callGeneric(grglist(query, order.as.in.query=FALSE), subject,
                 ignore.strand, ..., cds=cds)
 })
@@ -82,6 +82,6 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
  
 ## -------------------------------------------------------------------------
 ## Methods in GenomicFeatures : 
-## findSpliceOverlaps,GappedAlignments,TranscriptDb-method
-## findSpliceOverlaps,GappedAlignmentPairs,TranscriptDb-method
+## findSpliceOverlaps,GAlignments,TranscriptDb-method
+## findSpliceOverlaps,GAlignmentPairs,TranscriptDb-method
 ## findSpliceOverlaps,GRangesList,TranscriptDb-method

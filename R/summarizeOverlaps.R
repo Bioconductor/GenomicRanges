@@ -13,10 +13,10 @@ setGeneric("summarizeOverlaps", signature=c("features", "reads"),
 ##
 
 ## -------------------------------------------------------------------------
-## GappedAlignments methods
+## GAlignments methods
 ##
 
-setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
+setMethod("summarizeOverlaps", c("GRangesList", "GAlignments"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     if (all(strand(reads) == "*"))
@@ -27,7 +27,7 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignments"),
         rowData=features, colData=.readsMetadata(reads))
 })
 
-setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
+setMethod("summarizeOverlaps", c("GRanges", "GAlignments"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     if (all(strand(reads) == "*"))
@@ -39,10 +39,10 @@ setMethod("summarizeOverlaps", c("GRanges", "GappedAlignments"),
 })
 
 ## -------------------------------------------------------------------------
-## GappedAlignmentPairs methods
+## GAlignmentPairs methods
 ##
 
-setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
+setMethod("summarizeOverlaps", c("GRangesList", "GAlignmentPairs"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     if (all(strand(reads) == "*"))
@@ -53,7 +53,7 @@ setMethod("summarizeOverlaps", c("GRangesList", "GappedAlignmentPairs"),
         rowData=features, colData=.readsMetadata(reads))
 })
 
-setMethod("summarizeOverlaps", c("GRanges", "GappedAlignmentPairs"),
+setMethod("summarizeOverlaps", c("GRanges", "GAlignmentPairs"),
     function(features, reads, mode, ignore.strand=FALSE, ...)
 {
     if (all(strand(reads) == "*"))

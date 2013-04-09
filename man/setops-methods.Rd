@@ -13,8 +13,8 @@
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
 \alias{pintersect,GRangesList,GRangesList-method}
-\alias{pintersect,GappedAlignments,GRanges-method}
-\alias{pintersect,GRanges,GappedAlignments-method}
+\alias{pintersect,GAlignments,GRanges-method}
+\alias{pintersect,GRanges,GAlignments-method}
 
 \alias{psetdiff,GRanges,GRanges-method}
 \alias{psetdiff,GRanges,GRangesList-method}
@@ -22,10 +22,10 @@
 
 \alias{pgap,GRanges,GRanges-method}
 
-\title{Set operations on GRanges/GRangesList/GappedAlignments objects}
+\title{Set operations on GRanges/GRangesList/GAlignments objects}
 
 \description{
-  Performs set operations on GRanges/GRangesList/GappedAlignments objects.
+  Performs set operations on GRanges/GRangesList/GAlignments objects.
 }
 
 \usage{
@@ -37,7 +37,7 @@
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
 \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ignore.strand=FALSE, ...)
-\S4method{pintersect}{GappedAlignments,GRanges}(x, y, ...)
+\S4method{pintersect}{GAlignments,GRanges}(x, y, ...)
 \S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 }
 
@@ -51,7 +51,7 @@
 
     For \code{pintersect}: one of \code{x} or \code{y} must be a \link{GRanges}
     object, the other one can be a \link{GRanges}, \link{GRangesList} or
-    \link{GappedAlignments} object.
+    \link{GAlignments} object.
 
     For \code{psetdiff}: \code{x} and \code{y} can be any combination of
     \link{GRanges} and/or \link{GRangesList} objects, with the exception
@@ -90,7 +90,7 @@
 
 \details{
   The \code{pintersect} methods involving \link{GRanges}, \link{GRangesList}
-  and/or \link{GappedAlignments} objects use the triplet (sequence name, range,
+  and/or \link{GAlignments} objects use the triplet (sequence name, range,
   strand) to determine the element by element intersection of features,
   where a strand value of \code{"*"} is treated as occurring on both the
   \code{"+"} and \code{"-"} strand.
@@ -121,7 +121,7 @@
   \link[IRanges]{setops-methods},
   \link{GRanges-class},
   \link{GRangesList-class},
-  \link{GappedAlignments-class},
+  \link{GAlignments-class},
   \link{findOverlaps-methods}
 }
 
@@ -183,10 +183,10 @@ grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 pintersect(gr, grlist)
 pintersect(grlist, gr)
 
-## Parallel intersection of a GappedAlignments and a GRanges object
+## Parallel intersection of a GAlignments and a GRanges object
 library(Rsamtools)  # because file ex1.bam is in this package
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(galn_file)
+galn <- readGAlignments(galn_file)
 pintersect(galn, shift(as(galn, "GRanges"), 6L))
 
 ## Parallel set difference of a GRanges and a GRangesList object

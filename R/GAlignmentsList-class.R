@@ -6,11 +6,11 @@
 setClass("GAlignmentsList",
     contains="CompressedList",
     representation(
-        unlistData="GappedAlignments",
+        unlistData="GAlignments",
         elementMetadata="DataFrame"
     ),
     prototype(
-        elementType="GappedAlignments"
+        elementType="GAlignments"
     )
 )
 
@@ -41,15 +41,15 @@ setClass("GAlignmentsList",
 ###                 (endomorphism).
 ###
 ###   findOverlaps(query, subject) - 'query' or 'subject' or both are
-###                 GappedAlignments objects. Just a convenient wrapper for
+###                 GAlignments objects. Just a convenient wrapper for
 ###                 'findOverlaps(grglist(query), subject, ...)', etc...
 ###
 ###   countOverlaps(query, subject) - 'query' or 'subject' or both are
-###                 GappedAlignments objects. Just a convenient wrapper for
+###                 GAlignments objects. Just a convenient wrapper for
 ###                 'countOverlaps(grglist(query), subject, ...)', etc...
 ###
 ###   subsetByOverlaps(query, subject) - 'query' or 'subject' or both are
-###                 GappedAlignments objects.
+###                 GAlignments objects.
 ###
 
 ###   qnarrow(x, start=NA, end=NA, width=NA) - GAlignmentsList object of the
@@ -172,7 +172,7 @@ setReplaceMethod("seqnames", "GAlignmentsList", .replaceSeqnamesList)
 .valid.GAlignmentsList <- function(x)
 {
    ## Known pitfalls are caught by
-   ## GappedAlignments validity. 
+   ## GAlignments validity. 
 }
 
 setValidity2("GAlignmentsList", .valid.GAlignmentsList)
@@ -185,12 +185,12 @@ GAlignmentsList <- function(...)
 {
     listData <- list(...)
     if (length(listData) == 0L) {
-        unlistData <- GappedAlignments()
+        unlistData <- GAlignments()
     } else {
         if (length(listData) == 1L && is.list(listData[[1L]]))
             listData <- listData[[1L]]
-        if (!all(sapply(listData, is, "GappedAlignments")))
-            stop("all elements in '...' must be GappedAlignments objects")
+        if (!all(sapply(listData, is, "GAlignments")))
+            stop("all elements in '...' must be GAlignments objects")
         unlistData <- suppressWarnings(do.call("c", unname(listData)))
     }
     relist(unlistData, PartitioningByEnd(listData))
@@ -232,8 +232,8 @@ makeGAlignmentsListFromFeatureFragments <- function(seqnames=Rle(factor()),
         seqnames <- rep.int(seqnames, nfrag_per_feature)
         strand <- rep.int(strand, nfrag_per_feature)
     }
-    unlistData <- GappedAlignments(seqnames=seqnames, pos=pos, cigar=cigar,
-                                   strand=strand)
+    unlistData <- GAlignments(seqnames=seqnames, pos=pos, cigar=cigar,
+                              strand=strand)
     partitioning <- PartitioningByEnd(cumsum(nfrag_per_feature), names=NULL)
     relist(unlistData, partitioning)
 }
@@ -260,7 +260,7 @@ readGAlignmentsList <- function(file, format="BAM", use.names=FALSE, ...)
         stop("'use.names' must be TRUE or FALSE")
     if (format == "BAM") {
         suppressMessages(library("Rsamtools"))
-        ans <- readBamGAlignmentsList(file=file, use.names=TRUE, ...) 
+        ans <- readGAlignmentsListFromBam(file=file, use.names=TRUE, ...) 
         return(ans)
     }
     stop("only BAM format is supported at the moment")
@@ -374,7 +374,7 @@ setReplaceMethod("[[", "GAlignmentsList", .dBracketReplaceGRList)
 
 setMethod("show", "GAlignmentsList",
     function(object)
-        .showList(object, showGappedAlignments, FALSE)
+        .showList(object, showGAlignments, FALSE)
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

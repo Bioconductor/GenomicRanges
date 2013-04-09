@@ -50,7 +50,7 @@ getDanglingSeqlevels <- function(x, new2old=NULL, force=FALSE, new_seqlevels)
 
 ### Compute the new seqnames resulting from new seqlevels.
 ### Assumes that 'seqnames(x)' is a 'factor' Rle (which is true if 'x' is a
-### GRanges or GappedAlignments object, but not if it's a GRangesList object),
+### GRanges or GAlignments object, but not if it's a GRangesList object),
 ### and returns a 'factor' Rle of the same length (and same runLength vector).
 makeNewSeqnames <- function(x, new2old=NULL, new_seqlevels)
 {

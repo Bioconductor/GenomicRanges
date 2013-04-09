@@ -132,8 +132,8 @@ seqnameStyle(x) <- value
         a \code{seqinfo} setter, then all the corresponding setters will
         also work out-of-the-box.
 
-        See the \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
-        and \link{GappedAlignmentPairs} classes for examples of classes that
+        See the \link{GRanges}, \link{GRangesList}, \link{GAlignments},
+        and \link{GAlignmentPairs} classes for examples of classes that
         define the \code{seqinfo} getter and setter (those 4 classes are
         defined in the GenomicRanges package).
 
@@ -170,8 +170,8 @@ seqnameStyle(x) <- value
     \item \link{Seqinfo-class}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
-    \item \link{GappedAlignments-class}.
-    \item \link{GappedAlignmentPairs-class}.
+    \item \link{GAlignments-class}.
+    \item \link{GAlignmentPairs-class}.
     \item \link[GenomicFeatures]{TranscriptDb-class}.
   }
 }

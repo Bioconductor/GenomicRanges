@@ -131,7 +131,7 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
     NULL
 }
 
-### Also used by the validity method for GappedAlignments objects.
+### Also used by the validity method for GAlignments objects.
 valid.GenomicRanges.seqinfo <- function(x)
 {
     x_seqinfo <- seqinfo(x)

@@ -118,13 +118,13 @@ setMethod("coverage", "GRangesList",
     }
 )
 
-setMethod("coverage", "GappedAlignments",
+setMethod("coverage", "GAlignments",
     function(x, shift=0L, width=NULL, weight=1L, drop.D.ranges = FALSE, ...)
         coverage(grglist(x, drop.D.ranges = drop.D.ranges),
                  shift=shift, width=width, weight=weight, ...)
 )
 
-setMethod("coverage", "GappedAlignmentPairs",
+setMethod("coverage", "GAlignmentPairs",
     function(x, shift=0L, width=NULL, weight=1L, drop.D.ranges = FALSE, ...)
           coverage(grglist(x, drop.D.ranges = drop.D.ranges),
                    shift=shift, width=width, weight=weight, ...)

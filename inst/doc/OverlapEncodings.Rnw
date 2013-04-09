@@ -95,27 +95,27 @@ library(pasillaBamSubset)
 untreated1_chr4()
 @
 
-We use the \Rfunction{readGappedAlignments} function defined in the
+We use the \Rfunction{readGAlignments} function defined in the
 \Rpackage{GenomicRanges} package to load the reads into a
-\Rclass{GappedAlignments} object.
+\Rclass{GAlignments} object.
 It's probably a good idea to get rid of the PCR or optical duplicates
 (flag bit 0x400 in the SAM format, see the SAM Spec
 \footnote{\url{http://samtools.sourceforge.net/}} for the details), as well
 as reads not passing quality controls (flag bit 0x200 in the SAM format).
 We do this by creating a \Rclass{ScanBamParam} object that we pass to
-\Rcode{readGappedAlignments} (see \Rcode{?ScanBamParam} in the
+\Rcode{readGAlignments} (see \Rcode{?ScanBamParam} in the
 \Rpackage{Rsamtools} package for the details). Note that we also use
 \Rcode{use.names=TRUE} in order to load the {\it query names} (aka {\it query
 template names}, see QNAME field in the SAM Spec) from the BAM file
-(\Rcode{readGappedAlignments} will use them to set the names of the returned
+(\Rcode{readGAlignments} will use them to set the names of the returned
 object):
 
-<<readGappedAlignments>>=
+<<readGAlignments>>=
 library(GenomicRanges)
 library(Rsamtools)
 flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
-U1.GAL <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
+U1.GAL <- readGAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
 head(U1.GAL)
 @
 
@@ -172,15 +172,15 @@ BAM file {\tt untreated3\_chr4.bam} (located in the
 the ``Pasilla'' experiment and aligned against the dm3 genome (see
 \Rcode{?untreated3\_chr4} in the \Rpackage{pasillaBamSubset} package for
 more information about those reads).
-We use the \Rfunction{readGappedAlignmentPairs} function to load them
-into a \Rclass{GappedAlignmentPairs} object:
+We use the \Rfunction{readGAlignmentPairs} function to load them
+into a \Rclass{GAlignmentPairs} object:
 
-<<readGappedAlignmentPairs>>=
-U3.galp <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
+<<readGAlignmentPairs>>=
+U3.galp <- readGAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param0)
 head(U3.galp)
 @
 
-The \Rcode{show} method for \Rclass{GappedAlignmentPairs} objects displays
+The \Rcode{show} method for \Rclass{GAlignmentPairs} objects displays
 two {\tt ranges} columns, one for the {\it first} alignment in the pair (the
 left column), and one for the {\it last} alignment in the pair (the right
 column). The {\tt strand} column corresponds to the strand of the {\it first}
@@ -199,7 +199,7 @@ aligner''. So the exact criteria used for setting this flag is left to the
 aligner.
 
 We use \Rcode{isProperPair} to extract this flag from the
-\Rclass{GappedAlignmentPairs} object:
+\Rclass{GAlignmentPairs} object:
 
 <<isProperPair>>=
 table(isProperPair(U3.galp))
@@ -289,7 +289,7 @@ i.e. not all BAM files have them):
 
 <<U1.GAL_qseq>>=
 param1 <- ScanBamParam(flag=flag0, what="seq", tag="NM")
-U1.GAL <- readGappedAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
+U1.GAL <- readGAlignments(untreated1_chr4(), use.names=TRUE, param=param1)
 U1.GAL_qseq <- mcols(U1.GAL)$seq
 names(U1.GAL_qseq) <- names(U1.GAL)
 head(U1.GAL_qseq)
@@ -341,7 +341,7 @@ library(BSgenome.Dmelanogaster.UCSC.dm3)
 Dmelanogaster
 @
 
-Let's start by converting our \Rclass{GappedAlignments} object \Rcode{U1.GAL}
+Let's start by converting our \Rclass{GAlignments} object \Rcode{U1.GAL}
 into a \Rclass{GRangesList} object:
 
 <<U1.grl>>=
@@ -412,7 +412,7 @@ flag2 <- scanBamFlag(isDuplicate=FALSE,
                      isNotPassingQualityControls=FALSE,
                      isProperPair=TRUE)
 param2 <- ScanBamParam(flag=flag2, what="seq", tag="NM")
-U3.GALP <- readGappedAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
+U3.GALP <- readGAlignmentPairs(untreated3_chr4(), use.names=TRUE, param=param2)
 @
 
 Let's extract the {\it first} and {\it last} sequences from \Rcode{U3.GALP}:
@@ -981,7 +981,7 @@ U1.compOV00 <- U1.OV00[U1.OV00_is_comp]
 
 Note that high-level convenience wrapper \Rfunction{findCompatibleOverlaps}
 can be used for computing the ``compatible'' overlaps directly between
-a \Rclass{GappedAlignments} object (containing reads) and a
+a \Rclass{GAlignments} object (containing reads) and a
 \Rclass{GRangesList} object (containing transcripts):
 
 <<U1.compOV00_again, eval=FALSE>>=
@@ -1121,7 +1121,7 @@ U3.compOV00 <- U3.OV00[U3.OV00_is_comp]
 Note that, like with our single-end reads, high-level convenience
 wrapper \Rfunction{findCompatibleOverlaps} can be used for computing
 the ``compatible'' paired-end overlaps directly between a
-\Rclass{GappedAlignmentPairs} object (containing paired-end reads)
+\Rclass{GAlignmentPairs} object (containing paired-end reads)
 and a \Rclass{GRangesList} object (containing transcripts):
 
 <<U3.compOV00_again, eval=FALSE>>=

@@ -21,7 +21,7 @@
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
-\alias{coerce,GenomicRanges,GappedAlignments-method}
+\alias{coerce,GenomicRanges,GAlignments-method}
 \alias{coerce,RleList,GRanges-method}
 \alias{coerce,RleViewsList,GRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
@@ -151,8 +151,8 @@
       \code{genome(from)} vectors become the metadata columns.
     }
     \item{}{
-      \code{as(from, "GappedAlignments")}:
-      Creates a GappedAlignments object from a GRanges object. The metadata
+      \code{as(from, "GAlignments")}:
+      Creates a GAlignments object from a GRanges object. The metadata
       columns are propagated. cigar values are created from the sequence
       width unless a "cigar" metadata column already exists in \code{from}.
     }
@@ -439,11 +439,14 @@
     \item{}{
       \code{show(x)}:
       By default the \code{show} method displays 5 head and 5 tail
-      lines. The number of lines can be altered by setting the global
-      options \code{showHeadLines} and \code{showTailLines}. If the 
-      object length is less than the sum of the options, the full object 
-      is displayed. These options affect GRanges, GappedAlignments, 
-      Ranges, DataTable and XString objects.
+      elements. This can be changed by setting the global options
+      \code{showHeadLines} and \code{showTailLines}. If the object
+      length is less than (or equal to) the sum of these 2 options
+      plus 1, then the full object is displayed.
+      Note that these options also affect the display of \link{GAlignments}
+      and \link{GAlignmentPairs} objects, as well as other objects defined
+      in the IRanges and Biostrings packages (e.g. \link[IRanges]{Ranges}
+      and \link[Biostrings]{XStringSet} objects).
     }
   }
 }

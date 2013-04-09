@@ -2,8 +2,8 @@
 \alias{findSpliceOverlaps}
 \alias{findSpliceOverlaps-methods}
 
-\alias{findSpliceOverlaps,GappedAlignments,GRangesList-method}
-\alias{findSpliceOverlaps,GappedAlignmentPairs,GRangesList-method}
+\alias{findSpliceOverlaps,GAlignments,GRangesList-method}
+\alias{findSpliceOverlaps,GAlignmentPairs,GRangesList-method}
 \alias{findSpliceOverlaps,GRangesList,GRangesList-method}
 
 \title{Classify ranges (reads) as compatible with existing genomic annotations 
@@ -18,8 +18,8 @@
 \usage{
 findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 
-\S4method{findSpliceOverlaps}{GappedAlignments,GRangesList}(query, subject, ignore.strand=FALSE, ..., cds=NULL)
-\S4method{findSpliceOverlaps}{GappedAlignmentPairs,GRangesList}(query, subject, ignore.strand=FALSE, ..., cds=NULL)
+\S4method{findSpliceOverlaps}{GAlignments,GRangesList}(query, subject, ignore.strand=FALSE, ..., cds=NULL)
+\S4method{findSpliceOverlaps}{GAlignmentPairs,GRangesList}(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 \S4method{findSpliceOverlaps}{GRangesList,GRangesList}(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 
 ## Low-level utils:
@@ -43,13 +43,13 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
 \arguments{
   \item{query}{
     \code{character} name of a Bam file, a \link[Rsamtools]{BamFile}, 
-    \linkS4class{GappedAlignments}, \linkS4class{GappedAlignmentPairs} 
+    \linkS4class{GAlignments}, \linkS4class{GAlignmentPairs} 
     or a \linkS4class{GRangesList} object containing the reads.
 
     Single or paired-end reads are specified with the \code{singleEnd} 
     argument (default FALSE). Paired-end reads can be supplied in a Bam 
-    file or \linkS4class{GappedAlignmentPairs} object. Single-end are
-    expected to be in a Bam file, \linkS4class{GappedAlignments} or 
+    file or \linkS4class{GAlignmentPairs} object. Single-end are
+    expected to be in a Bam file, \linkS4class{GAlignments} or 
     \linkS4class{GRanges} object.
   }
   \item{subject}{
@@ -109,8 +109,8 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
  
 \seealso{
   \itemize{
-    \item The \link{GRangesList}, \link{GappedAlignments}, and
-          \link{GappedAlignmentPairs} classes.
+    \item The \link{GRangesList}, \link{GAlignments}, and
+          \link{GAlignmentPairs} classes.
   }
 }
 
@@ -159,13 +159,13 @@ pe <- untreated3_chr4()
 hits2 <- findSpliceOverlaps(pe, exbytx, singleEnd=FALSE, param=param)
  
 ## In addition to Bam files, paired-end reads can be supplied in a 
-## GappedAlignmentPairs object. 
+## GAlignmentPairs object. 
 genes <- GRangesList(
     GRanges("chr1", IRanges(c(5, 20), c(10, 25)), "+"),
     GRanges("chr1", IRanges(c(5, 22), c(15, 25)), "+"))
-galp <- GappedAlignmentPairs(
-    GappedAlignments("chr1", 5L, "11M4N6M", strand("+")),
-    GappedAlignments("chr1", 50L, "6M", strand("-")),
+galp <- GAlignmentPairs(
+    GAlignments("chr1", 5L, "11M4N6M", strand("+")),
+    GAlignments("chr1", 50L, "6M", strand("-")),
     isProperPair=TRUE)
 findSpliceOverlaps(galp, genes)
 }

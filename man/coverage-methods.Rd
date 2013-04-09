@@ -3,31 +3,31 @@
 
 \alias{coverage,GenomicRanges-method}
 \alias{coverage,GRangesList-method}
-\alias{coverage,GappedAlignments-method}
-\alias{coverage,GappedAlignmentPairs-method}
+\alias{coverage,GAlignments-method}
+\alias{coverage,GAlignmentPairs-method}
 
 
-\title{Coverage of a GRanges, GRangesList, GappedAlignments, or
-       GappedAlignmentPairs object}
+\title{Coverage of a GRanges, GRangesList, GAlignments, or
+       GAlignmentPairs object}
 
 \description{
   \code{\link[IRanges]{coverage}} methods for \link{GRanges},
-  \link{GRangesList}, \link{GappedAlignments}, and \link{GappedAlignmentPairs}
+  \link{GRangesList}, \link{GAlignments}, and \link{GAlignmentPairs}
   objects.
 }
 
 \usage{
 \S4method{coverage}{GenomicRanges}(x, shift=0L, width=NULL, weight=1L, ...)
-\S4method{coverage}{GappedAlignments}(x, shift=0L, width=NULL,
+\S4method{coverage}{GAlignments}(x, shift=0L, width=NULL,
          weight=1L, drop.D.ranges=FALSE, ...)
-\S4method{coverage}{GappedAlignmentPairs}(x, shift=0L, width=NULL,
+\S4method{coverage}{GAlignmentPairs}(x, shift=0L, width=NULL,
          weight=1L, drop.D.ranges=FALSE, ...)
 }
 
 \arguments{
   \item{x}{
-    A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
-    or \link{GappedAlignmentPairs} object.
+    A \link{GRanges}, \link{GRangesList}, \link{GAlignments},
+    or \link{GAlignmentPairs} object.
   }
   \item{shift, width, weight, ...}{
     See \code{\link[IRanges]{coverage}} in the IRanges package for
@@ -68,7 +68,7 @@
   When \code{x} is a \link{GRangesList} object, \code{coverage(x, ...)}
   is equivalent to \code{coverage(unlist(x), ...)}.
 
-  When \code{x} is a \link{GappedAlignments} or \link{GappedAlignmentPairs}
+  When \code{x} is a \link{GAlignments} or \link{GAlignmentPairs}
   object, \code{coverage(x, ...)} is equivalent to
   \code{coverage(as(x, "GRangesList"), ...)}.
 }
@@ -88,8 +88,8 @@
     \item \link[IRanges]{RleList-class}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
-    \item \link{GappedAlignments-class}.
-    \item \link{GappedAlignmentPairs-class}.
+    \item \link{GAlignments-class}.
+    \item \link{GAlignmentPairs-class}.
   }
 }
 
@@ -119,12 +119,12 @@ gr3 <- GRanges(seqnames=c("chr1", "chr2"),
 grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 stopifnot(identical(coverage(grl), coverage(unlist(grl))))
 
-## Coverage of a GappedAlignments or GappedAlignmentPairs object:
+## Coverage of a GAlignments or GAlignmentPairs object:
 library(Rsamtools)  # because file ex1.bam is in this package
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(ex1_file)
+galn <- readGAlignments(ex1_file)
 stopifnot(identical(coverage(galn), coverage(as(galn, "GRangesList"))))
-galp <- readGappedAlignmentPairs(ex1_file)
+galp <- readGAlignmentPairs(ex1_file)
 stopifnot(identical(coverage(galp), coverage(as(galp, "GRangesList"))))
 }
 

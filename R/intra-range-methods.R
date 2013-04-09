@@ -57,9 +57,9 @@ setMethod("narrow", "GenomicRanges",
     }
 )
 
-setMethod("narrow", "GappedAlignments",
+setMethod("narrow", "GAlignments",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-        .narrowGAlignments(x, start, end, width, cigarNarrow)
+        narrowGAlignments(x, cigarNarrow, start, end, width)
 )
 
 setMethod("narrow", "GAlignmentsList",

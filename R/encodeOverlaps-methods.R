@@ -69,10 +69,10 @@
 ### 2 non-exported utilities for inverting the strand of an object.
 ###
 ### TODO: We should probably have an invertStrand() generic with methods for
-### GRanges, GRangesList, GappedAlignments, GappedAlignmentPairs, and possibly
-### more, instead of this.
+### GRanges, GRangesList, GAlignments, GAlignmentPairs, and possibly more,
+### instead of this.
 
-### Works on GRanges and GappedAlignments objects. More generally, it should
+### Works on GRanges and GAlignments objects. More generally, it should
 ### work on any object that has: (1) a strand() getter that returns a
 ### 'factor'-Rle, and (2) a strand() setter.
 invertRleStrand <- function(x)
@@ -787,7 +787,7 @@ setGeneric("findCompatibleOverlaps",
     function(query, subject) standardGeneric("findCompatibleOverlaps")
 )
 
-.GappedAlignmentsORGappedAlignmentPairs.findCompatibleOverlaps <-
+.GAlignmentsORGAlignmentPairs.findCompatibleOverlaps <-
     function(query, subject)
 {
     grl <- grglist(query, order.as.in.query=TRUE)
@@ -800,12 +800,12 @@ setGeneric("findCompatibleOverlaps",
     ov[ov_is_compat]
 }
 
-setMethod("findCompatibleOverlaps", c("GappedAlignments", "GRangesList"),
-    .GappedAlignmentsORGappedAlignmentPairs.findCompatibleOverlaps
+setMethod("findCompatibleOverlaps", c("GAlignments", "GRangesList"),
+    .GAlignmentsORGAlignmentPairs.findCompatibleOverlaps
 )
 
-setMethod("findCompatibleOverlaps", c("GappedAlignmentPairs", "GRangesList"),
-    .GappedAlignmentsORGappedAlignmentPairs.findCompatibleOverlaps
+setMethod("findCompatibleOverlaps", c("GAlignmentPairs", "GRangesList"),
+    .GAlignmentsORGAlignmentPairs.findCompatibleOverlaps
 )
 
 countCompatibleOverlaps <- function(query, subject)

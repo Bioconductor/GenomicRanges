@@ -3,19 +3,19 @@
 \alias{keepSeqlevels}
 \alias{keepSeqlevels,GenomicRanges,GenomicRanges-method}
 \alias{keepSeqlevels,GenomicRanges,GRangesList-method}
-\alias{keepSeqlevels,GenomicRanges,GappedAlignments-method}
+\alias{keepSeqlevels,GenomicRanges,GAlignments-method}
 \alias{keepSeqlevels,GenomicRanges,character-method}
 \alias{keepSeqlevels,GRangesList,GenomicRanges-method}
 \alias{keepSeqlevels,GRangesList,GRangesList-method}
-\alias{keepSeqlevels,GRangesList,GappedAlignments-method}
+\alias{keepSeqlevels,GRangesList,GAlignments-method}
 \alias{keepSeqlevels,GRangesList,character-method}
-\alias{keepSeqlevels,GappedAlignments,GenomicRanges-method}
-\alias{keepSeqlevels,GappedAlignments,GRangesList-method}
-\alias{keepSeqlevels,GappedAlignments,GappedAlignments-method}
-\alias{keepSeqlevels,GappedAlignments,character-method}
+\alias{keepSeqlevels,GAlignments,GenomicRanges-method}
+\alias{keepSeqlevels,GAlignments,GRangesList-method}
+\alias{keepSeqlevels,GAlignments,GAlignments-method}
+\alias{keepSeqlevels,GAlignments,character-method}
 
 \alias{renameSeqlevels}
-\alias{renameSeqlevels,GappedAlignments,character-method}
+\alias{renameSeqlevels,GAlignments,character-method}
 \alias{renameSeqlevels,GRangesList,character-method}
 \alias{renameSeqlevels,GenomicRanges,character-method}
 
@@ -25,7 +25,7 @@
 
 \description{
   Rename or subset the seqlevels in a \link{GenomicRanges}, \link{GRangesList} 
-  or \link{GappedAlignments} object.
+  or \link{GAlignments} object.
 }
 
 \usage{
@@ -35,12 +35,12 @@
 
 \arguments{
   \item{x}{
-    The \link{GenomicRanges}, \link{GRangesList} or \link{GappedAlignments} object 
+    The \link{GenomicRanges}, \link{GRangesList} or \link{GAlignments} object 
     in which the seqlevels will be removed or renamed.
   }
   \item{value}{
     For \code{keepSeqlevels}, a \link{GRanges}, \link{GRangesList} or
-    \code{GappedAlignments} or character vector. \code{x} is subset on the
+    \code{GAlignments} or character vector. \code{x} is subset on the
     seqlevels in \code{value}.
 
     For \code{renameSeqlevels}, a named character vector where the names are the 
@@ -109,10 +109,10 @@ identical(grl1_rename, grl2)
  
 grl1_subset <- keepSeqlevels(grl1, "chr3")
  
-## GappedAlignments :
+## GAlignments :
 library(Rsamtools)
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(galn_file)
+galn <- readGAlignments(galn_file)
  
 galn_rename <- renameSeqlevels(galn, c(seq2="chr2"))
 galn_subset <- keepSeqlevels(galn_rename, gr1)

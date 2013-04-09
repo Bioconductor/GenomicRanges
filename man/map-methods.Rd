@@ -1,7 +1,7 @@
 \name{map-methods}
 
 \alias{map,GenomicRanges,GRangesList-method}
-\alias{map,GenomicRanges,GappedAlignments-method}
+\alias{map,GenomicRanges,GAlignments-method}
 
 \alias{coerce,RangesMapping,GenomicRanges-method}
 \alias{granges,RangesMapping-method}
@@ -15,7 +15,7 @@
 }
 \usage{
 \S4method{map}{GenomicRanges,GRangesList}(from, to)
-\S4method{map}{GenomicRanges,GappedAlignments}(from, to)
+\S4method{map}{GenomicRanges,GAlignments}(from, to)
 }
 \arguments{
   \item{from}{The input ranges to map, usually
@@ -48,7 +48,7 @@
       example, when predicting coding consequences of changes to the
       genomic sequence.
     }
-    \item{GappedAlignments}{Each element is taken to represent the
+    \item{GAlignments}{Each element is taken to represent the
       alignment of a (read) sequence. The CIGAR string is used to
       translate the input ranges to be relative to the read start. This
       is useful, for example, when determining the cycle (read position)

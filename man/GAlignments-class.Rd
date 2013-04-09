@@ -1,102 +1,112 @@
-\name{GappedAlignments-class}
+\name{GAlignments-class}
 \docType{class}
 
 % Class:
-\alias{class:GappedAlignments}
-\alias{GappedAlignments-class}
+\alias{class:GAlignments}
+\alias{GAlignments-class}
 
 % Constructors:
-\alias{GappedAlignments}
-\alias{updateObject,GappedAlignments-method}
-\alias{readGappedAlignments}
+\alias{GAlignments}
+\alias{updateObject,GAlignments-method}
+\alias{readGAlignments}
 
 % Accessors:
-\alias{length,GappedAlignments-method}
-\alias{names,GappedAlignments-method}
-\alias{seqnames,GappedAlignments-method}
+\alias{length,GAlignments-method}
+\alias{names,GAlignments-method}
+\alias{seqnames,GAlignments-method}
 \alias{rname}
-\alias{rname,GappedAlignments-method}
-\alias{strand,GappedAlignments-method}
-\alias{names<-,GappedAlignments-method}
-\alias{seqnames<-,GappedAlignments-method}
+\alias{rname,GAlignments-method}
+\alias{strand,GAlignments-method}
+\alias{names<-,GAlignments-method}
+\alias{seqnames<-,GAlignments-method}
 \alias{rname<-}
-\alias{rname<-,GappedAlignments-method}
-\alias{strand<-,GappedAlignments-method}
+\alias{rname<-,GAlignments-method}
+\alias{strand<-,GAlignments-method}
 \alias{cigar}
-\alias{cigar,GappedAlignments-method}
+\alias{cigar,GAlignments-method}
 \alias{qwidth}
-\alias{qwidth,GappedAlignments-method}
-\alias{start,GappedAlignments-method}
-\alias{end,GappedAlignments-method}
-\alias{width,GappedAlignments-method}
-\alias{ngap,GappedAlignments-method}
-\alias{elementMetadata<-,GappedAlignments-method}
-\alias{seqinfo,GappedAlignments-method}
-\alias{seqinfo<-,GappedAlignments-method}
+\alias{qwidth,GAlignments-method}
+\alias{start,GAlignments-method}
+\alias{end,GAlignments-method}
+\alias{width,GAlignments-method}
+\alias{ngap,GAlignments-method}
+\alias{elementMetadata<-,GAlignments-method}
+\alias{seqinfo,GAlignments-method}
+\alias{seqinfo<-,GAlignments-method}
 
 % Coercion:
 \alias{grglist}
 \alias{granges}
 \alias{introns}
 \alias{rglist}
-\alias{grglist,GappedAlignments-method}
-\alias{granges,GappedAlignments-method}
-\alias{introns,GappedAlignments-method}
-\alias{rglist,GappedAlignments-method}
-\alias{ranges,GappedAlignments-method}
-\alias{coerce,GappedAlignments,GRangesList-method}
-\alias{coerce,GappedAlignments,GRanges-method}
-\alias{coerce,GappedAlignments,RangesList-method}
-\alias{coerce,GappedAlignments,Ranges-method}
-\alias{as.data.frame,GappedAlignments-method}
+\alias{grglist,GAlignments-method}
+\alias{granges,GAlignments-method}
+\alias{introns,GAlignments-method}
+\alias{rglist,GAlignments-method}
+\alias{ranges,GAlignments-method}
+\alias{coerce,GAlignments,GRangesList-method}
+\alias{coerce,GAlignments,GRanges-method}
+\alias{coerce,GAlignments,RangesList-method}
+\alias{coerce,GAlignments,Ranges-method}
+\alias{as.data.frame,GAlignments-method}
 
 % Subsetting:
-\alias{[,GappedAlignments-method}
+\alias{[,GAlignments-method}
 
 % Combining:
-\alias{c,GappedAlignments-method}
+\alias{c,GAlignments-method}
 
 % "show" method:
-\alias{show,GappedAlignments-method}
+\alias{show,GAlignments-method}
 
 % Other methods:
 \alias{qnarrow}
-\alias{qnarrow,GappedAlignments-method}
-\alias{splitAsListReturnedClass,GappedAlignments-method}
+\alias{qnarrow,GAlignments-method}
+\alias{splitAsListReturnedClass,GAlignments-method}
+
+% Old stuff:
+\alias{GappedAlignments}
+\alias{class:GappedAlignments}
+\alias{GappedAlignments-class}
+\alias{readGappedAlignments}
+\alias{GappedAlignmentPairs}
+\alias{class:GappedAlignmentPairs}
+\alias{GappedAlignmentPairs-class}
+\alias{readGappedAlignmentPairs}
 
 
-\title{GappedAlignments objects}
+\title{GAlignments objects}
 
 \description{
-  The GappedAlignments class is a simple container which
-  purpose is to store a set of alignments that will hold just enough
+  The GAlignments class is a simple container which purpose is
+  to store a set of genomic alignments that will hold just enough
   information for supporting the operations described below.
 }
 
 \details{
-  A GappedAlignments object is a vector-like object where each element
-  describes an alignment i.e. how a given sequence (called "query"
+  A GAlignments object is a vector-like object where each element
+  describes a genomic alignment i.e. how a given sequence (called "query"
   or "read", typically short) aligns to a reference sequence (typically
   long).
 
-  Typically, a GappedAlignments object will be created by loading
+  Typically, a GAlignments object will be created by loading
   records from a BAM (or SAM) file and each element in the resulting
   object will correspond to a record. BAM/SAM records generally contain
   a lot of information but only part of that information is loaded
-  in the GappedAlignments object. In particular, we discard the query
+  in the GAlignments object. In particular, we discard the query
   sequences (SEQ field), the query qualities (QUAL), the mapping qualities
   (MAPQ) and any other information that is not needed in order to support
   the operations or methods described below.
 
   This means that multi-reads (i.e. reads with multiple hits in the
   reference) won't receive any special treatment i.e. the various SAM/BAM
-  records corresponding to a multi-read will show up in the GappedAlignments
+  records corresponding to a multi-read will show up in the GAlignments
   object as if they were coming from different/unrelated queries.
   Also paired-end reads will be treated as single-end reads and the
-  pairing information will be lost (see \code{?\link{GappedAlignmentPairs}}
+  pairing information will be lost (see \code{?\link{GAlignmentPairs}}
   for how to handle aligned paired-end reads).
 
-  Each element of a GappedAlignments object consists of:
+  Each element of a GAlignments object consists of:
   \itemize{
     \item The name of the reference sequence. (This is the RNAME field
           in a SAM/BAM record.)
@@ -125,27 +135,27 @@
           deletion, encoded with a D, is NOT considered a gap.
   }
 
-  Note that the last 2 items are not expicitly stored in the GappedAlignments
+  Note that the last 2 items are not expicitly stored in the GAlignments
   object: they are inferred on-the-fly from the CIGAR and the "start".
 
-  Optionally, a GappedAlignments object can have names (accessed thru the
+  Optionally, a GAlignments object can have names (accessed thru the
   \code{\link[base]{names}} generic function) which will be coming from
   the QNAME field of the SAM/BAM records.
 
   The rest of this man page will focus on describing how to:
   \itemize{
-    \item Access the information stored in a GappedAlignments object
+    \item Access the information stored in a GAlignments object
           in a way that is independent from how the data are actually
           stored internally.
-    \item How to create and manipulate a GappedAlignments object.
+    \item How to create and manipulate a GAlignments object.
   }
 }
 
 \section{Constructors}{
   \describe{
     \item{}{
-      \code{readGappedAlignments(file, format="BAM", use.names=FALSE, ...)}:
-      Read a file containing aligned reads as a GappedAlignments object.
+      \code{readGAlignments(file, format="BAM", use.names=FALSE, ...)}:
+      Read a file containing aligned reads as a GAlignments object.
       By default (i.e. \code{use.names=FALSE}), the resulting object has no
       names. If \code{use.names} is \code{TRUE}, then the names are
       constructed from the query template names (QNAME field in a SAM/BAM
@@ -156,24 +166,24 @@
       argument. The \code{use.names} argument and any extra argument are
       passed to the back-end function.
       Only the BAM format is supported for now. Its back-end is the
-      \code{\link[Rsamtools]{readBamGappedAlignments}} function defined
+      \code{\link[Rsamtools]{readGAlignmentsFromBam}} function defined
       in the Rsamtools package.
-      See \code{?\link[Rsamtools]{readBamGappedAlignments}} for
+      See \code{?\link[Rsamtools]{readGAlignmentsFromBam}} for
       more information (you might need to install and load the Rsamtools
       package first).
     }
     \item{}{
-      \code{GappedAlignments(seqnames=Rle(factor()), pos=integer(0),
-                             cigar=character(0),
-                             strand=NULL, names=NULL, seqlengths=NULL, ...)}:
-      Low-level GappedAlignments constructor. Generally not used directly.
+      \code{GAlignments(seqnames=Rle(factor()), pos=integer(0),
+                        cigar=character(0),
+                        strand=NULL, names=NULL, seqlengths=NULL, ...)}:
+      Low-level GAlignments constructor. Generally not used directly.
       Named arguments in \code{...} are used as metadata columns.
     }
   }
 }
 
 \section{Accessors}{
-  In the code snippets below, \code{x} is a GappedAlignments object.
+  In the code snippets below, \code{x} is a GAlignments object.
 
   \describe{
     \item{}{
@@ -183,7 +193,7 @@
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
       Get or set the names of \code{x}.
-      See \code{readGappedAlignments} above for how to automatically extract
+      See \code{readGAlignments} above for how to automatically extract
       and set the names from the file to read.
     }
     \item{}{
@@ -252,7 +262,7 @@
       Get or set the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being
-      guaranteed to return identical character vectors on a GappedAlignments
+      guaranteed to return identical character vectors on a GAlignments
       object. \code{value} must be a character vector with no NAs.
       See \code{?\link{seqlevels}} for more information.
     }
@@ -289,7 +299,7 @@
 }
 
 \section{Coercion}{
-  In the code snippets below, \code{x} is a GappedAlignments object.
+  In the code snippets below, \code{x} is a GAlignments object.
 
   \describe{
     \item{}{
@@ -357,12 +367,12 @@
 }
 
 \section{Subsetting and related operations}{
-  In the code snippets below, \code{x} is a GappedAlignments object.
+  In the code snippets below, \code{x} is a GAlignments object.
 
   \describe{
     \item{}{
       \code{x[i]}:
-      Return a new GappedAlignments object made of the selected
+      Return a new GAlignments object made of the selected
       alignments. \code{i} can be a numeric or logical vector.
     }
   }
@@ -372,7 +382,7 @@
   \describe{
     \item{}{
       \code{c(...)}:
-      Concatenates the GappedAlignment objects in \code{...}.
+      Concatenates the GAlignments objects in \code{...}.
     }
   }
 }
@@ -382,8 +392,8 @@
   \describe{
     \item{}{
       \code{qnarrow(x, start=NA, end=NA, width=NA)}:
-      \code{x} is a GappedAlignments object.
-      Return a new GappedAlignments object of the same length as \code{x}
+      \code{x} is a GAlignments object.
+      Return a new GAlignments object of the same length as \code{x}
       describing how the narrowed query sequences align to the reference.
       The \code{start}/\code{end}/\code{width} arguments describe how
       to narrow the query sequences. They must be vectors of integers.
@@ -394,11 +404,14 @@
     \item{}{
       \code{show(x)}:
       By default the \code{show} method displays 5 head and 5 tail
-      lines. The number of lines can be altered by setting the global
-      options \code{showHeadLines} and \code{showTailLines}. If the 
-      object length is less than the sum of the options, the full object 
-      is displayed. These options affect GRanges, GappedAlignments, 
-      Ranges, DataTable and XString objects.
+      elements. This can be changed by setting the global options
+      \code{showHeadLines} and \code{showTailLines}. If the object
+      length is less than (or equal to) the sum of these 2 options
+      plus 1, then the full object is displayed.
+      Note that these options also affect the display of \link{GRanges}
+      and \link{GAlignmentPairs} objects, as well as other objects defined
+      in the IRanges and Biostrings packages (e.g. \link[IRanges]{Ranges}
+      and \link[Biostrings]{XStringSet} objects).
     }
   }
 }
@@ -413,8 +426,8 @@
 
 \seealso{
   \itemize{
-    \item \link{GappedAlignmentPairs-class}.
-    \item \code{\link[Rsamtools]{readBamGappedAlignments}}.
+    \item \link{GAlignmentPairs-class}.
+    \item \code{\link[Rsamtools]{readGAlignmentsFromBam}}.
     \item \link{GRangesList-class}.
     \item \link{GRanges-class}.
     \item \link{findOverlaps-methods}.
@@ -428,7 +441,7 @@
 \examples{
 library(Rsamtools)  # for ScanBamParam() and the ex1.bam file
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-gal <- readGappedAlignments(ex1_file, param=ScanBamParam(what="flag"))
+gal <- readGAlignments(ex1_file, param=ScanBamParam(what="flag"))
 gal
 
 ## ---------------------------------------------------------------------
@@ -482,7 +495,7 @@ gal[grep("N", cigar(gal), fixed=TRUE)]  # no gaps
 stopifnot(all(ngap(gal) == 0))
 
 ## Different ways to subset:
-gal[6]             # a GappedAlignments object of length 1
+gal[6]             # a GAlignments object of length 1
 grglist(gal)[[6]]  # a GRanges object of length 1
 rglist(gal)[[6]]   # a NormalIRanges object of length 1
 

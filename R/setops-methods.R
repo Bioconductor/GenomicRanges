@@ -218,7 +218,7 @@ setMethod("pintersect", c("GRanges", "GRangesList"),
 )
 
 ### TODO: Revisit this method (seems to do strange things).
-setMethod("pintersect", c("GappedAlignments", "GRanges"),
+setMethod("pintersect", c("GAlignments", "GRanges"),
     function(x, y, ...)
     {
         bounds <- try(callGeneric(granges(x), y), silent=TRUE)
@@ -232,7 +232,7 @@ setMethod("pintersect", c("GappedAlignments", "GRanges"),
     }
 )
 
-setMethod("pintersect", c("GRanges", "GappedAlignments"),
+setMethod("pintersect", c("GRanges", "GAlignments"),
     function(x, y, ...)
     {
         callGeneric(y, x)

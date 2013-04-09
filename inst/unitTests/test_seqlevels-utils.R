@@ -16,11 +16,11 @@ test_keepSeqlevels <- function()
                   ranges = IRanges(start=1, width=3))
     checkIdentical(seqlengths(gr)[1], seqlengths(keepSeqlevels(gr, "chr1")))
 
-    galn <- GappedAlignments(names = c("A","B"),
-                             seqnames = Rle(c("chr1", "chr2")),
-                             pos = as.integer(c(10, 100)),
-                             cigar = c("50M", "50M"),
-                             strand=strand(c("*", "*")))
+    galn <- GAlignments(names = c("A","B"),
+                        seqnames = Rle(c("chr1", "chr2")),
+                        pos = as.integer(c(10, 100)),
+                        cigar = c("50M", "50M"),
+                        strand=strand(c("*", "*")))
     metadata(galn) <- list(x=1)
     checkIdentical(metadata(galn), metadata(keepSeqlevels(galn, "chr1"))) 
 }

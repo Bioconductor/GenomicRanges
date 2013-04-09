@@ -63,38 +63,38 @@
 
 \description{
   The GAlignmentsList class is a container for storing a collection of
-  GappedAlignments objects.
+  \link{GAlignments} objects.
 }
 
 \details{
-  A GAlignmentsList object contains a list of GappedAlignments. The
-  majority of operations on this page are described in more detail
-  on the GappedAlignments man page, see ?\code{GappedAlignments}.
+  A GAlignmentsList object contains a list of \link{GAlignments} objects.
+  The majority of operations on this page are described in more detail
+  on the GAlignments man page, see ?\code{GAlignments}.
 } 
 
 \section{Constructors}{
   \describe{
     \item{}{
       \code{GAlignmentsList(...)}:
-      Creates a GAlignmentsList from a list of GappedAlignments objects.
+      Creates a GAlignmentsList from a list of \link{GAlignments} objects.
     }
     \item{}{
       \code{readGAlignmentsList(file, format="BAM", use.names=FALSE, ...)}:
       Read a file containing aligned reads as a GAlignmentsList object.
       Note that this function is just a front-end that delegates to the
-      \code{\link[Rsamtools]{readBamGAlignmentsList}} function defined
+      \code{\link[Rsamtools]{readGAlignmentsListFromBam}} function defined
       in the Rsamtools package. 
-      See \code{?\link[Rsamtools]{readBamGAlignmentsList}} for
+      See \code{?\link[Rsamtools]{readGAlignmentsListFromBam}} for
       more information.
  
       The \code{param} and \code{asProperPairs} arguments described on the
-      \code{\link[Rsamtools]{readBamGAlignmentsList}} man page fine tune the 
-      records are returned. \code{param} is specifed by the standard
+      \code{\link[Rsamtools]{readGAlignmentsListFromBam}} man page fine tune
+      the records are returned. \code{param} is specifed by the standard
       \code{ScanBamParam()} options. When \code{asProperPairs=TRUE} (default), 
       only the proper pairs are returned. This is the same QC filtering that 
-      is done by \code{readBamGappedAlignmentPairs} but the records are
+      is done by \code{readGAlignmentPairsFromBam} but the records are
       returned in a \code{GAlignmentsList} instead of
-      \code{GappedAlignmentsPairs} object. If \code{asProperPairs=FALSE}, all 
+      \code{GAlignmentPairs} object. If \code{asProperPairs=FALSE}, all 
       records in the file are retained (i.e., no QC) and the list structure is 
       split by read id (QNAME in SAM/BAM). This format allows the flexibility 
       to retain singletons, pairs, and multi-fragment reads in a single class. 
@@ -243,7 +243,7 @@
     \item{}{
       \code{x[i]}, \code{x[i] <- value}:
       Get or set list elements \code{i}. \code{i} can be a numeric 
-      or logical vector. \code{value} must be a GappedAlignments.
+      or logical vector. \code{value} must be a GAlignments.
     }
     \item{}{
       \code{x[[i]]}, \code{x[[i]] <- value}:
@@ -253,7 +253,7 @@
       \code{x[i, j]}, \code{x[i, j] <- value}:
       Get or set list elements \code{i} with optional metadata columns
       \code{j}. \code{i} can be a numeric, logical or missing. 
-      \code{value} must be a GappedAlignments.
+      \code{value} must be a GAlignments.
     }
   }
 }
@@ -292,23 +292,23 @@
 
 \seealso{
   \itemize{
-    \item \link{GappedAlignments-class}.
-    \item \link{GappedAlignmentPairs-class}.
-    \item \code{\link[Rsamtools]{readBamGappedAlignments}}.
-    \item \code{\link[Rsamtools]{readBamGappedAlignmentPairs}}.
+    \item \link{GAlignments-class}.
+    \item \link{GAlignmentPairs-class}.
+    \item \code{\link[Rsamtools]{readGAlignmentsFromBam}}.
+    \item \code{\link[Rsamtools]{readGAlignmentPairsFromBam}}.
     \item \link{findOverlaps-methods}.
   }
 }
 
 \examples{
-gal1 <- GappedAlignments(
+gal1 <- GAlignments(
     seqnames=Rle(factor(c("chr1", "chr2", "chr1", "chr3")),
         c(1, 3, 2, 4)),
     pos=1:10, cigar=paste0(10:1, "M"),
     strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
     names=head(letters, 10), score=1:10)
 
-gal2 <- GappedAlignments(
+gal2 <- GAlignments(
     seqnames=Rle(factor(c("chr2", "chr4")), c(3, 4)), pos=1:7,
     cigar=c("5M", "3M2N3M2N3M", "5M", "10M", "5M1N4M", "8M2N1M", "5M"),
     strand=Rle(strand(c("-", "+")), c(4, 3)),
@@ -349,8 +349,8 @@ gaps <- sapply(galist, function(x) any(grepl("N", cigar(x), fixed=TRUE)))
 galist[gaps]
 
 ## Different ways to subset:
-galist[2]             # a GappedAlignments object of length 1
-galist[[2]]           # a GappedAlignments object of length 1
+galist[2]             # a GAlignments object of length 1
+galist[[2]]           # a GAlignments object of length 1
 grglist(galist[2])  # a GRangesList object of length 1
 rglist(galist[2])   # a NormalIRangesList object of length 1
 
@@ -358,17 +358,17 @@ rglist(galist[2])   # a NormalIRangesList object of length 1
 ## C. mcols()/elementMetadata()
 ## ---------------------------------------------------------------------
 
-## Metadata can be defined on the individual GappedAlignment elements
+## Metadata can be defined on the individual GAlignment elements
 ## and the overall GAlignmentsList object. By default, 'level=between' 
 ## extracts the GALignmentsList metadata. Using 'level=within' 
-## will extract the metadata on the individual GappedAliginments.
+## will extract the metadata on the individual GAlignments objects.
 
 mcols(galist) ## no metadata on the GAlignmentsList object
 mcols(galist, level="within")
 
 
 ## ---------------------------------------------------------------------
-## D. readBamGAlignmentsList() 
+## D. readGAlignmentsListFromBam()
 ## ---------------------------------------------------------------------
 
 library(pasillaBamSubset)

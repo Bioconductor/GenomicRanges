@@ -324,7 +324,7 @@ different sequences even though they appear to be the same sequence
 (based on their base pairs).
 
 Let's begin by using the \Rpackage{Rsamtools} to retrieve some data
-from a yeast experiment and load it into a \Rclass{GappedAlignments}
+from a yeast experiment and load it into a \Rclass{GAlignments}
 object. Here we will load in a single file that contains RNA-seq data
 aligned from a wild type yeast experiment. This particular file only
 has data from chromosome 13. While more data can be loaded, we will
@@ -339,7 +339,7 @@ limit our analysis to this subset for expediency purposes.
 library(leeBamViews)
 testFile <- system.file("bam", "isowt5_13e.bam", package="leeBamViews")
 library(Rsamtools)
-aligns <- readBamGappedAlignments(testFile)
+aligns <- readGAlignments(testFile)
 @
 
 At this point, we also have to consider carefully which build we have

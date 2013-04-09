@@ -13,11 +13,11 @@
 \alias{findOverlaps,RangedData,GRangesList-method}
 \alias{findOverlaps,GenomicRanges,RangedData-method}
 \alias{findOverlaps,GRangesList,RangedData-method}
-\alias{findOverlaps,GappedAlignments,Vector-method}
-\alias{findOverlaps,Vector,GappedAlignments-method}
-\alias{findOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{findOverlaps,GappedAlignmentPairs,Vector-method}
-\alias{findOverlaps,Vector,GappedAlignmentPairs-method}
+\alias{findOverlaps,GAlignments,Vector-method}
+\alias{findOverlaps,Vector,GAlignments-method}
+\alias{findOverlaps,GAlignments,GAlignments-method}
+\alias{findOverlaps,GAlignmentPairs,Vector-method}
+\alias{findOverlaps,Vector,GAlignmentPairs-method}
 \alias{findOverlaps,GAlignmentsList,Vector-method}
 \alias{findOverlaps,Vector,GAlignmentsList-method}
 \alias{findOverlaps,GAlignmentsList,GAlignmentsList-method}
@@ -28,11 +28,11 @@
 \alias{countOverlaps,GRangesList,Vector-method}
 \alias{countOverlaps,Vector,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
-\alias{countOverlaps,GappedAlignments,Vector-method}
-\alias{countOverlaps,Vector,GappedAlignments-method}
-\alias{countOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{countOverlaps,GappedAlignmentPairs,Vector-method}
-\alias{countOverlaps,Vector,GappedAlignmentPairs-method}
+\alias{countOverlaps,GAlignments,Vector-method}
+\alias{countOverlaps,Vector,GAlignments-method}
+\alias{countOverlaps,GAlignments,GAlignments-method}
+\alias{countOverlaps,GAlignmentPairs,Vector-method}
+\alias{countOverlaps,Vector,GAlignmentPairs-method}
 \alias{countOverlaps,GAlignmentsList,Vector-method}
 \alias{countOverlaps,Vector,GAlignmentsList-method}
 \alias{countOverlaps,GAlignmentsList,GAlignmentsList-method}
@@ -49,11 +49,11 @@
 \alias{overlapsAny,RangedData,GRangesList-method}
 \alias{overlapsAny,GenomicRanges,RangedData-method}
 \alias{overlapsAny,GRangesList,RangedData-method}
-\alias{overlapsAny,GappedAlignments,Vector-method}
-\alias{overlapsAny,Vector,GappedAlignments-method}
-\alias{overlapsAny,GappedAlignments,GappedAlignments-method}
-\alias{overlapsAny,GappedAlignmentPairs,Vector-method}
-\alias{overlapsAny,Vector,GappedAlignmentPairs-method}
+\alias{overlapsAny,GAlignments,Vector-method}
+\alias{overlapsAny,Vector,GAlignments-method}
+\alias{overlapsAny,GAlignments,GAlignments-method}
+\alias{overlapsAny,GAlignmentPairs,Vector-method}
+\alias{overlapsAny,Vector,GAlignmentPairs-method}
 \alias{overlapsAny,GAlignmentsList,Vector-method}
 \alias{overlapsAny,Vector,GAlignmentsList-method}
 \alias{overlapsAny,GAlignmentsList,GAlignmentsList-method}
@@ -70,11 +70,11 @@
 \alias{subsetByOverlaps,RangedData,GRangesList-method}
 \alias{subsetByOverlaps,GenomicRanges,RangedData-method}
 \alias{subsetByOverlaps,GRangesList,RangedData-method}
-\alias{subsetByOverlaps,GappedAlignments,Vector-method}
-\alias{subsetByOverlaps,Vector,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignments,GappedAlignments-method}
-\alias{subsetByOverlaps,GappedAlignmentPairs,Vector-method}
-\alias{subsetByOverlaps,Vector,GappedAlignmentPairs-method}
+\alias{subsetByOverlaps,GAlignments,Vector-method}
+\alias{subsetByOverlaps,Vector,GAlignments-method}
+\alias{subsetByOverlaps,GAlignments,GAlignments-method}
+\alias{subsetByOverlaps,GAlignmentPairs,Vector-method}
+\alias{subsetByOverlaps,Vector,GAlignmentPairs-method}
 \alias{subsetByOverlaps,GAlignmentsList,Vector-method}
 \alias{subsetByOverlaps,Vector,GAlignmentsList-method}
 \alias{subsetByOverlaps,GAlignmentsList,GAlignmentsList-method}
@@ -90,11 +90,11 @@
 \alias{match,RangedData,GRangesList-method}
 \alias{match,GenomicRanges,RangedData-method}
 \alias{match,GRangesList,RangedData-method}
-\alias{match,GappedAlignments,Vector-method}
-\alias{match,Vector,GappedAlignments-method}
-\alias{match,GappedAlignments,GappedAlignments-method}
-\alias{match,GappedAlignmentPairs,Vector-method}
-\alias{match,Vector,GappedAlignmentPairs-method}
+\alias{match,GAlignments,Vector-method}
+\alias{match,Vector,GAlignments-method}
+\alias{match,GAlignments,GAlignments-method}
+\alias{match,GAlignmentPairs,Vector-method}
+\alias{match,Vector,GAlignmentPairs-method}
 \alias{match,GAlignmentsList,Vector-method}
 \alias{match,Vector,GAlignmentsList-method}
 \alias{match,GAlignmentsList,GAlignmentsList-method}
@@ -110,11 +110,11 @@
 \alias{\%in\%,RangedData,GRangesList-method}
 \alias{\%in\%,GenomicRanges,RangedData-method}
 \alias{\%in\%,GRangesList,RangedData-method}
-\alias{\%in\%,GappedAlignments,Vector-method}
-\alias{\%in\%,Vector,GappedAlignments-method}
-\alias{\%in\%,GappedAlignments,GappedAlignments-method}
-\alias{\%in\%,GappedAlignmentPairs,Vector-method}
-\alias{\%in\%,Vector,GappedAlignmentPairs-method}
+\alias{\%in\%,GAlignments,Vector-method}
+\alias{\%in\%,Vector,GAlignments-method}
+\alias{\%in\%,GAlignments,GAlignments-method}
+\alias{\%in\%,GAlignmentPairs,Vector-method}
+\alias{\%in\%,Vector,GAlignmentPairs-method}
 \alias{\%in\%,GAlignmentsList,Vector-method}
 \alias{\%in\%,Vector,GAlignmentsList-method}
 \alias{\%in\%,GAlignmentsList,GAlignmentsList-method}
@@ -130,11 +130,11 @@
 \alias{findMatches,RangedData,GRangesList-method}
 \alias{findMatches,GenomicRanges,RangedData-method}
 \alias{findMatches,GRangesList,RangedData-method}
-\alias{findMatches,GappedAlignments,Vector-method}
-\alias{findMatches,Vector,GappedAlignments-method}
-\alias{findMatches,GappedAlignments,GappedAlignments-method}
-\alias{findMatches,GappedAlignmentPairs,Vector-method}
-\alias{findMatches,Vector,GappedAlignmentPairs-method}
+\alias{findMatches,GAlignments,Vector-method}
+\alias{findMatches,Vector,GAlignments-method}
+\alias{findMatches,GAlignments,GAlignments-method}
+\alias{findMatches,GAlignmentPairs,Vector-method}
+\alias{findMatches,Vector,GAlignmentPairs-method}
 \alias{findMatches,GAlignmentsList,Vector-method}
 \alias{findMatches,Vector,GAlignmentsList-method}
 \alias{findMatches,GAlignmentsList,GAlignmentsList-method}
@@ -150,11 +150,11 @@
 \alias{countMatches,RangedData,GRangesList-method}
 \alias{countMatches,GenomicRanges,RangedData-method}
 \alias{countMatches,GRangesList,RangedData-method}
-\alias{countMatches,GappedAlignments,Vector-method}
-\alias{countMatches,Vector,GappedAlignments-method}
-\alias{countMatches,GappedAlignments,GappedAlignments-method}
-\alias{countMatches,GappedAlignmentPairs,Vector-method}
-\alias{countMatches,Vector,GappedAlignmentPairs-method}
+\alias{countMatches,GAlignments,Vector-method}
+\alias{countMatches,Vector,GAlignments-method}
+\alias{countMatches,GAlignments,GAlignments-method}
+\alias{countMatches,GAlignmentPairs,Vector-method}
+\alias{countMatches,Vector,GAlignmentPairs-method}
 \alias{countMatches,GAlignmentsList,Vector-method}
 \alias{countMatches,Vector,GAlignmentsList-method}
 \alias{countMatches,GAlignmentsList,GAlignmentsList-method}
@@ -164,7 +164,7 @@
 
 \description{
   Finds interval overlaps between a \link{GRanges}, \link{GRangesList},
-  \link{GappedAlignments}, \link{GAlignmentsList}, or \link{GappedAlignmentPairs} 
+  \link{GAlignments}, \link{GAlignmentPairs}, or \link{GAlignmentsList}
   object, and another object containing ranges.
 }
 
@@ -190,8 +190,8 @@
 
 \arguments{
   \item{query, subject}{
-    A \link{GRanges}, \link{GRangesList}, \link{GappedAlignments},
-    \link{GAlignmentsList}, or \link{GappedAlignmentPairs} object. 
+    A \link{GRanges}, \link{GRangesList}, \link{GAlignments},
+    \link{GAlignmentPairs}, or \link{GAlignmentsList} object. 
     \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
     also accepted for one of \code{query} or \code{subject}.
   }
@@ -227,14 +227,14 @@
   the features are referred to by number, which run from 1 to
   \code{length(query)}/\code{length(subject)}.
 
-  When the query or the subject (or both) is a \link{GappedAlignments}
+  When the query or the subject (or both) is a \link{GAlignments}
   object, it is first turned into a \link{GRangesList} object (with
   \code{as( , "GRangesList")}) and then the rules described previously
-  apply. \link{GAlignmentsList} objects are coerced to \link{GappedAlignments}
+  apply. \link{GAlignmentsList} objects are coerced to \link{GAlignments}
   then to a \link{GRangesList}. Feature indices are mapped back to the 
   original \link{GAlignmentsList} list elements.
 
-  When the query is a \link{GappedAlignmentPairs} object, it is first
+  When the query is a \link{GAlignmentPairs} object, it is first
   turned into a \link{GRangesList} object (with \code{as( , "GRangesList")})
   and then the rules described previously apply.
 }
@@ -268,9 +268,9 @@
     \item \link[IRanges]{Hits-class}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
-    \item \link{GappedAlignments-class}.
+    \item \link{GAlignments-class}.
+    \item \link{GAlignmentPairs-class}.
     \item \link{GAlignmentsList-class}.
-    \item \link{GappedAlignmentPairs-class}.
   }
 }
 
@@ -340,11 +340,11 @@ findOverlaps(grl, rev(grl))
 subsetByOverlaps(grl, rev(grl))
 
 ## ---------------------------------------------------------------------
-## WITH GappedAlignments AND/OR GAlignmentsList OBJECTS
+## WITH GAlignments AND/OR GAlignmentsList OBJECTS
 ## ---------------------------------------------------------------------
 library(Rsamtools)  # because file ex1.bam is in this package
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGappedAlignments(ex1_file)
+galn <- readGAlignments(ex1_file)
 
 subject <- granges(galn)[1]
 

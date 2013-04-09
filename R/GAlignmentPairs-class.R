@@ -1,38 +1,41 @@
 ### =========================================================================
-### GappedAlignmentPairs objects
+### GAlignmentPairs objects
 ### -------------------------------------------------------------------------
 ###
 
-### TODO: Implement a GappedAlignmentList class (CompressedList subclass)
-### and derive GappedAlignmentPairs from it.
+### TODO: Implement a GAlignmentsList class (CompressedList subclass)
+### and derive GAlignmentPairs from it.
 
-### "first" and "last" GappedAlignments must have identical seqinfo.
-setClass("GappedAlignmentPairs",
+### "first" and "last" GAlignments must have identical seqinfo.
+setClass("GAlignmentPairs",
     contains="List",
     representation(
         NAMES="characterORNULL",      # R doesn't like @names !!
-        first="GappedAlignments",     # of length N, no names, no elt metadata
-        last="GappedAlignments",      # of length N, no names, no elt metadata
+        first="GAlignments",          # of length N, no names, no elt metadata
+        last="GAlignments",           # of length N, no names, no elt metadata
         isProperPair="logical",       # of length N
         elementMetadata="DataFrame"   # N rows
     ),
     prototype(
-        elementType="GappedAlignments"
+        elementType="GAlignments"
     )
 )
+
+### Temporary alias for backward compatibility.
+setClass("GappedAlignmentPairs", contains="GAlignmentPairs")
 
 ### Formal API:
 ###   length(x)   - single integer N. Nb of pairs in 'x'.
 ###   names(x)    - NULL or character vector.
 ###   first(x)    - returns "first" slot.
 ###   last(x)     - returns "last" slot.
-###   left(x)     - GappedAlignments made of the "left alignments" (if first
+###   left(x)     - GAlignments made of the "left alignments" (if first
 ###                 alignment is on + strand then it's considered to be the
 ###                 "left alignment", otherwise, it's considered the "right
 ###                 alignment").
-###   right(x)    - GappedAlignments made of the "right alignments".
+###   right(x)    - GAlignments made of the "right alignments".
 ###                 The strand of the last alignments is inverted before they
-###                 are stored in the GappedAlignments returned by left(x) or
+###                 are stored in the GAlignments returned by left(x) or
 ###                 right(x).
 ###   seqnames(x) - same as 'seqnames(first(x))' or 'seqnames(last(x))'.
 ###   strand(x)   - same as 'strand(first(x))' (opposite of 'strand(last(x))').
@@ -44,8 +47,8 @@ setClass("GappedAlignmentPairs",
 ###   introns(x)  - Extract the N gaps in a GRangesList object of the same
 ###                 length as 'x'.
 ###   show(x)     - compact display in a data.frame-like fashion.
-###   GappedAlignmentPairs(x) - constructor.
-###   x[i]        - GappedAlignmentPairs object of the same class as 'x'
+###   GAlignmentPairs(x) - constructor.
+###   x[i]        - GAlignmentPairs object of the same class as 'x'
 ###                 (endomorphism).
 ###
 
@@ -60,15 +63,15 @@ setGeneric("isProperPair", function(x) standardGeneric("isProperPair"))
 ### Getters.
 ###
 
-setMethod("length", "GappedAlignmentPairs",
+setMethod("length", "GAlignmentPairs",
     function(x) length(x@first)
 )
 
-setMethod("names", "GappedAlignmentPairs",
+setMethod("names", "GAlignmentPairs",
     function(x) x@NAMES
 )
 
-setMethod("first", "GappedAlignmentPairs",
+setMethod("first", "GAlignmentPairs",
     function(x, invert.strand=FALSE)
     {
         if (!isTRUEorFALSE(invert.strand))
@@ -80,7 +83,7 @@ setMethod("first", "GappedAlignmentPairs",
     }
 )
 
-setMethod("last", "GappedAlignmentPairs",
+setMethod("last", "GAlignmentPairs",
     function(x, invert.strand=FALSE)
     {
         if (!isTRUEorFALSE(invert.strand))
@@ -92,7 +95,7 @@ setMethod("last", "GappedAlignmentPairs",
     }
 )
 
-setMethod("left", "GappedAlignmentPairs",
+setMethod("left", "GAlignmentPairs",
     function(x, ...)
     {
         x_first <- x@first
@@ -107,7 +110,7 @@ setMethod("left", "GappedAlignmentPairs",
     }
 )
 
-setMethod("right", "GappedAlignmentPairs",
+setMethod("right", "GAlignmentPairs",
     function(x, ...)
     {
         x_first <- x@first
@@ -122,23 +125,23 @@ setMethod("right", "GappedAlignmentPairs",
     }
 )
 
-setMethod("seqnames", "GappedAlignmentPairs",
+setMethod("seqnames", "GAlignmentPairs",
     function(x) seqnames(x@first)
 )
 
-setMethod("strand", "GappedAlignmentPairs",
+setMethod("strand", "GAlignmentPairs",
     function(x) strand(x@first)
 )
 
-setMethod("ngap", "GappedAlignmentPairs",
+setMethod("ngap", "GAlignmentPairs",
     function(x) {ngap(x@first) + ngap(x@last)}
 )
 
-setMethod("isProperPair", "GappedAlignmentPairs",
+setMethod("isProperPair", "GAlignmentPairs",
     function(x) x@isProperPair
 )
 
-setMethod("seqinfo", "GappedAlignmentPairs",
+setMethod("seqinfo", "GAlignmentPairs",
     function(x) seqinfo(x@first)
 )
 
@@ -147,7 +150,7 @@ setMethod("seqinfo", "GappedAlignmentPairs",
 ### Setters.
 ###
 
-setReplaceMethod("names", "GappedAlignmentPairs",
+setReplaceMethod("names", "GAlignmentPairs",
     function(x, value)
     {
         if (!is.null(value))
@@ -158,7 +161,7 @@ setReplaceMethod("names", "GappedAlignmentPairs",
     }
 )
 
-setReplaceMethod("strand", "GappedAlignmentPairs",
+setReplaceMethod("strand", "GAlignmentPairs",
     function(x, value)
     {
         same_strand <- strand(x@first) == strand(x@last)
@@ -172,7 +175,7 @@ setReplaceMethod("strand", "GappedAlignmentPairs",
     }
 )
 
-setReplaceMethod("elementMetadata", "GappedAlignmentPairs",
+setReplaceMethod("elementMetadata", "GAlignmentPairs",
     function(x, ..., value)
     {
         x@elementMetadata <- mk_elementMetadataReplacementValue(x, value)
@@ -180,7 +183,7 @@ setReplaceMethod("elementMetadata", "GappedAlignmentPairs",
     }
 )
 
-setReplaceMethod("seqinfo", "GappedAlignmentPairs",
+setReplaceMethod("seqinfo", "GAlignmentPairs",
     function(x, new2old=NULL, force=FALSE, value)
     {
         if (!is(value, "Seqinfo"))
@@ -212,7 +215,7 @@ setReplaceMethod("seqinfo", "GappedAlignmentPairs",
 ### Validity.
 ###
 
-.valid.GappedAlignmentPairs.names <- function(x)
+.valid.GAlignmentPairs.names <- function(x)
 {
     x_names <- names(x)
     if (is.null(x_names))
@@ -227,19 +230,19 @@ setReplaceMethod("seqinfo", "GappedAlignmentPairs",
     NULL
 }
 
-.valid.GappedAlignmentPairs.first <- function(x)
+.valid.GAlignmentPairs.first <- function(x)
 {
     x_first <- x@first
-    if (class(x_first) != "GappedAlignments")
-        return("'x@first' must be a GappedAlignments instance")
+    if (class(x_first) != "GAlignments")
+        return("'x@first' must be a GAlignments instance")
     NULL
 }
 
-.valid.GappedAlignmentPairs.last <- function(x)
+.valid.GAlignmentPairs.last <- function(x)
 {
     x_last <- x@last
-    if (class(x_last) != "GappedAlignments")
-        return("'x@last' must be a GappedAlignments instance")
+    if (class(x_last) != "GAlignments")
+        return("'x@last' must be a GAlignments instance")
     x_first <- x@first
     if (length(x_last) != length(x_first))
         return("'x@last' and 'x@first' must have the same length")
@@ -248,7 +251,7 @@ setReplaceMethod("seqinfo", "GappedAlignmentPairs",
     NULL
 }
 
-.valid.GappedAlignmentPairs.isProperPair <- function(x)
+.valid.GAlignmentPairs.isProperPair <- function(x)
 {
     x_isProperPair <- x@isProperPair
     if (!is.logical(x_isProperPair) || !is.null(attributes(x_isProperPair))) {
@@ -263,15 +266,15 @@ setReplaceMethod("seqinfo", "GappedAlignmentPairs",
     NULL
 }
 
-.valid.GappedAlignmentPairs <- function(x)
+.valid.GAlignmentPairs <- function(x)
 {
-    c(.valid.GappedAlignmentPairs.names(x),
-      .valid.GappedAlignmentPairs.first(x),
-      .valid.GappedAlignmentPairs.last(x),
-      .valid.GappedAlignmentPairs.isProperPair(x))
+    c(.valid.GAlignmentPairs.names(x),
+      .valid.GAlignmentPairs.first(x),
+      .valid.GAlignmentPairs.last(x),
+      .valid.GAlignmentPairs.isProperPair(x))
 }
 
-setValidity2("GappedAlignmentPairs", .valid.GappedAlignmentPairs,
+setValidity2("GAlignmentPairs", .valid.GAlignmentPairs,
              where=asNamespace("GenomicRanges"))
 
 
@@ -279,9 +282,9 @@ setValidity2("GappedAlignmentPairs", .valid.GappedAlignmentPairs,
 ### Constructors.
 ###
 
-GappedAlignmentPairs <- function(first, last, isProperPair, names=NULL)
+GAlignmentPairs <- function(first, last, isProperPair, names=NULL)
 {
-    new2("GappedAlignmentPairs",
+    new2("GAlignmentPairs",
          NAMES=names,
          first=first, last=last,
          isProperPair=isProperPair,
@@ -289,7 +292,7 @@ GappedAlignmentPairs <- function(first, last, isProperPair, names=NULL)
          check=TRUE)
 }
 
-readGappedAlignmentPairs <- function(file, format="BAM", use.names=FALSE, ...)
+readGAlignmentPairs <- function(file, format="BAM", use.names=FALSE, ...)
 {
     if (!isSingleString(file))
         stop("'file' must be a single string")
@@ -299,18 +302,22 @@ readGappedAlignmentPairs <- function(file, format="BAM", use.names=FALSE, ...)
         stop("'use.names' must be TRUE or FALSE")
     if (format == "BAM") {
         suppressMessages(library("Rsamtools"))
-        ans <- readBamGappedAlignmentPairs(file=file, use.names=use.names, ...)
+        ans <- readGAlignmentPairsFromBam(file=file, use.names=use.names, ...)
         return(ans)
     }
     stop("only BAM format is supported at the moment")
 }
+
+### 2 temporary aliases for backward compatibility.
+GappedAlignmentPairs <- GAlignmentPairs
+readGappedAlignmentPairs <- readGAlignmentPairs
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Vector methods.
 ###
 
-setMethod("[", "GappedAlignmentPairs",
+setMethod("[", "GAlignmentPairs",
     function(x, i, j, ... , drop=TRUE)
     {
         if (!missing(j) || length(list(...)) > 0L)
@@ -333,22 +340,22 @@ setMethod("[", "GappedAlignmentPairs",
 ###
 
 ### TODO: Remove the "[[" method below after the definition of the
-### GappedAlignmentPairs class is changed to derive from CompressedList.
+### GAlignmentPairs class is changed to derive from CompressedList.
 ### (The "[[" method for CompressedList objects should do just fine i.e. it
 ### should do something like x@unlistData[x@partitioning[[i]]] and that
 ### should be optimal.)
-.GappedAlignmentPairs.getElement <- function(x, i)
+.GAlignmentPairs.getElement <- function(x, i)
 {
     c(x@first[i], x@last[i])
 }
 
-setMethod("[[", "GappedAlignmentPairs",
+setMethod("[[", "GAlignmentPairs",
     function(x, i, j, ... , drop=TRUE)
     {
         if (missing(i) || !missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
         i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
-        .GappedAlignmentPairs.getElement(x, i)
+        .GAlignmentPairs.getElement(x, i)
     }
 )
 
@@ -360,9 +367,9 @@ setMethod("[[", "GappedAlignmentPairs",
     ans
 }
 
-### TODO: Remove this method after the definition of the GappedAlignmentPairs
+### TODO: Remove this method after the definition of the GAlignmentPairs
 ### class is changed to derive from CompressedList.
-setMethod("unlist", "GappedAlignmentPairs",
+setMethod("unlist", "GAlignmentPairs",
     function(x, recursive=TRUE, use.names=TRUE)
     {
         if (!isTRUEorFALSE(use.names))
@@ -401,7 +408,7 @@ setMethod("unlist", "GappedAlignmentPairs",
     ans
 }
 
-setMethod("grglist", "GappedAlignmentPairs",
+setMethod("grglist", "GAlignmentPairs",
     function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
         if (!isTRUEorFALSE(order.as.in.query))
@@ -432,7 +439,7 @@ setMethod("grglist", "GappedAlignmentPairs",
     }
 )
 
-setMethod("granges", "GappedAlignmentPairs",
+setMethod("granges", "GAlignmentPairs",
     function (x)
     {
         rg <- range(grglist(x))
@@ -444,7 +451,7 @@ setMethod("granges", "GappedAlignmentPairs",
     }
 )
 
-setMethod("introns", "GappedAlignmentPairs",
+setMethod("introns", "GAlignmentPairs",
     function(x)
     {
         first_introns <- introns(x@first)
@@ -459,8 +466,8 @@ setMethod("introns", "GappedAlignmentPairs",
     }
 )
 
-setAs("GappedAlignmentPairs", "GRangesList", function(from) grglist(from))
-setAs("GappedAlignmentPairs", "GRanges", function(from) granges(from))
+setAs("GAlignmentPairs", "GRangesList", function(from) grglist(from))
+setAs("GAlignmentPairs", "GRanges", function(from) granges(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -500,7 +507,7 @@ fillGaps <- function(x)
 ### "show" method.
 ###
 
-.makeNakedMatFromGappedAlignmentPairs <- function(x)
+.makeNakedMatFromGAlignmentPairs <- function(x)
 {
     lx <- length(x)
     nc <- ncol(mcols(x))
@@ -523,9 +530,9 @@ fillGaps <- function(x)
     ans
 }
 
-showGappedAlignmentPairs <- function(x, margin="",
-                                        with.classinfo=FALSE,
-                                        print.seqlengths=FALSE)
+showGAlignmentPairs <- function(x, margin="",
+                                   with.classinfo=FALSE,
+                                   print.seqlengths=FALSE)
 {
     lx <- length(x)
     nc <- ncol(mcols(x))
@@ -535,7 +542,7 @@ showGappedAlignmentPairs <- function(x, margin="",
         nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- makePrettyMatrixForCompactPrinting(x,
-               .makeNakedMatFromGappedAlignmentPairs)
+               .makeNakedMatFromGAlignmentPairs)
     if (with.classinfo) {
         .PAIR_COL2CLASS <- c(
             seqnames="Rle",
@@ -563,9 +570,9 @@ showGappedAlignmentPairs <- function(x, margin="",
     }
 }
 
-setMethod("show", "GappedAlignmentPairs",
+setMethod("show", "GAlignmentPairs",
     function(object)
-        showGappedAlignmentPairs(object,
-                                 with.classinfo=TRUE, print.seqlengths=TRUE)
+        showGAlignmentPairs(object,
+                            with.classinfo=TRUE, print.seqlengths=TRUE)
 )
 

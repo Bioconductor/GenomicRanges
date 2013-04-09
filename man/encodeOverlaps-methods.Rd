@@ -35,8 +35,8 @@
 \alias{extractQueryStartInTranscript}
 
 \alias{findCompatibleOverlaps}
-\alias{findCompatibleOverlaps,GappedAlignments,GRangesList-method}
-\alias{findCompatibleOverlaps,GappedAlignmentPairs,GRangesList-method}
+\alias{findCompatibleOverlaps,GAlignments,GRangesList-method}
+\alias{findCompatibleOverlaps,GAlignmentPairs,GRangesList-method}
 \alias{countCompatibleOverlaps}
 
 
@@ -94,7 +94,7 @@ countCompatibleOverlaps(query, subject)
   \item{query, subject}{
     \link{GRangesList} objects except for \code{findCompatibleOverlaps}
     and \code{countCompatibleOverlaps} where \code{query} must be a
-    \link{GappedAlignments} or \link{GappedAlignmentPairs} object.
+    \link{GAlignments} or \link{GAlignmentPairs} object.
   }
   \item{hits}{
     A \link[IRanges]{Hits} object.
@@ -141,8 +141,8 @@ countCompatibleOverlaps(query, subject)
           in the IRanges package.
     \item The \link[IRanges]{OverlapEncodings} class defined in the IRanges
           package.
-    \item The \link{GRangesList}, \link{GappedAlignments}, and
-          \link{GappedAlignmentPairs} classes.
+    \item The \link{GRangesList}, \link{GAlignments}, and
+          \link{GAlignmentPairs} classes.
   }
 }
 
@@ -167,7 +167,7 @@ sm_treated1 <- system.file("extdata", "sm_treated1.bam",
 library(Rsamtools)
 flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
-gal <- readGappedAlignments(sm_treated1, use.names=TRUE, param=param0)
+gal <- readGAlignments(sm_treated1, use.names=TRUE, param=param0)
 
 ## Load the transcripts (IMPORTANT: Like always, the reference genome
 ## of the transcripts must be *exactly* the same as the reference

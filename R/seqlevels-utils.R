@@ -23,7 +23,7 @@ setMethod("keepSeqlevels",  c("GenomicRanges", "GRangesList"),
     callGeneric(x, value, ...)
 })
 
-setMethod("keepSeqlevels",  c("GenomicRanges", "GappedAlignments"),
+setMethod("keepSeqlevels",  c("GenomicRanges", "GAlignments"),
             function(x, value, ...)
 {
     value <- seqlevels(value)
@@ -44,7 +44,7 @@ setMethod("keepSeqlevels",  c("GRangesList", "GRangesList"),
     callGeneric(x, value, ...)
 })
 
-setMethod("keepSeqlevels",  c("GRangesList", "GappedAlignments"),
+setMethod("keepSeqlevels",  c("GRangesList", "GAlignments"),
             function(x, value, ...)
 {
     value <- seqlevels(value)
@@ -96,28 +96,28 @@ setMethod("keepSeqlevels",  c("GRangesList", "character"),
     }
 })
 
-setMethod("keepSeqlevels",  c("GappedAlignments", "GenomicRanges"),
+setMethod("keepSeqlevels",  c("GAlignments", "GenomicRanges"),
             function(x, value, ...)
 {
     value <- seqlevels(value)
     callGeneric(x, value, ...)
 })
 
-setMethod("keepSeqlevels",  c("GappedAlignments", "GRangesList"),
+setMethod("keepSeqlevels",  c("GAlignments", "GRangesList"),
             function(x, value, ...)
 {
     value <- seqlevels(value)
     callGeneric(x, value, ...)
 })
 
-setMethod("keepSeqlevels",  c("GappedAlignments", "GappedAlignments"),
+setMethod("keepSeqlevels",  c("GAlignments", "GAlignments"),
             function(x, value, ...)
 {
     value <- seqlevels(value)
     callGeneric(x, value, ...)
 })
 
-setMethod("keepSeqlevels",  c("GappedAlignments", "character"),
+setMethod("keepSeqlevels",  c("GAlignments", "character"),
             function(x, value, ...)
 {
     if (!identical(character(0), seqlevels(x)) &&
@@ -163,7 +163,7 @@ setGeneric("renameSeqlevels", signature = c("x", "value"),
     standardGeneric("renameSeqlevels")
 )
 
-setMethod("renameSeqlevels",  c(x="GappedAlignments", value="character"),
+setMethod("renameSeqlevels",  c(x="GAlignments", value="character"),
     function(x, value, ...) .renameSeqlevels(x, value, ...)
 )
 

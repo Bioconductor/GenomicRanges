@@ -54,8 +54,8 @@ support for the \Rpackage{BSgenome} (infrastructure),
 
 This package lays a foundation for genomic analysis by introducing
 three classes (\Rclass{GRanges}, \Rclass{GRangesList}, and
-\Rclass{GappedAlignments}), which are used to represent single
-interval range features, multiple interval range features, and gapped
+\Rclass{GAlignments}), which are used to represent single
+interval range features, multiple interval range features, and genomic
 alignments respectively.  This vignette focuses on these classes and
 their associated methods.
 
@@ -612,23 +612,23 @@ findOverlaps(grl, gr, select="first")
 @
 
 
-\section{Gapped Alignments} 
+\section{Genomic Alignments} 
 
 In addition to \Rclass{GRanges} and \Rclass{GRangesList} classes, the
-\GenomicRanges{} package defines the \Rclass{GappedAlignments} class,
-which is a more specialized container for storing a set of alignments.
-The class is intended to support alignments in general, not only those
-coming from a 'Binary Alignment Map' or 'BAM' files. Also alignments
-with gaps in the reference sequence (a.k.a. \emph{gapped alignments})
-are supported which, for example, makes the class suited for storing
-junction reads from an RNA-seq experiment.
+\GenomicRanges{} package defines the \Rclass{GAlignments} class,
+which is a more specialized container for storing a set of genomic
+alignments. The class is intended to support alignments in general,
+not only those coming from a 'Binary Alignment Map' or 'BAM' files.
+Also alignments with gaps in the reference sequence (a.k.a.
+\emph{gapped alignments}) are supported which, for example, makes
+the class suited for storing junction reads from an RNA-seq experiment.
 
-More precisely, a \Rclass{GappedAlignments} object is a vector-like
+More precisely, a \Rclass{GAlignments} object is a vector-like
 object where each element describes an \emph{alignment}, that is,
 how a given sequence (called \emph{query} or \emph{read}, typically
 short) aligns to a reference sequence (typically long).
 
-As shown later in this document, a \Rclass{GappedAlignments} object
+As shown later in this document, a \Rclass{GAlignments} object
 can be created from a 'BAM' file. In that case, each element in the
 resulting object will correspond to a record in the file.
 One important thing to note though is that not all the information
@@ -639,27 +639,27 @@ and any other information that is not needed in order to support the
 basic set of operations described in this document.
 This also means that multi-reads (i.e. reads with multiple hits in the
 reference) don't receive any special treatment i.e. the various SAM/BAM
-records corresponding to a multi-read will show up in the GappedAlignments
+records corresponding to a multi-read will show up in the \Rclass{GAlignments}
 object as if they were coming from different/unrelated queries.
 Also paired-end reads will be treated as single-end reads and the
 pairing information will be lost. This might change in the future.
 
 
-\subsection{Load a `BAM' file into a \Rclass{GappedAlignments} object}
+\subsection{Load a `BAM' file into a \Rclass{GAlignments} object}
 
-First we use the \Rfunction{readGappedAlignments} function to load
-a toy `BAM' file into a \Rclass{GappedAlignments} object:
-<<readGappedAlignments>>=
+First we use the \Rfunction{readGAlignments} function to load
+a toy `BAM' file into a \Rclass{GAlignments} object:
+<<readGAlignments>>=
 library(Rsamtools)
 aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-aln1 <- readGappedAlignments(aln1_file)
+aln1 <- readGAlignments(aln1_file)
 aln1
 length(aln1)
 @
 
 3271 `BAM' records were loaded into the object.
 
-Note that \Rfunction{readGappedAlignments} would have discarded
+Note that \Rfunction{readGAlignments} would have discarded
 any `BAM' record describing an unaligned query (see description
 of the <flag> field in the SAM Format Specification
 \footnote{\url{http://samtools.sourceforge.net/SAM1.pdf}}

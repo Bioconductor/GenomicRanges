@@ -1,30 +1,30 @@
-noGaps <- GappedAlignments(
+.noGaps <- GAlignments(
     Rle(factor(c("chr1", "chr2", "chr1", "chr3")), 
         c(1, 3, 2, 4)), 
     pos=1:10, cigar=paste0(10:1, "M"),
     strand=Rle(strand(c("-", "+", "*", "+", "-")), 
         c(1, 2, 2, 3, 2)),
     names=head(letters, 10), score=1:10)
-Gaps <- GappedAlignments(
+.Gaps <- GAlignments(
     Rle(factor(c("chr2", "chr4")), c(3, 4)), pos=1:7,
     cigar=c("5M", "3M2N3M2N3M", "5M", "10M", "5M1N4M", "8M2N1M", "5M"), 
     strand=Rle(strand(c("-", "+")), c(4, 3)),
     names=tail(letters, 7), score=1:7)
-GAList <- GAlignmentsList(a=noGaps, b=Gaps)
+GAList <- GAlignmentsList(a=.noGaps, b=.Gaps)
 quiet <- suppressWarnings
 
 test_GAlignmentsList_construction <- function() {
     checkTrue(validObject(GAlignmentsList()))
     checkTrue(validObject(new("GAlignmentsList")))
-    checkTrue(validObject(GAlignmentsList(noGaps, Gaps)))
-    checkTrue(validObject(GAlignmentsList(GappedAlignments())))
-    checkTrue(validObject(GAlignmentsList(a=GappedAlignments())))
+    checkTrue(validObject(GAlignmentsList(.noGaps, .Gaps)))
+    checkTrue(validObject(GAlignmentsList(GAlignments())))
+    checkTrue(validObject(GAlignmentsList(a=GAlignments())))
     checkException(GAlignmentsList(GRanges()), silent = TRUE)
 }
 
 test_GAlignmentsList_coercion <- function() {
-    galist <- GAlignmentsList(a=noGaps[seqnames(noGaps) == "chr3"], 
-                              b=Gaps[seqnames(Gaps) == "chr4"])
+    galist <- GAlignmentsList(a=.noGaps[seqnames(.noGaps) == "chr3"], 
+                              b=.Gaps[seqnames(.Gaps) == "chr4"])
     ## Lists
     rgl <- rglist(galist)
     grl <- grglist(galist)
@@ -61,7 +61,7 @@ test_GAlignmentsList_coercion <- function() {
                      ngap=c(0, 0, 0, 2), score=c(1, 2, 1, 2), 
                      row.names=c("a", "b", "t", "u"),
                      stringsAsFactors=FALSE)
-    galist <- GAlignmentsList(a=noGaps[1:2], b=Gaps[1:2])
+    galist <- GAlignmentsList(a=.noGaps[1:2], b=.Gaps[1:2])
     checkTrue(all.equal(as.data.frame(galist), df))
 
     ## introns
@@ -74,7 +74,7 @@ test_GAlignmentsList_coercion <- function() {
 }
 
 test_GAlignmentsList_accessors <- function() {
-    galist <- GAlignmentsList(noGaps, Gaps) 
+    galist <- GAlignmentsList(.noGaps, .Gaps) 
     target <- RleList(lapply(GAList, seqnames), compress=TRUE)
     checkIdentical(seqnames(GAList), target) 
     target <- RleList(lapply(GAList, rname), compress=TRUE)
@@ -99,8 +99,8 @@ test_GAlignments_subset_combine <- function()
     ## 'c' 
     checkIdentical(GAlignmentsList(), 
                    c(GAlignmentsList(), GAlignmentsList()))
-    checkIdentical(GAlignmentsList(noGaps, Gaps), 
-                   quiet(c(GAlignmentsList(noGaps), GAlignmentsList(Gaps))))
+    checkIdentical(GAlignmentsList(.noGaps, .Gaps), 
+                   quiet(c(GAlignmentsList(.noGaps), GAlignmentsList(.Gaps))))
 
     ## '['
     checkIdentical(galist, galist[])
@@ -110,7 +110,7 @@ test_GAlignments_subset_combine <- function()
 
 test_GAlignments_qnarrow <- function()
 {
-    galist <- GAlignmentsList(noGaps[1:6], Gaps)
+    galist <- GAlignmentsList(.noGaps[1:6], .Gaps)
     qn <- qnarrow(galist, end=-4)
     checkIdentical(qnarrow(galist[[1]], end=-4), qn[[1]])
     checkIdentical(qnarrow(galist[[2]], end=-4), qn[[2]])

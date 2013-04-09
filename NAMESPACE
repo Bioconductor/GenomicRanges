@@ -15,7 +15,8 @@ exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
     GenomicRangesORGRangesList,
-    GappedAlignments, GappedAlignmentPairs, GAlignmentsList,
+    GAlignments, GAlignmentPairs, GAlignmentsList,
+    GappedAlignments, GappedAlignmentPairs,  # old names
     SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -104,8 +105,10 @@ export(
     .DollarNames.GenomicRanges,
     makeGRangesListFromFeatureFragments,
     makeGAlignmentsListFromFeatureFragments,
-    GappedAlignments, readGappedAlignments,
-    GappedAlignmentPairs, readGappedAlignmentPairs,
+    GAlignments, readGAlignments,
+    GAlignmentPairs, readGAlignmentPairs,
+    GappedAlignments, readGappedAlignments,  # old names
+    GappedAlignmentPairs, readGappedAlignmentPairs,  # old names
     GAlignmentsList, readGAlignmentsList,
     flipQuery,
     selectEncodingWithCompatibleStrand,
@@ -134,11 +137,11 @@ export(
     genome, "genome<-",
     seqnameStyle, "seqnameStyle<-",
 
-    ## GappedAlignments-class.R:
+    ## GAlignments-class.R:
     rname, "rname<-", cigar, qwidth, qnarrow,
     grglist, granges, introns, rglist,
 
-    ## GappedAlignmentPairs-class.R:
+    ## GAlignmentPairs-class.R:
     first, last, left, right, isProperPair,
 
     ## SummarizedExperiment-class.R:

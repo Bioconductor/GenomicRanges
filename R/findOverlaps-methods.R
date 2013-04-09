@@ -494,7 +494,7 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
     }
 )
 
-setMethod("findOverlaps", c("GappedAlignments", "Vector"),
+setMethod("findOverlaps", c("GAlignments", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -506,7 +506,7 @@ setMethod("findOverlaps", c("GappedAlignments", "Vector"),
     }
 )
 
-setMethod("findOverlaps", c("Vector", "GappedAlignments"),
+setMethod("findOverlaps", c("Vector", "GAlignments"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -521,11 +521,11 @@ setMethod("findOverlaps", c("Vector", "GappedAlignments"),
 ### Not strictly needed! Defining the above 2 methods covers that case but
 ### with the following note:
 ###   > findOverlaps(al1, al0)
-###   Note: Method with signature "GappedAlignments#ANY" chosen for
+###   Note: Method with signature "GAlignments#ANY" chosen for
 ###    function "findOverlaps", target signature
-###    "GappedAlignments#GappedAlignments".
-###    "ANY#GappedAlignments" would also be valid
-setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
+###    "GAlignments#GAlignments".
+###    "ANY#GAlignments" would also be valid
+setMethod("findOverlaps", c("GAlignments", "GAlignments"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -537,7 +537,7 @@ setMethod("findOverlaps", c("GappedAlignments", "GappedAlignments"),
     }
 )
 
-setMethod("findOverlaps", c("GappedAlignmentPairs", "Vector"),
+setMethod("findOverlaps", c("GAlignmentPairs", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -549,7 +549,7 @@ setMethod("findOverlaps", c("GappedAlignmentPairs", "Vector"),
     }
 )
 
-setMethod("findOverlaps", c("Vector", "GappedAlignmentPairs"),
+setMethod("findOverlaps", c("Vector", "GAlignmentPairs"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
@@ -662,11 +662,11 @@ setMethod("findOverlaps", c("GAlignmentsList", "GAlignmentsList"),
     c("GRangesList", "Vector"),
     c("Vector", "GRangesList"),
     c("GRangesList", "GRangesList"),
-    c("GappedAlignments", "Vector"),
-    c("Vector", "GappedAlignments"),
-    c("GappedAlignments", "GappedAlignments"),
-    c("GappedAlignmentPairs", "Vector"),
-    c("Vector", "GappedAlignmentPairs"),
+    c("GAlignments", "Vector"),
+    c("Vector", "GAlignments"),
+    c("GAlignments", "GAlignments"),
+    c("GAlignmentPairs", "Vector"),
+    c("Vector", "GAlignmentPairs"),
     c("SummarizedExperiment", "Vector"),
     c("Vector", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment"),
@@ -739,11 +739,11 @@ setMethods("countOverlaps", .signatures1, .countOverlaps.definition)
     c("RangedData", "GRangesList"),
     c("GenomicRanges", "RangedData"),
     c("GRangesList", "RangedData"),
-    c("GappedAlignments", "Vector"),
-    c("Vector", "GappedAlignments"),
-    c("GappedAlignments", "GappedAlignments"),
-    c("GappedAlignmentPairs", "Vector"),
-    c("Vector", "GappedAlignmentPairs"),
+    c("GAlignments", "Vector"),
+    c("Vector", "GAlignments"),
+    c("GAlignments", "GAlignments"),
+    c("GAlignmentPairs", "Vector"),
+    c("Vector", "GAlignmentPairs"),
     c("SummarizedExperiment", "Vector"),
     c("Vector", "SummarizedExperiment"),
     c("SummarizedExperiment", "SummarizedExperiment"),

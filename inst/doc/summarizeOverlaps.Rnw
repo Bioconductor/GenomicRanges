@@ -119,7 +119,7 @@ This next example demonstrates how the same read can be counted differently
 depending on how the \Rcode{features} argument is specified. We use a single 
 read that overlaps two ranges, gr1 and gr2.
 <<simple>>=
-rd <- GappedAlignments("a", seqnames = Rle("chr1"), pos = as.integer(100),
+rd <- GAlignments("a", seqnames = Rle("chr1"), pos = as.integer(100),
     cigar = "300M", strand = strand("+"))
 
 gr1 <- GRanges("chr1", IRanges(start=50, width=150), strand="+")
@@ -175,7 +175,7 @@ features <- GRanges(
    DataFrame(group_id)
 )
 
-reads <- GappedAlignments(
+reads <- GAlignments(
     names = c("a","b","c","d","e","f","g"),
     seqnames = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
     pos = as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
@@ -236,7 +236,7 @@ are single-reads and 4 are paired-end. Smaller versions of untreated1
 
 \Rfunction{summarizeOverlaps} is capable of counting paired-end reads in
 both a \Rcode{BamFile}-method (set argument \Rcode{singleEnd=TRUE}) or a
-\Rcode{GappedAlignmentPairs}-method. For this example, we use the
+\Rcode{GAlignmentPairs}-method. For this example, we use the
 3 single-end read files,
 \begin{itemize}
 \item treated1.bam

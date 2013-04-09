@@ -1,9 +1,9 @@
 ### =========================================================================
-### GappedAlignments objects
+### GAlignments objects
 ### -------------------------------------------------------------------------
 ###
 
-setClass("GappedAlignments",
+setClass("GAlignments",
     contains="Vector",
     representation(
         NAMES="characterORNULL",      # R doesn't like @names !!
@@ -20,6 +20,9 @@ setClass("GappedAlignments",
         strand=Rle(strand())
     )
 )
+
+### Temporary alias for backward compatibility.
+setClass("GappedAlignments", contains="GAlignments")
 
 ### Formal API:
 ###   names(x)    - NULL or character vector.
@@ -41,30 +44,29 @@ setClass("GappedAlignments",
 ###   ranges(x)   - IRanges object of the same length as 'x'.
 ###   as.data.frame(x) - data.frame with 1 row per alignment in 'x'.
 ###   show(x)     - compact display in a data.frame-like fashion.
-###   GappedAlignments(x) - constructor.
-###   x[i]        - GappedAlignments object of the same class as 'x'
-###                 (endomorphism).
+###   GAlignments(x) - constructor.
+###   x[i]        - GAlignments object of the same class as 'x' (endomorphism).
 ###
-###   updateCigarAndStart(x, cigar=NULL, start=NULL) - GappedAlignments
+###   updateCigarAndStart(x, cigar=NULL, start=NULL) - GAlignments
 ###                 object of the same length and class as 'x' (endomorphism).
 ###                 For internal use only (NOT EXPORTED).
 ###
-###   qnarrow(x, start=NA, end=NA, width=NA) - GappedAlignments object of the
+###   qnarrow(x, start=NA, end=NA, width=NA) - GAlignments object of the
 ###                 same length and class as 'x' (endomorphism).
 ###
-###   narrow(x, start=NA, end=NA, width=NA) - GappedAlignments object of the
+###   narrow(x, start=NA, end=NA, width=NA) - GAlignments object of the
 ###                 same length and class as 'x' (endomorphism).
 ###
 ###   findOverlaps(query, subject) - 'query' or 'subject' or both are
-###                 GappedAlignments objects. Just a convenient wrapper for
+###                 GAlignments objects. Just a convenient wrapper for
 ###                 'findOverlaps(grglist(query), subject, ...)', etc...
 ###
 ###   countOverlaps(query, subject) - 'query' or 'subject' or both are
-###                 GappedAlignments objects. Just a convenient wrapper for
+###                 GAlignments objects. Just a convenient wrapper for
 ###                 'countOverlaps(grglist(query), subject, ...)', etc...
 ###
 ###   subsetByOverlaps(query, subject) - 'query' or 'subject' or both are
-###                 GappedAlignments objects.
+###                 GAlignments objects.
 ###
 
 setGeneric("rname", function(x) standardGeneric("rname"))
@@ -87,35 +89,35 @@ setGeneric("qnarrow",
 ### Getters.
 ###
 
-setMethod("length", "GappedAlignments", function(x) length(x@cigar))
+setMethod("length", "GAlignments", function(x) length(x@cigar))
 
-setMethod("names", "GappedAlignments", function(x) x@NAMES)
+setMethod("names", "GAlignments", function(x) x@NAMES)
 
-setMethod("seqnames", "GappedAlignments", function(x) x@seqnames)
-setMethod("rname", "GappedAlignments", function(x) seqnames(x))
+setMethod("seqnames", "GAlignments", function(x) x@seqnames)
+setMethod("rname", "GAlignments", function(x) seqnames(x))
 
-setMethod("cigar", "GappedAlignments", function(x) x@cigar)
+setMethod("cigar", "GAlignments", function(x) x@cigar)
 
-setMethod("width", "GappedAlignments", function(x) cigarToWidth(x@cigar))
-setMethod("start", "GappedAlignments", function(x, ...) x@start)
-setMethod("end", "GappedAlignments", function(x, ...) {x@start + width(x) - 1L})
+setMethod("width", "GAlignments", function(x) cigarToWidth(x@cigar))
+setMethod("start", "GAlignments", function(x, ...) x@start)
+setMethod("end", "GAlignments", function(x, ...) {x@start + width(x) - 1L})
 
-setMethod("strand", "GappedAlignments", function(x) x@strand)
+setMethod("strand", "GAlignments", function(x) x@strand)
 
-setMethod("qwidth", "GappedAlignments", function(x) cigarToQWidth(x@cigar))
+setMethod("qwidth", "GAlignments", function(x) cigarToQWidth(x@cigar))
 
-setMethod("ngap", "GappedAlignments",
+setMethod("ngap", "GAlignments",
     function(x) {unname(elementLengths(rglist(x))) - 1L}
 )
 
-setMethod("seqinfo", "GappedAlignments", function(x) x@seqinfo)
+setMethod("seqinfo", "GAlignments", function(x) x@seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
 ###
 
-setReplaceMethod("names", "GappedAlignments",
+setReplaceMethod("names", "GAlignments",
     function(x, value)
     {
         if (!is.null(value))
@@ -172,7 +174,7 @@ setReplaceMethod("names", "GappedAlignments",
     tr_table
 }
 
-setReplaceMethod("seqnames", "GappedAlignments",
+setReplaceMethod("seqnames", "GAlignments",
     function(x, value)
     {
         value <- .normargSeqnamesReplaceValue(x, value, ans.type="Rle")
@@ -183,11 +185,11 @@ setReplaceMethod("seqnames", "GappedAlignments",
     }
 )
 
-setReplaceMethod("rname", "GappedAlignments",
+setReplaceMethod("rname", "GAlignments",
     function(x, value) `seqnames<-`(x, value)
 )
 
-setReplaceMethod("strand", "GappedAlignments",
+setReplaceMethod("strand", "GAlignments",
     function(x, value) 
     {
         x@strand <- normargGenomicRangesStrand(value, length(x))
@@ -195,7 +197,7 @@ setReplaceMethod("strand", "GappedAlignments",
     }
 )
 
-setReplaceMethod("elementMetadata", "GappedAlignments",
+setReplaceMethod("elementMetadata", "GAlignments",
     function(x, ..., value)
     {
         x@elementMetadata <- mk_elementMetadataReplacementValue(x, value)
@@ -203,7 +205,7 @@ setReplaceMethod("elementMetadata", "GappedAlignments",
     }
 )
 
-setReplaceMethod("seqinfo", "GappedAlignments",
+setReplaceMethod("seqinfo", "GAlignments",
     function(x, new2old=NULL, force=FALSE, value)
     {
         if (!is(value, "Seqinfo"))
@@ -229,7 +231,7 @@ setReplaceMethod("seqinfo", "GappedAlignments",
 ### Validity.
 ###
 
-.valid.GappedAlignments.names <- function(x)
+.valid.GAlignments.names <- function(x)
 {
     x_names <- names(x)
     if (is.null(x_names))
@@ -244,7 +246,7 @@ setReplaceMethod("seqinfo", "GappedAlignments",
     NULL
 }
 
-.valid.GappedAlignments.seqnames <- function(x)
+.valid.GAlignments.seqnames <- function(x)
 {
     x_seqnames <- seqnames(x)
     if (!is(x_seqnames, "Rle") || !is.factor(runValue(x_seqnames))
@@ -255,7 +257,7 @@ setReplaceMethod("seqinfo", "GappedAlignments",
     NULL
 }
 
-.valid.GappedAlignments.start <- function(x)
+.valid.GAlignments.start <- function(x)
 {
     x_start <- start(x)
     if (!is.integer(x_start) || !is.null(names(x_start)) || IRanges:::anyMissing(x_start))
@@ -265,7 +267,7 @@ setReplaceMethod("seqinfo", "GappedAlignments",
     NULL
 }
 
-.valid.GappedAlignments.cigar <- function(x)
+.valid.GAlignments.cigar <- function(x)
 {
     x_cigar <- cigar(x)
     if (!is.character(x_cigar) || !is.null(names(x_cigar)) || any(is.na(x_cigar)))
@@ -276,7 +278,7 @@ setReplaceMethod("seqinfo", "GappedAlignments",
     NULL
 }
 
-.valid.GappedAlignments.strand <- function(x)
+.valid.GAlignments.strand <- function(x)
 {
     x_strand <- strand(x)
     if (!is(x_strand, "Rle") || !is.factor(runValue(x_strand))
@@ -288,17 +290,17 @@ setReplaceMethod("seqinfo", "GappedAlignments",
     NULL
 }
 
-.valid.GappedAlignments <- function(x)
+.valid.GAlignments <- function(x)
 {
-    c(.valid.GappedAlignments.names(x),
-      .valid.GappedAlignments.seqnames(x),
-      .valid.GappedAlignments.start(x),
-      .valid.GappedAlignments.cigar(x),
-      .valid.GappedAlignments.strand(x),
+    c(.valid.GAlignments.names(x),
+      .valid.GAlignments.seqnames(x),
+      .valid.GAlignments.start(x),
+      .valid.GAlignments.cigar(x),
+      .valid.GAlignments.strand(x),
       valid.GenomicRanges.seqinfo(x))
 }
 
-setValidity2("GappedAlignments", .valid.GappedAlignments,
+setValidity2("GAlignments", .valid.GAlignments,
              where=asNamespace("GenomicRanges"))
 
 
@@ -321,9 +323,9 @@ setValidity2("GappedAlignments", .valid.GappedAlignments,
     x
 }
 
-GappedAlignments <- function(seqnames=Rle(factor()), pos=integer(0),
-                             cigar=character(0), strand=NULL,
-                             names=NULL, seqlengths=NULL, ...)
+GAlignments <- function(seqnames=Rle(factor()), pos=integer(0),
+                        cigar=character(0), strand=NULL,
+                        names=NULL, seqlengths=NULL, ...)
 {
     ## Prepare the 'seqnames' slot.
     seqnames <- .asFactorRle(seqnames)
@@ -364,19 +366,19 @@ GappedAlignments <- function(seqnames=Rle(factor()), pos=integer(0),
         storage.mode(seqlengths) <- "integer"
     }
     seqinfo <- Seqinfo(seqnames=names(seqlengths), seqlengths=seqlengths)
-    ## Create and return the GappedAlignments instance.
-    new("GappedAlignments", NAMES=names,
-                            seqnames=seqnames, start=pos, cigar=cigar,
-                            strand=strand,
-                            elementMetadata=elementMetadata,
-                            seqinfo=seqinfo)
+    ## Create and return the GAlignments instance.
+    new("GAlignments", NAMES=names,
+                       seqnames=seqnames, start=pos, cigar=cigar,
+                       strand=strand,
+                       elementMetadata=elementMetadata,
+                       seqinfo=seqinfo)
 }
 
-setMethod("updateObject", "GappedAlignments",
+setMethod("updateObject", "GAlignments",
     function(object, ..., verbose=FALSE)
     {
         if (verbose)
-            message("updateObject(object = 'GappedAlignments')")
+            message("updateObject(object = 'GAlignments')")
         if (is(try(object@NAMES, silent=TRUE), "try-error")) {
             object@NAMES <- NULL
             return(object)
@@ -390,7 +392,7 @@ setMethod("updateObject", "GappedAlignments",
     }
 )
 
-readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
+readGAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 {
     if (!isSingleString(format))
         stop("'format' must be a single string")
@@ -398,24 +400,28 @@ readGappedAlignments <- function(file, format="BAM", use.names=FALSE, ...)
         stop("'use.names' must be TRUE or FALSE")
     if (format == "BAM") {
         suppressMessages(library("Rsamtools"))
-        ans <- readBamGappedAlignments(file=file, use.names=use.names, ...)
+        ans <- readGAlignmentsFromBam(file=file, use.names=use.names, ...)
         return(ans)
     }
     stop("only BAM format is supported at the moment")
 }
+
+### 2 temporary aliases for backward compatibility.
+GappedAlignments <- GAlignments
+readGappedAlignments <- readGAlignments
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Three helper functions used by higher level coercion functions.
 ###
 ### Note that their arguments are the different components of a
-### GappedAlignments object instead of just the GappedAlignments object
+### GAlignments object instead of just the GAlignments object
 ### itself (arg 'x'). This allows them to be used in many different contexts
 ### e.g. when 'x' doesn't exist yet but is in the process of being constructed.
 ###
 
-.GappedAlignmentsToGRanges <- function(seqnames, start, width, strand, seqinfo,
-                                       names=NULL)
+.GAlignmentsToGRanges <- function(seqnames, start, width, strand, seqinfo,
+                                  names=NULL)
 {
     ranges <- IRanges(start=start, width=width, names=names)
     ans <- GRanges(seqnames=seqnames, ranges=ranges, strand=strand)
@@ -449,7 +455,7 @@ setGeneric("granges", function(x, ...) standardGeneric("granges"))
 setGeneric("introns", function(x, ...) standardGeneric("introns"))
 setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
 
-setMethod("grglist", "GappedAlignments",
+setMethod("grglist", "GAlignments",
     function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
         rgl <- rglist(x,
@@ -460,13 +466,13 @@ setMethod("grglist", "GappedAlignments",
     }
 )
 
-setMethod("granges", "GappedAlignments",
+setMethod("granges", "GAlignments",
     function(x)
-        .GappedAlignmentsToGRanges(seqnames(x), start(x), width(x),
+        .GAlignmentsToGRanges(seqnames(x), start(x), width(x),
                                    strand(x), seqinfo(x), names(x))
 )
 
-setMethod("introns", "GappedAlignments",
+setMethod("introns", "GAlignments",
     function(x)
     {
         grl <- grglist(x, order.as.in.query=TRUE)
@@ -474,7 +480,7 @@ setMethod("introns", "GappedAlignments",
     }
 )
 
-setMethod("rglist", "GappedAlignments",
+setMethod("rglist", "GAlignments",
     function(x, order.as.in.query=FALSE, drop.D.ranges=FALSE)
     {
         if (!isTRUEorFALSE(order.as.in.query))
@@ -489,16 +495,16 @@ setMethod("rglist", "GappedAlignments",
     }
 )
 
-setMethod("ranges", "GappedAlignments",
+setMethod("ranges", "GAlignments",
     function(x) IRanges(start=start(x), width=width(x), names=names(x))
 )
 
-setAs("GappedAlignments", "GRangesList", function(from) grglist(from))
-setAs("GappedAlignments", "GRanges", function(from) granges(from))
-setAs("GappedAlignments", "RangesList", function(from) rglist(from))
-setAs("GappedAlignments", "Ranges", function(from) ranges(from))
+setAs("GAlignments", "GRangesList", function(from) grglist(from))
+setAs("GAlignments", "GRanges", function(from) granges(from))
+setAs("GAlignments", "RangesList", function(from) rglist(from))
+setAs("GAlignments", "Ranges", function(from) ranges(from))
 
-setMethod("as.data.frame", "GappedAlignments",
+setMethod("as.data.frame", "GAlignments",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
         if (is.null(row.names))
@@ -523,19 +529,18 @@ setMethod("as.data.frame", "GappedAlignments",
     }
 )
 
-setAs("GenomicRanges", "GappedAlignments",
+setAs("GenomicRanges", "GAlignments",
       function(from) {
-        ga <-
-          GappedAlignments(seqnames(from), start(from),
-                           if (!is.null(mcols(from)[["cigar"]]))
-                             mcols(from)[["cigar"]]
-                           else paste0(width(from), "M"),
-                           strand(from),
-                           if (!is.null(names(from))) names(from)
-                           else mcols(from)$name,
-                           seqlengths(from),
-                           mcols(from)[setdiff(colnames(mcols(from)),
-                                               c("cigar", "name"))])
+        ga <- GAlignments(seqnames(from), start(from),
+                          if (!is.null(mcols(from)[["cigar"]]))
+                            mcols(from)[["cigar"]]
+                          else paste0(width(from), "M"),
+                          strand(from),
+                          if (!is.null(names(from))) names(from)
+                          else mcols(from)$name,
+                          seqlengths(from),
+                          mcols(from)[setdiff(colnames(mcols(from)),
+                                              c("cigar", "name"))])
         metadata(ga) <- metadata(from)
         seqinfo(ga) <- seqinfo(from)
         ga
@@ -548,7 +553,7 @@ setAs("GenomicRanges", "GappedAlignments",
 
 ### Supported 'i' types: numeric vector, logical vector, NULL and missing.
 ### TODO: Support subsetting by names.
-setMethod("[", "GappedAlignments",
+setMethod("[", "GAlignments",
     function(x, i, j, ... , drop=TRUE)
     {
         if (!missing(j) || length(list(...)) > 0L)
@@ -590,7 +595,7 @@ setMethod("[", "GappedAlignments",
 ### "show" method.
 ###
 
-.makeNakedMatFromGappedAlignments <- function(x)
+.makeNakedMatFromGAlignments <- function(x)
 {
     lx <- length(x)
     nc <- ncol(mcols(x))
@@ -610,8 +615,8 @@ setMethod("[", "GappedAlignments",
     ans
 }
 
-showGappedAlignments <- function(x, margin="",
-                                 with.classinfo=FALSE, print.seqlengths=FALSE)
+showGAlignments <- function(x, margin="",
+                            with.classinfo=FALSE, print.seqlengths=FALSE)
 {
     lx <- length(x)
     nc <- ncol(mcols(x))
@@ -621,7 +626,7 @@ showGappedAlignments <- function(x, margin="",
         nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- makePrettyMatrixForCompactPrinting(x,
-               .makeNakedMatFromGappedAlignments)
+               .makeNakedMatFromGAlignments)
     if (with.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
@@ -647,18 +652,18 @@ showGappedAlignments <- function(x, margin="",
     }
 }
 
-setMethod("show", "GappedAlignments",
+setMethod("show", "GAlignments",
     function(object)
-        showGappedAlignments(object, margin="  ",
-                             with.classinfo=TRUE, print.seqlengths=TRUE)
+        showGAlignments(object, margin="  ",
+                        with.classinfo=TRUE, print.seqlengths=TRUE)
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining and concatenation.
+### Combining and splitting.
 ###
 
-setMethod("c", "GappedAlignments", function (x, ..., recursive=FALSE) {
+setMethod("c", "GAlignments", function (x, ..., recursive=FALSE) {
   if (!identical(recursive, FALSE))
     stop("'recursive' argument not supported")
   if (missing(x)) {
@@ -696,7 +701,7 @@ setMethod("c", "GappedAlignments", function (x, ..., recursive=FALSE) {
              elementMetadata=new_elementMetadata)
 })
 
-setMethod("splitAsListReturnedClass", "GappedAlignments", 
+setMethod("splitAsListReturnedClass", "GAlignments", 
     function(x) "GAlignmentsList"
 )
 
@@ -707,7 +712,7 @@ setMethod("splitAsListReturnedClass", "GappedAlignments",
 ### For internal use only (not exported).
 ###
 
-setMethod("updateCigarAndStart", "GappedAlignments",  # not exported
+setMethod("updateCigarAndStart", "GAlignments",  # not exported
     function(x, cigar=NULL, start=NULL)
     {
         if (is.null(cigar)) {
@@ -736,24 +741,24 @@ setMethod("updateCigarAndStart", "GappedAlignments",  # not exported
 ### "qnarrow" method.
 ###
 
-setMethod("qnarrow", "GappedAlignments",
-    function(x, start=NA, end=NA, width=NA)
-        .narrowGAlignments(x, start, end, width, cigarQNarrow)
-) 
-
-
-.narrowGAlignments <- function(x, start, end, width, narrowFunction)
+narrowGAlignments <- function(x, CIGAR_CUTTER, start, end, width)
 {
-    ans_cigar <- narrowFunction(cigar(x), start=start, end=end, width=width)
+    ans_cigar <- CIGAR_CUTTER(cigar(x), start=start, end=end, width=width)
     ans_start <- start(x) + attr(ans_cigar, "rshift")
     updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
 }
+
+setMethod("qnarrow", "GAlignments",
+    function(x, start=NA, end=NA, width=NA)
+        narrowGAlignments(x, cigarQNarrow, start, end, width)
+) 
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Mapping
 ###
 
-setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
+setMethod("map", c("GenomicRanges", "GAlignments"), function(from, to) {
   to_grl <- grglist(to, drop.D.ranges=TRUE)
   from_ol <- findOverlaps(from, to_grl, ignore.strand=TRUE, type="within")
   to_hits <- to[subjectHits(from_ol)]
@@ -766,7 +771,7 @@ setMethod("map", c("GenomicRanges", "GappedAlignments"), function(from, to) {
       ranges = ranges)
 })
 
-setMethod("pmap", c("Ranges", "GappedAlignments"), function(from, to) {
+setMethod("pmap", c("Ranges", "GAlignments"), function(from, to) {
   starts <- .Call("ref_locs_to_query_locs", start(from),
                   cigar(to), start(to), FALSE, PACKAGE="GenomicRanges")
   ends <- .Call("ref_locs_to_query_locs", end(from),
@@ -777,7 +782,7 @@ setMethod("pmap", c("Ranges", "GappedAlignments"), function(from, to) {
 
 setGeneric("prmap", function(from, to) standardGeneric("prmap")) # not exported
 
-setMethod("prmap", c("Ranges", "GappedAlignments"), # not exported
+setMethod("prmap", c("Ranges", "GAlignments"), # not exported
   function(from, to) {
   starts <- .Call("query_locs_to_ref_locs", start(from),
                   cigar(to), start(to), FALSE, PACKAGE="GenomicRanges")

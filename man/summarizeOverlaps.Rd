@@ -1,10 +1,10 @@
 \name{summarizeOverlaps}
 
 \alias{summarizeOverlaps}
-\alias{summarizeOverlaps,GRanges,GappedAlignments-method}
-\alias{summarizeOverlaps,GRangesList,GappedAlignments-method}
-\alias{summarizeOverlaps,GRanges,GappedAlignmentPairs-method}
-\alias{summarizeOverlaps,GRangesList,GappedAlignmentPairs-method}
+\alias{summarizeOverlaps,GRanges,GAlignments-method}
+\alias{summarizeOverlaps,GRangesList,GAlignments-method}
+\alias{summarizeOverlaps,GRanges,GAlignmentPairs-method}
+\alias{summarizeOverlaps,GRangesList,GAlignmentPairs-method}
 \alias{Union}
 \alias{IntersectionStrict}
 \alias{IntersectionNotEmpty}
@@ -19,13 +19,13 @@
 }
 
 \usage{
-  \S4method{summarizeOverlaps}{GRanges,GappedAlignments}(
+  \S4method{summarizeOverlaps}{GRanges,GAlignments}(
     features, reads, mode, ignore.strand=FALSE, ...) 
-  \S4method{summarizeOverlaps}{GRangesList,GappedAlignments}(
+  \S4method{summarizeOverlaps}{GRangesList,GAlignments}(
     features, reads, mode, ignore.strand=FALSE, ...) 
-  \S4method{summarizeOverlaps}{GRanges,GappedAlignmentPairs}(
+  \S4method{summarizeOverlaps}{GRanges,GAlignmentPairs}(
     features, reads, mode, ignore.strand=FALSE, ...) 
-  \S4method{summarizeOverlaps}{GRangesList,GappedAlignmentPairs}(
+  \S4method{summarizeOverlaps}{GRangesList,GAlignmentPairs}(
     features, reads, mode, ignore.strand=FALSE, ...) 
 }
 
@@ -38,8 +38,8 @@
 
   }
   \item{reads}{
-    A \linkS4class{GappedAlignments} (single-end), 
-    \linkS4class{GappedAlignmentPairs} (paired-end), or
+    A \linkS4class{GAlignments} (single-end), 
+    \linkS4class{GAlignmentPairs} (paired-end), or
     \link[Rsamtools]{BamFileList} or \link[Rsamtools]{BamViews} objects
     containing the reads to be mapped to the genomic regions of interest.
 
@@ -126,7 +126,7 @@
     }
     \item{paired-end reads :}{
       Paired-end reads should be provided in a 
-      \linkS4class{GappedAlignmentPairs} container. Paired-end reads
+      \linkS4class{GAlignmentPairs} container. Paired-end reads
       are counted the same as single-end reads with gaps. 
 
       The \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} 
@@ -159,13 +159,13 @@
   \itemize{
     \item \code{DESeq}, \code{DEXSeq} and \code{edgeR} packages 
     \item \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} classes
-    \item \link{GappedAlignments} and \link{GappedAlignmentPairs} classes
-    \item \link{readGappedAlignments} and \link{readGappedAlignmentPairs} 
+    \item \link{GAlignments} and \link{GAlignmentPairs} classes
+    \item \link{readGAlignments} and \link{readGAlignmentPairs} 
   }
 }
 
 \examples{
-reads <- GappedAlignments(
+reads <- GAlignments(
     names = c("a","b","c","d","e","f","g"),
     seqnames = Rle(c(rep(c("chr1", "chr2"), 3), "chr1")),
     pos = as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
@@ -253,13 +253,13 @@ edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 ## argument must be set to 'FALSE'. See the examples on the
 ## ?BamFile man page.
 
-## Paired-end can also be counted in a GappedAlignmentPairs object.
-## The readGappedAlignmentPairs() function outputs a GappedAliginmentPairs.
+## Paired-end can also be counted in a GAlignmentPairs object.
+## The readGAlignmentPairs() function outputs a GAlignmentPairs object.
 library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
 exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
 fl <- system.file("extdata", "untreated3_chr4.bam", 
                   package="pasillaBamSubset") 
-reads <- readGappedAlignmentPairs(fl)
+reads <- readGAlignmentPairs(fl)
 res <- summarizeOverlaps(exbygene, reads, "Union")
 stopifnot(length(assays(res)$counts) == length(exbygene))
 }
