@@ -55,9 +55,8 @@
     Modes include `Union', `IntersectionStrict', or `IntersectionNotEmpty' and 
     are designed after the counting modes in the HTSeq package by Simon Anders 
     (see references). All methods are gap-aware and count a read a maximum of 
-    once. A user can provide their own count function as the \code{mode} 
-    argument when using the \link[Rsamtools]{BamFileList} or 
-    \link[Rsamtools]{BamViews} methods.
+    once. Alternatively, a user can provide their own count function as the
+    \code{mode}. See details below.
 
     \itemize{
       \item Union : (Default) Reads that overlap any portion of exactly one 
@@ -91,12 +90,21 @@
             Simple and gapped reads are counted if,
 
             \itemize{
-            \item  the read or exactly 1 of the read fragments overlaps a unique
-                   disjoint region
-            \item the read or >1 read fragments overlap >1 unique disjoint
-                  region from the same feature
+              \item  the read or exactly 1 of the read fragments overlaps a unique
+                     disjoint region
+              \item the read or >1 read fragments overlap >1 unique disjoint
+                    region from the same feature
             }
-   }
+
+      \item User supplied function : The function must meet the following
+            requirements:
+
+            \itemize{
+              \item Have 3 arguments that correspond to `features', `reads' and 
+                    `ignore.strand', in that order.
+              \item Return a vector of counts the same length as `features'.
+            }
+    } 
   }
   \item{ignore.strand}{
     A logical value indicating if strand should be considered when matching.
@@ -216,19 +224,19 @@ listAsFeatures <- data.frame(
         mode="IntersectionNotEmpty"))$counts,
     countOverlaps = countOverlaps(lst, reads))
 
+
 ## ---------------------------------------------------------------------
-## 'reads' as BamFileList 
+## `reads' in Bam files
 ##
 
-## Examples of using summarizeOverlaps with Bam files are found
-## at ?BamFile or ?'summarizeOverlaps,GRanges,BamFileList-method'
-
-## Count BAM files and prepare output for DESeq or edgeR analysis
+## See also  ?BamFile.
 library(Rsamtools)
 fls <- list.files(system.file("extdata",package="GenomicRanges"),
                   recursive=TRUE, pattern="*bam$", full=TRUE)
 names(fls) <- basename(fls)
-bf <- BamFileList(fls, index=character())
+
+## Set 'yieldSize' to iterate over the files in chunks.
+bf <- BamFileList(fls, index=character(), yieldSize=1000)
 features <- GRanges(
     seqnames = c(rep("chr2L", 4), rep("chr2R", 5), rep("chr3L", 2)),
     ranges = IRanges(c(1000, 3000, 4000, 7000, 2000, 3000, 3600, 
@@ -239,22 +247,19 @@ features <- GRanges(
 
 se <- summarizeOverlaps(features, bf)
 
+## Prepare the output for DESeq or edgeR analysis.
 library(DESeq)
 deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
 
 library(edgeR)
 edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 
-## ---------------------------------------------------------------------
-## paired-end reads 
-##
+## Paired-end reads can be counted in a Bam file or GAlignmentPairs
+## object. The 'singleEnd' argument in summarizeOverlaps() must
+## be set to FALSE. See ?BamFileList for example of counting
+## paired-end from Bam files. Here we count reads in a 
+## GAlignmentPairs object.
 
-## When paired-end reads are counted in a Bam file, the 'singleEnd'
-## argument must be set to 'FALSE'. See the examples on the
-## ?BamFile man page.
-
-## Paired-end can also be counted in a GAlignmentPairs object.
-## The readGAlignmentPairs() function outputs a GAlignmentPairs object.
 library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
 exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
 fl <- system.file("extdata", "untreated3_chr4.bam", 
@@ -262,6 +267,15 @@ fl <- system.file("extdata", "untreated3_chr4.bam",
 reads <- readGAlignmentPairs(fl)
 res <- summarizeOverlaps(exbygene, reads, "Union")
 stopifnot(length(assays(res)$counts) == length(exbygene))
+
+## ---------------------------------------------------------------------
+## User supplied function as 'mode' 
+##
+
+counter <- function(x, y,  ignore.strand)
+    countOverlaps(y, x, ignore.strand=ignore.strand)
+
+assays(summarizeOverlaps(features, reads, mode=counter))$counts 
 }
 
 \keyword{methods}
