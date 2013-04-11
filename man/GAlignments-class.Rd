@@ -68,11 +68,8 @@
 \alias{GappedAlignments}
 \alias{class:GappedAlignments}
 \alias{GappedAlignments-class}
+\alias{show,GappedAlignments-method}
 \alias{readGappedAlignments}
-\alias{GappedAlignmentPairs}
-\alias{class:GappedAlignmentPairs}
-\alias{GappedAlignmentPairs-class}
-\alias{readGappedAlignmentPairs}
 
 
 \title{GAlignments objects}

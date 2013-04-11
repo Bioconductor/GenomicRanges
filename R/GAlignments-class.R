@@ -21,9 +21,6 @@ setClass("GAlignments",
     )
 )
 
-### Temporary alias for backward compatibility.
-setClass("GappedAlignments", contains="GAlignments")
-
 ### Formal API:
 ###   names(x)    - NULL or character vector.
 ###   length(x)   - single integer. Nb of alignments in 'x'.
@@ -406,10 +403,6 @@ readGAlignments <- function(file, format="BAM", use.names=FALSE, ...)
     stop("only BAM format is supported at the moment")
 }
 
-### 2 temporary aliases for backward compatibility.
-GappedAlignments <- GAlignments
-readGappedAlignments <- readGAlignments
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Three helper functions used by higher level coercion functions.
@@ -791,3 +784,49 @@ setMethod("prmap", c("Ranges", "GAlignments"), # not exported
   ends <- pmax(ends, starts - 1L)
   IRanges(starts, ends)
 })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
+###
+
+.GappedAlignments_warning_msg <- function()
+{
+    msg <- c("  The GappedAlignments class, the GappedAlignments()",
+             "constructor, and the readGappedAlignments() function, have been",
+             "renamed: GAlignments, GAlignments(), and readGAlignments(),",
+             "respectively. The old names are deprecated. Please use the new ",
+             "names instead.")
+    paste0(msg, collapse="\n  ")
+}
+
+setClass("GappedAlignments", contains="GAlignments")
+
+setValidity("GappedAlignments",
+    function(object)
+    {
+        .Deprecated(msg=.GappedAlignments_warning_msg())
+        TRUE
+    }
+)
+
+setMethod("show", "GappedAlignments",
+    function(object)
+    {
+        .Deprecated(msg=.GappedAlignments_warning_msg())
+        callNextMethod()
+    }
+)
+
+GappedAlignments <- function(...)
+{
+    .Deprecated(msg=.GappedAlignments_warning_msg())
+    GAlignments(...)
+}
+
+readGappedAlignments <- function(...)
+{
+    .Deprecated(msg=.GappedAlignments_warning_msg())
+    readGAlignments(...)
+}
+

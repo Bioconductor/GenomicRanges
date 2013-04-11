@@ -21,9 +21,6 @@ setClass("GAlignmentPairs",
     )
 )
 
-### Temporary alias for backward compatibility.
-setClass("GappedAlignmentPairs", contains="GAlignmentPairs")
-
 ### Formal API:
 ###   length(x)   - single integer N. Nb of pairs in 'x'.
 ###   names(x)    - NULL or character vector.
@@ -308,10 +305,6 @@ readGAlignmentPairs <- function(file, format="BAM", use.names=FALSE, ...)
     stop("only BAM format is supported at the moment")
 }
 
-### 2 temporary aliases for backward compatibility.
-GappedAlignmentPairs <- GAlignmentPairs
-readGappedAlignmentPairs <- readGAlignmentPairs
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Vector methods.
@@ -575,4 +568,49 @@ setMethod("show", "GAlignmentPairs",
         showGAlignmentPairs(object,
                             with.classinfo=TRUE, print.seqlengths=TRUE)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
+###
+
+.GappedAlignmentPairs_warning_msg <- function()
+{
+    msg <- c("  The GappedAlignmentPairs class, the GappedAlignmentPairs()",
+             "constructor, and the readGappedAlignmentPairs() function, have",
+             "been renamed: GAlignmentPairs, GAlignmentPairs(), and",
+             "readGAlignmentPairs(), respectively. The old names are",
+             "deprecated. Please use the new names instead.")
+    paste0(msg, collapse="\n  ")
+}
+
+setClass("GappedAlignmentPairs", contains="GAlignmentPairs")
+
+setValidity("GappedAlignmentPairs",
+    function(object)
+    {
+        .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
+        TRUE
+    }
+)
+
+setMethod("show", "GappedAlignmentPairs",
+    function(object)
+    {
+        .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
+        callNextMethod()
+    }
+)
+
+GappedAlignmentPairs <- function(...)
+{
+    .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
+    GAlignmentPairs(...)
+}
+
+readGappedAlignmentPairs <- function(...)
+{
+    .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
+    readGAlignmentPairs(...)
+}
 

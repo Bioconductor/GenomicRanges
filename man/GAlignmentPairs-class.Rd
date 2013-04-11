@@ -48,6 +48,13 @@
 % "show" method:
 \alias{show,GAlignmentPairs-method}
 
+% Old stuff:
+\alias{GappedAlignmentPairs}
+\alias{class:GappedAlignmentPairs}
+\alias{GappedAlignmentPairs-class}
+\alias{show,GappedAlignmentPairs-method}
+\alias{readGappedAlignmentPairs}
+
 
 \title{GAlignmentPairs objects}
 
