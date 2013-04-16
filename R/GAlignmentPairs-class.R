@@ -571,6 +571,110 @@ setMethod("show", "GAlignmentPairs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining.
+###
+
+### TODO: Support 'use.names=TRUE'.
+unlist_list_of_GAlignmentPairs <- function(x, use.names=TRUE,
+                                              ignore.mcols=FALSE)
+{
+    if (!is.list(x))
+        stop("'x' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    if (use.names)
+        stop("'use.names=TRUE' is not supported yet")
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+
+    ## TODO: Implement (in C) fast elementIsNull(x) in IRanges, that does
+    ## 'sapply(x, is.null)' on list 'x', and use it here.
+    null_idx <- which(sapply(x, is.null))
+    if (length(null_idx) != 0L)
+        x <- x[-null_idx]
+    if (length(x) == 0L)
+        return(new("GAlignmentPairs"))
+    x1 <- x[[1L]]
+    if (!is(x1, "GAlignmentPairs"))
+        stop("first non-NULL element in 'x' must be a GAlignmentPairs object")
+    if (length(x) == 1L)
+        return(x1)
+    ## TODO: Implement (in C) fast elementIs(x, class) in IRanges, that does
+    ## 'sapply(x, is, class)' on list 'x', and use it here.
+    ## 'elementIs(x, "NULL")' should work and be equivalent to
+    ## 'elementIsNull(x)'.
+    class1 <- class(x1)
+    if (!all(sapply(x, is, class1)))
+        stop("all elements in 'x' must be ", class1, " objects (or NULLs)")
+    x_names <- names(x)
+    names(x) <- NULL
+
+    ## Combine "NAMES" slots.
+    NAMES_slots <- lapply(x, function(xi) xi@NAMES)
+    ## TODO: Use elementIsNull() here when it becomes available.
+    has_no_names <- sapply(NAMES_slots, is.null)
+    if (all(has_no_names)) {
+        ans_NAMES <- NULL
+    } else {
+        noname_idx <- which(has_no_names)
+        if (length(noname_idx) != 0L)
+            NAMES_slots[noname_idx] <- lapply(elementLengths(x[noname_idx]),
+                                              character)
+        ans_NAMES <- unlist(NAMES_slots, use.names=FALSE)
+    }
+
+    ## Combine "first" slots.
+    first_slots <- lapply(x, function(xi) xi@first)
+    ans_first <- unlist_list_of_GAlignments(first_slots, use.names=FALSE,
+                                            ignore.mcols=ignore.mcols)
+
+    ## Combine "last" slots.
+    last_slots <- lapply(x, function(xi) xi@last)
+    ans_last <- unlist_list_of_GAlignments(last_slots, use.names=FALSE,
+                                           ignore.mcols=ignore.mcols)
+
+    ## Combine "isProperPair" slots.
+    isProperPair_slots <- lapply(x, function(xi) xi@isProperPair)
+    ans_isProperPair <- unlist(isProperPair_slots, use.names=FALSE)
+
+    ## Combine "mcols" slots. We don't need to use fancy
+    ## IRanges:::rbind.mcols() for this because the "mcols" slot of a
+    ## GAlignmentPairs object is guaranteed to be a DataFrame.
+    if (ignore.mcols) {
+        ans_mcols <- new("DataFrame", nrows=length(ans_first))
+    } else  {
+        mcols_slots <- lapply(x, function(xi) xi@elementMetadata)
+        ## Will fail if not all the GAlignmentPairs objects in 'x' have exactly
+        ## the same metadata cols.
+        ans_mcols <- do.call(rbind, mcols_slots)
+    }
+
+    ## Make 'ans' and return it.
+    new(class(x1), NAMES=ans_NAMES,
+                   first=ans_first,
+                   last=ans_last,
+                   isProperPair=ans_isProperPair,
+                   elementMetadata=ans_mcols)
+}
+
+setMethod("c", "GAlignmentPairs",
+    function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop("\"c\" method for GAlignmentPairs objects ",
+                 "does not support the 'recursive' argument")
+        if (missing(x)) {
+            args <- unname(list(...))
+        } else {
+            args <- unname(list(x, ...))
+        }
+        unlist_list_of_GAlignmentPairs(args, use.names=FALSE,
+                                             ignore.mcols=ignore.mcols)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Old stuff (deprecated & defunct)
 ###
 
