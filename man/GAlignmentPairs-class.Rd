@@ -48,6 +48,9 @@
 % "show" method:
 \alias{show,GAlignmentPairs-method}
 
+% Combining:
+\alias{c,GAlignmentPairs-method}
+
 % Old stuff:
 \alias{GappedAlignmentPairs}
 \alias{class:GappedAlignmentPairs}
