@@ -656,47 +656,118 @@ setMethod("show", "GAlignments",
 ### Combining and splitting.
 ###
 
-setMethod("c", "GAlignments", function (x, ..., recursive=FALSE) {
-  if (!identical(recursive, FALSE))
-    stop("'recursive' argument not supported")
-  if (missing(x)) {
-    args <- unname(list(...))
-    x <- args[[1L]]
-  }
-  else {
-    args <- unname(list(x, ...))
-  }
-  
-  if (length(args) == 1L)
-    return(x)
-  
-  arg_is_null <- sapply(args, is.null)
-  if (any(arg_is_null))
-    args[arg_is_null] <- NULL
-  if (!all(sapply(args, is, class(x))))
-    stop("all arguments in '...' must be ", class(x), " objects (or NULLs)")
- 
-  new_NAMES <- unlist(lapply(args, function(i) i@NAMES), use.names=FALSE)
-  new_seqnames <- do.call(c, lapply(args, seqnames))
-  new_start <- unlist(lapply(args, function(i) i@start), use.names=FALSE)
-  new_cigar <- unlist(lapply(args, function(i) i@cigar), use.names=FALSE)
-  new_strand <- do.call(c, lapply(args, function(i) i@strand))
-  new_seqinfo <- do.call(merge, lapply(args, seqinfo))
-  new_elementMetadata <- do.call(rbind, lapply(args, elementMetadata))
-  
-  initialize(x,
-             NAMES=new_NAMES,
-             start=new_start,
-             seqnames=new_seqnames,
-             strand=new_strand,
-             cigar=new_cigar,
-             seqinfo=new_seqinfo,
-             elementMetadata=new_elementMetadata)
-})
+### TODO: Support 'use.names=TRUE'.
+unlist_list_of_GAlignments <- function(x, use.names=TRUE, ignore.mcols=FALSE)
+{
+    if (!is.list(x))
+        stop("'x' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    if (use.names)
+        stop("'use.names=TRUE' is not supported yet")
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+
+    ## TODO: Implement (in C) fast elementIsNull(x) in IRanges, that does
+    ## 'sapply(x, is.null)' on list 'x', and use it here.
+    null_idx <- which(sapply(x, is.null))
+    if (length(null_idx) != 0L)
+        x <- x[-null_idx]
+    if (length(x) == 0L)
+        return(new("GAlignments"))
+    x1 <- x[[1L]]
+    if (!is(x1, "GAlignments"))
+        stop("first non-NULL element in 'x' must be a GAlignments object")
+    if (length(x) == 1L)
+        return(x1)
+    ## TODO: Implement (in C) fast elementIs(x, class) in IRanges, that does
+    ## 'sapply(x, is, class)' on list 'x', and use it here.
+    ## 'elementIs(x, "NULL")' should work and be equivalent to
+    ## 'elementIsNull(x)'.
+    class1 <- class(x1)
+    if (!all(sapply(x, is, class1)))
+        stop("all elements in 'x' must be ", class1, " objects (or NULLs)")
+    x_names <- names(x)
+    names(x) <- NULL
+
+    ## Combine "NAMES" slots.
+    NAMES_slots <- lapply(x, function(xi) xi@NAMES)
+    ## TODO: Use elementIsNull() here when it becomes available.
+    has_no_names <- sapply(NAMES_slots, is.null)
+    if (all(has_no_names)) {
+        ans_NAMES <- NULL
+    } else {
+        noname_idx <- which(has_no_names)
+        if (length(noname_idx) != 0L)
+            NAMES_slots[noname_idx] <- lapply(elementLengths(x[noname_idx]),
+                                              character)
+        ans_NAMES <- unlist(NAMES_slots, use.names=FALSE)
+    }
+
+    ## Combine "seqnames" slots.
+    seqnames_slots <- lapply(x, function(xi) xi@seqnames)
+    ## TODO: Implement unlist_list_of_Rle() in IRanges and use it here.
+    ans_seqnames <- do.call(c, seqnames_slots)
+
+    ## Combine "start" slots.
+    start_slots <- lapply(x, function(xi) xi@start)
+    ans_start <- unlist(start_slots, use.names=FALSE)
+
+    ## Combine "cigar" slots.
+    cigar_slots <- lapply(x, function(xi) xi@cigar)
+    ans_cigar <- unlist(cigar_slots, use.names=FALSE)
+
+    ## Combine "strand" slots.
+    strand_slots <- lapply(x, function(xi) xi@strand)
+    ## TODO: Implement unlist_list_of_Rle() in IRanges and use it here.
+    ans_strand <- do.call(c, strand_slots)
+
+    ## Combine "mcols" slots. We don't need to use fancy
+    ## IRanges:::rbind.mcols() for this because the "mcols" slot of a
+    ## GAlignments object is guaranteed to be a DataFrame.
+    if (ignore.mcols) {
+        ans_mcols <- new("DataFrame", nrows=length(ans_start))
+    } else  {
+        mcols_slots <- lapply(x, function(xi) xi@elementMetadata)
+        ## Will fail if not all the GAlignments objects in 'x' have exactly
+        ## the same metadata cols.
+        ans_mcols <- do.call(rbind, mcols_slots)
+    }
+
+    ## Combine "seqinfo" slots.
+    seqinfo_slots <- lapply(x, function(xi) xi@seqinfo)
+    ans_seqinfo <- do.call(merge, seqinfo_slots)
+
+    ## Make 'ans' and return it.
+    new(class(x1), NAMES=ans_NAMES,
+                   seqnames=ans_seqnames,
+                   start=ans_start,
+                   cigar=ans_cigar,
+                   strand=ans_strand,
+                   elementMetadata=ans_mcols,
+                   seqinfo=ans_seqinfo)
+}
+
+setMethod("c", "GAlignments",
+    function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop("\"c\" method for GAlignments objects ",
+                 "does not support the 'recursive' argument")
+        if (missing(x)) {
+            args <- unname(list(...))
+        } else {
+            args <- unname(list(x, ...))
+        }
+        unlist_list_of_GAlignments(args, use.names=FALSE,
+                                         ignore.mcols=ignore.mcols)
+    }
+)
 
 setMethod("splitAsListReturnedClass", "GAlignments", 
     function(x) "GAlignmentsList"
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "updateCigarAndStart" method.
