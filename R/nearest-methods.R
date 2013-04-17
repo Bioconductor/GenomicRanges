@@ -328,6 +328,24 @@ setMethod("distance", c("GenomicRanges", "GenomicRanges"),
     }
 )
 
+setMethod("distance", c("GenomicRanges", "TranscriptDb"),
+    function(x, y, ignore.strand=FALSE, id, type=c("gene", "tx", "cds"), ...)
+    {
+        if (!identical(length(x), length(id)))
+            stop("length(id) must equal length(x)") 
+        if (!is.character(id))
+            stop("'id' must be a character") 
+        rng <- switch(type,
+                      gene=unlist(range(transcriptsBy(y, "gene"))[id]),
+                      tx=transcripts(y, vals=list(tx_id=id)),
+                      cds=cds(y, vals=list(cds_id=id)))
+        if (!identical(length(x), length(rng)))
+            stop(paste0(type, " regions in annotation 'y' cannot be collapsed ",
+                        "into a single range"))
+        distance(x, rng, ignore.strand=ignore.strand)
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### distanceToNearest()

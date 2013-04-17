@@ -275,6 +275,19 @@ test_GenomicRanges_distance <- function()
     subject <-  GRanges("A", IRanges(3,4))
     current <- quiet(distance(query, subject))
     checkIdentical(current, 0L)
+
+    ## GRanges,TranscriptDb-method
+    library(TxDb.Dmelanogaster.UCSC.dm3.ensGene) 
+    txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene 
+    gr <- GRanges(c("chr2L", "chr2R"), 
+                  IRanges(c(100000, 200000),  width=100)) 
+    d <- quiet(distance(gr, txdb, id=c("FBgn0259717", "FBgn0261501"),
+                        type="gene"))
+    checkIdentical(d, c(2116403L, 13286545L))
+    d <- quiet(distance(gr, txdb, id=c("4", "4097"), type="tx"))
+    checkIdentical(d, c(23788L, 179531L))
+    d <- quiet(distance(gr, txdb, id=c("10000", "23000"), type="cds"))
+    checkIdentical(d, c(19326106L, 20653529L))
 }
 
 test_GenomicRanges_distanceToNearest <- function()
