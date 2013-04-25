@@ -471,8 +471,6 @@ setAs("GAlignmentPairs", "GAlignmentsList",
             pbe <- PartitioningByEnd(seq(2, 2*length(from), 2), names=names(from)) 
         new("GAlignmentsList",
             unlistData=unlist(from, use.names=FALSE),
-            elementMetadata=elementMetadata(from),
-            metadata=metadata(from),
             partitioning=pbe)
         }
 )
