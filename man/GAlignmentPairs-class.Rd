@@ -44,6 +44,7 @@
 \alias{introns,GAlignmentPairs-method}
 \alias{coerce,GAlignmentPairs,GRangesList-method}
 \alias{coerce,GAlignmentPairs,GRanges-method}
+\alias{coerce,GAlignmentPairs,GAlignmentsList-method}
 
 % "show" method:
 \alias{show,GAlignmentPairs-method}
@@ -337,6 +338,11 @@
       \code{as(x, "GRangesList")}, \code{as(x, "GRanges")}:
       Alternate ways of doing \code{grglist(x)} and \code{granges(x)},
       respectively.
+    }
+    \item{}{
+      \code{as(x, "GALignmentsList")}: Return a \link{GAlignmentsList} object of 
+      length \code{length(x)} where the i-th list element represents the ranges 
+      of the i-th alignment pair in \code{x}.
     }
   }
 }

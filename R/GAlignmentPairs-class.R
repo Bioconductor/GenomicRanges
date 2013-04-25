@@ -462,6 +462,20 @@ setMethod("introns", "GAlignmentPairs",
 setAs("GAlignmentPairs", "GRangesList", function(from) grglist(from))
 setAs("GAlignmentPairs", "GRanges", function(from) granges(from))
 
+setAs("GAlignmentPairs", "GAlignmentsList", 
+    function(from) 
+    {
+        if (length(from) == 0L)
+            pbe <- PartitioningByEnd()
+        else
+            pbe <- PartitioningByEnd(seq(2, 2*length(from), 2), names=names(from)) 
+        new("GAlignmentsList",
+            unlistData=unlist(from, use.names=FALSE),
+            elementMetadata=elementMetadata(from),
+            metadata=metadata(from),
+            partitioning=pbe)
+        }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### fillGaps()
