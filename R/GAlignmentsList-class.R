@@ -171,7 +171,7 @@ setReplaceMethod("seqnames", "GAlignmentsList", .replaceSeqnamesList)
 
 .valid.GAlignmentsList <- function(x)
 {
-   ## Known pitfalls are caught by
+   ## TDB: Currently known pitfalls are caught by
    ## GAlignments validity. 
 }
 

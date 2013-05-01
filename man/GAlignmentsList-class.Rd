@@ -87,17 +87,19 @@
       See \code{?\link[Rsamtools]{readGAlignmentsListFromBam}} for
       more information.
  
-      The \code{param} and \code{asProperPairs} arguments described on the
+      The \code{param} and \code{group.as.pairs} arguments described on the
       \code{\link[Rsamtools]{readGAlignmentsListFromBam}} man page fine tune
-      the records are returned. \code{param} is specifed by the standard
-      \code{ScanBamParam()} options. When \code{asProperPairs=TRUE} (default), 
-      only the proper pairs are returned. This is the same QC filtering that 
-      is done by \code{readGAlignmentPairsFromBam} but the records are
-      returned in a \code{GAlignmentsList} instead of
-      \code{GAlignmentPairs} object. If \code{asProperPairs=FALSE}, all 
-      records in the file are retained (i.e., no QC) and the list structure is 
-      split by read id (QNAME in SAM/BAM). This format allows the flexibility 
-      to retain singletons, pairs, and multi-fragment reads in a single class. 
+      which records are returned and how they are grouped. \code{param} is
+      specified by the standard \code{ScanBamParam()} options. When 
+      \code{group.as.pairs=TRUE} (default), records are paired according to
+      the algorithm used in 
+      \code{\link[Rsamtools]{readGAlignmentPairsFromBam}}. The result is a 
+      \code{GAlignmentsList} which includes the records paired by the 
+      algorithm (indicated by metadata column \sQuote{paired}) and all
+      unpaired or singleton reads. Records not paired by the algorithm will
+      have metadata column \code{paired=FALSE} and are grouped by read id
+      (QNAME in SAM/BAM). This format allows singletons, pairs, and 
+      multi-fragment reads to be stored in a single class. 
     }
 
     \item{}{
@@ -375,7 +377,7 @@ library(pasillaBamSubset)
 library(Rsamtools)
 fl <- sortBam(untreated3_chr4(), tempfile(), byQname=TRUE)
 bf <- BamFile(fl, index=character(0), yieldSize=50, obeyQname=TRUE)
-galist <- readGAlignmentsList(bf, asProperPairs=FALSE)
+galist <- readGAlignmentsList(bf, group.as.pairs=TRUE)
 galist
 
 ## ---------------------------------------------------------------------
