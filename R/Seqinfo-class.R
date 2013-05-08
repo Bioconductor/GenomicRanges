@@ -392,12 +392,15 @@ setAs("Seqinfo", "RangesList",
     readLines(tmp)
 }
 
-.compactDataFrame <- function(x, max.nrow=19L)
+.compactDataFrame <- function(x)
 {
-    if (nrow(x) <= max.nrow)
+    head_nrow <- as.integer(getOption("showHeadLines", default=5))
+    tail_nrow <- as.integer(getOption("showTailLines", default=5))
+    max_nrow <- head_nrow + tail_nrow + 1L
+    if (nrow(x) <= max_nrow)
         return(x)
-    head <- head(x, n=max.nrow %/% 2L)
-    tail <- tail(x, n=(max.nrow - 1L) %/% 2L)
+    head <- head(x, n=head_nrow)
+    tail <- tail(x, n=tail_nrow)
     dotrow <- rep.int("...", ncol(x))
     names(dotrow) <- colnames(x)
     dotrow <- data.frame(as.list(dotrow),
