@@ -768,6 +768,28 @@ setMethod("splitAsListReturnedClass", "GAlignments",
     function(x) "GAlignmentsList"
 )
 
+setMethod("seqselect", "GAlignments",
+    function(x, start=NULL, end=NULL, width=NULL)
+    {
+        if (!is.null(end) || !is.null(width))
+            start <- IRanges(start=start, end=end, width=width)
+        irInfo <- IRanges:::.bracket.Index(start, length(x), names(x),
+                                           asRanges=TRUE)
+        if (!is.null(irInfo[["msg"]]))
+            stop(irInfo[["msg"]])
+        if (!irInfo[["useIdx"]])
+            return(x)
+        ir <- irInfo[["idx"]]
+        ranges <- seqselect(ranges(x), ir)
+        clone(x,
+              NAMES=seqselect(names(x), ir),
+              seqnames=seqselect(seqnames(x), ir),
+              start=start(seqselect(ranges(x), ir)),
+              cigar=seqselect(cigar(x), ir),
+              strand=seqselect(strand(x), ir),
+              elementMetadata=seqselect(elementMetadata(x, FALSE), ir))
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "updateCigarAndStart" method.

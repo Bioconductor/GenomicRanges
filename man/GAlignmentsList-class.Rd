@@ -38,17 +38,12 @@
 \alias{coerce,GAlignmentsList,GRanges-method}
 \alias{coerce,GAlignmentsList,RangesList-method}
 \alias{coerce,GAlignmentsList,Ranges-method}
+\alias{coerce,GAlignmentPairs,GAlignmentsList-method}
 \alias{grglist,GAlignmentsList-method}
 \alias{granges,GAlignmentsList-method}
 \alias{rglist,GAlignmentsList-method}
 \alias{ranges,GAlignmentsList-method}
 \alias{introns,GAlignmentsList-method}
-
-% Subsetting:
-\alias{[,GAlignmentsList-method}
-\alias{[<-,GAlignmentsList,ANY,ANY,ANY-method}
-\alias{[[<-,GAlignmentsList-method}
-\alias{[[<-,GAlignmentsList,ANY,ANY-method}
 
 % Combining:
 \alias{c,GAlignmentsList-method}
@@ -218,22 +213,32 @@
       the cigar information. The resulting ranges span the entire
       range, including any gaps or spaces between paired-end reads.
 
-      The \code{granges} coercion supports \code{ignore.strand} to
-      allow ranges of opposite strand to be combined (see examples).
+      \code{granges} coercion supports \code{ignore.strand} to allow 
+      ranges of opposite strand to be combined (see examples). All
+      ranges in the resulting GRanges will have strand \sQuote{*}.
     }
     \item{}{
-      \code{grglist(x)}, 
+      \code{grglist(x, ignore.strand=FALSE)}, 
       \code{rglist(x)}:
       Return either a \link{GRangesList} or a \link[IRanges]{IRangesList}
       object of length \code{length(x)}. This coercion RESPECTS the cigar 
       information. The resulting ranges are fragments of the original ranges 
-      that do not include gaps or spaces between paired-end reads. 
+      that do not include gaps or spaces between paired-end reads.
+ 
+      \code{grglist} coercion supports \code{ignore.strand} to allow 
+      ranges of opposite strand to be combined (see examples). All 
+      ranges in the resulting GRangesList will have strand \sQuote{*}.
     }
     \item{}{
       \code{as(x, "GRangesList")}, \code{as(x, "GRanges")},
       \code{as(x, "RangesList")}, \code{as(x, "Ranges")}:
       Alternate ways of doing \code{grglist(x)}, \code{granges(x)},
       \code{rglist(x)}, \code{ranges(x)}, respectively.
+    }
+    \item{}{
+      \code{as(x, "GALignmentsList")}: Return a \link{GAlignmentsList} object of 
+      length \code{length(x)} where the i-th list element represents the ranges 
+      of the i-th alignment pair in \code{x}.
     }
   }
 }
@@ -384,17 +389,18 @@ galist
 ## E. COERCION 
 ## ---------------------------------------------------------------------
 
-## The granges() coercion supports 'ignore.strand' to allow ranges
-## from different strand to be combined. In this example paired-end
-## reads aligned to opposite strands were read into a GAlignmentsList. 
-## If the desired operation is to combine these ranges, reguardless of 
-## gaps or the space between pairs, 'ignore.strand' must be TRUE.
+## The granges() and grlist() coercions support 'ignore.strand' to 
+## allow ranges from different strand to be combined. In this example 
+## paired-end reads aligned to opposite strands were read into a 
+## GAlignmentsList. If the desired operation is to combine these ranges, 
+## reguardless of gaps or the space between pairs, 'ignore.strand' must be TRUE.
+granges(galist[1])
 granges(galist[1], ignore.strand=TRUE)
-granges(galist[1], ignore.strand=FALSE)
 
-## grglist() splits ranges by gap and the space bein each list element
+## grglist() splits ranges by gap and the space between list elements.
 galist <- GAlignmentsList(noGaps=gal1, Gaps=gal2)
 grglist(galist)
+grglist(galist, ignore.strand=TRUE)
 }
 
 \keyword{methods}

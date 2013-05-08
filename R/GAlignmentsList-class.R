@@ -134,23 +134,6 @@ setMethod("elementMetadata", "GAlignmentsList", .getElementMetadataList)
 ### Setters.
 ###
 
-setReplaceMethod("names", "GAlignmentsList",
-    function(x, value) 
-    {
-        if (!is(value, "AtomicList") ||
-            !identical(elementLengths(x), elementLengths(value)))
-            stop("replacement 'value' is not an AtomicList with the same ",
-                 "elementLengths as 'x'")
-        value <- unlist(value, use.names = FALSE)
-        if (!is(value, "Rle"))
-            value <- Rle(factor(value))
-        else if (!is.factor(runValue(value)))
-            runValue(value) <- factor(runValue(value))
-        names(x@unlistData) <- value
-        x
-    }
-)
-
 setReplaceMethod("rname", "GAlignmentsList",
     function(x, value) `seqnames<-`(x, value)
 )
@@ -196,6 +179,7 @@ GAlignmentsList <- function(...)
     relist(unlistData, PartitioningByEnd(listData))
 }
 
+## Taken from GRangesList. Maybe not needed?
 makeGAlignmentsListFromFeatureFragments <- function(seqnames=Rle(factor()),
                                                 fragmentPos=list(),
                                                 fragmentCigar=list(),
@@ -293,11 +277,17 @@ setMethod("granges", "GAlignmentsList",
     {
         if (ignore.strand)
             strand(x@unlistData) <- "*"
-        gr <- range(grglist(x))@unlistData
-        if (length(gr) != length(x))
-            warning("Some ranges could not be combined. ",
-                    "Consider using 'ignore.strand=TRUE'.")
-        gr
+        msg <- paste0("For some list elements in 'x', the ranges are ",
+                      "not aligned to the same chromosome and strand. ",
+                      "Cannot extract a single range for them.")
+        rg <- range(grglist(x, ignore.strand=ignore.strand))
+        if (all(elementLengths(rg) != 1L)) { 
+            if (ignore.strand)
+                warning(msg)
+            else
+                warning(paste0(msg, " Consider using 'ignore.strand=TRUE'."))
+        }
+        unlist(rg) 
     }
 )
 
@@ -360,13 +350,24 @@ setAs("GAlignmentsList", "Ranges",
 )
 setMethod("as.data.frame", "GAlignmentsList", .GRangesListAsdataframe)
 
+setAs("GAlignmentPairs", "GAlignmentsList", 
+    function(from) 
+    {
+        if (length(from) == 0L)
+            pbe <- PartitioningByEnd()
+        else
+            pbe <- PartitioningByEnd(seq(2, 2*length(from), 2), names=names(from)) 
+        new("GAlignmentsList",
+            unlistData=unlist(from, use.names=FALSE),
+            partitioning=pbe)
+        }
+)
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
 
-setMethod("[", "GAlignmentsList", .sBracketSubsetGRList)
-setReplaceMethod("[", "GAlignmentsList", .sBracketReplaceGRList)
-setReplaceMethod("[[", "GAlignmentsList", .dBracketReplaceGRList)
+## "[", "[<-" and "[[", "[[<-" from CompressedList
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.

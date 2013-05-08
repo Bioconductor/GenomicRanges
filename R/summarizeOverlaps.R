@@ -13,74 +13,87 @@ setGeneric("summarizeOverlaps", signature=c("features", "reads"),
 ##
 
 ## -------------------------------------------------------------------------
-## GAlignments methods
+## GAlignments, GAlignmentsList and GAlignmentPairs methods
 ##
 
-setMethod("summarizeOverlaps", c("GRangesList", "GAlignments"),
-    function(features, reads, mode, ignore.strand=FALSE, ...)
+.summarizeOverlaps <- function(features, reads, mode, ignore.strand,
+                               ..., inter.feature=inter.feature)
 {
     if (all(strand(reads) == "*"))
         ignore.strand <- TRUE
     mode <- match.fun(mode)
-    counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
+    counts <- .dispatchOverlaps(features, reads, mode, ignore.strand,
+                                inter.feature)
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-        rowData=features, colData=.readsMetadata(reads))
-})
+                         rowData=features, colData=.readsMetadata(reads))
+}
 
 setMethod("summarizeOverlaps", c("GRanges", "GAlignments"),
-    function(features, reads, mode, ignore.strand=FALSE, ...)
+    function(features, reads, mode, ignore.strand=FALSE, ...,
+             inter.feature=TRUE)
 {
-    if (all(strand(reads) == "*"))
-        ignore.strand <- TRUE
-    mode <- match.fun(mode)
-    counts <- .dispatchOverlaps(reads, features, mode, ignore.strand)
-    SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-        rowData=features, colData=.readsMetadata(reads))
+    .summarizeOverlaps(features, reads, mode, ignore.strand,
+                       ..., inter.feature=inter.feature)
+})
+setMethod("summarizeOverlaps", c("GRangesList", "GAlignments"),
+    function(features, reads, mode, ignore.strand=FALSE, ...,
+             inter.feature=TRUE)
+{
+    .summarizeOverlaps(features, reads, mode, ignore.strand,
+                       ..., inter.feature=inter.feature)
 })
 
-## -------------------------------------------------------------------------
-## GAlignmentPairs methods
-##
-
-setMethod("summarizeOverlaps", c("GRangesList", "GAlignmentPairs"),
-    function(features, reads, mode, ignore.strand=FALSE, ...)
+setMethod("summarizeOverlaps", c("GRanges", "GAlignmentsList"),
+    function(features, reads, mode, ignore.strand=FALSE, ...,
+             inter.feature=TRUE)
 {
-    if (all(strand(reads) == "*"))
-        ignore.strand <- TRUE
-    mode <- match.fun(mode)
-    counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
-    SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-        rowData=features, colData=.readsMetadata(reads))
+    .summarizeOverlaps(features, grglist(reads, ignore.strand=TRUE), 
+                       mode, ignore.strand, ..., 
+                       inter.feature=inter.feature)
+})
+setMethod("summarizeOverlaps", c("GRangesList", "GAlignmentsList"),
+    function(features, reads, mode, ignore.strand=FALSE, ...,
+             inter.feature=TRUE)
+{
+    .summarizeOverlaps(features, grglist(reads, ignore.strand=TRUE), 
+                       mode, ignore.strand, ..., 
+                       inter.feature=inter.feature)
 })
 
 setMethod("summarizeOverlaps", c("GRanges", "GAlignmentPairs"),
-    function(features, reads, mode, ignore.strand=FALSE, ...)
+    function(features, reads, mode, ignore.strand=FALSE, ...,
+             inter.feature=TRUE)
 {
-    if (all(strand(reads) == "*"))
-        ignore.strand <- TRUE
-    mode <- match.fun(mode)
-    counts <- .dispatchOverlaps(grglist(reads), features, mode, ignore.strand)
-    SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-        rowData=features, colData=.readsMetadata(reads))
+    .summarizeOverlaps(features, grglist(reads), mode, ignore.strand,
+                       ..., inter.feature=inter.feature)
+})
+setMethod("summarizeOverlaps", c("GRangesList", "GAlignmentPairs"),
+    function(features, reads, mode, ignore.strand=FALSE, ...,
+             inter.feature=TRUE)
+{
+    .summarizeOverlaps(features, grglist(reads), mode, ignore.strand,
+                       ..., inter.feature=inter.feature)
 })
 
 ## -------------------------------------------------------------------------
 ## 'mode' functions 
 ##
 
-Union <- function(reads, features, ignore.strand=FALSE, ...)
+Union <- function(features, reads, ignore.strand=FALSE, ...,
+                  inter.feature=TRUE)
 {
     co <- countOverlaps(reads, features, ignore.strand=ignore.strand)
     idx <- co == 1
-    if (sum(co == 1) == 0)
+    if (sum(idx) == 0)
         return(integer(length(features)))
+    if (inter.feature)
+        reads <- reads[idx]
 
-    counts <- countOverlaps(features, reads[idx], ignore.strand=ignore.strand)
-    names(counts) <- names(features)
-    counts 
+    countOverlaps(features, reads, ignore.strand=ignore.strand)
 }
 
-IntersectionStrict <- function(reads, features, ignore.strand=FALSE, ...)
+IntersectionStrict <- function(features, reads, ignore.strand=FALSE, 
+                               ..., inter.feature=TRUE)
 {
     queryseq <- seqlevels(reads)
     circular <- isCircular(features)
@@ -89,34 +102,42 @@ IntersectionStrict <- function(reads, features, ignore.strand=FALSE, ...)
         warning("circular sequence(s) in reads '",
                 paste(circNames, sep="' '"), "' ignored")
         if (any(keep <- !seqlevels(reads) %in% circNames))
-            reads <- keepSeqlevels(reads, seqlevels(reads)[keep])
+            #reads <- keepSeqlevels(reads, seqlevels(reads)[keep])
+            reads <- reads[seqlevels(reads)[keep]]
         else
             return(integer(length(features)))
     }
  
     fo <- findOverlaps(reads, features, type="within",
-        ignore.strand=ignore.strand)
-    ## omit reads that hit >1 feature
-    co <- tabulate(queryHits(fo), length(reads))
-    if (!any(co == 1L))
-        return(integer(length(features)))
-    unqfo <- fo[queryHits(fo) %in% seq_along(reads)[co == 1L]]
-    rle <- Rle(sort(subjectHits(unqfo)))
-    counts <- rep(0, length(features))
-    counts[runValue(rle)] <- runLength(rle)
-    names(counts) <- names(features)
-    counts 
+                       ignore.strand=ignore.strand)
+
+    if (inter.feature) {
+        ## omit reads that fall 'within' >1 feature
+        qh <- countQueryHits(fo)
+        if (!any(qh == 1L))
+            return(integer(length(features)))
+        unqfo <- fo[queryHits(fo) %in% seq_along(reads)[qh == 1L]]
+        rle <- Rle(sort(subjectHits(unqfo)))
+        counts <- rep(0, length(features))
+        counts[runValue(rle)] <- runLength(rle)
+        counts
+    } else {
+        countSubjectHits(fo)
+    }
 }
 
-IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
+IntersectionNotEmpty <-  function(features, reads, ignore.strand=FALSE, 
+                                  ..., inter.feature=TRUE)
 {
     co <- countOverlaps(reads, features, ignore.strand=ignore.strand)
     if (sum(co) == 0)
         return(integer(length(features)))
 
-    counts <- .IntersectionNotEmpty(reads, features, ignore.strand)
-    names(counts) <- names(features)
-    counts 
+    if (inter.feature) {
+        .IntersectionNotEmpty(reads, features, ignore.strand)
+    } else {
+        countOverlaps(features, reads, ignore.strand=ignore.strand)
+    }
 }
 
 ## -------------------------------------------------------------------------
@@ -132,18 +153,18 @@ IntersectionNotEmpty <-  function(reads, features, ignore.strand = FALSE, ...)
 }
 
 .dispatchOverlaps <-
-    function(reads, features, mode, ignore.strand, ...)
+    function(features, reads, mode, ignore.strand, inter.feature, ...)
 {
     if (ignore.strand) {
-        if (class(reads) == "GRangesList") {
-            r <- unlist(reads)
+        if (class(features) == "GRangesList") {
+            r <- unlist(features)
             strand(r) <- "*"
-            reads <- split(r, togroup(reads))
+            features@unlistData <- r
         } else {
-            strand(reads) <- "*"
+            strand(features) <- "*"
         } 
     }
-    mode(reads, features, ignore.strand)
+    mode(features, reads, ignore.strand, inter.feature=inter.feature)
 }
 
 .IntersectionNotEmpty <- function(reads, features, ignore.strand=FALSE)
