@@ -1,5 +1,6 @@
 #include "GenomicRanges.h"
 #include "IRanges_interface.h"
+#include "XVector_interface.h"
 
 static char errmsg_buf[200];
 
