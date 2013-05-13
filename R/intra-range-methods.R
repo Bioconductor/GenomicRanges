@@ -82,7 +82,7 @@ setMethod("flank", "GenomicRanges",
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand)
-            start <- rep.int(TRUE, length(x))
+            start <- rep.int(start, length(x))
         else 
             start <- as.vector(start == (strand(x) != "-"))
         ranges <-
