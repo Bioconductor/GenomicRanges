@@ -2,6 +2,19 @@
 {
     as.integer(assays(res)$counts)
 }
+quiet <- suppressMessages
+
+gr <- GRanges(c(rep("chr1", 7), rep("chr2", 4)), 
+    IRanges(c(1000, 3000, 3600, 4000, 4000, 5000, 
+        5400, 2000, 3000, 7000, 7500), 
+        width = c(500, 500, 300, 500, 900, 500, 500, 
+        900, 500, 600, 300)), "+",
+    group = c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H"))
+
+rds <- GAlignments(c(rep(c("chr1", "chr2"), 3), "chr1"),
+    as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
+    c("500M", "100M", "300M", "500M", "300M", "50M200N50M", "50M150N50M"),
+    strand(rep("+", 7)))
 
 test_summarizeOverlaps_Union_single <- function()
 {
@@ -127,7 +140,7 @@ test_summarizeOverlaps_IntersectionNotEmpty_single <- function()
     checkIdentical(c(0L, 0L), .getCounts(res))
 
     ann <- GRanges(rep("chr1", 3), IRanges(c(1L, 20L, 20L), 
-        width=c(50, 11, 11)), c("+", "+", "-")) 
+                   width=c(50, 11, 11)), c("+", "+", "-")) 
     ga <- GAlignments("chr1", 23L, "5M", strand("*"))
     res <- summarizeOverlaps(ann, ga, mode)
     checkIdentical(c(0L, 0L, 0L), .getCounts(res))
@@ -184,34 +197,80 @@ test_summarizeOverlaps_IntersectionNotEmpty_paired <- function()
     checkIdentical(c(1L, 0L), .getCounts(res_galp))
 }
 
-test_summarizeOverlaps_features <- function()
+test_summarizeOverlaps_inter.feature_GRanges <- function()
 {
-    fts <- GRanges(c(rep("chr1", 7), rep("chr2", 4)), 
-        IRanges(c(1000, 3000, 3600, 4000, 4000, 5000, 
-            5400, 2000, 3000, 7000, 7500), 
-            width = c(500, 500, 300, 500, 900, 500, 500, 
-            900, 500, 600, 300)), "+",
-        group = c("A", "B", "C", "C", "D", "D", "E", "F", "G", "H", "H"))
-    ftslst <- split(fts, mcols(fts)[["group"]])
+    ## rows 5,6,7 from figure in vignette
+    ft <- gr[10:11]
+    rd <- GAlignments(rep("chr2", 3), as.integer(c(7100, 7100, 7500)), 
+                      c("300M", "500M", "50M"), strand(rep("+", 3)))
+    mode <- "Union"
+    res <- summarizeOverlaps(ft, rd[1], mode, inter.feature=TRUE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[1], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=TRUE)
+    checkIdentical(c(0L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 1L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=TRUE)
+    checkIdentical(c(0L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 1L), .getCounts(res)) 
 
-    rds <- GAlignments(c(rep(c("chr1", "chr2"), 3), "chr1"),
-        as.integer(c(1400, 2700, 3400, 7100, 4000, 3100, 5200)),
-        c("500M", "100M", "300M", "500M", "300M", "50M200N50M", "50M150N50M"),
-        strand(rep("+", 7)))
+    mode <- "IntersectionStrict"
+    res <- summarizeOverlaps(ft, rd[1], mode, inter.feature=TRUE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[1], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=TRUE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=TRUE)
+    checkIdentical(c(0L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 1L), .getCounts(res)) 
 
-    ## GRanges
-    res <- summarizeOverlaps(fts, rds, "Union")
-    checkIdentical(c(1L, rep(0L, 6), 1L, 1L, 0L, 0L), .getCounts(res)) 
-    res <- summarizeOverlaps(fts, rds, mode="IntersectionStrict")
-    checkIdentical(c(rep(0L, 5), 1L, 0L, rep(1L, 3), 0L), .getCounts(res)) 
-    res <- summarizeOverlaps(fts, rds, mode="IntersectionNotEmpty")
-    checkIdentical(c(1L, rep(0L, 4), 1L, 0L, rep(1L, 3), 0L), .getCounts(res)) 
-
-    ## GRangesList
-    res <- summarizeOverlaps(ftslst, rds, "Union")
-    checkIdentical(c(1L, rep(0L, 4), rep(1L, 3)), .getCounts(res)) 
-    res <- summarizeOverlaps(ftslst, rds, "IntersectionStrict")
-    checkIdentical(c(0L, 0L, 0L, 1L, 0L, rep(1L, 3)), .getCounts(res)) 
-    res <- summarizeOverlaps(ftslst, rds, "IntersectionNotEmpty")
-    checkIdentical(c(1L, 0L, 0L, 1L, 0L, rep(1L, 3)), .getCounts(res)) 
+    mode <- "IntersectionNotEmpty"
+    res <- summarizeOverlaps(ft, rd[1], mode, inter.feature=TRUE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[1], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=TRUE)
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 1L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=TRUE)
+    checkIdentical(c(0L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=FALSE)
+    checkIdentical(c(1L, 1L), .getCounts(res)) 
 }
+
+test_summarizeOverlaps_inter.feature_GRangesList <- function()
+{
+    grl <- split(gr, mcols(gr)[["group"]])
+    mode <- "Union"
+    res <- quiet(summarizeOverlaps(grl, rds, mode))
+    checkIdentical(c(1L, rep(0L, 4), rep(1L, 3)), .getCounts(res)) 
+    res <- quiet(summarizeOverlaps(grl, rds, mode, inter.feature=FALSE))
+    checkIdentical(c(1L, 1L, 2L, 2L, rep(1L, 4)), .getCounts(res)) 
+    co <- countOverlaps(grl, rds, type="any")
+    checkIdentical(unname(co), .getCounts(res))
+
+    mode <- "IntersectionStrict"
+    res <- quiet(summarizeOverlaps(grl, rds, mode))
+    checkIdentical(c(0L, 0L, 0L, 1L, 0L, rep(1L, 3)), .getCounts(res)) 
+    res <- quiet(summarizeOverlaps(grl, rds, mode, inter.feature=FALSE))
+    checkIdentical(c(0L, 0L, 1L, 2L, 0L, rep(1L, 3)), .getCounts(res))
+    co <- countSubjectHits(findOverlaps(rds, grl, type="within"))
+    checkIdentical(unname(co), .getCounts(res))
+ 
+    mode <- "IntersectionNotEmpty"
+    res <- quiet(summarizeOverlaps(grl, rds, mode))
+    checkIdentical(c(1L, 0L, 0L, 1L, 0L, rep(1L, 3)), .getCounts(res)) 
+    res <- quiet(summarizeOverlaps(grl, rds, mode, inter.feature=FALSE))
+    checkIdentical(c(1L, 1L, 2L, 2L, rep(1L, 4)), .getCounts(res))
+    co <- countOverlaps(grl, rds, type="any")
+    checkIdentical(unname(co), .getCounts(res))
+}
+

@@ -23,7 +23,7 @@ setGeneric("summarizeOverlaps", signature=c("features", "reads"),
         ignore.strand <- TRUE
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(features, reads, mode, ignore.strand,
-                                inter.feature)
+                                inter.feature=inter.feature)
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
                          rowData=features, colData=.readsMetadata(reads))
 }
@@ -84,7 +84,7 @@ Union <- function(features, reads, ignore.strand=FALSE, ...,
 {
     co <- countOverlaps(reads, features, ignore.strand=ignore.strand)
     idx <- co == 1
-    if (sum(idx) == 0)
+    if (sum(co) == 0)
         return(integer(length(features)))
     if (inter.feature)
         reads <- reads[idx]

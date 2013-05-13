@@ -9,7 +9,6 @@
 \alias{nearest,GenomicRanges,GenomicRanges-method}
 \alias{nearest,GenomicRanges,missing-method}
 \alias{distance,GenomicRanges,GenomicRanges-method}
-\alias{distance,GenomicRanges,TranscriptDb-method}
 \alias{distanceToNearest,GenomicRanges,GenomicRanges-method}
 \alias{distanceToNearest,GenomicRanges,missing-method}
 
@@ -35,7 +34,6 @@
 \S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, ignore.strand=FALSE, ...)
 
 \S4method{distance}{GenomicRanges,GenomicRanges}(x, y, ignore.strand=FALSE, ...)
-\S4method{distance}{GenomicRanges,TranscriptDb}(x, y, ignore.strand=FALSE, id, type=c("gene", "tx", "cds"), ...)
 }
 
 \arguments{
@@ -45,9 +43,8 @@
     within which the nearest neighbors are found. Can be missing,
     in which case \code{x} is also the subject. 
   }
-  \item{y}{For the \code{distance} method, a \code{GRanges} or
-    \code{TranscriptDb} instance. Cannot be missing. In the case of 
-    \code{GRanges}, if \code{x} and \code{y} are not the same length, 
+  \item{y}{For the \code{distance} method, a \code{GRanges} instance.
+    Cannot be missing. If \code{x} and \code{y} are not the same length, 
     the shortest will be recycled to match the length of the longest.
   }
   \item{select}{Logic for handling ties. By default, all methods
@@ -62,16 +59,6 @@
   \item{ignore.strand}{
     A \code{logical} indicating if the strand of the input ranges
     should be ignored. When \code{TRUE}, strand is set to \code{'+'}.
-  }
-  \item{id}{A \code{character} vector of gene, transcript or coding region
-    ids. Must be the same length as \code{x} and be present in \code{y}
-    (TranscriptDb) as the gene_id, tx_id or cds_id. Applies to the 
-    \code{distance,GenomicRanges,TranscriptDb}-method only.
-  }
-  \item{type}{A \code{character(1)}. Must be one of \sQuote{gene}, 
-    \sQuote{tx} or \sQuote{cds} indicating the type of id provided in 
-    the \code{id} argument. Applies to the 
-    \code{distance,GenomicRanges,TranscriptDb}-method only.
   }
   \item{...}{Additional arguments for methods.}
 }
@@ -227,14 +214,8 @@
   query <- GRanges(c("A", "B"), IRanges(c(1, 5), width=1))
   distanceToNearest(query, subject)
 
-  ## distance() with GRanges and TranscriptDb
-  library(TxDb.Dmelanogaster.UCSC.dm3.ensGene) 
-  txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene 
-  gr <- GRanges(c("chr2L", "chr2R"), 
-                IRanges(c(100000, 200000),  width=100)) 
-  distance(gr, txdb, id=c("FBgn0259717", "FBgn0261501"), type="gene")
-  distance(gr, txdb, id=c("4", "4097"), type="tx")
-  distance(gr, txdb, id=c("10000", "23000"), type="cds")
+  ## distance() with GRanges and TranscriptDb see ?TranscriptDb
+  ## man page in GenomicFeatures package.
 }
  
 \keyword{utilities}

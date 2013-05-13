@@ -310,24 +310,6 @@ setMethod("nearest", c("GenomicRanges", "missing"),
 ### distance()
 ###
 
-setMethod("distance", c("GenomicRanges", "GenomicRanges"),
-    function(x, y, ignore.strand=FALSE, ...)
-    {
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE or FALSE")
-        d <- distance(ranges(x), ranges(y))
-        mismtch <- as.character(seqnames(x)) != as.character(seqnames(y))
-        if (any(mismtch))
-            d[mismtch] <- NA
-        if (!ignore.strand) {
-            idx <- as.numeric(strand(x)) + as.numeric(strand(y))
-            if (any(idx == 3))
-                d[idx == 3] <- NA
-        }
-        d
-    }
-)
-
 setMethod("distance", c("GenomicRanges", "TranscriptDb"),
     function(x, y, ignore.strand=FALSE, id, type=c("gene", "tx", "cds"), ...)
     {

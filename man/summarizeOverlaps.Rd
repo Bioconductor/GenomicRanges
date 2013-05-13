@@ -121,10 +121,23 @@
     behavior of modes \sQuote{Union} and \sQuote{IntersectionNotEmpty} are the
     same resulting in 5 distinct ways to count.
   }
+  \item{fragments}{
+    A logical value indicating if singletons, reads with unmapped pairs
+    and other fragments should be included in the counting. When
+    \code{fragments=FALSE} only reads paired with the algorithm described
+    at ?findMateAlignment are counted. When \code{fragments=TRUE} (default)
+    all singletons, reads with unmapped pairs and other fragments are
+    counted in addition to the reads paired with the ?findMateAlignment
+    algorithm. This argument applies to paired-end reads only so
+    \code{singleEnd} must be FALSE.
+  }
+  \item{param}{An optional \code{\linkS4class{ScanBamParam}} instance to
+     further influence scanning, counting, or filtering.
+  }
   \item{...}{
-    Additional arguments for other methods.  If using multiple
-    cores, you can pass arguments in here to be used by mclapply to
-    indicate the number of cores to use etc.
+    Additional arguments such as \code{fragments} or \code{param}.  If 
+    using multiple cores, arguments can be passed through to the mclapply 
+    used when counting Bam files.
   }
 }
 
@@ -311,7 +324,6 @@ table(assays(se_s)$counts > 0)
 ## pairs or reads with more than two fragments. When 'fragments=FALSE'
 ## only the reads paired by the ?findMateAlignment algorithm will
 ## be included in the counting. In this case, 'yieldSize' cannot be used.
-## See the ?BamFile man page for details on the 'fragments' argument. 
 bf_p <- BamFile(untreated3_chr4())
 se_p <- summarizeOverlaps(exbygene, bf_p, singleEnd=FALSE, fragments=FALSE)
 table(assays(se_p)$counts > 0)
@@ -347,7 +359,6 @@ sum(assays(se_p)$counts)
 fls <- list.files(system.file("extdata",package="GenomicRanges"),
                   recursive=TRUE, pattern="*bam$", full=TRUE)
 names(fls) <- basename(fls)
-
 bf <- BamFileList(fls, index=character(), yieldSize=1000)
 genes <- GRanges(
     seqnames = c(rep("chr2L", 4), rep("chr2R", 5), rep("chr3L", 2)),
