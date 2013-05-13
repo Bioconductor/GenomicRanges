@@ -121,23 +121,25 @@
     behavior of modes \sQuote{Union} and \sQuote{IntersectionNotEmpty} are the
     same resulting in 5 distinct ways to count.
   }
-  \item{fragments}{
-    A logical value indicating if singletons, reads with unmapped pairs
-    and other fragments should be included in the counting. When
-    \code{fragments=FALSE} only reads paired with the algorithm described
-    at ?findMateAlignment are counted. When \code{fragments=TRUE} (default)
-    all singletons, reads with unmapped pairs and other fragments are
-    counted in addition to the reads paired with the ?findMateAlignment
-    algorithm. This argument applies to paired-end reads only so
-    \code{singleEnd} must be FALSE.
-  }
-  \item{param}{An optional \code{\linkS4class{ScanBamParam}} instance to
-     further influence scanning, counting, or filtering.
-  }
   \item{...}{
     Additional arguments such as \code{fragments} or \code{param}.  If 
     using multiple cores, arguments can be passed through to the mclapply 
     used when counting Bam files.
+    \describe{
+      \item{fragments}{
+      A logical value indicating if singletons, reads with unmapped pairs
+      and other fragments should be included in the counting. When
+      \code{fragments=FALSE} only reads paired with the algorithm described
+      at ?findMateAlignment are counted. When \code{fragments=TRUE} (default)
+      all singletons, reads with unmapped pairs and other fragments are
+      counted in addition to the reads paired with the ?findMateAlignment
+      algorithm. This argument applies to paired-end reads only so
+      \code{singleEnd} must be FALSE.
+      }
+      \item{param}{An optional \code{\link[Rsamtools]{ScanBamParam}} instance to
+         further influence scanning, counting, or filtering.
+      }
+    }
   }
 }
 
