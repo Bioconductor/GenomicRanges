@@ -54,6 +54,7 @@ setMethod("keepSeqlevels",  c("GRangesList", "GAlignments"),
 setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
             function(x, value, ...)
 {
+    .Deprecated("seqlevels")
     if (!identical(character(0), seqlevels(x)) &&
         !identical(character(0), value)) {
         str <- !value %in% seqlevels(x)
@@ -74,6 +75,7 @@ setMethod("keepSeqlevels",  c("GenomicRanges", "character"),
 setMethod("keepSeqlevels",  c("GRangesList", "character"),
             function(x, value, ...)
 {
+    .Deprecated("seqlevels")
     if (!identical(character(0), seqlevels(x)) &&
         !identical(character(0), value)) {
         str <- !value %in% seqlevels(x)
@@ -120,6 +122,7 @@ setMethod("keepSeqlevels",  c("GAlignments", "GAlignments"),
 setMethod("keepSeqlevels",  c("GAlignments", "character"),
             function(x, value, ...)
 {
+    .Deprecated("seqlevels")
     if (!identical(character(0), seqlevels(x)) &&
         !identical(character(0), value)) {
         str <- !value %in% seqlevels(x)
@@ -142,6 +145,7 @@ setMethod("keepSeqlevels",  c("GAlignments", "character"),
 
 .renameSeqlevels <- function(x, value, ...)
 {
+    .Deprecated("seqlevels")
     if (identical(character(0), seqlevels(x)))
         return(x)
     if (is.null(old <- names(value)))

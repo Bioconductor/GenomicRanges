@@ -20,7 +20,7 @@
 \alias{renameSeqlevels,GenomicRanges,character-method}
 
 \title{
-  seqlevels utility functions
+  (Deprecated) seqlevels utility functions
 }
 
 \description{
