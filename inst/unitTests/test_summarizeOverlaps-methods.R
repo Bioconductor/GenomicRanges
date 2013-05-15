@@ -239,10 +239,16 @@ test_summarizeOverlaps_inter.feature_GRanges <- function()
     res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=TRUE)
     checkIdentical(c(1L, 0L), .getCounts(res)) 
     res <- summarizeOverlaps(ft, rd[2], mode, inter.feature=FALSE)
-    checkIdentical(c(1L, 1L), .getCounts(res)) 
+    checkIdentical(c(1L, 0L), .getCounts(res)) 
     res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=TRUE)
     checkIdentical(c(0L, 0L), .getCounts(res)) 
     res <- summarizeOverlaps(ft, rd[3], mode, inter.feature=FALSE)
+    checkIdentical(c(0L, 0L), .getCounts(res))
+    ## read spans both features 
+    rd <- GAlignments("chr2", 7000L, "750M", strand("+"))
+    res <- summarizeOverlaps(ft, rd, mode, inter.feature=TRUE)
+    checkIdentical(c(0L, 0L), .getCounts(res)) 
+    res <- summarizeOverlaps(ft, rd, mode, inter.feature=FALSE)
     checkIdentical(c(1L, 1L), .getCounts(res)) 
 }
 
@@ -266,11 +272,11 @@ test_summarizeOverlaps_inter.feature_GRangesList <- function()
     checkIdentical(unname(co), .getCounts(res))
  
     mode <- "IntersectionNotEmpty"
-    res <- quiet(summarizeOverlaps(grl, rds, mode))
-    checkIdentical(c(1L, 0L, 0L, 1L, 0L, rep(1L, 3)), .getCounts(res)) 
-    res <- quiet(summarizeOverlaps(grl, rds, mode, inter.feature=FALSE))
-    checkIdentical(c(1L, 1L, 2L, 2L, rep(1L, 4)), .getCounts(res))
-    co <- countOverlaps(grl, rds, type="any")
-    checkIdentical(unname(co), .getCounts(res))
+    rd <-  rds[c(5,7)]
+    ft <- grl[3:5]
+    res <- quiet(summarizeOverlaps(ft, rd, mode))
+    checkIdentical(c(0L, 1L, 0L), .getCounts(res)) 
+    res <- quiet(summarizeOverlaps(ft, rd, mode, inter.feature=FALSE))
+    checkIdentical(c(0L, 1L, 0L), .getCounts(res)) 
 }
 

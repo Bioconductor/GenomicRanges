@@ -133,11 +133,9 @@ IntersectionNotEmpty <-  function(features, reads, ignore.strand=FALSE,
     if (sum(co) == 0)
         return(integer(length(features)))
 
-    if (inter.feature) {
-        .IntersectionNotEmpty(reads, features, ignore.strand)
-    } else {
-        countOverlaps(features, reads, ignore.strand=ignore.strand)
-    }
+    .IntersectionNotEmpty(reads, features, ignore.strand,
+                              inter.feature=inter.feature)
+        #countOverlaps(features, reads, ignore.strand=ignore.strand)
 }
 
 ## -------------------------------------------------------------------------
@@ -167,24 +165,19 @@ IntersectionNotEmpty <-  function(features, reads, ignore.strand=FALSE,
     mode(features, reads, ignore.strand, inter.feature=inter.feature)
 }
 
-.IntersectionNotEmpty <- function(reads, features, ignore.strand=FALSE)
+.IntersectionNotEmpty <- function(reads, features, ignore.strand=FALSE,
+                                  inter.feature=TRUE)
 {
-    ## unique disjoint regions
+    ## overlaps with unique disjoint regions
     if (class(features) == "GRangesList")
         d <- disjoin(features@unlistData, ignore.strand=ignore.strand)
     else
         d <- disjoin(features)
     coUnq <- countOverlaps(d, features, ignore.strand=ignore.strand)
     ud <- d[coUnq == 1]
-
-    ## count read if :
-    ## (i)  the read or any one of the read fragments (gapped reads) olaps 
-    ##      a ud region
-    ## (ii) the read or > 1 of the read fragments (gapped reads) olaps >1
-    ##      ud region AND the ud regions are from the same feature
-
     foUD <- findOverlaps(reads, ud, ignore.strand=ignore.strand)
-    ## map ud regions back to original features
+
+    ## map unique disjoint regions back to original features
     foFeatures <- findOverlaps(features, ud, ignore.strand=ignore.strand)
     featuresMap <-
         as.matrix(foFeatures)[order(subjectHits(foFeatures)), 1L]
@@ -192,21 +185,20 @@ IntersectionNotEmpty <-  function(features, reads, ignore.strand=FALSE,
     mm <- data.frame(query=queryHits(foUD), subject=backMapFeatures)
 
     queryRle <- Rle(mm$query)
+    ## reads / fragments hit 1 unique disjoint region
     qsingle <- runValue(queryRle)[runLength(queryRle) == 1]
     singlehits <- mm$subject[mm$query %in% qsingle]
+    ## reads / fragments hit >1 unique disjoint region from same feature
     qmulti <- runValue(queryRle)[runLength(queryRle) > 1]
     multi <- mm[mm$query %in% qmulti, ]
     lst <- split(multi$subject, multi$query)
-    unq <- lapply(lst, function(x) {
-             if (length(unique(x)) == 1)
-                 unique(x)
-             else
-                 NA}
-           )
-
+    unq <- lapply(lst, unique)
+    if (inter.feature)  ## count if hits a single feature 
+        unq[elementLengths(unq) != 1L] <- NA_integer_
     multihits <- do.call(c, unq)
-    regions <- c(singlehits, multihits) 
 
+    ## combine results
+    regions <- c(singlehits, multihits) 
     counts <- rep(0, length(features))
     if (length(regions) == 0)
         return(counts)

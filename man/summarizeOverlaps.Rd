@@ -151,13 +151,16 @@
       is counted a maximum of once. New to GenomicRanges >= 1.13.9 is the
       \code{inter.feature} argument which allows reads to be counted for
       each feature they overlap. When \code{inter.feature=TRUE} the counting
-      modes are aware of feature overlap and reads overlapping multiple features
-      are dropped and not counted. (This was the standard behavior prior
-      to GenomicRanges 1.13.9.) When \code{inter.feature=FALSE} multiple
+      modes are aware of feature overlap and reads overlapping multiple 
+      features are dropped and not counted. (This was the standard behavior 
+      prior to GenomicRanges 1.13.9.) When \code{inter.feature=FALSE} multiple
       feature overlap is ignored and reads are counted once for each feature
-      they map to. This essentially reduces the modes to \code{countOverlaps} 
-      with \code{type="any"} (modes Union and IntersectionNotEmpty) or 
-      \code{type="within"} (mode IntersectionStrict).
+      they map to. This essentially reduces modes \sQuote{Union} and
+      \sQuote{IntersectionStrict} to \code{countOverlaps} with 
+      \code{type="any"}, and \code{type="within"}, respectively.
+      \sQuote{IntersectionNotEmpty} is not reduced to a derivative of
+      \code{countOverlaps} because the shared regions are removed before 
+      counting.
     }
     \item{features :}{
       A \sQuote{feature} can be any portion of a genomic region such as a gene, 
@@ -290,15 +293,15 @@ counts2["H", ]
 ## a read for each feature it overlaps. This can be accomplished by 
 ## setting 'inter.feature' to FALSE.
 
-## The counting essentially becomes countOverlaps() with type="any"
-## for modes "Union" and "IntersectionNotEmpty" and type="within" for
-## mode "IntersectionStrict".
+## When 'inter.feature=FALSE', modes 'Union' and 'IntersectionStrict'
+## essentially reduce to countOverlaps() with type="any" and 
+## type="within", respectively.
 
-## When inter.feature=TRUE only features "A", "F" and "G" have counts.
+## When 'inter.feature=TRUE' only features "A", "F" and "G" have counts.
 se1 <- summarizeOverlaps(gr, reads, mode="Union", inter.feature=TRUE)
 assays(se1)$counts
 
-## When inter.feature=FALSE all 11 features have a count. There are 
+## When 'inter.feature=FALSE' all 11 features have a count. There are 
 ## 7 total reads so one or more reads were counted more than once.
 se2 <- summarizeOverlaps(gr, reads, mode="Union", inter.feature=FALSE)
 assays(se2)$counts
