@@ -178,7 +178,7 @@ seqnameStyle(x) <- value
 
 \examples{
 ## ---------------------------------------------------------------------
-## Simple Examples.
+## Finding methods.
 ## ---------------------------------------------------------------------
 
 showMethods("seqinfo")
@@ -214,11 +214,23 @@ seqlevels(txdb)
 seqlevels(txdb)[seqlevels(txdb) == "CHM"] <- "M"
 seqlevels(txdb)
 
-## Renameing seqlevels in a GRanges can be done in the same
-## way as the TranscriptDb object.
+## The same approach is used when renaming seqlevels in a GRanges or 
+## any object with a 'Seqinfo' class.
 tx <- transcripts(txdb)
 seqlevels(tx)
 seqlevels(tx) <- gsub("CH", "ch", seqlevels(tx))
+seqlevels(tx)
+
+## ---------------------------------------------------------------------
+## Subsetting by seqlevels. 
+## ---------------------------------------------------------------------
+
+## Remove seqlevel 'M'.
+seqlevels(tx, force=TRUE) <- seqlevels(tx)[seqlevels(tx) != "M"]
+seqlevels(tx)
+
+## Keep only 'ch3L' and 'ch3R'.
+seqlevels(tx, force=TRUE) <- seqlevels(tx)[seqlevels(tx) == c("ch3L", "ch3R")]
 seqlevels(tx)
 }
 
