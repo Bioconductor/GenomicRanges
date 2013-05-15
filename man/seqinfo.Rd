@@ -177,14 +177,49 @@ seqnameStyle(x) <- value
 }
 
 \examples{
-  showMethods("seqinfo")
-  showMethods("seqinfo<-")
+## ---------------------------------------------------------------------
+## Simple Examples.
+## ---------------------------------------------------------------------
 
-  showMethods("seqnames")
-  showMethods("seqnames<-")
+showMethods("seqinfo")
+showMethods("seqinfo<-")
 
-  if (interactive())
-    ?`GRanges-class`
+showMethods("seqnames")
+showMethods("seqnames<-")
+
+if (interactive())
+  ?`GRanges-class`
+
+## ---------------------------------------------------------------------
+## Renaming seqlevels. 
+## ---------------------------------------------------------------------
+
+## Overlap and matching operations between objects require 
+## matching seqlevels. Often the seqlevels in one must be renamed 
+## to match the other.
+
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
+seqlevels(txdb)
+
+## Remove "chr" from all seqlevels.
+seqlevels(txdb) <- gsub("chr", "", seqlevels(txdb))
+seqlevels(txdb)
+
+## Add "CH" to all seqlevels.
+seqlevels(txdb) <- paste0("CH", seqlevels(txdb))
+seqlevels(txdb)
+
+## Modify a single seqlevel.
+seqlevels(txdb)[seqlevels(txdb) == "CHM"] <- "M"
+seqlevels(txdb)
+
+## Renameing seqlevels in a GRanges can be done in the same
+## way as the TranscriptDb object.
+tx <- transcripts(txdb)
+seqlevels(tx)
+seqlevels(tx) <- gsub("CH", "ch", seqlevels(tx))
+seqlevels(tx)
 }
 
 \keyword{methods}

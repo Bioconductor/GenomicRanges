@@ -238,7 +238,7 @@ names(grl) <- LETTERS[seq_along(grl)]
 
 ## ---------------------------------------------------------------------
 ## Counting modes. 
-##
+## ---------------------------------------------------------------------
 
 ## First we count with a GRanges as the 'features'. Note that
 ## 'Union' is the most conservative counting mode followed by 
@@ -282,7 +282,7 @@ counts2["H", ]
 
 ## ---------------------------------------------------------------------
 ## Counting multi-hit reads.
-##
+## ---------------------------------------------------------------------
 
 ## The goal of the counting modes is to provide a set of rules that
 ## resolve reads hitting multiple features so each read is counted
@@ -305,7 +305,7 @@ assays(se2)$counts
 
 ## ---------------------------------------------------------------------
 ## Counting Bam files.
-##
+## ---------------------------------------------------------------------
 
 library(Rsamtools)
 library(pasillaBamSubset)
@@ -356,7 +356,7 @@ sum(assays(se_p)$counts)
 
 ## ---------------------------------------------------------------------
 ## Count tables for DESeq or edgeR.
-##
+## ---------------------------------------------------------------------
 
 fls <- list.files(system.file("extdata",package="GenomicRanges"),
                   recursive=TRUE, pattern="*bam$", full=TRUE)
@@ -378,7 +378,7 @@ edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 
 ## ---------------------------------------------------------------------
 ## User supplied 'mode'. 
-##
+## ---------------------------------------------------------------------
 
 ## A user defined count function must have the same arguments as 
 ## the current counting modes.
