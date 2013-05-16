@@ -17,7 +17,7 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
     if (is.null(ntail <- getOption("showTailLines")))
         ntail <- nhalf 
 
-    if (lx < (nhalf*2+1L) | (lx < (nhead+ntail+1L))) {
+    if (lx < (nhead+ntail+1L)) {
         ans <- makeNakedMat.FUN(x)
         ans_rownames <- .rownames(names(x), lx)
     } else {
