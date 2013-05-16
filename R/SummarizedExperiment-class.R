@@ -16,9 +16,18 @@ setMethod("clone", "ShallowData",  # not exported
     x
 })
 
-.ShallowSimpleListAssays <- setRefClass("ShallowSimpleListAssays",
+.ShallowSimpleListAssays0 <- setRefClass("ShallowSimpleListAssays",
     fields = list( data = "SimpleList" ),
     contains = c("ShallowData", "Assays"))
+
+.ShallowSimpleListAssays <-
+    function(..., data = SimpleList())
+    ## this two-step constructor is much faster, 16 May, 2013
+{
+    xx <- .ShallowSimpleListAssays0(...)
+    xx$data <- data
+    xx
+}
 
 ## 
 ## SummarizedExperiment
@@ -31,7 +40,7 @@ setClass("SummarizedExperiment",
         assays="Assays"),                     # Data -- e.g., list of matricies
     prototype(
         rowData=GRanges(),
-        assays=.ShallowSimpleListAssays$new(data=SimpleList())))
+        assays=.ShallowSimpleListAssays(data=SimpleList())))
 
 ## validity
 
@@ -117,7 +126,7 @@ setMethod(SummarizedExperiment, "SimpleList",
     if (!all(sapply(assays, FUN)))
         assays <- endoapply(assays, unname)
     if (!is(assays, "Assays"))
-        assays <- .ShallowSimpleListAssays$new(data=assays)
+        assays <- .ShallowSimpleListAssays(data=assays)
 
     new("SummarizedExperiment", exptData=exptData, rowData=rowData,
         colData=colData, assays=assays, ...)
@@ -731,7 +740,7 @@ setMethod(updateObject, "SummarizedExperiment",
 {
     s <- slot(object, "assays")
     if (is(s, "SimpleList"))
-        slot(object, "assays") <- .ShallowSimpleListAssays$new(data=s)
+        slot(object, "assays") <- .ShallowSimpleListAssays(data=s)
     object
 })
 
