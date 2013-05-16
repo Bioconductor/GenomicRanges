@@ -19,7 +19,7 @@ test_Seqinfo_seqlevels_subset <- function()
 
     grl <- GRangesList(gr2)
     seqlevels(grl, force=TRUE) <- "chr1"
-    checkIdentical(0L, length(grl)) ## warning?
+    checkIdentical(0L, length(grl))
 
     ## GAlignments
     gal <- GAlignments(seqnames=Rle(c("chr1", "chr2")),
@@ -33,21 +33,19 @@ test_Seqinfo_seqlevels_subset <- function()
 test_Seqinfo_seqlevels_rename <- function()
 {
     ## GRanges
-    gr <- c(gr1, gr2, gr3) 
+    gr <- suppressWarnings(c(gr1, gr2, gr3)) 
     seqlevels(gr) <- gsub("chr", "CHR", seqlevels(gr))
     checkIdentical(c("CHR1", "CHR2", "CHR3"), seqlevels(gr))
     seqlevels(gr)[seqlevels(gr) == "CHR2"] <- "2"
     checkIdentical(c("CHR1", "2", "CHR3"), seqlevels(gr))
-    #checkException(seqlevels(gr) <- rev(seqlevels(gr))) ## exception?
-    #nms <- seqlevels(gr)
-    #new <- rev(seqlevels(gr))
-    #names(new) <- nms
-    #checkException(seqlevels(gr) <- rev(seqlevels(gr))) ## exception?
+    new <- rev(seqlevels(gr))
+    seqlevels(gr) <- new 
+    checkIdentical(new, seqlevels(gr))
 
     ## GRangesList
-    grl <- GRangesList(gr1, gr2, gr3)
-    #seqlevels(grl)[seqlevels(grl) == "chr2"] <- "chr1" ## should work?
-    #seqlevels(grl)[seqlevels(grl) == "chr3"] <- "chr1" ## should work?
+    grl <- suppressWarnings(GRangesList(gr1, gr2, gr3))
+    idx <- seqlevels(grl) == "chr2"
+    checkException(seqlevels(grl)[idx] <- "chr1", silent=TRUE)
     seqlevels(grl)[seqlevels(grl) == "chr3"] <- "3"
     checkIdentical(c("chr1", "chr2", "3"), seqlevels(grl))
 
@@ -61,6 +59,27 @@ test_Seqinfo_seqlevels_rename <- function()
     checkIdentical(c("chr1", "2"),  seqlevels(gal))
 }
 
+test_Seqinfo_seqlevels_drop_add <- function()
+{
+    grl <- GRangesList(gr1, gr2, gr3)
+
+    new_seqlevels <- setdiff(seqlevels(grl), "chr1")
+    checkException(seqlevels(grl) <- new_seqlevels, silent=TRUE)
+
+    target <- GRangesList(GRanges("chr3", IRanges(1:3, 5),
+    seqinfo=Seqinfo(c("chr2", "chr3"))))
+    seqlevels(grl, force=TRUE) <- new_seqlevels
+    checkIdentical(target, grl)
+
+    grl <- grl0 <- GRangesList(gr1, gr2, gr3)
+    checkException(seqlevels(grl) <- c(seqlevels(grl), "chr2"), silent=TRUE)
+    seqlevels(grl) <- c(seqlevels(grl), "chrX")
+    checkIdentical(c("chr1", "chr2", "chr3", "chrX"), seqlevels(grl))
+
+    new_seqlevels <- setdiff(seqlevels(grl), "chrX")
+    seqlevels(grl) <- new_seqlevels
+    checkIdentical(grl0, grl) 
+}
 test_Seqinfo.merge <- function()
 {
     x <- Seqinfo(seqnames=c("chr1", "chr2", "chr3", "chrM"),

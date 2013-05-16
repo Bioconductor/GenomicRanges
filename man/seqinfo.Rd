@@ -193,46 +193,62 @@ if (interactive())
   ?`GRanges-class`
 
 ## ---------------------------------------------------------------------
-## Renaming seqlevels. 
+## Modify seqlevels of an object.
 ## ---------------------------------------------------------------------
 
-## Overlap and matching operations between objects require 
-## matching seqlevels. Often the seqlevels in one must be renamed 
-## to match the other.
+## Overlap and matching operations between objects require matching
+## seqlevels. Often the seqlevels in one must be modified to match 
+## the other. The seqlevels() function can rename, drop, add and reorder 
+## seqlevels of an object. Examples below are shown on TranscriptDb 
+## and GRanges but the approach is the same for all objects that have
+## a 'Seqinfo' class.
 
 library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
 txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
 seqlevels(txdb)
 
-## Remove "chr" from all seqlevels.
-seqlevels(txdb) <- gsub("chr", "", seqlevels(txdb))
+## Rename:
+seqlevels(txdb) <- sub("chr", "", seqlevels(txdb))
 seqlevels(txdb)
 
-## Add "CH" to all seqlevels.
 seqlevels(txdb) <- paste0("CH", seqlevels(txdb))
 seqlevels(txdb)
 
-## Modify a single seqlevel.
 seqlevels(txdb)[seqlevels(txdb) == "CHM"] <- "M"
 seqlevels(txdb)
 
-## The same approach is used when renaming seqlevels in a GRanges or 
-## any object with a 'Seqinfo' class.
+## Add:
+gr <- GRanges(c("chr1", "chr2", "chr3"), IRanges(1:3, 5))
+seqlevels(gr)
+seqlevels(gr) <- c(seqlevels(gr), "chr4")
+seqlevels(gr)
+
+## Reorder:
+seqlevels(gr) <- c("chr2", "chr3", "chr1", "chr4")
+seqlevels(gr)
+
+## Drop:
+seqlevels(gr, force=TRUE) <- c("chr2", "chr1", "chr4")
+seqlevels(gr)
+
+## Rename/Add/Reorder:
+seqlevels(gr) <- c(chr1="1", chr2="2", "chr4", "chr5")
+seqlevels(gr)
+
+
+## ---------------------------------------------------------------------
+## Subset objects by seqlevels. 
+## ---------------------------------------------------------------------
+
 tx <- transcripts(txdb)
 seqlevels(tx)
-seqlevels(tx) <- gsub("CH", "ch", seqlevels(tx))
-seqlevels(tx)
 
-## ---------------------------------------------------------------------
-## Subsetting by seqlevels. 
-## ---------------------------------------------------------------------
-
-## Remove seqlevel 'M'.
+## Drop 'M', keep all others.
 seqlevels(tx, force=TRUE) <- seqlevels(tx)[seqlevels(tx) != "M"]
 seqlevels(tx)
 
-## Keep only 'ch3L' and 'ch3R'.
-seqlevels(tx, force=TRUE) <- seqlevels(tx)[seqlevels(tx) == c("ch3L", "ch3R")]
+## Drop all except 'ch3L' and 'ch3R'.
+seqlevels(tx, force=TRUE) <- c("ch3L", "ch3R")
 seqlevels(tx)
 }
 
