@@ -165,6 +165,8 @@ seqnameStyle(x) <- value
   that are currently attached.
 }
 
+\author{H. Pages}
+
 \seealso{
   \itemize{
     \item \link{Seqinfo-class}.
