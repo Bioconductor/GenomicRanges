@@ -10,12 +10,9 @@
 ### 'makeNakedMat.FUN' must be a function returning a character matrix.
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
-    nhalf <- 5L
     lx <- length(x)
-    if (is.null(nhead <- getOption("showHeadLines")))
-        nhead <- nhalf 
-    if (is.null(ntail <- getOption("showTailLines")))
-        ntail <- nhalf 
+    nhead <- getOption("showHeadLines", default=5L)
+    ntail <- getOption("showTailLines", default=5L)
 
     if (lx < (nhead+ntail+1L)) {
         ans <- makeNakedMat.FUN(x)
