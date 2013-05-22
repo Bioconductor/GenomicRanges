@@ -194,9 +194,14 @@
 
 \value{
   A \linkS4class{SummarizedExperiment} object. The \code{assays} slot holds 
-  the counts, \code{rowData} holds the \code{features}, \code{colData}
-  will either be \code{NULL} or hold any metadata that was present in the
-  \code{reads}.
+  the counts, \code{rowData} holds the annotation specified in 
+  \code{features}. 
+
+  The \code{colData} is a DataFrame with columns of \sQuote{object} (class of 
+  \code{reads}) and \sQuote{records} (length of \code{reads}). When \code{reads}
+  is a BamFile or BamFileList the \code{colData} holds the output of a call
+  to \code{countBam}. Columns are \sQuote{file}, \sQuote{records} and
+  \code{nucleotides}.
 }
 
 \references{
@@ -371,9 +376,13 @@ genes <- GRanges(
                        4000, 7500, 5000, 5400), 
                      width=c(rep(500, 3), 600, 900, 500, 300, 900, 
                              300, 500, 500))) 
-
 se <- summarizeOverlaps(genes, bf)
 
+## When the reads are Bam files, the 'colData' contains summary 
+## information from a call to countBam().
+colData(se)
+
+## Create count tables.
 library(DESeq)
 deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
 library(edgeR)

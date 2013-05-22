@@ -24,8 +24,11 @@ setGeneric("summarizeOverlaps", signature=c("features", "reads"),
     mode <- match.fun(mode)
     counts <- .dispatchOverlaps(features, reads, mode, ignore.strand,
                                 inter.feature=inter.feature)
+    colData <- DataFrame(object=class(reads),
+                         records=length(reads),
+                         row.names="reads") 
     SummarizedExperiment(assays=SimpleList(counts=as.matrix(counts)),
-                         rowData=features, colData=.readsMetadata(reads))
+                         rowData=features, colData=colData)
 }
 
 setMethod("summarizeOverlaps", c("GRanges", "GAlignments"),
@@ -141,14 +144,6 @@ IntersectionNotEmpty <-  function(features, reads, ignore.strand=FALSE,
 ## -------------------------------------------------------------------------
 ## non-exported helpers 
 ##
-
-.readsMetadata <- function(reads)
-{
-    if (length(metadata(reads)) > 0)
-        DataFrame(metaData = metadata(reads))
-    else
-        DataFrame(metaData = character(1))
-}
 
 .dispatchOverlaps <-
     function(features, reads, mode, ignore.strand, inter.feature, ...)
