@@ -116,10 +116,13 @@
     features are dropped (i.e., not counted). When FALSE, these reads are 
     retained and a count is assigned to each feature they map to.
 
-    There are 6 possible combinations of the \code{mode} and 
+    There are 6 possible combinations of the \code{mode} and
     \code{inter.feature} arguments. When \code{inter.feature=FALSE} the
-    behavior of modes \sQuote{Union} and \sQuote{IntersectionNotEmpty} are the
-    same resulting in 5 distinct ways to count.
+    behavior of modes \sQuote{Union} and \sQuote{IntersectionStrict} are 
+    essentially \sQuote{countOverlaps} with \sQuote{type=any} and
+    \code{type=within}, respectively. \sQuote{IntersectionNotEmpty} does
+    not reduce to a simple countOverlaps because common (shared) regions 
+    of the annotation are removed before counting.
   }
   \item{...}{
     Additional arguments such as \code{fragments} or \code{param}.  If 
@@ -197,11 +200,13 @@
   the counts, \code{rowData} holds the annotation specified in 
   \code{features}. 
 
-  The \code{colData} is a DataFrame with columns of \sQuote{object} (class of 
+  \code{colData} is a DataFrame with columns of \sQuote{object} (class of 
   \code{reads}) and \sQuote{records} (length of \code{reads}). When \code{reads}
   is a BamFile or BamFileList the \code{colData} holds the output of a call
-  to \code{countBam}. Columns are \sQuote{file}, \sQuote{records} and
-  \code{nucleotides}.
+  to \code{countBam} with columns of \sQuote{records} (total records in file), 
+  \sQuote{nucleotides} and \sQuote{mapped}. The number in \sQuote{mapped} is
+  the number of records returned when \code{isUnmappedQuery=FALSE} in the 
+  \sQuote{ScanBamParam}.
 }
 
 \references{
