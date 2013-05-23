@@ -1,4 +1,7 @@
-###
+### =========================================================================
+### Low-level CIGAR utilities
+### -------------------------------------------------------------------------
+
 
 validCigar <- function(cigar)
 {
@@ -10,15 +13,69 @@ validCigar <- function(cigar)
     .Call2("valid_cigar", cigar, 0L, PACKAGE="GenomicRanges")
 }
 
-cigarOpTable <- function(cigar)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Transform CIGARs into other useful representations
+###
+
+explodeCigarOps <- function(cigar)
+{
+    if (!is.character(cigar)) {
+        if (!is.factor(cigar))
+            stop("'cigar' must be a character vector or factor")
+        cigar <- as.character(cigar)
+    }
+    .Call2("explode_cigar_ops", cigar, PACKAGE="GenomicRanges")
+}
+
+explodeCigarOpLengths <- function(cigar)
+{
+    if (!is.character(cigar)) {
+        if (!is.factor(cigar))
+            stop("'cigar' must be a character vector or factor")
+        cigar <- as.character(cigar)
+    }
+    .Call2("explode_cigar_op_lengths", cigar, PACKAGE="GenomicRanges")
+}
+
+cigarToRleList <- function(cigar)
+{
+    cigar_ops <- explodeCigarOps(cigar)
+    cigar_op_lengths <- explodeCigarOpLengths(cigar)
+    if (length(cigar) == 0L) {
+        unlisted_cigar_ops <- character(0)
+        unlisted_cigar_op_lengths <- integer(0)
+    } else {
+        unlisted_cigar_ops <- unlist(cigar_ops, use.names=FALSE)
+        unlisted_cigar_op_lengths <- unlist(cigar_op_lengths, use.names=FALSE)
+    }
+
+    ## Prepare 'ans_flesh'.
+    ans_flesh <- Rle(unlisted_cigar_ops, unlisted_cigar_op_lengths)
+
+    ## Prepare 'ans_skeleton'.
+    nops_per_cigar <- elementLengths(cigar_op_lengths)
+    ans_breakpoints <- cumsum(unlisted_cigar_op_lengths)[cumsum(nops_per_cigar)]
+    ans_skeleton <- PartitioningByEnd(ans_breakpoints)
+
+    ## Relist.
+    relist(ans_flesh, ans_skeleton)
+}
+
+splitCigar <- function(cigar)
 {
     if (!is.character(cigar)) {
         if (!is.factor(cigar) || !is.character(levels(cigar)))
             stop("'cigar' must be a character vector/factor")
         cigar <- as.vector(cigar)
     }
-    .Call2("cigar_op_table", cigar, PACKAGE="GenomicRanges")
+    .Call2("split_cigar", cigar, PACKAGE="GenomicRanges")
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### From CIGARs to sequence lengths
+###
 
 cigarToQWidth <- function(cigar, before.hard.clipping=FALSE)
 {
@@ -43,6 +100,11 @@ cigarToWidth <- function(cigar)
     }
     .Call2("cigar_to_width", cigar, PACKAGE="GenomicRanges")
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Narrow CIGARs
+###
 
 cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
@@ -71,6 +133,11 @@ cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
     attr(ans, "rshift") <- C_ans[[2L]]
     ans
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### From CIGARs to ranges
+###
 
 cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
                            drop.empty.ranges=FALSE, reduce.ranges=TRUE)
@@ -171,6 +238,26 @@ cigarToIRangesListByRName <- function(cigar, rname, pos, flag=NULL,
         IRangesList(C_ans, compress=TRUE)
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Summarize CIGARs
+###
+
+cigarOpTable <- function(cigar)
+{
+    if (!is.character(cigar)) {
+        if (!is.factor(cigar) || !is.character(levels(cigar)))
+            stop("'cigar' must be a character vector/factor")
+        cigar <- as.vector(cigar)
+    }
+    .Call2("cigar_op_table", cigar, PACKAGE="GenomicRanges")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Translate coordinates between query-based and reference-based
+###
+
 queryLoc2refLoc <- function(qloc, cigar, pos=1)
 {
     stop("NOT IMPLEMENTED YET, SORRY!")
@@ -181,28 +268,16 @@ queryLocs2refLocs <- function(qlocs, cigar, pos, flag=NULL)
     stop("NOT IMPLEMENTED YET, SORRY!")
 }
 
-splitCigar <- function(cigar)
-{
-    if (!is.character(cigar)) {
-        if (!is.factor(cigar) || !is.character(levels(cigar)))
-            stop("'cigar' must be a character vector/factor")
-        cigar <- as.vector(cigar)
-    }
-    .Call2("split_cigar", cigar, PACKAGE="GenomicRanges")
-}
 
-cigarToRleList <- function(cigar)
-{
-    splitCigars <- splitCigar(cigar)
-    splitRawValues <- unname(lapply(splitCigars, "[[", 1L))
-    splitLengths <- unname(lapply(splitCigars, "[[", 2L))
-    partitioning <- PartitioningByEnd(cumsum(unlist(lapply(splitLengths, sum))))
-    relist(Rle(rawToChar(unlist(splitRawValues), multiple=TRUE),
-               unlist(splitLengths)),
-           partitioning)
-}
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
+###
 
-cigarToCigarTable <- function(cigar) {
+cigarToCigarTable <- function(cigar)
+{
+    msg <- c("  cigarToCigarTable() is deprecated.",
+             "Please use 'table(cigar)' instead.")
+    .Deprecated(msg=paste0(msg, collapse=" "))
     if (is.character(cigar))
         cigar <- factor(cigar)
     else if (!is.factor(cigar))
@@ -215,7 +290,21 @@ cigarToCigarTable <- function(cigar) {
               count = as.integer(basicTable))
 }
 
-summarizeCigarTable <- function(x) {
+### summarizeCigarTable() is broken:
+###
+###   > summarizeCigarTable(cigarToCigarTable(c("55M", "5M3I40M")))
+###   Error in data.frame(subject = subjectHits(findOverlaps(IRanges(unlist(x[["cigar"]] ==  : 
+###     arguments imply differing number of rows: 0, 1
+###
+### In addition, what it's supposed to do and to return is not really
+### documented, its implementation is kind of cryptic, and it doesn't seem
+### very useful anyway (hard to know exactly without more details about what
+### it does though). I doubt a lot of people have tried to use it ==> Probably
+### not worth fixing/maintaining.
+summarizeCigarTable <- function(x)
+{
+    msg <- "  summarizeCigarTable() is deprecated."
+    .Deprecated(msg=msg)
     alignedCharacters <-
       table(rep.int(elementLengths(x[["cigar"]]), x[["count"]]),
             rep.int(viewSums(Views(unlist(x[["cigar"]] == "M"),
@@ -256,3 +345,4 @@ summarizeCigarTable <- function(x) {
     list("AlignedCharacters" = tabledAlignedCharacters,
          "Indels" = tabledIndelHits)
 }
+

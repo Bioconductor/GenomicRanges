@@ -8,8 +8,7 @@ static char errmsg_buf[200];
 /* Return the number of chars that was read, or 0 if there is no more char
    to read (i.e. cig0[offset] is '\0'), or -1 in case of a parse error.
    Zero-length operations are ignored. */
-static int get_next_cigar_OP(const char *cig0, int offset,
-		int *OPL, char *OP)
+static int get_next_cigar_OP(const char *cig0, int offset, char *OP, int *OPL)
 {
 	char c;
 	int offset0, opl;
@@ -28,8 +27,8 @@ static int get_next_cigar_OP(const char *cig0, int offset,
 		/* Extract *OP */
 		if (!(*OP = cig0[offset])) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unexpected CIGAR end at char %d",
-				 offset + 1);
+				 "unexpected CIGAR end after char %d",
+				 offset);
 			return -1;
 		}
 		offset++;
@@ -41,8 +40,7 @@ static int get_next_cigar_OP(const char *cig0, int offset,
 /* Return the number of chars that was read, or 0 if there is no more char
    to read (i.e. offset is 0), or -1 in case of a parse error.
    Zero-length operations are ignored. */
-static int get_prev_cigar_OP(const char *cig0, int offset,
-		int *OPL, char *OP)
+static int get_prev_cigar_OP(const char *cig0, int offset, char *OP, int *OPL)
 {
 	char c;
 	int offset0, opl, powof10;
@@ -57,7 +55,7 @@ static int get_prev_cigar_OP(const char *cig0, int offset,
 		/* Extract *OPL */
 		if (offset == 0) {
 			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "no CIGAR operation length at char %d",
+				 "no CIGAR operation length before char %d",
 				 offset + 1);
 			return -1;
 		}
@@ -88,7 +86,7 @@ static const char *cigar_string_op_table(SEXP cigar_string, const char *allOPs,
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		tmp = strchr(allOPs, (int) OP);
@@ -117,7 +115,7 @@ static const char *cigar_string_to_qwidth(SEXP cigar_string, int clip_reads,
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	*qwidth = offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		switch (OP) {
@@ -155,7 +153,7 @@ static const char *cigar_string_to_width(SEXP cigar_string, int *width)
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	*width = offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		switch (OP) {
@@ -193,7 +191,7 @@ static const char *Lqnarrow_cigar_string(SEXP cigar_string,
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	*rshift = offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		switch (OP) {
@@ -247,7 +245,7 @@ static const char *Rqnarrow_cigar_string(SEXP cigar_string,
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	offset = LENGTH(cigar_string);
-	while ((n = get_prev_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_prev_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		offset -= n;
@@ -305,7 +303,7 @@ static const char *qnarrow_cigar_string(SEXP cigar_string,
 	buf_offset = 0;
 	cig0 = CHAR(cigar_string);
 	for (offset = Loffset; offset <= Roffset; offset += n) {
-		n = get_next_cigar_OP(cig0, offset, &OPL, &OP);
+		n = get_next_cigar_OP(cig0, offset, &OP, &OPL);
 		if (offset == Loffset)
 			OPL -= Lqwidth;
 		if (offset == Roffset)
@@ -334,7 +332,7 @@ static const char *Lnarrow_cigar_string(SEXP cigar_string,
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	*rshift = offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		switch (OP) {
@@ -387,7 +385,7 @@ static const char *Rnarrow_cigar_string(SEXP cigar_string,
 		return "CIGAR string is empty";
 	cig0 = CHAR(cigar_string);
 	offset = LENGTH(cigar_string);
-	while ((n = get_prev_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_prev_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		offset -= n;
@@ -453,7 +451,7 @@ static const char *narrow_cigar_string(SEXP cigar_string,
 	buf_offset = 0;
 	cig0 = CHAR(cigar_string);
 	for (offset = Loffset; offset <= Roffset; offset += n) {
-		n = get_next_cigar_OP(cig0, offset, &OPL, &OP);
+		n = get_next_cigar_OP(cig0, offset, &OP, &OPL);
 		if (offset == Loffset)
 			OPL -= Lwidth;
 		if (offset == Roffset)
@@ -478,11 +476,13 @@ static const char *split_cigar_string(SEXP cigar_string,
 
 	cig0 = CHAR(cigar_string);
 	offset = 0;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
-		CharAE_insert_at(OPbuf, CharAE_get_nelt(OPbuf), OP);
-		IntAE_insert_at(OPLbuf, IntAE_get_nelt(OPLbuf), OPL);
+		if (OPbuf != NULL)
+			CharAE_insert_at(OPbuf, CharAE_get_nelt(OPbuf), OP);
+		if (OPLbuf != NULL)
+			IntAE_insert_at(OPLbuf, IntAE_get_nelt(OPLbuf), OPL);
 		offset += n;
 	}
 	return NULL;
@@ -528,7 +528,7 @@ static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
 	out_nelt0 = RangeAE_get_nelt(out);
 	offset = 0;
 	start = pos_elt;
-	while ((n = get_next_cigar_OP(cig0, offset, &OPL, &OP))) {
+	while ((n = get_next_cigar_OP(cig0, offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
 		width = -1;
@@ -614,9 +614,92 @@ SEXP valid_cigar(SEXP cigar, SEXP ans_type)
 
 /****************************************************************************
  * --- .Call ENTRY POINT ---
- * Args:
- *   cigar: character vector containing the extended CIGAR string for each
- *          read.
+ *   - explode_cigar_ops()
+ *   - explode_cigar_op_lengths()
+ * Arg:
+ *   cigar: character vector containing the extended CIGAR strings to
+ *          explode.
+ * Both functions return a list of the same length as 'cigar' where each
+ * list element is a character vector (for explode_cigar_ops()) or an integer
+ * vector (for explode_cigar_op_lengths()). The 2 lists have the same shape
+ * i.e. same length() and same elementLengths(). The i-th character vector in
+ * the list returned by explode_cigar_ops() contains one single-letter string
+ * per CIGAR operation in 'cigar[i]'. The i-th integer vector in the list
+ * returned by explode_cigar_op_lengths() contains the corresponding CIGAR
+ * operation lengths. Zero-length operations are ignored.
+ */
+SEXP explode_cigar_ops(SEXP cigar)
+{
+	SEXP ans, cigar_string, ans_elt, ans_elt_elt;
+	int cigar_length, ans_elt_len, i, j;
+	CharAE OPbuf;
+	const char *errmsg;
+
+	cigar_length = LENGTH(cigar);
+	PROTECT(ans = NEW_LIST(cigar_length));
+	OPbuf = new_CharAE(0);
+	for (i = 0; i < cigar_length; i++) {
+		cigar_string = STRING_ELT(cigar, i);
+		if (cigar_string == NA_STRING) {
+			UNPROTECT(1);
+			error("'cigar' contains NAs");
+		}
+		CharAE_set_nelt(&OPbuf, 0);
+		errmsg = split_cigar_string(cigar_string, &OPbuf, NULL);
+		if (errmsg != NULL) {
+			UNPROTECT(1);
+			error("in 'cigar' element %d: %s", i + 1, errmsg);
+		}
+		ans_elt_len = CharAE_get_nelt(&OPbuf);
+		PROTECT(ans_elt = NEW_CHARACTER(ans_elt_len));
+		for (j = 0; j < ans_elt_len; j++) {
+			PROTECT(ans_elt_elt = mkCharLen(OPbuf.elts + j, 1));
+			SET_STRING_ELT(ans_elt, j, ans_elt_elt);
+			UNPROTECT(1);
+		}
+		SET_VECTOR_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+SEXP explode_cigar_op_lengths(SEXP cigar)
+{
+	SEXP ans, cigar_string, ans_elt;
+	int cigar_length, i;
+	IntAE OPLbuf;
+	const char *errmsg;
+
+	cigar_length = LENGTH(cigar);
+	PROTECT(ans = NEW_LIST(cigar_length));
+	OPLbuf = new_IntAE(0, 0, 0);
+	for (i = 0; i < cigar_length; i++) {
+		cigar_string = STRING_ELT(cigar, i);
+		if (cigar_string == NA_STRING) {
+			UNPROTECT(1);
+			error("'cigar' contains NAs");
+		}
+		IntAE_set_nelt(&OPLbuf, 0);
+		errmsg = split_cigar_string(cigar_string, NULL, &OPLbuf);
+		if (errmsg != NULL) {
+			UNPROTECT(1);
+			error("in 'cigar' element %d: %s", i + 1, errmsg);
+		}
+		PROTECT(ans_elt = new_INTEGER_from_IntAE(&OPLbuf));
+		SET_VECTOR_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
+ * --- .Call ENTRY POINT ---
+ *   - split_cigar()
+ * Arg:
+ *   cigar: character vector containing the extended CIGAR strings to split.
  * Return a list of the same length as 'cigar' where each element is itself
  * a list with 2 elements of the same lengths, the 1st one being a raw
  * vector containing the CIGAR operations and the 2nd one being an integer
@@ -656,56 +739,6 @@ SEXP split_cigar(SEXP cigar)
 		UNPROTECT(3);
 	}
 	UNPROTECT(1);
-	return ans;
-}
-
-
-/****************************************************************************
- * --- .Call ENTRY POINT ---
- * Args:
- *   cigar: character vector containing the extended CIGAR string for each
- *          read;
- * Return an integer matrix with the number of rows equal to the length of
- * 'cigar' and 7 columns, one for each extended CIGAR operation containing
- * a frequency count for the operations for each element of 'cigar'.
- */
-SEXP cigar_op_table(SEXP cigar)
-{
-	SEXP cigar_string, ans, ans_dimnames, ans_colnames;
-	int cigar_length, allOPs_length, i, j, *ans_row;
-	const char *allOPs = "MIDNSHP", *errmsg;
-	char OPstrbuf[2];
-
-	cigar_length = LENGTH(cigar);
-	allOPs_length = strlen(allOPs);
-	PROTECT(ans = allocMatrix(INTSXP, cigar_length, allOPs_length));
-	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	ans_row = INTEGER(ans);
-	for (i = 0, ans_row = INTEGER(ans); i < cigar_length; i++, ans_row++) {
-		cigar_string = STRING_ELT(cigar, i);
-		if (cigar_string == NA_STRING) {
-			INTEGER(ans)[i] = NA_INTEGER;
-			continue;
-		}
-		errmsg = cigar_string_op_table(cigar_string, allOPs,
-				ans_row, cigar_length);
-		if (errmsg != NULL) {
-			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1, errmsg);
-		}
-	}
-
-	PROTECT(ans_colnames = NEW_CHARACTER(7));
-	OPstrbuf[1] = '\0';
-	for (j = 0; j < allOPs_length; j++) {
-		OPstrbuf[0] = allOPs[j];
-		SET_STRING_ELT(ans_colnames, j, mkChar(OPstrbuf));
-	}
-	PROTECT(ans_dimnames = NEW_LIST(2));
-	SET_ELEMENT(ans_dimnames, 0, R_NilValue);
-	SET_ELEMENT(ans_dimnames, 1, ans_colnames);
-	SET_DIMNAMES(ans, ans_dimnames);
-	UNPROTECT(3);
 	return ans;
 }
 
@@ -1075,6 +1108,56 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 /****************************************************************************
  * --- .Call ENTRY POINT ---
  * Args:
+ *   cigar: character vector containing the extended CIGAR string for each
+ *          read;
+ * Return an integer matrix with the number of rows equal to the length of
+ * 'cigar' and 7 columns, one for each extended CIGAR operation containing
+ * a frequency count for the operations for each element of 'cigar'.
+ */
+SEXP cigar_op_table(SEXP cigar)
+{
+	SEXP cigar_string, ans, ans_dimnames, ans_colnames;
+	int cigar_length, allOPs_length, i, j, *ans_row;
+	const char *allOPs = "MIDNSHP", *errmsg;
+	char OPstrbuf[2];
+
+	cigar_length = LENGTH(cigar);
+	allOPs_length = strlen(allOPs);
+	PROTECT(ans = allocMatrix(INTSXP, cigar_length, allOPs_length));
+	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
+	ans_row = INTEGER(ans);
+	for (i = 0, ans_row = INTEGER(ans); i < cigar_length; i++, ans_row++) {
+		cigar_string = STRING_ELT(cigar, i);
+		if (cigar_string == NA_STRING) {
+			INTEGER(ans)[i] = NA_INTEGER;
+			continue;
+		}
+		errmsg = cigar_string_op_table(cigar_string, allOPs,
+				ans_row, cigar_length);
+		if (errmsg != NULL) {
+			UNPROTECT(1);
+			error("in 'cigar' element %d: %s", i + 1, errmsg);
+		}
+	}
+
+	PROTECT(ans_colnames = NEW_CHARACTER(7));
+	OPstrbuf[1] = '\0';
+	for (j = 0; j < allOPs_length; j++) {
+		OPstrbuf[0] = allOPs[j];
+		SET_STRING_ELT(ans_colnames, j, mkChar(OPstrbuf));
+	}
+	PROTECT(ans_dimnames = NEW_LIST(2));
+	SET_ELEMENT(ans_dimnames, 0, R_NilValue);
+	SET_ELEMENT(ans_dimnames, 1, ans_colnames);
+	SET_DIMNAMES(ans, ans_dimnames);
+	UNPROTECT(3);
+	return ans;
+}
+
+
+/****************************************************************************
+ * --- .Call ENTRY POINT ---
+ * Args:
  *   ref_locs: global positions in the reference that we will map
  *   cigar: character string containing the extended CIGAR;
  *   pos: reference position at which the query alignment begins
@@ -1100,7 +1183,7 @@ SEXP ref_locs_to_query_locs(SEXP ref_locs, SEXP cigar, SEXP pos,
     char OP;
     const char *cig0 = CHAR(STRING_ELT(cigar, i));
     while (query_consumed < query_loc &&
-           (n = get_next_cigar_OP(cig0, offset, &OPL, &OP)))
+           (n = get_next_cigar_OP(cig0, offset, &OP, &OPL)))
     {
       switch (OP) {
         /* Alignment match (can be a sequence match or mismatch) */
@@ -1180,7 +1263,7 @@ SEXP query_locs_to_ref_locs(SEXP query_locs, SEXP cigar, SEXP pos,
     char OP;
     const char *cig0 = CHAR(STRING_ELT(cigar, i));
     while (query_consumed < query_loc_i &&
-           (n = get_next_cigar_OP(cig0, offset, &OPL, &OP)))
+           (n = get_next_cigar_OP(cig0, offset, &OP, &OPL)))
       {
         switch (OP) {
           /* Alignment match (can be a sequence match or mismatch) */
@@ -1231,3 +1314,4 @@ SEXP query_locs_to_ref_locs(SEXP query_locs, SEXP cigar, SEXP pos,
   UNPROTECT(1);
   return ref_locs;
 }
+

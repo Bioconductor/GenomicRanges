@@ -93,11 +93,15 @@ exportMethods(
 export(
     phicoef,
 
-    validCigar, cigarOpTable,
-    cigarToQWidth, cigarToWidth, cigarQNarrow, cigarNarrow,
+    validCigar,
+    explodeCigarOps, explodeCigarOpLengths,
+    cigarToRleList,
+    splitCigar,
+    cigarToQWidth, cigarToWidth,
+    cigarQNarrow, cigarNarrow,
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
+    cigarOpTable, cigarToCigarTable, summarizeCigarTable,
     queryLoc2refLoc, queryLocs2refLocs,
-    splitCigar, cigarToRleList, cigarToCigarTable, summarizeCigarTable,
 
     makeSeqnameIds,
     Seqinfo,

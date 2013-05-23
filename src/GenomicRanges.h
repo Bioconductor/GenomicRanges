@@ -5,9 +5,11 @@
 
 SEXP valid_cigar(SEXP cigar, SEXP ans_type);
 
-SEXP split_cigar(SEXP cigar);
+SEXP explode_cigar_ops(SEXP cigar);
 
-SEXP cigar_op_table(SEXP cigar);
+SEXP explode_cigar_op_lengths(SEXP cigar);
+
+SEXP split_cigar(SEXP cigar);
 
 SEXP cigar_to_qwidth(SEXP cigar, SEXP before_hard_clipping);
 
@@ -43,6 +45,8 @@ SEXP cigar_to_list_of_IRanges_by_rname(
 	SEXP reduce_ranges
 );
 
+SEXP cigar_op_table(SEXP cigar);
+
 SEXP ref_locs_to_query_locs(
         SEXP ref_locs,
         SEXP cigar,
@@ -56,6 +60,7 @@ SEXP query_locs_to_ref_locs(
         SEXP pos,
         SEXP narrow_left
 );
+
 
 /* transcript_utils.c */
 

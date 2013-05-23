@@ -1,11 +1,17 @@
 \name{cigar-utils}
-\Rdversion{1.1}
+
 \alias{cigar-utils}
 
 \alias{validCigar}
-\alias{cigarOpTable}
+
+\alias{explodeCigarOps}
+\alias{explodeCigarOpLengths}
+\alias{cigarToRleList}
+\alias{splitCigar}
+
 \alias{cigarToQWidth}
 \alias{cigarToWidth}
+
 \alias{cigarQNarrow}
 \alias{cigarNarrow}
 
@@ -13,29 +19,40 @@
 \alias{cigarToIRangesListByAlignment}
 \alias{cigarToIRangesListByRName}
 
+\alias{cigarOpTable}
+
 \alias{queryLoc2refLoc}
 \alias{queryLocs2refLocs}
 
-\alias{splitCigar}
-\alias{cigarToRleList}
+% Old stuff:
 \alias{cigarToCigarTable}
 \alias{summarizeCigarTable}
+
 
 \title{
   CIGAR utility functions
 }
+
 \description{
   Utility functions for low-level CIGAR manipulation.
 }
-\usage{
-cigarOpTable(cigar)
 
+\usage{
+## Transform CIGARs into other useful representations:
+explodeCigarOps(cigar)
+explodeCigarOpLengths(cigar)
+cigarToRleList(cigar)
+splitCigar(cigar)
+
+## From CIGARs to sequence lengths:
 cigarToQWidth(cigar, before.hard.clipping=FALSE)
 cigarToWidth(cigar)
 
+## Narrow CIGARs:
 cigarQNarrow(cigar, start=NA, end=NA, width=NA)
 cigarNarrow(cigar, start=NA, end=NA, width=NA)
 
+## From CIGARs to ranges:
 cigarToIRanges(cigar,
                drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                reduce.ranges=TRUE)
@@ -47,14 +64,12 @@ cigarToIRangesListByAlignment(cigar, pos, flag=NULL,
 cigarToIRangesListByRName(cigar, rname, pos, flag=NULL,
                           drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                           reduce.ranges=TRUE)
+## Summarize CIGARs:
+cigarOpTable(cigar)
 
+## Translate coordinates between query-based and reference-based:
 queryLoc2refLoc(qloc, cigar, pos=1)
 queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
-
-splitCigar(cigar)
-cigarToRleList(cigar)
-cigarToCigarTable(cigar)
-summarizeCigarTable(x)
 }
 
 \arguments{
@@ -127,15 +142,16 @@ summarizeCigarTable(x)
     locations" i.e. 1-based locations relative to the corresponding
     query sequence stored in the SAM/BAM file.
   }
-  \item{x}{
-    A \link[IRanges]{DataFrame} produced by \code{cigarToCigarTable}.
-  }
 }
 
 \value{
-  For \code{cigarOpTable}: An integer matrix with number of rows equal
-  to the length of \code{cigar} and seven columns, one for each extended
-  CIGAR operation.
+  For \code{cigarToRleList}: A \link[IRanges]{CompressedRleList} object.
+
+  For \code{splitCigar}: A list of the same length as \code{cigar}
+  where each element is itself a list with 2 elements of the same
+  lengths, the 1st one being a raw vector containing the CIGAR
+  operations and the 2nd one being an integer vector containing
+  the lengths of the CIGAR operations.
 
   For \code{cigarToQWidth}: An integer vector of the same length
   as \code{cigar} where each element is the width of the query (i.e.
@@ -143,18 +159,18 @@ summarizeCigarTable(x)
   element in \code{cigar} (NAs in \code{cigar} will produce NAs in the
   returned vector).
 
+  For \code{cigarToWidth}: An integer vector of the same length
+  as \code{cigar} where each element is the width of the alignment
+  (i.e. its total length on the reference, gaps included)
+  as inferred from the corresponding element in \code{cigar}
+  (NAs in \code{cigar} will produce NAs in the returned vector).
+
   For \code{cigarQNarrow} and \code{cigarNarrow}: A character vector
   of the same length as \code{cigar} containing the narrowed cigars.
   In addition the vector has an "rshift" attribute which is an integer
   vector of the same length as \code{cigar}. It contains the values that
   would need to be added to the POS field of a SAM/BAM file as a
   consequence of this cigar narrowing.
-
-  For \code{cigarToWidth}: An integer vector of the same length
-  as \code{cigar} where each element is the width of the alignment
-  (i.e. its total length on the reference, gaps included)
-  as inferred from the corresponding element in \code{cigar}
-  (NAs in \code{cigar} will produce NAs in the returned vector).
 
   For \code{cigarToIRanges}: An \link[IRanges]{IRanges} object
   describing where the bases in the read align with respect to
@@ -170,6 +186,10 @@ summarizeCigarTable(x)
   object with one element (\link[IRanges]{IRanges}) per unique reference
   sequence.
 
+  For \code{cigarOpTable}: An integer matrix with number of rows equal
+  to the length of \code{cigar} and seven columns, one for each extended
+  CIGAR operation.
+
   For \code{queryLoc2refLoc}: An integer vector of the same length as
   \code{qloc} containing the "reference-based locations" (i.e. the
   1-based locations relative to the reference sequence) corresponding
@@ -179,22 +199,6 @@ summarizeCigarTable(x)
   \code{qlocs} where each element is an integer vector containing
   the "reference-based locations" corresponding to the "query-based
   locations" passed in the corresponding element in \code{qlocs}.
-
-  For \code{splitCigar}: A list of the same length as \code{cigar}
-  where each element is itself a list with 2 elements of the same
-  lengths, the 1st one being a raw vector containing the CIGAR
-  operations and the 2nd one being an integer vector containing
-  the lengths of the CIGAR operations.
-
-  For \code{cigarToRleList}: A \link[IRanges]{CompressedRleList} object.
-
-  For \code{cigarToCigarTable}: A frequency table of the CIGARs
-  in the form of a \link[IRanges]{DataFrame} with two columns:
-  \code{cigar} (a \link[IRanges]{CompressedRleList}) and \code{count}
-  (an integer).
-
-  For \code{summarizeCigarTable}: A list with two elements:
-  \code{AlignedCharacters} (integer) and \code{Indels} (matrix)
 }
 
 \references{
@@ -214,10 +218,8 @@ summarizeCigarTable(x)
 
 \examples{
 ## ---------------------------------------------------------------------
-## A. SIMPLE EXAMPLES
+## A. EXAMPLES ON A SINGLE CIGAR
 ## ---------------------------------------------------------------------
-
-## With a cigar vector of length 1:
 cigar1 <- "3H15M55N4M2I6M2D5M6S"
 
 ## cigarToQWidth()/cigarToWidth():
@@ -247,26 +249,28 @@ cigarToIRanges(cigar1)
 cigarToIRanges(cigar1, reduce.ranges=FALSE)
 cigarToIRanges(cigar1, drop.D.ranges=TRUE)
 
-## With a cigar vector of length 4:
+## ---------------------------------------------------------------------
+## B. ON A CIGAR VECTOR OF LENGTH > 1
+## ---------------------------------------------------------------------
 cigar2 <- c("40M", cigar1, "2S10M2000N15M", "3H25M5H")
+
+## Transform CIGARs into other useful representations:
+explodeCigarOps(cigar2)
+explodeCigarOpLengths(cigar2)
+cigarToRleList(cigar2)
+splitCigar(cigar2)
+
+## From CIGARs to ranges:
 pos <- c(1, 1001, 1,  351)
 cigarToIRangesListByAlignment(cigar2, pos)
 rname <- c("chr6", "chr6", "chr2", "chr6")
 cigarToIRangesListByRName(cigar2, rname, pos)
 
+## Summarize CIGARs:
 cigarOpTable(cigar2)
 
-splitCigar(cigar2)
-cigarToRleList(cigar2)
-
-cigarToCigarTable(cigar2)
-cigarToCigarTable(cigar2)[,"cigar"]
-cigarToCigarTable(cigar2)[,"count"]
-
-summarizeCigarTable(cigarToCigarTable(cigar2))
-
 ## ---------------------------------------------------------------------
-## B. PERFORMANCE
+## C. PERFORMANCE
 ## ---------------------------------------------------------------------
 
 if (interactive()) {
@@ -307,7 +311,7 @@ if (interactive()) {
 }
 
 ## ---------------------------------------------------------------------
-## C. COMPUTE THE COVERAGE OF THE READS STORED IN A BAM FILE
+## D. COMPUTE THE COVERAGE OF THE READS STORED IN A BAM FILE
 ## ---------------------------------------------------------------------
 ## The information stored in a BAM file can be used to compute the
 ## "coverage" of the mapped reads i.e. the number of reads that hit any

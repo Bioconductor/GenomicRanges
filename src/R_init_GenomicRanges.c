@@ -7,8 +7,9 @@ static const R_CallMethodDef callMethods[] = {
 
 /* cigar_utils.c */
 	CALLMETHOD_DEF(valid_cigar, 2),
+	CALLMETHOD_DEF(explode_cigar_ops, 1),
+	CALLMETHOD_DEF(explode_cigar_op_lengths, 1),
 	CALLMETHOD_DEF(split_cigar, 1),
-	CALLMETHOD_DEF(cigar_op_table, 1),
 	CALLMETHOD_DEF(cigar_to_qwidth, 2),
 	CALLMETHOD_DEF(cigar_to_width, 1),
 	CALLMETHOD_DEF(cigar_qnarrow, 3),
@@ -16,8 +17,9 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(cigar_to_IRanges, 4),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_alignment, 6),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_rname, 7),
-        CALLMETHOD_DEF(ref_locs_to_query_locs, 4),
-        CALLMETHOD_DEF(query_locs_to_ref_locs, 4),
+	CALLMETHOD_DEF(cigar_op_table, 1),
+	CALLMETHOD_DEF(ref_locs_to_query_locs, 4),
+	CALLMETHOD_DEF(query_locs_to_ref_locs, 4),
 
 /* transcript_utils.c */
 	CALLMETHOD_DEF(transcript_widths, 2),
