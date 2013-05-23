@@ -291,8 +291,6 @@ GAlignmentPairs <- function(first, last, isProperPair, names=NULL)
 
 readGAlignmentPairs <- function(file, format="BAM", use.names=FALSE, ...)
 {
-    if (!isSingleString(file))
-        stop("'file' must be a single string")
     if (!isSingleString(format))
         stop("'format' must be a single string")
     if (!isTRUEorFALSE(use.names))
