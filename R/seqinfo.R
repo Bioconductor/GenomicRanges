@@ -187,6 +187,13 @@ setReplaceMethod("seqlevels", "ANY",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### seqlengths0() getter.
+###
+
+### Currently applicable to TranscriptDb only.
+setGeneric("seqlevels0", function(x) standardGeneric("seqlevels0"))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### seqlengths() getter and setter.

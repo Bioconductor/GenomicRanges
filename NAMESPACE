@@ -118,7 +118,9 @@ export(
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,
     countCompatibleOverlaps,
-    Union, IntersectionNotEmpty, IntersectionStrict
+    Union, IntersectionNotEmpty, IntersectionStrict,
+
+    keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels
 )
 
 
@@ -135,7 +137,8 @@ export(
     ## seqinfo.R:
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
-    seqlevels, "seqlevels<-",
+    seqlevels, "seqlevels<-", 
+    seqlevels0,
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
     genome, "genome<-",
@@ -155,9 +158,6 @@ export(
     colData, "colData<-",
     assays, "assays<-",
     assay, "assay<-",
-
-    ## seqlevels-utils.R:
-    keepSeqlevels, renameSeqlevels,
 
     ## summarizeOverlaps.R:
     summarizeOverlaps,
@@ -191,7 +191,6 @@ exportMethods(
     colData, "colData<-",
     assays, "assays<-",
     assay, "assay<-",
-    keepSeqlevels, renameSeqlevels,
     summarizeOverlaps,
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,

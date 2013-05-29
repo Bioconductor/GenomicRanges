@@ -8,6 +8,7 @@
 \alias{seqlevels,ANY-method}
 \alias{seqlevels<-}
 \alias{seqlevels<-,ANY-method}
+\alias{seqlevels0}
 \alias{seqlengths}
 \alias{seqlengths,ANY-method}
 \alias{seqlengths<-}
@@ -49,6 +50,8 @@ seqnames(x) <- value
 
 seqlevels(x)
 seqlevels(x, force=FALSE) <- value
+
+seqlevels0(x)
 
 seqlengths(x)
 seqlengths(x) <- value
@@ -170,6 +173,9 @@ seqnameStyle(x) <- value
 \seealso{
   \itemize{
     \item \link{Seqinfo-class}.
+    \item \link{keepSeqlevels}.
+    \item \link{dropSeqlevels}.
+    \item \link{renameSeqlevels}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
     \item \link{GAlignments-class}.
@@ -188,6 +194,9 @@ showMethods("seqinfo<-")
 
 showMethods("seqnames")
 showMethods("seqnames<-")
+
+showMethods("seqlevels")
+showMethods("seqlevels<-")
 
 if (interactive())
   ?`GRanges-class`
@@ -250,6 +259,16 @@ seqlevels(tx)
 ## Drop all except 'ch3L' and 'ch3R'.
 seqlevels(tx, force=TRUE) <- c("ch3L", "ch3R")
 seqlevels(tx)
+
+## ---------------------------------------------------------------------
+## Restore original seqlevels. 
+## ---------------------------------------------------------------------
+
+## Applicable to TranscriptDb objects only.
+\dontrun{
+seqlevels0(txdb)
+seqlevels(txdb)
+}
 }
 
 \keyword{methods}

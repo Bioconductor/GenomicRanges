@@ -36,3 +36,49 @@ test_mergeNamedAtomicVectors <- function()
     checkIdentical(got, want)
 }
 
+test_keepSeqlevels <- function()
+{
+    gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3))
+    ## unnamed
+    checkIdentical("chr1", seqlevels(keepSeqlevels(gr, "chr1")))
+    got <- seqlevels(keepSeqlevels(gr, c("chr1", "chr3")))
+    checkIdentical(c("chr1", "chr3"), got)
+    ## named
+    checkIdentical("chr1", seqlevels(keepSeqlevels(gr, c(foo="chr1"))))
+    ## bogus
+    got <- seqlevels(suppressWarnings(keepSeqlevels(gr, "chrX")))
+    checkIdentical(character(0), got)
+}
+
+test_dropSeqlevels <- function()
+{
+    gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3))
+    ## unnamed
+    checkIdentical(c("chr2", "chr3"), seqlevels(dropSeqlevels(gr, "chr1")))
+    got <- seqlevels(dropSeqlevels(gr, c("chr1", "chr3")))
+    checkIdentical("chr2", got)
+    ## named
+    got <- seqlevels(dropSeqlevels(gr, c(foo="chr1")))
+    checkIdentical(c("chr2", "chr3"), got)
+    ## bogus
+    got <- seqlevels(suppressWarnings(dropSeqlevels(gr, "chrX")))
+    checkIdentical(seqlevels(gr), got)
+
+    grl <- split(gr, as.character(seqnames(gr)))
+    got <- dropSeqlevels(grl, c("chr1", "chr2"))
+    checkIdentical("chr3", seqlevels(got))
+    checkIdentical(1L, length(got))
+}
+
+test_renameSeqlevels <- function()
+{
+    gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3))
+    checkException(renameSeqlevels(gr, "CHR1"), silent=TRUE)
+    got <- seqlevels(renameSeqlevels(gr, c("chr2", "CHR1", "chr3")))
+    checkIdentical(c("chr2", "CHR1", "chr3"), got)
+    got <- seqlevels(suppressWarnings(renameSeqlevels(gr, c(foo="chr2"))))
+    checkIdentical(seqlevels(gr), got)
+    got <- seqlevels(renameSeqlevels(gr, c(chr2="CHR2")))
+    checkIdentical(c("chr1", "CHR2", "chr3"), got)
+}
+

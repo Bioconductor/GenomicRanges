@@ -1,50 +1,41 @@
 \name{utils}
 \docType{methods}
 \alias{keepSeqlevels}
-\alias{keepSeqlevels,GenomicRanges,GenomicRanges-method}
-\alias{keepSeqlevels,GenomicRanges,GRangesList-method}
-\alias{keepSeqlevels,GenomicRanges,GAlignments-method}
-\alias{keepSeqlevels,GenomicRanges,character-method}
-\alias{keepSeqlevels,GRangesList,GenomicRanges-method}
-\alias{keepSeqlevels,GRangesList,GRangesList-method}
-\alias{keepSeqlevels,GRangesList,GAlignments-method}
-\alias{keepSeqlevels,GRangesList,character-method}
-\alias{keepSeqlevels,GAlignments,GenomicRanges-method}
-\alias{keepSeqlevels,GAlignments,GRangesList-method}
-\alias{keepSeqlevels,GAlignments,GAlignments-method}
-\alias{keepSeqlevels,GAlignments,character-method}
-
+\alias{dropSeqlevels}
 \alias{renameSeqlevels}
-\alias{renameSeqlevels,GAlignments,character-method}
-\alias{renameSeqlevels,GRangesList,character-method}
-\alias{renameSeqlevels,GenomicRanges,character-method}
+\alias{restoreSeqlevels}
 
 \title{
-  (Deprecated) seqlevels utility functions
+  seqlevels utility functions
 }
 
 \description{
-  Rename or subset the seqlevels in a \link{GenomicRanges}, \link{GRangesList} 
-  or \link{GAlignments} object.
+  Keep, drop or rename seqlevels in objects with a \link{Seqinfo} class.
 }
 
 \usage{
-  \S4method{keepSeqlevels}{GenomicRanges,character}(x, value, ...) 
-  \S4method{renameSeqlevels}{GenomicRanges,character}(x, value, ...) 
+keepSeqlevels(x, value, ...)
+dropSeqlevels(x, value, ...)
+renameSeqlevels(x, value, ...)
+restoreSeqlevels(x, ...)
 }
 
 \arguments{
   \item{x}{
-    The \link{GenomicRanges}, \link{GRangesList} or \link{GAlignments} object 
-    in which the seqlevels will be removed or renamed.
+    Any object having a \link{Seqinfo} class in which the seqlevels will
+    be kept, dropped or renamed.
   }
   \item{value}{
-    For \code{keepSeqlevels}, a \link{GRanges}, \link{GRangesList} or
-    \code{GAlignments} or character vector. \code{x} is subset on the
-    seqlevels in \code{value}.
+    A named or unnamed character vector.
 
-    For \code{renameSeqlevels}, a named character vector where the names are the 
-    \sQuote{old} and the values are the \sQuote{new} seqlevels. 
+    Names are ignored by \code{keepSeqlevels} and \code{dropSeqlevels}. 
+    Only the values in the character vector dictate which seqlevels to keep
+    or drop.
+
+    In the case of \code{renameSeqlevels}, the names are used to map new 
+    sequence levels to the old (names correspond to the old levels). When 
+    \code{value} is unnamed, the replacement vector must the same length
+    and in the same order as the original \code{seqlevels(x)}.
   }
   \item{...}{
     Arguments passed to other functions.
@@ -58,34 +49,120 @@
 }
 
 \details{
-  Many operations on \link{GRanges} objects require the seqlevels to match 
-  before a comparison can be made (e.g., \code{findOverlaps(type="within")}).
-  \code{keepSeqlevels} and \code{renameSeqlevels} are convenience functions 
-  for subsetting and renaming the seqlevels of these objects. 
+  Matching and overlap operations on range objects often require that the
+  seqlevels match before a comparison can be made (e.g., \code{findOverlaps}).
+  \code{keepSeqlevels}, \code{dropSeqlevels} and \code{renameSeqlevels} are 
+  high-level convenience functions that wrap the low-level \code{seqlevels}
+  function.
 
-  \code{keepSeqlevels} subsets \code{x} based on the seqlevels provided in 
-  \code{value}. If \code{value} does not match any seqlevels in \code{x} the 
-  original \code{x} is returned. When \code{x} is a \link{GRangesList}, there 
-  may be multiple chromosomes in a single list element. If not all chromosomes 
-  are specified in \code{value}, a reduced list element is returned. All empty 
-  list elements are dropped. See examples.
+  \code{keepSeqlevels}, \code{dropSeqlevels}: Subsetting operations 
+  that modify the size of \code{x}. \code{keepSeqlevels} keeps only the
+  seqlevels in \code{value} and removes all others. \code{dropSeqlevels}
+  drops the levels in \code{value} and retains all others. If \code{value} 
+  does not match any seqlevels in \code{x} an empty object is returned.
 
-  \code{renameSeqlevels} renames the seqlevels in \code{x} to those provided 
-  in \code{value}. \code{value} is a named character vector where the names are 
-  the \sQuote{old} seqlevel names and the values are the \sQuote{new}. If 
-  no names in \code{value} match the seqlevels in \code{x} the original \code{x} 
-  is returned. 
+  \code{renameSeqlevels}: Rename the seqlevels in \code{x} to those in 
+  \code{value}. If \code{value} is a named character vector, the names are used
+  to map the new seqlevels to the old. When \code{value} is unnamed, the
+  replacment vector must be the same length and in the same order as the
+  original \code{seqlevels(x)}.
+
+  \code{restoreSeqlevels}: Restore the seqlevels in \code{x} back to the
+  original values. Applicable only when \code{x} is a TranscriptDb. The 
+  function re-initializes the TranscriptDb which resets the seqlevels, 
+  removes masks and any other previous modifications.
 }
 
 \seealso{
-  \code{\link{seqinfo}}
+  \itemize{
+    \item \link{seqinfo} ## Accessing sequence information
+    \item \link{Seqinfo} ## The Seqinfo class
+  }
 }
 
 \examples{
 
-## These functions are deprecated. Use seqlevels() instead. See the ?seqinfo 
-## man page for examples of renaming and subsetting objects by seqlevels.
+## ---------------------------------------------------------------------
+## keepSeqlevels / dropSeqlevels 
+## ---------------------------------------------------------------------
 
+## GRanges / GAlignments:
+
+gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3))
+seqlevels(gr)
+## Keep only 'chr1'
+chr1 <- keepSeqlevels(gr, "chr1")
+## Drop 'chr1'. Both 'chr2' and 'chr3' are kept.
+chr2 <- dropSeqlevels(gr, "chr1")
+
+library(Rsamtools)
+fl <- system.file("extdata", "ex1.bam", package="Rsamtools")
+gal <- readGAlignments(fl)
+seqlevels(gal)
+## If 'value' is named, the names are ignored.
+seq2 <- keepSeqlevels(gal, c(foo="seq2"))
+seqlevels(seq2)
+
+## GRangesList / GAlignmentsList:
+
+grl <- split(gr, as.character(seqnames(gr)))
+dropSeqlevels(grl, c("chr1", "chr2"))
+galist <- split(gal, as.character(seqnames(gal)))
+keepSeqlevels(galist, "seq2")
+
+## TranscriptDb:
+
+## A TranscriptDb cannot be directly subset with 'keepSeqlevels' 
+## and 'dropSeqlevels'.
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
+seqlevels(txdb)
+\dontrun{
+keepSeqlevels(txdb, "chr2L") ## fails
+}
+
+## GRanges or GRangesLists extracted from the TranscriptDb can be subset.
+txbygene <- transcriptsBy(txdb, "gene")
+seqlevels(txbygene)
+chr2L <- keepSeqlevels(txbygene, "chr2L")
+seqlevels(chr2L)
+
+## ---------------------------------------------------------------------
+## renameSeqlevels 
+## ---------------------------------------------------------------------
+
+## GAlignments:
+
+seqlevels(gal)
+## Rename 'seq2' to 'chr2' with a named or unnamed vector.
+gal2a <- renameSeqlevels(gal, c(seq2="chr2"))
+gal2b <- renameSeqlevels(gal, c("seq1", "chr2"))
+## Names that do not match existing seqlevels are ignored.
+## This attempt at renaming does nothing.
+gal3 <- renameSeqlevels(gal, c(foo="chr2"))
+identical(seqlevels(gal), seqlevels(gal3))
+
+## TranscriptDb:
+
+seqlevels(txdb)
+## When the seqlevels of a TranscriptDb are renamed, all future 
+## extractions reflect the modified seqlevels.
+renameSeqlevels(txdb, sub("chr", "CH", seqlevels(txdb)))
+renameSeqlevels(txdb, c(CHM="M"))
+seqlevels(txdb)
+
+transcripts <- transcripts(txdb)
+identical(seqlevels(txdb), seqlevels(transcripts))
+
+## ---------------------------------------------------------------------
+## restoreSeqlevels 
+## ---------------------------------------------------------------------
+
+## Restore seqlevels in a TranscriptDb to original values.
+\dontrun{
+restoreSeqlevels(txdb)
+seqlevels(txdb)
+}
 }
 
 \author{Valerie Obenchain \email{vobencha@fhcrc.org}}
