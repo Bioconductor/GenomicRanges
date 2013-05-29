@@ -235,7 +235,6 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
 {
     if (!is(value, "Seqinfo")) 
         stop("the supplied 'seqinfo' must be a Seqinfo object")
-browser()
     dangling_seqlevels <-
         getDanglingSeqlevels(rowData(x), new2old = new2old,
                              force = force, seqlevels(value))
