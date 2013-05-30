@@ -74,11 +74,10 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
 
 \arguments{
   \item{cigar}{
-    A character vector/factor containing the extended CIGAR
-    string for each read.
-    For \code{cigarToIRanges} and \code{queryLoc2refLoc},
-    this must be a single string (i.e. a character vector/factor
-    of length 1).
+    A character vector or factor containing the extended CIGAR strings.
+    It can be of arbitrary length except for \code{cigarToIRanges} and
+    \code{queryLoc2refLoc} which only accept a single CIGAR (as a character
+    vector or factor of length 1).
   }
   \item{before.hard.clipping}{
     Should the returned widths be the lengths of the reads before
@@ -145,6 +144,16 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
 }
 
 \value{
+  For \code{explodeCigarOps} and \code{explodeCigarOpLengths}:
+  Both functions return a list of the same length as \code{cigar} where each
+  list element is a character vector (for \code{explodeCigarOps}) or an integer
+  vector (for \code{explodeCigarOpLengths}). The 2 lists have the same shape,
+  that is, same \code{length()} and same \code{elementLengths()}. The i-th
+  character vector in the list returned by \code{explodeCigarOps} contains one
+  single-letter string per CIGAR operation in \code{cigar[i]}. The i-th integer
+  vector in the list returned by \code{explodeCigarOpLengths} contains the
+  corresponding CIGAR operation lengths. Zero-length operations are ignored.
+
   For \code{cigarToRleList}: A \link[IRanges]{CompressedRleList} object.
 
   For \code{splitCigar}: A list of the same length as \code{cigar}
@@ -210,15 +219,19 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
 }
 
 \seealso{
-  \link[IRanges]{IRanges-class},
-  \link[IRanges]{IRangesList-class},
-  \code{\link[IRanges]{coverage}},
-  \link[IRanges]{RleList-class}
+  \itemize{
+    \item The \link{GAlignments} container for storing a set of genomic
+          alignments.
+    \item The \link[IRanges]{IRanges}, \link[IRanges]{IRangesList}, and
+          \link[IRanges]{RleList} classes in the IRanges package.
+    \item The \code{\link[IRanges]{coverage}} generic and methods for
+          computing the coverage across a set of ranges or genomic ranges.
+  }
 }
 
 \examples{
 ## ---------------------------------------------------------------------
-## A. EXAMPLES ON A SINGLE CIGAR
+## A. ON A SINGLE CIGAR
 ## ---------------------------------------------------------------------
 cigar1 <- "3H15M55N4M2I6M2D5M6S"
 
@@ -250,7 +263,7 @@ cigarToIRanges(cigar1, reduce.ranges=FALSE)
 cigarToIRanges(cigar1, drop.D.ranges=TRUE)
 
 ## ---------------------------------------------------------------------
-## B. ON A CIGAR VECTOR OF LENGTH > 1
+## B. ON A VECTOR CONTAINING MORE THAN ONE CIGAR
 ## ---------------------------------------------------------------------
 cigar2 <- c("40M", cigar1, "2S10M2000N15M", "3H25M5H")
 
