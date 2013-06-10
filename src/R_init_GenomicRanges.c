@@ -14,6 +14,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(cigar_to_width, 1),
 	CALLMETHOD_DEF(cigar_qnarrow, 3),
 	CALLMETHOD_DEF(cigar_narrow, 3),
+	CALLMETHOD_DEF(cigar_ranges_on_reference, 6),
+	CALLMETHOD_DEF(cigar_ranges_on_query, 5),
 	CALLMETHOD_DEF(cigar_to_IRanges, 4),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_alignment, 6),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_rname, 7),

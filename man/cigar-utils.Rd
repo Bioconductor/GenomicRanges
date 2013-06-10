@@ -4,6 +4,8 @@
 
 \alias{validCigar}
 
+\alias{CIGAR_OPS}
+
 \alias{explodeCigarOps}
 \alias{explodeCigarOpLengths}
 \alias{cigarToRleList}
@@ -15,6 +17,8 @@
 \alias{cigarQNarrow}
 \alias{cigarNarrow}
 
+\alias{cigarRangesOnReference}
+\alias{cigarRangesOnQuery}
 \alias{cigarToIRanges}
 \alias{cigarToIRangesListByAlignment}
 \alias{cigarToIRangesListByRName}
@@ -38,6 +42,9 @@
 }
 
 \usage{
+## Supported CIGAR operations:
+CIGAR_OPS
+
 ## Transform CIGARs into other useful representations:
 explodeCigarOps(cigar)
 explodeCigarOpLengths(cigar)
@@ -53,6 +60,14 @@ cigarQNarrow(cigar, start=NA, end=NA, width=NA)
 cigarNarrow(cigar, start=NA, end=NA, width=NA)
 
 ## From CIGARs to ranges:
+cigarRangesOnReference(cigar, pos, ops=CIGAR_OPS,
+                       drop.empty.ranges=FALSE, reduce.ranges=FALSE,
+                       with.ops=FALSE)
+
+cigarRangesOnQuery(cigar, ops=CIGAR_OPS,
+                   drop.empty.ranges=FALSE, reduce.ranges=FALSE,
+                   with.ops=FALSE)
+
 cigarToIRanges(cigar,
                drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                reduce.ranges=TRUE)
@@ -64,6 +79,7 @@ cigarToIRangesListByAlignment(cigar, pos, flag=NULL,
 cigarToIRangesListByRName(cigar, rname, pos, flag=NULL,
                           drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                           reduce.ranges=TRUE)
+
 ## Summarize CIGARs:
 cigarOpTable(cigar)
 
@@ -144,6 +160,11 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
 }
 
 \value{
+  \code{CIGAR_OPS} is a predefined character vector containing the supported
+  CIGAR operations: M, I, D, N, S, H, P, =, X. See p. 4 of the SAM Spec v1.4
+  at \url{http://samtools.sourceforge.net/} for the list of CIGAR operations
+  and their meanings.
+
   For \code{explodeCigarOps} and \code{explodeCigarOpLengths}:
   Both functions return a list of the same length as \code{cigar} where each
   list element is a character vector (for \code{explodeCigarOps}) or an integer
@@ -230,6 +251,8 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
 }
 
 \examples{
+CIGAR_OPS
+
 ## ---------------------------------------------------------------------
 ## A. ON A SINGLE CIGAR
 ## ---------------------------------------------------------------------

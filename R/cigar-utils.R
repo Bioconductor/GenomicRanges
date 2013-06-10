@@ -3,6 +3,10 @@
 ### -------------------------------------------------------------------------
 
 
+### See p. 4 of the SAM Spec v1.4 at http://samtools.sourceforge.net/ for the
+### list of CIGAR operations and their meanings.
+CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
+
 validCigar <- function(cigar)
 {
     if (!is.character(cigar)) {
@@ -13,6 +17,25 @@ validCigar <- function(cigar)
     .Call2("valid_cigar", cigar, 0L, PACKAGE="GenomicRanges")
 }
 
+.normarg_ops <- function(ops)
+{
+    if (!is.character(ops))
+        stop("'ops' must be a character vector")
+    if (any(is.na(ops)))
+        stop("'ops' cannot contain NAs")
+    if (length(ops) == 1L) {
+        ops <- strsplit(ops, NULL, fixed=TRUE)[[1L]]
+    } else if (any(nchar(ops) != 1L)) {
+        stop("when 'length(ops) != 1', all its elements ",
+             "must be single letters")
+    }
+    if (anyDuplicated(ops))
+        stop("'ops' cannot contain duplicated letters")
+    if (!all(ops %in% CIGAR_OPS))
+        stop("'ops' contains invalid CIGAR operations")
+    ops
+}
+ 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Transform CIGARs into other useful representations
@@ -138,6 +161,56 @@ cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### From CIGARs to ranges
 ###
+
+cigarRangesOnReference <- function(cigar, pos, ops=CIGAR_OPS,
+                                   drop.empty.ranges=FALSE,
+                                   reduce.ranges=FALSE,
+                                   with.ops=FALSE)
+{
+    if (!is.character(cigar)) {
+        if (!is.factor(cigar))
+            stop("'cigar' must be a character vector or factor")
+        cigar <- as.character(cigar)
+    }
+    if (!is.numeric(pos))
+        stop("'pos' must be a vector of integers")
+    if (!is.integer(pos))
+        pos <- as.integer(pos)
+    if (length(cigar) != length(pos))
+        stop("'cigar' and 'pos' must have the same length")
+    ops <- .normarg_ops(ops)
+    if (!isTRUEorFALSE(drop.empty.ranges))
+        stop("'drop.empty.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(reduce.ranges))
+        stop("'reduce.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(with.ops))
+        stop("'with.ops' must be TRUE or FALSE")
+    .Call2("cigar_ranges_on_reference",
+           cigar, pos, ops, drop.empty.ranges, reduce.ranges, with.ops,
+           PACKAGE="GenomicRanges")
+}
+
+cigarRangesOnQuery <- function(cigar, ops=CIGAR_OPS,
+                               drop.empty.ranges=FALSE,
+                               reduce.ranges=FALSE,
+                               with.ops=FALSE)
+{
+    if (!is.character(cigar)) {
+        if (!is.factor(cigar))
+            stop("'cigar' must be a character vector or factor")
+        cigar <- as.character(cigar)
+    }
+    ops <- .normarg_ops(ops)
+    if (!isTRUEorFALSE(drop.empty.ranges))
+        stop("'drop.empty.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(reduce.ranges))
+        stop("'reduce.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(with.ops))
+        stop("'with.ops' must be TRUE or FALSE")
+    .Call2("cigar_ranges_on_query",
+           cigar, ops, drop.empty.ranges, reduce.ranges, with.ops,
+           PACKAGE="GenomicRanges")
+}
 
 cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
                            drop.empty.ranges=FALSE, reduce.ranges=TRUE)

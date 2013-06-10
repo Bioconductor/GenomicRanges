@@ -19,6 +19,23 @@ SEXP cigar_qnarrow(SEXP cigar, SEXP left_qwidth, SEXP right_qwidth);
 
 SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width);
 
+SEXP cigar_ranges_on_reference(
+	SEXP cigar,
+	SEXP pos,
+	SEXP ops,
+	SEXP drop_empty_ranges,
+	SEXP reduce_ranges,
+	SEXP with_ops
+);
+
+SEXP cigar_ranges_on_query(
+	SEXP cigar,
+	SEXP ops,
+	SEXP drop_empty_ranges,
+	SEXP reduce_ranges,
+	SEXP with_ops
+);
+
 SEXP cigar_to_IRanges(
 	SEXP cigar,
 	SEXP drop_D_ranges,

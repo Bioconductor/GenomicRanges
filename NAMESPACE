@@ -94,11 +94,13 @@ export(
     phicoef,
 
     validCigar,
+    CIGAR_OPS,
     explodeCigarOps, explodeCigarOpLengths,
     cigarToRleList,
     splitCigar,
     cigarToQWidth, cigarToWidth,
     cigarQNarrow, cigarNarrow,
+    cigarRangesOnReference, cigarRangesOnQuery,
     cigarToIRanges, cigarToIRangesListByAlignment, cigarToIRangesListByRName,
     cigarOpTable, cigarToCigarTable, summarizeCigarTable,
     queryLoc2refLoc, queryLocs2refLocs,
