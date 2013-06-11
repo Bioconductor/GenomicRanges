@@ -118,12 +118,15 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
   \item{flag}{
     \code{NULL} or an integer vector containing the SAM flag for
     each read.
-    According to the SAM specs, flag bit 0x004 has the following
-    meaning: when bit 0x004 is ON then "the query sequence itself
-    is unmapped".
-    When \code{flag} is provided,
-    \code{cigarToIRangesListByAlignment} and
-    \code{cigarToIRangesListByRName} ignore these reads.
+
+    According to the SAM Spec v1.4, flag bit 0x4 is the only reliable place
+    to tell whether a segment (or read) is mapped (bit is 0) or not (bit
+    is 1). If \code{flag} is supplied, then \code{cigarRangesOnReference},
+    \code{cigarRangesOnQuery}, and \code{cigarToIRangesListByAlignment},
+    translate unmapped reads to empty list elements in the returned
+    \link[IRanges]{IRangesList} object.
+    If \code{flag} is supplied, \code{cigarToIRangesListByRName} just
+    ignore these reads.
   }
   \item{ops}{
     Character vector containing the CIGAR operations to translate to ranges.

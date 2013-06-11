@@ -1036,7 +1036,10 @@ SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width)
  *   pos:   integer vector containing the 1-based leftmost position/coordinate
  *          of the clipped read sequences.
  *   flag:  NULL or an integer vector containing the SAM flag for each read.
- *          Serves only as way to indicate whether a read is mapped or not.
+ *          Serves only as a way to indicate whether a read is mapped or not.
+ *          According to the SAM Spec v1.4, flag bit 0x4 is the only reliable
+ *          place to tell whether a segment (or read) is mapped (bit is 0)
+ *          or not (bit is 1).
  *   ops:   character vector containing the CIGAR operations to translate to
  *          ranges.
  *   drop_empty_ranges: TRUE or FALSE.
@@ -1082,13 +1085,11 @@ SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP flag, SEXP ops,
 				error("'flag' contains NAs");
 			}
 			if (flag_elt & 0x004) {
-				/* An unmapped read translates to no ranges. */
+				/* An unmapped read translates to an empty
+				   list element (i.e. IRanges of length 0)
+				   in the returned IRangesList object. */
 				continue;
 			}
-		}
-		if (*pos_elt == NA_INTEGER || *pos_elt == 0) {
-			UNPROTECT(1);
-			error("'pos[%d]' is NA or 0", i + 1);
 		}
 		cigar_elt = STRING_ELT(cigar, i);
 		if (cigar_elt == NA_STRING) {
@@ -1099,6 +1100,10 @@ SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP flag, SEXP ops,
 		if (strcmp(cigar_string, "*") == 0) {
 			UNPROTECT(1);
 			error("'cigar[%d]' is \"*\"", i + 1);
+		}
+		if (*pos_elt == NA_INTEGER || *pos_elt == 0) {
+			UNPROTECT(1);
+			error("'pos[%d]' is NA or 0", i + 1);
 		}
 		errmsg = append_cigar_ranges_on_reference(cigar_string,
 				*pos_elt, ops,
@@ -1149,7 +1154,9 @@ SEXP cigar_ranges_on_query(SEXP cigar, SEXP flag, SEXP ops,
 				error("'flag' contains NAs");
 			}
 			if (flag_elt & 0x004) {
-				/* An unmapped read translates to no ranges. */
+				/* An unmapped read translates to an empty
+				   list element (i.e. IRanges of length 0)
+				   in the returned IRangesList object. */
 				continue;
 			}
 		}
@@ -1236,52 +1243,61 @@ SEXP cigar_to_IRanges(SEXP cigar,
 SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
 		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
 {
-	SEXP cigar_string;
-	SEXP ans, ans_partitioning_end;
-	int cigar_length, Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-	    i, pos_elt, flag_elt;
-	RangeAE range_ae;
-	const char *errmsg;
+	int cigar_len, Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
+	    i, *end_elt, flag_elt;
+	RangeAE range_buf;
+	SEXP ans, ans_partitioning_end, cigar_elt;
+	const int *pos_elt;
+	const char *cigar_string, *errmsg;
 
-	cigar_length = LENGTH(cigar);
+	cigar_len = LENGTH(cigar);
 	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
 	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
 	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
-	/* We will generate at least 'cigar_length' ranges. */
-	range_ae = new_RangeAE(cigar_length, 0);
-	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_length));
-	for (i = 0; i < cigar_length; i++) {
+	/* We will generate at least 'cigar_len' ranges. */
+	range_buf = new_RangeAE(cigar_len, 0);
+	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_len));
+	for (i = 0, pos_elt = INTEGER(pos),
+		    end_elt = INTEGER(ans_partitioning_end);
+	     i < cigar_len;
+	     i++, pos_elt++, *(end_elt++) = RangeAE_get_nelt(&range_buf))
+	{
 		if (flag != R_NilValue) {
 			flag_elt = INTEGER(flag)[i];
 			if (flag_elt == NA_INTEGER) {
 				UNPROTECT(1);
 				error("'flag' contains NAs");
 			}
-			if (flag_elt & 0x004)
+			if (flag_elt & 0x004) {
+				/* An unmapped read translates to an empty
+				   list element (i.e. IRanges of length 0)
+				   in the returned IRangesList object. */
 				continue;
+			}
 		}
-		cigar_string = STRING_ELT(cigar, i);
-		if (cigar_string == NA_STRING) {
+		cigar_elt = STRING_ELT(cigar, i);
+		if (cigar_elt == NA_STRING) {
 			UNPROTECT(1);
-			error("'cigar' contains %sNAs",
-			      flag != R_NilValue ? "unexpected " : "");
+			error("'cigar[%d]' is NA", i + 1);
 		}
-		pos_elt = INTEGER(pos)[i];
-		if (pos_elt == NA_INTEGER) {
+		cigar_string = CHAR(cigar_elt);
+		if (strcmp(cigar_string, "*") == 0) {
 			UNPROTECT(1);
-			error("'pos' contains %sNAs",
-			      flag != R_NilValue ? "unexpected " : "");
+			error("'cigar[%d]' is \"*\"", i + 1);
 		}
-		errmsg = cigar_string_to_ranges(cigar_string, pos_elt,
+		if (*pos_elt == NA_INTEGER || *pos_elt == 0) {
+			UNPROTECT(1);
+			error("'pos[%d]' is NA or 0", i + 1);
+		}
+		errmsg = cigar_string_to_ranges(cigar_elt, *pos_elt,
 				Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-				&range_ae);
+				&range_buf);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1, errmsg);
+			error("in 'cigar[%d]': %s", i + 1, errmsg);
 		}
-		INTEGER(ans_partitioning_end)[i] = RangeAE_get_nelt(&range_ae);
 	}
-	PROTECT(ans = make_CompressedIRangesList(&range_ae, NULL,
+	PROTECT(ans = make_CompressedIRangesList(&range_buf, NULL,
 						 ans_partitioning_end));
 	UNPROTECT(2);
 	return ans;
