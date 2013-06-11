@@ -350,14 +350,6 @@ setMethod("[[", "GAlignmentPairs",
     }
 )
 
-.makePickupIndex <- function(N)
-{
-    ans <- rep(seq_len(N), each=2L)
-    if (length(ans) != 0L)
-        ans[c(FALSE, TRUE)] <- ans[c(FALSE, TRUE)] + N
-    ans
-}
-
 ### TODO: Remove this method after the definition of the GAlignmentPairs
 ### class is changed to derive from CompressedList.
 setMethod("unlist", "GAlignmentPairs",
@@ -367,7 +359,9 @@ setMethod("unlist", "GAlignmentPairs",
             stop("'use.names' must be TRUE or FALSE")
         x_first <- x@first
         x_last <- x@last
-        ans <- c(x_first, x_last)[.makePickupIndex(length(x))]
+        collate_subscript <-
+            IRanges:::make_XYZxyz_to_XxYyZz_subscript(length(x))
+        ans <- c(x_first, x_last)[collate_subscript]
         if (use.names)
             names(ans) <- rep(names(x), each=2L)
         ans
@@ -410,7 +404,9 @@ setMethod("grglist", "GAlignmentPairs",
         x_first <- x@first
         x_last <- invertRleStrand(x@last)
         ## Not the same as doing 'unlist(x, use.names=FALSE)'.
-        x_unlisted <- c(x_first, x_last)[.makePickupIndex(length(x))]
+        collate_subscript <-
+            IRanges:::make_XYZxyz_to_XxYyZz_subscript(length(x))
+        x_unlisted <- c(x_first, x_last)[collate_subscript]
         grl <- grglist(x_unlisted,
                        order.as.in.query=TRUE,
                        drop.D.ranges=drop.D.ranges)
@@ -450,7 +446,9 @@ setMethod("introns", "GAlignmentPairs",
         ## Fast way of doing mendoapply(c, first_introns, last_introns)
         ## on 2 CompressedList objects.
         ans <- c(first_introns, last_introns)
-        ans <- ans[.makePickupIndex(length(x))]
+        collate_subscript <-
+            IRanges:::make_XYZxyz_to_XxYyZz_subscript(length(x))
+        ans <- ans[collate_subscript]
         ans <- .shrinkByHalf(ans)
         mcols(ans) <- NULL
         ans
@@ -485,8 +483,8 @@ fillGaps <- function(x)
     half2_partitioning <- PartitioningByEnd(cumsum(half2_eltlens))
     half2 <- relist(x@unlistData[-idx], half2_partitioning)
     half2 <- range(half2)@unlistData
-    idx <- .makePickupIndex(length(x))
-    ans_unlistData <- c(half1, half2)[idx]
+    collate_subscript <- IRanges:::make_XYZxyz_to_XxYyZz_subscript(length(x))
+    ans_unlistData <- c(half1, half2)[collate_subscript]
     ans_partitioning <- PartitioningByEnd(2L * seq_along(x),
                                           names=names(x))
     relist(ans_unlistData, ans_partitioning)
