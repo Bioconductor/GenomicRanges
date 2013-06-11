@@ -151,7 +151,7 @@
   \linkS4class{GRangesList}-class}) and columns represent samples (with
   sample data summarized as a \code{\linkS4class{DataFrame}-class}). A
   \code{SummarizedExperiment} contains one or more assays, each
-  represented by a matrix of numeric or other mode.
+  represented by a matrix-like object of numeric or other mode.
 
 }
 

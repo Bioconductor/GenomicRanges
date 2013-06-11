@@ -54,10 +54,10 @@ setClass("SummarizedExperiment",
 .valid.SummarizedExperiment.assays_class <- function(x)
 {
     ok <- sapply(assays(x, withDimnames=FALSE), function(cl) {
-        is(cl, "matrix") || is(cl, "array") || is(cl, "Matrix")
+        (!is.null(dim(cl))) && (length(dim(cl)) >= 2L)
     })
     if (!all(ok))
-        return("'assays' must be class 'matrix', 'array', or 'Matrix'")
+        return("'assays' must be matrix-like with 2 (or more?) dimensions")
     NULL
 }
 
