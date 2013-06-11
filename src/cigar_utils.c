@@ -1032,23 +1032,25 @@ SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width)
  *    - cigar_ranges_on_reference()
  *    - cigar_ranges_on_query()
  * Arg:
- *   cigar: character vector containing extended CIGAR strings;
+ *   cigar: character vector containing extended CIGAR strings.
  *   pos:   integer vector containing the 1-based leftmost position/coordinate
- *          of the clipped read sequences;
+ *          of the clipped read sequences.
+ *   flag:  NULL or an integer vector containing the SAM flag for each read.
+ *          Serves only as way to indicate whether a read is mapped or not.
  *   ops:   character vector containing the CIGAR operations to translate to
- *          ranges;
- *   drop_empty_ranges: TRUE or FALSE;
- *   reduce_ranges: TRUE or FALSE;
+ *          ranges.
+ *   drop_empty_ranges: TRUE or FALSE.
+ *   reduce_ranges: TRUE or FALSE.
  *   with_ops: TRUE or FALSE indicating whether the returned ranges should be
- *          named with the corresponding CIGAR operation.
+ *          named with their corresponding CIGAR operation.
  * Both functions return a CompressedIRangesList object of the same length as
  * 'cigar'.
  */
-SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP ops,
+SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP flag, SEXP ops,
 		SEXP drop_empty_ranges, SEXP reduce_ranges, SEXP with_ops)
 {
 	int cigar_len, drop_empty_ranges0, reduce_ranges0, with_ops0,
-	    i, *end_elt;
+	    i, *end_elt, flag_elt;
 	RangeAE range_buf;
 	CharAEAE OP_buf, *OP_buf_p;
 	SEXP ans, ans_partitioning_end, cigar_elt;
@@ -1071,24 +1073,32 @@ SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP ops,
 	for (i = 0, pos_elt = INTEGER(pos),
 		    end_elt = INTEGER(ans_partitioning_end);
 	     i < cigar_len;
-	     i++, pos_elt++, end_elt++)
+	     i++, pos_elt++, *(end_elt++) = RangeAE_get_nelt(&range_buf))
 	{
+		if (flag != R_NilValue) {
+			flag_elt = INTEGER(flag)[i];
+			if (flag_elt == NA_INTEGER) {
+				UNPROTECT(1);
+				error("'flag' contains NAs");
+			}
+			if (flag_elt & 0x004) {
+				/* An unmapped read translates to no ranges. */
+				continue;
+			}
+		}
 		if (*pos_elt == NA_INTEGER || *pos_elt == 0) {
-			/* An unmapped read translates to no ranges. */
-			*end_elt = RangeAE_get_nelt(&range_buf);
-			continue;
+			UNPROTECT(1);
+			error("'pos[%d]' is NA or 0", i + 1);
 		}
 		cigar_elt = STRING_ELT(cigar, i);
 		if (cigar_elt == NA_STRING) {
 			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1,
-			      "unexpected NA");
+			error("'cigar[%d]' is NA", i + 1);
 		}
 		cigar_string = CHAR(cigar_elt);
 		if (strcmp(cigar_string, "*") == 0) {
 			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1,
-			      "unexpected star ('*')");
+			error("'cigar[%d]' is \"*\"", i + 1);
 		}
 		errmsg = append_cigar_ranges_on_reference(cigar_string,
 				*pos_elt, ops,
@@ -1096,9 +1106,8 @@ SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP ops,
 				&range_buf, OP_buf_p);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1, errmsg);
+			error("in 'cigar[%d]': %s", i + 1, errmsg);
 		}
-		*end_elt = RangeAE_get_nelt(&range_buf);
 	}
 	PROTECT(ans = make_CompressedIRangesList(&range_buf, OP_buf_p,
 						 ans_partitioning_end));
@@ -1106,11 +1115,11 @@ SEXP cigar_ranges_on_reference(SEXP cigar, SEXP pos, SEXP ops,
 	return ans;
 }
 
-SEXP cigar_ranges_on_query(SEXP cigar, SEXP ops,
+SEXP cigar_ranges_on_query(SEXP cigar, SEXP flag, SEXP ops,
 		SEXP drop_empty_ranges, SEXP reduce_ranges, SEXP with_ops)
 {
 	int cigar_len, drop_empty_ranges0, reduce_ranges0, with_ops0,
-	    i, *end_elt;
+	    i, *end_elt, flag_elt;
 	RangeAE range_buf;
 	CharAEAE OP_buf, *OP_buf_p;
 	SEXP ans, ans_partitioning_end, cigar_elt;
@@ -1131,19 +1140,28 @@ SEXP cigar_ranges_on_query(SEXP cigar, SEXP ops,
 	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_len));
 	for (i = 0, end_elt = INTEGER(ans_partitioning_end);
 	     i < cigar_len;
-	     i++, end_elt++)
+	     i++, *(end_elt++) = RangeAE_get_nelt(&range_buf))
 	{
+		if (flag != R_NilValue) {
+			flag_elt = INTEGER(flag)[i];
+			if (flag_elt == NA_INTEGER) {
+				UNPROTECT(1);
+				error("'flag' contains NAs");
+			}
+			if (flag_elt & 0x004) {
+				/* An unmapped read translates to no ranges. */
+				continue;
+			}
+		}
 		cigar_elt = STRING_ELT(cigar, i);
 		if (cigar_elt == NA_STRING) {
-			/* Translates to no ranges. */
-			*end_elt = RangeAE_get_nelt(&range_buf);
-			continue;
+			UNPROTECT(1);
+			error("'cigar[%d]' is NA", i + 1);
 		}
 		cigar_string = CHAR(cigar_elt);
 		if (strcmp(cigar_string, "*") == 0) {
-			/* Translates to no ranges. */
-			*end_elt = RangeAE_get_nelt(&range_buf);
-			continue;
+			UNPROTECT(1);
+			error("'cigar[%d]' is \"*\"", i + 1);
 		}
 		errmsg = append_cigar_ranges_on_query(cigar_string,
 				ops,
@@ -1151,9 +1169,8 @@ SEXP cigar_ranges_on_query(SEXP cigar, SEXP ops,
 				&range_buf, OP_buf_p);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
-			error("in 'cigar' element %d: %s", i + 1, errmsg);
+			error("in 'cigar[%d]': %s", i + 1, errmsg);
 		}
-		*end_elt = RangeAE_get_nelt(&range_buf);
 	}
 	PROTECT(ans = make_CompressedIRangesList(&range_buf, OP_buf_p,
 						 ans_partitioning_end));

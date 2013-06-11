@@ -60,11 +60,11 @@ cigarQNarrow(cigar, start=NA, end=NA, width=NA)
 cigarNarrow(cigar, start=NA, end=NA, width=NA)
 
 ## From CIGARs to ranges:
-cigarRangesOnReference(cigar, pos, ops=CIGAR_OPS,
+cigarRangesOnReference(cigar, pos, flag=NULL, ops=CIGAR_OPS,
                        drop.empty.ranges=FALSE, reduce.ranges=FALSE,
                        with.ops=FALSE)
 
-cigarRangesOnQuery(cigar, ops=CIGAR_OPS,
+cigarRangesOnQuery(cigar, flag=NULL, ops=CIGAR_OPS,
                    drop.empty.ranges=FALSE, reduce.ranges=FALSE,
                    with.ops=FALSE)
 
@@ -110,22 +110,6 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
     "solved" according to the rules of the SEW (Start/End/Width)
     interface (see \code{?\link[IRanges]{solveUserSEW}} for the details).
   }
-  \item{drop.D.ranges}{
-    Should the ranges corresponding to a deletion from the
-    reference (encoded with a D in the CIGAR) be dropped?
-    By default we keep them to be consistent with the pileup tool
-    from SAMtools.
-    Note that, when \code{drop.D.ranges} is \code{TRUE}, then Ds
-    and Ns in the CIGAR are equivalent.
-  }
-  \item{drop.empty.ranges}{
-    Should empty ranges be dropped?
-  }
-  \item{reduce.ranges}{
-    Should adjacent ranges coming from the same cigar be merged or not?
-    Using \code{TRUE} (the default) can significantly reduce the
-    size of the returned object.
-  }
   \item{pos}{
     An integer vector containing the 1-based leftmost
     position/coordinate for each (eventually clipped) read
@@ -140,6 +124,30 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
     When \code{flag} is provided,
     \code{cigarToIRangesListByAlignment} and
     \code{cigarToIRangesListByRName} ignore these reads.
+  }
+  \item{ops}{
+    Character vector containing the CIGAR operations to translate to ranges.
+    By default, all CIGAR operations are translated.
+  }
+  \item{with.ops}{
+    \code{TRUE} or \code{FALSE} indicating whether the returned ranges should
+    be named with their corresponding CIGAR operation.
+  }
+  \item{drop.empty.ranges}{
+    Should empty ranges be dropped?
+  }
+  \item{reduce.ranges}{
+    Should adjacent ranges coming from the same cigar be merged or not?
+    Using \code{TRUE} can significantly reduce the size of the returned
+    object.
+  }
+  \item{drop.D.ranges}{
+    Should the ranges corresponding to a deletion from the
+    reference (encoded with a D in the CIGAR) be dropped?
+    By default we keep them to be consistent with the pileup tool
+    from SAMtools.
+    Note that, when \code{drop.D.ranges} is \code{TRUE}, then Ds
+    and Ns in the CIGAR are equivalent.
   }
   \item{rname}{
     A character vector/factor containing the name of the
@@ -202,14 +210,20 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
   would need to be added to the POS field of a SAM/BAM file as a
   consequence of this cigar narrowing.
 
+  For \code{cigarRangesOnReference} and \code{cigarRangesOnQuery}:
+  An \link[IRanges]{IRangesList} object (more precisely a
+  \link[IRanges]{CompressedIRangesList} object) of the same length
+  as \code{cigar}.
+
   For \code{cigarToIRanges}: An \link[IRanges]{IRanges} object
   describing where the bases in the read align with respect to
   an imaginary reference sequence assuming that the leftmost
   aligned base is at position 1 in the reference (i.e. at the
   first position).
 
-  For \code{cigarToIRangesListByAlignment}: A
-  \link[IRanges]{CompressedIRangesList} object of the same length
+  For \code{cigarToIRangesListByAlignment}:
+  An \link[IRanges]{IRangesList} object (more precisely a
+  \link[IRanges]{CompressedIRangesList} object) of the same length
   as \code{cigar}.
 
   For \code{cigarToIRangesListByRName}: A named \link[IRanges]{IRangesList}
@@ -298,7 +312,21 @@ splitCigar(cigar2)
 
 ## From CIGARs to ranges:
 pos <- c(1, 1001, 1,  351)
-cigarToIRangesListByAlignment(cigar2, pos)
+cigarRangesOnReference(cigar2, pos, with.ops=TRUE)
+cigarRangesOnQuery(cigar2, with.ops=TRUE)
+
+res1a <- cigarToIRangesListByAlignment(cigar2, pos)
+res1b <- cigarRangesOnReference(cigar2, pos,
+                                ops=setdiff(CIGAR_OPS, "N"),
+                                reduce.ranges=TRUE)
+stopifnot(identical(res1a, res1b))
+
+res2a <- cigarToIRangesListByAlignment(cigar2, pos, drop.D.ranges=TRUE)
+res2b <- cigarRangesOnReference(cigar2, pos,
+                                ops=setdiff(CIGAR_OPS, c("D", "N")),
+                                reduce.ranges=TRUE)
+stopifnot(identical(res2a, res2b))
+
 rname <- c("chr6", "chr6", "chr2", "chr6")
 cigarToIRangesListByRName(cigar2, rname, pos)
 
