@@ -394,8 +394,8 @@ setAs("Seqinfo", "RangesList",
 
 .compactDataFrame <- function(x)
 {
-    head_nrow <- as.integer(getOption("showHeadLines", default=5))
-    tail_nrow <- as.integer(getOption("showTailLines", default=5))
+    head_nrow <- getOption("showHeadLines", default=5)
+    tail_nrow <- getOption("showTailLines", default=5)
     max_nrow <- head_nrow + tail_nrow + 1L
     if (nrow(x) <= max_nrow)
         return(x)
