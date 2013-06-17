@@ -394,8 +394,17 @@ setAs("Seqinfo", "RangesList",
 
 .compactDataFrame <- function(x)
 {
-    head_nrow <- getOption("showHeadLines", default=5)
-    tail_nrow <- getOption("showTailLines", default=5)
+    default <- 5L
+    head_nrow <- getOption("showHeadLines", default=default)
+    if (!is.infinite(head_nrow))
+        head_nrow <- as.integer(head_nrow)
+    if (is.na(head_nrow))
+        head_nrow <- default 
+    tail_nrow <- getOption("showTailLines", default=default)
+    if (!is.infinite(tail_nrow))
+        tail_nrow <- as.integer(tail_nrow)
+    if (is.na(tail_nrow))
+        tail_nrow <- default 
     max_nrow <- head_nrow + tail_nrow + 1L
     if (nrow(x) <= max_nrow)
         return(x)
