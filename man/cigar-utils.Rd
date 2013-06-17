@@ -17,8 +17,9 @@
 \alias{cigarQNarrow}
 \alias{cigarNarrow}
 
-\alias{cigarRangesOnReference}
-\alias{cigarRangesOnQuery}
+\alias{cigarRangesOnReferenceSpace}
+\alias{cigarRangesOnQuerySpace}
+\alias{cigarRangesOnPairwiseSpace}
 \alias{cigarToIRanges}
 \alias{cigarToIRangesListByAlignment}
 \alias{cigarToIRangesListByRName}
@@ -60,23 +61,27 @@ cigarQNarrow(cigar, start=NA, end=NA, width=NA)
 cigarNarrow(cigar, start=NA, end=NA, width=NA)
 
 ## From CIGARs to ranges:
-cigarRangesOnReference(cigar, pos, flag=NULL, ops=CIGAR_OPS,
-                       drop.empty.ranges=FALSE, reduce.ranges=FALSE,
-                       with.ops=FALSE)
+cigarRangesOnReferenceSpace(cigar, flag=NULL, ops=CIGAR_OPS, pos=1L,
+                            drop.empty.ranges=FALSE, reduce.ranges=FALSE,
+                            with.ops=FALSE)
 
-cigarRangesOnQuery(cigar, flag=NULL, ops=CIGAR_OPS,
-                   drop.empty.ranges=FALSE, reduce.ranges=FALSE,
-                   with.ops=FALSE)
+cigarRangesOnQuerySpace(cigar, flag=NULL, ops=CIGAR_OPS,
+                        drop.empty.ranges=FALSE, reduce.ranges=FALSE,
+                        with.ops=FALSE)
+
+cigarRangesOnPairwiseSpace(cigar, flag=NULL, ops=CIGAR_OPS,
+                           drop.empty.ranges=FALSE, reduce.ranges=FALSE,
+                           with.ops=FALSE)
 
 cigarToIRanges(cigar,
                drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                reduce.ranges=TRUE)
 
-cigarToIRangesListByAlignment(cigar, pos, flag=NULL,
+cigarToIRangesListByAlignment(cigar, pos=1L, flag=NULL,
                               drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                               reduce.ranges=TRUE)
 
-cigarToIRangesListByRName(cigar, rname, pos, flag=NULL,
+cigarToIRangesListByRName(cigar, rname, pos=1L, flag=NULL,
                           drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                           reduce.ranges=TRUE)
 
@@ -84,8 +89,8 @@ cigarToIRangesListByRName(cigar, rname, pos, flag=NULL,
 cigarOpTable(cigar)
 
 ## Translate coordinates between query-based and reference-based:
-queryLoc2refLoc(qloc, cigar, pos=1)
-queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
+queryLoc2refLoc(qloc, cigar, pos=1L)
+queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
 }
 
 \arguments{
@@ -110,27 +115,28 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
     "solved" according to the rules of the SEW (Start/End/Width)
     interface (see \code{?\link[IRanges]{solveUserSEW}} for the details).
   }
-  \item{pos}{
-    An integer vector containing the 1-based leftmost
-    position/coordinate for each (eventually clipped) read
-    sequence.
-  }
   \item{flag}{
     \code{NULL} or an integer vector containing the SAM flag for
     each read.
 
     According to the SAM Spec v1.4, flag bit 0x4 is the only reliable place
     to tell whether a segment (or read) is mapped (bit is 0) or not (bit
-    is 1). If \code{flag} is supplied, then \code{cigarRangesOnReference},
-    \code{cigarRangesOnQuery}, and \code{cigarToIRangesListByAlignment},
-    translate unmapped reads to empty list elements in the returned
-    \link[IRanges]{IRangesList} object.
+    is 1). If \code{flag} is supplied, then \code{cigarRangesOnReferenceSpace},
+    \code{cigarRangesOnQuerySpace}, \code{cigarRangesOnPairwiseSpace}, and
+    \code{cigarToIRangesListByAlignment}, translate unmapped reads to empty
+    list elements in the returned \link[IRanges]{IRangesList} object.
     If \code{flag} is supplied, \code{cigarToIRangesListByRName} just
     ignore these reads.
   }
   \item{ops}{
     Character vector containing the CIGAR operations to translate to ranges.
     By default, all CIGAR operations are translated.
+  }
+  \item{pos}{
+    An integer vector containing the 1-based leftmost
+    position/coordinate for each (eventually clipped) read
+    sequence. Must have length 1 (in which case it's recycled to the
+    length of \code{cigar}), or the same length as \code{cigar}.
   }
   \item{with.ops}{
     \code{TRUE} or \code{FALSE} indicating whether the returned ranges should
@@ -213,10 +219,10 @@ queryLocs2refLocs(qlocs, cigar, pos, flag=NULL)
   would need to be added to the POS field of a SAM/BAM file as a
   consequence of this cigar narrowing.
 
-  For \code{cigarRangesOnReference} and \code{cigarRangesOnQuery}:
-  An \link[IRanges]{IRangesList} object (more precisely a
-  \link[IRanges]{CompressedIRangesList} object) of the same length
-  as \code{cigar}.
+  For \code{cigarRangesOnReferenceSpace}, \code{cigarRangesOnQuerySpace},
+  and \code{cigarRangesOnPairwiseSpace}: An \link[IRanges]{IRangesList}
+  object (more precisely a \link[IRanges]{CompressedIRangesList} object)
+  of the same length as \code{cigar}.
 
   For \code{cigarToIRanges}: An \link[IRanges]{IRanges} object
   describing where the bases in the read align with respect to
@@ -315,23 +321,27 @@ splitCigar(cigar2)
 
 ## From CIGARs to ranges:
 pos <- c(1, 1001, 1,  351)
-cigarRangesOnReference(cigar2, pos, with.ops=TRUE)
-cigarRangesOnQuery(cigar2, with.ops=TRUE)
+cigarRangesOnReferenceSpace(cigar2, pos=pos, with.ops=TRUE)
+cigarRangesOnQuerySpace(cigar2, with.ops=TRUE)
+cigarRangesOnPairwiseSpace(cigar2, with.ops=TRUE)
 
-res1a <- cigarToIRangesListByAlignment(cigar2, pos)
-res1b <- cigarRangesOnReference(cigar2, pos,
-                                ops=setdiff(CIGAR_OPS, "N"),
-                                reduce.ranges=TRUE)
+res1a <- cigarToIRangesListByAlignment(cigar2, pos=pos)
+res1b <- cigarRangesOnReferenceSpace(cigar2,
+                                     ops=setdiff(CIGAR_OPS, "N"),
+                                     pos=pos,
+                                     reduce.ranges=TRUE)
 stopifnot(identical(res1a, res1b))
 
-res2a <- cigarToIRangesListByAlignment(cigar2, pos, drop.D.ranges=TRUE)
-res2b <- cigarRangesOnReference(cigar2, pos,
-                                ops=setdiff(CIGAR_OPS, c("D", "N")),
-                                reduce.ranges=TRUE)
+res2a <- cigarToIRangesListByAlignment(cigar2, pos=pos,
+                                       drop.D.ranges=TRUE)
+res2b <- cigarRangesOnReferenceSpace(cigar2,
+                                     ops=setdiff(CIGAR_OPS, c("D", "N")),
+                                     pos=pos,
+                                     reduce.ranges=TRUE)
 stopifnot(identical(res2a, res2b))
 
 rname <- c("chr6", "chr6", "chr2", "chr6")
-cigarToIRangesListByRName(cigar2, rname, pos)
+cigarToIRangesListByRName(cigar2, rname, pos=pos)
 
 ## Summarize CIGARs:
 cigarOpTable(cigar2)
@@ -360,16 +370,16 @@ if (interactive()) {
   pos <- sample(80000000L, nreads, replace=TRUE)
 
   ## The following takes < 5 sec. to complete:
-  system.time(rglist <- cigarToIRangesListByAlignment(cigar3, pos))
+  system.time(rglist <- cigarToIRangesListByAlignment(cigar3, pos=pos))
 
   ## The following takes < 10 sec. to complete:
-  system.time(irl <- cigarToIRangesListByRName(cigar3, rname, pos))
+  system.time(irl <- cigarToIRangesListByRName(cigar3, rname, pos=pos))
 
   ## Internally, cigarToIRangesListByRName() turns 'rname' into a factor
   ## before starting the calculation. Hence it will run sligthly
   ## faster if 'rname' is already a factor.
   rname2 <- as.factor(rname)
-  system.time(irl2 <- cigarToIRangesListByRName(cigar3, rname2, pos))
+  system.time(irl2 <- cigarToIRangesListByRName(cigar3, rname2, pos=pos))
 
   ## The sizes of the resulting objects are about 240M and 160M,
   ## respectively:
@@ -398,7 +408,7 @@ extractCoverageFromBAM <- function(file)
   bam <- scanBam(file, param=param)[[1]]
   ## Note that unmapped reads and reads that are PCR/optical duplicates
   ## have already been filtered out by using the ScanBamParam object above.
-  irl <- cigarToIRangesListByRName(bam$cigar, bam$rname, bam$pos)
+  irl <- cigarToIRangesListByRName(bam$cigar, bam$rname, pos=bam$pos)
   irl <- irl[elementLengths(irl) != 0]  # drop empty elements
   coverage(irl)
 }

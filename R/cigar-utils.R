@@ -22,8 +22,8 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
         stop("'pos' must be a vector of integers")
     if (!is.integer(pos))
         pos <- as.integer(pos)
-    if (length(cigar) != length(pos))
-        stop("'cigar' and 'pos' must have the same length")
+    if (length(pos) != 1L && length(pos) != length(cigar))
+        stop("'pos' must have length 1 or the same length as 'cigar'")
     pos
 }
 
@@ -171,30 +171,32 @@ cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
 ### From CIGARs to ranges
 ###
 
-cigarRangesOnReference <- function(cigar, pos, flag=NULL, ops=CIGAR_OPS,
-                                   drop.empty.ranges=FALSE,
-                                   reduce.ranges=FALSE,
-                                   with.ops=FALSE)
+cigarRangesOnReferenceSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
+                                        pos=1L,
+                                        drop.empty.ranges=FALSE,
+                                        reduce.ranges=FALSE,
+                                        with.ops=FALSE)
 {
     cigar <- .normarg_cigar(cigar)
-    pos <- .normarg_pos(pos, cigar)
     flag <- .normarg_flag(flag, cigar)
     ops <- .normarg_ops(ops)
+    pos <- .normarg_pos(pos, cigar)
     if (!isTRUEorFALSE(drop.empty.ranges))
         stop("'drop.empty.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(reduce.ranges))
         stop("'reduce.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
-    .Call2("cigar_ranges_on_reference",
-           cigar, pos, flag, ops, drop.empty.ranges, reduce.ranges, with.ops,
+    .Call2("cigar_ranges",
+           cigar, flag, ops, 0L, pos,
+           drop.empty.ranges, reduce.ranges, with.ops,
            PACKAGE="GenomicRanges")
 }
 
-cigarRangesOnQuery <- function(cigar, flag=NULL, ops=CIGAR_OPS,
-                               drop.empty.ranges=FALSE,
-                               reduce.ranges=FALSE,
-                               with.ops=FALSE)
+cigarRangesOnQuerySpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
+                                    drop.empty.ranges=FALSE,
+                                    reduce.ranges=FALSE,
+                                    with.ops=FALSE)
 {
     cigar <- .normarg_cigar(cigar)
     flag <- .normarg_flag(flag, cigar)
@@ -205,8 +207,29 @@ cigarRangesOnQuery <- function(cigar, flag=NULL, ops=CIGAR_OPS,
         stop("'reduce.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
-    .Call2("cigar_ranges_on_query",
-           cigar, flag, ops, drop.empty.ranges, reduce.ranges, with.ops,
+    .Call2("cigar_ranges",
+           cigar, flag, ops, 1L, 1L,
+           drop.empty.ranges, reduce.ranges, with.ops,
+           PACKAGE="GenomicRanges")
+}
+
+cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
+                                       drop.empty.ranges=FALSE,
+                                       reduce.ranges=FALSE,
+                                       with.ops=FALSE)
+{
+    cigar <- .normarg_cigar(cigar)
+    flag <- .normarg_flag(flag, cigar)
+    ops <- .normarg_ops(ops)
+    if (!isTRUEorFALSE(drop.empty.ranges))
+        stop("'drop.empty.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(reduce.ranges))
+        stop("'reduce.ranges' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(with.ops))
+        stop("'with.ops' must be TRUE or FALSE")
+    .Call2("cigar_ranges",
+           cigar, flag, ops, 2L, 1L,
+           drop.empty.ranges, reduce.ranges, with.ops,
            PACKAGE="GenomicRanges")
 }
 
@@ -227,7 +250,7 @@ cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
            PACKAGE="GenomicRanges")
 }
 
-cigarToIRangesListByAlignment <- function(cigar, pos, flag=NULL,
+cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
                                           drop.D.ranges=FALSE,
                                           drop.empty.ranges=FALSE,
                                           reduce.ranges=TRUE)
@@ -247,7 +270,7 @@ cigarToIRangesListByAlignment <- function(cigar, pos, flag=NULL,
            PACKAGE="GenomicRanges")
 }
 
-cigarToIRangesListByRName <- function(cigar, rname, pos, flag=NULL,
+cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
                                       drop.D.ranges=FALSE,
                                       drop.empty.ranges=FALSE,
                                       reduce.ranges=TRUE)
@@ -295,12 +318,12 @@ cigarOpTable <- function(cigar)
 ### Translate coordinates between query-based and reference-based
 ###
 
-queryLoc2refLoc <- function(qloc, cigar, pos=1)
+queryLoc2refLoc <- function(qloc, cigar, pos=1L)
 {
     stop("NOT IMPLEMENTED YET, SORRY!")
 }
 
-queryLocs2refLocs <- function(qlocs, cigar, pos, flag=NULL)
+queryLocs2refLocs <- function(qlocs, cigar, pos=1L, flag=NULL)
 {
     stop("NOT IMPLEMENTED YET, SORRY!")
 }
