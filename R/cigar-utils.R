@@ -181,23 +181,6 @@ cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
            PACKAGE="GenomicRanges")
 }
 
-cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
-                           drop.empty.ranges=FALSE, reduce.ranges=TRUE)
-{
-    cigar <- .normarg_cigar(cigar)
-    if (!isSingleString(cigar))
-        stop("'cigar' must be a single string")
-    if (!isTRUEorFALSE(drop.D.ranges))
-        stop("'drop.D.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(drop.empty.ranges))
-        stop("'drop.empty.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(reduce.ranges))
-        stop("'reduce.ranges' must be TRUE or FALSE")
-    .Call2("cigar_to_IRanges",
-           cigar, drop.D.ranges, drop.empty.ranges, reduce.ranges,
-           PACKAGE="GenomicRanges")
-}
-
 cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
                                           drop.D.ranges=FALSE,
                                           drop.empty.ranges=FALSE,
@@ -354,6 +337,15 @@ cigarToQWidth <- function(...)
 {
     .Deprecated("cigarWidthOnQuerySpace")
     cigarWidthOnQuerySpace(...)
+}
+
+cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
+                           drop.empty.ranges=FALSE, reduce.ranges=TRUE)
+{
+    .Deprecated("cigarToIRangesListByAlignment")
+    cigarToIRangesListByAlignment(cigar, drop.D.ranges=drop.D.ranges,
+                                  drop.empty.ranges=drop.empty.ranges,
+                                  reduce.ranges=reduce.ranges)[[1L]]
 }
 
 cigarToCigarTable <- function(cigar)

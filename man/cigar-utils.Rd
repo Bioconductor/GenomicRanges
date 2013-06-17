@@ -14,7 +14,6 @@
 \alias{cigarRangesOnReferenceSpace}
 \alias{cigarRangesOnQuerySpace}
 \alias{cigarRangesOnPairwiseSpace}
-\alias{cigarToIRanges}
 \alias{cigarToIRangesListByAlignment}
 \alias{cigarToIRangesListByRName}
 
@@ -31,6 +30,7 @@
 \alias{queryLocs2refLocs}
 
 % Old stuff:
+\alias{cigarToIRanges}
 \alias{cigarToWidth}
 \alias{cigarToQWidth}
 \alias{cigarToCigarTable}
@@ -68,17 +68,13 @@ cigarRangesOnPairwiseSpace(cigar, flag=NULL, ops=CIGAR_OPS,
                            drop.empty.ranges=FALSE, reduce.ranges=FALSE,
                            with.ops=FALSE)
 
-cigarToIRanges(cigar,
-               drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
-               reduce.ranges=TRUE)
-
 cigarToIRangesListByAlignment(cigar, pos=1L, flag=NULL,
-                              drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
-                              reduce.ranges=TRUE)
+                              drop.D.ranges=FALSE,
+                              drop.empty.ranges=FALSE, reduce.ranges=TRUE)
 
 cigarToIRangesListByRName(cigar, rname, pos=1L, flag=NULL,
-                          drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
-                          reduce.ranges=TRUE)
+                          drop.D.ranges=FALSE,
+                          drop.empty.ranges=FALSE, reduce.ranges=TRUE)
 
 ## -=-= From CIGARs to sequence lengths =-=-
 cigarWidthOnReferenceSpace(cigar)
@@ -100,9 +96,8 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
 \arguments{
   \item{cigar}{
     A character vector or factor containing the extended CIGAR strings.
-    It can be of arbitrary length except for \code{cigarToIRanges} and
-    \code{queryLoc2refLoc} which only accept a single CIGAR (as a character
-    vector or factor of length 1).
+    It can be of arbitrary length except for \code{queryLoc2refLoc} which
+    only accepts a single CIGAR (as a character vector or factor of length 1).
   }
   \item{flag}{
     \code{NULL} or an integer vector containing the SAM flag for
@@ -209,12 +204,6 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   object (more precisely a \link[IRanges]{CompressedIRangesList} object)
   of the same length as \code{cigar}.
 
-  For \code{cigarToIRanges}: An \link[IRanges]{IRanges} object
-  describing where the bases in the read align with respect to
-  an imaginary reference sequence assuming that the leftmost
-  aligned base is at position 1 in the reference (i.e. at the
-  first position).
-
   For \code{cigarToIRangesListByAlignment}:
   An \link[IRanges]{IRangesList} object (more precisely a
   \link[IRanges]{CompressedIRangesList} object) of the same length
@@ -283,10 +272,22 @@ CIGAR_OPS
 ## ---------------------------------------------------------------------
 cigar1 <- "3H15M55N4M2I6M2D5M6S"
 
-## cigarToIRanges():
-cigarToIRanges(cigar1)
-cigarToIRanges(cigar1, reduce.ranges=FALSE)
-cigarToIRanges(cigar1, drop.D.ranges=TRUE)
+## cigarRangesOnReferenceSpace():
+cigarRangesOnReferenceSpace(cigar1, with.ops=TRUE)[[1]]
+
+cigarRangesOnReferenceSpace(cigar1,
+                            reduce.ranges=TRUE, with.ops=TRUE)[[1]]
+
+ops <- setdiff(CIGAR_OPS, "N")
+
+cigarRangesOnReferenceSpace(cigar1, ops=ops, with.ops=TRUE)[[1]]
+
+cigarRangesOnReferenceSpace(cigar1, ops=ops,
+                            reduce.ranges=TRUE, with.ops=TRUE)[[1]]
+
+ops <- setdiff(CIGAR_OPS, c("D", "N"))
+
+cigarRangesOnReferenceSpace(cigar1, ops=ops, with.ops=TRUE)[[1]]
 
 ## cigarWidthOnReferenceSpace()/cigarWidthOnQuerySpace():
 cigarWidthOnReferenceSpace(cigar1)

@@ -915,40 +915,6 @@ SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space, SEXP pos,
 /****************************************************************************
  * --- .Call ENTRY POINT ---
  * Args:
- *   cigar: character string containing the extended CIGAR;
- *   drop_D_ranges: TRUE or FALSE indicating whether Ds should be treated
- *          like Ns or not;
- *   reduce_ranges: TRUE or FALSE indicating whether adjacent ranges coming
- *          from the same cigar should be merged or not.
- * Return an IRanges object describing the alignment.
- */
-SEXP cigar_to_IRanges(SEXP cigar,
-		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
-{
-	RangeAE range_ae;
-	SEXP cigar_string;
-	int Ds_as_Ns, drop_empty_ranges0, reduce_ranges0;
-	const char *errmsg;
-
-	cigar_string = STRING_ELT(cigar, 0);
-	if (cigar_string == NA_STRING)
-		error("'cigar' is NA");
-	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
-	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
-	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
-	range_ae = new_RangeAE(0, 0);
-	errmsg = cigar_string_to_ranges(cigar_string, 1,
-			Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-			&range_ae);
-	if (errmsg != NULL)
-		error("%s", errmsg);
-	return new_IRanges_from_RangeAE("IRanges", &range_ae);
-}
-
-
-/****************************************************************************
- * --- .Call ENTRY POINT ---
- * Args:
  *   cigar: character vector containing the extended CIGAR string for each
  *          read;
  *   pos:   integer vector containing the 1-based leftmost position/coordinate
