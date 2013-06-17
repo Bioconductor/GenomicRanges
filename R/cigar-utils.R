@@ -16,17 +16,6 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     cigar
 }
 
-.normarg_pos <- function(pos, cigar)
-{
-    if (!is.numeric(pos))
-        stop("'pos' must be a vector of integers")
-    if (!is.integer(pos))
-        pos <- as.integer(pos)
-    if (length(pos) != 1L && length(pos) != length(cigar))
-        stop("'pos' must have length 1 or the same length as 'cigar'")
-    pos
-}
-
 .normarg_flag <- function(flag, cigar)
 {
     if (!is.null(flag)) {
@@ -42,6 +31,8 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
 
 .normarg_ops <- function(ops)
 {
+    if (is.null(ops))
+        return(ops)
     if (!is.character(ops))
         stop("'ops' must be a character vector")
     if (any(is.na(ops)))
@@ -59,6 +50,17 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     ops
 }
  
+.normarg_pos <- function(pos, cigar)
+{
+    if (!is.numeric(pos))
+        stop("'pos' must be a vector of integers")
+    if (!is.integer(pos))
+        pos <- as.integer(pos)
+    if (length(pos) != 1L && length(pos) != length(cigar))
+        stop("'pos' must have length 1 or the same length as 'cigar'")
+    pos
+}
+
 validCigar <- function(cigar)
 {
     cigar <- .normarg_cigar(cigar)
@@ -114,60 +116,6 @@ splitCigar <- function(cigar)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### From CIGARs to sequence lengths
-###
-
-cigarToQWidth <- function(cigar, before.hard.clipping=FALSE)
-{
-    cigar <- .normarg_cigar(cigar)
-    if (!isTRUEorFALSE(before.hard.clipping))
-        stop("'before.hard.clipping' must be TRUE or FALSE")
-    .Call2("cigar_to_qwidth",
-          cigar, before.hard.clipping,
-          PACKAGE="GenomicRanges")
-}
-
-cigarToWidth <- function(cigar)
-{
-    cigar <- .normarg_cigar(cigar)
-    .Call2("cigar_to_width", cigar, PACKAGE="GenomicRanges")
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Narrow CIGARs
-###
-
-cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
-{
-    cigar_qwidth <- cigarToQWidth(cigar)
-    cigar_qranges <- IRanges(start=rep.int(1L, length(cigar_qwidth)),
-                             width=cigar_qwidth)
-    threeranges <- threebands(cigar_qranges, start=start, end=end, width=width)
-    C_ans <- .Call2("cigar_qnarrow",
-                   cigar, width(threeranges$left), width(threeranges$right),
-                   PACKAGE="GenomicRanges")
-    ans <- C_ans[[1L]]
-    attr(ans, "rshift") <- C_ans[[2L]]
-    ans
-}
-
-cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
-{
-    cigar_width <- cigarToWidth(cigar)
-    cigar_ranges <- IRanges(start=rep.int(1L, length(cigar_width)),
-                            width=cigar_width)
-    threeranges <- threebands(cigar_ranges, start=start, end=end, width=width)
-    C_ans <- .Call2("cigar_narrow",
-                   cigar, width(threeranges$left), width(threeranges$right),
-                   PACKAGE="GenomicRanges")
-    ans <- C_ans[[1L]]
-    attr(ans, "rshift") <- C_ans[[2L]]
-    ans
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### From CIGARs to ranges
 ###
 
@@ -188,7 +136,7 @@ cigarRangesOnReferenceSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
     .Call2("cigar_ranges",
-           cigar, flag, ops, 0L, pos,
+           cigar, flag, ops, 4L, pos,
            drop.empty.ranges, reduce.ranges, with.ops,
            PACKAGE="GenomicRanges")
 }
@@ -228,7 +176,7 @@ cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
     .Call2("cigar_ranges",
-           cigar, flag, ops, 2L, 1L,
+           cigar, flag, ops, 3L, 1L,
            drop.empty.ranges, reduce.ranges, with.ops,
            PACKAGE="GenomicRanges")
 }
@@ -304,6 +252,69 @@ cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### From CIGARs to sequence lengths
+###
+
+cigarWidthOnReferenceSpace <- function(cigar)
+{
+    cigar <- .normarg_cigar(cigar)
+    .Call2("cigar_width", cigar, 4L, PACKAGE="GenomicRanges")
+}
+
+cigarWidthOnQuerySpace <- function(cigar, before.hard.clipping=FALSE)
+{
+    cigar <- .normarg_cigar(cigar)
+    if (!isTRUEorFALSE(before.hard.clipping))
+        stop("'before.hard.clipping' must be TRUE or FALSE")
+    if (before.hard.clipping) {
+        space <- 0L  # QUERY_BEFORE_HARD_CLIPPING space
+    } else {
+        space <- 1L  # QUERY space
+    }
+    .Call2("cigar_width", cigar, space, PACKAGE="GenomicRanges")
+}
+
+cigarWidthOnPairwiseSpace <- function(cigar)
+{
+    cigar <- .normarg_cigar(cigar)
+    .Call2("cigar_width", cigar, 3L, PACKAGE="GenomicRanges")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Narrow CIGARs
+###
+
+cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
+{
+    cigar_width <- cigarWidthOnReferenceSpace(cigar)
+    cigar_ranges <- IRanges(start=rep.int(1L, length(cigar_width)),
+                            width=cigar_width)
+    threeranges <- threebands(cigar_ranges, start=start, end=end, width=width)
+    C_ans <- .Call2("cigar_narrow",
+                   cigar, width(threeranges$left), width(threeranges$right),
+                   PACKAGE="GenomicRanges")
+    ans <- C_ans[[1L]]
+    attr(ans, "rshift") <- C_ans[[2L]]
+    ans
+}
+
+cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
+{
+    cigar_qwidth <- cigarWidthOnQuerySpace(cigar)
+    cigar_qranges <- IRanges(start=rep.int(1L, length(cigar_qwidth)),
+                             width=cigar_qwidth)
+    threeranges <- threebands(cigar_qranges, start=start, end=end, width=width)
+    C_ans <- .Call2("cigar_qnarrow",
+                   cigar, width(threeranges$left), width(threeranges$right),
+                   PACKAGE="GenomicRanges")
+    ans <- C_ans[[1L]]
+    attr(ans, "rshift") <- C_ans[[2L]]
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Summarize CIGARs
 ###
 
@@ -332,6 +343,18 @@ queryLocs2refLocs <- function(qlocs, cigar, pos=1L, flag=NULL)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Old stuff (deprecated & defunct)
 ###
+
+cigarToWidth <- function(...)
+{
+    .Deprecated("cigarWidthOnReferenceSpace")
+    cigarWidthOnReferenceSpace(...)
+}
+
+cigarToQWidth <- function(...)
+{
+    .Deprecated("cigarWidthOnQuerySpace")
+    cigarWidthOnQuerySpace(...)
+}
 
 cigarToCigarTable <- function(cigar)
 {

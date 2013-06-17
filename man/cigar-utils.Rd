@@ -11,12 +11,6 @@
 \alias{cigarToRleList}
 \alias{splitCigar}
 
-\alias{cigarToQWidth}
-\alias{cigarToWidth}
-
-\alias{cigarQNarrow}
-\alias{cigarNarrow}
-
 \alias{cigarRangesOnReferenceSpace}
 \alias{cigarRangesOnQuerySpace}
 \alias{cigarRangesOnPairwiseSpace}
@@ -24,12 +18,21 @@
 \alias{cigarToIRangesListByAlignment}
 \alias{cigarToIRangesListByRName}
 
+\alias{cigarWidthOnReferenceSpace}
+\alias{cigarWidthOnQuerySpace}
+\alias{cigarWidthOnPairwiseSpace}
+
+\alias{cigarNarrow}
+\alias{cigarQNarrow}
+
 \alias{cigarOpTable}
 
 \alias{queryLoc2refLoc}
 \alias{queryLocs2refLocs}
 
 % Old stuff:
+\alias{cigarToWidth}
+\alias{cigarToQWidth}
 \alias{cigarToCigarTable}
 \alias{summarizeCigarTable}
 
@@ -43,24 +46,16 @@
 }
 
 \usage{
-## Supported CIGAR operations:
+## -=-= Supported CIGAR operations =-=-
 CIGAR_OPS
 
-## Transform CIGARs into other useful representations:
+## -=-= Transform CIGARs into other useful representations =-=-
 explodeCigarOps(cigar)
 explodeCigarOpLengths(cigar)
 cigarToRleList(cigar)
 splitCigar(cigar)
 
-## From CIGARs to sequence lengths:
-cigarToQWidth(cigar, before.hard.clipping=FALSE)
-cigarToWidth(cigar)
-
-## Narrow CIGARs:
-cigarQNarrow(cigar, start=NA, end=NA, width=NA)
-cigarNarrow(cigar, start=NA, end=NA, width=NA)
-
-## From CIGARs to ranges:
+## -=-= From CIGARs to ranges =-=-
 cigarRangesOnReferenceSpace(cigar, flag=NULL, ops=CIGAR_OPS, pos=1L,
                             drop.empty.ranges=FALSE, reduce.ranges=FALSE,
                             with.ops=FALSE)
@@ -85,10 +80,19 @@ cigarToIRangesListByRName(cigar, rname, pos=1L, flag=NULL,
                           drop.D.ranges=FALSE, drop.empty.ranges=FALSE,
                           reduce.ranges=TRUE)
 
-## Summarize CIGARs:
+## -=-= From CIGARs to sequence lengths =-=-
+cigarWidthOnReferenceSpace(cigar)
+cigarWidthOnQuerySpace(cigar, before.hard.clipping=FALSE)
+cigarWidthOnPairwiseSpace(cigar)
+
+## -=-= Narrow CIGARs =-=-
+cigarNarrow(cigar, start=NA, end=NA, width=NA)
+cigarQNarrow(cigar, start=NA, end=NA, width=NA)
+
+## -=-= Summarize CIGARs =-=-
 cigarOpTable(cigar)
 
-## Translate coordinates between query-based and reference-based:
+## -=-= Translate coordinates between query and reference spaces =-=-
 queryLoc2refLoc(qloc, cigar, pos=1L)
 queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
 }
@@ -99,21 +103,6 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     It can be of arbitrary length except for \code{cigarToIRanges} and
     \code{queryLoc2refLoc} which only accept a single CIGAR (as a character
     vector or factor of length 1).
-  }
-  \item{before.hard.clipping}{
-    Should the returned widths be the lengths of the reads before
-    or after "hard clipping"? Hard clipping of a read is
-    encoded with an H in the CIGAR.
-    If NO (\code{before.hard.clipping=FALSE}, the default),
-    then the returned widths are the lengths of the query
-    sequences stored in the SAM/BAM file.
-    If YES (\code{before.hard.clipping=TRUE}), then the returned
-    widths are the lengths of the original reads.
-  }
-  \item{start,end,width}{
-    Vectors of integers. NAs and negative values are accepted and
-    "solved" according to the rules of the SEW (Start/End/Width)
-    interface (see \code{?\link[IRanges]{solveUserSEW}} for the details).
   }
   \item{flag}{
     \code{NULL} or an integer vector containing the SAM flag for
@@ -163,6 +152,21 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     reference sequence associated with each read (i.e. the
     name of the sequence the read has been aligned to).
   }
+  \item{before.hard.clipping}{
+    Should the returned widths be the lengths of the reads before
+    or after "hard clipping"? Hard clipping of a read is
+    encoded with an H in the CIGAR.
+    If NO (\code{before.hard.clipping=FALSE}, the default),
+    then the returned widths are the lengths of the query
+    sequences stored in the SAM/BAM file.
+    If YES (\code{before.hard.clipping=TRUE}), then the returned
+    widths are the lengths of the original reads.
+  }
+  \item{start,end,width}{
+    Vectors of integers. NAs and negative values are accepted and
+    "solved" according to the rules of the SEW (Start/End/Width)
+    interface (see \code{?\link[IRanges]{solveUserSEW}} for the details).
+  }
   \item{qloc}{
     An integer vector containing "query-based locations" i.e.
     1-based locations relative to the query sequence
@@ -200,25 +204,6 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   operations and the 2nd one being an integer vector containing
   the lengths of the CIGAR operations.
 
-  For \code{cigarToQWidth}: An integer vector of the same length
-  as \code{cigar} where each element is the width of the query (i.e.
-  the length of the query sequence) as inferred from the corresponding
-  element in \code{cigar} (NAs in \code{cigar} will produce NAs in the
-  returned vector).
-
-  For \code{cigarToWidth}: An integer vector of the same length
-  as \code{cigar} where each element is the width of the alignment
-  (i.e. its total length on the reference, gaps included)
-  as inferred from the corresponding element in \code{cigar}
-  (NAs in \code{cigar} will produce NAs in the returned vector).
-
-  For \code{cigarQNarrow} and \code{cigarNarrow}: A character vector
-  of the same length as \code{cigar} containing the narrowed cigars.
-  In addition the vector has an "rshift" attribute which is an integer
-  vector of the same length as \code{cigar}. It contains the values that
-  would need to be added to the POS field of a SAM/BAM file as a
-  consequence of this cigar narrowing.
-
   For \code{cigarRangesOnReferenceSpace}, \code{cigarRangesOnQuerySpace},
   and \code{cigarRangesOnPairwiseSpace}: An \link[IRanges]{IRangesList}
   object (more precisely a \link[IRanges]{CompressedIRangesList} object)
@@ -238,6 +223,23 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   For \code{cigarToIRangesListByRName}: A named \link[IRanges]{IRangesList}
   object with one element (\link[IRanges]{IRanges}) per unique reference
   sequence.
+
+  For \code{cigarWidthOnReferenceSpace}, \code{cigarWidthOnQuerySpace},
+  and \code{cigarWidthOnPairwiseSpace} : An integer vector of the same
+  length as \code{cigar} where each element is the width of the alignment
+  with respect to the reference, query, and pairwise space, respectively.
+  More precisely, for \code{cigarWidthOnReferenceSpace}, the returned
+  widths are the lengths of the alignments on the reference, gaps included.
+  And for \code{cigarWidthOnQuerySpace}, the returned widths are the lengths
+  of the query sequences as inferred from the CIGARs in \code{cigar}.
+  NAs or \code{"*"} in \code{cigar} will produce NAs in the returned vector.
+
+  For \code{cigarNarrow} and \code{cigarQNarrow}: A character vector
+  of the same length as \code{cigar} containing the narrowed cigars.
+  In addition the vector has an "rshift" attribute which is an integer
+  vector of the same length as \code{cigar}. It contains the values that
+  would need to be added to the POS field of a SAM/BAM file as a
+  consequence of this cigar narrowing.
 
   For \code{cigarOpTable}: An integer matrix with number of rows equal
   to the length of \code{cigar} and seven columns, one for each extended
@@ -281,16 +283,15 @@ CIGAR_OPS
 ## ---------------------------------------------------------------------
 cigar1 <- "3H15M55N4M2I6M2D5M6S"
 
-## cigarToQWidth()/cigarToWidth():
-cigarToQWidth(cigar1)
-cigarToQWidth(cigar1, before.hard.clipping=TRUE)
-cigarToWidth(cigar1)
+## cigarToIRanges():
+cigarToIRanges(cigar1)
+cigarToIRanges(cigar1, reduce.ranges=FALSE)
+cigarToIRanges(cigar1, drop.D.ranges=TRUE)
 
-## cigarQNarrow():
-cigarQNarrow(cigar1, start=4, end=-3)
-cigarQNarrow(cigar1, start=10)
-cigarQNarrow(cigar1, start=19)
-cigarQNarrow(cigar1, start=24)
+## cigarWidthOnReferenceSpace()/cigarWidthOnQuerySpace():
+cigarWidthOnReferenceSpace(cigar1)
+cigarWidthOnQuerySpace(cigar1)
+cigarWidthOnQuerySpace(cigar1, before.hard.clipping=TRUE)
 
 ## cigarNarrow():
 cigarNarrow(cigar1)  # only drops the soft/hard clipping
@@ -303,10 +304,11 @@ cigarNarrow(cigar1, start=71)
 cigarNarrow(cigar1, start=72)
 cigarNarrow(cigar1, start=75)
 
-## cigarToIRanges():
-cigarToIRanges(cigar1)
-cigarToIRanges(cigar1, reduce.ranges=FALSE)
-cigarToIRanges(cigar1, drop.D.ranges=TRUE)
+## cigarQNarrow():
+cigarQNarrow(cigar1, start=4, end=-3)
+cigarQNarrow(cigar1, start=10)
+cigarQNarrow(cigar1, start=19)
+cigarQNarrow(cigar1, start=24)
 
 ## ---------------------------------------------------------------------
 ## B. ON A VECTOR CONTAINING MORE THAN ONE CIGAR
