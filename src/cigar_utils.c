@@ -100,49 +100,66 @@ static const char *split_cigar_string(SEXP cigar_string,
 #define PAIRWISE			3
 #define REFERENCE			4
 
-static int get_cigar_OP_width(char OP, int OPL, int space)
+static int belongs_to_space(char OP, int space)
 {
 	if (OP == 'M')
-		return OPL;
+		return 1;
 	switch (space) {
 	case QUERY_BEFORE_HARD_CLIPPING:
 		if (OP == 'H')
-			return OPL;
+			return 1;
 		/* fall through */
 	case QUERY:
 		if (OP == 'S')
-			return OPL;
+			return 1;
 		/* fall through */
 	case QUERY_AFTER_SOFT_CLIPPING:
 		if (OP == 'I')
-			return OPL;
+			return 1;
 		break;
 	case PAIRWISE:
 		if (OP == 'I')
-			return OPL;
+			return 1;
 		/* fall through */
 	case REFERENCE:
 		if (OP == 'N' || OP == 'D')
-			return OPL;
+			return 1;
 		break;
 	}
 	if (OP == '=' || OP == 'X')
-		return OPL;
+		return 1;
 	return 0;
 }
 
-static int is_in_ops(char OP, SEXP ops)
+static int ops_lkup_table[256];
+
+static void init_ops_lkup_table(SEXP ops)
 {
 	int ops_len, i;
+	SEXP ops_elt;
+	char OP;
 
-	if (ops == R_NilValue)
-		return 1;
+	if (ops == R_NilValue) {
+		for (i = 0; i < 256; i++)
+			ops_lkup_table[i] = 1;
+		return;
+	}
+	for (i = 0; i < 256; i++)
+		ops_lkup_table[i] = 0;
 	ops_len = LENGTH(ops);
 	for (i = 0; i < ops_len; i++) {
-		if (OP == CHAR(STRING_ELT(ops, i))[0])
-			return 1;
+		ops_elt = STRING_ELT(ops, i);
+		if (ops_elt == NA_STRING || LENGTH(ops_elt) == 0)
+			error("'ops' contains NAs and/or empty strings");
+		OP = CHAR(ops_elt)[0];
+		ops_lkup_table[(unsigned char) OP] = 1;
 	}
-	return 0;
+	return;
+}
+
+static int is_in_ops(char OP)
+{
+	return ops_lkup_table[(unsigned char) OP];
 }
 
 static void drop_or_append_or_merge_range(int start, int width,
@@ -199,71 +216,14 @@ static const char *parse_cigar_ranges(const char *cigar_string,
 	while ((n = next_cigar_OP(cigar_string, cigar_offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
-		width = get_cigar_OP_width(OP, OPL, space);
-		if (is_in_ops(OP, ops))
+		width = belongs_to_space(OP, space) ? OPL : 0;
+		if (is_in_ops(OP))
 			drop_or_append_or_merge_range(start, width,
 						      drop_empty_ranges,
 						      reduce_ranges, buf_nelt0,
 						      range_buf, &OP, OP_buf);
 		start += width;
 		cigar_offset += n;
-	}
-	return NULL;
-}
-
-/*
- * Only the M, =, X, I, and D CIGAR operations produce ranges (1 range per
- * operation). The I operation always produces an empty range. The D operation
- * only produces a range if Ds_as_Ns is FALSE.
- */
-static const char *cigar_string_to_ranges(SEXP cigar_string, int pos_elt,
-		int Ds_as_Ns, int drop_empty_ranges, int reduce_ranges,
-		RangeAE *out)
-{
-	const char *cig0;
-	int out_nelt0, offset, n, OPL /* Operation Length */, start, width;
-	char OP /* Operation */;
-
-	cig0 = CHAR(cigar_string);
-	out_nelt0 = RangeAE_get_nelt(out);
-	offset = 0;
-	start = pos_elt;
-	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		width = -1;
-		switch (OP) {
-		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': case '=': case 'X': width = OPL; break;
-		/* Insertion to the reference */
-		    case 'I': width = 0; break;
-		/* Deletion from the reference */
-		    case 'D':
-			if (Ds_as_Ns)
-				start += OPL;
-			else
-				width = OPL;
-		    break;
-		/* Skipped region from the reference */
-		    case 'N': start += OPL; break;
-		/* Soft/hard clip on the read */
-		    case 'S': case 'H': break;
-		/* Silent deletion from the padded reference */
-		    case 'P': break;
-		    default:
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-		if (width != -1) {
-			drop_or_append_or_merge_range(start, width,
-						      drop_empty_ranges,
-						      reduce_ranges, out_nelt0,
-						      out, NULL, NULL);
-			start += width;
-		}
-		offset += n;
 	}
 	return NULL;
 }
@@ -302,7 +262,8 @@ static const char *parse_cigar_width(const char *cigar_string, int space,
 	while ((n = next_cigar_OP(cigar_string, cigar_offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
-		*width += get_cigar_OP_width(OP, OPL, space);
+		if (belongs_to_space(OP, space))
+			*width += OPL;
 		cigar_offset += n;
 	}
 	return NULL;
@@ -832,8 +793,7 @@ SEXP split_cigar(SEXP cigar)
  *   reduce_ranges: TRUE or FALSE.
  *   with_ops: TRUE or FALSE indicating whether the returned ranges should be
  *          named with their corresponding CIGAR operation.
- * Both functions return a CompressedIRangesList object of the same length as
- * 'cigar'.
+ * Returns a CompressedIRangesList object of the same length as 'cigar'.
  */
 SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space, SEXP pos,
 		SEXP drop_empty_ranges, SEXP reduce_ranges, SEXP with_ops)
@@ -848,6 +808,7 @@ SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space, SEXP pos,
 	const char *cigar_string, *errmsg;
 
 	cigar_len = LENGTH(cigar);
+	init_ops_lkup_table(ops);
 	space0 = INTEGER(space)[0];
 	pos_len = LENGTH(pos);
 	pos_elt = INTEGER(pos);
@@ -915,146 +876,37 @@ SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space, SEXP pos,
 /****************************************************************************
  * --- .Call ENTRY POINT ---
  * Args:
- *   cigar: character vector containing the extended CIGAR string for each
- *          read;
- *   pos:   integer vector containing the 1-based leftmost position/coordinate
- *          of the clipped read sequence;
- *   flag:  NULL or an integer vector containing the SAM flag for each
- *          read;
- *   drop_D_ranges: TRUE or FALSE indicating whether Ds should be treated
- *          like Ns or not;
- * 'cigar', 'pos' and 'flag' (when not NULL) are assumed to have the same
- * length (which is the number of aligned reads).
+ *   rname: character factor containing the name of the reference sequence
+ *          associated with each read (i.e. the name of the sequence the
+ *          read has been aligned to);
+ * See cigar_ranges() above for the other arguments.
+ * Returns a list of IRanges objects named with the factor levels in 'rname'.
  *
- * Returns a CompressedIRangesList object of the same length as the input.
- * NOTE: See note for cigar_to_list_of_IRanges_by_rname() below about the
- * strand.
- * TODO: Support character factor 'cigar' in addition to current character
- *       vector format.
+ * TODO:
+ * - Support 'rname' of length 1.
+ * - Maybe support factor 'cigar' in addition to current character vector
+ *   format.
  */
-SEXP cigar_to_list_of_IRanges_by_alignment(SEXP cigar, SEXP pos, SEXP flag,
-		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
+SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP flag, SEXP ops,
+		SEXP rname, SEXP pos,
+		SEXP drop_empty_ranges, SEXP reduce_ranges)
 {
-	int cigar_len, pos_len, Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-	    i, *end_elt, flag_elt;
-	RangeAE range_buf;
-	SEXP ans, ans_partitioning_end, cigar_elt;
+	SEXP rname_levels, cigar_elt, ans, ans_names;
+	int cigar_len, ans_length, drop_empty_ranges0, reduce_ranges0,
+	    i, level, flag_elt;
+	RangeAEAE range_aeae;
 	const int *pos_elt;
 	const char *cigar_string, *errmsg;
 
 	cigar_len = LENGTH(cigar);
-	pos_len = LENGTH(pos);
-	pos_elt = INTEGER(pos);
-	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
-	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
-	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
-	/* We will generate at least 'cigar_len' ranges. */
-	range_buf = new_RangeAE(cigar_len, 0);
-	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_len));
-	for (i = 0, end_elt = INTEGER(ans_partitioning_end);
-	     i < cigar_len;
-	     i++, *(end_elt++) = RangeAE_get_nelt(&range_buf))
-	{
-		if (flag != R_NilValue) {
-			flag_elt = INTEGER(flag)[i];
-			if (flag_elt == NA_INTEGER) {
-				UNPROTECT(1);
-				error("'flag' contains NAs");
-			}
-			if (flag_elt & 0x004) {
-				/* An unmapped read translates to an empty
-				   list element (i.e. IRanges of length 0)
-				   in the returned IRangesList object. */
-				continue;
-			}
-		}
-		cigar_elt = STRING_ELT(cigar, i);
-		if (cigar_elt == NA_STRING) {
-			UNPROTECT(1);
-			error("'cigar[%d]' is NA", i + 1);
-		}
-		cigar_string = CHAR(cigar_elt);
-		if (strcmp(cigar_string, "*") == 0) {
-			UNPROTECT(1);
-			error("'cigar[%d]' is \"*\"", i + 1);
-		}
-		if (*pos_elt == NA_INTEGER || *pos_elt == 0) {
-			UNPROTECT(1);
-			error("'pos[%d]' is NA or 0", i + 1);
-		}
-		errmsg = cigar_string_to_ranges(cigar_elt, *pos_elt,
-				Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-				&range_buf);
-		if (errmsg != NULL) {
-			UNPROTECT(1);
-			error("in 'cigar[%d]': %s", i + 1, errmsg);
-		}
-		if (pos_len != 1)
-			pos_elt++;
-	}
-	PROTECT(ans = make_CompressedIRangesList(&range_buf, NULL,
-						 ans_partitioning_end));
-	UNPROTECT(2);
-	return ans;
-}
-
-
-/****************************************************************************
- * --- .Call ENTRY POINT ---
- * Args:
- *   cigar: character vector containing the extended CIGAR string for each
- *          read;
- *   rname: character factor containing the name of the reference sequence
- *          associated with each read (i.e. the name of the sequence the
- *          read has been aligned to);
- *   pos:   integer vector containing the 1-based leftmost position/coordinate
- *          of the clipped read sequence;
- *   flag:  NULL or an integer vector containing the SAM flag for each
- *          read;
- *   drop_D_ranges: TRUE or FALSE indicating whether Ds should be treated
- *          like Ns or not;
- *   reduce_ranges: TRUE or FALSE indicating whether adjacent ranges coming
- *          from the same cigar should be merged or not.
- * 'cigar', 'rname', 'pos' and 'flag' (when not NULL) are assumed to have
- * the same length (which is the number of aligned reads).
- *
- * Return a list of IRanges objects named with the factor levels in 'rname'.
- *
- * NOTE: According to the SAM Format Specification (0.1.2-draft 20090820),
- *   the CIGAR (and the read sequence) stored in the SAM file are represented
- *   on the + strand of the reference sequence. This means that, for a read
- *   that aligns to the - strand, the bases have been reverse complemented
- *   from the unmapped read sequence, and that the corresponding CIGAR has
- *   been reversed. So it seems that, for now, we don't need to deal with the
- *   strand information at all (as long as we are only interested in
- *   returning a list of IRanges objects that is suitable for coverage
- *   extraction).
- *
- * TODO:
- * - Support 'rname' of length 1.
- * - Support character factor 'cigar' in addition to current character vector
- *   format.
- */
-SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
-		SEXP flag,
-		SEXP drop_D_ranges, SEXP drop_empty_ranges, SEXP reduce_ranges)
-{
-	SEXP rname_levels, cigar_string, ans, ans_names;
-	int ans_length, nreads, Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-	    i, level, flag_elt;
-	RangeAEAE range_aeae;
-	const int *pos_elt;
-	const char *errmsg;
-
+	init_ops_lkup_table(ops);
 	rname_levels = GET_LEVELS(rname);
 	ans_length = LENGTH(rname_levels);
 	range_aeae = new_RangeAEAE(ans_length, ans_length);
-	nreads = LENGTH(pos);
 	pos_elt = INTEGER(pos);
-	Ds_as_Ns = LOGICAL(drop_D_ranges)[0];
 	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
 	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
-	for (i = 0; i < nreads; i++) {
+	for (i = 0; i < cigar_len; i++) {
 		if (flag != R_NilValue) {
 			flag_elt = INTEGER(flag)[i];
 			if (flag_elt == NA_INTEGER)
@@ -1062,10 +914,11 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 			if (flag_elt & 0x004)
 				continue;
 		}
-		cigar_string = STRING_ELT(cigar, i);
-		if (cigar_string == NA_STRING)
+		cigar_elt = STRING_ELT(cigar, i);
+		if (cigar_elt == NA_STRING)
 			error("'cigar' contains %sNAs",
 			      flag != R_NilValue ? "unexpected " : "");
+		cigar_string = CHAR(cigar_elt);
 		level = INTEGER(rname)[i];
 		if (level == NA_INTEGER)
 			error("'rname' contains %sNAs",
@@ -1073,12 +926,12 @@ SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP rname, SEXP pos,
 		if (*pos_elt == NA_INTEGER)
 			error("'pos' contains %sNAs",
 			      flag != R_NilValue ? "unexpected " : "");
-		errmsg = cigar_string_to_ranges(cigar_string, *pos_elt,
-				Ds_as_Ns, drop_empty_ranges0, reduce_ranges0,
-				range_aeae.elts + level - 1);
+		errmsg = parse_cigar_ranges(cigar_string, ops, 4, *pos_elt,
+				drop_empty_ranges0, reduce_ranges0,
+				range_aeae.elts + level - 1, NULL);
 		if (errmsg != NULL)
-			error("in 'cigar' element %d: %s", i + 1, errmsg);
-		if (nreads != 1)
+			error("in 'cigar[%d]': %s", i + 1, errmsg);
+		if (cigar_len != 1)
 			pos_elt++;
 	}
 	PROTECT(ans = new_list_of_IRanges_from_RangeAEAE(

@@ -181,24 +181,23 @@ cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
            PACKAGE="GenomicRanges")
 }
 
+### A wrapper to cigarRangesOnReferenceSpace(). Useful for extracting the
+### ranges that generate coverage on the reference.
 cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
                                           drop.D.ranges=FALSE,
                                           drop.empty.ranges=FALSE,
                                           reduce.ranges=TRUE)
 {
-    cigar <- .normarg_cigar(cigar)
-    pos <- .normarg_pos(pos, cigar)
-    flag <- .normarg_flag(flag, cigar)
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(drop.empty.ranges))
-        stop("'drop.empty.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(reduce.ranges))
-        stop("'reduce.ranges' must be TRUE or FALSE")
-    .Call2("cigar_to_list_of_IRanges_by_alignment",
-           cigar, pos, flag,
-           drop.D.ranges, drop.empty.ranges, reduce.ranges,
-           PACKAGE="GenomicRanges")
+    if (drop.D.ranges) {
+        ops <- c("M", "=", "X")
+    } else {
+        ops <- c("M", "=", "X", "D")
+    }
+    cigarRangesOnReferenceSpace(cigar, flag=flag, ops=ops, pos=pos,
+                                drop.empty.ranges=drop.empty.ranges,
+                                reduce.ranges=reduce.ranges)
 }
 
 cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
@@ -218,13 +217,23 @@ cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
     flag <- .normarg_flag(flag, cigar)
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
+    ## It doesn't really make sense to include "I" operations here since they
+    ## don't generate coverage on the reference (they always produce zero-width
+    ## ranges on the reference). Anyway, this is how
+    ## cigarToIRangesListByRName() has been behaving since the beginning and
+    ## the unit tests expect this.
+    if (drop.D.ranges) {
+        ops <- c("M", "=", "X", "I")
+    } else {
+        ops <- c("M", "=", "X", "I", "D")
+    }
     if (!isTRUEorFALSE(drop.empty.ranges))
         stop("'drop.empty.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(reduce.ranges))
         stop("'reduce.ranges' must be TRUE or FALSE")
     C_ans <- .Call2("cigar_to_list_of_IRanges_by_rname",
-                    cigar, rname, pos, flag,
-                    drop.D.ranges, drop.empty.ranges, reduce.ranges,
+                    cigar, flag, ops, rname, pos,
+                    drop.empty.ranges, reduce.ranges,
                     PACKAGE="GenomicRanges")
     if (length(C_ans) < 200L) {
         IRangesList(C_ans, compress=FALSE)

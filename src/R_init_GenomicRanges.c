@@ -11,7 +11,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(explode_cigar_op_lengths, 1),
 	CALLMETHOD_DEF(split_cigar, 1),
 	CALLMETHOD_DEF(cigar_ranges, 8),
-	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_alignment, 6),
 	CALLMETHOD_DEF(cigar_to_list_of_IRanges_by_rname, 7),
 	CALLMETHOD_DEF(cigar_width, 2),
 	CALLMETHOD_DEF(cigar_narrow, 3),
