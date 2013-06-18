@@ -29,12 +29,12 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     flag
 }
 
-.select_reference_space <- function(remove.N.regions)
+.select_reference_space <- function(N.regions.removed)
 {
-    if (!isTRUEorFALSE(remove.N.regions))
-        stop("'remove.N.regions' must be TRUE or FALSE")
-    if (remove.N.regions) {
-        space <- 6L  # REFERENCE_REMOVE_N_REGIONS
+    if (!isTRUEorFALSE(N.regions.removed))
+        stop("'N.regions.removed' must be TRUE or FALSE")
+    if (N.regions.removed) {
+        space <- 6L  # REFERENCE_N_REGIONS_REMOVED
     } else {
         space <- 4L  # REFERENCE
     }
@@ -60,12 +60,12 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     space
 }
 
-.select_pairwise_space <- function(remove.N.regions)
+.select_pairwise_space <- function(N.regions.removed)
 {
-    if (!isTRUEorFALSE(remove.N.regions))
-        stop("'remove.N.regions' must be TRUE or FALSE")
-    if (remove.N.regions) {
-        space <- 5L  # PAIRWISE_REMOVE_N_REGIONS
+    if (!isTRUEorFALSE(N.regions.removed))
+        stop("'N.regions.removed' must be TRUE or FALSE")
+    if (N.regions.removed) {
+        space <- 5L  # PAIRWISE_N_REGIONS_REMOVED
     } else {
         space <- 3L  # PAIRWISE
     }
@@ -191,13 +191,13 @@ splitCigar <- function(cigar)
 }
 
 cigarRangesOnReferenceSpace <- function(cigar, flag=NULL,
-                                        remove.N.regions=FALSE, pos=1L, f=NULL,
+                                        N.regions.removed=FALSE, pos=1L, f=NULL,
                                         ops=CIGAR_OPS,
                                         drop.empty.ranges=FALSE,
                                         reduce.ranges=FALSE,
                                         with.ops=FALSE)
 {
-    space <- .select_reference_space(remove.N.regions)
+    space <- .select_reference_space(N.regions.removed)
     C_ans <- .cigar_ranges(cigar, flag, space, pos, f,
                            ops, drop.empty.ranges, reduce.ranges, with.ops)
     if (is.null(f))
@@ -220,13 +220,13 @@ cigarRangesOnQuerySpace <- function(cigar, flag=NULL,
 }
 
 cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL,
-                                       remove.N.regions=FALSE,
+                                       N.regions.removed=FALSE,
                                        ops=CIGAR_OPS,
                                        drop.empty.ranges=FALSE,
                                        reduce.ranges=FALSE,
                                        with.ops=FALSE)
 {
-    space <- .select_pairwise_space(remove.N.regions)
+    space <- .select_pairwise_space(N.regions.removed)
     .cigar_ranges(cigar, flag, space, 1L, NULL,
                   ops, drop.empty.ranges, reduce.ranges, with.ops)
 }
@@ -269,9 +269,9 @@ extractAlignmentRangesOnReference <- function(cigar, pos=1L,
 }
 
 cigarWidthOnReferenceSpace <- function(cigar, flag=NULL,
-                                       remove.N.regions=FALSE)
+                                       N.regions.removed=FALSE)
 {
-    space <- .select_reference_space(remove.N.regions)
+    space <- .select_reference_space(N.regions.removed)
     .cigar_width(cigar, flag, space)
 }
 
@@ -284,9 +284,9 @@ cigarWidthOnQuerySpace <- function(cigar, flag=NULL,
 }
 
 cigarWidthOnPairwiseSpace <- function(cigar, flag=NULL,
-                                      remove.N.regions=FALSE)
+                                      N.regions.removed=FALSE)
 {
-    space <- .select_pairwise_space(remove.N.regions)
+    space <- .select_pairwise_space(N.regions.removed)
     .cigar_width(cigar, flag, space)
 }
 

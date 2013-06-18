@@ -58,7 +58,7 @@ splitCigar(cigar)
 
 ## -=-= From CIGARs to ranges =-=-
 cigarRangesOnReferenceSpace(cigar, flag=NULL,
-        remove.N.regions=FALSE, pos=1L, f=NULL,
+        N.regions.removed=FALSE, pos=1L, f=NULL,
         ops=CIGAR_OPS, drop.empty.ranges=FALSE, reduce.ranges=FALSE,
         with.ops=FALSE)
 
@@ -68,7 +68,7 @@ cigarRangesOnQuerySpace(cigar, flag=NULL,
         with.ops=FALSE)
 
 cigarRangesOnPairwiseSpace(cigar, flag=NULL,
-        remove.N.regions=FALSE,
+        N.regions.removed=FALSE,
         ops=CIGAR_OPS, drop.empty.ranges=FALSE, reduce.ranges=FALSE,
         with.ops=FALSE)
 
@@ -76,13 +76,13 @@ extractAlignmentRangesOnReference(cigar, pos=1L, drop.D.ranges=FALSE, f=NULL)
 
 ## -=-= From CIGARs to sequence lengths =-=-
 cigarWidthOnReferenceSpace(cigar, flag=NULL,
-        remove.N.regions=FALSE)
+        N.regions.removed=FALSE)
 
 cigarWidthOnQuerySpace(cigar, flag=NULL,
         before.hard.clipping=FALSE, after.soft.clipping=FALSE)
 
 cigarWidthOnPairwiseSpace(cigar, flag=NULL,
-        remove.N.regions=FALSE)
+        N.regions.removed=FALSE)
 
 ## -=-= Narrow CIGARs =-=-
 cigarNarrow(cigar, start=NA, end=NA, width=NA)
@@ -116,7 +116,7 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     \code{cigarWidthOnReferenceSpace}, \code{cigarWidthOnQuerySpace}, and
     \code{cigarWidthOnPairwiseSpace} return \code{NA}s for unmapped reads.
   }
-  \item{remove.N.regions}{
+  \item{N.regions.removed}{
     \code{TRUE} or \code{FALSE}.
     If \code{TRUE}, then \code{cigarRangesOnReferenceSpace} and
     \code{cigarWidthOnReferenceSpace} report ranges/widths with respect
@@ -241,7 +241,7 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   the width of the alignment with respect to the "reference" and "pairwise"
   space, respectively. More precisely, for \code{cigarWidthOnReferenceSpace},
   the returned widths are the lengths of the alignments on the reference,
-  N gaps included (except if \code{remove.N.regions} is \code{TRUE}).
+  N gaps included (except if \code{N.regions.removed} is \code{TRUE}).
   NAs or \code{"*"} in \code{cigar} will produce NAs in the returned vector.
 
   For \code{cigarWidthOnQuerySpace}: An integer vector of the same

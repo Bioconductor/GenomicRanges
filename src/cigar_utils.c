@@ -9,8 +9,8 @@
 #define QUERY_AFTER_SOFT_CLIPPING	2
 #define PAIRWISE			3
 #define REFERENCE			4
-#define PAIRWISE_REMOVE_N_REGIONS	5
-#define REFERENCE_REMOVE_N_REGIONS	6
+#define PAIRWISE_N_REGIONS_REMOVED	5
+#define REFERENCE_N_REGIONS_REMOVED	6
 
 static char errmsg_buf[200];
 
@@ -128,11 +128,11 @@ static int belongs_to_space(char OP, int space)
 		if (OP == 'D' || OP == 'N')
 			return 1;
 		break;
-	case PAIRWISE_REMOVE_N_REGIONS:
+	case PAIRWISE_N_REGIONS_REMOVED:
 		if (OP == 'I')
 			return 1;
 		/* fall through */
-	case REFERENCE_REMOVE_N_REGIONS:
+	case REFERENCE_N_REGIONS_REMOVED:
 		if (OP == 'D')
 			return 1;
 		break;
