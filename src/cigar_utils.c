@@ -3,6 +3,13 @@
 
 #include <ctype.h> /* for isdigit() */
 
+/* The 5 supported spaces. */
+#define QUERY_BEFORE_HARD_CLIPPING	0
+#define QUERY				1
+#define QUERY_AFTER_SOFT_CLIPPING	2
+#define PAIRWISE			3
+#define REFERENCE			4
+
 static char errmsg_buf[200];
 
 /* Return the number of chars that was read, or 0 if there is no more char
@@ -93,12 +100,6 @@ static const char *split_cigar_string(SEXP cigar_string,
 	}
 	return NULL;
 }
-
-#define QUERY_BEFORE_HARD_CLIPPING	0
-#define QUERY				1
-#define QUERY_AFTER_SOFT_CLIPPING	2
-#define PAIRWISE			3
-#define REFERENCE			4
 
 static int belongs_to_space(char OP, int space)
 {
@@ -249,6 +250,17 @@ static SEXP make_CompressedIRangesList(const RangeAE *range_buf,
 				"CompressedIRangesList",
 				ans_unlistData, ans_partitioning));
 	UNPROTECT(3);
+	return ans;
+}
+
+static SEXP make_list_of_IRanges(const RangeAEAE *range_buf, SEXP names)
+{
+	SEXP ans, ans_names;
+
+	PROTECT(ans = new_list_of_IRanges_from_RangeAEAE("IRanges", range_buf));
+	PROTECT(ans_names = duplicate(names));
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(2);
 	return ans;
 }
 
@@ -777,167 +789,137 @@ SEXP split_cigar(SEXP cigar)
  * --- .Call ENTRY POINT ---
  * Args:
  *   cigar: character vector containing extended CIGAR strings.
- *   flag:  NULL or an integer vector containing the SAM flag for each read.
- *          Serves only as a way to indicate whether a read is mapped or not.
- *          According to the SAM Spec v1.4, flag bit 0x4 is the only reliable
- *          place to tell whether a segment (or read) is mapped (bit is 0)
- *          or not (bit is 1).
- *   ops:   NULL or character vector containing the CIGAR operations to
+ *   flag:  NULL or an integer vector of the same length as 'cigar'
+ *          containing the SAM flag for each read. Serves only as a way to
+ *          indicate whether a read is mapped or not. According to the SAM
+ *          Spec v1.4, flag bit 0x4 is the only reliable place to tell
+ *          whether a segment (or read) is mapped (bit is 0) or not (bit is 1).
+ *   ops:   NULL or a character vector containing the CIGAR operations to
  *          translate to ranges. If NULL, then all CIGAR operations are
  *          translated.
- *   space: single integer (0: reference, 1:query, 2:pairwise)
- *   pos:   integer vector of length 1 or same length as 'cigar' containing
- *          the 1-based leftmost position/coordinate of the clipped read
- *          sequences.
+ *   space: single integer indicating one of the 5 supported spaces (defined
+ *          at the top of this file).
+ *   pos:   integer vector of the same length as 'cigar' (or of length 1)
+ *          containing the 1-based leftmost position/coordinate of the
+ *          clipped read sequences.
+ *   f:     NULL or a factor of length 'cigar'. If NULL, then the ranges are
+ *          grouped by alignment and stored in a CompressedIRangesList object
+ *          with 1 list element per element in 'cigar'. If a factor, then they
+ *          are grouped by factor level and stored in an ordinary list of
+ *          IRanges objects with 1 list element per level in 'f' and named
+ *          with those levels.
  *   drop_empty_ranges: TRUE or FALSE.
  *   reduce_ranges: TRUE or FALSE.
  *   with_ops: TRUE or FALSE indicating whether the returned ranges should be
  *          named with their corresponding CIGAR operation.
- * Returns a CompressedIRangesList object of the same length as 'cigar'.
+ *
+ * Returns either a CompressedIRangesList object of the same length as 'cigar'
+ * (if 'f' is NULL) or an ordinary list of IRanges objects with 1 list element
+ * per level in 'f' (if 'f' is a factor). This list is then turned into a
+ * SimpleIRangesList object in R.
  */
-SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space, SEXP pos,
-		SEXP drop_empty_ranges, SEXP reduce_ranges, SEXP with_ops)
+SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space,
+		  SEXP pos, SEXP f,
+		  SEXP drop_empty_ranges, SEXP reduce_ranges, SEXP with_ops)
 {
-	int cigar_len, space0, pos_len,
-	    drop_empty_ranges0, reduce_ranges0, with_ops0,
-	    i, *end_elt, flag_elt;
-	RangeAE range_buf;
+	SEXP ans, ans_partitioning_end, f_levels, cigar_elt;
+	int cigar_len, space0, pos_len, f_is_NULL, ans_len, *end_elt,
+	    drop_empty_ranges0, reduce_ranges0, with_ops0, i;
+	RangeAE range_buf1, *range_buf_p;
+	RangeAEAE range_buf2;
 	CharAEAE OP_buf, *OP_buf_p;
-	SEXP ans, ans_partitioning_end, cigar_elt;
-	const int *pos_elt;
+	const int *flag_elt, *pos_elt, *f_elt;
 	const char *cigar_string, *errmsg;
 
 	cigar_len = LENGTH(cigar);
+	if (flag != R_NilValue)
+		flag_elt = INTEGER(flag);
 	init_ops_lkup_table(ops);
 	space0 = INTEGER(space)[0];
 	pos_len = LENGTH(pos);
 	pos_elt = INTEGER(pos);
+	f_is_NULL = f == R_NilValue;
+	if (f_is_NULL) {
+		ans_len = cigar_len;
+		/* We will typically generate at least 'cigar_len' ranges. */
+		range_buf1 = new_RangeAE(ans_len, 0);
+		range_buf_p = &range_buf1;
+		PROTECT(ans_partitioning_end = NEW_INTEGER(ans_len));
+		end_elt = INTEGER(ans_partitioning_end);
+	} else {
+		f_levels = GET_LEVELS(f);
+		ans_len = LENGTH(f_levels);
+		range_buf2 = new_RangeAEAE(ans_len, ans_len);
+		f_elt = INTEGER(f);
+	}
 	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
 	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
 	with_ops0 = LOGICAL(with_ops)[0];
-	/* We will generate at least 'cigar_len' ranges. */
-	range_buf = new_RangeAE(cigar_len, 0);
-	if (with_ops0) {
+	if (with_ops0 && f_is_NULL) {
 		OP_buf = new_CharAEAE(cigar_len, 0);
 		OP_buf_p = &OP_buf;
 	} else {
 		OP_buf_p = NULL;
 	}
-	PROTECT(ans_partitioning_end = NEW_INTEGER(cigar_len));
-	for (i = 0, end_elt = INTEGER(ans_partitioning_end);
-	     i < cigar_len;
-	     i++, *(end_elt++) = RangeAE_get_nelt(&range_buf))
-	{
+	for (i = 0; i < cigar_len; i++) {
 		if (flag != R_NilValue) {
-			flag_elt = INTEGER(flag)[i];
-			if (flag_elt == NA_INTEGER) {
-				UNPROTECT(1);
+			if (*flag_elt == NA_INTEGER) {
+				if (f_is_NULL)
+					UNPROTECT(1);
 				error("'flag' contains NAs");
 			}
-			if (flag_elt & 0x004) {
-				/* An unmapped read translates to an empty
-				   list element (i.e. IRanges of length 0)
-				   in the returned IRangesList object. */
-				continue;
+			if (*flag_elt & 0x004) {
+				/* The CIGAR of an unmapped read doesn't
+				   produce any range i.e. it's treated as an
+				   empty CIGAR. */
+				goto for_tail;
 			}
 		}
 		cigar_elt = STRING_ELT(cigar, i);
 		if (cigar_elt == NA_STRING) {
-			UNPROTECT(1);
+			if (f_is_NULL)
+				UNPROTECT(1);
 			error("'cigar[%d]' is NA", i + 1);
 		}
 		cigar_string = CHAR(cigar_elt);
 		if (strcmp(cigar_string, "*") == 0) {
-			UNPROTECT(1);
+			if (f_is_NULL)
+				UNPROTECT(1);
 			error("'cigar[%d]' is \"*\"", i + 1);
 		}
 		if (*pos_elt == NA_INTEGER || *pos_elt == 0) {
-			UNPROTECT(1);
+			if (f_is_NULL)
+				UNPROTECT(1);
 			error("'pos[%d]' is NA or 0", i + 1);
+		}
+		if (!f_is_NULL) {
+			if (*f_elt == NA_INTEGER)
+				error("'f[%d]' is NA", i + 1);
+			range_buf_p = range_buf2.elts + *f_elt - 1;
 		}
 		errmsg = parse_cigar_ranges(cigar_string, ops, space0,
 				*pos_elt,
 				drop_empty_ranges0, reduce_ranges0,
-				&range_buf, OP_buf_p);
+				range_buf_p, OP_buf_p);
 		if (errmsg != NULL) {
-			UNPROTECT(1);
+			if (f_is_NULL)
+				UNPROTECT(1);
 			error("in 'cigar[%d]': %s", i + 1, errmsg);
 		}
+for_tail:
+		if (flag != R_NilValue)
+			flag_elt++;
 		if (pos_len != 1)
 			pos_elt++;
+		if (f_is_NULL)
+			*(end_elt++) = RangeAE_get_nelt(range_buf_p);
+		else
+			f_elt++;
 	}
-	PROTECT(ans = make_CompressedIRangesList(&range_buf, OP_buf_p,
+	if (!f_is_NULL)
+		return make_list_of_IRanges(&range_buf2, f_levels);
+	PROTECT(ans = make_CompressedIRangesList(range_buf_p, OP_buf_p,
 						 ans_partitioning_end));
-	UNPROTECT(2);
-	return ans;
-}
-
-
-/****************************************************************************
- * --- .Call ENTRY POINT ---
- * Args:
- *   rname: character factor containing the name of the reference sequence
- *          associated with each read (i.e. the name of the sequence the
- *          read has been aligned to);
- * See cigar_ranges() above for the other arguments.
- * Returns a list of IRanges objects named with the factor levels in 'rname'.
- *
- * TODO:
- * - Support 'rname' of length 1.
- * - Maybe support factor 'cigar' in addition to current character vector
- *   format.
- */
-SEXP cigar_to_list_of_IRanges_by_rname(SEXP cigar, SEXP flag, SEXP ops,
-		SEXP rname, SEXP pos,
-		SEXP drop_empty_ranges, SEXP reduce_ranges)
-{
-	SEXP rname_levels, cigar_elt, ans, ans_names;
-	int cigar_len, ans_length, drop_empty_ranges0, reduce_ranges0,
-	    i, level, flag_elt;
-	RangeAEAE range_aeae;
-	const int *pos_elt;
-	const char *cigar_string, *errmsg;
-
-	cigar_len = LENGTH(cigar);
-	init_ops_lkup_table(ops);
-	rname_levels = GET_LEVELS(rname);
-	ans_length = LENGTH(rname_levels);
-	range_aeae = new_RangeAEAE(ans_length, ans_length);
-	pos_elt = INTEGER(pos);
-	drop_empty_ranges0 = LOGICAL(drop_empty_ranges)[0];
-	reduce_ranges0 = LOGICAL(reduce_ranges)[0];
-	for (i = 0; i < cigar_len; i++) {
-		if (flag != R_NilValue) {
-			flag_elt = INTEGER(flag)[i];
-			if (flag_elt == NA_INTEGER)
-				error("'flag' contains NAs");
-			if (flag_elt & 0x004)
-				continue;
-		}
-		cigar_elt = STRING_ELT(cigar, i);
-		if (cigar_elt == NA_STRING)
-			error("'cigar' contains %sNAs",
-			      flag != R_NilValue ? "unexpected " : "");
-		cigar_string = CHAR(cigar_elt);
-		level = INTEGER(rname)[i];
-		if (level == NA_INTEGER)
-			error("'rname' contains %sNAs",
-			      flag != R_NilValue ? "unexpected " : "");
-		if (*pos_elt == NA_INTEGER)
-			error("'pos' contains %sNAs",
-			      flag != R_NilValue ? "unexpected " : "");
-		errmsg = parse_cigar_ranges(cigar_string, ops, 4, *pos_elt,
-				drop_empty_ranges0, reduce_ranges0,
-				range_aeae.elts + level - 1, NULL);
-		if (errmsg != NULL)
-			error("in 'cigar[%d]': %s", i + 1, errmsg);
-		if (cigar_len != 1)
-			pos_elt++;
-	}
-	PROTECT(ans = new_list_of_IRanges_from_RangeAEAE(
-				"IRanges", &range_aeae));
-	PROTECT(ans_names = duplicate(rname_levels));
-	SET_NAMES(ans, ans_names);
 	UNPROTECT(2);
 	return ans;
 }

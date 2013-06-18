@@ -120,7 +120,7 @@ splitCigar <- function(cigar)
 ###
 
 cigarRangesOnReferenceSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
-                                        pos=1L,
+                                        pos=1L, f=NULL,
                                         drop.empty.ranges=FALSE,
                                         reduce.ranges=FALSE,
                                         with.ops=FALSE)
@@ -129,16 +129,26 @@ cigarRangesOnReferenceSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
     flag <- .normarg_flag(flag, cigar)
     ops <- .normarg_ops(ops)
     pos <- .normarg_pos(pos, cigar)
+    if (!is.null(f)) {
+        if (!is.factor(f))
+            stop("'f' must be NULL or a factor")
+        if (length(f) != length(cigar))
+            stop("'f' must have the same length as 'cigar'")
+    }
     if (!isTRUEorFALSE(drop.empty.ranges))
         stop("'drop.empty.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(reduce.ranges))
         stop("'reduce.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
-    .Call2("cigar_ranges",
-           cigar, flag, ops, 4L, pos,
-           drop.empty.ranges, reduce.ranges, with.ops,
-           PACKAGE="GenomicRanges")
+    C_ans <- .Call2("cigar_ranges",
+                    cigar, flag, ops, 4L, pos, f,
+                    drop.empty.ranges, reduce.ranges, with.ops,
+                    PACKAGE="GenomicRanges")
+    if (is.null(f))
+        return(C_ans)
+    compress <- length(C_ans) >= 200L
+    IRangesList(C_ans, compress=compress)
 }
 
 cigarRangesOnQuerySpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
@@ -156,7 +166,7 @@ cigarRangesOnQuerySpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
     .Call2("cigar_ranges",
-           cigar, flag, ops, 1L, 1L,
+           cigar, flag, ops, 1L, 1L, NULL,
            drop.empty.ranges, reduce.ranges, with.ops,
            PACKAGE="GenomicRanges")
 }
@@ -176,13 +186,15 @@ cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
     .Call2("cigar_ranges",
-           cigar, flag, ops, 3L, 1L,
+           cigar, flag, ops, 3L, 1L, NULL,
            drop.empty.ranges, reduce.ranges, with.ops,
            PACKAGE="GenomicRanges")
 }
 
-### A wrapper to cigarRangesOnReferenceSpace(). Useful for extracting the
-### ranges that generate coverage on the reference.
+### 2 wrappers to cigarRangesOnReferenceSpace() with ugly names. Used
+### internally in the GenomicRanges package for turning a GAlignments object
+### into a GRangesList object and/or for extracting the ranges that generate
+### coverage on the reference.
 cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
                                           drop.D.ranges=FALSE,
                                           drop.empty.ranges=FALSE,
@@ -190,10 +202,14 @@ cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
 {
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
+    ## It doesn't really make sense to include "I" operations here since they
+    ## don't generate coverage on the reference (they always produce zero-width
+    ## ranges on the reference). Anyway, this is how
+    ## cigarToIRangesListByAlignment() has been behaving since the beginning.
     if (drop.D.ranges) {
-        ops <- c("M", "=", "X")
+        ops <- c("M", "=", "X", "I")
     } else {
-        ops <- c("M", "=", "X", "D")
+        ops <- c("M", "=", "X", "I", "D")
     }
     cigarRangesOnReferenceSpace(cigar, flag=flag, ops=ops, pos=pos,
                                 drop.empty.ranges=drop.empty.ranges,
@@ -205,41 +221,26 @@ cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
                                       drop.empty.ranges=FALSE,
                                       reduce.ranges=TRUE)
 {
-    cigar <- .normarg_cigar(cigar)
-    if (!is.factor(rname) || !is.character(levels(rname))) {
-        if (!is.character(rname))
-            stop("'rname' must be a character vector/factor")
-        rname <- as.factor(rname)
-    }
-    if (length(cigar) != length(rname))
-        stop("'cigar' and 'rname' must have the same length")
-    pos <- .normarg_pos(pos, cigar)
-    flag <- .normarg_flag(flag, cigar)
+    if (!is.factor(rname))
+        stop("'rname' must be a factor")
+    if (length(rname) != length(cigar))
+        stop("'rname' must have the same length as 'cigar'")
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
     ## It doesn't really make sense to include "I" operations here since they
     ## don't generate coverage on the reference (they always produce zero-width
     ## ranges on the reference). Anyway, this is how
-    ## cigarToIRangesListByRName() has been behaving since the beginning and
-    ## the unit tests expect this.
+    ## cigarToIRangesListByRName() has been behaving since the beginning
+    ## and the unit tests expect this.
     if (drop.D.ranges) {
         ops <- c("M", "=", "X", "I")
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    if (!isTRUEorFALSE(drop.empty.ranges))
-        stop("'drop.empty.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(reduce.ranges))
-        stop("'reduce.ranges' must be TRUE or FALSE")
-    C_ans <- .Call2("cigar_to_list_of_IRanges_by_rname",
-                    cigar, flag, ops, rname, pos,
-                    drop.empty.ranges, reduce.ranges,
-                    PACKAGE="GenomicRanges")
-    if (length(C_ans) < 200L) {
-        IRangesList(C_ans, compress=FALSE)
-    } else {
-        IRangesList(C_ans, compress=TRUE)
-    }
+    cigarRangesOnReferenceSpace(cigar, flag=flag, ops=ops,
+                                pos=pos, f=rname,
+                                drop.empty.ranges=drop.empty.ranges,
+                                reduce.ranges=reduce.ranges)
 }
 
 

@@ -17,19 +17,10 @@ SEXP cigar_ranges(
 	SEXP ops,
 	SEXP space,
 	SEXP pos,
+	SEXP f,
 	SEXP drop_empty_ranges,
 	SEXP reduce_ranges,
 	SEXP with_ops
-);
-
-SEXP cigar_to_list_of_IRanges_by_rname(
-	SEXP cigar,
-	SEXP flag,
-	SEXP ops,
-	SEXP rname,
-	SEXP pos,
-	SEXP drop_empty_ranges,
-	SEXP reduce_ranges
 );
 
 SEXP cigar_width(SEXP cigar, SEXP space);

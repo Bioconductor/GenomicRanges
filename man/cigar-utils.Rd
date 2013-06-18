@@ -56,7 +56,8 @@ cigarToRleList(cigar)
 splitCigar(cigar)
 
 ## -=-= From CIGARs to ranges =-=-
-cigarRangesOnReferenceSpace(cigar, flag=NULL, ops=CIGAR_OPS, pos=1L,
+cigarRangesOnReferenceSpace(cigar, flag=NULL, ops=CIGAR_OPS,
+                            pos=1L, f=NULL,
                             drop.empty.ranges=FALSE, reduce.ranges=FALSE,
                             with.ops=FALSE)
 
@@ -106,11 +107,10 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     According to the SAM Spec v1.4, flag bit 0x4 is the only reliable place
     to tell whether a segment (or read) is mapped (bit is 0) or not (bit
     is 1). If \code{flag} is supplied, then \code{cigarRangesOnReferenceSpace},
-    \code{cigarRangesOnQuerySpace}, \code{cigarRangesOnPairwiseSpace}, and
-    \code{cigarToIRangesListByAlignment}, translate unmapped reads to empty
-    list elements in the returned \link[IRanges]{IRangesList} object.
-    If \code{flag} is supplied, \code{cigarToIRangesListByRName} just
-    ignore these reads.
+    \code{cigarRangesOnQuerySpace}, \code{cigarRangesOnPairwiseSpace},
+    \code{cigarToIRangesListByAlignment}, and \code{cigarToIRangesListByRName}
+    don't produce any range for unmapped reads i.e. they treat them as if
+    their CIGAR was empty (independently of what their CIGAR is).
   }
   \item{ops}{
     Character vector containing the CIGAR operations to translate to ranges.
@@ -121,6 +121,19 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     position/coordinate for each (eventually clipped) read
     sequence. Must have length 1 (in which case it's recycled to the
     length of \code{cigar}), or the same length as \code{cigar}.
+  }
+  \item{f}{
+    \code{NULL} or a factor of length \code{cigar}.
+    If \code{NULL}, then the ranges are grouped by alignment i.e. the
+    returned \link[IRanges]{IRangesList} object has 1 list element per
+    element in \code{cigar}. Otherwise they are grouped by factor level
+    i.e. the returned \link[IRanges]{IRangesList} object has 1 list element
+    per level in \code{f} and is named with those levels.
+
+    For example, if \code{f} is a factor containing the chromosome for each
+    read, then the returned \link[IRanges]{IRangesList} object will have
+    1 list element per chromosome and each list element will contain all
+    the ranges on that chromosome.
   }
   \item{with.ops}{
     \code{TRUE} or \code{FALSE} indicating whether the returned ranges should
@@ -143,9 +156,10 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     and Ns in the CIGAR are equivalent.
   }
   \item{rname}{
-    A character vector/factor containing the name of the
+    A factor of length \code{cigar} containing the name of the
     reference sequence associated with each read (i.e. the
     name of the sequence the read has been aligned to).
+    It's treated as the \code{f} argument above.
   }
   \item{before.hard.clipping}{
     Should the returned widths be the lengths of the reads before
@@ -210,8 +224,7 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   as \code{cigar}.
 
   For \code{cigarToIRangesListByRName}: A named \link[IRanges]{IRangesList}
-  object with one element (\link[IRanges]{IRanges}) per unique reference
-  sequence.
+  object with one list element per level in \code{rname}.
 
   For \code{cigarWidthOnReferenceSpace}, \code{cigarWidthOnQuerySpace},
   and \code{cigarWidthOnPairwiseSpace} : An integer vector of the same
@@ -372,22 +385,17 @@ if (interactive()) {
   rname <- sample(some_fake_rnames, nreads, replace=TRUE)
   pos <- sample(80000000L, nreads, replace=TRUE)
 
-  ## The following takes < 5 sec. to complete:
-  system.time(rglist <- cigarToIRangesListByAlignment(cigar3, pos=pos))
+  ## The following takes < 3 sec. to complete:
+  system.time(irl1 <- cigarToIRangesListByAlignment(cigar3, pos=pos))
 
-  ## The following takes < 10 sec. to complete:
-  system.time(irl <- cigarToIRangesListByRName(cigar3, rname, pos=pos))
-
-  ## Internally, cigarToIRangesListByRName() turns 'rname' into a factor
-  ## before starting the calculation. Hence it will run sligthly
-  ## faster if 'rname' is already a factor.
+  ## The following takes < 4 sec. to complete:
   rname2 <- as.factor(rname)
   system.time(irl2 <- cigarToIRangesListByRName(cigar3, rname2, pos=pos))
 
   ## The sizes of the resulting objects are about 240M and 160M,
   ## respectively:
-  object.size(rglist)
-  object.size(irl)
+  object.size(irl1)
+  object.size(irl2)
 }
 
 ## ---------------------------------------------------------------------
