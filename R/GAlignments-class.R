@@ -481,8 +481,8 @@ setMethod("rglist", "GAlignments",
     {
         if (!isTRUEorFALSE(order.as.in.query))
             stop("'reorder.ranges.from5to3' must be TRUE or FALSE")
-        ans <- cigarToIRangesListByAlignment(x@cigar, x@start,
-                                             drop.D.ranges=drop.D.ranges)
+        ans <- extractAlignmentRangesOnReference(x@cigar, x@start,
+                                                 drop.D.ranges=drop.D.ranges)
         if (order.as.in.query)
             ans <- revElements(ans, strand(x) == "-")
         names(ans) <- names(x)

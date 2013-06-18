@@ -14,8 +14,7 @@
 \alias{cigarRangesOnReferenceSpace}
 \alias{cigarRangesOnQuerySpace}
 \alias{cigarRangesOnPairwiseSpace}
-\alias{cigarToIRangesListByAlignment}
-\alias{cigarToIRangesListByRName}
+\alias{extractAlignmentRangesOnReference}
 
 \alias{cigarWidthOnReferenceSpace}
 \alias{cigarWidthOnQuerySpace}
@@ -31,6 +30,8 @@
 
 % Old stuff:
 \alias{cigarToIRanges}
+\alias{cigarToIRangesListByAlignment}
+\alias{cigarToIRangesListByRName}
 \alias{cigarToWidth}
 \alias{cigarToQWidth}
 \alias{cigarToCigarTable}
@@ -71,13 +72,7 @@ cigarRangesOnPairwiseSpace(cigar, flag=NULL,
         ops=CIGAR_OPS, drop.empty.ranges=FALSE, reduce.ranges=FALSE,
         with.ops=FALSE)
 
-cigarToIRangesListByAlignment(cigar, pos=1L, flag=NULL,
-                              drop.D.ranges=FALSE,
-                              drop.empty.ranges=FALSE, reduce.ranges=TRUE)
-
-cigarToIRangesListByRName(cigar, rname, pos=1L, flag=NULL,
-                          drop.D.ranges=FALSE,
-                          drop.empty.ranges=FALSE, reduce.ranges=TRUE)
+extractAlignmentRangesOnReference(cigar, pos=1L, drop.D.ranges=FALSE, f=NULL)
 
 ## -=-= From CIGARs to sequence lengths =-=-
 cigarWidthOnReferenceSpace(cigar, flag=NULL,
@@ -114,13 +109,12 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     According to the SAM Spec v1.4, flag bit 0x4 is the only reliable place
     to tell whether a segment (or read) is mapped (bit is 0) or not (bit
     is 1). If \code{flag} is supplied, then \code{cigarRangesOnReferenceSpace},
-    \code{cigarRangesOnQuerySpace}, \code{cigarRangesOnPairwiseSpace},
-    \code{cigarToIRangesListByAlignment}, and \code{cigarToIRangesListByRName}
-    don't produce any range for unmapped reads i.e. they treat them as if
-    their CIGAR was empty (independently of what their CIGAR is).
-    If \code{flag} is supplied, then \code{cigarWidthOnReferenceSpace},
-    \code{cigarWidthOnQuerySpace}, and \code{cigarWidthOnPairwiseSpace}
-    return \code{NA}s for unmapped reads.
+    \code{cigarRangesOnQuerySpace}, \code{cigarRangesOnPairwiseSpace}, and
+    \code{extractAlignmentRangesOnReference} don't produce any range for
+    unmapped reads i.e. they treat them as if their CIGAR was empty
+    (independently of what their CIGAR is). If \code{flag} is supplied, then
+    \code{cigarWidthOnReferenceSpace}, \code{cigarWidthOnQuerySpace}, and
+    \code{cigarWidthOnPairwiseSpace} return \code{NA}s for unmapped reads.
   }
   \item{remove.N.regions}{
     \code{TRUE} or \code{FALSE}.
@@ -190,12 +184,6 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     Note that, when \code{drop.D.ranges} is \code{TRUE}, then Ds
     and Ns in the CIGAR are equivalent.
   }
-  \item{rname}{
-    A factor of length \code{cigar} containing the name of the
-    reference sequence associated with each read (i.e. the
-    name of the sequence the read has been aligned to).
-    It's treated as the \code{f} argument above.
-  }
   \item{start,end,width}{
     Vectors of integers. NAs and negative values are accepted and
     "solved" according to the rules of the SEW (Start/End/Width)
@@ -239,21 +227,14 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   the lengths of the CIGAR operations.
 
   For \code{cigarRangesOnReferenceSpace}, \code{cigarRangesOnQuerySpace},
-  and \code{cigarRangesOnPairwiseSpace}: An \link[IRanges]{IRangesList}
+  \code{cigarRangesOnPairwiseSpace}, and
+  \code{extractAlignmentRangesOnReference}: An \link[IRanges]{IRangesList}
   object (more precisely a \link[IRanges]{CompressedIRangesList} object)
   with 1 list element per element in \code{cigar}.
   However, if \code{f} is a factor, then the returned
   \link[IRanges]{IRangesList} object can be a \link[IRanges]{SimpleIRangesList}
   object (instead of \link[IRanges]{CompressedIRangesList}), and it has
   1 list element per level in \code{f} and is named with those levels.
-
-  For \code{cigarToIRangesListByAlignment}:
-  An \link[IRanges]{IRangesList} object (more precisely a
-  \link[IRanges]{CompressedIRangesList} object) of the same length
-  as \code{cigar}.
-
-  For \code{cigarToIRangesListByRName}: A named \link[IRanges]{IRangesList}
-  object with one list element per level in \code{rname}.
 
   For \code{cigarWidthOnReferenceSpace} and \code{cigarWidthOnPairwiseSpace}:
   An integer vector of the same length as \code{cigar} where each element is
@@ -384,24 +365,24 @@ cigarRangesOnReferenceSpace(cigar2, pos=pos, with.ops=TRUE)
 cigarRangesOnQuerySpace(cigar2, with.ops=TRUE)
 cigarRangesOnPairwiseSpace(cigar2, with.ops=TRUE)
 
-res1a <- cigarToIRangesListByAlignment(cigar2, pos=pos)
+res1a <- extractAlignmentRangesOnReference(cigar2, pos=pos)
 res1b <- cigarRangesOnReferenceSpace(cigar2,
                                      pos=pos,
                                      ops=setdiff(CIGAR_OPS, "N"),
                                      reduce.ranges=TRUE)
 stopifnot(identical(res1a, res1b))
 
-res2a <- cigarToIRangesListByAlignment(cigar2, pos=pos,
-                                       drop.D.ranges=TRUE)
+res2a <- extractAlignmentRangesOnReference(cigar2, pos=pos,
+                                           drop.D.ranges=TRUE)
 res2b <- cigarRangesOnReferenceSpace(cigar2,
                                      pos=pos,
                                      ops=setdiff(CIGAR_OPS, c("D", "N")),
                                      reduce.ranges=TRUE)
 stopifnot(identical(res2a, res2b))
 
-rname <- factor(c("chr6", "chr6", "chr2", "chr6"),
-                levels=c("chr2", "chr6"))
-cigarToIRangesListByRName(cigar2, rname, pos=pos)
+seqnames <- factor(c("chr6", "chr6", "chr2", "chr6"),
+                   levels=c("chr2", "chr6"))
+extractAlignmentRangesOnReference(cigar2, pos=pos, f=seqnames)
 
 ## Summarize CIGARs:
 cigarOpTable(cigar2)
@@ -431,10 +412,11 @@ if (interactive()) {
   pos <- sample(80000000L, nreads, replace=TRUE)
 
   ## The following takes < 3 sec. to complete:
-  system.time(irl1 <- cigarToIRangesListByAlignment(cigar3, pos=pos))
+  system.time(irl1 <- extractAlignmentRangesOnReference(cigar3, pos=pos))
 
   ## The following takes < 4 sec. to complete:
-  system.time(irl2 <- cigarToIRangesListByRName(cigar3, rname, pos=pos))
+  system.time(irl2 <- extractAlignmentRangesOnReference(cigar3, pos=pos,
+                                                        f=rname))
 
   ## The sizes of the resulting objects are about 240M and 160M,
   ## respectively:
@@ -463,7 +445,8 @@ extractCoverageFromBAM <- function(file)
   bam <- scanBam(file, param=param)[[1]]
   ## Note that unmapped reads and reads that are PCR/optical duplicates
   ## have already been filtered out by using the ScanBamParam object above.
-  irl <- cigarToIRangesListByRName(bam$cigar, bam$rname, pos=bam$pos)
+  irl <- extractAlignmentRangesOnReference(bam$cigar, pos=bam$pos,
+                                           f=bam$rname)
   irl <- irl[elementLengths(irl) != 0]  # drop empty elements
   coverage(irl)
 }

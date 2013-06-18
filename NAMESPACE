@@ -101,6 +101,7 @@ export(
     cigarRangesOnReferenceSpace,
     cigarRangesOnQuerySpace,
     cigarRangesOnPairwiseSpace,
+    extractAlignmentRangesOnReference,
     cigarToIRanges,
     cigarToIRangesListByAlignment, cigarToIRangesListByRName,
     cigarWidthOnReferenceSpace,

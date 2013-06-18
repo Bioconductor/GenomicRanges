@@ -231,55 +231,25 @@ cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL,
                   ops, drop.empty.ranges, reduce.ranges, with.ops)
 }
 
-### 2 wrappers to cigarRangesOnReferenceSpace() with ugly names. Used
-### internally in the GenomicRanges package for turning a GAlignments object
-### into a GRangesList object and/or for extracting the ranges that generate
-### coverage on the reference.
-cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
-                                          drop.D.ranges=FALSE,
-                                          drop.empty.ranges=FALSE,
-                                          reduce.ranges=TRUE)
+### A convenience wrapper to cigarRangesOnReferenceSpace().
+extractAlignmentRangesOnReference <- function(cigar, pos=1L,
+                                              drop.D.ranges=FALSE, f=NULL)
 {
     if (!isTRUEorFALSE(drop.D.ranges))
         stop("'drop.D.ranges' must be TRUE or FALSE")
-    ## It doesn't really make sense to include "I" operations here since they
-    ## don't generate coverage on the reference (they always produce zero-width
-    ## ranges on the reference). Anyway, this is how
-    ## cigarToIRangesListByAlignment() has been behaving since the beginning.
+    ## Not sure why we include "I" operations here since they don't generate
+    ## coverage on the reference (they always produce zero-width ranges on the
+    ## reference). Anyway, this is what old cigarToIRangesListByAlignment()
+    ## and cigarToIRangesListByRName() have been doing for a while so
+    ## extractAlignmentRangesOnReference() (which replaces them) does the same.
     if (drop.D.ranges) {
         ops <- c("M", "=", "X", "I")
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos,
-                                ops=ops, drop.empty.ranges=drop.empty.ranges,
-                                reduce.ranges=reduce.ranges)
-}
-
-cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
-                                      drop.D.ranges=FALSE,
-                                      drop.empty.ranges=FALSE,
-                                      reduce.ranges=TRUE)
-{
-    if (!is.factor(rname))
-        stop("'rname' must be a factor")
-    if (length(rname) != length(cigar))
-        stop("'rname' must have the same length as 'cigar'")
-    if (!isTRUEorFALSE(drop.D.ranges))
-        stop("'drop.D.ranges' must be TRUE or FALSE")
-    ## It doesn't really make sense to include "I" operations here since they
-    ## don't generate coverage on the reference (they always produce zero-width
-    ## ranges on the reference). Anyway, this is how
-    ## cigarToIRangesListByRName() has been behaving since the beginning
-    ## and the unit tests expect this.
-    if (drop.D.ranges) {
-        ops <- c("M", "=", "X", "I")
-    } else {
-        ops <- c("M", "=", "X", "I", "D")
-    }
-    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos, f=rname,
-                                ops=ops, drop.empty.ranges=drop.empty.ranges,
-                                reduce.ranges=reduce.ranges)
+    cigarRangesOnReferenceSpace(cigar, flag=NULL, pos=pos, f=f,
+                                ops=ops,
+                                drop.empty.ranges=FALSE, reduce.ranges=TRUE)
 }
 
 
@@ -384,6 +354,68 @@ queryLocs2refLocs <- function(qlocs, cigar, pos=1L, flag=NULL)
 ### Old stuff (deprecated & defunct)
 ###
 
+cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
+                           drop.empty.ranges=FALSE, reduce.ranges=TRUE)
+{
+    .Deprecated("extractAlignmentRangesOnReference")
+    cigarToIRangesListByAlignment(cigar, drop.D.ranges=drop.D.ranges,
+                                  drop.empty.ranges=drop.empty.ranges,
+                                  reduce.ranges=reduce.ranges)[[1L]]
+}
+
+### 2 wrappers to cigarRangesOnReferenceSpace() with ugly names. Used
+### internally in the GenomicRanges package for turning a GAlignments object
+### into a GRangesList object and/or for extracting the ranges that generate
+### coverage on the reference.
+cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
+                                          drop.D.ranges=FALSE,
+                                          drop.empty.ranges=FALSE,
+                                          reduce.ranges=TRUE)
+{
+    .Deprecated("extractAlignmentRangesOnReference")
+    if (!isTRUEorFALSE(drop.D.ranges))
+        stop("'drop.D.ranges' must be TRUE or FALSE")
+    ## It doesn't really make sense to include "I" operations here since they
+    ## don't generate coverage on the reference (they always produce zero-width
+    ## ranges on the reference). Anyway, this is what
+    ## cigarToIRangesListByAlignment() has been doing for a while.
+    if (drop.D.ranges) {
+        ops <- c("M", "=", "X", "I")
+    } else {
+        ops <- c("M", "=", "X", "I", "D")
+    }
+    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos,
+                                ops=ops, drop.empty.ranges=drop.empty.ranges,
+                                reduce.ranges=reduce.ranges)
+}
+
+cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
+                                      drop.D.ranges=FALSE,
+                                      drop.empty.ranges=FALSE,
+                                      reduce.ranges=TRUE)
+{
+    .Deprecated("extractAlignmentRangesOnReference")
+    if (!is.factor(rname))
+        stop("'rname' must be a factor")
+    if (length(rname) != length(cigar))
+        stop("'rname' must have the same length as 'cigar'")
+    if (!isTRUEorFALSE(drop.D.ranges))
+        stop("'drop.D.ranges' must be TRUE or FALSE")
+    ## It doesn't really make sense to include "I" operations here since they
+    ## don't generate coverage on the reference (they always produce zero-width
+    ## ranges on the reference). Anyway, this is what
+    ## cigarToIRangesListByRName() has been doing for a while and the unit
+    ## tests expect this.
+    if (drop.D.ranges) {
+        ops <- c("M", "=", "X", "I")
+    } else {
+        ops <- c("M", "=", "X", "I", "D")
+    }
+    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos, f=rname,
+                                ops=ops, drop.empty.ranges=drop.empty.ranges,
+                                reduce.ranges=reduce.ranges)
+}
+
 cigarToWidth <- function(...)
 {
     .Deprecated("cigarWidthOnReferenceSpace")
@@ -394,15 +426,6 @@ cigarToQWidth <- function(...)
 {
     .Deprecated("cigarWidthOnQuerySpace")
     cigarWidthOnQuerySpace(...)
-}
-
-cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
-                           drop.empty.ranges=FALSE, reduce.ranges=TRUE)
-{
-    .Deprecated("cigarToIRangesListByAlignment")
-    cigarToIRangesListByAlignment(cigar, drop.D.ranges=drop.D.ranges,
-                                  drop.empty.ranges=drop.empty.ranges,
-                                  reduce.ranges=reduce.ranges)[[1L]]
 }
 
 cigarToCigarTable <- function(cigar)
