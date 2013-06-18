@@ -3,12 +3,14 @@
 
 #include <ctype.h> /* for isdigit() */
 
-/* The 5 supported spaces. */
+/* The 7 supported spaces. */
 #define QUERY_BEFORE_HARD_CLIPPING	0
 #define QUERY				1
 #define QUERY_AFTER_SOFT_CLIPPING	2
 #define PAIRWISE			3
 #define REFERENCE			4
+#define PAIRWISE_REMOVE_N_REGIONS	5
+#define REFERENCE_REMOVE_N_REGIONS	6
 
 static char errmsg_buf[200];
 
@@ -123,7 +125,15 @@ static int belongs_to_space(char OP, int space)
 			return 1;
 		/* fall through */
 	case REFERENCE:
-		if (OP == 'N' || OP == 'D')
+		if (OP == 'D' || OP == 'N')
+			return 1;
+		break;
+	case PAIRWISE_REMOVE_N_REGIONS:
+		if (OP == 'I')
+			return 1;
+		/* fall through */
+	case REFERENCE_REMOVE_N_REGIONS:
+		if (OP == 'D')
 			return 1;
 		break;
 	}
@@ -203,8 +213,8 @@ static void drop_or_append_or_merge_range(int start, int width,
 }
 
 static const char *parse_cigar_ranges(const char *cigar_string,
-		SEXP ops, int space, int pos,
-		int drop_empty_ranges, int reduce_ranges,
+		int space, int pos,
+		SEXP ops, int drop_empty_ranges, int reduce_ranges,
 		RangeAE *range_buf, CharAEAE *OP_buf)
 {
 	int buf_nelt0, cigar_offset, n, OPL /* Operation Length */,
@@ -230,7 +240,7 @@ static const char *parse_cigar_ranges(const char *cigar_string,
 }
 
 static SEXP make_CompressedIRangesList(const RangeAE *range_buf,
-		const CharAEAE *OP_buf, SEXP partitioning_end)
+		const CharAEAE *OP_buf, SEXP breakpoints)
 {
 	SEXP ans, ans_unlistData, ans_unlistData_names, ans_partitioning;
 
@@ -244,8 +254,7 @@ static SEXP make_CompressedIRangesList(const RangeAE *range_buf,
 	}
 	PROTECT(ans_partitioning =
 			new_PartitioningByEnd("PartitioningByEnd",
-					      partitioning_end,
-					      NULL));
+					      breakpoints, NULL));
 	PROTECT(ans = new_CompressedList(
 				"CompressedIRangesList",
 				ans_unlistData, ans_partitioning));
@@ -794,10 +803,7 @@ SEXP split_cigar(SEXP cigar)
  *          indicate whether a read is mapped or not. According to the SAM
  *          Spec v1.4, flag bit 0x4 is the only reliable place to tell
  *          whether a segment (or read) is mapped (bit is 0) or not (bit is 1).
- *   ops:   NULL or a character vector containing the CIGAR operations to
- *          translate to ranges. If NULL, then all CIGAR operations are
- *          translated.
- *   space: single integer indicating one of the 5 supported spaces (defined
+ *   space: single integer indicating one of the 7 supported spaces (defined
  *          at the top of this file).
  *   pos:   integer vector of the same length as 'cigar' (or of length 1)
  *          containing the 1-based leftmost position/coordinate of the
@@ -808,6 +814,9 @@ SEXP split_cigar(SEXP cigar)
  *          are grouped by factor level and stored in an ordinary list of
  *          IRanges objects with 1 list element per level in 'f' and named
  *          with those levels.
+ *   ops:   NULL or a character vector containing the CIGAR operations to
+ *          translate to ranges. If NULL, then all CIGAR operations are
+ *          translated.
  *   drop_empty_ranges: TRUE or FALSE.
  *   reduce_ranges: TRUE or FALSE.
  *   with_ops: TRUE or FALSE indicating whether the returned ranges should be
@@ -818,12 +827,12 @@ SEXP split_cigar(SEXP cigar)
  * per level in 'f' (if 'f' is a factor). This list is then turned into a
  * SimpleIRangesList object in R.
  */
-SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space,
-		  SEXP pos, SEXP f,
-		  SEXP drop_empty_ranges, SEXP reduce_ranges, SEXP with_ops)
+SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP space, SEXP pos, SEXP f,
+		  SEXP ops, SEXP drop_empty_ranges, SEXP reduce_ranges,
+		  SEXP with_ops)
 {
-	SEXP ans, ans_partitioning_end, f_levels, cigar_elt;
-	int cigar_len, space0, pos_len, f_is_NULL, ans_len, *end_elt,
+	SEXP ans, ans_breakpoints, f_levels, cigar_elt;
+	int cigar_len, space0, pos_len, f_is_NULL, ans_len, *breakpoint,
 	    drop_empty_ranges0, reduce_ranges0, with_ops0, i;
 	RangeAE range_buf1, *range_buf_p;
 	RangeAEAE range_buf2;
@@ -844,8 +853,8 @@ SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space,
 		/* We will typically generate at least 'cigar_len' ranges. */
 		range_buf1 = new_RangeAE(ans_len, 0);
 		range_buf_p = &range_buf1;
-		PROTECT(ans_partitioning_end = NEW_INTEGER(ans_len));
-		end_elt = INTEGER(ans_partitioning_end);
+		PROTECT(ans_breakpoints = NEW_INTEGER(ans_len));
+		breakpoint = INTEGER(ans_breakpoints);
 	} else {
 		f_levels = GET_LEVELS(f);
 		ans_len = LENGTH(f_levels);
@@ -897,9 +906,8 @@ SEXP cigar_ranges(SEXP cigar, SEXP flag, SEXP ops, SEXP space,
 				error("'f[%d]' is NA", i + 1);
 			range_buf_p = range_buf2.elts + *f_elt - 1;
 		}
-		errmsg = parse_cigar_ranges(cigar_string, ops, space0,
-				*pos_elt,
-				drop_empty_ranges0, reduce_ranges0,
+		errmsg = parse_cigar_ranges(cigar_string, space0, *pos_elt,
+				ops, drop_empty_ranges0, reduce_ranges0,
 				range_buf_p, OP_buf_p);
 		if (errmsg != NULL) {
 			if (f_is_NULL)
@@ -912,14 +920,14 @@ for_tail:
 		if (pos_len != 1)
 			pos_elt++;
 		if (f_is_NULL)
-			*(end_elt++) = RangeAE_get_nelt(range_buf_p);
+			*(breakpoint++) = RangeAE_get_nelt(range_buf_p);
 		else
 			f_elt++;
 	}
 	if (!f_is_NULL)
 		return make_list_of_IRanges(&range_buf2, f_levels);
 	PROTECT(ans = make_CompressedIRangesList(range_buf_p, OP_buf_p,
-						 ans_partitioning_end));
+						 ans_breakpoints));
 	UNPROTECT(2);
 	return ans;
 }
@@ -928,38 +936,51 @@ for_tail:
 /****************************************************************************
  * --- .Call ENTRY POINT ---
  * Args:
- *   cigar: character vector containing the extended CIGAR string for each
- *          read.
- *   space: single integer (0: reference, 1:query, 2:pairwise).
+ *   cigar, flag, space: see cigar_ranges() function above.
  * Return an integer vector of the same length as 'cigar' containing the
  * widths of the alignments as inferred from the cigar information.
  */
-SEXP cigar_width(SEXP cigar, SEXP space)
+SEXP cigar_width(SEXP cigar, SEXP flag, SEXP space)
 {
 	SEXP ans, cigar_elt;
-	int cigar_len, space0, i, width;
+	int cigar_len, space0, i, *ans_elt;
+	const int *flag_elt;
 	const char *cigar_string, *errmsg;
 
 	cigar_len = LENGTH(cigar);
+	if (flag != R_NilValue)
+		flag_elt = INTEGER(flag);
 	space0 = INTEGER(space)[0];
 	PROTECT(ans = NEW_INTEGER(cigar_len));
-	for (i = 0; i < cigar_len; i++) {
+	for (i = 0, ans_elt = INTEGER(ans); i < cigar_len; i++, ans_elt++) {
+		if (flag != R_NilValue) {
+			if (*flag_elt == NA_INTEGER) {
+				UNPROTECT(1);
+				error("'flag' contains NAs");
+			}
+			if (*flag_elt & 0x004) {
+				*ans_elt = NA_INTEGER;
+				goto for_tail;
+			}
+		}
 		cigar_elt = STRING_ELT(cigar, i);
 		if (cigar_elt == NA_STRING) {
-			INTEGER(ans)[i] = NA_INTEGER;
-			continue;
+			*ans_elt = NA_INTEGER;
+			goto for_tail;
 		}
 		cigar_string = CHAR(cigar_elt);
 		if (strcmp(cigar_string, "*") == 0) {
-			INTEGER(ans)[i] = NA_INTEGER;
-			continue;
+			*ans_elt = NA_INTEGER;
+			goto for_tail;
 		}
-		errmsg = parse_cigar_width(cigar_string, space0, &width);
+		errmsg = parse_cigar_width(cigar_string, space0, ans_elt);
 		if (errmsg != NULL) {
 			UNPROTECT(1);
 			error("in 'cigar[%d]': %s", i + 1, errmsg);
 		}
-		INTEGER(ans)[i] = width;
+for_tail:
+		if (flag != R_NilValue)
+			flag_elt++;
 	}
 	UNPROTECT(1);
 	return ans;

@@ -29,6 +29,59 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     flag
 }
 
+.select_reference_space <- function(remove.N.regions)
+{
+    if (!isTRUEorFALSE(remove.N.regions))
+        stop("'remove.N.regions' must be TRUE or FALSE")
+    if (remove.N.regions) {
+        space <- 6L  # REFERENCE_REMOVE_N_REGIONS
+    } else {
+        space <- 4L  # REFERENCE
+    }
+    space
+}
+
+.select_query_space <- function(before.hard.clipping, after.soft.clipping)
+{
+    if (!isTRUEorFALSE(before.hard.clipping))
+        stop("'before.hard.clipping' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(after.soft.clipping))
+        stop("'after.soft.clipping' must be TRUE or FALSE")
+    if (before.hard.clipping) {
+        if (after.soft.clipping)
+            stop("'before.hard.clipping' and 'after.soft.clipping' cannot ",
+                 "both be TRUE")
+        space <- 0L  # QUERY_BEFORE_HARD_CLIPPING
+    } else if (after.soft.clipping) {
+        space <- 2L  # QUERY_AFTER_SOFT_CLIPPING
+    } else {
+        space <- 1L  # QUERY
+    }
+    space
+}
+
+.select_pairwise_space <- function(remove.N.regions)
+{
+    if (!isTRUEorFALSE(remove.N.regions))
+        stop("'remove.N.regions' must be TRUE or FALSE")
+    if (remove.N.regions) {
+        space <- 5L  # PAIRWISE_REMOVE_N_REGIONS
+    } else {
+        space <- 3L  # PAIRWISE
+    }
+}
+
+.normarg_pos <- function(pos, cigar)
+{
+    if (!is.numeric(pos))
+        stop("'pos' must be a vector of integers")
+    if (!is.integer(pos))
+        pos <- as.integer(pos)
+    if (length(pos) != 1L && length(pos) != length(cigar))
+        stop("'pos' must have length 1 or the same length as 'cigar'")
+    pos
+}
+
 .normarg_ops <- function(ops)
 {
     if (is.null(ops))
@@ -48,17 +101,6 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     if (!all(ops %in% CIGAR_OPS))
         stop("'ops' contains invalid CIGAR operations")
     ops
-}
- 
-.normarg_pos <- function(pos, cigar)
-{
-    if (!is.numeric(pos))
-        stop("'pos' must be a vector of integers")
-    if (!is.integer(pos))
-        pos <- as.integer(pos)
-    if (length(pos) != 1L && length(pos) != length(cigar))
-        stop("'pos' must have length 1 or the same length as 'cigar'")
-    pos
 }
 
 validCigar <- function(cigar)
@@ -119,15 +161,15 @@ splitCigar <- function(cigar)
 ### From CIGARs to ranges
 ###
 
-cigarRangesOnReferenceSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
-                                        pos=1L, f=NULL,
-                                        drop.empty.ranges=FALSE,
-                                        reduce.ranges=FALSE,
-                                        with.ops=FALSE)
+.cigar_ranges <- function(cigar, flag, space, pos, f,
+                          ops, drop.empty.ranges, reduce.ranges, with.ops)
 {
     cigar <- .normarg_cigar(cigar)
     flag <- .normarg_flag(flag, cigar)
-    ops <- .normarg_ops(ops)
+    if (!isSingleNumber(space))
+        stop("'space' must be a single integer")
+    if (!is.integer(space))
+        space <- as.integer(space)
     pos <- .normarg_pos(pos, cigar)
     if (!is.null(f)) {
         if (!is.factor(f))
@@ -135,60 +177,58 @@ cigarRangesOnReferenceSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
         if (length(f) != length(cigar))
             stop("'f' must have the same length as 'cigar'")
     }
+    ops <- .normarg_ops(ops)
     if (!isTRUEorFALSE(drop.empty.ranges))
         stop("'drop.empty.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(reduce.ranges))
         stop("'reduce.ranges' must be TRUE or FALSE")
     if (!isTRUEorFALSE(with.ops))
         stop("'with.ops' must be TRUE or FALSE")
-    C_ans <- .Call2("cigar_ranges",
-                    cigar, flag, ops, 4L, pos, f,
-                    drop.empty.ranges, reduce.ranges, with.ops,
-                    PACKAGE="GenomicRanges")
+    .Call2("cigar_ranges",
+           cigar, flag, space, pos, f,
+           ops, drop.empty.ranges, reduce.ranges, with.ops,
+           PACKAGE="GenomicRanges")
+}
+
+cigarRangesOnReferenceSpace <- function(cigar, flag=NULL,
+                                        remove.N.regions=FALSE, pos=1L, f=NULL,
+                                        ops=CIGAR_OPS,
+                                        drop.empty.ranges=FALSE,
+                                        reduce.ranges=FALSE,
+                                        with.ops=FALSE)
+{
+    space <- .select_reference_space(remove.N.regions)
+    C_ans <- .cigar_ranges(cigar, flag, space, pos, f,
+                           ops, drop.empty.ranges, reduce.ranges, with.ops)
     if (is.null(f))
         return(C_ans)
     compress <- length(C_ans) >= 200L
     IRangesList(C_ans, compress=compress)
 }
 
-cigarRangesOnQuerySpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
+cigarRangesOnQuerySpace <- function(cigar, flag=NULL,
+                                    before.hard.clipping=FALSE,
+                                    after.soft.clipping=FALSE,
+                                    ops=CIGAR_OPS,
                                     drop.empty.ranges=FALSE,
                                     reduce.ranges=FALSE,
                                     with.ops=FALSE)
 {
-    cigar <- .normarg_cigar(cigar)
-    flag <- .normarg_flag(flag, cigar)
-    ops <- .normarg_ops(ops)
-    if (!isTRUEorFALSE(drop.empty.ranges))
-        stop("'drop.empty.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(reduce.ranges))
-        stop("'reduce.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(with.ops))
-        stop("'with.ops' must be TRUE or FALSE")
-    .Call2("cigar_ranges",
-           cigar, flag, ops, 1L, 1L, NULL,
-           drop.empty.ranges, reduce.ranges, with.ops,
-           PACKAGE="GenomicRanges")
+    space <- .select_query_space(before.hard.clipping, after.soft.clipping)
+    .cigar_ranges(cigar, flag, space, 1L, NULL,
+                  ops, drop.empty.ranges, reduce.ranges, with.ops)
 }
 
-cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL, ops=CIGAR_OPS,
+cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL,
+                                       remove.N.regions=FALSE,
+                                       ops=CIGAR_OPS,
                                        drop.empty.ranges=FALSE,
                                        reduce.ranges=FALSE,
                                        with.ops=FALSE)
 {
-    cigar <- .normarg_cigar(cigar)
-    flag <- .normarg_flag(flag, cigar)
-    ops <- .normarg_ops(ops)
-    if (!isTRUEorFALSE(drop.empty.ranges))
-        stop("'drop.empty.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(reduce.ranges))
-        stop("'reduce.ranges' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(with.ops))
-        stop("'with.ops' must be TRUE or FALSE")
-    .Call2("cigar_ranges",
-           cigar, flag, ops, 3L, 1L, NULL,
-           drop.empty.ranges, reduce.ranges, with.ops,
-           PACKAGE="GenomicRanges")
+    space <- .select_pairwise_space(remove.N.regions)
+    .cigar_ranges(cigar, flag, space, 1L, NULL,
+                  ops, drop.empty.ranges, reduce.ranges, with.ops)
 }
 
 ### 2 wrappers to cigarRangesOnReferenceSpace() with ugly names. Used
@@ -211,8 +251,8 @@ cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    cigarRangesOnReferenceSpace(cigar, flag=flag, ops=ops, pos=pos,
-                                drop.empty.ranges=drop.empty.ranges,
+    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos,
+                                ops=ops, drop.empty.ranges=drop.empty.ranges,
                                 reduce.ranges=reduce.ranges)
 }
 
@@ -237,9 +277,8 @@ cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    cigarRangesOnReferenceSpace(cigar, flag=flag, ops=ops,
-                                pos=pos, f=rname,
-                                drop.empty.ranges=drop.empty.ranges,
+    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos, f=rname,
+                                ops=ops, drop.empty.ranges=drop.empty.ranges,
                                 reduce.ranges=reduce.ranges)
 }
 
@@ -248,29 +287,37 @@ cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
 ### From CIGARs to sequence lengths
 ###
 
-cigarWidthOnReferenceSpace <- function(cigar)
+.cigar_width <- function(cigar, flag, space)
 {
     cigar <- .normarg_cigar(cigar)
-    .Call2("cigar_width", cigar, 4L, PACKAGE="GenomicRanges")
+    flag <- .normarg_flag(flag, cigar)
+    if (!isSingleNumber(space))
+        stop("'space' must be a single integer")
+    if (!is.integer(space))
+        space <- as.integer(space)
+    .Call2("cigar_width", cigar, flag, space, PACKAGE="GenomicRanges")
 }
 
-cigarWidthOnQuerySpace <- function(cigar, before.hard.clipping=FALSE)
+cigarWidthOnReferenceSpace <- function(cigar, flag=NULL,
+                                       remove.N.regions=FALSE)
 {
-    cigar <- .normarg_cigar(cigar)
-    if (!isTRUEorFALSE(before.hard.clipping))
-        stop("'before.hard.clipping' must be TRUE or FALSE")
-    if (before.hard.clipping) {
-        space <- 0L  # QUERY_BEFORE_HARD_CLIPPING space
-    } else {
-        space <- 1L  # QUERY space
-    }
-    .Call2("cigar_width", cigar, space, PACKAGE="GenomicRanges")
+    space <- .select_reference_space(remove.N.regions)
+    .cigar_width(cigar, flag, space)
 }
 
-cigarWidthOnPairwiseSpace <- function(cigar)
+cigarWidthOnQuerySpace <- function(cigar, flag=NULL,
+                                   before.hard.clipping=FALSE,
+                                   after.soft.clipping=FALSE)
 {
-    cigar <- .normarg_cigar(cigar)
-    .Call2("cigar_width", cigar, 3L, PACKAGE="GenomicRanges")
+    space <- .select_query_space(before.hard.clipping, after.soft.clipping)
+    .cigar_width(cigar, flag, space)
+}
+
+cigarWidthOnPairwiseSpace <- function(cigar, flag=NULL,
+                                      remove.N.regions=FALSE)
+{
+    space <- .select_pairwise_space(remove.N.regions)
+    .cigar_width(cigar, flag, space)
 }
 
 

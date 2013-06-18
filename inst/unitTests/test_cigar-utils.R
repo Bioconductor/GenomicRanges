@@ -78,7 +78,9 @@ test_cigarNarrow <- function()
 test_cigarToIRangesListByRName <- function()
 {
     cigar <- c("30M5000N10M", "50M", "90M10M5I50M10D40M", "18M10I22M", "99I")
-    rname <- c("chr6", "chr6", "chr2", "chr6", "chr2")
+    seqlevels <- c("chr2", "chr6")
+    rname <- factor(c("chr6", "chr6", "chr2", "chr6", "chr2"),
+                    levels=seqlevels)
     pos <- c(101, 201, 1001,  301, 2001)
 
     ## When 'reduce.ranges=FALSE', we expect 1 range per CIGAR operation.

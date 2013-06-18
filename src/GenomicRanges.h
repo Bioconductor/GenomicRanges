@@ -14,16 +14,20 @@ SEXP split_cigar(SEXP cigar);
 SEXP cigar_ranges(
 	SEXP cigar,
 	SEXP flag,
-	SEXP ops,
 	SEXP space,
 	SEXP pos,
 	SEXP f,
+	SEXP ops,
 	SEXP drop_empty_ranges,
 	SEXP reduce_ranges,
 	SEXP with_ops
 );
 
-SEXP cigar_width(SEXP cigar, SEXP space);
+SEXP cigar_width(
+	SEXP cigar,
+	SEXP flag,
+	SEXP space
+);
 
 SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width);
 
