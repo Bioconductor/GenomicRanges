@@ -29,6 +29,17 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     flag
 }
 
+.normarg_pos <- function(pos, cigar)
+{
+    if (!is.numeric(pos))
+        stop("'pos' must be a vector of integers")
+    if (!is.integer(pos))
+        pos <- as.integer(pos)
+    if (length(pos) != 1L && length(pos) != length(cigar))
+        stop("'pos' must have length 1 or the same length as 'cigar'")
+    pos
+}
+
 .select_reference_space <- function(N.regions.removed)
 {
     if (!isTRUEorFALSE(N.regions.removed))
@@ -71,17 +82,6 @@ CIGAR_OPS <- c("M", "I", "D", "N", "S", "H", "P", "=", "X")
     }
 }
 
-.normarg_pos <- function(pos, cigar)
-{
-    if (!is.numeric(pos))
-        stop("'pos' must be a vector of integers")
-    if (!is.integer(pos))
-        pos <- as.integer(pos)
-    if (length(pos) != 1L && length(pos) != length(cigar))
-        stop("'pos' must have length 1 or the same length as 'cigar'")
-    pos
-}
-
 .normarg_ops <- function(ops)
 {
     if (is.null(ops))
@@ -114,16 +114,18 @@ validCigar <- function(cigar)
 ### Transform CIGARs into other useful representations
 ###
 
-explodeCigarOps <- function(cigar)
+explodeCigarOps <- function(cigar, ops=CIGAR_OPS)
 {
     cigar <- .normarg_cigar(cigar)
-    .Call2("explode_cigar_ops", cigar, PACKAGE="GenomicRanges")
+    ops <- .normarg_ops(ops)
+    .Call2("explode_cigar_ops", cigar, ops, PACKAGE="GenomicRanges")
 }
 
-explodeCigarOpLengths <- function(cigar)
+explodeCigarOpLengths <- function(cigar, ops=CIGAR_OPS)
 {
     cigar <- .normarg_cigar(cigar)
-    .Call2("explode_cigar_op_lengths", cigar, PACKAGE="GenomicRanges")
+    ops <- .normarg_ops(ops)
+    .Call2("explode_cigar_op_lengths", cigar, ops, PACKAGE="GenomicRanges")
 }
 
 cigarToRleList <- function(cigar)
@@ -148,12 +150,6 @@ cigarToRleList <- function(cigar)
 
     ## Relist.
     relist(ans_flesh, ans_skeleton)
-}
-
-splitCigar <- function(cigar)
-{
-    cigar <- .normarg_cigar(cigar)
-    .Call2("split_cigar", cigar, PACKAGE="GenomicRanges")
 }
 
 
@@ -353,6 +349,14 @@ queryLocs2refLocs <- function(qlocs, cigar, pos=1L, flag=NULL)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Old stuff (deprecated & defunct)
 ###
+
+splitCigar <- function(cigar)
+{
+    msg <- "  splitCigar() is deprecated."
+    .Deprecated(msg=msg)
+    cigar <- .normarg_cigar(cigar)
+    .Call2("split_cigar", cigar, PACKAGE="GenomicRanges")
+}
 
 cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
                            drop.empty.ranges=FALSE, reduce.ranges=TRUE)

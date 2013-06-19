@@ -9,7 +9,6 @@
 \alias{explodeCigarOps}
 \alias{explodeCigarOpLengths}
 \alias{cigarToRleList}
-\alias{splitCigar}
 
 \alias{cigarRangesOnReferenceSpace}
 \alias{cigarRangesOnQuerySpace}
@@ -29,6 +28,7 @@
 \alias{queryLocs2refLocs}
 
 % Old stuff:
+\alias{splitCigar}
 \alias{cigarToIRanges}
 \alias{cigarToIRangesListByAlignment}
 \alias{cigarToIRangesListByRName}
@@ -51,10 +51,9 @@
 CIGAR_OPS
 
 ## -=-= Transform CIGARs into other useful representations =-=-
-explodeCigarOps(cigar)
-explodeCigarOpLengths(cigar)
+explodeCigarOps(cigar, ops=CIGAR_OPS)
+explodeCigarOpLengths(cigar, ops=CIGAR_OPS)
 cigarToRleList(cigar)
-splitCigar(cigar)
 
 ## -=-= From CIGARs to ranges =-=-
 cigarRangesOnReferenceSpace(cigar, flag=NULL,
@@ -102,6 +101,11 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     It can be of arbitrary length except for \code{queryLoc2refLoc} which
     only accepts a single CIGAR (as a character vector or factor of length 1).
   }
+  \item{ops}{
+    Character vector containing the extended CIGAR operations to actually
+    consider. Zero-length operations or operations not listed \code{ops}
+    are ignored.
+  }
   \item{flag}{
     \code{NULL} or an integer vector containing the SAM flag for
     each read.
@@ -143,10 +147,6 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
     read, then the returned \link[IRanges]{IRangesList} object will have
     1 list element per chromosome and each list element will contain all
     the ranges on that chromosome.
-  }
-  \item{ops}{
-    Character vector containing the CIGAR operations to translate to ranges.
-    By default, all CIGAR operations are translated.
   }
   \item{drop.empty.ranges}{
     Should empty ranges be dropped?
@@ -204,9 +204,9 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
 
 \value{
   \code{CIGAR_OPS} is a predefined character vector containing the supported
-  CIGAR operations: M, I, D, N, S, H, P, =, X. See p. 4 of the SAM Spec v1.4
-  at \url{http://samtools.sourceforge.net/} for the list of CIGAR operations
-  and their meanings.
+  extended CIGAR operations: M, I, D, N, S, H, P, =, X. See p. 4 of the
+  SAM Spec v1.4 at \url{http://samtools.sourceforge.net/} for the list of
+  extended CIGAR operations and their meanings.
 
   For \code{explodeCigarOps} and \code{explodeCigarOpLengths}:
   Both functions return a list of the same length as \code{cigar} where each
@@ -216,15 +216,10 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   character vector in the list returned by \code{explodeCigarOps} contains one
   single-letter string per CIGAR operation in \code{cigar[i]}. The i-th integer
   vector in the list returned by \code{explodeCigarOpLengths} contains the
-  corresponding CIGAR operation lengths. Zero-length operations are ignored.
+  corresponding CIGAR operation lengths. Zero-length operations or operations
+  not listed in \code{ops} are ignored.
 
   For \code{cigarToRleList}: A \link[IRanges]{CompressedRleList} object.
-
-  For \code{splitCigar}: A list of the same length as \code{cigar}
-  where each element is itself a list with 2 elements of the same
-  lengths, the 1st one being a raw vector containing the CIGAR
-  operations and the 2nd one being an integer vector containing
-  the lengths of the CIGAR operations.
 
   For \code{cigarRangesOnReferenceSpace}, \code{cigarRangesOnQuerySpace},
   \code{cigarRangesOnPairwiseSpace}, and
@@ -351,13 +346,13 @@ cigarQNarrow(cigar1, start=24)
 ## ---------------------------------------------------------------------
 ## B. ON A VECTOR CONTAINING MORE THAN ONE CIGAR
 ## ---------------------------------------------------------------------
-cigar2 <- c("40M", cigar1, "2S10M2000N15M", "3H25M5H")
+cigar2 <- c("40M2I9M", cigar1, "2S10M2000N15M", "3H33M5H")
 
 ## Transform CIGARs into other useful representations:
 explodeCigarOps(cigar2)
 explodeCigarOpLengths(cigar2)
+explodeCigarOpLengths(cigar2, ops=c("I", "S"))
 cigarToRleList(cigar2)
-splitCigar(cigar2)
 
 ## From CIGARs to ranges:
 pos <- c(1, 1001, 1,  351)

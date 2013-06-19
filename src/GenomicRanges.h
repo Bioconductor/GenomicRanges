@@ -5,9 +5,15 @@
 
 SEXP valid_cigar(SEXP cigar, SEXP ans_type);
 
-SEXP explode_cigar_ops(SEXP cigar);
+SEXP explode_cigar_ops(
+	SEXP cigar,
+	SEXP ops
+);
 
-SEXP explode_cigar_op_lengths(SEXP cigar);
+SEXP explode_cigar_op_lengths(
+	SEXP cigar,
+	SEXP ops
+);
 
 SEXP split_cigar(SEXP cigar);
 

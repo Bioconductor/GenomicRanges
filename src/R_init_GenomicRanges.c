@@ -7,8 +7,8 @@ static const R_CallMethodDef callMethods[] = {
 
 /* cigar_utils.c */
 	CALLMETHOD_DEF(valid_cigar, 2),
-	CALLMETHOD_DEF(explode_cigar_ops, 1),
-	CALLMETHOD_DEF(explode_cigar_op_lengths, 1),
+	CALLMETHOD_DEF(explode_cigar_ops, 2),
+	CALLMETHOD_DEF(explode_cigar_op_lengths, 2),
 	CALLMETHOD_DEF(split_cigar, 1),
 	CALLMETHOD_DEF(cigar_ranges, 9),
 	CALLMETHOD_DEF(cigar_width, 3),
