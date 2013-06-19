@@ -1106,14 +1106,14 @@ SEXP cigar_qnarrow(SEXP cigar, SEXP left_qwidth, SEXP right_qwidth)
  *   cigar: character vector containing the extended CIGAR string for each
  *          read;
  * Return an integer matrix with the number of rows equal to the length of
- * 'cigar' and 7 columns, one for each extended CIGAR operation containing
+ * 'cigar' and 9 columns, one for each extended CIGAR operation containing
  * a frequency count for the operations for each element of 'cigar'.
  */
 SEXP cigar_op_table(SEXP cigar)
 {
 	SEXP cigar_string, ans, ans_dimnames, ans_colnames;
 	int cigar_len, allOPs_len, i, j, *ans_row;
-	const char *allOPs = "M=XIDNSHP", *errmsg;
+	const char *allOPs = "MIDNSHP=X", *errmsg;
 	char OPstrbuf[2];
 
 	cigar_len = LENGTH(cigar);
@@ -1135,7 +1135,7 @@ SEXP cigar_op_table(SEXP cigar)
 		}
 	}
 
-	PROTECT(ans_colnames = NEW_CHARACTER(7));
+	PROTECT(ans_colnames = NEW_CHARACTER(allOPs_len));
 	OPstrbuf[1] = '\0';
 	for (j = 0; j < allOPs_len; j++) {
 		OPstrbuf[0] = allOPs[j];

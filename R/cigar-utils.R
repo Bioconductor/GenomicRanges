@@ -327,7 +327,9 @@ cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
 cigarOpTable <- function(cigar)
 {
     cigar <- .normarg_cigar(cigar)
-    .Call2("cigar_op_table", cigar, PACKAGE="GenomicRanges")
+    ans <- .Call2("cigar_op_table", cigar, PACKAGE="GenomicRanges")
+    stopifnot(identical(CIGAR_OPS, colnames(ans)))  # sanity check
+    ans
 }
 
 

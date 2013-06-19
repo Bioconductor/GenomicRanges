@@ -257,7 +257,7 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   consequence of this cigar narrowing.
 
   For \code{cigarOpTable}: An integer matrix with number of rows equal
-  to the length of \code{cigar} and seven columns, one for each extended
+  to the length of \code{cigar} and nine columns, one for each extended
   CIGAR operation.
 
   For \code{queryLoc2refLoc}: An integer vector of the same length as
