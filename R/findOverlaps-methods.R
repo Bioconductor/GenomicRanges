@@ -537,6 +537,30 @@ setMethod("findOverlaps", c("GAlignments", "GAlignments"),
     }
 )
 
+setMethod("findOverlaps", c("GAlignments", "GRangesList"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(grglist(query), subject,
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
+setMethod("findOverlaps", c("GRangesList", "GAlignments"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(query, grglist(subject),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
 setMethod("findOverlaps", c("GAlignmentPairs", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
@@ -555,6 +579,18 @@ setMethod("findOverlaps", c("Vector", "GAlignmentPairs"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(query, as(subject, "GRangesList"),
+                     maxgap = maxgap, minoverlap = minoverlap,
+                     type = match.arg(type), select = match.arg(select),
+                     ignore.strand = ignore.strand)
+    }
+)
+
+setMethod("findOverlaps", c("GAlignmentPairs", "GAlignmentPairs"),
+    function(query, subject, maxgap = 0L, minoverlap = 1L,
+             type = c("any", "start", "end", "within"),
+             select = c("all", "first"), ignore.strand = FALSE)
+    {
+        findOverlaps(as(query, "GRangesList"), as(subject, "GRangesList"),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
                      ignore.strand = ignore.strand)
@@ -659,20 +695,30 @@ setMethod("findOverlaps", c("GAlignmentsList", "GAlignmentsList"),
     c("GenomicRanges", "Vector"),
     c("Vector", "GenomicRanges"),
     c("GenomicRanges", "GenomicRanges"),
+
     c("GRangesList", "Vector"),
     c("Vector", "GRangesList"),
     c("GRangesList", "GRangesList"),
+
     c("GAlignments", "Vector"),
     c("Vector", "GAlignments"),
     c("GAlignments", "GAlignments"),
+    c("GAlignments", "GenomicRanges"),
+    c("GenomicRanges", "GAlignments"),
+    c("GAlignments", "GRangesList"),
+    c("GRangesList", "GAlignments"),
+
     c("GAlignmentPairs", "Vector"),
     c("Vector", "GAlignmentPairs"),
-    c("SummarizedExperiment", "Vector"),
-    c("Vector", "SummarizedExperiment"),
-    c("SummarizedExperiment", "SummarizedExperiment"),
+    c("GAlignmentPairs", "GAlignmentPairs"),
+
     c("GAlignmentsList", "Vector"),
     c("Vector", "GAlignmentsList"),
-    c("GAlignmentsList", "GAlignmentsList")
+    c("GAlignmentsList", "GAlignmentsList"),
+
+    c("SummarizedExperiment", "Vector"),
+    c("Vector", "SummarizedExperiment"),
+    c("SummarizedExperiment", "SummarizedExperiment")
 )
 
 setMethods("countOverlaps", .signatures1, .countOverlaps.definition)
