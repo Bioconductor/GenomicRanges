@@ -394,8 +394,8 @@ setAs("Seqinfo", "RangesList",
 
 .compactDataFrame <- function(x)
 {
-    head_nrow <- IRanges:::get_showHeadLines()
-    tail_nrow <- IRanges:::get_showTailLines()
+    head_nrow <- get_showHeadLines()
+    tail_nrow <- get_showTailLines()
     max_nrow <- head_nrow + tail_nrow + 1L
     if (nrow(x) <= max_nrow)
         return(x)

@@ -11,8 +11,8 @@
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
     lx <- length(x)
-    nhead <- IRanges:::get_showHeadLines()
-    ntail <- IRanges:::get_showTailLines()
+    nhead <- get_showHeadLines()
+    ntail <- get_showTailLines()
 
     if (lx < (nhead + ntail + 1L)) {
         ans <- makeNakedMat.FUN(x)
