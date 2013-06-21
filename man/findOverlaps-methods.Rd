@@ -65,15 +65,14 @@
 \alias{countOverlaps,GAlignments,GAlignments-method}
 \alias{countOverlaps,GAlignments,GenomicRanges-method}
 \alias{countOverlaps,GenomicRanges,GAlignments-method}
-
+\alias{countOverlaps,GAlignments,GRangesList-method}
+\alias{countOverlaps,GRangesList,GAlignments-method}
 \alias{countOverlaps,GAlignmentPairs,Vector-method}
 \alias{countOverlaps,Vector,GAlignmentPairs-method}
-##
+\alias{countOverlaps,GAlignmentPairs,GAlignmentPairs-method}
 \alias{countOverlaps,GAlignmentsList,Vector-method}
 \alias{countOverlaps,Vector,GAlignmentsList-method}
 \alias{countOverlaps,GAlignmentsList,GAlignmentsList-method}
-\alias{countOverlaps,GAlignmentsList,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,GAlignmentsList-method}
 
 \alias{overlapsAny,GenomicRanges,GenomicRanges-method}
 \alias{overlapsAny,GRangesList,GenomicRanges-method}
