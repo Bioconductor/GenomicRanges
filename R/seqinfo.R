@@ -23,7 +23,7 @@
 }
 
 ### The dangling seqlevels in 'x' are those seqlevels that the user wants to
-### drop but they are in use.
+### drop but are in use.
 getDanglingSeqlevels <- function(x, new2old=NULL, force=FALSE, new_seqlevels)
 {
     if (!is.character(new_seqlevels) || any(is.na(new_seqlevels)))
@@ -33,10 +33,12 @@ getDanglingSeqlevels <- function(x, new2old=NULL, force=FALSE, new_seqlevels)
     if (is.null(new2old))
         return(character(0))
     new_N <- length(new_seqlevels)
-    old_N <- length(seqlevels(x))
+    old_seqlevels <- seqlevels(x)
+    old_N <- length(old_seqlevels)
     old2new <- .reverseNew2old(new2old, new_N, old_N)
-    dangling_seqlevels <- intersect(unique(seqnames(x)),
-                                    seqlevels(x)[is.na(old2new)])
+    seqlevels_to_drop <- old_seqlevels[is.na(old2new)]
+    seqlevels_in_use <- seqlevelsInUse(x)
+    dangling_seqlevels <- intersect(seqlevels_to_drop, seqlevels_in_use)
     if (!force && length(dangling_seqlevels) != 0L)
         stop("won't drop seqlevels currently in use (",
              paste(dangling_seqlevels, collapse = ", "),
@@ -187,8 +189,30 @@ setReplaceMethod("seqlevels", "ANY",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqlengths0() getter.
+### seqlevelsInUse() getter.
+###
+
+setGeneric("seqlevelsInUse", function(x) standardGeneric("seqlevelsInUse"))
+
+### Covers GenomicRanges and GAlignments objects.
+setMethod("seqlevelsInUse", "Vector",
+    function(x)
+    {
+        f <- runValue(seqnames(x))
+        levels(f)[tabulate(f, nbins=nlevels(f)) != 0L]
+    }
+)
+
+### Covers GRangesList and GAlignmentsList objects.
+setMethod("seqlevelsInUse", "CompressedList",
+    function(x) seqlevelsInUse(x@unlistData)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### seqlevels0() getter.
 ###
 
 ### Currently applicable to TranscriptDb only.

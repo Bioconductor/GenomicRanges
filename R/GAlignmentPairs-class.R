@@ -180,24 +180,28 @@ setReplaceMethod("elementMetadata", "GAlignmentPairs",
     }
 )
 
+setMethod("seqlevelsInUse", "GAlignmentPairs",
+    function(x)
+    {
+        in_use1 <- seqlevelsInUse(x@first)
+        in_use2 <- seqlevelsInUse(x@last)
+        ## We cannot just do union() because we want the returned levels
+        ## to be in the order they appear in 'seqlevels(x)'.
+        intersect(seqlevels(x), union(in_use1, in_use2))
+    }
+)
+
 setReplaceMethod("seqinfo", "GAlignmentPairs",
     function(x, new2old=NULL, force=FALSE, value)
     {
         if (!is(value, "Seqinfo"))
             stop("the supplied 'seqinfo' must be a Seqinfo object")
-        first <- x@first
-        last <- x@last
-        dangling_seqlevels_in_first <- getDanglingSeqlevels(first,
-                                           new2old=new2old, force=force,
-                                           seqlevels(value))
-        dangling_seqlevels_in_last <- getDanglingSeqlevels(last,
-                                           new2old=new2old, force=force,
-                                           seqlevels(value))
-        dangling_seqlevels <- union(dangling_seqlevels_in_first,
-                                    dangling_seqlevels_in_last)
+        dangling_seqlevels <- getDanglingSeqlevels(x,
+                                  new2old=new2old, force=force,
+                                  seqlevels(value))
         if (length(dangling_seqlevels) != 0L) {
-            dropme_in_first <- seqnames(first) %in% dangling_seqlevels_in_first
-            dropme_in_last <- seqnames(last) %in% dangling_seqlevels_in_last
+            dropme_in_first <- seqnames(x@first) %in% dangling_seqlevels
+            dropme_in_last <- seqnames(x@last) %in% dangling_seqlevels
             dropme <- dropme_in_first | dropme_in_last
             x <- x[!dropme]
         }

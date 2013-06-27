@@ -8,6 +8,9 @@
 \alias{seqlevels,ANY-method}
 \alias{seqlevels<-}
 \alias{seqlevels<-,ANY-method}
+\alias{seqlevelsInUse}
+\alias{seqlevelsInUse,Vector-method}
+\alias{seqlevelsInUse,CompressedList-method}
 \alias{seqlevels0}
 \alias{seqlengths}
 \alias{seqlengths,ANY-method}
@@ -50,7 +53,7 @@ seqnames(x) <- value
 
 seqlevels(x)
 seqlevels(x, force=FALSE) <- value
-
+seqlevelsInUse(x)
 seqlevels0(x)
 
 seqlengths(x)
@@ -114,7 +117,8 @@ seqnameStyle(x) <- value
   The \link{Seqinfo} class plays a central role for those generics because:
 
   \itemize{
-  \item It has methods for all those generics (except \code{seqinfo}).
+  \item It has methods for all those generics (except for \code{seqinfo},
+        \code{seqlevelsInUse}, and \code{seqlevels0}).
         That is, the \code{seqnames}, \code{seqlevels}, \code{seqlengths},
         \code{isCircular}, \code{genome} and \code{seqnameStyle} getters
         and setters are defined for \link{Seqinfo} objects.
@@ -173,13 +177,13 @@ seqnameStyle(x) <- value
 \seealso{
   \itemize{
     \item \link{Seqinfo-class}.
-    \item \link{keepSeqlevels}.
-    \item \link{dropSeqlevels}.
-    \item \link{renameSeqlevels}.
+    \item \link{seqlevels-utils}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
     \item \link{GAlignments-class}.
     \item \link{GAlignmentPairs-class}.
+    \item \link{GAlignmentsList-class}.
+    \item \link{SummarizedExperiment-class}.
     \item \link[GenomicFeatures]{TranscriptDb-class}.
   }
 }

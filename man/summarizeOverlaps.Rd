@@ -49,7 +49,8 @@
     \code{singleEnd} argument. Currently \code{singleEnd} is set once for 
     all files in the list (i.e., the list cannot contain both single and 
     paired-end read files.). For examples of iterating over Bam files 
-    See ?\code{summarizeOverlaps,GRanges,BamFileList-method}.
+    See \code{?`summarizeOverlaps,GRanges,BamFileList-method`} in the
+    \pkg{Rsamtools} package.
   }
   \item{mode}{
     Character name of a function that defines the counting method to be used. 

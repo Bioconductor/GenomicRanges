@@ -1,5 +1,6 @@
 \name{utils}
 \docType{methods}
+\alias{seqlevels-utils}
 \alias{keepSeqlevels}
 \alias{dropSeqlevels}
 \alias{renameSeqlevels}

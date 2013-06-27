@@ -230,6 +230,12 @@ setMethod(seqinfo, "SummarizedExperiment",
     seqinfo(rowData(x))
 })
 
+setMethod("seqlevelsInUse", "SummarizedExperiment",
+    function(x)
+{
+    seqlevelsInUse(rowData(x))
+})
+
 setReplaceMethod("seqinfo", "SummarizedExperiment",
     function (x, new2old = NULL, force = FALSE, value)
 {

@@ -29,6 +29,7 @@
 \alias{isProperPair,GAlignmentPairs-method}
 \alias{elementMetadata<-,GAlignmentPairs-method}
 \alias{seqinfo,GAlignmentPairs-method}
+\alias{seqlevelsInUse,GAlignmentPairs-method}
 \alias{seqinfo<-,GAlignmentPairs-method}
 
 % Vector methods:
