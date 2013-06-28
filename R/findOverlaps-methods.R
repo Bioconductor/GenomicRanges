@@ -20,6 +20,10 @@
         return(findOverlaps(query, subject,
                             maxgap=maxgap, minoverlap=minoverlap,
                             type=type, select="all"))
+    q_len <- length(query)
+    s_len <- length(subject)
+    if (q_len == 0L || s_len == 0L)
+        return(new("Hits", queryLength=q_len, subjectLength=s_len))
     if (type != "any")
         stop("overlap type \"", type, "\" is not yet supported ",
              "for circular sequence ", names(circle.length))
