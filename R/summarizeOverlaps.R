@@ -108,6 +108,8 @@ Union <- function(features, reads, ignore.strand=FALSE, inter.feature=TRUE)
     countQueryHits(ov)
 }
 
+## Drop from 'reads' circular seqlevels that are in use in *both*: 'reads'
+## and 'features'.
 .dropCircularSeqlevelsInUse <- function(reads, features)
 {
     seqlevels_in_use <- intersect(seqlevelsInUse(reads),
