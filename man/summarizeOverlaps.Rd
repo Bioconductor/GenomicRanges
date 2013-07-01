@@ -28,6 +28,11 @@
     features, reads, mode, ignore.strand=FALSE, ..., inter.feature=TRUE) 
   \S4method{summarizeOverlaps}{GRangesList,GAlignmentPairs}(
     features, reads, mode, ignore.strand=FALSE, ..., inter.feature=TRUE) 
+
+  ## mode funtions
+  Union(features, reads, ignore.strand=FALSE, inter.feature=TRUE)
+  IntersectionStrict(features, reads, ignore.strand=FALSE, inter.feature=TRUE)
+  IntersectionNotEmpty(features, reads, ignore.strand=FALSE, inter.feature=TRUE)
 }
 
 \arguments{

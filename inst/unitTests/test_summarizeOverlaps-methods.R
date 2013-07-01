@@ -150,6 +150,10 @@ test_summarizeOverlaps_IntersectionNotEmpty_single <- function()
     ga <- GAlignments("chr1", 28L, "5M", strand("+"))
     res <- summarizeOverlaps(ann, ga, mode)
     checkIdentical(c(1L, 0L, 0L), .getCounts(res))
+    ## ignore.strand
+    ann <- GRanges("chr1", IRanges(c(5, 1), end=c(10, 6)), strand=c("+", "-"))
+    reads <- GRanges("chr1", IRanges(2, 2), strand="+")
+    checkIdentical(c(0L, 1L), IntersectionNotEmpty(ann, reads, TRUE))
 }
 
 test_summarizeOverlaps_IntersectionNotEmpty_paired <- function()

@@ -16,6 +16,21 @@ setGeneric("summarizeOverlaps", signature=c("features", "reads"),
 ## GAlignments, GAlignmentsList and GAlignmentPairs methods
 ##
 
+.dispatchOverlaps <-
+    function(features, reads, mode, ignore.strand, inter.feature, ...)
+{
+    if (ignore.strand) {
+        if (class(features) == "GRangesList") {
+            r <- unlist(features)
+            strand(r) <- "*"
+            features@unlistData <- r
+        } else {
+            strand(features) <- "*"
+        } 
+    }
+    mode(features, reads, ignore.strand, inter.feature=inter.feature)
+}
+
 .summarizeOverlaps <- function(features, reads, mode, ignore.strand,
                                ..., inter.feature=inter.feature)
 {
@@ -82,122 +97,72 @@ setMethod("summarizeOverlaps", c("GRangesList", "GAlignmentPairs"),
 ## 'mode' functions 
 ##
 
-Union <- function(features, reads, ignore.strand=FALSE, ...,
-                  inter.feature=TRUE)
+Union <- function(features, reads, ignore.strand=FALSE, inter.feature=TRUE)
 {
-    co <- countOverlaps(reads, features, ignore.strand=ignore.strand)
-    idx <- co == 1
-    if (sum(co) == 0)
-        return(integer(length(features)))
-    if (inter.feature)
-        reads <- reads[idx]
+    ov <- findOverlaps(features, reads, ignore.strand=ignore.strand)
+    if (inter.feature) {
+        ## Remove ambigous reads.
+        reads_to_keep <- which(countSubjectHits(ov) == 1L)
+        ov <- ov[subjectHits(ov) %in% reads_to_keep]
+    }
+    countQueryHits(ov)
+}
 
-    countOverlaps(features, reads, ignore.strand=ignore.strand)
+.dropCircularSeqlevelsInUse <- function(reads, features)
+{
+    seqlevels_in_use <- intersect(seqlevelsInUse(reads),
+                                  seqlevelsInUse(features))
+    seqinfo <- merge(seqinfo(reads), seqinfo(features))
+    is_circ <- isCircular(seqinfo)
+    circular_seqlevels <- names(is_circ)[is_circ]
+    seqlevels_to_drop <- intersect(seqlevels_in_use, circular_seqlevels)
+    if (length(seqlevels_to_drop) != 0L) {
+        warning("reads on circular sequence(s) '",
+                paste(seqlevels_to_drop, sep="', '"),
+                "' were ignored")
+        seqlevels(reads, force=TRUE) <- setdiff(seqlevels(reads),
+                                                seqlevels_to_drop)
+    }
+    reads
 }
 
 IntersectionStrict <- function(features, reads, ignore.strand=FALSE, 
-                               ..., inter.feature=TRUE)
+                               inter.feature=TRUE)
 {
-    queryseq <- seqlevels(reads)
-    circular <- isCircular(features)
-    circNames <- intersect(queryseq, names(circular)[circular])
-    if (0L != length(circNames)) {
-        warning("circular sequence(s) in reads '",
-                paste(circNames, sep="' '"), "' ignored")
-        if (any(keep <- !seqlevels(reads) %in% circNames))
-            #reads <- keepSeqlevels(reads, seqlevels(reads)[keep])
-            reads <- reads[seqlevels(reads)[keep]]
-        else
-            return(integer(length(features)))
-    }
- 
-    fo <- findOverlaps(reads, features, type="within",
+    reads <- .dropCircularSeqlevelsInUse(reads, features)
+    ov <- findOverlaps(reads, features, type="within",
                        ignore.strand=ignore.strand)
-
     if (inter.feature) {
-        ## omit reads that fall 'within' >1 feature
-        qh <- countQueryHits(fo)
-        if (!any(qh == 1L))
-            return(integer(length(features)))
-        unqfo <- fo[queryHits(fo) %in% seq_along(reads)[qh == 1L]]
-        rle <- Rle(sort(subjectHits(unqfo)))
-        counts <- rep(0, length(features))
-        counts[runValue(rle)] <- runLength(rle)
-        counts
-    } else {
-        countSubjectHits(fo)
+        ## Remove ambigous reads.
+        reads_to_keep <- which(countQueryHits(ov) == 1L)
+        ov <- ov[queryHits(ov) %in% reads_to_keep]
     }
+    countSubjectHits(ov)
+}
+
+.removeSharedRegions <- function(features, ignore.strand=FALSE)
+{
+    if (is(features, "GRanges")) {
+        regions <- disjoin(features, ignore.strand=ignore.strand)
+    } else if (is(features, "GRangesList")) {
+        regions <- disjoin(features@unlistData, ignore.strand=ignore.strand)
+    } else {
+        stop("internal error")  # should never happen
+    }
+    ov <- findOverlaps(features, regions, ignore.strand=ignore.strand)
+    regions_to_keep <- which(countSubjectHits(ov) == 1L)
+    ov <- ov[subjectHits(ov) %in% regions_to_keep]
+    ov2feature <- queryHits(ov)
+    ans_flesh <- regions[subjectHits(ov)]
+    ans_eltlens <- tabulate(ov2feature, nbins=length(features))
+    ans_skeleton <- PartitioningByEnd(cumsum(ans_eltlens))
+    relist(ans_flesh, ans_skeleton)
 }
 
 IntersectionNotEmpty <-  function(features, reads, ignore.strand=FALSE, 
-                                  ..., inter.feature=TRUE)
-{
-    co <- countOverlaps(reads, features, ignore.strand=ignore.strand)
-    if (sum(co) == 0)
-        return(integer(length(features)))
-
-    .IntersectionNotEmpty(reads, features, ignore.strand,
-                              inter.feature=inter.feature)
-        #countOverlaps(features, reads, ignore.strand=ignore.strand)
-}
-
-## -------------------------------------------------------------------------
-## non-exported helpers 
-##
-
-.dispatchOverlaps <-
-    function(features, reads, mode, ignore.strand, inter.feature, ...)
-{
-    if (ignore.strand) {
-        if (class(features) == "GRangesList") {
-            r <- unlist(features)
-            strand(r) <- "*"
-            features@unlistData <- r
-        } else {
-            strand(features) <- "*"
-        } 
-    }
-    mode(features, reads, ignore.strand, inter.feature=inter.feature)
-}
-
-.IntersectionNotEmpty <- function(reads, features, ignore.strand=FALSE,
                                   inter.feature=TRUE)
 {
-    ## overlaps with unique disjoint regions
-    if (class(features) == "GRangesList")
-        d <- disjoin(features@unlistData, ignore.strand=ignore.strand)
-    else
-        d <- disjoin(features)
-    coUnq <- countOverlaps(d, features, ignore.strand=ignore.strand)
-    ud <- d[coUnq == 1]
-    foUD <- findOverlaps(reads, ud, ignore.strand=ignore.strand)
-
-    ## map unique disjoint regions back to original features
-    foFeatures <- findOverlaps(features, ud, ignore.strand=ignore.strand)
-    featuresMap <-
-        as.matrix(foFeatures)[order(subjectHits(foFeatures)), 1L]
-    backMapFeatures <- featuresMap[subjectHits(foUD)]
-    mm <- data.frame(query=queryHits(foUD), subject=backMapFeatures)
-
-    queryRle <- Rle(mm$query)
-    ## reads / fragments hit 1 unique disjoint region
-    qsingle <- runValue(queryRle)[runLength(queryRle) == 1]
-    singlehits <- mm$subject[mm$query %in% qsingle]
-    ## reads / fragments hit >1 unique disjoint region from same feature
-    qmulti <- runValue(queryRle)[runLength(queryRle) > 1]
-    multi <- mm[mm$query %in% qmulti, ]
-    lst <- split(multi$subject, multi$query)
-    unq <- lapply(lst, unique)
-    if (inter.feature)  ## count if hits a single feature 
-        unq[elementLengths(unq) != 1L] <- NA_integer_
-    multihits <- do.call(c, unq)
-
-    ## combine results
-    regions <- c(singlehits, multihits) 
-    counts <- rep(0, length(features))
-    if (length(regions) == 0)
-        return(counts)
-    countsRle <- Rle(sort(regions))
-    counts[runValue(countsRle)] <- runLength(countsRle) 
-    counts
+    features <- .removeSharedRegions(features, ignore.strand=ignore.strand)
+    Union(features, reads, ignore.strand=ignore.strand,
+           inter.feature=inter.feature)
 }
