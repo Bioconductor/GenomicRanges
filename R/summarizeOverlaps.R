@@ -154,9 +154,8 @@ IntersectionStrict <- function(features, reads, ignore.strand=FALSE,
     ov <- findOverlaps(features, regions, ignore.strand=ignore.strand)
     regions_to_keep <- which(countSubjectHits(ov) == 1L)
     ov <- ov[subjectHits(ov) %in% regions_to_keep]
-    ov2feature <- queryHits(ov)
     ans_flesh <- regions[subjectHits(ov)]
-    ans_eltlens <- tabulate(ov2feature, nbins=length(features))
+    ans_eltlens <- countQueryHits(ov)
     ans_skeleton <- PartitioningByEnd(cumsum(ans_eltlens))
     relist(ans_flesh, ans_skeleton)
 }
