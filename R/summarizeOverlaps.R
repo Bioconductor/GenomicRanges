@@ -155,9 +155,9 @@ IntersectionStrict <- function(features, reads, ignore.strand=FALSE,
     regions_to_keep <- which(countSubjectHits(ov) == 1L)
     ov <- ov[subjectHits(ov) %in% regions_to_keep]
     ans_flesh <- regions[subjectHits(ov)]
-    ### Using 'countQueryHits(ov)' to compute the skeleton of the answer relies
-    ### on the assumption that the hits returned by findOverlaps() are always
-    ### ordered by query first and then by subject.
+    ## Using 'countQueryHits(ov)' to compute the skeleton of 'ans' relies
+    ## on the assumption that the hits returned by findOverlaps() are always
+    ## ordered by query.
     ans_eltlens <- countQueryHits(ov)
     ans_skeleton <- PartitioningByEnd(cumsum(ans_eltlens))
     relist(ans_flesh, ans_skeleton)
