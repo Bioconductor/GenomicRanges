@@ -31,6 +31,8 @@
 \alias{countOverlaps,GRangesList,Vector-method}
 \alias{countOverlaps,Vector,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
+\alias{countOverlaps,GRanges,GRangesList-method}
+\alias{countOverlaps,GRangesList,GRanges-method}
 \alias{countOverlaps,GAlignments,Vector-method}
 \alias{countOverlaps,Vector,GAlignments-method}
 \alias{countOverlaps,GAlignments,GAlignments-method}

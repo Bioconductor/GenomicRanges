@@ -703,6 +703,8 @@ setMethod("findOverlaps", c("GAlignmentsList", "GAlignmentsList"),
     c("GRangesList", "Vector"),
     c("Vector", "GRangesList"),
     c("GRangesList", "GRangesList"),
+    c("GRanges", "GRangesList"),
+    c("GRangesList", "GRanges"),
 
     c("GAlignments", "Vector"),
     c("Vector", "GAlignments"),
