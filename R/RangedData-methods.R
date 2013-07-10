@@ -12,7 +12,7 @@ setMethod("seqinfo", "List", function(x) {
   if (is.null(si)) {
     sn <- names(x)
     if (is.null(sn))
-      sn <- as.character(seq(length(x)))
+      sn <- as.character(seq_len(length(x)))
     si <- Seqinfo(unique(sn))
   }
   si  
