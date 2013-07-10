@@ -81,6 +81,8 @@
             ans_mcols[["mapping"]] <- mapping_unlisted2
         }
     }
+    if (length(extraColumnSlotNames(x)) > 0L)
+        x <- new("GRanges", x)
     update(x, seqnames=ans_seqnames,
               ranges=ans_ranges,
               strand=ans_strand,
@@ -102,6 +104,8 @@
     listNameMatrix <- matrix(as.character(unlist(splitListNames)), nrow=2L)
     ansSeqnames <- Rle(factor(listNameMatrix[1L, ], levels=seqlevels(x)), k)
     ansStrand <- Rle(strand(listNameMatrix[2L, ]), k)
+    if (length(extraColumnSlotNames(x)) > 0L)
+        x <- new("GRanges", x)
     update(x, seqnames=ansSeqnames,
            ranges=unlist(ansIRangesList, use.names=FALSE),
            strand=ansStrand,

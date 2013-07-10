@@ -60,6 +60,20 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
 #setMethod("constraint", "GenomicRanges", function(x) x@constraint)
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Extra column slots (implemented by subclasses)
+###
+
+extraColumnSlots <- function(x) {
+  sapply(extraColumnSlotNames(x), slot, object = x, simplify = FALSE)
+}
+
+extraColumnSlotsAsDF <- function(x) DataFrame(extraColumnSlots(x))
+
+setGeneric("extraColumnSlotNames",
+           function(x) standardGeneric("extraColumnSlotNames"))
+
+setMethod("extraColumnSlotNames", "ANY", function(x) character())
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
@@ -74,11 +88,13 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 .valid.GenomicRanges.length <- function(x)
 {
     n <- length(seqnames(x))
-    if ((length(ranges(x)) != n)
-     || (length(strand(x)) != n)
-     || (nrow(mcols(x)) != n))
-        return("slot lengths are not all equal")
-    NULL
+    checkSlotLength <- function(name) {
+        if (NROW(slot(x, name)) != n)
+            paste0("length of '", name, "' != length(object)")
+    }
+    do.call(c, lapply(c("ranges", "strand", "elementMetadata",
+                        extraColumnSlotNames(x)),
+                      checkSlotLength))
 }
 
 .valid.GenomicRanges.seqnames <- function(x)
@@ -165,6 +181,14 @@ valid.GenomicRanges.seqinfo <- function(x)
     NULL
 }
 
+## For convenience, validate the extra column slots that are virtual
+## classes. Since they are not directly constructed, any validity
+## checks specific to the virtual class have probably not been called.
+.valid.GenomicRanges.ecs <- function(x) {
+  virtuals <- Filter(isVirtualClass, getSlots(class(x))[extraColumnSlotNames(x)])
+  unlist(lapply(names(virtuals), function(nm) validObject(slot(x, nm))))
+}
+
 .valid.GenomicRanges <- function(x)
 {
     c(.valid.GenomicRanges.length(x),
@@ -172,7 +196,8 @@ valid.GenomicRanges.seqinfo <- function(x)
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.mcols(x),
-      valid.GenomicRanges.seqinfo(x))
+      valid.GenomicRanges.seqinfo(x),
+      .valid.GenomicRanges.ecs(x))
       #checkConstraint(x, constraint(x)))
 }
 
@@ -186,8 +211,12 @@ setValidity2("GenomicRanges", .valid.GenomicRanges)
 setAs("GenomicRanges", "RangedData",
     function(from)
     {
+        mcols <- mcols(from)
+        ecs <- extraColumnSlotsAsDF(from)
+        if (length(ecs))
+          mcols <- cbind(mcols, ecs)
         rd <- RangedData(ranges(from), strand=strand(from),
-                         mcols(from), space=seqnames(from))
+                         mcols, space=seqnames(from))
         mcols(ranges(rd)) <- DataFrame(seqlengths=seqlengths(from),
                                        isCircular=isCircular(from),
                                        genome=genome(from))
@@ -201,8 +230,11 @@ setAs("GenomicRanges", "RangesList",
     function(from)
     {
         rl <- split(ranges(from), seqnames(from))
-        mcols_list <- split(DataFrame(strand=strand(from), mcols(from)),
-                            seqnames(from))
+        strand_mcols <- DataFrame(strand=strand(from), mcols(from))
+        ecs <- extraColumnSlotsAsDF(from)
+        if (length(ecs))
+          strand_mcols <- cbind(strand_mcols, ecs)
+        mcols_list <- split(strand_mcols, seqnames(from))
         rl <- mendoapply(function(ranges, metadata) {
           mcols(ranges) <- metadata
           ranges
@@ -224,12 +256,15 @@ setMethod("as.data.frame", "GenomicRanges",
             row.names <- names(x)
         if (!is.null(names(x)))
             names(x) <- NULL
+        mcols_df <- as.data.frame(mcols(x), ...)
+        if (length(extraColumnSlotNames(x)) > 0L)
+            mcols_df <- cbind(as.data.frame(extraColumnSlots(x), ...), mcols_df)
         data.frame(seqnames=as.factor(seqnames(x)),
                    start=start(x),
                    end=end(x),
                    width=width(x),
                    strand=as.factor(strand(x)),
-                   as.data.frame(mcols(x), ...),
+                   mcols_df,
                    row.names=row.names,
                    stringsAsFactors=FALSE)
     }
@@ -390,25 +425,23 @@ setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
 ### initialize. Reference classes will want to override 'update'. Other
 ### external representations need further customization.
 
-setMethod("update", "GenomicRanges",  # not exported
-    function(object, ..., check=TRUE)
-    {
-        initialize(object, ...)
-    }
-)
-
 setGeneric("clone", function(x, ...) standardGeneric("clone"))  # not exported
 
 setMethod("clone", "ANY",  # not exported
     function(x, ...)
     {
         if (nargs() > 1L)
-            initialize(x, ...)
+            update(x, ...)
         else
             x
     }
 )
 
+setMethod("update", "GenomicRanges",
+          function(object, ...)
+          {
+            BiocGenerics:::updateS4(object, ...)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Ranges methods.
@@ -482,7 +515,7 @@ setReplaceMethod("width", "GenomicRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting and combining.
 ###
-
+        
 setMethod("[", "GenomicRanges",
     function(x, i, j, ..., drop)
     {
@@ -499,6 +532,7 @@ setMethod("[", "GenomicRanges",
         ans_seqnames <- seqnames(x)[i]
         ans_ranges <- ranges(x)[i]
         ans_strand <- strand(x)[i]
+        ans_ecs <- lapply(extraColumnSlots(x), IRanges:::extractROWS, i)
         if (missing(j)) {
             ans_mcols <- x_mcols[i, , drop=FALSE]
         } else {
@@ -507,7 +541,8 @@ setMethod("[", "GenomicRanges",
         clone(x, seqnames=ans_seqnames,
                  ranges=ans_ranges,
                  strand=ans_strand,
-                 elementMetadata=ans_mcols)
+                 elementMetadata=ans_mcols,
+                 .slotList=ans_ecs)
     }
 )
 
@@ -526,6 +561,10 @@ setReplaceMethod("[", "GenomicRanges",
             if (!is.null(iInfo[["msg"]]))
                 stop(iInfo[["msg"]])
         }
+        value_ecs <- extraColumnSlots(value)
+        x_ecs <- extraColumnSlots(x)
+        new_ecs <- value_ecs[!names(value_ecs) %in% names(x_ecs)]
+        ecs_to_replace <- intersect(names(value_ecs), names(x_ecs))        
         if (missing(i) || !iInfo[["useIdx"]]) {
             seqnames[] <- seqnames(value)
             ranges[] <- ranges(value)
@@ -534,6 +573,9 @@ setReplaceMethod("[", "GenomicRanges",
                 ans_mcols[ , ] <- mcols(value, FALSE)
             else
                 ans_mcols[ , j] <- mcols(value, FALSE)
+            if (length(new_ecs > 0L))
+                ans_mcols[names(new_ecs)] <- DataFrame(new_ecs)
+            x_ecs[ecs_to_replace] <- value_ecs[ecs_to_replace]
         } else {
             i <- iInfo[["idx"]]
             seqnames[i] <- seqnames(value)
@@ -543,9 +585,16 @@ setReplaceMethod("[", "GenomicRanges",
                 ans_mcols[i, ] <- mcols(value, FALSE)
             else
                 ans_mcols[i, j] <- mcols(value, FALSE)
+            if (length(new_ecs > 0L))
+                ans_mcols[i, names(new_ecs)] <- DataFrame(new_ecs)
+            if (length(ecs_to_replace) > 0L) {
+              x_ecs <- DataFrame(x_ecs)
+              x_ecs[i, ecs_to_replace] <- DataFrame(value_ecs[ecs_to_replace])
+            }
         }
         update(x, seqnames=seqnames, ranges=ranges,
-               strand=strand, elementMetadata=ans_mcols)
+               strand=strand, elementMetadata=ans_mcols,
+               .slotList=as.list(x_ecs))
     }
 )
 
@@ -564,8 +613,15 @@ setReplaceMethod("[", "GenomicRanges",
     } else {
         ans_mcols <- do.call(rbind, lapply(x, mcols, FALSE))
     }
-    new(ans_class, seqnames=ans_seqnames, ranges=ans_ranges, strand=ans_strand,
-                   elementMetadata=ans_mcols, seqinfo=ans_seqinfo)
+    if (length(extraColumnSlotNames(x[[1L]])) > 0L) {
+        ans_ecs <- do.call(rbind, lapply(x, extraColumnSlotsAsDF))
+        do.call(new, c(list(ans_class, seqnames=ans_seqnames, ranges=ans_ranges,
+                            strand=ans_strand, elementMetadata=ans_mcols,
+                            seqinfo=ans_seqinfo), ans_ecs))
+    } else {
+        new(ans_class, seqnames=ans_seqnames, ranges=ans_ranges,
+            strand=ans_strand, elementMetadata=ans_mcols, seqinfo=ans_seqinfo)
+    }
 }
 
 setMethod("c", "GenomicRanges",
@@ -598,7 +654,8 @@ setMethod("seqselect", "GenomicRanges",
               seqnames=seqselect(seqnames(x), ir),
               ranges=ranges,
               strand=seqselect(strand(x), ir),
-              elementMetadata=seqselect(elementMetadata(x, FALSE), ir))
+              elementMetadata=seqselect(elementMetadata(x, FALSE), ir),
+              .slotList=lapply(extraColumnSlots(x), seqselect, ir))
     }
 )
 
@@ -633,9 +690,16 @@ setReplaceMethod("seqselect", "GenomicRanges",
             seqselect(ranges, ir) <- ranges(value)
             seqselect(strand, ir) <- as.factor(strand(value))
             seqselect(mcols, ir) <- mcols(value)
+            ecs <- extraColumnSlotsAsDF(x)
+            value_ecs <- extraColumnSlotsAsDF(value)
+            if (!identical(names(ecs), names(value_ecs)))
+                stop("extra column slots inconsistent between 'x' and 'value'")
+            if (length(ecs) > 0L)
+                seqselect(ecs, ir) <- value_ecs
             update(x, seqnames=Rle(seqnames), ranges=ranges, 
                    strand=Rle(strand),
-                   elementMetadata=mcols)
+                   elementMetadata=mcols,
+                   .slotList=as.list(ecs))
         }
     }
 )
@@ -657,7 +721,10 @@ setMethod("window", "GenomicRanges",
                elementMetadata=window(elementMetadata(x, FALSE),
                                       start=start, end=end,
                                       width=width, frequency=frequency,
-                                      delta=delta))
+                                      delta=delta),
+               .slotList=lapply(extraColumnSlots(x), window, start=start,
+                                end=end, width=width, frequency=frequency,
+                                delta=delta))
     }
 )
 
@@ -699,6 +766,12 @@ setReplaceMethod("$", "GenomicRanges",
     ans <- cbind(seqnames=as.character(seqnames(x)),
                  ranges=IRanges:::showAsCell(ranges(x)),
                  strand=as.character(strand(x)))
+    extraColumnNames <- extraColumnSlotNames(x)
+    if (length(extraColumnNames) > 0L) {
+      
+      extraColumnSlots <- lapply(extraColumnSlots, showAsCell)
+      ans <- do.call(cbind, c(list(ans), extraColumnSlots))
+    }
     if (nc > 0L) {
         tmp <- do.call(data.frame, c(lapply(mcols(x),
                                             IRanges:::showAsCell),
@@ -718,7 +791,7 @@ showGenomicRanges <- function(x, margin="",
         " and ",
         nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
-    out <- makePrettyMatrixForCompactPrinting(x,
+    out <- IRanges:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
     if (with.classinfo) {
         .COL2CLASS <- c(
@@ -726,6 +799,8 @@ showGenomicRanges <- function(x, margin="",
             ranges="IRanges",
             strand="Rle"
         )
+        extraColumnNames <- extraColumnSlotNames(x)
+        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extraColumnNames])
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
@@ -745,4 +820,3 @@ setMethod("show", "GenomicRanges",
         showGenomicRanges(object, margin="  ",
                           with.classinfo=TRUE, print.seqlengths=TRUE)
 )
-
