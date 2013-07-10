@@ -129,42 +129,6 @@ GRanges <-
                           seqinfo = seqinfo)
 }
 
-.unsafe.update.GRanges <- function(x, ...)
-{
-    valid_argnames <- slotNames(x)
-    args <- IRanges:::extraArgsAsList(valid_argnames, ...)
-    firstTime <- TRUE
-    for (nm in names(args)) {
-        ## Too risky! identical() is not reliable enough e.g. with objects
-        ## that contain external pointers. For example, DNAStringSet("A") and
-        ## DNAStringSet("T") are considered to be identical! identical() needs
-        ## to be fixed first.
-        #if (identical(slot(x, nm), args[[nm]]))
-        #    next
-        if (firstTime) {
-            ## Triggers a copy.
-            slot(x, nm, check=FALSE) <- args[[nm]]
-            firstTime <- FALSE
-        } else {
-            ## In-place modification (i.e. no copy).
-            `slot<-`(x, nm, check=FALSE, args[[nm]])
-        }
-    }
-    x
-}
-
-setMethod("update", "GRanges",  # not exported
-    function(object, ..., check=TRUE)
-    {
-        if (!isTRUEorFALSE(check)) 
-            stop("'check' must be TRUE or FALSE")
-        object <- .unsafe.update.GRanges(object, ...)
-        if (check)
-            validObject(object)
-        object
-    }
-)
-
 setMethod("updateObject", "GRanges",
     function(object, ..., verbose=FALSE)
     {
