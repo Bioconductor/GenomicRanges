@@ -239,13 +239,6 @@ setMethod("pintersect", c("GRanges", "GAlignments"),
     }
 )
 
-setMethod("pintersect", c("GAlignments", "GAlignments"),
-          function(x, y, ...)
-          {
-            callGeneric(x, granges(y))
-          }
-          )
-
 setMethod("pintersect", c("GRangesList", "GRangesList"),
           function(x, y, ...)
           {
