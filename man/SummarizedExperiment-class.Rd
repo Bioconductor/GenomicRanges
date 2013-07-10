@@ -236,7 +236,7 @@ exptData(x, ...) <- value
     and \code{matrix}, arguments identical to those of the
     \code{SimpleList} method.
 
-    For \code{assay}, \code{...} may contain \code{withNames}, which is
+    For \code{assay}, \code{...} may contain \code{withDimnames}, which is
     forwarded to \code{assays}.
 
     For \code{cbind, rbind}, \code{...} contains \code{SummarizedExperiment}
