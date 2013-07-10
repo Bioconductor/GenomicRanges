@@ -321,7 +321,7 @@ test_GRanges_seqlengths <- function()
     checkException(seqlengths(gr1) <- 1:10, silent=TRUE)
 
     val <- seqlengths(gr1)
-    val[] <- c(10L, 20L, 30L)
+    val[] <- c(10L, 20L, 30L, 10L)
     seqlengths(gr1) <- val
     checkIdentical(val, seqlengths(gr1))
 }
