@@ -621,7 +621,7 @@ showGAlignments <- function(x, margin="",
         " and ",
         nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
-    out <- makePrettyMatrixForCompactPrinting(x,
+    out <- IRanges:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGAlignments)
     if (with.classinfo) {
         .COL2CLASS <- c(
