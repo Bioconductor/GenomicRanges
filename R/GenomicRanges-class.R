@@ -768,9 +768,8 @@ setReplaceMethod("$", "GenomicRanges",
                  strand=as.character(strand(x)))
     extraColumnNames <- extraColumnSlotNames(x)
     if (length(extraColumnNames) > 0L) {
-      
-      extraColumnSlots <- lapply(extraColumnSlots, showAsCell)
-      ans <- do.call(cbind, c(list(ans), extraColumnSlots))
+        ans <- do.call(cbind,
+                       c(list(ans), lapply(extraColumnSlots(x), showAsCell)))
     }
     if (nc > 0L) {
         tmp <- do.call(data.frame, c(lapply(mcols(x),
