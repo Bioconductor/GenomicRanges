@@ -392,6 +392,12 @@ setMethod("updateObject", "GAlignments",
     }
 )
 
+setMethod("update", "GAlignments",
+          function(object, ...)
+          {
+            BiocGenerics:::updateS4(object, ...)
+          })
+
 readGAlignments <- function(file, format="BAM", use.names=FALSE, ...)
 {
     if (!isSingleString(format))
