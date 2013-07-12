@@ -68,7 +68,10 @@ extraColumnSlots <- function(x) {
   sapply(extraColumnSlotNames(x), slot, object = x, simplify = FALSE)
 }
 
-extraColumnSlotsAsDF <- function(x) DataFrame(extraColumnSlots(x))
+extraColumnSlotsAsDF <- function(x) {
+  ## low-level fast path; otherwise, would need to wrap some things with I()
+  new("DataFrame", listData = extraColumnSlots(x), nrows = length(x))
+}
 
 setGeneric("extraColumnSlotNames",
            function(x) standardGeneric("extraColumnSlotNames"))
@@ -561,8 +564,8 @@ setReplaceMethod("[", "GenomicRanges",
             if (!is.null(iInfo[["msg"]]))
                 stop(iInfo[["msg"]])
         }
-        value_ecs <- extraColumnSlots(value)
-        x_ecs <- extraColumnSlots(x)
+        value_ecs <- extraColumnSlotsAsDF(value)
+        x_ecs <- extraColumnSlotsAsDF(x)
         new_ecs <- value_ecs[!names(value_ecs) %in% names(x_ecs)]
         ecs_to_replace <- intersect(names(value_ecs), names(x_ecs))        
         if (missing(i) || !iInfo[["useIdx"]]) {
@@ -573,8 +576,8 @@ setReplaceMethod("[", "GenomicRanges",
                 ans_mcols[ , ] <- mcols(value, FALSE)
             else
                 ans_mcols[ , j] <- mcols(value, FALSE)
-            if (length(new_ecs > 0L))
-                ans_mcols[names(new_ecs)] <- DataFrame(new_ecs)
+            if (length(new_ecs) > 0L)
+                ans_mcols[names(new_ecs)] <- new_ecs
             x_ecs[ecs_to_replace] <- value_ecs[ecs_to_replace]
         } else {
             i <- iInfo[["idx"]]
@@ -585,11 +588,10 @@ setReplaceMethod("[", "GenomicRanges",
                 ans_mcols[i, ] <- mcols(value, FALSE)
             else
                 ans_mcols[i, j] <- mcols(value, FALSE)
-            if (length(new_ecs > 0L))
+            if (length(new_ecs) > 0L)
                 ans_mcols[i, names(new_ecs)] <- DataFrame(new_ecs)
             if (length(ecs_to_replace) > 0L) {
-              x_ecs <- DataFrame(x_ecs)
-              x_ecs[i, ecs_to_replace] <- DataFrame(value_ecs[ecs_to_replace])
+              x_ecs[i, ecs_to_replace] <- value_ecs[ecs_to_replace]
             }
         }
         update(x, seqnames=seqnames, ranges=ranges,
