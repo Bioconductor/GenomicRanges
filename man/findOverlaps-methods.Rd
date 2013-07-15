@@ -2,6 +2,7 @@
 \alias{findOverlaps-methods}
 
 \alias{findOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{findOverlaps,GenomicRanges,GIntervalTree-method}
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GRangesList-method}
 \alias{findOverlaps,GRangesList,GRangesList-method}
@@ -202,9 +203,8 @@
 \title{Finding overlapping genomic ranges}
 
 \description{
-  Finds interval overlaps between a \link{GRanges}, \link{GRangesList},
-  \link{GAlignments}, \link{GAlignmentPairs}, or \link{GAlignmentsList}
-  object, and another object containing ranges.
+  Finds interval overlaps between a \link{GRanges}, \link{GIntervalTree}, \link{GRangesList}, \link{GAlignments}, \link{GAlignmentPairs}, 
+  or \link{GAlignmentsList} object, and another object containing ranges.
 }
 
 \usage{
@@ -232,7 +232,9 @@
     A \link{GRanges}, \link{GRangesList}, \link{GAlignments},
     \link{GAlignmentPairs}, or \link{GAlignmentsList} object. 
     \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
-    also accepted for one of \code{query} or \code{subject}.
+    also accepted for one of \code{query} or \code{subject}. When
+    \code{query} is a \link{GRanges} or \link{GRangesList} then 
+    \code{subject} can be a \link{GIntervalTree} object.
   }
   \item{maxgap, minoverlap, type, select}{
     See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
@@ -276,6 +278,11 @@
   When the query is a \link{GAlignmentPairs} object, it is first
   turned into a \link{GRangesList} object (with \code{as( , "GRangesList")})
   and then the rules described previously apply.
+
+  When the query is a \link{GRanges} or \link{GRangesList} object then
+  the \link{subject} can be a \link{GIntervalTree} object. For repeated queries against the same subject, it is more efficient to create a \code{GIntervalTree} once for the subject using the \link{GIntervalTree} constructor described below and then perform the queries against
+  the \code{GIntervalTree} instance. Note that \link{GIntervalTree}
+  objects are not supported for circular genomes.
 }
 
 \value{
@@ -299,7 +306,7 @@
   has to give).
 }
 
-\author{P. Aboyoun, S. Falcon, M. Lawrence, N. Gopalakrishnan and H. Pages}
+\author{P. Aboyoun, S. Falcon, M. Lawrence, N. Gopalakrishnan H. Pages and H. Corrada Bravo}
 
 \seealso{
   \itemize{
@@ -307,6 +314,7 @@
     \item \link[IRanges]{Hits-class}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
+    \item \link{GIntervalTree-class}.
     \item \link{GAlignments-class}.
     \item \link{GAlignmentPairs-class}.
     \item \link{GAlignmentsList-class}.
@@ -363,6 +371,13 @@ findOverlaps(gr1, gr, type = "start")
 findOverlaps(gr1, gr, type = "within")
 findOverlaps(gr1, gr, type = "equal")
 
+## using a GIntervalTree
+gtree <- GIntervalTree(gr1)
+table(!is.na(findOverlaps(gr, gtree, select="arbitrary")))
+countOverlaps(gr, gtree)
+findOverlaps(gr, gtree)
+subsetByOverlaps(gr, gtree)
+
 ## Overlapping a GRanges and a GRangesList object:
 table(!is.na(findOverlaps(grl, gr, select="first")))
 countOverlaps(grl, gr)
@@ -372,6 +387,17 @@ countOverlaps(grl, gr, type = "start")
 findOverlaps(grl, gr, type = "start")
 subsetByOverlaps(grl, gr, type = "start")
 findOverlaps(grl, gr, select = "first")
+
+## using a GIntervalTree
+table(!is.na(findOverlaps(grl, gtree, select="first")))
+countOverlaps(grl, gtree)
+findOverlaps(grl, gtree)
+subsetByOverlaps(grl, gtree)
+countOverlaps(grl, gtree, type = "start")
+findOverlaps(grl, gtree, type = "start")
+subsetByOverlaps(grl, gtree, type = "start")
+findOverlaps(grl, gtree, select = "first")
+
 
 ## Overlapping two GRangesList objects:
 countOverlaps(grl, rev(grl))

@@ -13,7 +13,7 @@ import(IRanges)
 exportClasses(
     Constraint, ConstraintORNULL,
     Seqinfo,
-    GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList,
+    GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList, GIntervalTree,
     GenomicRangesORGRangesList,
     GAlignments, GAlignmentPairs, GAlignmentsList,
     GappedAlignments, GappedAlignmentPairs,  # old names
@@ -114,7 +114,7 @@ export(
 
     makeSeqnameIds,
     Seqinfo,
-    GRanges, GRangesList, GenomicRangesList,
+    GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,
     makeGRangesListFromFeatureFragments,
     makeGAlignmentsListFromFeatureFragments,

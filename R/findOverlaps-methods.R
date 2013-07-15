@@ -74,10 +74,10 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         s_len <- length(subject)
         q_seqnames <- seqnames(query)
         s_seqnames <- seqnames(subject)
-        q_seqlevels <- levels(q_seqnames)
-        s_seqlevels <- levels(s_seqnames)
         q_splitranges <- splitRanges(q_seqnames)
         s_splitranges <- splitRanges(s_seqnames)
+        q_seqlevels_nonempty <- names(q_splitranges)[sapply(q_splitranges, length) > 0]
+        s_seqlevels_nonempty <- names(s_splitranges)[sapply(s_splitranges, length) > 0]
         q_ranges <- unname(ranges(query))
         s_ranges <- unname(ranges(subject))
         if (ignore.strand) {
@@ -88,7 +88,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
             s_strand <- .strandAsSignedNumber(strand(subject))
         }
 
-        common_seqlevels <- intersect(q_seqlevels, s_seqlevels)
+        common_seqlevels <- intersect(q_seqlevels_nonempty, s_seqlevels_nonempty)
         results <- lapply(common_seqlevels,
             function(seqlevel)
             {
