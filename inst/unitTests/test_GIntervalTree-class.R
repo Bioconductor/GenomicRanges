@@ -22,11 +22,6 @@ test_GIntervalTree_fully_specified_coercion <- function() {
   checkIdentical(seqinfo(git), seqinfo(gr))
   checkIdentical(seqnames(git), seqnames(gr))
   checkIdentical(strand(git), strand(gr))
-  
-  git_rng <- git@ranges
-  checkIdentical(start(git_rng), start(gr))
-  checkIdentical(width(git_rng), width(gr))
-  checkIdentical(git_rng@partition, seqnames(gr))
 }
 
 test_GIntervalTree_fully_specified_constructor <- function() {
@@ -36,11 +31,6 @@ test_GIntervalTree_fully_specified_constructor <- function() {
   checkIdentical(seqinfo(git), seqinfo(gr))
   checkIdentical(seqnames(git), seqnames(gr))
   checkIdentical(strand(git), strand(gr))
-  
-  git_rng <- git@ranges
-  checkIdentical(start(git_rng), start(gr))
-  checkIdentical(width(git_rng), width(gr))
-  checkIdentical(git_rng@partition, seqnames(gr))
 }
 
 test_GIntervalTree_partial_coercion <- function() {
@@ -50,11 +40,6 @@ test_GIntervalTree_partial_coercion <- function() {
   checkIdentical(seqinfo(git), seqinfo(gr))
   checkIdentical(seqnames(git), seqnames(gr))
   checkIdentical(strand(git), strand(gr))
-  
-  git_rng <- git@ranges
-  checkIdentical(start(git_rng), start(gr))
-  checkIdentical(width(git_rng), width(gr))
-  checkIdentical(git_rng@partition, seqnames(gr))
 }
 
 test_GIntervalTree_conversion_to_GRanges <- function () {
@@ -74,12 +59,6 @@ test_GIntervalTree_subsetting <- function () {
   checkIdentical(seqinfo(git), seqinfo(gr))
   checkIdentical(seqnames(git), seqnames(gr))
   checkIdentical(strand(git), strand(gr))
-  
-  git_rng <- git@ranges
-  checkIdentical(start(git_rng), start(gr))
-  checkIdentical(width(git_rng), width(gr))
-  checkIdentical(git_rng@partition, seqnames(gr))
-  
 }
 
 test_GIntervalTree_findOverlaps <- function() {

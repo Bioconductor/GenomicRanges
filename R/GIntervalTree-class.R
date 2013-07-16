@@ -13,6 +13,7 @@ setClass("GIntervalTree",
          contains="GenomicRanges",
          representation(
            ranges="IntervalForest",
+           rngidx="IRanges",
            strand="Rle",
            elementMetadata="DataFrame",
            seqinfo="Seqinfo"),
@@ -28,6 +29,13 @@ setClass("GIntervalTree",
   NULL
 }
 
+.valid.GIntervalTree.rngidx <- function(x) {
+  n <- length(x@ranges)
+  if(sum(width(x@rngidx)) != n)
+    return("'rngidx' invalid")
+  NULL
+}
+
 .valid.GIntervalTree.ranges <- function(x) {
   if (class(x@ranges) != "IntervalForest")
     return("'ranges(x)' must be a IntervalForest instance")
@@ -37,12 +45,37 @@ setClass("GIntervalTree",
 .valid.GIntervalTree <- function(x) {
   c(.valid.GIntervalTree.length(x),
     .valid.GIntervalTree.ranges(x),
+    .valid.GIntervalTree.rngidx(x),
     .valid.GenomicRanges.strand(x),
     .valid.GenomicRanges.mcols(x),
     valid.GenomicRanges.seqinfo(x))
 }
 
 setValidity2("GIntervalTree", .valid.GIntervalTree)
+
+.GT_getIndex <- function(from) {
+  fvals <- as.integer(runValue(seqnames(from)))
+  if (IRanges:::isNotSorted(fvals)) {
+    flens <- runLength(seqnames(from))
+    idx <- IRanges:::orderInteger(fvals)
+    rngidx <- successiveIRanges(flens)[idx]
+    idx <- IRanges:::orderInteger(start(rngidx))
+    return(IRanges(end=cumsum(width(rngidx))[idx], width=width(rngidx)[idx]))
+  }
+  IRanges()
+}
+
+
+.GT_reorderValue <- function(obj, val, rngidx=NULL)
+{
+  if (!is(obj, "GIntervalTree") && is.null(rngidx))
+    stop("obj must be 'GIntervalTree' object")
+  if (is.null(rngidx))
+    rngidx <- obj@rngidx  
+  if (length(rngidx))
+    val <- seqselect(val, rngidx)
+  val
+}
 
 #' seqnames accessor 
 #' 
@@ -51,7 +84,8 @@ setValidity2("GIntervalTree", .valid.GIntervalTree)
 #' @family GIntervalTree
 #' @export
 #' @importMethodsFrom GenomicRanges seqnames
-setMethod("seqnames", "GIntervalTree", function(x) (x@ranges@partition))
+setMethod("seqnames", "GIntervalTree",
+          function(x) Rle(.GT_reorderValue(x, space(x@ranges))))
 
 #' ranges accessor
 #' 
@@ -59,7 +93,8 @@ setMethod("seqnames", "GIntervalTree", function(x) (x@ranges@partition))
 #' @family GIntervalTree
 #' @export
 #' @importMethodsFrom GenomicRanges ranges
-setMethod("ranges", "GIntervalTree", function(x) as(x@ranges, "IRanges"))
+setMethod("ranges", "GIntervalTree",
+          function(x) .GT_reorderValue(x, as(x@ranges, "IRanges")))
 
 #' strand accessor
 #' 
@@ -77,9 +112,12 @@ setMethod("strand", "GIntervalTree", function(x) x@strand)
 #' @importMethodsFrom GenomicRanges seqinfo
 setMethod("seqinfo", "GIntervalTree", function(x) x@seqinfo)
 
-setMethod("start", "GIntervalTree", function(x, ...) start(x@ranges))
-setMethod("end", "GIntervalTree", function(x, ...) end(x@ranges))
-setMethod("width", "GIntervalTree", function(x) width(x@ranges))
+setMethod("start", "GIntervalTree",
+          function(x, ...) .GT_reorderValue(x,start(x@ranges, ...)@unlistData))
+setMethod("end", "GIntervalTree",
+          function(x, ...) .GT_reorderValue(x, end(x@ranges, ...)@unlistData))
+setMethod("width", "GIntervalTree",
+          function(x) .GT_reorderValue(x, width(x@ranges)@unlistData))
 
 #' length accessor
 #' 
@@ -94,18 +132,22 @@ setMethod("length", "GIntervalTree", function(x) length(x@ranges))
 #' @name as
 #' @family GIntervalTree
 #' @importClassesFrom GenomicRanges GRanges
+
+
 setAs("GRanges", "GIntervalTree",
       function(from) {
         if (any(isCircular(from), na.rm=TRUE))
           stop("'GIntervalTree' objects not supported for circular sequences")
 
-        out=new2("GIntervalTree",
-                strand=strand(from),
-                elementMetadata=mcols(from),
-                seqinfo=seqinfo(from),
-                ranges=IntervalForest(ranges(from), seqnames(from)),
-                check=FALSE)
-        out
+        rl <- split(unname(ranges(from)), seqnames(from))
+
+        new2("GIntervalTree",
+              strand=strand(from),
+              elementMetadata=mcols(from),
+              seqinfo=seqinfo(from),
+              ranges=IntervalForest(rl),
+              rngidx=.GT_getIndex(from),
+              check=FALSE)
       }
 )
 
@@ -125,11 +167,12 @@ GIntervalTree <- function(x) {
 setAs("GIntervalTree", "GRanges",
       function(from) {
         out=new("GRanges",
-                seqnames=(from@ranges@partition),
+                seqnames=Rle(space(from@ranges)),
                 strand=strand(from),
                 elementMetadata=mcols(from),
                 seqinfo=seqinfo(from),
-                ranges=ranges(from))
+                ranges=as(from@ranges, "IRanges"))
+        .GT_reorderValue(from, out)
       }
 )
 
@@ -140,6 +183,11 @@ setAs("GIntervalTree", "GRanges",
 #' @export
 setMethod("[", "GIntervalTree",
           function(x, i, j, ...) {
-            gr <- as(x, "GRanges")[i]
+            gr <- callGeneric(as(x, "GRanges"),i=i, ...)
             as(gr, "GIntervalTree")
           })
+
+### - - - - - - - -
+### show setMethod
+### - - - - - - - - 
+setMethod("show", "GIntervalTree", function(object) show(as(object, "GRanges")))

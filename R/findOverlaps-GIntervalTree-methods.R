@@ -15,11 +15,30 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
     ## merge() also checks that 'query' and 'subject' are based on the
     ## same reference genome.
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
-    
-    hits <- findOverlaps(ranges(query), subject@ranges,
+
+    qidx <- .GT_getIndex(query)    
+    qlist <- split(unname(ranges(query)), seqnames(query))      
+    hits <- findOverlaps(qlist, subject@ranges,
                             maxgap=maxgap,minoverlap=minoverlap,
-                            type=type,select="all",
-                            partition=seqnames(query))
+                            type=type,select="all")
+                            
+    hits <- hits@unlistData
+    if (is(hits, "Hits")) {
+      .GT_reorderHits <- function(rngidx, hits) {
+        if (length(rngidx)) {
+          idx <- findOverlaps(hits, rngidx, select="first")
+          starts <- as.integer(1+c(0,cumsum(width(rngidx))[-length(rngidx)]))
+          hits <- starts[idx] + hits - start(rngidx)[idx]
+        } 
+        hits
+      }
+
+      hits@queryHits <- .GT_reorderHits(qidx, queryHits(hits))
+      hits@subjectHits <- .GT_reorderHits(subject@rngidx, subjectHits(hits))
+      hits <- hits[order(queryHits(hits), subjectHits(hits))]
+    } else {
+      hits <- .GT_reorderValue(qlist, hits, qidx)
+    }
      
     if (!ignore.strand) {
       q_strand <- .strandAsSignedNumber(strand(query))

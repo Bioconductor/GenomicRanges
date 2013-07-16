@@ -31,6 +31,7 @@
 % Vector methods:
 \alias{length,GIntervalTree-method}
 \alias{[,GIntervalTree-method}
+\alias{show,GIntervalTree-method}
 
 \title{GIntervalTree objects}
 
@@ -69,10 +70,9 @@
   \describe{
     \item{\code{ranges}}{an \link[IRanges]{IntervalForest} object containing
       the ranges stored as a set of interval trees.}
-    \item{\code{seqnames}}{in this class, these are not stored directly, but are stored
-    as the \code{partition} component of the \link[IRanges]{IntervalForest} object stored
-    in \code{ranges}.
-      containing the sequence names.}
+    \item{\code{seqnames}}{these are not stored directly in this class, but are obtained from
+    the \code{partitioning} component of the \link[IRanges]{IntervalForest} object stored
+    in \code{ranges}.}
   }
 
   Note that \code{GIntervalTree} objects are not supported for \link{GRanges} objects
@@ -82,7 +82,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{GIntervalTree(x)}: Creates a GIntervalTree object from a \link{GRanges}
+      \code{GIntervalTree(x)}: Creates a \code{GIntervalTree} object from a \link{GRanges}
             object.
       \describe{
         \item{\code{x}}{a \link{GRanges} object containing the genomic ranges.}
@@ -94,8 +94,10 @@
 \section{Coercion}{
   \describe{
     \item{}{
-      \code{as(from, "GIntervalTree")}: Creates a GIntervalTree object from a
+      \code{as(from, "GIntervalTree")}: Creates a \code{GIntervalTree} object from a
       \link{GRanges} object.
+      \code{as(from, "GRanges")}: Creates a \link{GRanges} object from an
+      \code{GIntervalTree} object
     }
   }
 }
@@ -200,100 +202,7 @@
       \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
       logical, numeric, or character vector; or a 'logical' Rle object.
     }
-    \item{}{
-      \code{head(x, n = 6L)}:
-      If \code{n} is non-negative, returns the first n elements of the
-      GIntervalTree object.
-      If \code{n} is negative, returns all but the last \code{abs(n)} elements
-      of the GIntervalTree object.
     }
-    % \item{}{
-    %   \code{rep(x, times, length.out, each)}:
-    %   Repeats the values in \code{x} through one of the following conventions:
-    %   \describe{
-    %     \item{\code{times}}{Vector giving the number of times to repeat each
-    %       element if of length \code{length(x)}, or to repeat the whole vector
-    %       if of length 1.}
-    %     \item{\code{length.out}}{Non-negative integer. The desired length of
-    %       the output vector.}
-    %     \item{\code{each}}{Non-negative integer.  Each element of \code{x} is
-    %       repeated \code{each} times.}
-    %   }
-    % }
-    % \item{}{
-    %   \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
-    %   Similar to \code{window}, except that multiple consecutive subsequences
-    %   can be requested for concatenation. As such two of the three \code{start},
-    %   \code{end}, and \code{width} arguments can be used to specify the
-    %   consecutive subsequences. Alternatively, \code{start} can take a Ranges
-    %   object or something that can be converted to a Ranges object like an
-    %   integer vector, logical vector or logical Rle. If the concatenation of
-    %   the consecutive subsequences is undesirable, consider using
-    %   \code{\link{Views}}.
-    % }
-    % \item{}{
-    %   \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
-    %   Similar to \code{window<-}, except that multiple consecutive subsequences
-    %   can be replaced with a \code{value} whose length is a divisor of the
-    %   number of elements it is replacing. As such two of the three \code{start},
-    %   \code{end}, and \code{width} arguments can be used to specify the
-    %   consecutive subsequences. Alternatively, \code{start} can take a Ranges
-    %   object or something that can be converted to a Ranges object like an
-    %   integer vector, logical vector or logical Rle.
-    % }
-    % \item{}{
-    %   \code{subset(x, subset)}:
-    %   Returns a new object of the same class as \code{x} made of the subset
-    %   using logical vector \code{subset}, where missing values are taken as
-    %   \code{FALSE}.
-    % }
-    \item{}{
-      \code{tail(x, n = 6L)}:
-      If \code{n} is non-negative, returns the last n elements of the
-      GRanges object.
-      If \code{n} is negative, returns all but the first \code{abs(n)} elements
-      of the GRanges object.
-    }
-  %   \item{}{
-  %     \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
-  %     Extracts the subsequence window from the GRanges object using:
-  %     \describe{
-  %       \item{\code{start}, \code{end}, \code{width}}{The start, end, or width
-  %         of the window. Two of the three are required.}
-  %       \item{\code{frequency}, \code{delta}}{Optional arguments that specify
-  %         the sampling frequency and increment within the window.}
-  %     }
-  %     In general, this is more efficient than using \code{"["} operator.
-  %   }
-  %   \item{}{
-  %     \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
-  %     Replaces the subsequence window specified on the left (i.e. the subsequence
-  %     in \code{x} specified by \code{start}, \code{end} and \code{width})
-  %     by \code{value}.
-  %     \code{value} must either be of class \code{class(x)}, belong to a subclass
-  %     of \code{class(x)}, be coercible to \code{class(x)}, or be \code{NULL}.
-  %     If \code{keepLength} is \code{TRUE}, the elements of \code{value} are
-  %     repeated to create a GRanges object with the same number of elements
-  %     as the width of the subsequence window it is replacing.
-  %     If \code{keepLength} is \code{FALSE}, this replacement method can modify
-  %     the length of \code{x}, depending on how the length of the left
-  %     subsequence window compares to the length of \code{value}.
-  %   }
-  %   \item{}{
-  %     \code{x$name}, \code{x$name <- value}:
-  %     Shortcuts for \code{mcols(x)$name} and \code{mcols(x)$name <- value},
-  %     respectively. Provided as a convenience, for GRanges objects *only*,
-  %     and as the result of strong popular demand.
-  %     Note that those methods are not consistent with the other \code{$}
-  %     and \code{$<-} methods in the IRanges/GenomicRanges infrastructure,
-  %     and might confuse some users by making them believe that a GRanges
-  %     object can be manipulated as a data.frame-like object.
-  %     Therefore we recommend using them only interactively, and we discourage
-  %     their use in scripts or packages. For the latter, use
-  %     \code{mcols(x)$name} and \code{mcols(x)$name <- value}, instead
-  %     of \code{x$name} and \code{x$name <- value}, respectively.
-  %   }
-   }
 }
 
 \section{Other methods}{
