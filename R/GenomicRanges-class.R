@@ -261,7 +261,8 @@ setMethod("as.data.frame", "GenomicRanges",
             names(x) <- NULL
         mcols_df <- as.data.frame(mcols(x), ...)
         if (length(extraColumnSlotNames(x)) > 0L)
-            mcols_df <- cbind(as.data.frame(extraColumnSlots(x), ...), mcols_df)
+            mcols_df <- cbind(as.data.frame(extraColumnSlotsAsDF(x), ...),
+                              mcols_df)
         data.frame(seqnames=as.factor(seqnames(x)),
                    start=start(x),
                    end=end(x),
