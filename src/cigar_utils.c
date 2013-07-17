@@ -3,14 +3,15 @@
 
 #include <ctype.h> /* for isdigit() */
 
-/* The 7 supported spaces. */
-#define QUERY_BEFORE_HARD_CLIPPING	0
-#define QUERY				1
-#define QUERY_AFTER_SOFT_CLIPPING	2
-#define PAIRWISE			3
-#define REFERENCE			4
-#define PAIRWISE_N_REGIONS_REMOVED	5
-#define REFERENCE_N_REGIONS_REMOVED	6
+/* The 8 supported spaces. */
+#define REFERENCE			1
+#define REFERENCE_N_REGIONS_REMOVED	2
+#define QUERY				3
+#define QUERY_BEFORE_HARD_CLIPPING	4
+#define QUERY_AFTER_SOFT_CLIPPING	5
+#define PAIRWISE			6
+#define PAIRWISE_N_REGIONS_REMOVED	7
+#define PAIRWISE_DENSE			8
 
 static char errmsg_buf[200];
 
@@ -84,45 +85,6 @@ static int prev_cigar_OP(const char *cigar_string, int offset,
 	return offset0 - offset;
 }
 
-static int belongs_to_space(char OP, int space)
-{
-	if (OP == 'M')
-		return 1;
-	switch (space) {
-	case QUERY_BEFORE_HARD_CLIPPING:
-		if (OP == 'H')
-			return 1;
-		/* fall through */
-	case QUERY:
-		if (OP == 'S')
-			return 1;
-		/* fall through */
-	case QUERY_AFTER_SOFT_CLIPPING:
-		if (OP == 'I')
-			return 1;
-		break;
-	case PAIRWISE:
-		if (OP == 'I')
-			return 1;
-		/* fall through */
-	case REFERENCE:
-		if (OP == 'D' || OP == 'N')
-			return 1;
-		break;
-	case PAIRWISE_N_REGIONS_REMOVED:
-		if (OP == 'I')
-			return 1;
-		/* fall through */
-	case REFERENCE_N_REGIONS_REMOVED:
-		if (OP == 'D')
-			return 1;
-		break;
-	}
-	if (OP == '=' || OP == 'X')
-		return 1;
-	return 0;
-}
-
 static int ops_lkup_table[256];
 
 static void init_ops_lkup_table(SEXP ops)
@@ -154,29 +116,42 @@ static int is_in_ops(char OP)
 	return ops_lkup_table[(unsigned char) OP];
 }
 
-/* Make sure you call init_ops_lkup_table() before you call
-   split_cigar_string(). */
-static const char *split_cigar_string(const char *cigar_string,
-		CharAE *OPbuf, IntAE *OPLbuf)
+static int is_visible_in_space(char OP, int space)
 {
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	offset = 0;
-	while ((n = next_cigar_OP(cigar_string, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		if (is_in_ops(OP)) {
-			if (OPbuf != NULL)
-				CharAE_insert_at(OPbuf,
-					CharAE_get_nelt(OPbuf), OP);
-			if (OPLbuf != NULL)
-				IntAE_insert_at(OPLbuf,
-					IntAE_get_nelt(OPLbuf), OPL);
-		}
-		offset += n;
+	if (OP == 'M')
+		return 1;
+	switch (space) {
+	case QUERY_BEFORE_HARD_CLIPPING:
+		if (OP == 'H')
+			return 1;
+		/* fall through */
+	case QUERY:
+		if (OP == 'S')
+			return 1;
+		/* fall through */
+	case QUERY_AFTER_SOFT_CLIPPING:
+		if (OP == 'I')
+			return 1;
+		break;
+	case PAIRWISE:
+		if (OP == 'I')
+			return 1;
+		/* fall through */
+	case REFERENCE:
+		if (OP == 'D' || OP == 'N')
+			return 1;
+		break;
+	case PAIRWISE_N_REGIONS_REMOVED:
+		if (OP == 'I')
+			return 1;
+		/* fall through */
+	case REFERENCE_N_REGIONS_REMOVED:
+		if (OP == 'D')
+			return 1;
 	}
-	return NULL;
+	if (OP == '=' || OP == 'X')
+		return 1;
+	return 0;
 }
 
 static void drop_or_append_or_merge_range(int start, int width,
@@ -218,8 +193,7 @@ static void drop_or_append_or_merge_range(int start, int width,
 	return;
 }
 
-/* Make sure you call init_ops_lkup_table() before you call
-   parse_cigar_ranges(). */
+/* Make sure init_ops_lkup_table() is called before parse_cigar_ranges(). */
 static const char *parse_cigar_ranges(const char *cigar_string,
 		int space, int pos,
 		int drop_empty_ranges, int reduce_ranges,
@@ -235,7 +209,7 @@ static const char *parse_cigar_ranges(const char *cigar_string,
 	while ((n = next_cigar_OP(cigar_string, cigar_offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
-		width = belongs_to_space(OP, space) ? OPL : 0;
+		width = is_visible_in_space(OP, space) ? OPL : 0;
 		if (is_in_ops(OP))
 			drop_or_append_or_merge_range(start, width,
 						      drop_empty_ranges,
@@ -245,40 +219,6 @@ static const char *parse_cigar_ranges(const char *cigar_string,
 		cigar_offset += n;
 	}
 	return NULL;
-}
-
-static SEXP make_CompressedIRangesList(const RangeAE *range_buf,
-		const CharAEAE *OP_buf, SEXP breakpoints)
-{
-	SEXP ans, ans_unlistData, ans_unlistData_names, ans_partitioning;
-
-	PROTECT(ans_unlistData =
-			new_IRanges_from_RangeAE("IRanges", range_buf));
-	if (OP_buf != NULL) {
-		PROTECT(ans_unlistData_names =
-				new_CHARACTER_from_CharAEAE(OP_buf));
-		set_IRanges_names(ans_unlistData, ans_unlistData_names);
-		UNPROTECT(1);
-	}
-	PROTECT(ans_partitioning =
-			new_PartitioningByEnd("PartitioningByEnd",
-					      breakpoints, NULL));
-	PROTECT(ans = new_CompressedList(
-				"CompressedIRangesList",
-				ans_unlistData, ans_partitioning));
-	UNPROTECT(3);
-	return ans;
-}
-
-static SEXP make_list_of_IRanges(const RangeAEAE *range_buf, SEXP names)
-{
-	SEXP ans, ans_names;
-
-	PROTECT(ans = new_list_of_IRanges_from_RangeAEAE("IRanges", range_buf));
-	PROTECT(ans_names = duplicate(names));
-	SET_NAMES(ans, ans_names);
-	UNPROTECT(2);
-	return ans;
 }
 
 static const char *parse_cigar_width(const char *cigar_string, int space,
@@ -291,327 +231,9 @@ static const char *parse_cigar_width(const char *cigar_string, int space,
 	while ((n = next_cigar_OP(cigar_string, cigar_offset, &OP, &OPL))) {
 		if (n == -1)
 			return errmsg_buf;
-		if (belongs_to_space(OP, space))
+		if (is_visible_in_space(OP, space))
 			*width += OPL;
 		cigar_offset += n;
-	}
-	return NULL;
-}
-
-static const char *Lqnarrow_cigar_string(SEXP cigar_string,
-		int *Lqwidth, int *Loffset, int *rshift)
-{
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	if (cigar_string == NA_STRING)
-		return "CIGAR string is NA";
-	if (LENGTH(cigar_string) == 0)
-		return "CIGAR string is empty";
-	cig0 = CHAR(cigar_string);
-	*rshift = offset = 0;
-	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		switch (OP) {
-		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': case '=': case 'X':
-			if (*Lqwidth < OPL) {
-				*Loffset = offset;
-				*rshift += *Lqwidth;
-				return NULL;
-			}
-			*Lqwidth -= OPL;
-			*rshift += OPL;
-		    break;
-		/* Insertion to the reference or soft/hard clip on the read */
-		    case 'I': case 'S': case 'H':
-			if (*Lqwidth < OPL) {
-				*Loffset = offset;
-				return NULL;
-			}
-			*Lqwidth -= OPL;
-		    break;
-		/* Deletion (or skipped region) from the reference */
-		    case 'D': case 'N':
-			*rshift += OPL;
-		    break;
-		/* Silent deletion from the padded reference */
-		    case 'P': break;
-		    default:
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-		offset += n;
-	}
-	snprintf(errmsg_buf, sizeof(errmsg_buf),
-		 "CIGAR is empty after qnarrowing");
-	return errmsg_buf;
-}
-
-static const char *Rqnarrow_cigar_string(SEXP cigar_string,
-		int *Rqwidth, int *Roffset)
-{
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	if (cigar_string == NA_STRING)
-		return "CIGAR string is NA";
-	if (LENGTH(cigar_string) == 0)
-		return "CIGAR string is empty";
-	cig0 = CHAR(cigar_string);
-	offset = LENGTH(cigar_string);
-	while ((n = prev_cigar_OP(cig0, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		offset -= n;
-		switch (OP) {
-		/* M, =, X, I, S, H */
-		    case 'M': case '=': case 'X': case 'I': case 'S': case 'H':
-			if (*Rqwidth < OPL) {
-				*Roffset = offset;
-				return NULL;
-			}
-			*Rqwidth -= OPL;
-		    break;
-		/* Deletion (or skipped region) from the reference,
-		   or silent deletion from the padded reference */
-		    case 'D': case 'N': case 'P':
-		    break;
-		    default:
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-	}
-	snprintf(errmsg_buf, sizeof(errmsg_buf),
-		 "CIGAR is empty after qnarrowing");
-	return errmsg_buf;
-}
-
-/* FIXME: 'cigar_buf' is under the risk of a buffer overflow! */
-static const char *qnarrow_cigar_string(SEXP cigar_string,
-		int Lqwidth, int Rqwidth, char *cigar_buf, int *rshift)
-{
-	int Loffset, Roffset, buf_offset;
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-	const char *errmsg;
-
-	//Rprintf("qnarrow_cigar_string():\n");
-	errmsg = Lqnarrow_cigar_string(cigar_string, &Lqwidth, &Loffset,
-				       rshift);
-	if (errmsg != NULL)
-		return errmsg;
-	//Rprintf("  Lqwidth=%d Loffset=%d *rshift=%d\n",
-	//	Lqwidth, Loffset, *rshift);
-	errmsg = Rqnarrow_cigar_string(cigar_string, &Rqwidth, &Roffset);
-	if (errmsg != NULL)
-		return errmsg;
-	//Rprintf("  Rqwidth=%d Roffset=%d\n", Rqwidth, Roffset);
-	if (Roffset < Loffset) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "CIGAR is empty after qnarrowing");
-		return errmsg_buf;
-	}
-	buf_offset = 0;
-	cig0 = CHAR(cigar_string);
-	for (offset = Loffset; offset <= Roffset; offset += n) {
-		n = next_cigar_OP(cig0, offset, &OP, &OPL);
-		if (offset == Loffset)
-			OPL -= Lqwidth;
-		if (offset == Roffset)
-			OPL -= Rqwidth;
-		if (OPL <= 0) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR is empty after qnarrowing");
-			return errmsg_buf;
-		}
-		buf_offset += sprintf(cigar_buf + buf_offset,
-				      "%d%c", OPL, OP);
-	}
-	return NULL;
-}
-
-static const char *Lnarrow_cigar_string(SEXP cigar_string,
-		int *Lwidth, int *Loffset, int *rshift)
-{
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	if (cigar_string == NA_STRING)
-		return "CIGAR string is NA";
-	if (LENGTH(cigar_string) == 0)
-		return "CIGAR string is empty";
-	cig0 = CHAR(cigar_string);
-	*rshift = offset = 0;
-	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		switch (OP) {
-		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': case '=': case 'X':
-			if (*Lwidth < OPL) {
-				*Loffset = offset;
-				*rshift += *Lwidth;
-				return NULL;
-			}
-			*Lwidth -= OPL;
-			*rshift += OPL;
-		    break;
-		/* Insertion to the reference or soft/hard clip on the read */
-		    case 'I': case 'S': case 'H':
-		    break;
-		/* Deletion (or skipped region) from the reference */
-		    case 'D': case 'N':
-			if (*Lwidth < OPL)
-				*Lwidth = 0;
-			else
-				*Lwidth -= OPL;
-			*rshift += OPL;
-		    break;
-		/* Silent deletion from the padded reference */
-		    case 'P': break;
-		    default:
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-		offset += n;
-	}
-	snprintf(errmsg_buf, sizeof(errmsg_buf),
-		 "CIGAR is empty after narrowing");
-	return errmsg_buf;
-}
-
-static const char *Rnarrow_cigar_string(SEXP cigar_string,
-		int *Rwidth, int *Roffset)
-{
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	if (cigar_string == NA_STRING)
-		return "CIGAR string is NA";
-	if (LENGTH(cigar_string) == 0)
-		return "CIGAR string is empty";
-	cig0 = CHAR(cigar_string);
-	offset = LENGTH(cigar_string);
-	while ((n = prev_cigar_OP(cig0, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		offset -= n;
-		switch (OP) {
-		/* Alignment match (can be a sequence match or mismatch) */
-		    case 'M': case '=': case 'X':
-			if (*Rwidth < OPL) {
-				*Roffset = offset;
-				return NULL;
-			}
-			*Rwidth -= OPL;
-		    break;
-		/* Insertion to the reference or soft/hard clip on the read */
-		    case 'I': case 'S': case 'H':
-		    break;
-		/* Deletion (or skipped region) from the reference */
-		    case 'D': case 'N':
-			if (*Rwidth < OPL)
-				*Rwidth = 0;
-			else
-				*Rwidth -= OPL;
-		    break;
-		/* Silent deletion from the padded reference */
-		    case 'P': break;
-		    default:
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-	}
-	snprintf(errmsg_buf, sizeof(errmsg_buf),
-		 "CIGAR is empty after narrowing");
-	return errmsg_buf;
-}
-
-/* FIXME: 'cigar_buf' is under the risk of a buffer overflow! */
-static const char *narrow_cigar_string(SEXP cigar_string,
-		int Lwidth, int Rwidth, char *cigar_buf, int *rshift)
-{
-	int Loffset, Roffset, buf_offset;
-	const char *cig0;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-	const char *errmsg;
-
-	//Rprintf("narrow_cigar_string():\n");
-	errmsg = Lnarrow_cigar_string(cigar_string, &Lwidth, &Loffset,
-				      rshift);
-	if (errmsg != NULL)
-		return errmsg;
-	//Rprintf("  Lwidth=%d Loffset=%d *rshift=%d\n",
-	//	Lwidth, Loffset, *rshift);
-	errmsg = Rnarrow_cigar_string(cigar_string, &Rwidth, &Roffset);
-	if (errmsg != NULL)
-		return errmsg;
-	//Rprintf("  Rwidth=%d Roffset=%d\n", Rwidth, Roffset);
-	if (Roffset < Loffset) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "CIGAR is empty after narrowing");
-		return errmsg_buf;
-	}
-	buf_offset = 0;
-	cig0 = CHAR(cigar_string);
-	for (offset = Loffset; offset <= Roffset; offset += n) {
-		n = next_cigar_OP(cig0, offset, &OP, &OPL);
-		if (offset == Loffset)
-			OPL -= Lwidth;
-		if (offset == Roffset)
-			OPL -= Rwidth;
-		if (OPL <= 0) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "CIGAR is empty after narrowing");
-			return errmsg_buf;
-		}
-		buf_offset += sprintf(cigar_buf + buf_offset,
-				      "%d%c", OPL, OP);
-	}
-	return NULL;
-}
-
-static const char *cigar_string_op_table(SEXP cigar_string, const char *allOPs,
-		int *table_row, int table_nrow)
-{
-	const char *cig0, *tmp;
-	int offset, n, OPL /* Operation Length */;
-	char OP /* Operation */;
-
-	if (cigar_string == NA_STRING)
-		return "CIGAR string is NA";
-	if (LENGTH(cigar_string) == 0)
-		return "CIGAR string is empty";
-	cig0 = CHAR(cigar_string);
-	offset = 0;
-	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
-		if (n == -1)
-			return errmsg_buf;
-		tmp = strchr(allOPs, (int) OP);
-		if (tmp == NULL) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "unknown CIGAR operation '%c' at char %d",
-				 OP, offset + 1);
-			return errmsg_buf;
-		}
-		*(table_row + (tmp - allOPs) * table_nrow) += OPL;
-		offset += n;
 	}
 	return NULL;
 }
@@ -673,7 +295,34 @@ SEXP valid_cigar(SEXP cigar, SEXP ans_type)
 
 
 /****************************************************************************
- * --- .Call ENTRY POINTS ---
+ * explode_cigar_ops() and explode_cigar_op_lengths()
+ */
+
+/* Make sure init_ops_lkup_table() is called before split_cigar_string(). */
+static const char *split_cigar_string(const char *cigar_string,
+		CharAE *OPbuf, IntAE *OPLbuf)
+{
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+
+	offset = 0;
+	while ((n = next_cigar_OP(cigar_string, offset, &OP, &OPL))) {
+		if (n == -1)
+			return errmsg_buf;
+		if (is_in_ops(OP)) {
+			if (OPbuf != NULL)
+				CharAE_insert_at(OPbuf,
+					CharAE_get_nelt(OPbuf), OP);
+			if (OPLbuf != NULL)
+				IntAE_insert_at(OPLbuf,
+					IntAE_get_nelt(OPLbuf), OPL);
+		}
+		offset += n;
+	}
+	return NULL;
+}
+
+/* --- .Call ENTRY POINTS ---
  *   - explode_cigar_ops()
  *   - explode_cigar_op_lengths()
  * Args:
@@ -822,7 +471,126 @@ SEXP split_cigar(SEXP cigar)
 
 
 /****************************************************************************
- * --- .Call ENTRY POINT ---
+ * cigar_op_table()
+ */
+
+static const char *cigar_string_op_table(SEXP cigar_string, const char *allOPs,
+		int *table_row, int table_nrow)
+{
+	const char *cig0, *tmp;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+
+	if (cigar_string == NA_STRING)
+		return "CIGAR string is NA";
+	if (LENGTH(cigar_string) == 0)
+		return "CIGAR string is empty";
+	cig0 = CHAR(cigar_string);
+	offset = 0;
+	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
+		if (n == -1)
+			return errmsg_buf;
+		tmp = strchr(allOPs, (int) OP);
+		if (tmp == NULL) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unknown CIGAR operation '%c' at char %d",
+				 OP, offset + 1);
+			return errmsg_buf;
+		}
+		*(table_row + (tmp - allOPs) * table_nrow) += OPL;
+		offset += n;
+	}
+	return NULL;
+}
+
+/* --- .Call ENTRY POINT ---
+ * Args:
+ *   cigar: character vector containing the extended CIGAR string for each
+ *          read;
+ * Return an integer matrix with the number of rows equal to the length of
+ * 'cigar' and 9 columns, one for each extended CIGAR operation containing
+ * a frequency count for the operations for each element of 'cigar'.
+ */
+SEXP cigar_op_table(SEXP cigar)
+{
+	SEXP cigar_string, ans, ans_dimnames, ans_colnames;
+	int cigar_len, allOPs_len, i, j, *ans_row;
+	const char *allOPs = "MIDNSHP=X", *errmsg;
+	char OPstrbuf[2];
+
+	cigar_len = LENGTH(cigar);
+	allOPs_len = strlen(allOPs);
+	PROTECT(ans = allocMatrix(INTSXP, cigar_len, allOPs_len));
+	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
+	ans_row = INTEGER(ans);
+	for (i = 0, ans_row = INTEGER(ans); i < cigar_len; i++, ans_row++) {
+		cigar_string = STRING_ELT(cigar, i);
+		if (cigar_string == NA_STRING) {
+			INTEGER(ans)[i] = NA_INTEGER;
+			continue;
+		}
+		errmsg = cigar_string_op_table(cigar_string, allOPs,
+				ans_row, cigar_len);
+		if (errmsg != NULL) {
+			UNPROTECT(1);
+			error("in 'cigar[%d]': %s", i + 1, errmsg);
+		}
+	}
+
+	PROTECT(ans_colnames = NEW_CHARACTER(allOPs_len));
+	OPstrbuf[1] = '\0';
+	for (j = 0; j < allOPs_len; j++) {
+		OPstrbuf[0] = allOPs[j];
+		SET_STRING_ELT(ans_colnames, j, mkChar(OPstrbuf));
+	}
+	PROTECT(ans_dimnames = NEW_LIST(2));
+	SET_ELEMENT(ans_dimnames, 0, R_NilValue);
+	SET_ELEMENT(ans_dimnames, 1, ans_colnames);
+	SET_DIMNAMES(ans, ans_dimnames);
+	UNPROTECT(3);
+	return ans;
+}
+
+
+/****************************************************************************
+ * cigar_ranges()
+ */
+
+static SEXP make_list_of_IRanges(const RangeAEAE *range_buf, SEXP names)
+{
+	SEXP ans, ans_names;
+
+	PROTECT(ans = new_list_of_IRanges_from_RangeAEAE("IRanges", range_buf));
+	PROTECT(ans_names = duplicate(names));
+	SET_NAMES(ans, ans_names);
+	UNPROTECT(2);
+	return ans;
+}
+
+static SEXP make_CompressedIRangesList(const RangeAE *range_buf,
+		const CharAEAE *OP_buf, SEXP breakpoints)
+{
+	SEXP ans, ans_unlistData, ans_unlistData_names, ans_partitioning;
+
+	PROTECT(ans_unlistData =
+			new_IRanges_from_RangeAE("IRanges", range_buf));
+	if (OP_buf != NULL) {
+		PROTECT(ans_unlistData_names =
+				new_CHARACTER_from_CharAEAE(OP_buf));
+		set_IRanges_names(ans_unlistData, ans_unlistData_names);
+		UNPROTECT(1);
+	}
+	PROTECT(ans_partitioning =
+			new_PartitioningByEnd("PartitioningByEnd",
+					      breakpoints, NULL));
+	PROTECT(ans = new_CompressedList(
+				"CompressedIRangesList",
+				ans_unlistData, ans_partitioning));
+	UNPROTECT(3);
+	return ans;
+}
+
+/* --- .Call ENTRY POINT ---
  * Args:
  *   cigar: character vector containing extended CIGAR strings.
  *   flag:  NULL or an integer vector of the same length as 'cigar'
@@ -830,7 +598,7 @@ SEXP split_cigar(SEXP cigar)
  *          indicate whether a read is mapped or not. According to the SAM
  *          Spec v1.4, flag bit 0x4 is the only reliable place to tell
  *          whether a segment (or read) is mapped (bit is 0) or not (bit is 1).
- *   space: single integer indicating one of the 7 supported spaces (defined
+ *   space: single integer indicating one of the 8 supported spaces (defined
  *          at the top of this file).
  *   pos:   integer vector of the same length as 'cigar' (or of length 1)
  *          containing the 1-based leftmost position/coordinate of the
@@ -1015,8 +783,158 @@ for_tail:
 
 
 /****************************************************************************
- * --- .Call ENTRY POINT ---
+ * cigar_narrow()
  */
+
+static const char *Lnarrow_cigar_string(SEXP cigar_string,
+		int *Lwidth, int *Loffset, int *rshift)
+{
+	const char *cig0;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+
+	if (cigar_string == NA_STRING)
+		return "CIGAR string is NA";
+	if (LENGTH(cigar_string) == 0)
+		return "CIGAR string is empty";
+	cig0 = CHAR(cigar_string);
+	*rshift = offset = 0;
+	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
+		if (n == -1)
+			return errmsg_buf;
+		switch (OP) {
+		/* Alignment match (can be a sequence match or mismatch) */
+		    case 'M': case '=': case 'X':
+			if (*Lwidth < OPL) {
+				*Loffset = offset;
+				*rshift += *Lwidth;
+				return NULL;
+			}
+			*Lwidth -= OPL;
+			*rshift += OPL;
+		    break;
+		/* Insertion to the reference or soft/hard clip on the read */
+		    case 'I': case 'S': case 'H':
+		    break;
+		/* Deletion (or skipped region) from the reference */
+		    case 'D': case 'N':
+			if (*Lwidth < OPL)
+				*Lwidth = 0;
+			else
+				*Lwidth -= OPL;
+			*rshift += OPL;
+		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
+		    default:
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unknown CIGAR operation '%c' at char %d",
+				 OP, offset + 1);
+			return errmsg_buf;
+		}
+		offset += n;
+	}
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "CIGAR is empty after narrowing");
+	return errmsg_buf;
+}
+
+static const char *Rnarrow_cigar_string(SEXP cigar_string,
+		int *Rwidth, int *Roffset)
+{
+	const char *cig0;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+
+	if (cigar_string == NA_STRING)
+		return "CIGAR string is NA";
+	if (LENGTH(cigar_string) == 0)
+		return "CIGAR string is empty";
+	cig0 = CHAR(cigar_string);
+	offset = LENGTH(cigar_string);
+	while ((n = prev_cigar_OP(cig0, offset, &OP, &OPL))) {
+		if (n == -1)
+			return errmsg_buf;
+		offset -= n;
+		switch (OP) {
+		/* Alignment match (can be a sequence match or mismatch) */
+		    case 'M': case '=': case 'X':
+			if (*Rwidth < OPL) {
+				*Roffset = offset;
+				return NULL;
+			}
+			*Rwidth -= OPL;
+		    break;
+		/* Insertion to the reference or soft/hard clip on the read */
+		    case 'I': case 'S': case 'H':
+		    break;
+		/* Deletion (or skipped region) from the reference */
+		    case 'D': case 'N':
+			if (*Rwidth < OPL)
+				*Rwidth = 0;
+			else
+				*Rwidth -= OPL;
+		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
+		    default:
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unknown CIGAR operation '%c' at char %d",
+				 OP, offset + 1);
+			return errmsg_buf;
+		}
+	}
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "CIGAR is empty after narrowing");
+	return errmsg_buf;
+}
+
+/* FIXME: 'cigar_buf' is under the risk of a buffer overflow! */
+static const char *narrow_cigar_string(SEXP cigar_string,
+		int Lwidth, int Rwidth, char *cigar_buf, int *rshift)
+{
+	int Loffset, Roffset, buf_offset;
+	const char *cig0;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+	const char *errmsg;
+
+	//Rprintf("narrow_cigar_string():\n");
+	errmsg = Lnarrow_cigar_string(cigar_string, &Lwidth, &Loffset,
+				      rshift);
+	if (errmsg != NULL)
+		return errmsg;
+	//Rprintf("  Lwidth=%d Loffset=%d *rshift=%d\n",
+	//	Lwidth, Loffset, *rshift);
+	errmsg = Rnarrow_cigar_string(cigar_string, &Rwidth, &Roffset);
+	if (errmsg != NULL)
+		return errmsg;
+	//Rprintf("  Rwidth=%d Roffset=%d\n", Rwidth, Roffset);
+	if (Roffset < Loffset) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "CIGAR is empty after narrowing");
+		return errmsg_buf;
+	}
+	buf_offset = 0;
+	cig0 = CHAR(cigar_string);
+	for (offset = Loffset; offset <= Roffset; offset += n) {
+		n = next_cigar_OP(cig0, offset, &OP, &OPL);
+		if (offset == Loffset)
+			OPL -= Lwidth;
+		if (offset == Roffset)
+			OPL -= Rwidth;
+		if (OPL <= 0) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "CIGAR is empty after narrowing");
+			return errmsg_buf;
+		}
+		buf_offset += sprintf(cigar_buf + buf_offset,
+				      "%d%c", OPL, OP);
+	}
+	return NULL;
+}
+
+/* --- .Call ENTRY POINT --- */
 SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width)
 {
 	SEXP ans, ans_cigar, ans_cigar_string, ans_rshift, cigar_string;
@@ -1056,7 +974,151 @@ SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width)
 
 
 /****************************************************************************
- * --- .Call ENTRY POINT ---
+ * cigar_qnarrow()
+ */
+
+static const char *Lqnarrow_cigar_string(SEXP cigar_string,
+		int *Lqwidth, int *Loffset, int *rshift)
+{
+	const char *cig0;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+
+	if (cigar_string == NA_STRING)
+		return "CIGAR string is NA";
+	if (LENGTH(cigar_string) == 0)
+		return "CIGAR string is empty";
+	cig0 = CHAR(cigar_string);
+	*rshift = offset = 0;
+	while ((n = next_cigar_OP(cig0, offset, &OP, &OPL))) {
+		if (n == -1)
+			return errmsg_buf;
+		switch (OP) {
+		/* Alignment match (can be a sequence match or mismatch) */
+		    case 'M': case '=': case 'X':
+			if (*Lqwidth < OPL) {
+				*Loffset = offset;
+				*rshift += *Lqwidth;
+				return NULL;
+			}
+			*Lqwidth -= OPL;
+			*rshift += OPL;
+		    break;
+		/* Insertion to the reference or soft/hard clip on the read */
+		    case 'I': case 'S': case 'H':
+			if (*Lqwidth < OPL) {
+				*Loffset = offset;
+				return NULL;
+			}
+			*Lqwidth -= OPL;
+		    break;
+		/* Deletion (or skipped region) from the reference */
+		    case 'D': case 'N':
+			*rshift += OPL;
+		    break;
+		/* Silent deletion from the padded reference */
+		    case 'P': break;
+		    default:
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unknown CIGAR operation '%c' at char %d",
+				 OP, offset + 1);
+			return errmsg_buf;
+		}
+		offset += n;
+	}
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "CIGAR is empty after qnarrowing");
+	return errmsg_buf;
+}
+
+static const char *Rqnarrow_cigar_string(SEXP cigar_string,
+		int *Rqwidth, int *Roffset)
+{
+	const char *cig0;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+
+	if (cigar_string == NA_STRING)
+		return "CIGAR string is NA";
+	if (LENGTH(cigar_string) == 0)
+		return "CIGAR string is empty";
+	cig0 = CHAR(cigar_string);
+	offset = LENGTH(cigar_string);
+	while ((n = prev_cigar_OP(cig0, offset, &OP, &OPL))) {
+		if (n == -1)
+			return errmsg_buf;
+		offset -= n;
+		switch (OP) {
+		/* M, =, X, I, S, H */
+		    case 'M': case '=': case 'X': case 'I': case 'S': case 'H':
+			if (*Rqwidth < OPL) {
+				*Roffset = offset;
+				return NULL;
+			}
+			*Rqwidth -= OPL;
+		    break;
+		/* Deletion (or skipped region) from the reference,
+		   or silent deletion from the padded reference */
+		    case 'D': case 'N': case 'P':
+		    break;
+		    default:
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "unknown CIGAR operation '%c' at char %d",
+				 OP, offset + 1);
+			return errmsg_buf;
+		}
+	}
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "CIGAR is empty after qnarrowing");
+	return errmsg_buf;
+}
+
+/* FIXME: 'cigar_buf' is under the risk of a buffer overflow! */
+static const char *qnarrow_cigar_string(SEXP cigar_string,
+		int Lqwidth, int Rqwidth, char *cigar_buf, int *rshift)
+{
+	int Loffset, Roffset, buf_offset;
+	const char *cig0;
+	int offset, n, OPL /* Operation Length */;
+	char OP /* Operation */;
+	const char *errmsg;
+
+	//Rprintf("qnarrow_cigar_string():\n");
+	errmsg = Lqnarrow_cigar_string(cigar_string, &Lqwidth, &Loffset,
+				       rshift);
+	if (errmsg != NULL)
+		return errmsg;
+	//Rprintf("  Lqwidth=%d Loffset=%d *rshift=%d\n",
+	//	Lqwidth, Loffset, *rshift);
+	errmsg = Rqnarrow_cigar_string(cigar_string, &Rqwidth, &Roffset);
+	if (errmsg != NULL)
+		return errmsg;
+	//Rprintf("  Rqwidth=%d Roffset=%d\n", Rqwidth, Roffset);
+	if (Roffset < Loffset) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "CIGAR is empty after qnarrowing");
+		return errmsg_buf;
+	}
+	buf_offset = 0;
+	cig0 = CHAR(cigar_string);
+	for (offset = Loffset; offset <= Roffset; offset += n) {
+		n = next_cigar_OP(cig0, offset, &OP, &OPL);
+		if (offset == Loffset)
+			OPL -= Lqwidth;
+		if (offset == Roffset)
+			OPL -= Rqwidth;
+		if (OPL <= 0) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "CIGAR is empty after qnarrowing");
+			return errmsg_buf;
+		}
+		buf_offset += sprintf(cigar_buf + buf_offset,
+				      "%d%c", OPL, OP);
+	}
+	return NULL;
+}
+
+/* --- .Call ENTRY POINT ---
  * Return a list of 2 elements: 1st elt is the narrowed cigar vector, 2nd elt
  * is the 'rshift' vector i.e. the integer vector of the same length as 'cigar'
  * that would need to be added to the 'pos' field of a SAM/BAM file as a
@@ -1095,56 +1157,6 @@ SEXP cigar_qnarrow(SEXP cigar, SEXP left_qwidth, SEXP right_qwidth)
 	PROTECT(ans = NEW_LIST(2));
 	SET_VECTOR_ELT(ans, 0, ans_cigar);
 	SET_VECTOR_ELT(ans, 1, ans_rshift);
-	UNPROTECT(3);
-	return ans;
-}
-
-
-/****************************************************************************
- * --- .Call ENTRY POINT ---
- * Args:
- *   cigar: character vector containing the extended CIGAR string for each
- *          read;
- * Return an integer matrix with the number of rows equal to the length of
- * 'cigar' and 9 columns, one for each extended CIGAR operation containing
- * a frequency count for the operations for each element of 'cigar'.
- */
-SEXP cigar_op_table(SEXP cigar)
-{
-	SEXP cigar_string, ans, ans_dimnames, ans_colnames;
-	int cigar_len, allOPs_len, i, j, *ans_row;
-	const char *allOPs = "MIDNSHP=X", *errmsg;
-	char OPstrbuf[2];
-
-	cigar_len = LENGTH(cigar);
-	allOPs_len = strlen(allOPs);
-	PROTECT(ans = allocMatrix(INTSXP, cigar_len, allOPs_len));
-	memset(INTEGER(ans), 0, LENGTH(ans) * sizeof(int));
-	ans_row = INTEGER(ans);
-	for (i = 0, ans_row = INTEGER(ans); i < cigar_len; i++, ans_row++) {
-		cigar_string = STRING_ELT(cigar, i);
-		if (cigar_string == NA_STRING) {
-			INTEGER(ans)[i] = NA_INTEGER;
-			continue;
-		}
-		errmsg = cigar_string_op_table(cigar_string, allOPs,
-				ans_row, cigar_len);
-		if (errmsg != NULL) {
-			UNPROTECT(1);
-			error("in 'cigar[%d]': %s", i + 1, errmsg);
-		}
-	}
-
-	PROTECT(ans_colnames = NEW_CHARACTER(allOPs_len));
-	OPstrbuf[1] = '\0';
-	for (j = 0; j < allOPs_len; j++) {
-		OPstrbuf[0] = allOPs[j];
-		SET_STRING_ELT(ans_colnames, j, mkChar(OPstrbuf));
-	}
-	PROTECT(ans_dimnames = NEW_LIST(2));
-	SET_ELEMENT(ans_dimnames, 0, R_NilValue);
-	SET_ELEMENT(ans_dimnames, 1, ans_colnames);
-	SET_DIMNAMES(ans, ans_dimnames);
 	UNPROTECT(3);
 	return ans;
 }

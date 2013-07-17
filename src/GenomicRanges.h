@@ -17,6 +17,8 @@ SEXP explode_cigar_op_lengths(
 
 SEXP split_cigar(SEXP cigar);
 
+SEXP cigar_op_table(SEXP cigar);
+
 SEXP cigar_ranges(
 	SEXP cigar,
 	SEXP flag,
@@ -38,8 +40,6 @@ SEXP cigar_width(
 SEXP cigar_narrow(SEXP cigar, SEXP left_width, SEXP right_width);
 
 SEXP cigar_qnarrow(SEXP cigar, SEXP left_qwidth, SEXP right_qwidth);
-
-SEXP cigar_op_table(SEXP cigar);
 
 SEXP ref_locs_to_query_locs(
         SEXP ref_locs,
