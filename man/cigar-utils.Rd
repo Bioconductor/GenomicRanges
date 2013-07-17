@@ -292,7 +292,7 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
 \seealso{
   \itemize{
     \item The \link[Rsamtools]{sequenceLayer} function in the \pkg{Rsamtools}
-          package for laying the query sequences to the "reference" or
+          package for laying the query sequences alongside the "reference" or
           "pairwise" spaces.
 
     \item The \link{GAlignments} container for storing a set of genomic
