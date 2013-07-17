@@ -94,7 +94,7 @@ setMethod("strand", "GAlignmentsList",
 setMethod("qwidth", "GAlignmentsList",
     function(x)
         new2("CompressedIntegerList",
-             unlistData=cigarWidthOnQuerySpace(x@unlistData@cigar),
+             unlistData=cigarWidthAlongQuerySpace(x@unlistData@cigar),
              partitioning=x@partitioning, check=FALSE)
 )
 
@@ -122,7 +122,7 @@ setMethod("end", "GAlignmentsList",
 setMethod("width", "GAlignmentsList",
     function(x)
         new2("CompressedIntegerList",
-             unlistData=cigarWidthOnReferenceSpace(x@unlistData@cigar),
+             unlistData=cigarWidthAlongReferenceSpace(x@unlistData@cigar),
              partitioning=x@partitioning, check=FALSE)
 )
 

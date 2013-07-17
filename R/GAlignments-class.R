@@ -96,7 +96,7 @@ setMethod("rname", "GAlignments", function(x) seqnames(x))
 setMethod("cigar", "GAlignments", function(x) x@cigar)
 
 setMethod("width", "GAlignments",
-    function(x) cigarWidthOnReferenceSpace(x@cigar)
+    function(x) cigarWidthAlongReferenceSpace(x@cigar)
 )
 
 setMethod("start", "GAlignments", function(x, ...) x@start)
@@ -104,7 +104,9 @@ setMethod("end", "GAlignments", function(x, ...) {x@start + width(x) - 1L})
 
 setMethod("strand", "GAlignments", function(x) x@strand)
 
-setMethod("qwidth", "GAlignments", function(x) cigarWidthOnQuerySpace(x@cigar))
+setMethod("qwidth", "GAlignments",
+    function(x) cigarWidthAlongQuerySpace(x@cigar)
+)
 
 setMethod("ngap", "GAlignments",
     function(x) {unname(elementLengths(rglist(x))) - 1L}

@@ -207,12 +207,12 @@ cigarOpTable <- function(cigar)
            PACKAGE="GenomicRanges")
 }
 
-cigarRangesOnReferenceSpace <- function(cigar, flag=NULL,
-                                        N.regions.removed=FALSE, pos=1L, f=NULL,
-                                        ops=CIGAR_OPS,
-                                        drop.empty.ranges=FALSE,
-                                        reduce.ranges=FALSE,
-                                        with.ops=FALSE)
+cigarRangesAlongReferenceSpace <- function(cigar, flag=NULL,
+                                    N.regions.removed=FALSE, pos=1L, f=NULL,
+                                    ops=CIGAR_OPS,
+                                    drop.empty.ranges=FALSE,
+                                    reduce.ranges=FALSE,
+                                    with.ops=FALSE)
 {
     space <- .select_reference_space(N.regions.removed)
     C_ans <- .cigar_ranges(cigar, flag, space, pos, f,
@@ -223,7 +223,7 @@ cigarRangesOnReferenceSpace <- function(cigar, flag=NULL,
     IRangesList(C_ans, compress=compress)
 }
 
-cigarRangesOnQuerySpace <- function(cigar, flag=NULL,
+cigarRangesAlongQuerySpace <- function(cigar, flag=NULL,
                                     before.hard.clipping=FALSE,
                                     after.soft.clipping=FALSE,
                                     ops=CIGAR_OPS,
@@ -236,19 +236,19 @@ cigarRangesOnQuerySpace <- function(cigar, flag=NULL,
                   ops, drop.empty.ranges, reduce.ranges, with.ops)
 }
 
-cigarRangesOnPairwiseSpace <- function(cigar, flag=NULL,
-                                       N.regions.removed=FALSE, dense=FALSE,
-                                       ops=CIGAR_OPS,
-                                       drop.empty.ranges=FALSE,
-                                       reduce.ranges=FALSE,
-                                       with.ops=FALSE)
+cigarRangesAlongPairwiseSpace <- function(cigar, flag=NULL,
+                                    N.regions.removed=FALSE, dense=FALSE,
+                                    ops=CIGAR_OPS,
+                                    drop.empty.ranges=FALSE,
+                                    reduce.ranges=FALSE,
+                                    with.ops=FALSE)
 {
     space <- .select_pairwise_space(N.regions.removed, dense)
     .cigar_ranges(cigar, flag, space, 1L, NULL,
                   ops, drop.empty.ranges, reduce.ranges, with.ops)
 }
 
-### A convenience wrapper to cigarRangesOnReferenceSpace().
+### A convenience wrapper to cigarRangesAlongReferenceSpace().
 extractAlignmentRangesOnReference <- function(cigar, pos=1L,
                                               drop.D.ranges=FALSE, f=NULL)
 {
@@ -264,9 +264,9 @@ extractAlignmentRangesOnReference <- function(cigar, pos=1L,
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    cigarRangesOnReferenceSpace(cigar, flag=NULL, pos=pos, f=f,
-                                ops=ops,
-                                drop.empty.ranges=FALSE, reduce.ranges=TRUE)
+    cigarRangesAlongReferenceSpace(cigar, flag=NULL, pos=pos, f=f,
+                                   ops=ops,
+                                   drop.empty.ranges=FALSE, reduce.ranges=TRUE)
 }
 
 
@@ -285,23 +285,23 @@ extractAlignmentRangesOnReference <- function(cigar, pos=1L,
     .Call2("cigar_width", cigar, flag, space, PACKAGE="GenomicRanges")
 }
 
-cigarWidthOnReferenceSpace <- function(cigar, flag=NULL,
-                                       N.regions.removed=FALSE)
+cigarWidthAlongReferenceSpace <- function(cigar, flag=NULL,
+                                          N.regions.removed=FALSE)
 {
     space <- .select_reference_space(N.regions.removed)
     .cigar_width(cigar, flag, space)
 }
 
-cigarWidthOnQuerySpace <- function(cigar, flag=NULL,
-                                   before.hard.clipping=FALSE,
-                                   after.soft.clipping=FALSE)
+cigarWidthAlongQuerySpace <- function(cigar, flag=NULL,
+                                      before.hard.clipping=FALSE,
+                                      after.soft.clipping=FALSE)
 {
     space <- .select_query_space(before.hard.clipping, after.soft.clipping)
     .cigar_width(cigar, flag, space)
 }
 
-cigarWidthOnPairwiseSpace <- function(cigar, flag=NULL,
-                                      N.regions.removed=FALSE, dense=FALSE)
+cigarWidthAlongPairwiseSpace <- function(cigar, flag=NULL,
+                                         N.regions.removed=FALSE, dense=FALSE)
 {
     space <- .select_pairwise_space(N.regions.removed, dense)
     .cigar_width(cigar, flag, space)
@@ -314,7 +314,7 @@ cigarWidthOnPairwiseSpace <- function(cigar, flag=NULL,
 
 cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
-    cigar_width <- cigarWidthOnReferenceSpace(cigar)
+    cigar_width <- cigarWidthAlongReferenceSpace(cigar)
     cigar_ranges <- IRanges(start=rep.int(1L, length(cigar_width)),
                             width=cigar_width)
     threeranges <- threebands(cigar_ranges, start=start, end=end, width=width)
@@ -328,7 +328,7 @@ cigarNarrow <- function(cigar, start=NA, end=NA, width=NA)
 
 cigarQNarrow <- function(cigar, start=NA, end=NA, width=NA)
 {
-    cigar_qwidth <- cigarWidthOnQuerySpace(cigar)
+    cigar_qwidth <- cigarWidthAlongQuerySpace(cigar)
     cigar_qranges <- IRanges(start=rep.int(1L, length(cigar_qwidth)),
                              width=cigar_qwidth)
     threeranges <- threebands(cigar_qranges, start=start, end=end, width=width)
@@ -377,7 +377,7 @@ cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
                                   reduce.ranges=reduce.ranges)[[1L]]
 }
 
-### 2 wrappers to cigarRangesOnReferenceSpace() with ugly names. Used
+### 2 wrappers to cigarRangesAlongReferenceSpace() with ugly names. Used
 ### internally in the GenomicRanges package for turning a GAlignments object
 ### into a GRangesList object and/or for extracting the ranges that generate
 ### coverage on the reference.
@@ -398,9 +398,9 @@ cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos,
-                                ops=ops, drop.empty.ranges=drop.empty.ranges,
-                                reduce.ranges=reduce.ranges)
+    cigarRangesAlongReferenceSpace(cigar, flag=flag, pos=pos,
+                                   ops=ops, drop.empty.ranges=drop.empty.ranges,
+                                   reduce.ranges=reduce.ranges)
 }
 
 cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
@@ -425,21 +425,21 @@ cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
     } else {
         ops <- c("M", "=", "X", "I", "D")
     }
-    cigarRangesOnReferenceSpace(cigar, flag=flag, pos=pos, f=rname,
-                                ops=ops, drop.empty.ranges=drop.empty.ranges,
-                                reduce.ranges=reduce.ranges)
+    cigarRangesAlongReferenceSpace(cigar, flag=flag, pos=pos, f=rname,
+                                   ops=ops, drop.empty.ranges=drop.empty.ranges,
+                                   reduce.ranges=reduce.ranges)
 }
 
 cigarToWidth <- function(...)
 {
-    .Deprecated("cigarWidthOnReferenceSpace")
-    cigarWidthOnReferenceSpace(...)
+    .Deprecated("cigarWidthAlongReferenceSpace")
+    cigarWidthAlongReferenceSpace(...)
 }
 
 cigarToQWidth <- function(...)
 {
-    .Deprecated("cigarWidthOnQuerySpace")
-    cigarWidthOnQuerySpace(...)
+    .Deprecated("cigarWidthAlongQuerySpace")
+    cigarWidthAlongQuerySpace(...)
 }
 
 cigarToCigarTable <- function(cigar)
