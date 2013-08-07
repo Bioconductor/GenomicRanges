@@ -232,16 +232,13 @@ setAs("GenomicRanges", "RangedData",
 setAs("GenomicRanges", "RangesList",
     function(from)
     {
-        rl <- split(ranges(from), seqnames(from))
         strand_mcols <- DataFrame(strand=strand(from), mcols(from))
         ecs <- extraColumnSlotsAsDF(from)
         if (length(ecs))
           strand_mcols <- cbind(strand_mcols, ecs)
-        mcols_list <- split(strand_mcols, seqnames(from))
-        rl <- mendoapply(function(ranges, metadata) {
-          mcols(ranges) <- metadata
-          ranges
-        }, rl, mcols_list)
+        rngs <- ranges(from)
+        mcols(rngs) <- strand_mcols
+        rl <- split(rngs, seqnames(from))
         mcols(rl) <- DataFrame(seqlengths=seqlengths(from),
                                isCircular=isCircular(from),
                                genome=genome(from))
