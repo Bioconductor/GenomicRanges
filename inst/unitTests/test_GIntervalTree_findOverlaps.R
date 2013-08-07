@@ -312,7 +312,24 @@ test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
      checkIdentical(target, current)
 }
 
+test_findOverlaps_seqlevelIssues <- function() {
+    gr=GRanges(seqnames=c("chr1","chr2"),ranges=IRanges(1:2,width=1))
+    gtree=GIntervalTree(gr)
 
+    olaps1=findOverlaps(gr,gr[1])
+    olaps2=findOverlaps(gr,gtree[1])
+    checkIdentical(olaps1, olaps2)
+
+    gr1 = GRanges(seqnames = c("chr1", "chr2"), ranges = IRanges(1:2, width = 1))    
+    gr2 = gr1
+    seqlevels(gr2, force = TRUE) = c("chr2", "chr1")
+
+    olaps1=findOverlaps(gr1,gr2)
+    olaps2=findOverlaps(gr1,GIntervalTree(gr2))
+    checkIdentical(olaps1,olaps2)
+
+
+}
 # this needs GIntervalTreeList?
 # test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
 #      query <- make_query()

@@ -186,8 +186,3 @@ setMethod("[", "GIntervalTree",
             gr <- callGeneric(as(x, "GRanges"),i=i, ...)
             as(gr, "GIntervalTree")
           })
-
-### - - - - - - - -
-### show setMethod
-### - - - - - - - - 
-setMethod("show", "GIntervalTree", function(object) show(as(object, "GRanges")))

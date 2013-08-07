@@ -6,12 +6,12 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.13.35
+Version: 1.13.36
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.10), methods, BiocGenerics (>= 0.7.3),
-	IRanges (>= 1.19.18), XVector
+	IRanges (>= 1.19.20), XVector
 Imports: methods, utils, stats, BiocGenerics, IRanges
 LinkingTo: IRanges, XVector
 Suggests: AnnotationDbi (>= 1.21.1),  Biostrings (>= 2.25.3),
