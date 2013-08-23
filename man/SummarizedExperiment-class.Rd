@@ -127,6 +127,7 @@
 \alias{shift,SummarizedExperiment-method}
 \alias{sort,SummarizedExperiment-method}
 \alias{split,SummarizedExperiment-method}
+\alias{split,SummarizedExperiment,ANY-method}
 \alias{splitAsListReturnedClass,SummarizedExperiment-method}
 \alias{start,SummarizedExperiment-method}
 \alias{start<-,SummarizedExperiment-method}

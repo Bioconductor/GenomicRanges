@@ -244,7 +244,7 @@ readGAlignmentsList <- function(file, format="BAM", use.names=FALSE, ...)
         stop("'use.names' must be TRUE or FALSE")
     if (format == "BAM") {
         suppressMessages(library("Rsamtools"))
-        ans <- readGAlignmentsListFromBam(file=file, use.names=TRUE, ...) 
+        ans <- readGAlignmentsListFromBam(file=file, use.names=use.names, ...) 
         return(ans)
     }
     stop("only BAM format is supported at the moment")
