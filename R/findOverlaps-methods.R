@@ -603,7 +603,7 @@ setMethod("findOverlaps", c("GAlignmentPairs", "GAlignmentPairs"),
 
 setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end", "within"),
+             type = c("any", "start", "end", "within", "equal"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(rowData(query), subject,
@@ -615,7 +615,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
 
 setMethod("findOverlaps", c("Vector", "SummarizedExperiment"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end", "within"),
+             type = c("any", "start", "end", "within", "equal"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
         findOverlaps(query, rowData(subject),
