@@ -43,14 +43,18 @@ test_GIntervalTree_partial_coercion <- function() {
 }
 
 test_GIntervalTree_conversion_to_GRanges <- function () {
-  gr <- GRanges(seqnames=rep(c("chr1","chr2"),len=10), ranges=IRanges(start=1:10, width=100))
+  gr <- GRanges(seqnames=rep(c("chr1","chr2"),len=10),
+                ranges=IRanges(start=1:10, width=100),
+                strand=rep(c("+","-"), len=10), a=letters[1:10])
   gr2 <- as(as(gr,"GIntervalTree"), "GRanges")
   
   checkIdentical(gr,gr2)
 }
 
 test_GIntervalTree_subsetting <- function () {
-  gr <- GRanges(seqnames=rep(c("chr1","chr2"),len=10), ranges=IRanges(start=1:10, width=100))
+  gr <- GRanges(seqnames=rep(c("chr1","chr2"),len=10),
+                ranges=IRanges(start=1:10, width=100),
+                strand=rep(c("+","-"), len=10), a=letters[1:10])
   git=as(gr,"GIntervalTree")
   
   gr <- gr[4:7,]

@@ -167,12 +167,12 @@ GIntervalTree <- function(x) {
 setAs("GIntervalTree", "GRanges",
       function(from) {
         out=new("GRanges",
-                seqnames=Rle(space(from@ranges)),
+                seqnames=seqnames(from),
                 strand=strand(from),
                 elementMetadata=mcols(from),
                 seqinfo=seqinfo(from),
-                ranges=as(from@ranges, "IRanges"))
-        .GT_reorderValue(from, out)
+                ranges=ranges(from))
+        out
       }
 )
 
