@@ -82,19 +82,10 @@
       See \code{?\link[Rsamtools]{readGAlignmentsListFromBam}} for
       more information.
  
-      The \code{param} and \code{group.as.pairs} arguments described on the
-      \code{\link[Rsamtools]{readGAlignmentsListFromBam}} man page fine tune
+      The \code{param} described on the
+      \code{\link[Rsamtools]{readGAlignmentsListFromBam}} man page fine tunes
       which records are returned and how they are grouped. \code{param} is
-      specified by the standard \code{ScanBamParam()} options. When 
-      \code{group.as.pairs=TRUE} (default), records are paired according to
-      the algorithm used in 
-      \code{\link[Rsamtools]{readGAlignmentPairsFromBam}}. The result is a 
-      \code{GAlignmentsList} which includes the records paired by the 
-      algorithm (indicated by metadata column \sQuote{paired}) and all
-      unpaired or singleton reads. Records not paired by the algorithm will
-      have metadata column \code{paired=FALSE} and are grouped by read id
-      (QNAME in SAM/BAM). This format allows singletons, pairs, and 
-      multi-fragment reads to be stored in a single class. 
+      specified by the standard \code{ScanBamParam()} options.
     }
 
     \item{}{
@@ -378,12 +369,29 @@ mcols(galist, level="within")
 ## D. readGAlignmentsListFromBam()
 ## ---------------------------------------------------------------------
 
-library(pasillaBamSubset)
 library(Rsamtools)
-fl <- sortBam(untreated3_chr4(), tempfile(), byQname=TRUE)
-bf <- BamFile(fl, index=character(0), yieldSize=50, obeyQname=TRUE)
-galist <- readGAlignmentsList(bf, group.as.pairs=TRUE)
-galist
+library(pasillaBamSubset)
+
+## 'file' as character.
+fl <- untreated3_chr4()
+galist1 <- readGAlignmentsList(fl)
+
+galist1[1:3]
+length(galist1)
+table(elementLengths(galist1))
+
+## When 'file' is a BamFile, 'asMates' must be TRUE. If FALSE,
+## the data are treated as single-end and each list element of the
+## GAlignmentsList will be of length 1. For single-end data 
+## use readGAlignements().
+bf <- BamFile(fl, yieldSize=3, asMates=TRUE)
+readGAlignmentsList(bf)
+
+## Use a 'param' to fine tune the results.
+param <- ScanBamParam(flag=scanBamFlag(isProperPair=TRUE))
+galist2 <- readGAlignmentsList(fl, param=param)
+length(galist2)
+
 
 ## ---------------------------------------------------------------------
 ## E. COERCION 
