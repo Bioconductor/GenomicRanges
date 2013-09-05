@@ -461,6 +461,8 @@ setMethod("introns", "GAlignmentPairs",
 
 setAs("GAlignmentPairs", "GRangesList", function(from) grglist(from))
 setAs("GAlignmentPairs", "GRanges", function(from) granges(from))
+setAs("GAlignmentPairs", "GAlignments",
+      function(from) unlist(from, use.names=TRUE))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### fillGaps()
