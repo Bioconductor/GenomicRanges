@@ -383,7 +383,7 @@ table(elementLengths(galist1))
 ## When 'file' is a BamFile, 'asMates' must be TRUE. If FALSE,
 ## the data are treated as single-end and each list element of the
 ## GAlignmentsList will be of length 1. For single-end data 
-## use readGAlignements().
+## use readGAlignments() instead of readGAlignmentsList().
 bf <- BamFile(fl, yieldSize=3, asMates=TRUE)
 readGAlignmentsList(bf)
 
