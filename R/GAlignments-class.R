@@ -202,7 +202,8 @@ setReplaceMethod("strand", "GAlignments",
 setReplaceMethod("elementMetadata", "GAlignments",
     function(x, ..., value)
     {
-        x@elementMetadata <- mk_elementMetadataReplacementValue(x, value)
+        value <- normalizeMetadataColumnsReplacementValue(value, x)
+        x@elementMetadata <- value
         x
     }
 )

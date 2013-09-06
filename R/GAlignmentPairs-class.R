@@ -175,7 +175,8 @@ setReplaceMethod("strand", "GAlignmentPairs",
 setReplaceMethod("elementMetadata", "GAlignmentPairs",
     function(x, ..., value)
     {
-        x@elementMetadata <- mk_elementMetadataReplacementValue(x, value)
+        value <- normalizeMetadataColumnsReplacementValue(value, x)
+        x@elementMetadata <- value
         x
     }
 )
@@ -349,7 +350,7 @@ setMethod("[[", "GAlignmentPairs",
     {
         if (missing(i) || !missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
-        i <- IRanges:::checkAndTranslateDbleBracketSubscript(x, i)
+        i <- IRanges:::normalizeDoubleBracketSubscript(i, x)
         .GAlignmentPairs.getElement(x, i)
     }
 )

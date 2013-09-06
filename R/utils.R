@@ -55,7 +55,7 @@ showSeqlengths <- function(object, margin="")
 ###
 
 ### Try to turn 'value' into a DataFrame compatible with 'x'.
-mk_elementMetadataReplacementValue <- function(x, value)
+normalizeMetadataColumnsReplacementValue <- function(value, x)
 {
     if (is.null(value))
         return(new("DataFrame", nrows=length(x)))
