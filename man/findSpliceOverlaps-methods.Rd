@@ -67,7 +67,13 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     in a coding region. When not provided, the "coding" output is 
     \code{NA}.
   }
-  \item{\dots}{
+  \item{...}{
+    Additional arguments such as \code{singleEnd} used in the BamFile method. 
+    \describe{
+      \item{singleEnd}{
+        A logical value indicating if reads are single or paired-end.
+      }
+    }
   }
 }
 

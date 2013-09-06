@@ -36,82 +36,47 @@
 }
 
 \arguments{
-  \item{features}{
-    A \linkS4class{GRanges} or a \linkS4class{GRangesList} containing genomic 
-    regions of interest. This will commonly be a \code{GRanges} of exons or
-    transcripts or a \linkS4class{GRangesList} of exons by gene or transcripts
-    by gene.
 
-  }
   \item{reads}{
-    A \linkS4class{GAlignments} (single-end), 
-    \linkS4class{GAlignmentPairs} (paired-end), or
-    \link[Rsamtools]{BamFileList} or \link[Rsamtools]{BamViews} objects
-    containing the reads to be mapped to the genomic regions of interest.
-
-    The \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} methods 
-    can handle single or paired-end reads by appropriately specifying the
-    \code{singleEnd} argument. Currently \code{singleEnd} is set once for 
-    all files in the list (i.e., the list cannot contain both single and 
-    paired-end read files.). For examples of iterating over Bam files 
-    See \code{?`summarizeOverlaps,GRanges,BamFileList-method`} in the
-    \pkg{Rsamtools} package.
+    A \code{\link[Rsamtools]{BamFileList}} that represents the data to be
+    counted by \code{summarizeOverlaps}.
   }
+  \item{features}{
+    A \link{GRanges} or a \link{GRangesList} object of genomic regions of
+    interest. When a \link{GRanges} is supplied, each row is considered a
+    feature. When a \link{GRangesList} is supplied, each higher list-level is
+    considered a feature. This distinction is important when defining
+    overlaps.
+  } 
   \item{mode}{
-    Character name of a function that defines the counting method to be used. 
-    Modes include \sQuote{Union}, \sQuote{IntersectionStrict}, or 
-    \sQuote{IntersectionNotEmpty} and are designed after the counting modes 
-    in the HTSeq package by Simon Anders (see references). All methods are 
-    gap-aware and count a read a maximum of once. Alternatively, a user can 
-    provide their own count function as the \code{mode}. See details below.
+    A function that defines the method to be used when a read overlaps
+    more than one feature. Pre-defined options are "Union",
+    "IntersectionStrict", or "IntersectionNotEmpty" and are designed
+    after the counting modes available in the HTSeq package by Simon
+    Anders (see references).
 
     \itemize{
-      \item Union : (Default) Reads that overlap any portion of exactly one 
-            feature are counted. Reads that overlap multiple features are 
-            discarded. For mode `Union' gapped reads are handled the same as 
-            simple reads. If any portion of the gapped read hits >1 feature 
-            the read is discarded. 
-
-            The number of reads counted depends on the quality of the features
-            (i.e., do the features overlap, have gaps, etc.). Of the three
-            modes `Union' tends to be the most conservative and 
-            often resuts in the lowest number of read counts. This is 
-            because the method does not attempt to resolve a read that hits 
-            multiple subjects but simply discards them. Both 
-            `IntersectionStrict' and `IntersectionNotEmpty' have rules that
-            attempt to assign a `multi-hit read' to a single feature.
-
-      \item IntersectionStrict : The read must fall completely within a 
-            single feature to be counted. A read can overlap multiple 
-            features but must fall within only one. In the case of gapped reads, 
-            all portions of the read fragment must fall within the same 
-            feature for the read to be counted. The fragments can overlap 
-            multiple features but collectively they must fall within 
-            only one. 
-
-      \item IntersectionNotEmpty : For this counting mode, the features are
-            partitioned into unique disjoint regions. This is accomplished
-            by disjoining the feature ranges then removing ranges shared by
-            more than one feature. The result is a group of non-overlapping 
-            regions each of which belong to a single feature. 
-            Simple and gapped reads are counted if,
-
-            \enumerate{
-              \item the read or exactly 1 of the read fragments overlaps a 
-                    unique disjoint region
-              \item the read or >1 read fragments overlap >1 unique disjoint
-                    region from the same feature
-            }
-
-      \item User supplied function : The function must meet the following
-            requirements:
-
-            \enumerate{
-              \item have 3 arguments that correspond to `features', `reads' and 
-                    `ignore.strand', in that order
-              \item return a vector of counts the same length as `features'
-            }
-    } 
+      \item "Union" : (Default) Reads that overlap any portion of exactly one
+            feature are counted. Reads that overlap multiple features are
+            discarded. This is the most conservative of the 3 modes.
+      \item "IntersectionStrict" : A read must fall completely "within" the
+            feature to be counted. If a read overlaps multiple features but
+            falls "within" only one, the read is counted for that feature.
+            If the read is "within" multiple features, the read is discarded.
+      \item "IntersectionNotEmpty" : A read must fall in a unique disjoint
+            region of a feature to be counted. When a read overlaps multiple
+            features, the features are partitioned into disjoint intervals.
+            Regions that are shared between the features are discarded leaving
+            only the unique disjoint regions. If the read overlaps one of
+            these remaining regions, it is assigned to the feature the
+            unique disjoint region came from.
+      \item user supplied function : A function can be supplied as the
+            \code{mode} argument. It must (1) have arguments that correspond
+            to \code{features}, \code{reads}, \code{ignore.strand} and
+            \code{inter.feature} arguments (as in the defined mode functions)
+            and (2) return a vector of counts the same length as
+            \code{features}. 
+    }
   }
   \item{ignore.strand}{
     A logical indicating if strand should be considered when matching.
@@ -131,9 +96,9 @@
     of the annotation are removed before counting.
   }
   \item{...}{
-    Additional arguments such as \code{fragments} or \code{param}.  If 
-    using multiple cores, arguments can be passed through to the mclapply 
-    used when counting Bam files.
+    Additional arguments such as \code{fragments}, \code{singleEnd} or 
+    \code{param}. If using multiple cores, arguments can be passed through 
+    to mclapply used when counting Bam files.
     \describe{
       \item{fragments}{
       A logical value indicating if singletons, reads with unmapped pairs
@@ -144,6 +109,9 @@
       counted in addition to the reads paired with the ?findMateAlignment
       algorithm. This argument applies to paired-end reads only so
       \code{singleEnd} must be FALSE.
+      }
+      \item{singleEnd}{
+        A logical value indicating if reads are single or paired-end.
       }
       \item{param}{An optional \code{\link[Rsamtools]{ScanBamParam}} instance to
          further influence scanning, counting, or filtering.
