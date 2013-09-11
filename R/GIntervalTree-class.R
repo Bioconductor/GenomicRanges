@@ -73,7 +73,7 @@ setValidity2("GIntervalTree", .valid.GIntervalTree)
   if (is.null(rngidx))
     rngidx <- obj@rngidx  
   if (length(rngidx))
-    val <- seqselect(val, rngidx)
+    val <- IRanges:::extractROWS(val, rngidx)
   val
 }
 

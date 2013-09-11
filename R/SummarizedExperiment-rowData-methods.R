@@ -255,19 +255,19 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
     x
 })
 
-## seqselect, seqselect<-
+## extractROWS, replaceROWS
 
-setMethod(seqselect, "SummarizedExperiment",
-    function(x, start = NULL, end = NULL, width = NULL)
+setMethod(IRanges:::extractROWS, "SummarizedExperiment",
+    function(x, i)
 {
-    ridx <- seqselect(seq_len(nrow(x)), start=start, end=end, width=width)
+    ridx <- IRanges:::extractROWS(seq_len(nrow(x)), i)
     x[ridx,]
 })
 
-setReplaceMethod("seqselect", "SummarizedExperiment",
-    function (x, start = NULL, end = NULL, width = NULL, value)
+setMethod(IRanges:::replaceROWS, "SummarizedExperiment",
+    function (x, i, value)
 {
-    ridx <- seqselect(seq_len(nrow(x)), start=start, end=end, width=width)
+    ridx <- IRanges:::extractROWS(seq_len(nrow(x)), i)
     x[ridx,] <- value
     x
 })

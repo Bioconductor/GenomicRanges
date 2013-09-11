@@ -122,8 +122,6 @@
 \alias{seqlevelsInUse,SummarizedExperiment-method}
 \alias{seqinfo<-,SummarizedExperiment-method}
 \alias{seqnames,SummarizedExperiment-method}
-\alias{seqselect,SummarizedExperiment-method}
-\alias{seqselect<-,SummarizedExperiment-method}
 \alias{shift,SummarizedExperiment-method}
 \alias{sort,SummarizedExperiment-method}
 \alias{split,SummarizedExperiment-method}
@@ -432,7 +430,7 @@ exptData(x, ...) <- value
   \code{\link{ranges<-}}, \code{\link{rank}}, \code{\link{resize}},
   \code{\link{restrict}}, \code{\link{seqinfo}},
   \code{\link{seqinfo<-}}, \code{\link{seqnames}},
-  \code{\link{seqselect}}, \code{\link{seqselect<-}}, \code{\link{shift}},
+  \code{\link{shift}},
   \code{\link{sort}}, \code{split}, \code{splitAsListReturnedClass},
   \code{\link{start}}, \code{\link{start<-}},
   \code{\link{strand}}, \code{\link{strand<-}},

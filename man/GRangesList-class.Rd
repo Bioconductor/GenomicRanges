@@ -311,27 +311,6 @@
       }
     }
     \item{}{
-      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
-      Similar to \code{window}, except that multiple consecutive subsequences
-      can be requested for concatenation. As such two of the three \code{start},
-      \code{end}, and \code{width} arguments can be used to specify the
-      consecutive subsequences. Alternatively, \code{start} can take a Ranges
-      object or something that can be converted to a Ranges object like an
-      integer vector, logical vector or logical Rle. If the concatenation of
-      the consecutive subsequences is undesirable, consider using
-      \code{\link{Views}}.
-    }
-    \item{}{
-      \code{seqselect(x, start=NULL, end=NULL, width=NULL) <- value}:
-      Similar to \code{window<-}, except that multiple consecutive subsequences
-      can be replaced by a \code{value} whose length is a divisor of the number
-      of elements it is replacing. As such two of the three \code{start},
-      \code{end}, and \code{width} arguments can be used to specify the
-      consecutive subsequences. Alternatively, \code{start} can take a Ranges
-      object or something that can be converted to a Ranges object like an
-      integer vector, logical vector or logical Rle.
-    }
-    \item{}{
       \code{subset(x, subset)}:
       Returns a new object of the same class as \code{x} made of the subset
       using logical vector \code{subset}, where missing values are taken as

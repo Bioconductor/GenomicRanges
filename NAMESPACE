@@ -68,7 +68,6 @@ exportMethods(
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
-    seqselect, "seqselect<-",
     splitAsListReturnedClass,
     width, "start<-", "width<-", "end<-",
     compare,

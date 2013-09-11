@@ -418,16 +418,16 @@ test_GRanges_subsetting <- function()
     gr <- .make_TARGET_GRanges()
     checkIdentical(gr[1:3], window(gr, 1, 3))
 
-    ## seqselect
+    ## [ by IRanges
     gr <- .make_TARGET_GRanges()
-    checkIdentical(gr[1:3], seqselect(gr, 1, 3))
-    checkIdentical(gr[c(1:3, 1:3)], seqselect(gr, c(1,1), c(3,3)))
+    checkIdentical(gr[1:3], gr[IRanges(1, 3)])
+    checkIdentical(gr[c(1:3, 1:3)], gr[IRanges(c(1,1), c(3,3))])
 
-    ## seqselect<-
+    ## [<- by IRanges
     gr1 <- .make_TARGET_GRanges()
     gr1[1:3] <- .make_TARGET_GRanges()[4:6]
     gr2 <- .make_TARGET_GRanges()
-    seqselect(gr2, 1, 3) <- .make_TARGET_GRanges()[4:6]
+    gr2[IRanges(1, 3)] <- .make_TARGET_GRanges()[4:6]
     checkIdentical(gr1, gr2)
 }
 

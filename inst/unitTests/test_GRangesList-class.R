@@ -147,9 +147,9 @@ test_GRangesList_Vector <- function() {
 
     checkIdentical(grl, local({
         x <- grl
-        seqselect(x, 1, 1) <- seqselect(grl, 1, 1)
+        x[IRanges(1, 1)] <- grl[IRanges(1, 1)]
         x
-    }), "seqselect")
+    }), "[ by IRanges")
     checkIdentical(grl, local({
         x <- grl; x[1] <- grl[1]; x
     }), "[<- 1")

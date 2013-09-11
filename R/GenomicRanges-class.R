@@ -517,6 +517,24 @@ setReplaceMethod("width", "GenomicRanges",
 ### Subsetting and combining.
 ###
         
+setMethod(IRanges:::extractROWS, "GenomicRanges",
+    function(x, i)
+    {
+        if (missing(i) || !is(i, "Ranges"))
+            i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+        ans_seqnames <- IRanges:::extractROWS(seqnames(x), i)
+        ans_ranges <- IRanges:::extractROWS(ranges(x), i)
+        ans_strand <- IRanges:::extractROWS(strand(x), i)
+        ans_mcols <- IRanges:::extractROWS(mcols(x), i)
+        ans_ecs <- lapply(extraColumnSlots(x), IRanges:::extractROWS, i)
+        clone(x, seqnames=ans_seqnames,
+                 ranges=ans_ranges,
+                 strand=ans_strand,
+                 elementMetadata=ans_mcols,
+                 .slotList=ans_ecs)
+    }
+)
+
 setMethod("[", "GenomicRanges",
     function(x, i, j, ..., drop)
     {
@@ -529,21 +547,49 @@ setMethod("[", "GenomicRanges",
             ans_mcols <- x_mcols[ , j, drop=FALSE]
             return(clone(x, elementMetadata=ans_mcols))
         }
-        i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+        i <- IRanges:::extractROWS(setNames(seq_along(x), names(x)), i)
         ans_seqnames <- seqnames(x)[i]
         ans_ranges <- ranges(x)[i]
         ans_strand <- strand(x)[i]
-        ans_ecs <- lapply(extraColumnSlots(x), IRanges:::extractROWS, i)
         if (missing(j)) {
             ans_mcols <- x_mcols[i, , drop=FALSE]
         } else {
             ans_mcols <- x_mcols[i, j, drop=FALSE]
         }
+        ans_ecs <- lapply(extraColumnSlots(x), IRanges:::extractROWS, i)
         clone(x, seqnames=ans_seqnames,
                  ranges=ans_ranges,
                  strand=ans_strand,
                  elementMetadata=ans_mcols,
                  .slotList=ans_ecs)
+    }
+)
+
+setMethod(IRanges:::replaceROWS, "GenomicRanges",
+    function(x, i, value)
+    {
+        if (missing(i) || !is(i, "Ranges"))
+            i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
+        x_seqnames <- seqnames(x)
+        x_ranges <- ranges(x)
+        x_strand <- strand(x)
+        x_mcols <- mcols(x)
+        ans_seqnames <- IRanges:::replaceROWS(seqnames(x), i, seqnames(value))
+        ans_ranges <- IRanges:::replaceROWS(ranges(x), i, ranges(value))
+        ans_strand <- IRanges:::replaceROWS(strand(x), i, strand(value))
+        ans_mcols <- IRanges:::replaceROWS(mcols(x), i, mcols(value))
+        ans_ecs <- extraColumnSlotsAsDF(x)
+        value_ecs <- extraColumnSlotsAsDF(value)
+        if (!identical(names(ans_ecs), names(value_ecs)))
+            stop("extra column slots inconsistent between 'x' and 'value'")
+        if (length(ans_ecs) > 0L)
+            ans_ecs <- IRanges:::replaceROWS(ans_ecs, i, value_ecs)
+        update(x, seqnames=ans_seqnames,
+                  ranges=ans_ranges,
+                  strand=ans_strand,
+                  elementMetadata=ans_mcols,
+                  .slotList=as.list(ans_ecs))
     }
 )
 
@@ -634,73 +680,6 @@ setMethod("c", "GenomicRanges",
         else
             args <- unname(list(x, ...))
         .unlist_list_of_GenomicRanges(args, ignore.mcols=ignore.mcols)
-    }
-)
-
-setMethod("seqselect", "GenomicRanges",
-    function(x, start=NULL, end=NULL, width=NULL)
-    {
-        if (!is.null(end) || !is.null(width))
-            start <- IRanges(start=start, end=end, width=width)
-        irInfo <- IRanges:::.bracket.Index(start, length(x), names(x),
-                                           asRanges=TRUE)
-        if (!is.null(irInfo[["msg"]]))
-            stop(irInfo[["msg"]])
-        if (!irInfo[["useIdx"]])
-            return(x)
-        ir <- irInfo[["idx"]]
-        ranges <- seqselect(ranges(x), ir)
-        clone(x,
-              seqnames=seqselect(seqnames(x), ir),
-              ranges=ranges,
-              strand=seqselect(strand(x), ir),
-              elementMetadata=seqselect(elementMetadata(x, FALSE), ir),
-              .slotList=lapply(extraColumnSlots(x), seqselect, ir))
-    }
-)
-
-setReplaceMethod("seqselect", "GenomicRanges",
-    function(x, start=NULL, end=NULL, width=NULL, value)
-    {
-        if (!is(value, "GenomicRanges"))
-            stop("replacement value must be a GenomicRanges object")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
-        if (is.null(end) && is.null(width)) {
-            if (is.null(start))
-                ir <- IRanges(start=1L, width=length(x))
-            else if (is(start, "Ranges"))
-                ir <- start
-            else {
-                if (is.logical(start) && length(start) != length(x))
-                    start <- rep(start, length.out=length(x))
-                ir <- as(start, "IRanges")
-            }
-        } else {
-            ir <- IRanges(start=start, end=end, width=width, names=NULL)
-        }
-        ir <- reduce(ir)
-        if (length(ir) == 0L) {
-            x
-        } else {
-            seqnames <- as.factor(seqnames(x))
-            ranges <- ranges(x)
-            strand <- as.factor(strand(x))
-            mcols <- mcols(x, FALSE)
-            seqselect(seqnames, ir) <- as.factor(seqnames(value))
-            seqselect(ranges, ir) <- ranges(value)
-            seqselect(strand, ir) <- as.factor(strand(value))
-            seqselect(mcols, ir) <- mcols(value)
-            ecs <- extraColumnSlotsAsDF(x)
-            value_ecs <- extraColumnSlotsAsDF(value)
-            if (!identical(names(ecs), names(value_ecs)))
-                stop("extra column slots inconsistent between 'x' and 'value'")
-            if (length(ecs) > 0L)
-                seqselect(ecs, ir) <- value_ecs
-            update(x, seqnames=Rle(seqnames), ranges=ranges, 
-                   strand=Rle(strand),
-                   elementMetadata=mcols,
-                   .slotList=as.list(ecs))
-        }
     }
 )
 

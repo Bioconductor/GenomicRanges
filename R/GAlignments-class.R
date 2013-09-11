@@ -556,42 +556,23 @@ setAs("GenomicRanges", "GAlignments",
 ### Subsetting.
 ###
 
-### Supported 'i' types: numeric vector, logical vector, NULL and missing.
-### TODO: Support subsetting by names.
-setMethod("[", "GAlignments",
-    function(x, i, j, ... , drop=TRUE)
+setMethod(IRanges:::extractROWS, "GAlignments",
+    function(x, i)
     {
-        if (!missing(j) || length(list(...)) > 0L)
-            stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (is(i, "Rle"))
-            i <- as.vector(i)
-        if (!is.atomic(i))
-            stop("invalid subscript type")
-        lx <- length(x)
-        #if (length(i) == 0L) {
-        if (length(i) == 0L | all(i == 0)) {
-            i <- integer(0)
-        } else if (is.numeric(i)) {
-            if (min(i) < 0L)
-                i <- seq_len(lx)[i]
-            else if (!is.integer(i))
-                i <- as.integer(i)
-        } else if (is.logical(i)) {
-            if (length(i) > lx)
-                stop("subscript out of bounds")
-            i <- seq_len(lx)[i]
-        } else {
-            stop("invalid subscript type")
-        }
-        x@NAMES <- x@NAMES[i]
-        x@seqnames <- x@seqnames[i]
-        x@start <- x@start[i]
-        x@cigar <- x@cigar[i]
-        x@strand <- x@strand[i]
-        x@elementMetadata <- x@elementMetadata[i,,drop=FALSE]
-        x
+        if (missing(i) || !is(i, "Ranges"))
+            i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+        ans_names <- IRanges:::extractROWS(names(x), i)
+        ans_seqnames <- IRanges:::extractROWS(seqnames(x), i)
+        ans_start <- IRanges:::extractROWS(start(x), i)
+        ans_cigar <- IRanges:::extractROWS(cigar(x), i)
+        ans_strand <- IRanges:::extractROWS(strand(x), i)
+        ans_mcols <- IRanges:::extractROWS(mcols(x), i)
+        clone(x, NAMES=ans_names,
+                 seqnames=ans_seqnames,
+                 start=ans_start,
+                 cigar=ans_cigar,
+                 strand=ans_strand,
+                 elementMetadata=ans_mcols)
     }
 )
 
@@ -780,28 +761,6 @@ setMethod("splitAsListReturnedClass", "GAlignments",
     function(x) "GAlignmentsList"
 )
 
-setMethod("seqselect", "GAlignments",
-    function(x, start=NULL, end=NULL, width=NULL)
-    {
-        if (!is.null(end) || !is.null(width))
-            start <- IRanges(start=start, end=end, width=width)
-        irInfo <- IRanges:::.bracket.Index(start, length(x), names(x),
-                                           asRanges=TRUE)
-        if (!is.null(irInfo[["msg"]]))
-            stop(irInfo[["msg"]])
-        if (!irInfo[["useIdx"]])
-            return(x)
-        ir <- irInfo[["idx"]]
-        ranges <- seqselect(ranges(x), ir)
-        clone(x,
-              NAMES=seqselect(names(x), ir),
-              seqnames=seqselect(seqnames(x), ir),
-              start=start(seqselect(ranges(x), ir)),
-              cigar=seqselect(cigar(x), ir),
-              strand=seqselect(strand(x), ir),
-              elementMetadata=seqselect(elementMetadata(x, FALSE), ir))
-    }
-)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "updateCigarAndStart" method.

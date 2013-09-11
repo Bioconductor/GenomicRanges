@@ -50,10 +50,6 @@
 \alias{coerce,GAlignments,Ranges-method}
 \alias{as.data.frame,GAlignments-method}
 
-% Subsetting:
-\alias{[,GAlignments-method}
-\alias{seqselect,GAlignments-method}
-
 % Combining:
 \alias{c,GAlignments-method}
 
@@ -372,15 +368,6 @@
       \code{x[i]}:
       Return a new GAlignments object made of the selected
       alignments. \code{i} can be a numeric or logical vector.
-    }
-    \item{}{
-      \code{seqselect(x, start=NULL, end=NULL, width=NULL)}:
-      Return a new GAlignments object made of the selected alignments.
-      Two of the three \code{start}, \code{end}, and \code{width} 
-      arguments can be used to specify the consecutive subsequences. 
-      Alternatively, \code{start} can take a Ranges object or something 
-      that can be converted to a Ranges object (e.g., integer or logical
-      vector or logical Rle).
     }
   }
 }

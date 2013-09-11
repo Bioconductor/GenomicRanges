@@ -207,7 +207,7 @@ rev(gr)
 head(gr,n=2)
 tail(gr,n=2)
 window(gr, start=2,end=4)
-seqselect(gr, start=c(2,7), end=c(3,9))
+gr[IRanges(start=c(2,7), end=c(3,9))]
 @
 
 
@@ -482,9 +482,9 @@ grl["txB", "GC"]
 @ 
 
 The \Rmethod{head}, \Rmethod{tail}, \Rmethod{rep}, \Rmethod{rev},
-\Rmethod{window} and \Rmethod{seqselect} methods all behave as you
-would expect them to for a list object. For example, the elements
-referred to by \Rmethod{window} or \Rmethod{seqselect} are now list
+and \Rmethod{window} methods all behave as you would expect them
+to for a list object. For example, the elements
+referred to by \Rmethod{window} are now list
 elements instead of \Rclass{GRanges} elements.
 
 <<otherSubsetGRL>>=
@@ -493,7 +493,7 @@ rev(grl)
 head(grl, n=1)
 tail(grl, n=1)
 window(grl, start=1, end=1)
-seqselect(grl, start=2, end=2)
+grl[IRanges(start=2, end=2)]
 @
 
 
