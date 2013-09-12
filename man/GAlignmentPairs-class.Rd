@@ -32,9 +32,6 @@
 \alias{seqlevelsInUse,GAlignmentPairs-method}
 \alias{seqinfo<-,GAlignmentPairs-method}
 
-% Vector methods:
-\alias{[,GAlignmentPairs-method}
-
 % List methods:
 \alias{[[,GAlignmentPairs,ANY,ANY-method}
 \alias{unlist,GAlignmentPairs-method}
