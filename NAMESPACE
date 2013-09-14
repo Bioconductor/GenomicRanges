@@ -57,7 +57,6 @@ exportMethods(
     union, intersect, setdiff,
     start, end,
     split, unlist,
-    window,
     range,
     Ops,
     merge,

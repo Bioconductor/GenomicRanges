@@ -666,30 +666,6 @@ setMethod("c", "GenomicRanges",
     }
 )
 
-setMethod("window", "GenomicRanges",
-    function(x, start=NA, end=NA, width=NA,
-             frequency=NULL, delta=NULL, ...)
-    {
-        update(x,
-               seqnames=window(seqnames(x), start=start, end=end,
-                               width=width, frequency=frequency,
-                               delta=delta),
-               ranges=window(ranges(x), start=start, end=end,
-                             width=width, frequency=frequency,
-                             delta=delta),
-               strand=window(strand(x), start=start, end=end,
-                             width=width, frequency=frequency,
-                             delta=delta),
-               elementMetadata=window(elementMetadata(x, FALSE),
-                                      start=start, end=end,
-                                      width=width, frequency=frequency,
-                                      delta=delta),
-               .slotList=lapply(extraColumnSlots(x), window, start=start,
-                                end=end, width=width, frequency=frequency,
-                                delta=delta))
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### $ and $<- methods
