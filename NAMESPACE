@@ -110,7 +110,7 @@ export(
     cigarOpTable, cigarToCigarTable, summarizeCigarTable,
     queryLoc2refLoc, queryLocs2refLocs,
 
-    makeSeqnameIds,
+    makeSeqnameIds, sortSeqlevels,
     Seqinfo,
     GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,

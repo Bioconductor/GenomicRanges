@@ -1,5 +1,5 @@
 ### =========================================================================
-### makeSeqnameIds()
+### makeSeqnameIds() and sortSeqlevels()
 ### -------------------------------------------------------------------------
 ###
 ### Assign a unique ID to each unique sequence name passed in 'seqnames'.
@@ -55,8 +55,8 @@
 ### packages for hg19, mm10, ce2, dm3, sacCer1, sacCer2, sacCer3 and rheMac2
 ### i.e. the IDs returned on the seqnames defined in those packages match the
 ### ranks of the seqnames.
-### For example, for hg19, 'makeSeqnameIds(seqnames(Hsapiens))' is identical
-### to 'seq_len(length(seqnames(Hsapiens))))'.
+### For example, for hg19, 'makeSeqnameIds(seqlevels(Hsapiens))' is identical
+### to 'seq_along(seqlevels(Hsapiens)))'.
 ### TODO: Add unit test for makeSeqnameIds().
 
 makeSeqnameIds <- function(seqnames, X.is.sexchrom=NA)
@@ -267,5 +267,12 @@ makeSeqnameIds <- function(seqnames, X.is.sexchrom=NA)
 
     ## Seqname ids.
     seqlevel_ids[as.integer(seqnames)]
+}
+
+sortSeqlevels <- function(seqlevels, X.is.sexchrom=NA)
+{
+    if (!is.character(seqlevels))
+        stop("'seqlevels' must be a character vector")
+    seqlevels[order(makeSeqnameIds(seqlevels, X.is.sexchrom=X.is.sexchrom))]
 }
 
