@@ -269,10 +269,23 @@ makeSeqnameIds <- function(seqnames, X.is.sexchrom=NA)
     seqlevel_ids[as.integer(seqnames)]
 }
 
-sortSeqlevels <- function(seqlevels, X.is.sexchrom=NA)
-{
-    if (!is.character(seqlevels))
-        stop("'seqlevels' must be a character vector")
-    seqlevels[order(makeSeqnameIds(seqlevels, X.is.sexchrom=X.is.sexchrom))]
-}
+setGeneric("sortSeqlevels", signature="x",
+    function(x, X.is.sexchrom=NA) standardGeneric("sortSeqlevels")
+)
+
+setMethod("sortSeqlevels", "character",
+    function(x, X.is.sexchrom=NA)
+    {
+        x[order(makeSeqnameIds(x, X.is.sexchrom=X.is.sexchrom))]
+    }
+)
+
+setMethod("sortSeqlevels", "ANY",
+    function(x, X.is.sexchrom=NA)
+    {
+        seqlevels(x) <- sortSeqlevels(seqlevels(x),
+                                      X.is.sexchrom=X.is.sexchrom)
+        x
+    }
+)
 

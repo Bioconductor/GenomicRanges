@@ -110,7 +110,7 @@ export(
     cigarOpTable, cigarToCigarTable, summarizeCigarTable,
     queryLoc2refLoc, queryLocs2refLocs,
 
-    makeSeqnameIds, sortSeqlevels,
+    makeSeqnameIds,
     Seqinfo,
     GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,
@@ -140,6 +140,9 @@ export(
     ## constraint.R:
     #constraint, "constraint<-",
     checkConstraint,
+
+    ## makeSeqnameIds.R:
+    sortSeqlevels,
 
     ## seqinfo.R:
     seqinfo, "seqinfo<-",
@@ -183,6 +186,7 @@ export(
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
+    sortSeqlevels,
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlevels, "seqlevels<-",

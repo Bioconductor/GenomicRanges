@@ -1,7 +1,10 @@
 \name{makeSeqnameIds}
 
 \alias{makeSeqnameIds}
+
 \alias{sortSeqlevels}
+\alias{sortSeqlevels,character-method}
+\alias{sortSeqlevels,ANY-method}
 
 \title{Sort sequence levels in "natural" order}
 
@@ -57,6 +60,10 @@ seqlevels <- c("chr2RHet", "chr4", "chrUextra", "chrYHet",
                "chrM", "chrXHet", "chr2LHet", "chrU",
                "chr3L", "chr3R", "chr2R", "chrX")
 sortSeqlevels(seqlevels)
+
+gr <- GRanges()
+seqlevels(gr) <- seqlevels
+sortSeqlevels(gr)
 
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
 makeSeqnameIds(seqnames(Scerevisiae))
