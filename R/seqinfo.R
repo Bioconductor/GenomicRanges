@@ -133,7 +133,7 @@ sequenceGeometryHasChanged <- function(new_seqinfo, old_seqinfo, new2old=NULL)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqinfo() getter and setter.
+### seqinfo() getter and setter
 ###
 
 setGeneric("seqinfo", function(x) standardGeneric("seqinfo"))
@@ -144,7 +144,7 @@ setGeneric("seqinfo<-", signature="x",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqnames() getter and setter.
+### seqnames() getter and setter
 ###
 
 setGeneric("seqnames", function(x) standardGeneric("seqnames"))
@@ -155,7 +155,7 @@ setGeneric("seqnames<-", signature="x",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqlevels() getter and setter.
+### seqlevels() getter and setter
 ###
 
 setGeneric("seqlevels", function(x) standardGeneric("seqlevels"))
@@ -191,7 +191,32 @@ setReplaceMethod("seqlevels", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqlevelsInUse() getter.
+### sortSeqlevels()
+###
+
+setGeneric("sortSeqlevels", signature="x",
+    function(x, X.is.sexchrom=NA) standardGeneric("sortSeqlevels")
+)
+
+setMethod("sortSeqlevels", "character",
+    function(x, X.is.sexchrom=NA)
+    {
+        x[order(makeSeqnameIds(x, X.is.sexchrom=X.is.sexchrom))]
+    }
+)
+
+setMethod("sortSeqlevels", "ANY",
+    function(x, X.is.sexchrom=NA)
+    {
+        seqlevels(x) <- sortSeqlevels(seqlevels(x),
+                                      X.is.sexchrom=X.is.sexchrom)
+        x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### seqlevelsInUse() getter
 ###
 
 setGeneric("seqlevelsInUse", function(x) standardGeneric("seqlevelsInUse"))
@@ -212,7 +237,7 @@ setMethod("seqlevelsInUse", "CompressedList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqlevels0() getter.
+### seqlevels0() getter
 ###
 
 ### Currently applicable to TranscriptDb only.
@@ -220,7 +245,7 @@ setGeneric("seqlevels0", function(x) standardGeneric("seqlevels0"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqlengths() getter and setter.
+### seqlengths() getter and setter
 ###
 
 setGeneric("seqlengths", function(x) standardGeneric("seqlengths"))
@@ -245,7 +270,7 @@ setReplaceMethod("seqlengths", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### isCircular() getter and setter.
+### isCircular() getter and setter
 ###
 
 setGeneric("isCircular", function(x) standardGeneric("isCircular"))
@@ -270,7 +295,7 @@ setReplaceMethod("isCircular", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### genome() getter and setter.
+### genome() getter and setter
 ###
 
 setGeneric("genome", function(x) standardGeneric("genome"))
@@ -295,7 +320,7 @@ setReplaceMethod("genome", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqnameStyle() getter and setter.
+### seqnameStyle() getter and setter
 ###
 
 setGeneric("seqnameStyle", function(x) standardGeneric("seqnameStyle"))

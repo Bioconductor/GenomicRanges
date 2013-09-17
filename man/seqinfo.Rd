@@ -8,6 +8,9 @@
 \alias{seqlevels,ANY-method}
 \alias{seqlevels<-}
 \alias{seqlevels<-,ANY-method}
+\alias{sortSeqlevels}
+\alias{sortSeqlevels,character-method}
+\alias{sortSeqlevels,ANY-method}
 \alias{seqlevelsInUse}
 \alias{seqlevelsInUse,Vector-method}
 \alias{seqlevelsInUse,CompressedList-method}
@@ -37,11 +40,11 @@
 \alias{seqnames,RangesList-method}
 \alias{seqnames,RangedData-method}
 
-\title{Accessing sequence information}
+\title{Accessing/modifying sequence information}
 
 \description{
-  A set of generic functions for getting/setting sequence information
-  from/on an object.
+  A set of generic functions for getting/setting/modifying the sequence
+  information stored in an object.
 }
 
 \usage{
@@ -53,6 +56,7 @@ seqnames(x) <- value
 
 seqlevels(x)
 seqlevels(x, force=FALSE) <- value
+sortSeqlevels(x, X.is.sexchrom=NA)
 seqlevelsInUse(x)
 seqlevels0(x)
 
@@ -112,16 +116,12 @@ seqnameStyle(x) <- value
 }
 
 \details{
-  Various classes implement methods for those generic functions.
-
-  The \link{Seqinfo} class plays a central role for those generics because:
+  The \link{Seqinfo} class plays a central role for the functions described
+  in this man page because:
 
   \itemize{
-  \item It has methods for all those generics (except for \code{seqinfo},
-        \code{seqlevelsInUse}, and \code{seqlevels0}).
-        That is, the \code{seqnames}, \code{seqlevels}, \code{seqlengths},
-        \code{isCircular}, \code{genome} and \code{seqnameStyle} getters
-        and setters are defined for \link{Seqinfo} objects.
+  \item All these functions (except \code{seqinfo}, \code{seqlevelsInUse},
+        and \code{seqlevels0}) work on a \link{Seqinfo} object.
 
   \item For classes that implement it, the \code{seqinfo} getter should
         return a \link{Seqinfo} object.
@@ -177,14 +177,19 @@ seqnameStyle(x) <- value
 \seealso{
   \itemize{
     \item \link{Seqinfo-class}.
-    \item \link{seqlevels-utils}.
-    \item \link{GRanges-class}.
-    \item \link{GRangesList-class}.
-    \item \link{GAlignments-class}.
-    \item \link{GAlignmentPairs-class}.
-    \item \link{GAlignmentsList-class}.
-    \item \link{SummarizedExperiment-class}.
-    \item \link[GenomicFeatures]{TranscriptDb-class}.
+
+    \item \link{GRanges}, \link{GRangesList},
+          \link{GAlignments}, \link{GAlignmentPairs},
+          \link{GAlignmentsList}, \link{SummarizedExperiment},
+          and \link[GenomicFeatures]{TranscriptDb}, for examples
+          of objects on which the functions described in this man page
+          work.
+
+    \item \link{seqlevels-utils} for convenience wrappers to the
+          \code{seqlevels} getter and setter.
+
+    \item \code{\link{makeSeqnameIds}}, on which \code{sortSeqlevels} is
+          based.
   }
 }
 
@@ -248,6 +253,26 @@ seqlevels(gr)
 seqlevels(gr) <- c(chr1="1", chr2="2", "chr4", "chr5")
 seqlevels(gr)
 
+
+## ---------------------------------------------------------------------
+## Sort seqlevels in "natural" order
+## ---------------------------------------------------------------------
+
+sortSeqlevels(c("11", "Y", "1", "10", "9", "M", "2"))
+
+seqlevels <- c("chrXI", "chrY", "chrI", "chrX", "chrIX", "chrM", "chrII")
+sortSeqlevels(seqlevels)
+sortSeqlevels(seqlevels, X.is.sexchrom=TRUE)
+sortSeqlevels(seqlevels, X.is.sexchrom=FALSE)
+
+seqlevels <- c("chr2RHet", "chr4", "chrUextra", "chrYHet",
+               "chrM", "chrXHet", "chr2LHet", "chrU",
+               "chr3L", "chr3R", "chr2R", "chrX")
+sortSeqlevels(seqlevels)
+
+gr <- GRanges()
+seqlevels(gr) <- seqlevels
+sortSeqlevels(gr)
 
 ## ---------------------------------------------------------------------
 ## Subset objects by seqlevels. 

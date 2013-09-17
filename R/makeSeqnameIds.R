@@ -1,5 +1,5 @@
 ### =========================================================================
-### makeSeqnameIds() and sortSeqlevels()
+### makeSeqnameIds()
 ### -------------------------------------------------------------------------
 ###
 ### Assign a unique ID to each unique sequence name passed in 'seqnames'.
@@ -268,24 +268,4 @@ makeSeqnameIds <- function(seqnames, X.is.sexchrom=NA)
     ## Seqname ids.
     seqlevel_ids[as.integer(seqnames)]
 }
-
-setGeneric("sortSeqlevels", signature="x",
-    function(x, X.is.sexchrom=NA) standardGeneric("sortSeqlevels")
-)
-
-setMethod("sortSeqlevels", "character",
-    function(x, X.is.sexchrom=NA)
-    {
-        x[order(makeSeqnameIds(x, X.is.sexchrom=X.is.sexchrom))]
-    }
-)
-
-setMethod("sortSeqlevels", "ANY",
-    function(x, X.is.sexchrom=NA)
-    {
-        seqlevels(x) <- sortSeqlevels(seqlevels(x),
-                                      X.is.sexchrom=X.is.sexchrom)
-        x
-    }
-)
 

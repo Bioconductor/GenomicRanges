@@ -141,13 +141,11 @@ export(
     #constraint, "constraint<-",
     checkConstraint,
 
-    ## makeSeqnameIds.R:
-    sortSeqlevels,
-
     ## seqinfo.R:
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
-    seqlevels, "seqlevels<-", 
+    seqlevels, "seqlevels<-",
+    sortSeqlevels,
     seqlevelsInUse,
     seqlevels0,
     seqlengths, "seqlengths<-",
@@ -186,10 +184,10 @@ export(
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    sortSeqlevels,
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-",
     seqlevels, "seqlevels<-",
+    sortSeqlevels,
     seqlevelsInUse,
     seqlengths, "seqlengths<-",
     isCircular, "isCircular<-",
