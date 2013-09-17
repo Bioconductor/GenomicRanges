@@ -57,7 +57,6 @@ seqlevels <- c("chr2RHet", "chr4", "chrUextra", "chrYHet",
                "chrM", "chrXHet", "chr2LHet", "chrU",
                "chr3L", "chr3R", "chr2R", "chrX")
 sortSeqlevels(seqlevels)
-sortSeqlevels(seqlevels, X.is.sexchrom=TRUE)
 
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
 makeSeqnameIds(seqnames(Scerevisiae))
