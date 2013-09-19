@@ -3,14 +3,14 @@
 ### -------------------------------------------------------------------------
 
 
-.make_breakpoints_for_cut_last_tile_in_chrom <- function(seqlengths, tilesize)
+.make_breakpoints_for_cut_last_tile_in_chrom <- function(seqlengths, tilewidth)
 {
     tile_relative_breakpoints <- lapply(seqlengths,
         function(seqlength) {
-            nfulltile <- seqlength %/% tilesize
+            nfulltile <- seqlength %/% tilewidth
             if (nfulltile == 0L)
                 return(seqlength)
-            relative_breakpoints <- ceiling(tilesize * seq_len(nfulltile))
+            relative_breakpoints <- ceiling(tilewidth * seq_len(nfulltile))
             if (relative_breakpoints[[nfulltile]] >= seqlength)
                 return(relative_breakpoints)
             c(relative_breakpoints, seqlength)
@@ -68,20 +68,15 @@
 
 ### 'seqlengths' must be a non-negative numeric or integer vector of length
 ### >= 1 with no NAs and with unique names.
-### Only one of 'ntile' and 'tilesize' can be specified.
-### If 'cut.last.tile.in.chrom' is FALSE (the default), returns a GRangesList
-### object with 1 list element per tile, each of them containing a number of
-### ranges equal to the number of chromosomes spanned by the tile (when tiles
-### are small, most of them only span 1 chromosome).
-### If 'cut.last.tile.in.chrom' is TRUE (only supported when 'tilesize' is
-### specified), tiles never span more than 1 chromosome (the last tile in each
-### chromosome is cut if necessary). In that case, a GRanges object is
-### returned with 1 element per tile. 
-tileGenome <- function(seqlengths, ntile, tilesize,
+### Only one of 'ntile' and 'tilewidth' can be specified.
+tileGenome <- function(seqlengths, ntile, tilewidth,
                        cut.last.tile.in.chrom=FALSE)
 {
     if (!isTRUEorFALSE(cut.last.tile.in.chrom))
         stop("'cut.last.tile.in.chrom' must be TRUE or FALSE")
+
+    if (is(seqlengths, "Seqinfo"))
+        seqlengths <- seqlengths(seqlengths)
 
     ## Check 'seqlengths'.
     if (!is.numeric(seqlengths) || length(seqlengths) == 0L)
@@ -103,8 +98,8 @@ tileGenome <- function(seqlengths, ntile, tilesize,
     genome_size <- chrom_breakpoints[[length(chrom_breakpoints)]]
 
     if (!missing(ntile)) {
-        if (!missing(tilesize))
-            stop("only one of 'ntile' and 'tilesize' can be specified")
+        if (!missing(tilewidth))
+            stop("only one of 'ntile' and 'tilewidth' can be specified")
         if (cut.last.tile.in.chrom)
             stop("'cut.last.tile.in.chrom' must be FALSE ",
                  "when 'ntile' is supplied")
@@ -119,27 +114,27 @@ tileGenome <- function(seqlengths, ntile, tilesize,
             ntile <- as.integer(ntile)
         }
     } else {
-        if (missing(tilesize))
-            stop("one of 'ntile' and 'tilesize' must be specified")
-        ## Check 'tilesize'.
-        if (!isSingleNumber(tilesize))
-            stop("'tilesize' must be a single number")
-        if (tilesize < 1 || tilesize > genome_size)
-            stop("'tilesize' must be >= 1 and <= genome size")
+        if (missing(tilewidth))
+            stop("one of 'ntile' and 'tilewidth' must be specified")
+        ## Check 'tilewidth'.
+        if (!isSingleNumber(tilewidth))
+            stop("'tilewidth' must be a single number")
+        if (tilewidth < 1 || tilewidth > genome_size)
+            stop("'tilewidth' must be >= 1 and <= genome size")
         if (cut.last.tile.in.chrom) {
             tile_breakpoints <-
                 .make_breakpoints_for_cut_last_tile_in_chrom(seqlengths,
-                                                             tilesize)
+                                                             tilewidth)
         } else {
-            ntile <- ceiling(genome_size / tilesize)
+            ntile <- ceiling(genome_size / tilewidth)
             if (ntile > .Machine$integer.max)
-                stop("this 'tilesize' is too small")
+                stop("this 'tilewidth' is too small")
             ntile <- as.integer(ntile)
         }
     }
     if (!cut.last.tile.in.chrom) {
-        tilesize <- genome_size / ntile
-        tile_breakpoints <- ceiling(tilesize * seq_len(ntile))
+        tilewidth <- genome_size / ntile
+        tile_breakpoints <- ceiling(tilewidth * seq_len(ntile))
     }
     absolute_ends <- .superimpose_breakpoints(chrom_breakpoints,
                                               tile_breakpoints)
