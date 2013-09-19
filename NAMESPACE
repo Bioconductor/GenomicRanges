@@ -115,6 +115,7 @@ export(
     GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,
     makeGRangesListFromFeatureFragments,
+    tileGenome,
     makeGAlignmentsListFromFeatureFragments,
     GAlignments, readGAlignments,
     GAlignmentPairs, readGAlignmentPairs,

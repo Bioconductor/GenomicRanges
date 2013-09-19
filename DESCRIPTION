@@ -38,6 +38,7 @@ Collate: utils.R
 	GenomicRanges-comparison.R
 	GenomicRangesList-class.R
 	GRangesList-class.R
+	tileGenome.R
 	GAlignments-class.R
 	GAlignmentPairs-class.R
 	GAlignmentsList-class.R
