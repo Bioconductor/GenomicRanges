@@ -75,8 +75,12 @@ tileGenome <- function(seqlengths, ntile, tilewidth,
     if (!isTRUEorFALSE(cut.last.tile.in.chrom))
         stop("'cut.last.tile.in.chrom' must be TRUE or FALSE")
 
-    if (is(seqlengths, "Seqinfo"))
+    if (is(seqlengths, "Seqinfo")) {
+        gr_seqinfo <- seqlengths
         seqlengths <- seqlengths(seqlengths)
+    } else {
+        gr_seqinfo <- NULL
+    }
 
     ## Check 'seqlengths'.
     if (!is.numeric(seqlengths) || length(seqlengths) == 0L)
@@ -141,8 +145,10 @@ tileGenome <- function(seqlengths, ntile, tilewidth,
     gr_end <- .get_relative_ends(absolute_ends, chrom_breakpoints)
     gr_seqnames <- Rle(factor(names(gr_end), levels=names(seqlengths)))
     gr_start <- .get_relative_starts(gr_end, gr_seqnames)
-    gr <- GRanges(gr_seqnames, IRanges(gr_start, gr_end),
-                  seqlengths=seqlengths)
+    if (is.null(gr_seqinfo))
+        gr_seqinfo <- Seqinfo(seqnames=names(seqlengths),
+                              seqlengths=seqlengths)
+    gr <- GRanges(gr_seqnames, IRanges(gr_start, gr_end), seqinfo=gr_seqinfo)
     if (cut.last.tile.in.chrom)
         return(gr)
     relist(gr, absolute_ends)
