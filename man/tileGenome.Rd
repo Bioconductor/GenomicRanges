@@ -63,6 +63,11 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
     \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter.
 
     \item \link[IRanges]{IntegerList} objects.
+
+    \item \link[IRanges]{Views} objects.
+
+    \item \link{coverage,GenomicRanges-method} for computing the coverage
+          of a \link{GRanges} object.
   }
 }
 
@@ -207,6 +212,10 @@ x2 <- GRanges("chrI",
               score=c(0.4, 8, -10),
               seqinfo=seqinfo(Scerevisiae))
 x2
+
+## If we consider the score to be zero in the genomic regions not
+## covered by 'x2', then the "score" metadata column represents a
+## variable defined along the genome.
 
 ## Turning the score variable into a named RleList representation
 ## can be done by computing the weighted coverage of 'x2':
