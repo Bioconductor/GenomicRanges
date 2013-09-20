@@ -173,11 +173,11 @@ binnedAverage <- function(bins, numvar, mcolname)
     stopifnot(is(bins, "GRanges"))
     stopifnot(is(numvar, "RleList"))
     stopifnot(identical(seqlevels(bins), names(numvar)))
-    bins_per_chrom <- split(bins, seqnames(bins))
+    bins_per_chrom <- split(ranges(bins), seqnames(bins))
     means_list <- lapply(names(numvar),
         function(seqname) {
             views <- Views(numvar[[seqname]],
-                           ranges(bins_per_chrom[[seqname]]))
+                           bins_per_chrom[[seqname]])
             viewMeans(views)
         })
     new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
