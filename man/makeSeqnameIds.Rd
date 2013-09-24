@@ -20,7 +20,8 @@ makeSeqnameIds(seqnames, X.is.sexchrom=NA)
   }
   \item{X.is.sexchrom}{
     A logical indicating whether X refers to the sexual chromosome 
-    or to chromosome with Roman Numeral X.
+    or to chromosome with Roman Numeral X. If \code{NA}, \code{makeSeqnameIds}
+    does its best to "guess".
   }
 }
 

@@ -113,6 +113,11 @@ seqnameStyle(x) <- value
     A vector containing the sequence information to store for the other
     setters.
   }
+  \item{X.is.sexchrom}{
+    A logical indicating whether X refers to the sexual chromosome
+    or to chromosome with Roman Numeral X. If \code{NA}, \code{sortSeqlevels}
+    does its best to "guess".
+  }
 }
 
 \details{
