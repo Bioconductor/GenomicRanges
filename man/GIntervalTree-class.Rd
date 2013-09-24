@@ -29,7 +29,6 @@
 \alias{width,GIntervalTree-method}
 
 % Vector methods:
-\alias{length,GIntervalTree-method}
 \alias{[,GIntervalTree-method}
 \alias{show,GIntervalTree-method}
 

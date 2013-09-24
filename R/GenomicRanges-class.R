@@ -90,14 +90,19 @@ setMethod("extraColumnSlotNames", "ANY", function(x) character())
 
 .valid.GenomicRanges.length <- function(x)
 {
-    n <- length(seqnames(x))
-    checkSlotLength <- function(name) {
-        if (NROW(slot(x, name)) != n)
-            paste0("length of '", name, "' != length(object)")
+    x_len <- length(x)
+    checkCoreGetterReturnedLength <- function(getter) {
+        if (NROW(get(getter)(x)) != x_len)
+            paste0("NROW(", getter, "(x)) != length(x)")
     }
-    do.call(c, lapply(c("ranges", "strand", "elementMetadata",
-                        extraColumnSlotNames(x)),
-                      checkSlotLength))
+    pbs1 <- unlist(lapply(c("seqnames", "ranges", "strand", "mcols"),
+                          checkCoreGetterReturnedLength))
+    checkExtraColumnLength <- function(slotname) {
+        if (NROW(slot(x, slotname)) != x_len)
+            paste0("NROW(x@", slotname, ") != length(x)")
+    }
+    pbs2 <- unlist(lapply(extraColumnSlotNames(x), checkExtraColumnLength))
+    c(pbs1, pbs2)
 }
 
 .valid.GenomicRanges.seqnames <- function(x)

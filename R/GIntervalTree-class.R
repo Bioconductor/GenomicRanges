@@ -21,34 +21,24 @@ setClass("GIntervalTree",
            strand=Rle(strand()))
 )
 
-.valid.GIntervalTree.length <- function(x) {
-  n <- length(x@ranges)
-  if ((length(strand(x)) != n)
-      || (nrow(mcols(x)) != n))
-    return("slot lengths are not all equal")
-  NULL
-}
-
 .valid.GIntervalTree.rngidx <- function(x) {
-  n <- length(x@ranges)
-  if(sum(width(x@rngidx)) != n)
-    return("'rngidx' invalid")
+  x_len <- length(x)
+  if (sum(width(x@rngidx)) != x_len)
+    return("ivalid 'rngidx' slot")
   NULL
 }
 
 .valid.GIntervalTree.ranges <- function(x) {
   if (class(x@ranges) != "IntervalForest")
-    return("'ranges(x)' must be a IntervalForest instance")
+    return("'x@ranges' must be an IntervalForest instance")
+  if (nobj(x@ranges@partitioning) != length(x))
+    return("'nobj(x@ranges@partitioning)' must equal 'length(x)'")
   NULL
 }
 
 .valid.GIntervalTree <- function(x) {
-  c(.valid.GIntervalTree.length(x),
-    .valid.GIntervalTree.ranges(x),
-    .valid.GIntervalTree.rngidx(x),
-    .valid.GenomicRanges.strand(x),
-    .valid.GenomicRanges.mcols(x),
-    valid.GenomicRanges.seqinfo(x))
+  c(.valid.GIntervalTree.ranges(x),
+    .valid.GIntervalTree.rngidx(x))
 }
 
 setValidity2("GIntervalTree", .valid.GIntervalTree)
@@ -119,21 +109,11 @@ setMethod("end", "GIntervalTree",
 setMethod("width", "GIntervalTree",
           function(x) .GT_reorderValue(x, width(x@ranges)@unlistData))
 
-#' length accessor
-#' 
-#' 
-#' @rdname GIntervalTree-class
-#' @family GIntervalTree
-#' @export
-setMethod("length", "GIntervalTree", function(x) length(x@ranges))
-
 #' construct from GRanges object via coercion
 #' 
 #' @name as
 #' @family GIntervalTree
 #' @importClassesFrom GenomicRanges GRanges
-
-
 setAs("GRanges", "GIntervalTree",
       function(from) {
         if (any(isCircular(from), na.rm=TRUE))
