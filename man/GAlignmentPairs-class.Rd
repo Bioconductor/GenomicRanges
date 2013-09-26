@@ -42,6 +42,7 @@
 \alias{introns,GAlignmentPairs-method}
 \alias{coerce,GAlignmentPairs,GRangesList-method}
 \alias{coerce,GAlignmentPairs,GRanges-method}
+\alias{coerce,GAlignmentPairs,GAlignments-method}
 
 % "show" method:
 \alias{show,GAlignmentPairs-method}
@@ -335,6 +336,10 @@
       \code{as(x, "GRangesList")}, \code{as(x, "GRanges")}:
       Alternate ways of doing \code{grglist(x)} and \code{granges(x)},
       respectively.
+    }
+    \item{}{
+      \code{as(x, "GAlignments")}:
+      Equivalent of \code{unlist(x, use.names=TRUE)}.
     }
   }
 }

@@ -73,8 +73,8 @@
 }
 
 \details{
-  The GRanges class stores the sequences of genomic locations and associated
-  annotations. Each element in the sequence is comprised of a sequence name,
+  GRanges is a vector of genomic locations and associated
+  annotations. Each element in the vector is comprised of a sequence name,
   an interval, a \link{strand}, and optional metadata columns (e.g. score, GC
   content, etc.). This information is stored in four components:
   \describe{
