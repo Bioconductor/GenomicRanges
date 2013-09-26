@@ -189,6 +189,7 @@ setAs("RangesList", "GRanges",
       {
         if (!length(from))
           return(GRanges())
+        from <- as(from, "CompressedIRangesList")
         ranges <- unlist(from, use.names=FALSE)
         ranges <- IRanges(start=start(ranges), width=width(ranges))
         ## From now, ranges is guaranteed to be an IRanges *instance*.
