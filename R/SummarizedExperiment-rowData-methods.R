@@ -227,7 +227,7 @@ setMethod("sort", "SummarizedExperiment",
 setMethod(seqinfo, "SummarizedExperiment",
     function(x)
 {
-    seqinfo(rowData(x))
+    seqinfo(x@rowData)
 })
 
 setMethod("seqlevelsInUse", "SummarizedExperiment",
@@ -242,12 +242,12 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
     if (!is(value, "Seqinfo")) 
         stop("the supplied 'seqinfo' must be a Seqinfo object")
     dangling_seqlevels <-
-        getDanglingSeqlevels(rowData(x), new2old = new2old,
+        getDanglingSeqlevels(x@rowData, new2old = new2old,
                              force = force, seqlevels(value))
     if (length(dangling_seqlevels) != 0L) 
         x <- x[!(seqnames(x) %in% dangling_seqlevels)]
-    rowData(x) <-
-        update(rowData(x),
+    x@rowData <-
+        update(x@rowData,
                seqnames = makeNewSeqnames(x, new2old, seqlevels(value)),
                seqinfo = value)
     if (is.character(msg <- .valid.SummarizedExperiment(x)))
