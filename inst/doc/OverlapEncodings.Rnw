@@ -25,7 +25,7 @@
 
 \title{Overlap encodings}
 \author{Herv\'e Pag\`es}
-\date{Last modified: August 2012; Compiled: \today}
+\date{Last modified: September 2013; Compiled: \today}
 
 \begin{document}
 
@@ -917,9 +917,9 @@ of the transcript:
 sort(U1.ovenc_table[isCompatibleWithSplicing(U1.unique_encodings)])
 @
 
-Encodings \Rcode{"1:i:"} (395278 occurences in \Rcode{U1.ovenc}),
-\Rcode{"2:jm:af:"} (65169 occurences in \Rcode{U1.ovenc}),
-and \Rcode{"3:jmm:agm:aaf:"} (342 occurences in \Rcode{U1.ovenc}),
+Encodings \Rcode{"1:i:"} (455176 occurences in \Rcode{U1.ovenc}),
+\Rcode{"2:jm:af:"} (72929 occurences in \Rcode{U1.ovenc}),
+and \Rcode{"3:jmm:agm:aaf:"} (488 occurences in \Rcode{U1.ovenc}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -946,7 +946,7 @@ For clarity, only the exons involved in the overlap are represented. The
 transcript can of course have more upstream and downstream exons, which
 is denoted by the ... on the left side (5' end) and right side (3' end)
 of each drawing. Note that the exons represented in the 2nd and 3rd drawings
-are consecutive in the transcript.
+are consecutive and adjacent in the processed transcript.
 
 Encodings \Rcode{"1:f:"} and \Rcode{"1:j:"} are variations of the situation
 described by encoding \Rcode{"1:i:"}. For \Rcode{"1:f:"}, the first
@@ -970,7 +970,7 @@ base of the exon. For \Rcode{"1:j:"}, the last aligned base of the read (or
 
 <<U1.OV00_is_comp>>=
 U1.OV00_is_comp <- isCompatibleWithSplicing(U1.ovenc)
-table(U1.OV00_is_comp)  # 476124 "compatible" overlaps
+table(U1.OV00_is_comp)  # 531797 "compatible" overlaps
 @
 
 Finally, let's extract the ``compatible'' overlaps from \Rcode{U1.OV00}:
@@ -1001,7 +1001,7 @@ table(U1.GAL_ncomptx)
 mean(U1.GAL_ncomptx >= 1)
 @
 
-73.8\% of the alignments in \Rcode{U1.GAL} are ``compatible''
+75\% of the alignments in \Rcode{U1.GAL} are ``compatible''
 with at least 1 transcript in \Rcode{exbytx}.
 
 Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
@@ -1023,7 +1023,7 @@ table(U1.uqnames_ncomptx)
 mean(U1.uqnames_ncomptx >= 1)
 @
 
-76.5\% of the reads are ``compatible'' with at least 1 transcript in
+77.5\% of the reads are ``compatible'' with at least 1 transcript in
 \Rcode{exbytx}.
 
 Number of ``compatible'' reads for each transcript:
@@ -1034,7 +1034,7 @@ names(U1.exbytx_ncompOV10) <- names(exbytx)
 mean(U1.exbytx_ncompOV10 >= 50)
 @
 
-Only 0.860\% of the transcripts in \Rcode{exbytx} are ``compatible''
+Only 0.87\% of the transcripts in \Rcode{exbytx} are ``compatible''
 with at least 50 reads.
 
 Top 10 transcripts:
@@ -1059,12 +1059,12 @@ the splicing of the transcript:
 sort(U3.ovenc_table[isCompatibleWithSplicing(U3.unique_encodings)])
 @
 
-Paired-end encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (87951 occurences in
-\Rcode{U3.ovenc}), \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2562 occurences
-in \Rcode{U3.ovenc}), \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2023 occurences
-in \Rcode{U3.ovenc}), \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (353 occurences
+Paired-end encodings \Rcode{"1{-}{-}1:i{-}{-}i:"} (100084 occurences in
+\Rcode{U3.ovenc}), \Rcode{"2{-}{-}1:jm{-}{-}m:af{-}{-}i:"} (2700 occurences
+in \Rcode{U3.ovenc}), \Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}af:"} (2480 occurences
+in \Rcode{U3.ovenc}), \Rcode{"1{-}{-}1:i{-}{-}m:a{-}{-}i:"} (287 occurences
 in \Rcode{U3.ovenc}), and \Rcode{"2{-}{-}2:jm{-}{-}mm:af{-}{-}jm:aa{-}{-}af:"}
-(122 occurences in \Rcode{U3.ovenc}), correspond to the following paired-end
+(153 occurences in \Rcode{U3.ovenc}), correspond to the following paired-end
 overlaps:
 
 \begin{itemize}
@@ -1108,7 +1108,7 @@ Note: switch use of ``first'' and ``last'' above if the read was ``flipped''.
 
 <<U3.OV00_is_comp>>=
 U3.OV00_is_comp <- isCompatibleWithSplicing(U3.ovenc)
-table(U3.OV00_is_comp)  # 94068 "compatible" paired-end overlaps
+table(U3.OV00_is_comp)  # 106835 "compatible" paired-end overlaps
 @
 
 Finally, let's extract the ``compatible'' paired-end overlaps from
@@ -1142,7 +1142,7 @@ table(U3.GALP_ncomptx)
 mean(U3.GALP_ncomptx >= 1)
 @
 
-68.9\% of the alignment pairs in \Rcode{U3.GALP} are ``compatible''
+69.7\% of the alignment pairs in \Rcode{U3.GALP} are ``compatible''
 with at least 1 transcript in \Rcode{exbytx}.
 
 Note that high-level convenience wrapper \Rfunction{countCompatibleOverlaps}
@@ -1164,7 +1164,7 @@ table(U3.uqnames_ncomptx)
 mean(U3.uqnames_ncomptx >= 1)
 @
 
-70.1\% of the templates are ``compatible'' with at least 1 transcript in
+70.7\% of the templates are ``compatible'' with at least 1 transcript in
 \Rcode{exbytx}.
 
 Number of ``compatible'' templates for each transcript:
@@ -1175,7 +1175,7 @@ names(U3.exbytx_ncompOV10) <- names(exbytx)
 mean(U3.exbytx_ncompOV10 >= 50)
 @
 
-Only 0.752\% of the transcripts in \Rcode{exbytx} are ``compatible'' with at
+Only 0.7\% of the transcripts in \Rcode{exbytx} are ``compatible'' with at
 least 50 templates.
 
 Top 10 transcripts:
@@ -1532,8 +1532,7 @@ Any ``encoding-based compatible'' overlap is of course ``string-based
 compatible'':
 
 <<encoding-based-compatible-implies-string-based-compatible>>=
-## FIXME: 11 September, 2012 requires U1.sbcompHITS object update
-## stopifnot(length(setdiff(U1.compOV10, U1.sbcompHITS)) == 0)
+stopifnot(length(setdiff(U1.compOV10, U1.sbcompHITS)) == 0)
 @
 
 but the reverse is not true:
@@ -1596,9 +1595,9 @@ splicing of the transcript:
 sort(U1.ovenc_table[isCompatibleWithSkippedExons(U1.unique_encodings)])
 @
 
-Encodings \Rcode{"2:jm:am:af:"} (721 occurences in \Rcode{U1.ovenc}),
-\Rcode{"2:jm:am:am:af:"} (112 occurences in \Rcode{U1.ovenc}),
-and \Rcode{"3:jmm:agm:aam:aaf:"} (18 occurences in \Rcode{U1.ovenc}),
+Encodings \Rcode{"2:jm:am:af:"} (1015 occurences in \Rcode{U1.ovenc}),
+\Rcode{"2:jm:am:am:af:"} (144 occurences in \Rcode{U1.ovenc}),
+and \Rcode{"3:jmm:agm:aam:aaf:"} (21 occurences in \Rcode{U1.ovenc}),
 correspond to the following overlaps:
 
 \begin{itemize}
@@ -1623,7 +1622,7 @@ correspond to the following overlaps:
 
 <<U1.OV00_is_acomp>>=
 U1.OV00_is_acomp <- isCompatibleWithSkippedExons(U1.ovenc)
-table(U1.OV00_is_acomp)  # 860 "almost compatible" overlaps
+table(U1.OV00_is_acomp)  # 1202 "almost compatible" overlaps
 @
 
 Finally, let's extract the ``almost compatible'' overlaps from \Rcode{U1.OV00}:
@@ -1645,7 +1644,7 @@ table(U1.GAL_nacomptx)
 mean(U1.GAL_nacomptx >= 1)
 @
 
-Only 0.22\% of the alignments in \Rcode{U1.GAL} are ``almost compatible''
+Only 0.27\% of the alignments in \Rcode{U1.GAL} are ``almost compatible''
 with at least 1 transcript in \Rcode{exbytx}.
 
 Number of ``almost compatible'' alignments for each transcript:
@@ -1657,7 +1656,7 @@ table(U1.exbytx_nacompOV00)
 mean(U1.exbytx_nacompOV00 >= 50)
 @
 
-Only 0.0087\% of the transcripts in \Rcode{exbytx} are ``almost compatible''
+Only 0.017\% of the transcripts in \Rcode{exbytx} are ``almost compatible''
 with at least 50 alignments in \Rcode{U1.GAL}.
 
 Finally note that the ``query start in transcript'' values returned by
@@ -1682,8 +1681,8 @@ sort(U3.ovenc_table[isCompatibleWithSkippedExons(U3.unique_encodings)])
 @
 
 Paired-end encodings \Rcode{"2{-}{-}1:jm{-}{-}m:am{-}{-}m:af{-}{-}i:"}
-(54 occurences in \Rcode{U3.ovenc}),
-\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}am:a{-}{-}af:"} (36 occurences in
+(73 occurences in \Rcode{U3.ovenc}),
+\Rcode{"1{-}{-}2:i{-}{-}jm:a{-}{-}am:a{-}{-}af:"} (53 occurences in
 \Rcode{U3.ovenc}), and
 \Rcode{"2{-}{-}2:jm{-}{-}mm:am{-}{-}mm:af{-}{-}jm:aa{-}{-}af:"}
 (9 occurences in \Rcode{U3.ovenc}), correspond to the following paired-end
@@ -1716,7 +1715,7 @@ Note: switch use of ``first'' and ``last'' above if the read was ``flipped''.
 
 <<U3.OV00_is_acomp>>=
 U3.OV00_is_acomp <- isCompatibleWithSkippedExons(U3.ovenc)
-table(U3.OV00_is_acomp)  # 104 "almost compatible" paired-end overlaps
+table(U3.OV00_is_acomp)  # 141 "almost compatible" paired-end overlaps
 @
 
 Finally, let's extract the ``almost compatible'' paired-end overlaps from
@@ -1739,7 +1738,7 @@ table(U3.GALP_nacomptx)
 mean(U3.GALP_nacomptx >= 1)
 @
 
-Only 0.18\% of the alignment pairs in \Rcode{U3.GALP} are ``almost compatible''
+Only 0.2\% of the alignment pairs in \Rcode{U3.GALP} are ``almost compatible''
 with at least 1 transcript in \Rcode{exbytx}.
 
 Number of ``almost compatible'' alignment pairs for each transcript:
@@ -1751,7 +1750,7 @@ table(U3.exbytx_nacompOV00)
 mean(U3.exbytx_nacompOV00 >= 50)
 @
 
-Only 0.0043\% of the transcripts in \Rcode{exbytx} are ``almost compatible''
+Only 0.0034\% of the transcripts in \Rcode{exbytx} are ``almost compatible''
 with at least 50 alignment pairs in \Rcode{U3.GALP}.
 
 Finally note that the ``query start in transcript'' values returned by
