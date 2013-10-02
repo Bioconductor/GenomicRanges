@@ -147,6 +147,8 @@
     \item The \link[IRanges]{nearest-methods} man page in the IRanges package.
     \item \link[GenomicRanges]{findOverlaps-methods} for finding just the
           overlapping ranges.
+    \item The \link[GenomicFeatures]{nearest-methods} man page in the 
+          GenomicFeatures package.
   }
 }
 
@@ -214,8 +216,9 @@
   query <- GRanges(c("A", "B"), IRanges(c(1, 5), width=1))
   distanceToNearest(query, subject)
 
-  ## distance() with GRanges and TranscriptDb see ?TranscriptDb
-  ## man page in GenomicFeatures package.
+  ## distance() with GRanges and TranscriptDb see the 
+  ## ?'distance,GenomicRanges,TranscriptDb-method' man 
+  ## page in the GenomicFeatures package.
 }
  
 \keyword{utilities}
