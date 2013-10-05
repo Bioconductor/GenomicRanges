@@ -45,36 +45,29 @@
     .coverage.recycleAndSetNames(width, "width", seqlevels(x))
 }
 
-### 'circle.length' must be NA (if the underlying sequence is linear) or the
-### length of the underlying circular sequence (integer vector of length 1
-### with the name of the sequence).
-### 'rg' must be an IRanges object.
-.coverage.circle <- function(circle.length, rg, shift, width, weight)
-{
-    if (is.na(circle.length))
-        return(coverage(rg, shift=shift, width=width, weight=weight))
-    cvg <- fold(coverage(rg, weight=weight),
-                circle.length, from=1L-shift)
-    if (is.null(width))
-        return(cvg)
-    if (width > length(cvg))
-        stop("invalid width (", width, ") ",
-             "for circular sequence ", names(circle.length))
-    cvg[seq_len(width)]
-}
-
 .coverage.seq <- function(seqlength, isCircular, rg, shift, width, weight)
 {
     ## A shortcut for a common situation. Is it worth it?
     if (length(rg) == 0L && is.na(width))
         return(Rle(weight, 0L))
-    if (isCircular %in% TRUE)
-        circle.length <- seqlength
-    else
-        circle.length <- NA
     if (is.na(width))
-        width <- NULL
-    .coverage.circle(circle.length, rg, shift, width, weight)
+      width <- NULL
+    if (isTRUE(isCircular)) {
+      cvg <- fold(coverage(rg, weight=weight),
+                  seqlength, from=1L-shift)
+      if (is.null(width))
+        cvg
+      else {
+        if (width > length(cvg))
+          stop("invalid width (", width, ") ",
+               "for circular sequence ", names(circle.length))
+        cvg[seq_len(width)]
+      }
+    } else {
+      if (identical(width, seqlength) && identical(shift, 0L))
+        IRanges:::.Ranges.coverage(rg, width=width, weight=weight)
+      else coverage(rg, shift=shift, width=width, weight=weight)
+    }
 }
 
 setMethod("coverage", "GenomicRanges",
