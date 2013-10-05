@@ -168,6 +168,7 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
         ## Calling merge() is the way to check that 'x' and 'table' are based
         ## on the same reference genome.
         merge(seqinfo(x), seqinfo(table))
+        x_seqnames <- relevelSeqnamesForMatch(x, table)
         if (ignore.strand) {
             x_strand <- integer(length(x))
             table_strand <- integer(length(table))
@@ -178,13 +179,23 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
         ## Equivalent to (but faster than):
         ##     findOverlaps(x, table, type="equal", select="first")
         ## except when 'x' and 'table' both contain empty ranges.
-        IRanges:::matchIntegerQuads(as.factor(seqnames(x)), x_strand,
+        IRanges:::matchIntegerQuads(x_seqnames, x_strand,
                                     start(x), width(x),
                                     as.factor(seqnames(table)), table_strand,
                                     start(table), width(table),
                                     nomatch=nomatch, method=method)
     }
 )
+
+relevelSeqnamesForMatch <- function(x, table) {
+  x_seqnames <- as.factor(seqnames(x))
+  if (!hasHead(seqlevels(x), seqlevels(table)) &&
+      !hasHead(seqlevels(table), seqlevels(x))) {
+    x_seqnames <- factor(x_seqnames,
+                         union(seqlevels(table), seqlevels(x)))
+  }
+  x_seqnames
+}
 
 ### The only reason for overriding the method for Vector objects is to issue
 ### the warning.

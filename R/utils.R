@@ -121,3 +121,6 @@ mergeNamedAtomicVectors <- function(x, y, what=c("key", "values"))
     ans
 }
 
+hasHead <- function(x, h) {
+  identical(head(x, length(h)), h)
+}
