@@ -156,9 +156,9 @@
       \linkS4class{GRanges} would be appropriate. 
     }
     \item{paired-end reads :}{
-      Paired-end reads should be provided in a 
-      \linkS4class{GAlignmentPairs} container. Paired-end reads
-      are counted the same as single-end reads with gaps. 
+      Paired-end reads are counted the same as single-end reads with gaps; 
+      each pair registers as a single hit. Paired-end records can be counted 
+      in a \linkS4class{GAlignmentPairs} container or bam file. 
 
       The \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} 
       methods have an additional argument, \code{singleEnd}, to indicate if 
