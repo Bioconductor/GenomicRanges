@@ -326,6 +326,8 @@ setReplaceMethod("strand", "GRangesList", .replaceStrandList)
         }
         elementMetadata(x@unlistData) <- value
     }
+    if (!is.null(msg <- .valid.GRangesList.mcols(x)))
+        stop(msg)
     x
 }
 setReplaceMethod("elementMetadata", "GRangesList", .replaceElementMetadataList)
