@@ -33,12 +33,6 @@ setClassUnion("GenomicRangesORGRangesList", c("GenomicRanges", "GRangesList"))
             paste("'mcols(x)' cannot have columns named \"seqnames\", ",
                   "\"ranges\", \"strand\", \"start\", \"end\", \"width\", ",
                   "or \"element\""))
-    if (any(colnames(x_mcols) %in%
-            colnames(x@unlistData@elementMetadata)))
-        msg <-
-          c(msg,
-            paste("'mcols(x)' cannot have columns named as metadata ",
-                  "columns of unlisted GRanges"))
     if (!is.null(rownames(x_mcols)))
         msg <- c(msg, "'mcols(x)' cannot have row names")
     msg
@@ -326,8 +320,6 @@ setReplaceMethod("strand", "GRangesList", .replaceStrandList)
         }
         elementMetadata(x@unlistData) <- value
     }
-    if (!is.null(msg <- .valid.GRangesList.mcols(x)))
-        stop(msg)
     x
 }
 setReplaceMethod("elementMetadata", "GRangesList", .replaceElementMetadataList)
