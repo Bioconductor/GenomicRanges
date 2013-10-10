@@ -3,649 +3,855 @@
 %  org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
-\documentclass[10pt]{article}
 
-\usepackage{times}
-\usepackage{hyperref}
+\documentclass{article}
 
-\textwidth=6.5in
-\textheight=8.5in
-%\parskip=.3cm
-\oddsidemargin=-.1in
-\evensidemargin=-.1in
-\headheight=-.3in
+<<style, eval=TRUE, echo=FALSE, results=tex>>=
+BiocStyle::latex()
+@
 
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
-\newcommand{\Robject}[1]{{\texttt{#1}}}
-\newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\Rmethod}[1]{{\texttt{#1}}}
-\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
-\newcommand{\Rclass}[1]{{\textit{#1}}}
-\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\title{\Biocpkg{GenomicRanges} Use Cases}
+\author{Bioconductor Team}
+\date{Edited: October 2012; Compiled: \today}
 
-\newcommand{\software}[1]{\textsf{#1}}
-\newcommand{\R}{\software{R}}
-\newcommand{\Bioconductor}{\software{Bioconductor}}
-\newcommand{\GenomicRanges}{\Rpackage{GenomicRanges}}
-
-% TODO: Add example showing (for RNASeq) how to convert the results into a table such as can be used by DESeq and include in that example a conversion of the gene IDs to the gene symbols. 
-\title{GenomicRanges Use Cases}
-\author{Marc Carlson \and Patrick Aboyoun}
-\date{\today}
-
-\begin{document} 
+\begin{document}
 
 \maketitle
 
-<<options,echo=FALSE>>=
+\tableofcontents
+
+<<options, echo=FALSE>>=
 options(width=72)
+options("showHeadLines" = 3)
+options("showTailLines" = 3)
 @
 
 \section{Introduction}
 
-This vignette focuses on common use cases involving the 
-\Rpackage{GenomicRanges} package.
+This vignette demonstrates workflows for high throughput sequence analysis 
+that involve the \Biocpkg{GenomicRanges} package. In the more detailed 
+examples \Biocpkg{GenomicRanges} may be just one of several packages used 
+to accomplish the task. Other workflows are more focused and highlight a 
+single function or aspect of the package that is especially useful.
 
-<<initialize, results=hide>>=
+Resources available for learning more about the ranged-based functionality
+in \Bioconductor{} are the IRanges, GenomicRanges and GenomicFeatures 
+paper 
+http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003118
+ and the several vignettes available in the package. To view available 
+vignettes use \Rcode{browseVignettes("GenomicRanges")}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 
+%%% Count tables for RNA-Seq differential gene expression 
+%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Count tables for RNA-Seq differential gene expression}
+
+Methods for RNA-Seq gene expression analysis generally require a table of
+counts that summarize the number of reads that overlap or `hit' a 
+particular gene. In this section we count with \Rcode{summarizeOverlaps}
+and create a count table from the results. 
+
+Other packages that provide read counting are \Biocpkg{Rsubread} and 
+\Biocpkg{easyRNASeq}. The \Biocpkg{parathyroidSE} package vignette 
+contains a workflow on counting and other common operations required for 
+differential expression analysis. 
+
+\subsection{Counting with \Rfunction{summarizeOverlaps}}
+
+As sample data we use \Biocpkg{pasillaBamSubset} which contains both
+a single-end bam (untreated1\_chr4) and a paired-end bam 
+(untreated3\_chr4). Each file is a subset of chr4 from the "Pasilla" 
+experiment. See ?\Biocpkg{pasillaBamSubset} for details.
+
+<<load, results=hide>>=
 library(GenomicRanges)
+library(Rsamtools)
+library(pasillaBamSubset)
+un1 <- untreated1_chr4() ## single-end records
+@
+
+\Rcode{summarizeOverlaps} requires the name of a bam file(s) and an
+annotation to count against. The annotation must match the genome 
+build the BAM records were aligned to. For the pasilla data this is 
+dm3 Dmelanogaster which is available as a \Bioconductor{} package. 
+Load the package and extract the exon ranges by gene.
+
+<<count_1>>=
+library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
+exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
+@
+
+\Rcode{summarizeOverlaps} automatically sets a \Rcode{yieldSize}
+on large bam files and iterates over them in chunks. When reading
+paired-end data set the \Rcode{singleEnd} argument to FALSE.
+See ?\Rfunction{summarizeOverlaps} for details reguarding the
+count \Rcode{modes} and additional arguments. 
+
+<<count_2>>=
+se <- summarizeOverlaps(exbygene, un1, mode="IntersectionNotEmpty")
+@
+
+The return object is a \Rcode{SummarizedExperiment} with counts in 
+the \Rcode{assays} slot.
+
+<<count_3>>=
+class(se)
+head(table(assays(se)$counts))
+@
+
+The count vector is the same length as the annotation.
+
+<<count_4>>=
+identical(length(exbygene), length(assays(se)$counts))
+@
+
+The annotation is stored in the \Rcode{rowData} slot.
+
+<<count_5>>=
+rowData(se)
+@
+
+\subsection{Retrieving annotations from \Biocpkg{AnnotationHub}}
+
+When the annotation is not available as a \Rcode{GRanges} or a
+\Bioconductor{} package it may be available in \Rcode{AnnotationHub}.
+Create a `hub' and filter on Drosophila melanogaster.
+
+<<hub_1>>=
+library(AnnotationHub)
+hub <- AnnotationHub()
+filters(hub) <- list(Species="Drosophila melanogaster")
+@
+
+There are 87 files that match Drosophila melanogaster.
+
+<<hub_2>>=
+length(hub)
+head(names(hub))
+@
+
+Retrieve a dm3 file as a \Rcode{GRanges}. 
+
+<<hub_3>>=
+gr <- hub$goldenpath.dm3.database.ensGene_0.0.1.RData
+summary(gr)
+@
+
+The metadata fields contain the details of file origin and content.
+
+<<hub_4>>=
+names(metadata(gr)[[2]])
+metadata(gr)[[2]]$Tags
+@
+
+Split the GRanges by gene name to get a \Robject{GRangesList} of
+transcripts by gene.
+
+<<hub_5>>= 
+split(gr, gr$name)
+@
+
+Before performing overlap operations confirm that the seqlevels 
+(chromosome names) in the annotation match those in the bam file. See 
+?\Rfunction{renameSeqlevels}, ?\Rfunction{keepSeqlevels} and 
+?\Rfunction{seqlevels} for examples of renaming seqlevels.
+
+\subsection{Reading bam files}
+
+Counting with \Rfunction{summarizeOverlaps} does not retain the bam 
+records in \R{}. Often the count summary is the important piece of
+information and the individual record details are not needed. In
+cases where closer inspection of the data is necessary there are
+several functions are available for reading bam records into \R{} 
+objects.
+
+\begin{verbatim}
+  scanBam()
+  readGAlignments()
+  readGAlignmentPairs()
+  readGAlignmentsList()
+\end{verbatim}
+
+\Rfunction{scanBam} is a low-level function that returns a list of lists
+and is not discussed further here. For details see ?\Rfunction{scanBam}.
+ 
+\subsubsection{single-end}
+Single-end data can be read with the \Rfunction{readGAlignments} function.
+
+<<bam_1>>=
+un1 <- untreated1_chr4()
+gal <- readGAlignments(un1)
+@
+
+Data subsets can be specified by genomic position, field names, or flag
+criteria in the \Rcode{ScanBamParam}. Here we input records that overlap 
+position 1 to 5000 on the negative strand with \Rcode{flag} and 
+\Rcode{cigar} as metadata columns.
+ 
+<<bam_2>>=
+what <- c("flag", "cigar") 
+which <- GRanges("chr4", IRanges(1, 5000)) 
+flag <- scanBamFlag(isMinusStrand = TRUE)
+param <- ScanBamParam(which=which, what=what, flag=flag)
+neg <- readGAlignments(un1, param=param)
+neg
+@
+
+Another approach to subsetting the data is to use \Rfunction{filterBam}.
+This function creates a new BAM file of records passing user-defined 
+criteria. See ?\Rfunction{filterBam} for details.
+
+\subsubsection{paired-end}
+
+Paired-end data are read with \Rfunction{readGAlignmentPairs}
+or \Rfunction{readGAlignmentsList}. These functions use the same
+mate paring algorithm but output different objects. Mate pairing
+is performed when \Rcode{asMates=TRUE} in the BamFile, otherwise
+records are treated as single-end. 
+
+<<bam_3>>=
+un3 <- untreated3_chr4()
+gapairs <- readGAlignmentPairs(BamFile(un3, asMates=TRUE))
+galist <- readGAlignmentsList(BamFile(un3, asMates=TRUE))
+@
+
+The \Robject{GAlignmentPairs} class holds only pairs; singletons, 
+reads with unmapped mates, and secondary alignments are discarded. 
+Each list element holds exactly 2 records (a mated pair). Records
+can be accessed as the \Rcode{first} and\Rcode{last} segments in
+a template or as \Rcode{left} and \Rcode{right} alignments.
+See ?\Rfunction{GAlignmentPairs} for details.
+
+<<bam_4>>=
+gapairs
 @ 
 
+\Robject{GAlignmentsList} is a more general `list-like' structure
+that holds mate pairs as well as non-mates (i.e., singletons, records 
+with unmapped mates etc.) A \Rcode{mates} metadata column (accessed
+with \Rfunction{mcols}) indicates which records were paired and is set 
+on both the individual \Robject{GAlignments} and the outer list elements.
 
-\section{Chip-seq analysis}
-
-This section presents an example workflow using a subset of the
-ChIP-seq data for origin recognition complex (ORC) binding sites in
-\textit{Saccharomyces cerevisiae} from the paper \textit{Conserved
-nucleosome positioning defines replication origins}, Eaton et. al.
-(PMID 20351051). The subset consists of all the MAQ alignments to
-chromosome XIV for two replicates of ORC ChIP-seq data and is
-contained in the Bioconductor package \Rpackage{EatonEtAlChIPseq}.
-For illustration purposes we will focus on the first replicate.
-
-<<EatonEtAlChIPseq>>=
-library(EatonEtAlChIPseq)
-data(orcAlignsRep1)
-orcAlignsRep1
+<<bam_5>>=
+galist
 @
 
-\subsection{Filtering alignments}
+Non-mated reads are returned as groups by QNAME and contain any number 
+of records. Here the non-mate groups range in size from 1 to 9.
 
-In this subsection we will demonstrate how to perform three filtering
-operations on alignments produced by the MAQ software through the
-following restrictions:
-
-\begin{itemize}
-\item Number of mismatches in alignment must be $\le$ 3 (guideline
-  specified in paper)
-\item No duplicates of \{chromosome, strand, position\} combinations
-  (PCR bias correction)
-\item An alignment on one strand must have a plausible alignment on
-  the complementary strand (``pseudo" paired-read restriction)
-\end{itemize} 
-
-\noindent
-The first two restrictions can be implemented using functionality from
-the \Rpackage{ShortRead} package, while the last one can be performed
-using operations within the \Rpackage{GenomicRanges} package.
-
-In the previous section we loaded the \Robject{orcAlignsRep1} object,
-an instance of the \Rpackage{ShortRead} class \Rclass{AlignedRead}.
-This object contains information on the characteristics of the read as
-well as its alignment to a reference genome, including information on
-the number of mismatches for the best alignment. Using functionality from
-the \Rpackage{ShortRead} package we can perform the first two filtering
-operations, which result in a subset that is roughly 18\% of the size of
-the original MAQ alignment file.
-
-<<EatonAlignmentFiltering-1>>=
-subsetRep1 <-
-  orcAlignsRep1[alignData(orcAlignsRep1)[["nMismatchBestHit"]] <= 3L]
-length(subsetRep1) / length(orcAlignsRep1)
-subsetRep1 <- subsetRep1[occurrenceFilter(withSread=FALSE)(subsetRep1)]
-length(subsetRep1) / length(orcAlignsRep1)
-subsetRep1
+<<bam_6>>=
+non_mates <- galist[unlist(mcols(galist)$mates) == FALSE]
+table(elementLengths(non_mates))
 @
 
-The last filtering criterion, a ``pseudo" paired-read filter, requires
-an understanding of the interval spans for the alignments rather than
-just the ``leftmost" alignment location, i.e. start location on the
-positive strand or end location on the negative strand, represented in
-the \Rclass{AlignedRead} class. As such we will coerce the alignment
-subset contained in \Robject{subsetRep1} to a \Rclass{GRanges} object
-using a \Rmethod{coerce} method from the \Rpackage{ShortRead} package.
+\subsubsection{Iterating with \Rcode{yieldSize}}
 
-<<EatonOrcRanges>>=
-rangesRep1 <- as(subsetRep1, "GRanges")
-head(rangesRep1, 3)
+Large files can be iterated through in chunks by setting a \Rcode{yieldSize} 
+on the \Rcode{BamFile}.
+
+<<bam_7>>=
+bf <- BamFile(un1, yieldSize=100000)
 @
 
-\Rclass{AlignedRead} objects lack information on chromosome length,
-so we will add it to the new \Robject{rangesRep1} object.
+Iteration through a file requires that the bam be opened, repeatedly
+queried inside a loop, then closed. Repeated calls to 
+\Rfunction{readGAlignments} without opening the file first result
+in the same 100000 records returned each time.
 
-<<EatonAddSeqlengths>>=
-seqlengths(rangesRep1) <- 784333
-@
-
-For our ``pseudo" paired-read filter, we will use the authors' estimate
-of the mean fragment length (around 150 base pairs). In particular, we
-will construct a filter where each alignment on the plus strand must have
-a corresponding alignment somewhere within [100, 200] bp downstream on the
-minus strand and vice versa with those alignments on the minus strand.
-
-This filtering process can be achieved through an interval overlap
-operation between the starts of the alignments on the minus strand
-
-<<EatonNegStarts>>=
-negRangesRep1 <- rangesRep1[strand(rangesRep1) == "-"]
-negStartsRep1 <- resize(negRangesRep1, 1)
-@
-
-\noindent 
-and the projected end of the alignments on the plus strand.
-Note: As of GenomicRanges >= 1.11.7, shift() no longer
-trims out of bound ranges. Because of this, we have a little
-more work to do for the positive strand ends.
-
-<<EatonPossibleEnds>>=
-posRangesRep1 <- rangesRep1[strand(rangesRep1) == "+"]
-posEndsRep1 <- shift(posRangesRep1, 99)
-posEndsRep1 <- trim(posRangesRep1)
-posEndsRep1 <- resize(posEndsRep1, 100)
-strand(posEndsRep1) <- "-"
-@
-
-The results of the interval overlap are shown below. This filter
-flagged roughly 4.5\% of the remaining alignments for removal,
-resulting in keeping 17.3\% of the original set of alignments when
-including the results of the first two filtering steps.
-
-<<EatonMatchingPairs>>=
-strandMatching <- findOverlaps(negStartsRep1, posEndsRep1)
-posKeep <- unique(subjectHits(strandMatching))
-negKeep <- unique(queryHits(strandMatching))
-length(posKeep) / length(posEndsRep1)
-length(negKeep) / length(negStartsRep1)
-(length(posKeep) + length(negKeep)) / length(orcAlignsRep1)
-@
-
-<<EatonAlignmentFiltering-2>>=
-posFilteredRangesRep1 <- posRangesRep1[posKeep]
-negFilteredRangesRep1 <- negRangesRep1[negKeep]
-@
-
-\subsection{Finding peaks}
-
-Once the alignments have been filtered, they can be aggregated into
-coverage vectors. Assuming the size of the reads are uniformly
-distributed within [100, 200] base pairs, we will generate a coverage
-vector by giving full weight to alignments within 100 bp upstream and
-then linearly decreasing weights for the next 100 bp upstream. For
-the \Rfunction{runwtsum} function from \Rpackage{IRanges}, these weights
-for the positive and negative strands are expressed by the vectors:
-
-<<CoverageWeights, fig=TRUE, include=FALSE, eps=FALSE, height=3>>=
-posWeights <- c(seq(0.01, 1, length = 100), rep(c(1, 0), c(101, 200)))
-negWeights <- rev(posWeights)
-plot(-200:200, posWeights, xlab = "Relative Position",
-     ylab = "Coverage Weight", type = "l")
-@
-
-\begin{figure}[tb]
-  \begin{center}
-     \includegraphics[width=\textwidth]{GenomicRangesUseCases-CoverageWeights}  
-     \caption{\label{fig-CoverageWeights}%
-      Coverage weights for positive strand weighted sums.}
-  \end{center}
-\end{figure}
-
-The first step in constructing this coverage vector is to tabulate
-the alignments by their start positions on both the positive and
-negative strand. We will use the \Rfunction{coverage} function on
-these start values, which will produce \Rclass{RleList}
-representations of the coverage vectors.
-
-<<EatonStartCoverage>>=
-posStartsCoverRep1 <- coverage(resize(posFilteredRangesRep1, 1))
-negStartsCoverRep1 <- coverage(resize(negFilteredRangesRep1, 1))
-@
-
-\noindent
-The second step in the process is aggregating upstream alignments
-using the \Robject{posWeights} and \Robject{negWeights} objects
-defined above.
-
-<<EatonExtendedCoverage>>=
-posExtCoverRep1 <-
-  round(runwtsum(posStartsCoverRep1, k = 401, wt = posWeights,
-                 endrule = "constant"))
-negExtCoverRep1 <-
-  round(runwtsum(negStartsCoverRep1, k = 401, wt = negWeights,
-                 endrule = "constant"))
-@
-
-Before we proceeded any further, we will define two plot functions
-for visualizing coverage vectors: \Rfunction{plotCoverage} for
-displaying a single coverage vector and
-\Rfunction{plotStrandedCoverage} for displaying back-to-back
-coverage vectors for dual-stranded data.
-
-<<plotCoverage>>=
-plotCoverage <-
-function(x, xlab = "Position", ylab = "Coverage",...)
-{
-    plot(c(start(x), length(x)), c(runValue(x), tail(runValue(x), 1)),
-         type = "s", col = "blue", xlab = xlab, ylab = ylab, ...)
+<<bam_8>>=
+open(bf)
+ans <- integer(length(exbygene))
+repeat {
+    gal <- readGAlignments(bf)
+    if (length(gal))
+        ans <- ans + countOverlaps(exbygene, gal)
+    else
+        break
 }
-plotStrandedCoverage <-
-function(positive, negative, xlab = "Position", ylab = "Coverage",...)
-{
-    ylim <- min(max(positive), max(negative)) * c(-1, 1)
-    plotCoverage(positive, ylim = ylim, ...)
-    lines(c(start(negative), length(negative)),
-          - c(runValue(negative), tail(runValue(negative), 1)),
-          type = "s", col = "red")
-    abline(h = 0, col = "dimgray")
-}
-@
-
-The coverage across chromosome XIV of the filtered alignements is
-shown in Figure \ref{fig-EatonPlotStrands}. In general this plot
-shows a near mirror image of coverage vectors between the positive
-and negative strand.
-
-<<EatonPlotStrands, fig=TRUE, include=FALSE, eps=FALSE, height=5>>=
-plotStrandedCoverage(posExtCoverRep1[[1]], negExtCoverRep1[[1]])
-@
-
-\begin{figure}[tb]
-  \begin{center}
-     \includegraphics[width=\textwidth]{GenomicRangesUseCases-EatonPlotStrands}  
-     \caption{\label{fig-EatonPlotStrands}%
-      Plot of coverage across chromosome XIV.}
-  \end{center}
-\end{figure}
-
-To reduce these measures to a single dimension, we will be
-conservative and choose the smallest value between the positive
-and negative strand coverage vectors using the \Rfunction{pmin}
-method for \Rclass{RleList} objects.
-
-<<EatonExtendedCoverage>>=
-combExtCoverRep1 <- pmin(posExtCoverRep1, negExtCoverRep1)
-quantile(combExtCoverRep1, c(0.5, 0.9, 0.95))
-@
-
-We now can call peaks off the combined coverage object
-\Robject{combExtCoverRep1}. Since the median height for the
-combined coverage on chromosome XIV is 4, we can limit our
-attention to areas on the chromosome with coverage $\ge 5$
-using the \Rfunction{slice} function. From there we can
-derive a heuristic for a significant peaks as those achieving
-a maximum height $\ge 28$, which selects 22 peaks.
-
-<<EatonPeaks>>=
-peaksRep1 <- slice(combExtCoverRep1, lower = 5)
-peakMaxsRep1 <- viewMaxs(peaksRep1)
-tail(sort(peakMaxsRep1[[1]]), 30)
-peaksRep1 <- peaksRep1[peakMaxsRep1 >= 28]
-peakRangesRep1 <-
-  GRanges("chrXIV", as(peaksRep1[[1]], "IRanges"),
-          seqlengths = seqlengths(rangesRep1))
-length(peakRangesRep1)
-@
-
-We can now compare the significant peaks we selected with
-those selected by the authors. Using interval comparison
-tools, we see there is general agreement between our peaks
-and those of the authors.
-
-<<EatonExtendedReads>>=
-data(orcPeaksRep1)
-countOverlaps(orcPeaksRep1, peakRangesRep1)
-countOverlaps(peakRangesRep1, orcPeaksRep1)
+close(bf)
+head(table(ans))
 @
 
 
-\section{Simple RNA-seq Analysis}
+\subsection{Count tables}
 
-For the first example we will focus on RNA-seq analysis, but these
-tools can also be applied to other kinds of short read data analysis.
-It is also necessary to consider limitations imposed by BAM files and
-the way that they are read in. BAM files can contain things that align
-to multiple places (multi-reads) and this makes things more complex
-since we don't know which things were aligned in this way. Therefore,
-if these things are not filtered out beforehand by the aligner, we
-will be counting some reads multiple times. Also, because alignments
-consider the per base qualities of a sequence, it is also possible for
-the same called sequence to be aligned onto two different places.
-When we scan in the BAM file, these sequences will be read in based on
-their predicted positions from the aligner. Thus, they can count as
-different sequences even though they appear to be the same sequence
-(based on their base pairs).
+Two popular packages for gene expression are \Biocpkg{DESeq} and 
+\Biocpkg{edgeR}. Tables of counts per gene are required for both and can be 
+easily created with a vector of counts. Here we use the counts from the 
+\Robject{SummarizedExperiment}.
 
-Let's begin by using the \Rpackage{Rsamtools} to retrieve some data
-from a yeast experiment and load it into a \Rclass{GAlignments}
-object. Here we will load in a single file that contains RNA-seq data
-aligned from a wild type yeast experiment. This particular file only
-has data from chromosome 13. While more data can be loaded, we will
-limit our analysis to this subset for expediency purposes.
-
-% FIXME: The reads in this BAM file from leeBamViews seem to have been
-% aligned against a different reference genome than the one we use later
-% for extracting the transcripts (sacCer2) (see below the different sequence
-% lengths for chrX and chrXIV). This is wrong and is exactly what we should
-% tell the users to NOT do!
-<<YeastData>>=
-library(leeBamViews)
-testFile <- system.file("bam", "isowt5_13e.bam", package="leeBamViews")
-library(Rsamtools)
-aligns <- readGAlignments(testFile)
+<<count_table>>=
+library(DESeq)
+deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
+library(edgeR)
+edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 @
 
-At this point, we also have to consider carefully which build we have
-so that we can know which annotation we need. This data is from Lee et
-al (PMID 19096707), which is available in the \Rpackage{leeBamViews}
-data package. This data originates from Gavin Sherlock's group at
-Stanford and so naturally they designed their experiments with the SGD
-genomes in mind. Therefore, it is probably reasonable to use the SGD
-genome assembly data for \textit{Saccharomyces cerevisiae} when looking
-at their data. This data is available from UCSC and is therefore also
-accessible through the \Rpackage{rtracklayer}, \Rpackage{BSGenome} and
-\Rpackage{GenomicFeatures} packages.
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 
+%%%  Extracting DNA sequences of gene regions
+%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Extract DNA sequences of gene regions}
 
-\subsection{Getting relevant genomic annotations}
+\subsection{DNA sequences for intron and exon regions of a single gene}
 
-Now that we have chosen a data source to match the data that the genes
-were aligned to, we can simply get relevant annotation data to go with
-it. The following code will load the \Rpackage{GenomicFeatures}
-package, and then create an annotation database based on material from
-the sgdGene track.
+DNA sequences for the introns and exons of a gene are essentially
+the sequences for the introns and exons for all known transcripts of
+a gene. The first task is to identify all transcripts associated
+with the gene of interest. Our sample gene is the human TRAK2
+which is involved in regulation of endosome-to-lysosome trafficking 
+of membrane cargo. The Entrez gene id is `66008'. 
 
-<<GetAnnoations>>=
+<<trak_1>>=
+trak2 <- "66008"
+@
+
+Load the UCSC `Known Gene' table annotation available as a
+\Bioconductor{} package.
+
+<<trak_2>>=
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+@
+
+To get the transcripts associated with the trak2 gene we use the
+\Rfunction{transcriptsBy} function from the \Biocpkg{GenomicFeatures} 
+package. This returns a \Robject{GRangesList} of all transcripts
+grouped by gene. We are only interested in trak2 so we subset the 
+list on the trak2 gene id.
+
+<<trak_3>>=
 library(GenomicFeatures)
-txdb <- makeTranscriptDbFromUCSC(genome="sacCer2", tablename="sgdGene")
+txbygene <- transcriptsBy(txdb, by="gene")[trak2]
+txbygene
 @
 
-Then we simply have to retrieve data from the database using the
-\Rfunction{exonsBy} method so that only exonic locations for each
-transcript will be retrieved by setting the \Rfunarg{by} argument to
-\Rcode{"tx"}.
+The transcript names corresponding to the trak2 gene will be used to 
+subset the extracted intron and exon regions. The \Rcode{txbygene} 
+object is a \Robject{GRangesList} and the transcript names are a 
+metadata column on the individual \Robject{GRanges}. To extract the 
+names we must first `flatten' or unlist \Rcode{txbygene}.
 
-<<exonsBy>>=
-exonRanges <- exonsBy(txdb, "tx")
-length(exonRanges)
-exonRanges[1]
+<<trak_4>>=
+tx_names <- mcols(unlist(txbygene))$tx_name
+tx_names
 @
 
-At this point, in spite of using the matching annotations for the data,
-there is still a discrepancy in how the chromosomes were named from one
-source to the next. In our data these all start with "Sc", whereas in
-the annotations they do not. Also, numbers of the chromosomes for the
-annotation are given in classic Roman numerals (as is traditional for
-yeast). So let's recode the alignments to conform with the exon
-annotations.
+Intron and exon regions are extracted with \Rfunction{intronsByTranscript} 
+and \Rfunction{exonsBy}. The resulting \Robject{GRangesLists} are
+subset on the trak2 transcript names. 
 
-<<ammendData>>=
-seqlevels(exonRanges)
-newlvls <- c(paste("chr", as.roman(1:16), sep=""), "chrM", "2micron")
-newlvls
-seqlevels(exonRanges) <- newlvls  # reorder the levels
+Extract the intron regions ...
 
-names(newlvls) <- seqlevels(aligns)
-newlvls
-seqlevels(aligns) <- newlvls  # rename the levels
-
-seqlengths(aligns) <- seqlengths(exonRanges)
+<<trak_5>>=
+intronsbytx <- intronsByTranscript(txdb, use.names=TRUE)[tx_names]
+elementLengths(intronsbytx)
 @
 
+and the exon regions.
 
-\subsection{Counting reads that overlap the annotations}
-
-Now we can count how many reads mapped to each transcript.  And, since
-the \Robject{exonRanges} object only has ranges for exons, this use of
-\Rfunction{countOverlaps} will only consider the exon space when
-calculating the counts for each.
-<<count>>=
-counts <- countOverlaps(exonRanges, aligns)
+<<trak_7>>=
+exonsbytx <- exonsBy(txdb, "tx", use.names=TRUE)[tx_names]
+elementLengths(exonsbytx)
 @
 
-For simplicities sake, we will now calculate the RPKM.  This is not
-meant as an endorsement of any one measure over any other, it's just
-being used here as an example that users will probably have
-encountered before. Using the annotation object, we can also get the
-number of bases representing each \Robject{exonRanges} element.  Note
-that this sum also only includes bases that are represented by the
-exons from each transcript.
-<<numBases>>=
-numBases <- sum(width(exonRanges))
-geneLengthsInKB <- numBases / 1000
+Next we want the DNA sequences for these intron and exon regions.
+The \Rfunction{extractTranscriptsFromGenome} function in the 
+\Biocpkg{Biostrings} package will query a \Biocpkg{BSGenome} package 
+with a set of genomic positions and retrieve the DNA sequences. 
+
+<<trak_8>>=
+library(Biostrings)
+library (BSgenome.Hsapiens.UCSC.hg19)
 @
 
-And from this we could (as an example) calculate the sum of the
-mappable reads and then calculate the RPKMs.
-% RPKM as intrepreted from python code:
-% RPKMs <- (counts/(sumMappable/1000000))/geneLengthsInKB
-To do that we first would need to calculate the total number of reads
-being considered by the experiment in millions of reads.
-<<millionsMapped>>=
-millionsMapped <- sum(counts) / 1000000
+Extract the intron sequences ...
+
+<<trak_9>>=
+intron_seqs <- extractTranscriptsFromGenome(Hsapiens, intronsbytx)
+intron_seqs
 @
 
-Then we have to calculate the RPM by considering the number of reads
-for each transcript relative to this value.
-<<RPM>>=
-# counted reads / total reads in millions
-rpm <- counts / millionsMapped
-@
+and the exon sequences.
 
-Finally, we calculate the RPKM by adjusting each RPM measurement for
-the length of the transcript in Kb.
-<<RPKM>>=
-# reads per million per geneLength in Kb
-rpkm <- rpm / geneLengthsInKB
+<<trak_10>>=
+exon_seqs <- extractTranscriptsFromGenome(Hsapiens, exonsbytx)
+exon_seqs
 @
 
 
-Once we have calculated a measure of gene expression, we might find it
-convenient to put it into a table as is expected by the
-\Rpackage{DESeq} package.  To do this, we have to consider that we
-will probably want to do just the above steps that collect the raw counts and then place those vectors into a
-\Robject{data.frame} or \Robject{matrix} as a column.  For the sake of
-saving space, lets assume you did that and created another vector
-called \Robject{counts2}, then you could create your \Rpackage{DESeq}
-object like this:
+\subsection{DNA sequences for coding and UTR regions of genes associated 
+            with colorectal cancer}
 
-<<DESeqFrame, eval=FALSE>>=
-deframe <- data.frame(counts, counts2)  
+In this section we extract the coding and UTR sequences of genes involved
+in colorectal cancer. The workflow extends the ideas presented in the single 
+gene example and suggests an approach to identify disease-related genes.
+
+\subsubsection{Build a gene list}
+
+We start with a list of gene or transcript ids. If you do not have 
+pre-defined list one can be created with the \Biocpkg{KEGG.db} and 
+\Biocpkg{KEGGgraph} packages. Updates to the data in the \Biocpkg{KEGG.db} 
+package are no longer available, however, the resource is still useful for 
+identifying pathway names and ids. 
+
+Create a table of KEGG pathways and ids and search on the term `cancer'.
+
+<<cancer_1>>=
+library(KEGG.db)
+pathways <- toTable(KEGGPATHNAME2ID)
+pathways[grepl("cancer", pathways$path_name, fixed=TRUE),] 
 @
 
-This will work in this case for as many other samples as you choose to
-process because the countOvelaps method is always using the same
-\Robject{exonRanges} object to quantify overlap regions with.
+Use the "05210" id to query the KEGG web resource (accesses the currently
+maintained data).
 
-
-
-
-\subsection{Identifying and learning more about interesting transcripts} 
-
-Now that we have calculated the RPKM, we can start to ask basic
-questions about the results.  For example, which of the transcripts
-had the two highest scores?  We can get this easily, because rpkm and
-exonRanges will both be listed in the same order. 
-
-<<sort>>=
-sortedRPKM <- sort(rpkm)
-highScoreGenes <- tail(sortedRPKM)
+<<cancer_2>>=
+library(KEGGgraph)
+dest <- tempfile()
+retrieveKGML("05200", "hsa", dest, "internal")
 @
 
-From the above output, notice how the names of the sortedRPKM are the
-same as the index of exonRanges we need to retrieve?  We can therefore
-see that transcript 6678 and 6676 are also the IDs of the transcript
-with the highest RPKM. So we can use the \Rmethod{transcripts}
-accessor learn which gene that transcript is associated with like
-this: 
+The suffix of the KEGG id is the Entrez gene id. The 
+\Rfunction{translateKEGGID2GeneID} simply removes the prefix leaving 
+just the Entrez gene ids.
 
-<<annotate1>>=
-txs <- transcripts(txdb, 
-                   vals=list(tx_id=names(highScoreGenes)), 
-                   columns=c("tx_id","gene_id"))
-systNames <- as.vector(unlist(mcols(txs)[["gene_id"]]))
+<<cancer_3>>=
+crids <- as.character(parseKGML2DataFrame(dest)[,1])
+crgenes <- unique(translateKEGGID2GeneID(crids))
+head(crgenes)
 @
 
-Once you know the gene id, you can use gene-centric annotation data
-sources such as the \Rpackage{org.Sc.sgd.db} package
-to learn more about it:
+\subsubsection{Identify genomic coordinates}
 
-<<annnotate2>>=
-library(org.Sc.sgd.db)
-toTable(org.Sc.sgdGENENAME[systNames])
+The list of gene ids is used to extract genomic positions of the regions 
+of interest. The Known Gene table from UCSC will be the annotation and
+is available as a \Bioconductor{} package.
+
+<<cancer_4>>=
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 @
 
-If you wish, you can also use these systematic names to replace the
-rownames in any \Rpackage{DESeq} frame objects that you create.
+If an annotation is not available as a \Bioconductor{} annotation package
+it may be available in \Biocpkg{AnnotationHub}. Additionally, there are
+functions in \Biocpkg{GenomicFeatures} which can retrieve data from UCSC and
+Ensembl to create a \Robject{TranscriptDb}. See 
+?\Rcode{makeTranscriptDbFromUCSC} for details.
 
+As in the single gene example we need to identify the transcripts 
+corresponding to each gene. The transcript id (or name) is used
+to isolate the UTR and coding regions of interest. This grouping of
+transcript by gene is also used to re-group the final sequence results.
 
-% NEXT: Compete the subsection on finding UNKNOWN transcribed regions.
-% Basically, 1) use the annotations to filter out reads from the aligned
-% reads object, and then 2) use chipseq tools to do pileups, and then
-% apply cutoffs to find putative transcribed regions.
+The \Rcode{transcriptsBy} function outputs both the gene and transcript
+identifiers which we use to create a map between the two. The 
+\Rcode{map} is a \Robject{CharacterList} with gene ids as names and 
+transcript ids as the list elements.
 
-
-\subsection{Identifying reads that do NOT overlap known annotation} 
-
-At this point you might be satisfied with calculating the amount of
-known genes in your model, but what if you wanted to know about
-regions that were transcribed but which were NOT found amongst the
-annotated transcripts? 
-
-Isolate regions not present in the annotation.
-<<noOlap>>=
-noOlap <- aligns[!overlapsAny(aligns, exonRanges)]
+<<cancer_5>>=
+txbygene <- transcriptsBy(txdb, "gene")[crgenes] ## subset on colorectal genes
+map <- relist(unlist(txbygene, use.names=FALSE)$tx_id, txbygene)
+map
 @
 
-Perform a \Rcode{findOverlaps} to confirm no ranges overlap.
-<<confirm_noOlap>>=
-findOverlaps(noOlap, exonRanges)
+Extract the UTR and coding regions.
+
+<<cancer_6>>=
+cds <- cdsBy(txdb, "tx")
+threeUTR <- threeUTRsByTranscript(txdb)
+fiveUTR <- fiveUTRsByTranscript(txdb)
 @
 
-It is interesting to note that in spite of having removed all known exons, 
-this object still contains about half of the original set of aligned reads.
-<<length_noOlap>>=
-length(noOlap)
+Coding and UTR regions may not be present for all transcripts specified 
+in \Rcode{map}. Consequently, the subset results will not be the same 
+length. This length discrepancy must be taken into account when re-listing 
+the final results by gene.
+
+<<cancer_7>>=
+txid <- unlist(map, use.names=FALSE)
+cds <- cds[names(cds) %in% txid]
+threeUTR <- threeUTR[names(threeUTR) %in% txid]
+fiveUTR <- fiveUTR[names(fiveUTR) %in% txid]
 @
 
-Create a subset of records that do overlap with the annotation using the 
-\Rfunction{subsetByOverlaps} function.
-<<filterKnowns>>=
-filtData <- subsetByOverlaps(aligns, exonRanges)
-length(filtData)
+Note the different lengths of the subset regions.
+
+<<cancer_8>>=
+length(txid) ## all possible transcripts
+length(cds)
+length(threeUTR)
+length(fiveUTR)
 @
 
-If a coarser level of filtering is desired, you could also use the
-output of \Rmethod{transcriptsBy} as the subject argument for
-\Rmethod{subsetByOverlaps}.
-Doing so would look like this:
+These objects are \Robject{GRangesList}s with the transcript id as the 
+outer list element. 
 
-<<filterKnowns2>>=
-filtData2 <- subsetByOverlaps(aligns, transcriptsBy(txdb, "gene"))
-length(filtData2)
+<<cancer_9>>=
+cds
 @
 
-In this specific case, you can see that not many additional things
-have been filtered out by the coarser filtering which indicates that
-not many of these unknown aligned reads are from intronic or
-untranslated regions.  This makes sense, since introns in yeast tend
-to be rare, infrequent and small.  Going forward in this example, we
-will use the set that has only filtered out the exons just so that we
-can look at the set of reads that is complementary to the ones we just
-counted.
+\subsubsection{Extract sequences from BSgenome}
 
-The next step in looking for transcripts that are unknown is to see
-where the reads are located on the genome.  To do that we will use a
-function originally developed for chip-seq analysis.  The
-\Rfunction{coverage} method.
+The \Rcode{BSgenome} packages contain complete genome sequences
+for a given organism.
 
-<<coverage>>=
-cov <- coverage(filtData)
+Load the \Rcode{BSgenome} package for homo sapiens.
+
+<<cancer_10>>=
+library(BSgenome.Hsapiens.UCSC.hg19)
+genome <- BSgenome.Hsapiens.UCSC.hg19
 @
 
-Since we only have data for chromosome 13, lets subset down to that.
-Notice that in using the coverage method we lose the strand
-information.  This is ok in this case, since the experiment has not
-preserved the strand information anyhow.  If you had data that
-measured each strand separately, then you would want to call coverage
-twice at this point to keep the results separated.
+Use \Rfunction{extractTranscriptsFromGenome} to extract the UTR and coding 
+regions from the \Rcode{BSGenome}. This function retrieves the sequences 
+for an any \Robject{GRanges} or \Robject{GRangesList} (i.e., not just 
+transcripts like the name implies).
 
-<<coverageSubset>>=
-cov <- cov[13]
+<<cancer_11>>=
+threeUTR_seqs <- extractTranscriptsFromGenome(genome, threeUTR) 
+fiveUTR_seqs <- extractTranscriptsFromGenome(genome, fiveUTR) 
+cds_seqs <- extractTranscriptsFromGenome(genome, cds) 
 @
 
-And now we can slice that data so that we only consider islands where
-things are continuously at least one read deep.
+The return values are \Robject{DNAStringSet} objects.
 
-<<islands>>=
-islands <- slice(cov, lower = 1)
+<<cancer_12>>=
+cds_seqs
 @
 
-Having identified those, we can then filter out just the islands where
-the final width is at least 1000 bases long.
+Our final step is to collect the coding and UTR regions (currently 
+organzied by transcript) into groups by gene id. The \Rfunction{split} 
+function splits the sequences in the \Robject{DNAStringSet} by the partition
+object. The partition object represents the number of transcript ranges 
+(defined as the width) in each gene id group. These widths are different for 
+each region because not all transcripts had a coding or 3' or 5' UTR region 
+defined. 
 
-<<continous >1000>>=
-transcribedRegions <- islands[width(islands) > 1000]
-txr <- islands[width(islands) > 1000]
+<<cancer_13>>=
+lst3 <- split(threeUTR_seqs, PartitioningByWidth(sum(map %in% names(threeUTR))))
+lst5 <- split(fiveUTR_seqs, PartitioningByWidth(sum(map %in% names(fiveUTR))))
+lstc <- split(cds_seqs, PartitioningByWidth(sum(map %in% names(cds))))
+names(lst3) <- names(lst5) <- names(lstc) <- names(map)
 @
 
-Finally, we should then be able to go back to the \Robject{BSGenome}
-object and retrieve the actual sequences.  In order to recover these
-sequences, we are going to specify that this data came from chromosome
-13, and we will just retrieve the plus strand version of each (since
-the experiment collapsed that data anyhow).
+There are 239 genes in \Rcode{map} each of which have 1 or more transcripts. 
+The table of element lengths shows how many genes have each number of
+transcripts. For example, 47 genes have 1 transcript, 48 genes have 2 etc.
 
-<<getSequence>>=
+<<cancer_14>>=
+length(map)
+table(elementLengths(map))
+@
+
+The lists of DNA sequences all have the same length as \Rcode{map} but one or
+more of the element lengths may be zero. This would indicate that data were
+not available for that gene. The tables below show that there was at least
+1 coding region available for all genes (i.e., none of the element lengths
+are 0). However, both the 3' and 5' UTR results have element lengths of 0 
+which indicates no UTR data were available for that gene.
+
+<<cancer_15>>=
+table(elementLengths(lstc))
+table(elementLengths(lst3))
+names(lst3)[elementLengths(lst3) == 0L] ## genes with no 3' UTR data
+table(elementLengths(lst5))
+names(lst5)[elementLengths(lst5) == 0L] ## genes with no 5' UTR data
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 
+%%%  Create DNA consensus sequence for read group families 
+%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Create DNA consensus sequences for read group `families'}
+
+The motivation for this use-case comes from a study which explored the
+dynamics of point mutations. The mutations of interest exist with a range 
+of frequencies in the control group (e.g., 0.1\% - 50\%). PCR and sequencing 
+error rates make it difficult to identify low frequency events 
+(e.g., < 20\%).
+
+When a library is prepared with Nextera, random fragments are generated 
+followed by a few rounds of PCR. When the genome is large enough, reads 
+aligning to the same start position are likely descendant from the same 
+template fragment and should have identical sequences. 
+
+The goal is to elimininate noise by grouping the reads by common start 
+position and discarding those that do not exceed a certain threshold within 
+each family. A new consensus sequence will be created for each read group
+family.
+
+\subsection{Sort reads into groups by start position}
+
+Load the BAM file into a GAlignments object.
+
+<<cseq_1>>=
+library(Rsamtools)
+bamfile <- system.file("extdata", "ex1.bam", package="Rsamtools")
+param <- ScanBamParam(what=c("seq", "qual"))
+gal <- readGAlignmentsFromBam(bamfile, use.names=TRUE, param=param)
+@
+
+Use sequenceLayer() to "lay" the query sequences and quality strings
+on the reference.
+
+<<cseq_2>>=
+qseq <- setNames(mcols(gal)$seq, names(gal))
+qual <- setNames(mcols(gal)$qual, names(gal))
+qseq_on_ref <- sequenceLayer(qseq, cigar(gal),
+                             from="query", to="reference")
+qual_on_ref <- sequenceLayer(qual, cigar(gal),
+                             from="query", to="reference")
+@
+
+Split by chromosome.
+
+<<cseq_3>>=
+qseq_on_ref_by_chrom <- splitAsList(qseq_on_ref, seqnames(gal))
+qual_on_ref_by_chrom <- splitAsList(qual_on_ref, seqnames(gal))
+pos_by_chrom <- splitAsList(start(gal), seqnames(gal))
+@
+
+For each chromosome generate one GRanges object that contains
+unique alignment start positions and attach 3 metadata columns
+to it: the number of reads, the query sequences, and the quality
+strings.
+
+<<cseq_4>>=
+gr_by_chrom <- lapply(seqlevels(gal),
+  function(seqname)
+  {
+    qseq_on_ref2 <- qseq_on_ref_by_chrom[[seqname]]
+    qual_on_ref2 <- qual_on_ref_by_chrom[[seqname]]
+    pos2 <- pos_by_chrom[[seqname]]
+    qseq_on_ref_per_pos <- split(qseq_on_ref2, pos2)
+    qual_on_ref_per_pos <- split(qual_on_ref2, pos2)
+    nread <- elementLengths(qseq_on_ref_per_pos)
+    gr_mcols <- DataFrame(nread=unname(nread),
+                          qseq_on_ref=unname(qseq_on_ref_per_pos),
+                          qual_on_ref=unname(qual_on_ref_per_pos))
+    gr <- GRanges(Rle(seqname, nrow(gr_mcols)),
+                  IRanges(as.integer(names(nread)), width=1))
+    mcols(gr) <- gr_mcols
+    seqlevels(gr) <- seqlevels(gal)
+    gr
+  })
+@
+
+Combine all the GRanges objects obtained in (4) in 1 big GRanges
+object:
+
+<<cseq_5>>=
+gr <- do.call(c, gr_by_chrom)
+seqinfo(gr) <- seqinfo(gal)
+@
+
+`gr' is a GRanges object that contains unique alignment start positions:
+
+<<cseq_6>>=
+gr[1:6]
+@
+
+Look at qseq\_on\_ref and qual\_on\_ref.
+
+<<cseq_7>>= 
+qseq_on_ref
+qual_on_ref
+@
+
+2 reads align to start position 13. Let's have a close look at their 
+sequences:
+
+<<cseq_8>>=
+mcols(gr)$qseq_on_ref[[6]]
+@
+
+and their qualities:
+
+<<cseq_9>>=
+mcols(gr)$qual_on_ref[[6]]
+@
+
+Note that the sequence and quality strings are those projected to the 
+reference so the first letter in those strings are on top of start 
+position 13, the 2nd letter on top of position 14, etc...
+
+\subsection{Remove low frequency reads}
+
+For each start position, remove reads with and under-represented sequence 
+(e.g. threshold = 20\% for the data used here which is low coverage).
+A unique number is assigned to each unique sequence. This will make
+future calculations easier and a little bit faster.
+
+<<cseq_10>>=
+qseq_on_ref <- mcols(gr)$qseq_on_ref
+tmp <- unlist(qseq_on_ref, use.names=FALSE)
+qseq_on_ref_id <- relist(match(tmp, tmp), qseq_on_ref)
+@
+
+Quick look at `qseq\_on\_ref\_id':
+It's an IntegerList object with the same length and "shape"
+as `qseq\_on\_ref'.
+
+<<cseq_11>>=
+qseq_on_ref_id
+@
+
+Remove the under represented ids from each list element of `qseq\_on\_ref\_id':
+
+<<cseq_12>>=
+qseq_on_ref_id2 <- endoapply(qseq_on_ref_id,
+    function(ids) ids[countMatches(ids, ids) >= 0.2 * length(ids)])
+@
+
+Remove corresponding sequences from `qseq\_on\_ref':
+
+<<cseq_13>>=
+tmp <- unlist(qseq_on_ref_id2, use.names=FALSE)
+qseq_on_ref2 <- relist(unlist(qseq_on_ref, use.names=FALSE)[tmp],
+                       qseq_on_ref_id2)
+@
+
+\subsection{Create a consensus sequence for each read group family}
+
+Compute 1 consensus matrix per chromosome:
+
+<<cseq_14>>=
+split_factor <- rep.int(seqnames(gr), elementLengths(qseq_on_ref2))
+qseq_on_ref2 <- unlist(qseq_on_ref2, use.names=FALSE)
+qseq_on_ref2_by_chrom <- splitAsList(qseq_on_ref2, split_factor)
+qseq_pos_by_chrom <- splitAsList(start(gr), split_factor)
+
+cm_by_chrom <- lapply(names(qseq_pos_by_chrom),
+    function(seqname)
+        consensusMatrix(qseq_on_ref2_by_chrom[[seqname]],
+                        as.prob=TRUE,
+                        shift=qseq_pos_by_chrom[[seqname]]-1,
+                        width=seqlengths(gr)[[seqname]]))
+names(cm_by_chrom) <- names(qseq_pos_by_chrom)
+@
+
+'cm\_by\_chrom' is a list of consensus matrices. Each matrix has 17 rows 
+(1 per letter in the DNA alphabet) and 1 column per chromosome position.
+
+<<cseq_15>>=
+lapply(cm_by_chrom, dim)
+@
+
+Compute the consensus string from each consensus matrix. We'll put "+" 
+in the strings wherever there is no coverage for that position, and "N" 
+where there is coverage but no consensus.
+
+<<cseq_16>>=
+cs_by_chrom <- lapply(cm_by_chrom,
+    function(cm) {
+        ## need to "fix" 'cm' because consensusString()
+        ## doesn't like consensus matrices with columns
+        ## that contain only zeroes (e.g., chromosome
+        ## positions with no coverage)
+        idx <- colSums(cm) == 0L
+        cm["+", idx] <- 1
+        DNAString(consensusString(cm, ambiguityMap="N"))
+    })
+@
+
+The new consensus strings.
+
+<<cseq_17>>=
+cs_by_chrom
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% 
+%%% Compute binned averages along a genome 
+%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Compute binned averages along a genome}
+
+In some applications, there is the need to compute the average of a 
+variable along a genome for a set of predefined fixed-width regions 
+(sometimes called "bins"). One such example is coverage.
+Coverage is an \Robject{RleList} with one list element per
+chromosome. Here we simulate a coverage list.
+
+<<bim_1>>=
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
-getYeastSequence <- function(data) {
-  chr <- rep("chrXIII",length(start(data[[1]])))
-  starts <- start(data[[1]])
-  ends <- end(data[[1]])
-  strands <- rep("+",length(start(data[[1]])))
-  getSeq(Scerevisiae, names=chr, start=starts, end=ends, strand=strands)
-}
-DNASet <- DNAStringSet(getYeastSequence(transcribedRegions))
+set.seed(22)
+cov <- RleList(
+    lapply(seqlengths(Scerevisiae),
+           function(len) Rle(sample(-10:10, len, replace=TRUE))),
+    compress=FALSE)
+head(cov, 3)
 @
 
+Use the \Rfunction{tileGenome} function to create a set of bins along
+the genome.
 
+<<bin_2>>=
+bins1 <- tileGenome(seqinfo(Scerevisiae), tilewidth=100,
+                    cut.last.tile.in.chrom=TRUE)
+@
 
-% <<translate>>=
-% DNASet <- DNAStringSet(DNASet)
-% translate(DNASet)
-% @ 
+We define the following function to compute the binned average of a
+numerical variable defined along a genome.
 
+\begin{verbatim}
+Arguments:
+  'bins': a GRanges object representing the genomic bins.
+       Typically obtained by calling tileGenome() with
+       'cut.last.tile.in.chrom=TRUE'.
+  'numvar': a named RleList object representing a numerical
+       variable defined along the genome covered by 'bins', which
+       is the genome described by 'seqinfo(bins)'.
+  'mcolname': the name to give to the metadata column that will
+       contain the binned average in the returned object.
+\end{verbatim}
 
-% The next step after here is to compare these strings to the BSgenome and see if there are homologs, and if not, to then see if they are repeated etc.?
+The function returns `bins' with an additional metadata column named 
+`mcolname' containing the binned average.
 
+<<bin_3>>=
+binnedAverage <- function(bins, numvar, mcolname)
+{
+    stopifnot(is(bins, "GRanges"))
+    stopifnot(is(numvar, "RleList"))
+    stopifnot(identical(seqlevels(bins), names(numvar)))
+    bins_per_chrom <- split(ranges(bins), seqnames(bins))
+    means_list <- lapply(names(numvar),
+        function(seqname) {
+            views <- Views(numvar[[seqname]],
+                           bins_per_chrom[[seqname]])
+            viewMeans(views)
+        })
+    new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
+    mcols(bins)[[mcolname]] <- new_mcol
+    bins
+}
+@
 
+Compute the binned average for `cov':
 
+<<bin_4>>=
+bins1 <- binnedAverage(bins1, cov, "binned_cov")
+bins1
+@
 
-% Some other ideas: 
-% Retrieve data from the \Rclass{GenomicFeatures} object for the range of
-% a transcript.
-
-% Convert that into a \Rclass{DNAStringSet} so that we can search a
-% \Rclass{BSgenome} for the sequence (allowing for lots of gaps).
-
-% See how many other instances of that are in a genome, pull those out,
-% and then use \Rpackage{GenomicFeatures} again to identify those
-% homologous ranges.
-
-% \section{Getting data into a \Rclass{GenomeRanges}  object}
-% \subsection{\Rclass{GenomeRanges} Objects} 
-
-
+The bin size can be modified with the \Rcode{tilewidth} argument
+to \Rfunction{tileGenome}. For additional examples see
+?\Rfunction{tileGenome}.
 
 \section{Session Information}
-
-The version number of R and packages loaded for generating the vignette were:
 
 <<SessionInfo, echo=FALSE>>=
 sessionInfo()
