@@ -325,7 +325,7 @@ txCDS <- newCountDataSet(assays(txhits)$counts, design)
 experimentData(txCDS) <- expdata
 @
 
-\section{Refererences}
+\section{References}
 
 \url{http://www-huber.embl.de/users/anders/HTSeq/doc/overview.html} 
 \noindent\url{http://www-huber.embl.de/users/anders/HTSeq/doc/count.html}
