@@ -337,16 +337,16 @@ setMethod("ranges", "GAlignmentsList",
 )
 
 setAs("GAlignmentsList", "GRangesList", 
-    function(from) grglist(from, ignore.strand=ignore.strand)
+    function(from) grglist(from)
 )
 setAs("GAlignmentsList", "GRanges", 
-    function(from) granges(from, ignore.strand=ignore.strand)
+    function(from) granges(from)
 )
 setAs("GAlignmentsList", "RangesList", 
-    function(from) rglist(from, ignore.strand=ignore.strand)
+    function(from) rglist(from)
 )
 setAs("GAlignmentsList", "Ranges", 
-    function(from) ranges(from, ignore.strand=ignore.strand)
+    function(from) ranges(from)
 )
 setMethod("as.data.frame", "GAlignmentsList", .GRangesListAsdataframe)
 
