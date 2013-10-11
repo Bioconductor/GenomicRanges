@@ -43,10 +43,10 @@ showSeqlengths <- function(object, margin="")
     }
     showMatrix <- format(showMatrix, justify="right")
     cat(margin, "seqlengths:\n", sep="")
-    cat(margin, IRanges:::labeledLine("", showMatrix[1L, ], count=FALSE,
-                                      labelSep=""), sep="")
-    cat(margin, IRanges:::labeledLine("", showMatrix[2L, ], count=FALSE,
-                                      labelSep=""), sep="")
+    cat(margin, BiocGenerics:::labeledLine("", showMatrix[1L, ], count=FALSE,
+                                           labelSep=""), sep="")
+    cat(margin, BiocGenerics:::labeledLine("", showMatrix[2L, ], count=FALSE,
+                                           labelSep=""), sep="")
 }
 
 
