@@ -403,7 +403,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     orig <- idx
     idx <- match(idx, txt)
     if (any(bad <- is.na(idx))) {
-        msg <- paste(IRanges:::selectSome(orig[bad]), collapse=" ")
+        msg <- paste(BiocGenerics:::selectSome(orig[bad]), collapse=" ")
         stop(sprintf(fmt, msg))
     }
     idx
@@ -749,11 +749,11 @@ setMethod(updateObject, "SummarizedExperiment",
 setMethod(show, "SummarizedExperiment",
     function(object)
 {
-    selectSome <- IRanges:::selectSome
+    selectSome <- BiocGenerics:::selectSome
     scat <- function(fmt, vals=character(), exdent=2, ...)
     {
         vals <- ifelse(nzchar(vals), vals, "''")
-        lbls <- paste(IRanges:::selectSome(vals), collapse=" ")
+        lbls <- paste(BiocGenerics:::selectSome(vals), collapse=" ")
         txt <- sprintf(fmt, length(vals), lbls)
         cat(strwrap(txt, exdent=exdent, ...), sep="\n")
     }
