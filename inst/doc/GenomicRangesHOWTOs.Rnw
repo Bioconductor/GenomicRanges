@@ -1,18 +1,20 @@
-%\VignetteIndexEntry{GenomicRanges Use Cases}
-%\VignetteDepends{EatonEtAlChIPseq, leeBamViews, Rsamtools, GenomicFeatures,
-%  org.Sc.sgd.db, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteIndexEntry{GenomicRanges HOWTOs}
+%\VignetteDepends{GenomicRanges, Rsamtools, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, AnnotationHub, DESeq, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
 \documentclass{article}
 
+\usepackage[authoryear,round]{natbib}
+\bibliographystyle{plainnat}
+
 <<style, eval=TRUE, echo=FALSE, results=tex>>=
 BiocStyle::latex()
 @
 
-\title{\Biocpkg{GenomicRanges} Use Cases}
+\title{\Biocpkg{GenomicRanges} HOWTOs}
 \author{Bioconductor Team}
-\date{Edited: October 2012; Compiled: \today}
+\date{Edited: October 2013; Compiled: \today}
 
 \begin{document}
 
@@ -26,29 +28,183 @@ options("showHeadLines" = 3)
 options("showTailLines" = 3)
 @
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Introduction}
 
-This vignette demonstrates workflows for high throughput sequence analysis 
-that involve the \Biocpkg{GenomicRanges} package. In the more detailed 
-examples \Biocpkg{GenomicRanges} may be just one of several packages used 
-to accomplish the task. Other workflows are more focused and highlight a 
-single function or aspect of the package that is especially useful.
+This vignette is a collection of {\it HOWTOs}. Each {\it HOWTO} is
+a short section that demonstrates how to use the the containers and
+operations implemented in the \Biocpkg{GenomicRanges} and related
+packages (\Biocpkg{IRanges}, \Biocpkg{GenomicFeatures},
+\Biocpkg{Rsamtools}, and \Biocpkg{Biostrings}) to perform a task
+typically found in the context of a high throughput sequence analysis.
 
-Resources available for learning more about the ranged-based functionality
-in \Bioconductor{} are the IRanges, GenomicRanges and GenomicFeatures 
-paper 
-http://www.ploscompbiol.org/article/info%3Adoi%2F10.1371%2Fjournal.pcbi.1003118
- and the several vignettes available in the package. To view available 
-vignettes use \Rcode{browseVignettes("GenomicRanges")}.
+The HOWTOs are self contained, independent of each other, and can be
+studied and reproduced in any order.
+
+We assume the reader has some previous experience with \R{} and
+with basic manipulation of \Rcode{GRanges}, \Rcode{GRangesList}, \Rcode{Rle},
+\Rcode{RleList}, and \Rcode{DataFrame} objects. See the ``An Introduction
+to Genomic Ranges Classes'' vignette located in the \Biocpkg{GenomicRanges}
+package (in the same folder as this document) for an introduction to these
+containers.
+
+Additional recommended readings after this vignette are the ``Software for
+Computing and Annotating Genomic Ranges'' paper[\citet{Lawrence2013ranges}]
+and the ``Counting reads with \Rfunction{summarizeOverlaps}'' vignette
+located in the \Biocpkg{GenomicRanges} package (in the same folder as this
+document).
+
+To display the list of vignettes available in the \Biocpkg{GenomicRanges},
+use \Rcode{browseVignettes("GenomicRanges")}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% 
-%%% Count tables for RNA-Seq differential gene expression 
-%%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Count tables for RNA-Seq differential gene expression}
+\section{How to read BAM files into \R{}}
+
+As sample data we use the \Biocpkg{pasillaBamSubset} data package which
+contains both a BAM file with single-end reads (untreated1\_chr4) and
+a BAM file with paired-end reads (untreated3\_chr4). Each file is a subset
+of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
+for details.
+
+<<load, results=hide>>=
+library(GenomicRanges)
+library(Rsamtools)
+library(pasillaBamSubset)
+un1 <- untreated1_chr4() ## single-end reads
+@
+
+Several functions are available for reading BAM files into \R{}:
+
+\begin{verbatim}
+  scanBam()
+  readGAlignments()
+  readGAlignmentPairs()
+  readGAlignmentsList()
+\end{verbatim}
+
+\Rfunction{scanBam} is a low-level function that returns a list of lists
+and is not discussed further here. For details see ?\Rfunction{scanBam}.
+
+\subsection{Single-end reads}
+Single-end reads can be loaded with the \Rfunction{readGAlignments} function.
+
+<<readGAlignments>>=
+un1 <- untreated1_chr4()
+gal <- readGAlignments(un1)
+@
+
+Data subsets can be specified by genomic position, field names, or flag
+criteria in the \Rcode{ScanBamParam}. Here we input records that overlap 
+position 1 to 5000 on the negative strand with \Rcode{flag} and 
+\Rcode{cigar} as metadata columns.
+ 
+<<ScanBamParam>>=
+what <- c("flag", "cigar") 
+which <- GRanges("chr4", IRanges(1, 5000)) 
+flag <- scanBamFlag(isMinusStrand = TRUE)
+param <- ScanBamParam(which=which, what=what, flag=flag)
+neg <- readGAlignments(un1, param=param)
+neg
+@
+
+Another approach to subsetting the data is to use \Rfunction{filterBam}.
+This function creates a new BAM file of records passing user-defined 
+criteria. See ?\Rfunction{filterBam} for details.
+
+\subsection{Paired-end reads}
+
+Paired-end reads can be loaded with \Rfunction{readGAlignmentPairs}
+or \Rfunction{readGAlignmentsList}. These functions use the same
+mate paring algorithm but output different objects.
+
+Let's start with \Rfunction{readGAlignmentPairs}:
+
+<<readGAlignmentPairs>>=
+un3 <- untreated3_chr4()
+gapairs <- readGAlignmentPairs(un3)
+@
+
+The \Robject{GAlignmentPairs} class holds only pairs; reads with no
+mate or with ambiguous pairing are discarded.
+Each list element holds exactly 2 records (a mated pair). Records
+can be accessed as the \Rcode{first} and\Rcode{last} segments in
+a template or as \Rcode{left} and \Rcode{right} alignments.
+See ?\Rfunction{GAlignmentPairs} for details.
+
+<<gapairs>>=
+gapairs
+@ 
+
+For \Rcode{readGAlignmentsList}, mate pairing is performed when \Rcode{asMates}
+is set to \Rcode{TRUE} on the \Rcode{BamFile} object, otherwise records are
+treated as single-end. 
+
+<<readGAlignmentsList>>=
+galist <- readGAlignmentsList(BamFile(un3, asMates=TRUE))
+@
+
+\Robject{GAlignmentsList} is a more general `list-like' structure
+that holds mate pairs as well as non-mates (i.e., singletons, records 
+with unmapped mates etc.) A \Rcode{mates} metadata column (accessed
+with \Rfunction{mcols}) indicates which records were paired and is set 
+on both the individual \Robject{GAlignments} and the outer list elements.
+
+<<galist>>=
+galist
+@
+
+Non-mated reads are returned as groups by QNAME and contain any number 
+of records. Here the non-mate groups range in size from 1 to 9.
+
+<<non_mates>>=
+non_mates <- galist[unlist(mcols(galist)$mates) == FALSE]
+table(elementLengths(non_mates))
+@
+
+\subsection{Iterating with \Rcode{yieldSize}}
+
+Large files can be iterated through in chunks by setting a \Rcode{yieldSize} 
+on the \Rcode{BamFile}.
+
+<<yieldSize>>=
+bf <- BamFile(un1, yieldSize=100000)
+@
+
+Iteration through a BAM file requires that the file be opened, repeatedly
+queried inside a loop, then closed. Repeated calls to 
+\Rfunction{readGAlignments} without opening the file first result
+in the same 100000 records returned each time.
+
+<<readGAlignments_by_chunk>>=
+open(bf)
+cvg <- NULL
+repeat {
+    chunk <- readGAlignments(bf)
+    if (length(chunk) == 0L)
+        break
+    chunk_cvg <- coverage(chunk)
+    if (is.null(cvg)) {
+        cvg <- chunk_cvg
+    } else {
+        cvg <- cvg + chunk_cvg
+    }
+}
+close(bf)
+cvg
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to prepare a table of read counts for RNA-Seq differential
+         gene expression}
 
 Methods for RNA-Seq gene expression analysis generally require a table of
 counts that summarize the number of reads that overlap or `hit' a 
@@ -63,7 +219,7 @@ differential expression analysis.
 \subsection{Counting with \Rfunction{summarizeOverlaps}}
 
 As sample data we use \Biocpkg{pasillaBamSubset} which contains both
-a single-end bam (untreated1\_chr4) and a paired-end bam 
+a single-end BAM (untreated1\_chr4) and a paired-end BAM
 (untreated3\_chr4). Each file is a subset of chr4 from the "Pasilla" 
 experiment. See ?\Biocpkg{pasillaBamSubset} for details.
 
@@ -74,19 +230,19 @@ library(pasillaBamSubset)
 un1 <- untreated1_chr4() ## single-end records
 @
 
-\Rcode{summarizeOverlaps} requires the name of a bam file(s) and an
+\Rcode{summarizeOverlaps} requires the name of a BAM file(s) and an
 annotation to count against. The annotation must match the genome 
 build the BAM records were aligned to. For the pasilla data this is 
 dm3 Dmelanogaster which is available as a \Bioconductor{} package. 
 Load the package and extract the exon ranges by gene.
 
 <<count_1>>=
-library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
 exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
 @
 
 \Rcode{summarizeOverlaps} automatically sets a \Rcode{yieldSize}
-on large bam files and iterates over them in chunks. When reading
+on large BAM files and iterates over them in chunks. When reading
 paired-end data set the \Rcode{singleEnd} argument to FALSE.
 See ?\Rfunction{summarizeOverlaps} for details reguarding the
 count \Rcode{modes} and additional arguments. 
@@ -156,126 +312,9 @@ split(gr, gr$name)
 @
 
 Before performing overlap operations confirm that the seqlevels 
-(chromosome names) in the annotation match those in the bam file. See 
+(chromosome names) in the annotation match those in the BAM file. See 
 ?\Rfunction{renameSeqlevels}, ?\Rfunction{keepSeqlevels} and 
 ?\Rfunction{seqlevels} for examples of renaming seqlevels.
-
-\subsection{Reading bam files}
-
-Counting with \Rfunction{summarizeOverlaps} does not retain the bam 
-records in \R{}. Often the count summary is the important piece of
-information and the individual record details are not needed. In
-cases where closer inspection of the data is necessary there are
-several functions are available for reading bam records into \R{} 
-objects.
-
-\begin{verbatim}
-  scanBam()
-  readGAlignments()
-  readGAlignmentPairs()
-  readGAlignmentsList()
-\end{verbatim}
-
-\Rfunction{scanBam} is a low-level function that returns a list of lists
-and is not discussed further here. For details see ?\Rfunction{scanBam}.
- 
-\subsubsection{single-end}
-Single-end data can be read with the \Rfunction{readGAlignments} function.
-
-<<bam_1>>=
-un1 <- untreated1_chr4()
-gal <- readGAlignments(un1)
-@
-
-Data subsets can be specified by genomic position, field names, or flag
-criteria in the \Rcode{ScanBamParam}. Here we input records that overlap 
-position 1 to 5000 on the negative strand with \Rcode{flag} and 
-\Rcode{cigar} as metadata columns.
- 
-<<bam_2>>=
-what <- c("flag", "cigar") 
-which <- GRanges("chr4", IRanges(1, 5000)) 
-flag <- scanBamFlag(isMinusStrand = TRUE)
-param <- ScanBamParam(which=which, what=what, flag=flag)
-neg <- readGAlignments(un1, param=param)
-neg
-@
-
-Another approach to subsetting the data is to use \Rfunction{filterBam}.
-This function creates a new BAM file of records passing user-defined 
-criteria. See ?\Rfunction{filterBam} for details.
-
-\subsubsection{paired-end}
-
-Paired-end data are read with \Rfunction{readGAlignmentPairs}
-or \Rfunction{readGAlignmentsList}. These functions use the same
-mate paring algorithm but output different objects. Mate pairing
-is performed when \Rcode{asMates=TRUE} in the BamFile, otherwise
-records are treated as single-end. 
-
-<<bam_3>>=
-un3 <- untreated3_chr4()
-gapairs <- readGAlignmentPairs(BamFile(un3, asMates=TRUE))
-galist <- readGAlignmentsList(BamFile(un3, asMates=TRUE))
-@
-
-The \Robject{GAlignmentPairs} class holds only pairs; singletons, 
-reads with unmapped mates, and secondary alignments are discarded. 
-Each list element holds exactly 2 records (a mated pair). Records
-can be accessed as the \Rcode{first} and\Rcode{last} segments in
-a template or as \Rcode{left} and \Rcode{right} alignments.
-See ?\Rfunction{GAlignmentPairs} for details.
-
-<<bam_4>>=
-gapairs
-@ 
-
-\Robject{GAlignmentsList} is a more general `list-like' structure
-that holds mate pairs as well as non-mates (i.e., singletons, records 
-with unmapped mates etc.) A \Rcode{mates} metadata column (accessed
-with \Rfunction{mcols}) indicates which records were paired and is set 
-on both the individual \Robject{GAlignments} and the outer list elements.
-
-<<bam_5>>=
-galist
-@
-
-Non-mated reads are returned as groups by QNAME and contain any number 
-of records. Here the non-mate groups range in size from 1 to 9.
-
-<<bam_6>>=
-non_mates <- galist[unlist(mcols(galist)$mates) == FALSE]
-table(elementLengths(non_mates))
-@
-
-\subsubsection{Iterating with \Rcode{yieldSize}}
-
-Large files can be iterated through in chunks by setting a \Rcode{yieldSize} 
-on the \Rcode{BamFile}.
-
-<<bam_7>>=
-bf <- BamFile(un1, yieldSize=100000)
-@
-
-Iteration through a file requires that the bam be opened, repeatedly
-queried inside a loop, then closed. Repeated calls to 
-\Rfunction{readGAlignments} without opening the file first result
-in the same 100000 records returned each time.
-
-<<bam_8>>=
-open(bf)
-ans <- integer(length(exbygene))
-repeat {
-    gal <- readGAlignments(bf)
-    if (length(gal))
-        ans <- ans + countOverlaps(exbygene, gal)
-    else
-        break
-}
-close(bf)
-head(table(ans))
-@
-
 
 \subsection{Count tables}
 
@@ -293,12 +332,9 @@ edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% 
-%%%  Extracting DNA sequences of gene regions
-%%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Extract DNA sequences of gene regions}
+\section{How to extract DNA sequences of gene regions}
 
 \subsection{DNA sequences for intron and exon regions of a single gene}
 
@@ -369,7 +405,7 @@ with a set of genomic positions and retrieve the DNA sequences.
 
 <<trak_8>>=
 library(Biostrings)
-library (BSgenome.Hsapiens.UCSC.hg19)
+library(BSgenome.Hsapiens.UCSC.hg19)
 @
 
 Extract the intron sequences ...
@@ -568,14 +604,11 @@ names(lst5)[elementLengths(lst5) == 0L] ## genes with no 5' UTR data
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% 
-%%%  Create DNA consensus sequence for read group families 
-%%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Create DNA consensus sequences for read group `families'}
+\section{How to create DNA consensus sequences for read group `families'}
 
-The motivation for this use-case comes from a study which explored the
+The motivation for this HOWTO comes from a study which explored the
 dynamics of point mutations. The mutations of interest exist with a range 
 of frequencies in the control group (e.g., 0.1\% - 50\%). PCR and sequencing 
 error rates make it difficult to identify low frequency events 
@@ -602,8 +635,8 @@ param <- ScanBamParam(what=c("seq", "qual"))
 gal <- readGAlignmentsFromBam(bamfile, use.names=TRUE, param=param)
 @
 
-Use sequenceLayer() to "lay" the query sequences and quality strings
-on the reference.
+Use the \Rfunction{sequenceLayer} function to {\it lay} the query sequences
+and quality strings on the reference.
 
 <<cseq_2>>=
 qseq <- setNames(mcols(gal)$seq, names(gal))
@@ -771,13 +804,11 @@ The new consensus strings.
 cs_by_chrom
 @
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% 
-%%% Compute binned averages along a genome 
-%%% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Compute binned averages along a genome}
+\section{How to compute binned averages along a genome}
 
 In some applications, there is the need to compute the average of a 
 variable along a genome for a set of predefined fixed-width regions 
@@ -856,5 +887,7 @@ to \Rfunction{tileGenome}. For additional examples see
 <<SessionInfo, echo=FALSE>>=
 sessionInfo()
 @
+
+\bibliography{GenomicRanges}
 
 \end{document}

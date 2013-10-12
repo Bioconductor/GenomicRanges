@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Overview of summarizeOverlaps}
+%\VignetteIndexEntry{Counting reads with summarizeOverlaps}
 %\VignetteDepends{}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
@@ -9,9 +9,9 @@
 BiocStyle::latex()
 @
 
-\title{Counting with \Rfunction{summarizeOverlaps}}
+\title{Counting reads with \Rfunction{summarizeOverlaps}}
 \author{Valerie Obenchain}
-\date{Edited: August 2012; Compiled: \today}
+\date{Edited: October 2013; Compiled: \today}
 
 \begin{document}
 
