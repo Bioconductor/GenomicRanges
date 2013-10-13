@@ -311,35 +311,30 @@ table(assays(se_s)$counts > 0)
 
 ## A paired-end file may contain singletons, reads with unmapped
 ## pairs or reads with more than two fragments. When 'fragments=FALSE'
-## only the reads paired by the ?findMateAlignment algorithm will
-## be included in the counting. In this case, 'yieldSize' cannot be used.
-bf_p <- BamFile(untreated3_chr4())
-se_p <- summarizeOverlaps(exbygene, bf_p, singleEnd=FALSE, fragments=FALSE)
-table(assays(se_p)$counts > 0)
+## only reads paired by the algorithm are included in the counting. 
+bf <- BamFile(untreated3_chr4())
+se_nofrag <- summarizeOverlaps(exbygene, bf, singleEnd=FALSE, fragments=FALSE)
+table(assays(se_nofrag)$counts > 0)
 
 ## When 'fragments=TRUE' (default) all singletons, reads with
 ## unmapped pairs and other fragments will be included in the
-## counting as well as the reads paired with ?findMateAlignment.
-## When 'fragments=TRUE', 'yieldSize' can be used and the file
-## must be sorted by qname.
-fl <- sortBam(untreated3_chr4(), tempfile(), byQname=TRUE)
-bf_psort <- BamFile(fl, index=character(), yieldSize=90000, obeyQname=TRUE)
-se_psort <- summarizeOverlaps(exbygene, bf_psort, singleEnd=FALSE)
-table(assays(se_psort)$counts > 0)
+## counting.
+bf <- BamFile(untreated3_chr4(), asMates=TRUE)
+se_frag <- summarizeOverlaps(exbygene, bf, singleEnd=FALSE)
+table(assays(se_frag)$counts > 0)
 
-## Both the qname-sorted and unsorted examples used the same Bam file,
-## annotation, and counting method. As expected, using 'fragments=TRUE' 
-## results in a larger number of total counts because singletons,
-## unmapped pairs etc. are included in the counting.
+## As expected, using 'fragments=TRUE' results in a larger number 
+## of total counts because singletons, unmapped pairs etc. are 
+## included in the counting.
 
 ## Total reads in the file:
 countBam(untreated3_chr4())
 
-## Reads counted with 'fragments=TRUE':
-sum(assays(se_psort)$counts)
+## Reads counted with 'fragments=FALSE':
+sum(assays(se_nofrag)$counts)
 
 ## Reads counted with 'fragments=TRUE':
-sum(assays(se_p)$counts)
+sum(assays(se_frag)$counts)
 
 ## ---------------------------------------------------------------------
 ## Count tables for DESeq or edgeR.
