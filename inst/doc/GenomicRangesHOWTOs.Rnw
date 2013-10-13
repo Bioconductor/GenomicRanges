@@ -35,7 +35,7 @@ options("showTailLines" = 3)
 \section{Introduction}
 
 This vignette is a collection of {\it HOWTOs}. Each {\it HOWTO} is
-a short section that demonstrates how to use the the containers and
+a short section that demonstrates how to use the containers and
 operations implemented in the \Biocpkg{GenomicRanges} and related
 packages (\Biocpkg{IRanges}, \Biocpkg{GenomicFeatures},
 \Biocpkg{Rsamtools}, and \Biocpkg{Biostrings}) to perform a task

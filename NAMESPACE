@@ -114,6 +114,7 @@ export(
     Seqinfo,
     GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,
+    makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
     tileGenome,
     makeGAlignmentsListFromFeatureFragments,
