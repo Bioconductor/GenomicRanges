@@ -92,3 +92,11 @@ makeGRangesFromDataFrame <- function(df,
     ans
 }
 
+setAs("data.frame", "GRanges",
+    function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
+)
+
+setAs("DataFrame", "GRanges",
+    function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
+)
+

@@ -131,6 +131,9 @@
     \item{}{
       \code{as(from, "GRanges")}: Creates a GRanges object from a
       RangedData, RangesList, RleList or RleViewsList object.
+
+      Coercing a data.frame or DataFrame into a GRanges object is also
+      supported. See \code{\link{makeGRangesFromDataFrame}} for the details.
     }
     \item{}{
       \code{as(from, "RangedData")}:
@@ -431,6 +434,7 @@
 \author{P. Aboyoun}
 
 \seealso{
+  \code{\link{makeGRangesFromDataFrame}},
   \link{GRangesList-class},
   \code{\link{seqinfo}},
   \link[IRanges]{Vector-class},

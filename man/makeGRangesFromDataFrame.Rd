@@ -2,11 +2,18 @@
 
 \alias{makeGRangesFromDataFrame}
 
+\alias{coerce,data.frame,GRanges-method}
+\alias{coerce,DataFrame,GRanges-method}
+
 \title{Make a GRanges object from a data.frame or DataFrame}
 
 \description{
   \code{makeGRangesFromDataFrame} finds the fields in the input that describe
   genomic ranges and returns them as a \link{GRanges} object.
+
+  For convenience, coercing a data.frame or \link[IRanges]{DataFrame}
+  \code{df} into a \link{GRanges} object is supported and does
+  \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}
 }
 
 \usage{
@@ -125,7 +132,10 @@ df <- data.frame(chr="chr1", start=11:13, end=12:14,
                  strand=c("+","-","+"), score=1:3)
 
 makeGRangesFromDataFrame(df)
-makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
+gr <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
+gr2 <- as(df, "GRanges")  # equivalent to the above
+stopifnot(identical(gr, gr2))
+
 makeGRangesFromDataFrame(df, ignore.strand=TRUE)
 makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
                              ignore.strand=TRUE)
