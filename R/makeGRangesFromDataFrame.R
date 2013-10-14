@@ -16,11 +16,11 @@
             stop("when a numeric vector, 'seqinfo' must have names")
         return(Seqinfo(seqlevels, seqlengths=seqinfo))
     }
-    stop("'seqinfo' must be a Seqinfo object, or a character vector ",
+    stop("'seqinfo' must be NULL, or a Seqinfo object, or a character vector ",
          "of seqlevels, or a named numeric vector of sequence lengths")
 }
 
-.get_field_pos <- function(fields, df, what, required=FALSE)
+.get_field_pos <- function(fields, df, what, required=TRUE)
 {
     if (!is.character(fields) || any(is.na(fields)))
         stop("'", what, ".fields' must be a character vector with no NAs")
@@ -31,19 +31,16 @@
     pos
 }
 
-### 'df': can be a data.frame or DataFrame object.
-### 'seqinfo': [optional] must be a Seqinfo object, or a character vector of
-###            seqlevels, or a named numeric vector of sequence lengths.
-###            Must be compatible with the seqnames in 'df'.
+### 'df' must be a data.frame or DataFrame object.
 makeGRangesFromDataFrame <- function(df,
-                                keep.extra.columns=FALSE,
-                                ignore.strand=FALSE,
-                                seqinfo=NULL,
-                                seqnames.fields=c("seqnames", "chr", "chrom"),
-                                start.fields="start",
-                                end.fields=c("end", "stop"),
-                                strand.fields="strand",
-                                starts.in.df.are.0based=FALSE)
+    keep.extra.columns=FALSE,
+    ignore.strand=FALSE,
+    seqinfo=NULL,
+    seqnames.fields=c("seqnames", "chr", "chrom"),
+    start.fields=c("start", "chromStart"),
+    end.fields=c("end", "chromEnd", "stop", "chromStop"),
+    strand.fields="strand",
+    starts.in.df.are.0based=FALSE)
 {
     ## Check args.
     if (!is.data.frame(df) && !is(df, "DataFrame"))
@@ -70,7 +67,7 @@ makeGRangesFromDataFrame <- function(df,
     if (starts.in.df.are.0based)
         ans_start <- ans_start + 1L
     ans_ranges <- IRanges(ans_start, ans_end)
-    if (ignore.strand || is.na(strand_fpos)) {
+    if (is.na(strand_fpos) || ignore.strand) {
         ans_strand <- "*"
     } else {
         ans_strand <- df[[strand_fpos]]
