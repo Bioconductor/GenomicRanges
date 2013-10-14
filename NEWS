@@ -7,9 +7,6 @@ NEW FEATURES
 
     o Add "c" method for GAlignmentsPairs objects. 
 
-    o Add distance,GenomicRanges,TranscriptDb method
-      (since moved to GenomicFeatures). 
-
     o Add coercion from GAlignmentPairs to GAlignmentsList. 
 
     o Add 'inter.feature' and 'fragment' arguments to summarizeOverlaps().
@@ -25,19 +22,10 @@ NEW FEATURES
 
     o Add seqlevels0() and restoreSeqlevels(). 
 
-    o Add get_showHeadLines() and get_showTailLines() helpers.
- 
     o Add seqlevelsInUse() getter for GRanges, GRangesList, GAlignments
       GAlignmentPairs, GAlignmentsList and SummarizedExperiment objects. 
 
-    o Add extraColumnSlotNames() generic and method. This facilitates 
-      the implementation of new subclasses with additional "fixed" columns.
-      The slot names specified in extraColumnSlotNames() are treated as
-      columns in the virtual GRanges table. 
-
     o Add update,GAlignments method.
- 
-    o Add showAsCell,GenomicRanges method.
  
     o Add GIntervalTree class.
  
@@ -46,7 +34,9 @@ NEW FEATURES
     o Add sortSeqlevels().
  
     o Add tileGenome(). 
- 
+
+    o Add makeGRangesFromDataFrame() and coercion from data.frame or DataFrame
+      to GRanges. 
 
 SIGNIFICANT USER-LEVEL CHANGES
 
@@ -65,7 +55,8 @@ SIGNIFICANT USER-LEVEL CHANGES
     o Modify "show" method for Seqinfo object to honor showHeadLines
       and showTailLines global options. 
 
-    o 50x speedup when merging 2 Seqinfo objects. 
+    o 50x speedup or more when merging 2 Seqinfo objects, 1 very small
+      and 1 very big. 
 
     o Add dependency on new XVector package. 
 
@@ -90,8 +81,6 @@ SIGNIFICANT USER-LEVEL CHANGES
       - mode 'IntersectionNotEmpty': 2x to 8x speedup + memory footprint 
         reduced by ~ half
 
-    o Move matrix-style 'pretty printing' code to IRanges. 
-
     o Change default 'use.names' to FALSE for readGAlignmentsList().
 
     o Implement 'type="equal"' for findOverlaps,SummarizedExperiment methods. 
@@ -101,16 +90,8 @@ SIGNIFICANT USER-LEVEL CHANGES
 
     o Remove unneeded "window" method for GenomicRanges objects. 
 
-    o Remove IRagnes:::.bracket.Index(). 
-
-    o Replace "[" method for GAlignmentPairs objects with an
-      "extractROWS" method. 
-
-    o Use direct acces to 'rowData' slot in "seqinfo" and "seainfo<-"
-      methods.
-
-    o match,GenomicRanges,GenomicRanges method now handles objects when
-      seqlevels are different orders. 
+    o Speed up seqinfo() getter and setter on SummarizedExperiment objects
+      and derivatives (e.g. VCF) by using direct access to 'rowData' slot.
 
     o coverage,GenomicRanges method now uses .Ranges.coverage() when
       using the defaults for 'shift' and 'width'.
@@ -121,13 +102,12 @@ SIGNIFICANT USER-LEVEL CHANGES
     o GenomicRangesUseCases vignette has been redone and renamed
       to GenomicRangesHOWTOs 
 
-
 DEPRECATED AND DEFUNCT
  
     o Defunct all "match" and "%in%" methods in the 
       package except for those with the GenomicRanges,GenomicRanges signature.
 
-    o Deprecate GappedAlignments*:
+    o Deprecate GappedAlignment*:
       - GappedAlignments and GappedAlignmentPairs classes
       - GappedAlignments() and GappedAlignmentPairs() constructors
       - readGappedAlignments() and readGappedAlignmentPairs() functions
@@ -138,6 +118,7 @@ DEPRECATED AND DEFUNCT
       cigarToIRangesListByRName(), cigarToWidth(), cigarToQWidth()
       cigarToCigarTable(), summarizeCigarTable()
 
+    o Deprecate seqselect().
 
 BUG FIXES
 
@@ -156,6 +137,8 @@ BUG FIXES
     o Fix bug in summarizeOverlaps(..., mode='IntersectionNotEmpty')
       when 'features' has '-' and '+' elements and 'ignore.strand=TRUE'. 
 
+    o match,GenomicRanges,GenomicRanges method now handles properly objects
+      with seqlevels not in the same order. 
 
 
 CHANGES IN VERSION 1.12.0
@@ -257,6 +240,7 @@ BUG FIXES
     o Output of "findSpliceOverlaps" now displays 'NA' for ranges with 
       no hits.
 
+
 CHANGES IN VERSION 1.10.0
 -------------------------
 
@@ -308,7 +292,6 @@ NEW FEATURES
       "encodeOverlaps" method for GRangesList objects.
 
     o Add makeSeqnameIds() low-level utility.
-
 
 SIGNIFICANT USER-LEVEL CHANGES
 
@@ -368,6 +351,7 @@ BUG FIXES
     o Fix bug in renameSeqlevels() wrt order of rename vector.
 
     o Fix bug in selectEncodingWithCompatibleStrand().
+
 
 CHANGES IN VERSION 1.8.0
 ------------------------
