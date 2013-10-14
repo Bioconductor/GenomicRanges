@@ -14,10 +14,10 @@ makeGRangesFromDataFrame(df,
     keep.extra.columns=FALSE,
     ignore.strand=FALSE,
     seqinfo=NULL,
-    seqnames.fields=c("seqnames", "chr", "chrom"),
-    start.fields=c("start", "chromStart"),
-    end.fields=c("end", "chromEnd", "stop", "chromStop"),
-    strand.fields="strand",
+    seqnames.field=c("seqnames", "chr", "chrom"),
+    start.field=c("start", "chromStart"),
+    end.field=c("end", "chromEnd", "stop", "chromStop"),
+    strand.field="strand",
     starts.in.df.are.0based=FALSE)
 }
 
@@ -43,32 +43,32 @@ makeGRangesFromDataFrame(df,
     in \code{df} i.e. it must include at least the sequence levels
     represented in \code{df}.
   }
-  \item{seqnames.fields}{
+  \item{seqnames.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the chromosome name (a.k.a. sequence name) associated
     with each genomic range.
-    Only the first name in \code{seqnames.fields} that is found
+    Only the first name in \code{seqnames.field} that is found
     in \code{colnames(df)} will be used.
     If no one is found, then an error is raised.
   }
-  \item{start.fields}{
+  \item{start.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the start positions of the genomic ranges.
-    Only the first name in \code{start.fields} that is found
+    Only the first name in \code{start.field} that is found
     in \code{colnames(df)} will be used.
     If no one is found, then an error is raised.
   }
-  \item{end.fields}{
+  \item{end.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the end positions of the genomic ranges.
-    Only the first name in \code{start.fields} that is found
+    Only the first name in \code{start.field} that is found
     in \code{colnames(df)} will be used.
     If no one is found, then an error is raised.
   }
-  \item{strand.fields}{
+  \item{strand.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the strand associated with each genomic range.
-    Only the first name in \code{strand.fields} that is found
+    Only the first name in \code{strand.field} that is found
     in \code{colnames(df)} will be used.
     If no one is found or if \code{ignore.strand} is \code{TRUE},
     then the strand of the returned \link{GRanges} object will be

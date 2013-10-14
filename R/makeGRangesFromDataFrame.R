@@ -20,14 +20,14 @@
          "of seqlevels, or a named numeric vector of sequence lengths")
 }
 
-.get_field_pos <- function(fields, df, what, required=TRUE)
+.get_field_pos <- function(field, df, what, required=TRUE)
 {
-    if (!is.character(fields) || any(is.na(fields)))
-        stop("'", what, ".fields' must be a character vector with no NAs")
-    pos <- match(fields, names(df))
+    if (!is.character(field) || any(is.na(field)))
+        stop("'", what, ".field' must be a character vector with no NAs")
+    pos <- match(field, names(df))
     pos <- pos[which(!is.na(pos))[1L]]
     if (required && is.na(pos))
-        stop("no field listed in '", what, ".fields' is present in 'df'")
+        stop("no field listed in '", what, ".field' is present in 'df'")
     pos
 }
 
@@ -36,10 +36,10 @@ makeGRangesFromDataFrame <- function(df,
     keep.extra.columns=FALSE,
     ignore.strand=FALSE,
     seqinfo=NULL,
-    seqnames.fields=c("seqnames", "chr", "chrom"),
-    start.fields=c("start", "chromStart"),
-    end.fields=c("end", "chromEnd", "stop", "chromStop"),
-    strand.fields="strand",
+    seqnames.field=c("seqnames", "chr", "chrom"),
+    start.field=c("start", "chromStart"),
+    end.field=c("end", "chromEnd", "stop", "chromStop"),
+    strand.field="strand",
     starts.in.df.are.0based=FALSE)
 {
     ## Check args.
@@ -50,10 +50,10 @@ makeGRangesFromDataFrame <- function(df,
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
     ans_seqinfo <- .normarg_seqinfo(seqinfo)
-    seqnames_fpos <- .get_field_pos(seqnames.fields, df, "seqnames")
-    start_fpos <- .get_field_pos(start.fields, df, "start")
-    end_fpos <- .get_field_pos(end.fields, df, "end")
-    strand_fpos <- .get_field_pos(strand.fields, df, "strand", required=FALSE)
+    seqnames_fpos <- .get_field_pos(seqnames.field, df, "seqnames")
+    start_fpos <- .get_field_pos(start.field, df, "start")
+    end_fpos <- .get_field_pos(end.field, df, "end")
+    strand_fpos <- .get_field_pos(strand.field, df, "strand", required=FALSE)
     if (!isTRUEorFALSE(starts.in.df.are.0based))
         stop("'starts.in.df.are.0based' must be TRUE or FALSE")
 
