@@ -1,3 +1,163 @@
+CHANGES IN VERSION 1.14.0
+-------------------------
+
+NEW FEATURES
+
+    o Add coercion from GenomicRangesList to RangedDataList.
+
+    o Add "c" method for GAlignmentsPairs objects. 
+
+    o Add distance,GenomicRanges,TranscriptDb method
+      (since moved to GenomicFeatures). 
+
+    o Add coercion from GAlignmentPairs to GAlignmentsList. 
+
+    o Add 'inter.feature' and 'fragment' arguments to summarizeOverlaps().
+
+    o Add seqselect,GAlignments-method.
+ 
+    o Add CIGAR utilities:
+      explodeCigarOps(), explodeCigarOpLengths()
+      cigarRangesAlongReferenceSpace(), cigarRangesAlongQuerySpace()
+      cigarRangesAlongPairwiseSpace(), extractAlignmentRangesOnReference()
+      cigarWidthAlongReferenceSpace(), cigarWidthAlongQuerySpace()
+      cigarWidthAlongPairwiseSpace().
+
+    o Add seqlevels0() and restoreSeqlevels(). 
+
+    o Add get_showHeadLines() and get_showTailLines() helpers.
+ 
+    o Add seqlevelsInUse() getter for GRanges, GRangesList, GAlignments
+      GAlignmentPairs, GAlignmentsList and SummarizedExperiment objects. 
+
+    o Add extraColumnSlotNames() generic and method. This facilitates 
+      the implementation of new subclasses with additional "fixed" columns.
+      The slot names specified in extraColumnSlotNames() are treated as
+      columns in the virtual GRanges table. 
+
+    o Add update,GAlignments method.
+ 
+    o Add showAsCell,GenomicRanges method.
+ 
+    o Add GIntervalTree class.
+ 
+    o Add coercion from GAlignmentPairs to GAlignments.
+ 
+    o Add sortSeqlevels().
+ 
+    o Add tileGenome(). 
+ 
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Renaming (with aliases from old to new names):
+      - classes
+        GappedAlignments -> GAlignments
+        GappedAlignmentPairs -> GAlignmentPairs
+      - functions
+        GappedAlignments() -> GAlignments()
+        GappedAlignmentPairs() -> GAlignmentPairs()
+        readGappedAlignments() -> readGAlignments()
+        readGappedAlignmentPairs() -> readGAlignmentPairs()
+
+    o Remove 'asProperPairs' argument to readGAlignmentsList(). 
+
+    o Modify "show" method for Seqinfo object to honor showHeadLines
+      and showTailLines global options. 
+
+    o 50x speedup when merging 2 Seqinfo objects. 
+
+    o Add dependency on new XVector package. 
+
+    o Enhanced examples for renaming seqlevels in seqlevels-utils.Rd. 
+
+    o More efficient reference class constructor for 'assays'
+      slot of SummarizedExperiment objects. 
+
+    o 'colData' slot of SummarizedExperiment produced from call to
+      summarizedOverlaps() now holds the class type and length of 'reads'.
+
+    o 4x speedup to cigarToRleList(). 
+
+    o Relax SummarizedExperiment class validity. 
+ 
+    o Renaming (with aliases from old to new names):
+      cigarToWidth() -> cigarWidthOnReferenceSpace(), and 
+      cigarToQWidth() -> cigarWidthOnQuerySpace(). 
+
+    o Improvements to summarizeOverlaps():
+      - mode 'Union': 1.5x to 2x speedup
+      - mode 'IntersectionNotEmpty': 2x to 8x speedup + memory footprint 
+        reduced by ~ half
+
+    o Move matrix-style 'pretty printing' code to IRanges. 
+
+    o Change default 'use.names' to FALSE for readGAlignmentsList().
+
+    o Implement 'type="equal"' for findOverlaps,SummarizedExperiment methods. 
+
+    o Modify summarizeOverlaps() examples to use 'asMates=TRUE' instead
+      of 'obeyQname=TRUE'. 
+
+    o Remove unneeded "window" method for GenomicRanges objects. 
+
+    o Remove IRagnes:::.bracket.Index(). 
+
+    o Replace "[" method for GAlignmentPairs objects with an
+      "extractROWS" method. 
+
+    o Use direct acces to 'rowData' slot in "seqinfo" and "seainfo<-"
+      methods.
+
+    o match,GenomicRanges,GenomicRanges method now handles objects when
+      seqlevels are different orders. 
+
+    o coverage,GenomicRanges method now uses .Ranges.coverage() when
+      using the defaults for 'shift' and 'width'.
+
+    o Remove restriction that metadata column names must be different on
+      a GRangesList and the unlisted GRanges. 
+
+    o GenomicRangesUseCases vignette has been redone and renamed
+      to GenomicRangesHOWTOs 
+
+
+DEPRECATED AND DEFUNCT
+ 
+    o Defunct all "match" and "%in%" methods in the 
+      package except for those with the GenomicRanges,GenomicRanges signature.
+
+    o Deprecate GappedAlignments*:
+      - GappedAlignments and GappedAlignmentPairs classes
+      - GappedAlignments() and GappedAlignmentPairs() constructors
+      - readGappedAlignments() and readGappedAlignmentPairs() functions
+ 
+    o Deprecate cigar util functions:
+      cigarToWidth(), cigarToQWidth(), cigarToIRanges()
+      splitCigar(), cigarToIRanges(), cigarToIRangesListByAlignment()
+      cigarToIRangesListByRName(), cigarToWidth(), cigarToQWidth()
+      cigarToCigarTable(), summarizeCigarTable()
+
+
+BUG FIXES
+
+    o Fix bug in c,GAlignments for case when objects were unnamed. 
+
+    o Fix bug in flank,GenomicRanges (when 'ignore.strand=TRUE'
+      'start' was being set to TRUE). 
+
+    o Fix bug in behavior of summarizeOverlaps() count mode 
+      'IntersectionNotEmpty' when 'inter.features=FALSE'. Shared 
+      regions are now removed before counting. 
+
+    o Fix bug in cigarToIRangesListByAlignment() when 'flag' is
+      supplied and indicates some reads are unmapped. 
+
+    o Fix bug in summarizeOverlaps(..., mode='IntersectionNotEmpty')
+      when 'features' has '-' and '+' elements and 'ignore.strand=TRUE'. 
+
+
+
 CHANGES IN VERSION 1.12.0
 -------------------------
 
