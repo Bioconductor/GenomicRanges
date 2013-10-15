@@ -82,10 +82,10 @@
     A logical indicating if strand should be considered when matching.
   }
   \item{inter.feature}{
-    A logical indicating if the counting \code{mode} should be aware of
-    overlapping features. When TRUE (default), reads mapping to multiple 
-    features are dropped (i.e., not counted). When FALSE, these reads are 
-    retained and a count is assigned to each feature they map to.
+    (Default TRUE) A logical indicating if the counting \code{mode} should 
+    be aware of overlapping features. When TRUE (default), reads mapping to 
+    multiple features are dropped (i.e., not counted). When FALSE, these 
+    reads are retained and a count is assigned to each feature they map to.
 
     There are 6 possible combinations of the \code{mode} and
     \code{inter.feature} arguments. When \code{inter.feature=FALSE} the
@@ -96,22 +96,36 @@
     of the annotation are removed before counting.
   }
   \item{...}{
-    Additional arguments such as \code{fragments}, \code{singleEnd} or 
-    \code{param}. If using multiple cores, arguments can be passed through 
-    to mclapply used when counting Bam files.
+    Additional arguments for Bam file methods such as \code{fragments}, 
+    \code{singleEnd} or \code{param}. If using multiple cores, arguments 
+    can be passed through to mclapply used when counting Bam files.
     \describe{
       \item{fragments}{
-      A logical value indicating if singletons, reads with unmapped pairs
-      and other fragments should be included in the counting. When
-      \code{fragments=FALSE} only reads paired with the algorithm described
-      at ?findMateAlignment are counted. When \code{fragments=TRUE} (default)
-      all singletons, reads with unmapped pairs and other fragments are
-      counted in addition to the reads paired with the ?findMateAlignment
-      algorithm. This argument applies to paired-end reads only so
-      \code{singleEnd} must be FALSE.
+        (Default FALSE) Applies to paired-end data only so \code{singleEnd}
+        must be FALSE. 
+
+        \code{fragments} is a logical value indicating if singletons, reads 
+        with unmapped pairs and other fragments should be included in counting. 
+        When \code{fragments=FALSE} \code{readGAlignmentPairs} is used to 
+        read in the data, when \code{fragments=TRUE} \code{readGAlignmentsList} 
+        is used.
+
+        \code{readGAlignmentPairs} keeps only the read pairs mated by the 
+        algorithm while \code{readGAlignmentsList} keeps the pairs as well as 
+        all singletons, reads with unmapped pairs and other fragments. When 
+        \code{fragments=TRUE} counts will generally be higher because all 
+        records are included in the counting, not just the primary alignment 
+        pairs. See ?\code{readGAlignmentsListFromBam} for the algorithm 
+        details.
       }
       \item{singleEnd}{
-        A logical value indicating if reads are single or paired-end.
+        (Default TRUE) A logical value indicating if reads are single or 
+        paired-end. In Bioconductor > 2.12 it is not necessary to sort
+        paired-end Bam files by \code{qname}. When counting with 
+        \code{summarizeOverlaps}, setting \code{singleEnd=FALSE} will trigger 
+        paired-end reading and counting. It is fine to also set 
+        \code{asMates=TRUE} in the \code{BamFile} but is not necessary when
+        \code{singleEnd=FALSE}.
       }
       \item{param}{An optional \code{\link[Rsamtools]{ScanBamParam}} instance to
          further influence scanning, counting, or filtering.
@@ -129,10 +143,9 @@
       \code{inter.feature} argument which allows reads to be counted for
       each feature they overlap. When \code{inter.feature=TRUE} the counting
       modes are aware of feature overlap and reads overlapping multiple 
-      features are dropped and not counted. (This was the standard behavior 
-      prior to GenomicRanges 1.13.9.) When \code{inter.feature=FALSE} multiple
-      feature overlap is ignored and reads are counted once for each feature
-      they map to. This essentially reduces modes \sQuote{Union} and
+      features are dropped and not counted. When \code{inter.feature=FALSE} 
+      multiple feature overlap is ignored and reads are counted once for each 
+      feature they map to. This essentially reduces modes \sQuote{Union} and
       \sQuote{IntersectionStrict} to \code{countOverlaps} with 
       \code{type="any"}, and \code{type="within"}, respectively.
       \sQuote{IntersectionNotEmpty} is not reduced to a derivative of
@@ -158,13 +171,12 @@
     \item{paired-end reads :}{
       Paired-end reads are counted the same as single-end reads with gaps; 
       each pair registers as a single hit. Paired-end records can be counted 
-      in a \linkS4class{GAlignmentPairs} container or bam file. 
+      in a \linkS4class{GAlignmentPairs} container or Bam file. 
 
-      The \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} 
-      methods have an additional argument, \code{singleEnd}, to indicate if 
-      the bam files contain single or paired-end reads. 
-      See ?\code{summarizeOverlaps,GRanges,BamFileList-method} for
-      details.
+      When counting Bam files the method has an additional argument,
+      \code{singleEnd}, which should be FALSE for paired-end data.
+      See ?\code{summarizeOverlaps,GRanges,BamFileList-method} for details
+      on additional arguments when counting Bam files.
     }
   }
 }
@@ -299,29 +311,32 @@ library(pasillaBamSubset)
 library("TxDb.Dmelanogaster.UCSC.dm3.ensGene")
 exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
 
-## (i) Single-end reads:
+## (i) Single-end :
 
-## 'yieldSize' can be set to iterate over large files in chunks.
-## When counting, 'singleEnd' should be TRUE (default).
+## Large files can be iterated over in chunks by setting a
+## 'yieldSize' on the BamFile.
 bf_s <- BamFile(untreated1_chr4(), yieldSize=50000)
 se_s <- summarizeOverlaps(exbygene, bf_s, singleEnd=TRUE)
 table(assays(se_s)$counts > 0)
 
-## (ii) Paired-end reads:
+## When a character (file name) is provided as 'reads' instead 
+## of a BamFile object summarizeOverlaps() will create a BamFile
+## and set a reasonable default 'yieldSize'.
+
+## (ii) Paired-end :
 
 ## A paired-end file may contain singletons, reads with unmapped
 ## pairs or reads with more than two fragments. When 'fragments=FALSE'
 ## only reads paired by the algorithm are included in the counting. 
-bf <- BamFile(untreated3_chr4())
-se_nofrag <- summarizeOverlaps(exbygene, bf, singleEnd=FALSE, fragments=FALSE)
-table(assays(se_nofrag)$counts > 0)
+nofrag <- summarizeOverlaps(exbygene, untreated3_chr4(), 
+                            singleEnd=FALSE, fragments=FALSE)
+table(assays(nofrag)$counts > 0)
 
-## When 'fragments=TRUE' (default) all singletons, reads with
-## unmapped pairs and other fragments will be included in the
-## counting.
-bf <- BamFile(untreated3_chr4(), asMates=TRUE)
-se_frag <- summarizeOverlaps(exbygene, bf, singleEnd=FALSE)
-table(assays(se_frag)$counts > 0)
+## When 'fragments=TRUE' all singletons, reads with unmapped pairs 
+## and other fragments will be included in the counting.
+bf <- BamFile(untreated3_chr4())
+frag <- summarizeOverlaps(exbygene, bf, singleEnd=FALSE, fragments=TRUE)
+table(assays(frag)$counts > 0)
 
 ## As expected, using 'fragments=TRUE' results in a larger number 
 ## of total counts because singletons, unmapped pairs etc. are 
@@ -331,10 +346,10 @@ table(assays(se_frag)$counts > 0)
 countBam(untreated3_chr4())
 
 ## Reads counted with 'fragments=FALSE':
-sum(assays(se_nofrag)$counts)
+sum(assays(nofrag)$counts)
 
 ## Reads counted with 'fragments=TRUE':
-sum(assays(se_frag)$counts)
+sum(assays(frag)$counts)
 
 ## ---------------------------------------------------------------------
 ## Count tables for DESeq or edgeR.
