@@ -48,8 +48,8 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
   much smaller than the chromosomes), most of them only overlap with a
   single chromosome.
 
-  A \link{GRanges} object if \code{cut.last.tile.in.chrom} is \code{TRUE},
-  with one element (i.e. one genomic range) per tile.
+  If \code{cut.last.tile.in.chrom} is \code{TRUE}, a \link{GRanges}
+  object with one element (i.e. one genomic range) per tile.
 }
 
 \author{
@@ -168,6 +168,7 @@ bins1 <- tileGenome(seqinfo(Scerevisiae), tilewidth=100,
 ##        contain the binned average in the returned object.
 ## Returns 'bins' with an additional metadata column named 'mcolname'
 ## containing the binned average.
+
 binnedAverage <- function(bins, numvar, mcolname)
 {
     stopifnot(is(bins, "GRanges"))
@@ -199,7 +200,7 @@ bins1
 ## isDisjoint() function. For example, the GRanges object returned
 ## by tileGenome() is always guaranteed to be disjoint:
 
-isDisjoint(bins1)
+stopifnot(isDisjoint(bins1))
 
 ## In addition to named RleList objects, the metadata columns of a
 ## disjoint GRanges object can also be seen as variables defined
@@ -245,8 +246,8 @@ stopifnot(all.equal(mean(binned_var1), mean(my_var1)))
 binned_score <- coverage(bins2, weight="binned_score")
 stopifnot(all.equal(mean(binned_score), mean(score)))
 
-## Of course the "binned" variables are much more compact in memory
-## than the original variables (they contain much less runs):
+## Not surprisingly, the "binned" variables are much more compact in
+## memory than the original variables (they contain much less runs):
 
 object.size(binned_var1)
 object.size(my_var1)
