@@ -65,7 +65,7 @@
       }
     } else {
       if (identical(width, seqlength) && identical(shift, 0L))
-        IRanges:::.Ranges.coverage(rg, width=width, weight=weight)
+        IRanges:::.IRanges.coverage(rg, width=width, weight=weight)
       else coverage(rg, shift=shift, width=width, weight=weight)
     }
 }
