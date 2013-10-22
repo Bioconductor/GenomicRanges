@@ -33,9 +33,11 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
         hits
       }
 
-      hits@queryHits <- .GT_reorderHits(qidx, queryHits(hits))
-      hits@subjectHits <- .GT_reorderHits(subject@rngidx, subjectHits(hits))
-      hits <- hits[order(queryHits(hits), subjectHits(hits))]
+      new_queryHits <- .GT_reorderHits(qidx, queryHits(hits))
+      new_subjectHits <- .GT_reorderHits(subject@rngidx, subjectHits(hits))
+      oo <- IRanges:::orderIntegerPairs(new_queryHits, new_subjectHits)
+      hits@queryHits <- new_queryHits[oo]
+      hits@subjectHits <- new_subjectHits[oo]
     } else {
       hits <- .GT_reorderValue(qlist, hits, qidx)
     }
