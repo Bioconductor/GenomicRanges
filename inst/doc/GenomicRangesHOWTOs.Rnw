@@ -6,10 +6,9 @@
 \documentclass{article}
 
 \usepackage[authoryear,round]{natbib}
-\bibliographystyle{plainnat}
 
 <<style, eval=TRUE, echo=FALSE, results=tex>>=
-BiocStyle::latex()
+BiocStyle::latex(bibstyle="plainnat")
 @
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
