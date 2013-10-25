@@ -14,14 +14,24 @@
   \code{\link[IRanges]{coverage}} methods for \link{GRanges},
   \link{GRangesList}, \link{GAlignments}, and \link{GAlignmentPairs}
   objects.
+
+  NOTE: The \code{\link[IRanges]{coverage}} generic function and methods
+  for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
+  are defined and documented in the \pkg{IRanges} package.
 }
 
 \usage{
-\S4method{coverage}{GenomicRanges}(x, shift=0L, width=NULL, weight=1L, ...)
-\S4method{coverage}{GAlignments}(x, shift=0L, width=NULL,
-         weight=1L, drop.D.ranges=FALSE, ...)
-\S4method{coverage}{GAlignmentPairs}(x, shift=0L, width=NULL,
-         weight=1L, drop.D.ranges=FALSE, ...)
+\S4method{coverage}{GenomicRanges}(x, shift=0L, width=NULL, weight=1L,
+            method=c("auto", "sort", "hash"))
+
+\S4method{coverage}{GRangesList}(x, shift=0L, width=NULL, weight=1L,
+            method=c("auto", "sort", "hash"))
+
+\S4method{coverage}{GAlignments}(x, shift=0L, width=NULL, weight=1L,
+            method=c("auto", "sort", "hash"), drop.D.ranges=FALSE)
+
+\S4method{coverage}{GAlignmentPairs}(x, shift=0L, width=NULL, weight=1L,
+            method=c("auto", "sort", "hash"), drop.D.ranges=FALSE)
 }
 
 \arguments{
@@ -29,9 +39,44 @@
     A \link{GRanges}, \link{GRangesList}, \link{GAlignments},
     or \link{GAlignmentPairs} object.
   }
-  \item{shift, width, weight, ...}{
-    See \code{\link[IRanges]{coverage}} in the IRanges package for
-    a description of these optional arguments.
+  \item{shift}{
+    A numeric vector or a list-like object. If numeric, it must be parallel
+    to \code{x} (recycled if necessary). If a list-like object, it must
+    have 1 list element per seqlevel in \code{x}, and its names must be
+    exactly \code{seqlevels(x)}.
+
+    Alternatively, \code{shift} can also be specified as a single string
+    naming a metadata column in \code{x} (i.e. a column in \code{mcols(x)})
+    to be used as the \code{shift} vector.
+
+    See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
+    for more information about this argument.
+  }
+  \item{width}{
+    Either \code{NULL} (the default), or an integer vector.
+    If \code{NULL}, it is replaced with \code{seqlengths(x)}.
+    Otherwise, the vector must have the length and names of
+    \code{seqlengths(x)} and contain NAs or non-negative integers.
+
+    See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
+    for more information about this argument.
+  }
+  \item{weight}{
+    A numeric vector or a list-like object. If numeric, it must be parallel
+    to \code{x} (recycled if necessary). If a list-like object, it must
+    have 1 list element per seqlevel in \code{x}, and its names must be
+    exactly \code{seqlevels(x)}.
+
+    Alternatively, \code{weight} can also be specified as a single string
+    naming a metadata column in \code{x} (i.e. a column in \code{mcols(x)})
+    to be used as the \code{weight} vector.
+
+    See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
+    for more information about this argument.
+  }
+  \item{method}{
+    See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
+    for a description of this argument.
   }
   \item{drop.D.ranges}{
     Whether the coverage calculation should ignore ranges corresponding
@@ -40,47 +85,20 @@
 }
 
 \details{
-  Here is how optional arguments \code{shift}, \code{width} and
-  \code{weight} are handled when \code{x} is a \link{GRanges} object:
-  \itemize{
-  \item \code{shift}, \code{weight}: can be either a numeric vector
-        (integers) or a list. If a list, then it should be named by the
-        sequence levels in \code{x} (i.e. by the names of the underlying
-        sequences), and its elements are passed into the \code{coverage}
-        method for \link[IRanges]{IRanges} objects. If a numeric vector,
-        then it is first recycled to the length of \code{x}, then turned
-        into a list with \code{split(shift, as.factor(seqnames(x)))},
-        and finally the elements of this list are passed into the
-        \code{coverage} method for \link[IRanges]{IRanges} objects.
-        Finally, if \code{x} is a \link{GRanges} object, then \code{weight}
-        can also be a single string naming a metadata column to be used
-        as the weights.
-
-  \item \code{width}: can be either \code{NULL} or a numeric vector.
-        If a numeric vector, then it should be named by the sequence
-        levels in \code{x}. If \code{NULL} (the default), then it is
-        replaced with \code{seqlengths(x)}. Like for \code{shift} and
-        \code{weight}, its elements are passed into the \code{coverage}
-        method for \link[IRanges]{IRanges} objects (if the element is
-        \code{NA} then \code{NULL} is passed instead).
-  }
-
   When \code{x} is a \link{GRangesList} object, \code{coverage(x, ...)}
   is equivalent to \code{coverage(unlist(x), ...)}.
 
   When \code{x} is a \link{GAlignments} or \link{GAlignmentPairs}
   object, \code{coverage(x, ...)} is equivalent to
-  \code{coverage(as(x, "GRangesList"), ...)}.
+  \code{coverage(grglist(x), ...)}.
 }
 
 \value{
-  Returns a named \link[IRanges]{RleList} object with one element
-  ('integer' Rle) per underlying sequence in \code{x} representing how
-  many times each position in the sequence is covered by the intervals in
-  \code{x}.
+  A named \link[IRanges]{RleList} object with one coverage vector per
+  seqlevel in \code{x}.
 }
 
-\author{P. Aboyoun and H. Pages}
+\author{H. Pages and P. Aboyoun}
 
 \seealso{
   \itemize{
