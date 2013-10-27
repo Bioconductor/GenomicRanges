@@ -19,12 +19,11 @@ BiocStyle::latex()
 
 <<options,echo=FALSE>>=
 options(width=100)
-.precomputed_results <- system.file("doc", "precomputed_results",
-                                    package="GenomicRanges", mustWork=TRUE)
+.precomputed_results_dir <- "precomputed_results"
 .loadPrecomputed <- function(objname)
 {
     filename <- paste0(objname, ".rda")
-    path <- file.path(.precomputed_results, filename)
+    path <- file.path(.precomputed_results_dir, filename)
     tempenv <- new.env(parent=emptyenv())
     load(path, envir=tempenv)
     get(objname, envir=tempenv)
