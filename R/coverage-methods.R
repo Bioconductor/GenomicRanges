@@ -23,6 +23,7 @@
     rep(x, length.out=skeleton_len)
 }
 
+### Returns a list-like object.
 .normarg_shift_or_weight <- function(arg, arg.label, x)
 {
     if (is.list(arg) || is(arg, "List")) {
@@ -53,14 +54,10 @@ setMethod("coverage", "GenomicRanges",
         ## Normalize 'shift'.
         shift <- .normarg_shift_or_weight(shift, "shift", x)
 
-        ## Normalize 'width'.
-        if (is.null(width)) {
+        ## Just handle the default 'width' here. Non default will be checked
+        ## in IRanges:::.CompressedIRangesList.coverage().
+        if (is.null(width))
             width <- seqlengths(x)
-        } else if (!(is.numeric(width)
-                  && identical(names(width), seqlevels(x)))) {
-            stop("'width' must be NULL or an integer vector with ",
-                 "the length and names of 'seqlengths(x)'")
-        }
 
         ## Normalize 'weight'.
         weight <- .normarg_shift_or_weight(weight, "weight", x)
@@ -73,7 +70,8 @@ setMethod("coverage", "GenomicRanges",
                                         width=width,
                                         weight=weight,
                                         circle.length=circle.length,
-                                        method=method)
+                                        method=method,
+                                        x_names.label="'seqlevels(x)'")
     }
 )
 
