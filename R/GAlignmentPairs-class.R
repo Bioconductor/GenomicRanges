@@ -686,38 +686,24 @@ setMethod("c", "GAlignmentPairs",
     msg <- c("  The GappedAlignmentPairs class, the GappedAlignmentPairs()",
              "constructor, and the readGappedAlignmentPairs() function, have",
              "been renamed: GAlignmentPairs, GAlignmentPairs(), and",
-             "readGAlignmentPairs(), respectively. The old names are",
-             "deprecated. Please use the new names instead.")
+             "readGAlignmentPairs(), respectively. The old names are now",
+             "defunct. Please use the new names instead.")
     paste0(msg, collapse="\n  ")
 }
 
 setClass("GappedAlignmentPairs", contains="GAlignmentPairs")
 
 setValidity("GappedAlignmentPairs",
-    function(object)
-    {
-        .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
-        TRUE
-    }
+    function(object) .Defunct(msg=.GappedAlignmentPairs_warning_msg())
 )
 
 setMethod("show", "GappedAlignmentPairs",
-    function(object)
-    {
-        .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
-        callNextMethod()
-    }
+    function(object) .Defunct(msg=.GappedAlignmentPairs_warning_msg())
 )
 
 GappedAlignmentPairs <- function(...)
-{
-    .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
-    GAlignmentPairs(...)
-}
+    .Defunct(msg=.GappedAlignmentPairs_warning_msg())
 
 readGappedAlignmentPairs <- function(...)
-{
-    .Deprecated(msg=.GappedAlignmentPairs_warning_msg())
-    readGAlignmentPairs(...)
-}
+    .Defunct(msg=.GappedAlignmentPairs_warning_msg())
 

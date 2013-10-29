@@ -15,8 +15,6 @@ SEXP explode_cigar_op_lengths(
 	SEXP ops
 );
 
-SEXP split_cigar(SEXP cigar);
-
 SEXP cigar_op_table(SEXP cigar);
 
 SEXP cigar_ranges(

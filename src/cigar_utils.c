@@ -421,56 +421,6 @@ SEXP explode_cigar_op_lengths(SEXP cigar, SEXP ops)
 
 
 /****************************************************************************
- * --- .Call ENTRY POINT ---
- *
- * TODO: Used by splitCigar() which is now deprecated. Remove this .Call
- * ENTRY POINT once splitCigar() is defunct.
- */
-SEXP split_cigar(SEXP cigar)
-{
-	SEXP ans, cigar_elt, ans_elt, ans_elt_elt0, ans_elt_elt1;
-	int cigar_len, i;
-	CharAE OPbuf;
-	IntAE OPLbuf;
-	const char *cigar_string, *errmsg;
-
-	cigar_len = LENGTH(cigar);
-	init_ops_lkup_table(R_NilValue);
-	PROTECT(ans = NEW_LIST(cigar_len));
-	OPbuf = new_CharAE(0);
-	OPLbuf = new_IntAE(0, 0, 0);
-	for (i = 0; i < cigar_len; i++) {
-		cigar_elt = STRING_ELT(cigar, i);
-		if (cigar_elt == NA_STRING) {
-			UNPROTECT(1);
-			error("'cigar[%d]' is NA", i + 1);
-		}
-		cigar_string = CHAR(cigar_elt);
-		if (strcmp(cigar_string, "*") == 0) {
-			UNPROTECT(1);
-			error("'cigar[%d]' is \"*\"", i + 1);
-		}
-		CharAE_set_nelt(&OPbuf, 0);
-		IntAE_set_nelt(&OPLbuf, 0);
-		errmsg = split_cigar_string(cigar_string, &OPbuf, &OPLbuf);
-		if (errmsg != NULL) {
-			UNPROTECT(1);
-			error("in 'cigar[%d]': %s", i + 1, errmsg);
-		}
-		PROTECT(ans_elt = NEW_LIST(2));
-		PROTECT(ans_elt_elt0 = new_RAW_from_CharAE(&OPbuf));
-		PROTECT(ans_elt_elt1 = new_INTEGER_from_IntAE(&OPLbuf));
-		SET_VECTOR_ELT(ans_elt, 0, ans_elt_elt0);
-		SET_VECTOR_ELT(ans_elt, 1, ans_elt_elt1);
-		SET_VECTOR_ELT(ans, i, ans_elt);
-		UNPROTECT(3);
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-
-/****************************************************************************
  * cigar_op_table()
  */
 

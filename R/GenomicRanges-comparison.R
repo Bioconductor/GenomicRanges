@@ -132,7 +132,6 @@ setMethod("duplicated", "GenomicRanges", .duplicated.GenomicRanges)
 ### method for Vector objects.
 ###
 
-### TODO: Defunct 'match.if.overlap' arg in BioC 2.14.
 setMethod("match", c("GenomicRanges", "GenomicRanges"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL,
                        method=c("auto", "quick", "hash"),
@@ -150,15 +149,15 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
         if (!isTRUEorFALSE(match.if.overlap))
             stop("'match.if.overlap' must be TRUE or FALSE")
         if (match.if.overlap) {
-            msg <- c("  In the near future (starting with BioC 2.14), ",
-                     "match() on GRanges objects\n  won't support ",
+            msg <- c("  Starting with BioC 2.14, ",
+                     "match() on GRanges objects\n  does not support ",
                      "the 'match.if.overlap' argument anymore. Please use\n\n",
                      "    findOverlaps(x, table, select=\"first\", ",
                      "ignore.strand=ignore.strand)\n\n",
-                     "  instead of\n\n",
+                     "  if you need to do\n\n",
                      "    match(x, table, ignore.strand=ignore.strand, ",
                      "match.if.overlap=TRUE)")
-            .Deprecated(msg=msg)
+            .Defunct(msg=msg)
             ans <- findOverlaps(x, table,
                                 select="first", ignore.strand=ignore.strand)
             if (!is.na(nomatch) && anyMissing(ans))
@@ -196,47 +195,6 @@ relevelSeqnamesForMatch <- function(x, table) {
   }
   x_seqnames
 }
-
-### The only reason for overriding the method for Vector objects is to issue
-### the warning.
-### TODO: Remove this method in BioC 2.14 when the 'match.if.overlap' arg of
-### match() is defunct.
-setMethod("%in%", c("GenomicRanges", "GenomicRanges"),
-    function(x, table)
-    {
-        warning(IRanges:::`%in%.warning.msg`("GenomicRanges"))
-        !is.na(match(x, table))
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### findMatches(), countMatches()
-###
-### The only reason for defining these methods is to prevent the warnings
-### that otherwise would be issued when the user calls findMatches() or
-### countMatches() on GenomicRanges objects.
-### TODO: Remove these methods in BioC 2.14 when the 'match.if.overlap' arg
-### of match() is defunct.
-
-setMethod("findMatches", c("GenomicRanges", "GenomicRanges"),
-    function(x, table, select=c("all", "first", "last"), ...)
-    {
-        select <- match.arg(select)
-        if (select != "all")
-            stop("'select' is not supported yet. Note that you can use ",
-                 "match() if you want to do 'select=\"first\"'. Otherwise ",
-                 "you're welcome to request this on the Bioconductor ",
-                 "mailing list.")
-        IRanges:::.findAllMatchesInSmallTable(x, table,
-                                              match.if.overlap=FALSE, ...)
-    }
-)
-
-setMethod("countMatches", c("GenomicRanges", "GenomicRanges"),
-    function(x, table, ...)
-        IRanges:::.countMatches.default(x, table, match.if.overlap=FALSE, ...)
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

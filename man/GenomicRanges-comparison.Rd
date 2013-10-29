@@ -11,10 +11,6 @@
 \alias{duplicated.GenomicRanges}
 
 \alias{match,GenomicRanges,GenomicRanges-method}
-\alias{\%in\%,GenomicRanges,GenomicRanges-method}
-
-\alias{findMatches,GenomicRanges,GenomicRanges-method}
-\alias{countMatches,GenomicRanges,GenomicRanges-method}
 
 \alias{order,GenomicRanges-method}
 \alias{rank,GenomicRanges-method}
@@ -78,10 +74,9 @@
     ranges.
   }
   \item{match.if.overlap}{
-    This argument is deprecated in BioC 2.13 and won't be supported
-    anymore in BioC 2.14. Please use
+    This argument is defunct in BioC 2.14. Please use
     \code{findOverlaps(x, table, select="first", ignore.strand=ignore.strand)}
-    instead of
+    if you need to do
     \code{match(x, table, ignore.strand=ignore.strand, match.if.overlap=TRUE)}.
   }
   \item{...}{
@@ -168,9 +163,7 @@ table <- gr[1:7]
 match(gr, table)
 match(gr, table, ignore.strand=TRUE)
 
-gr \%in\% table  # Warning! The warning will be removed in BioC 2.14.
-## In the meantime, use suppressWarnings() to suppress the warning:
-suppressWarnings(gr \%in\% table)
+gr \%in\% table
 
 ## ---------------------------------------------------------------------
 ## D. findMatches(), countMatches()

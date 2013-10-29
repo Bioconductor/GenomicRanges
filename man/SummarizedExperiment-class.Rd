@@ -93,12 +93,6 @@
 \alias{follow,SummarizedExperiment,SummarizedExperiment-method}
 \alias{granges,SummarizedExperiment-method}
 \alias{isDisjoint,SummarizedExperiment-method}
-\alias{match,Vector,SummarizedExperiment-method}
-\alias{match,SummarizedExperiment,Vector-method}
-\alias{match,SummarizedExperiment,SummarizedExperiment-method}
-\alias{\%in\%,Vector,SummarizedExperiment-method}
-\alias{\%in\%,SummarizedExperiment,Vector-method}
-\alias{\%in\%,SummarizedExperiment,SummarizedExperiment-method}
 \alias{mcols,SummarizedExperiment-method}
 \alias{mcols<-,SummarizedExperiment-method}
 \alias{narrow,SummarizedExperiment-method}

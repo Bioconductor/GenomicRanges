@@ -52,7 +52,7 @@ exportMethods(
     rbind,
     show,
     "==", "<=",
-    duplicated, match, "%in%",
+    duplicated, match,
     order, sort, rank,
     union, intersect, setdiff,
     start, end,

@@ -859,38 +859,24 @@ setMethod("prmap", c("Ranges", "GAlignments"), # not exported
     msg <- c("  The GappedAlignments class, the GappedAlignments()",
              "constructor, and the readGappedAlignments() function, have been",
              "renamed: GAlignments, GAlignments(), and readGAlignments(),",
-             "respectively. The old names are deprecated. Please use the new ",
-             "names instead.")
+             "respectively. The old names are now defunct. Please use the ",
+             "new names instead.")
     paste0(msg, collapse="\n  ")
 }
 
 setClass("GappedAlignments", contains="GAlignments")
 
 setValidity("GappedAlignments",
-    function(object)
-    {
-        .Deprecated(msg=.GappedAlignments_warning_msg())
-        TRUE
-    }
+    function(object) .Defunct(msg=.GappedAlignments_warning_msg())
 )
 
 setMethod("show", "GappedAlignments",
-    function(object)
-    {
-        .Deprecated(msg=.GappedAlignments_warning_msg())
-        callNextMethod()
-    }
+    function(object) .Defunct(msg=.GappedAlignments_warning_msg())
 )
 
 GappedAlignments <- function(...)
-{
-    .Deprecated(msg=.GappedAlignments_warning_msg())
-    GAlignments(...)
-}
+    .Defunct(msg=.GappedAlignments_warning_msg())
 
 readGappedAlignments <- function(...)
-{
-    .Deprecated(msg=.GappedAlignments_warning_msg())
-    readGAlignments(...)
-}
+    .Defunct(msg=.GappedAlignments_warning_msg())
 

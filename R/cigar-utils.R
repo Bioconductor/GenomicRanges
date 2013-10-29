@@ -360,22 +360,11 @@ queryLocs2refLocs <- function(qlocs, cigar, pos=1L, flag=NULL)
 ### Old stuff (deprecated & defunct)
 ###
 
-splitCigar <- function(cigar)
-{
-    msg <- "  splitCigar() is deprecated."
-    .Deprecated(msg=msg)
-    cigar <- .normarg_cigar(cigar)
-    .Call2("split_cigar", cigar, PACKAGE="GenomicRanges")
-}
+splitCigar <- function(cigar) .Defunct()
 
 cigarToIRanges <- function(cigar, drop.D.ranges=FALSE,
                            drop.empty.ranges=FALSE, reduce.ranges=TRUE)
-{
-    .Deprecated("extractAlignmentRangesOnReference")
-    cigarToIRangesListByAlignment(cigar, drop.D.ranges=drop.D.ranges,
-                                  drop.empty.ranges=drop.empty.ranges,
-                                  reduce.ranges=reduce.ranges)[[1L]]
-}
+    .Defunct("extractAlignmentRangesOnReference")
 
 ### 2 wrappers to cigarRangesAlongReferenceSpace() with ugly names. Used
 ### internally in the GenomicRanges package for turning a GAlignments object
@@ -385,78 +374,25 @@ cigarToIRangesListByAlignment <- function(cigar, pos=1L, flag=NULL,
                                           drop.D.ranges=FALSE,
                                           drop.empty.ranges=FALSE,
                                           reduce.ranges=TRUE)
-{
-    .Deprecated("extractAlignmentRangesOnReference")
-    if (!isTRUEorFALSE(drop.D.ranges))
-        stop("'drop.D.ranges' must be TRUE or FALSE")
-    ## It doesn't really make sense to include "I" operations here since they
-    ## don't generate coverage on the reference (they always produce zero-width
-    ## ranges on the reference). Anyway, this is what
-    ## cigarToIRangesListByAlignment() has been doing for a while.
-    if (drop.D.ranges) {
-        ops <- c("M", "=", "X", "I")
-    } else {
-        ops <- c("M", "=", "X", "I", "D")
-    }
-    cigarRangesAlongReferenceSpace(cigar, flag=flag, pos=pos,
-                                   ops=ops, drop.empty.ranges=drop.empty.ranges,
-                                   reduce.ranges=reduce.ranges)
-}
+    .Defunct("extractAlignmentRangesOnReference")
 
 cigarToIRangesListByRName <- function(cigar, rname, pos=1L, flag=NULL,
                                       drop.D.ranges=FALSE,
                                       drop.empty.ranges=FALSE,
                                       reduce.ranges=TRUE)
-{
-    .Deprecated("extractAlignmentRangesOnReference")
-    if (!is.factor(rname))
-        stop("'rname' must be a factor")
-    if (length(rname) != length(cigar))
-        stop("'rname' must have the same length as 'cigar'")
-    if (!isTRUEorFALSE(drop.D.ranges))
-        stop("'drop.D.ranges' must be TRUE or FALSE")
-    ## It doesn't really make sense to include "I" operations here since they
-    ## don't generate coverage on the reference (they always produce zero-width
-    ## ranges on the reference). Anyway, this is what
-    ## cigarToIRangesListByRName() has been doing for a while and the unit
-    ## tests expect this.
-    if (drop.D.ranges) {
-        ops <- c("M", "=", "X", "I")
-    } else {
-        ops <- c("M", "=", "X", "I", "D")
-    }
-    cigarRangesAlongReferenceSpace(cigar, flag=flag, pos=pos, f=rname,
-                                   ops=ops, drop.empty.ranges=drop.empty.ranges,
-                                   reduce.ranges=reduce.ranges)
-}
+    .Defunct("extractAlignmentRangesOnReference")
 
 cigarToWidth <- function(...)
-{
-    .Deprecated("cigarWidthAlongReferenceSpace")
-    cigarWidthAlongReferenceSpace(...)
-}
+    .Defunct("cigarWidthAlongReferenceSpace")
 
 cigarToQWidth <- function(...)
-{
-    .Deprecated("cigarWidthAlongQuerySpace")
-    cigarWidthAlongQuerySpace(...)
-}
+    .Defunct("cigarWidthAlongQuerySpace")
 
 cigarToCigarTable <- function(cigar)
 {
-    msg <- c("  cigarToCigarTable() is deprecated.",
+    msg <- c("  cigarToCigarTable() is defunct.",
              "Please use 'table(cigar)' instead.")
-    .Deprecated(msg=paste0(msg, collapse=" "))
-    if (is.character(cigar))
-        cigar <- factor(cigar)
-    else if (!is.factor(cigar))
-        stop("'cigar' must be a character vector/factor")
-    basicTable <- table(cigar)
-    tableOrder <- order(basicTable, decreasing=TRUE)
-    cigar <- factor(cigar, levels = levels(cigar)[tableOrder])
-    basicTable <- basicTable[tableOrder]
-    DataFrame(cigar = cigarToRleList(levels(cigar)),
-              count = as.integer(basicTable))
+    .Defunct(msg=paste0(msg, collapse=" "))
 }
 
 ### summarizeCigarTable() is broken:
@@ -470,48 +406,5 @@ cigarToCigarTable <- function(cigar)
 ### very useful anyway (hard to know exactly without more details about what
 ### it does though). I doubt a lot of people have tried to use it ==> Probably
 ### not worth fixing/maintaining.
-summarizeCigarTable <- function(x)
-{
-    msg <- "  summarizeCigarTable() is deprecated."
-    .Deprecated(msg=msg)
-    alignedCharacters <-
-      table(rep.int(elementLengths(x[["cigar"]]), x[["count"]]),
-            rep.int(viewSums(Views(unlist(x[["cigar"]] == "M"),
-                                   as(x[["cigar"]]@partitioning, "IRanges"))) ==
-                                   elementLengths(x[["cigar"]]),
-                    x[["count"]]))
-    tabledAlignedCharacters <- as(rev(colSums(alignedCharacters)), "integer")
-    names(tabledAlignedCharacters) <-
-      unname(c("TRUE" = "AllAligned",
-               "FALSE" = "SomeNonAligned")[names(tabledAlignedCharacters)])
-
-    indelHits <-
-      rbind(data.frame(subject =
-                       subjectHits(findOverlaps(IRanges(unlist(x[["cigar"]] == "D")),
-                                                x[["cigar"]]@partitioning)),
-                       type = factor("D", levels = c("D", "I"))),
-            data.frame(subject =
-                       subjectHits(findOverlaps(IRanges(unlist(x[["cigar"]] == "I")),
-                                                x[["cigar"]]@partitioning)),
-                       type = factor("I", levels = c("D", "I"))))
-    tabledIndelHits <- table(indelHits[,1], indelHits[,2])
-    tabledIndelHits <-
-      tabledIndelHits[rep.int(seq_len(nrow(tabledIndelHits)),
-                              x[["count"]][as.integer(rownames(tabledIndelHits))]),
-                      , drop = FALSE]
-    tabledIndelHits <-
-      as(table(tabledIndelHits[,"D"], tabledIndelHits[,"I"]), "matrix")
-    rownames(tabledIndelHits) <- paste("D", rownames(tabledIndelHits), sep = "")
-    colnames(tabledIndelHits) <- paste("I", colnames(tabledIndelHits), sep = "")
-    if (!("D0" %in% rownames(tabledIndelHits)))
-        tabledIndelHits <-
-          rbind("D0" = rep.int(0L, ncol(tabledIndelHits)), tabledIndelHits)
-    if (!("I0" %in% colnames(tabledIndelHits)))
-        tabledIndelHits <-
-          cbind("I0" = rep.int(0L, nrow(tabledIndelHits)), tabledIndelHits)
-    tabledIndelHits["D0", "I0"] <- nrow(x) - sum(tabledIndelHits[-1])
-
-    list("AlignedCharacters" = tabledAlignedCharacters,
-         "Indels" = tabledIndelHits)
-}
+summarizeCigarTable <- function(x) .Defunct()
 
