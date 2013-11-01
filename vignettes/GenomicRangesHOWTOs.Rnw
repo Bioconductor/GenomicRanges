@@ -8,7 +8,7 @@
 \usepackage[authoryear,round]{natbib}
 
 <<style, eval=TRUE, echo=FALSE, results=tex>>=
-BiocStyle::latex(bibstyle="plainnat")
+BiocStyle::latex(use.unsrturl=FALSE)
 @
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
@@ -888,5 +888,6 @@ sessionInfo()
 @
 
 \bibliography{GenomicRanges}
+\bibliographystyle{plainnat}
 
 \end{document}
