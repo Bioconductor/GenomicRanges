@@ -74,6 +74,7 @@ for details.
 <<load, results=hide>>=
 library(GenomicRanges)
 library(Rsamtools)
+library(GenomicAlignments)
 library(pasillaBamSubset)
 un1 <- untreated1_chr4() ## single-end reads
 @
