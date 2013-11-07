@@ -138,7 +138,10 @@ grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 stopifnot(identical(coverage(grl), coverage(unlist(grl))))
 
 ## Coverage of a GAlignments or GAlignmentPairs object:
-library(Rsamtools)  # because file ex1.bam is in this package
+library(Rsamtools)  # for the ex1.bam file
+library(GenomicAlignments)  # for readGAlignments()
+                            # and readGAlignmentPairs()
+
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galn <- readGAlignments(ex1_file)
 stopifnot(identical(coverage(galn), coverage(as(galn, "GRangesList"))))

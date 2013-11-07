@@ -106,8 +106,11 @@
 
         \code{fragments} is a logical value indicating if singletons, reads 
         with unmapped pairs and other fragments should be included in counting. 
-        When \code{fragments=FALSE} \code{readGAlignmentPairs} is used to 
-        read in the data, when \code{fragments=TRUE} \code{readGAlignmentsList} 
+        When \code{fragments=FALSE} the
+        \code{\link[GenomicAlignments]{readGAlignmentPairs}} function
+        from the \pkg{GenomicAlignments} package is used to 
+        read in the data, when \code{fragments=TRUE} the
+        \code{\link[GenomicAlignments]{readGAlignmentsList}}
         is used.
 
         \code{readGAlignmentPairs} keeps only the read pairs mated by the 
@@ -115,8 +118,8 @@
         all singletons, reads with unmapped pairs and other fragments. When 
         \code{fragments=TRUE} counts will generally be higher because all 
         records are included in the counting, not just the primary alignment 
-        pairs. See ?\code{readGAlignmentsListFromBam} for the algorithm 
-        details.
+        pairs. See ?\code{readGAlignmentsListFromBam} in the
+        \pkg{GenomicAlignments} package for the algorithm details.
       }
       \item{singleEnd}{
         (Default TRUE) A logical value indicating if reads are single or 
@@ -210,7 +213,9 @@
     \item \code{DESeq}, \code{DEXSeq} and \code{edgeR} packages 
     \item \link[Rsamtools]{BamFileList} and \link[Rsamtools]{BamViews} classes
     \item \link{GAlignments} and \link{GAlignmentPairs} classes
-    \item \link{readGAlignments} and \link{readGAlignmentPairs} 
+    \item The \link[GenomicAlignments]{readGAlignments} and
+          \link[GenomicAlignments]{readGAlignmentPairs} functions in
+          the \pkg{GenomicAlignments} package.
   }
 }
 

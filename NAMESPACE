@@ -118,11 +118,10 @@ export(
     makeGRangesListFromFeatureFragments,
     tileGenome,
     makeGAlignmentsListFromFeatureFragments,
-    GAlignments, readGAlignments,
-    GAlignmentPairs, readGAlignmentPairs,
-    GappedAlignments, readGappedAlignments,  # old names
-    GappedAlignmentPairs, readGappedAlignmentPairs,  # old names
-    GAlignmentsList, readGAlignmentsList,
+    GAlignments,
+    GAlignmentPairs,
+    GappedAlignments, GappedAlignmentPairs,  # old names
+    GAlignmentsList, 
     flipQuery,
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,

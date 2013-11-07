@@ -7,7 +7,6 @@
 
 % Constructors:
 \alias{GAlignmentPairs}
-\alias{readGAlignmentPairs}
 
 % Accessors:
 \alias{length,GAlignmentPairs-method}
@@ -55,7 +54,6 @@
 \alias{class:GappedAlignmentPairs}
 \alias{GappedAlignmentPairs-class}
 \alias{show,GappedAlignmentPairs-method}
-\alias{readGappedAlignmentPairs}
 
 
 \title{GAlignmentPairs objects}
@@ -85,28 +83,8 @@
   records.
 }
 
-\section{Constructors}{
+\section{Constructor}{
   \describe{
-    \item{}{
-      \code{readGAlignmentPairs(file, format="BAM", use.names=FALSE, ...)}:
-      Read a file containing paired-end reads as a GAlignmentPairs
-      object.
-      By default (i.e. \code{use.names=FALSE}), the resulting object has no
-      names. If \code{use.names} is \code{TRUE}, then the names are
-      constructed from the query template names (QNAME field in a SAM/BAM
-      file). Note that the 2 records in a pair of records have the same QNAME.
-
-      Note that this function is just a front-end that delegates to the
-      format-specific back-end function specified via the \code{format}
-      argument. The \code{use.names} argument and any extra argument are
-      passed to the back-end function.
-      Only the BAM format is supported for now. Its back-end is the
-      \code{\link[Rsamtools]{readGAlignmentPairsFromBam}} function
-      defined in the Rsamtools package.
-      See \code{?\link[Rsamtools]{readGAlignmentPairsFromBam}} for
-      more information (you might need to install and load the Rsamtools
-      package first).
-    }
     \item{}{
       \code{GAlignmentPairs(first, last, isProperPair, names=NULL)}:
       Low-level GAlignmentPairs constructor. Generally not used directly.
@@ -124,9 +102,10 @@
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
-      Get or set the names of \code{x}.
-      See \code{readGAlignmentPairs} above for how to automatically
-      extract and set the names from the file to read.
+      Get or set the names on \code{x}.
+      See \code{\link[GenomicAlignments]{readGAlignmentPairs}} in the
+      \pkg{GenomicAlignments} package for how to automatically extract
+      and set the names when reading the alignments from a file.
     }
     \item{}{
       \code{first(x, invert.strand=FALSE)},
@@ -157,11 +136,11 @@
     \item{}{
       \code{seqnames(x)}:
       Get the name of the reference sequence for each alignment pair
-      in \code{x}. This comes from the RNAME field of the BAM file and
-      has the same value for the 2 records in a pair
-      (\code{\link[Rsamtools]{makeGAlignmentPairs}}, the function
-      used by \code{\link[Rsamtools]{readGAlignmentPairsFromBam}} for
-      doing the pairing, rejects pairs with incompatible RNAME values).
+      in \code{x}. When reading the alignments from a BAM file, this comes
+      from the RNAME field which has the same value for the 2 records in a
+      pair (\code{\link[Rsamtools]{makeGAlignmentPairs}}, the function
+      used by \code{\link[GenomicAlignments]{readGAlignmentPairsFromBam}}
+      for doing the pairing, rejects pairs with incompatible RNAME values).
     }
     \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
@@ -171,8 +150,9 @@
       In a GAlignmentPairs object, the strand of the "last" alignment
       in a pair is typically (but not always) the opposite of the strand
       of the "first" alignment. Note that, currently,
-      \code{\link[Rsamtools]{makeGAlignmentPairs}}, the function
-      used internally by \code{\link[Rsamtools]{readGAlignmentPairsFromBam}}
+      \code{\link[GenomicAlignments]{readGAlignmentPairsFromBam}}, the
+      function used internally by
+      \code{\link[GenomicAlignments]{readGAlignmentPairs}}
       for doing the pairing, rejects pairs where the "first" and "last"
       alignments are on the same strand, but those pairs might be supported
       in the future.
@@ -370,7 +350,7 @@
 \seealso{
   \itemize{
     \item \link{GAlignments-class}.
-    \item \code{\link[Rsamtools]{readGAlignmentPairsFromBam}}.
+    \item \code{\link[GenomicAlignments]{readGAlignmentPairs}}.
     \item \code{\link[Rsamtools]{makeGAlignmentPairs}}.
     \item \link{GRangesList-class}.
     \item \link{GRanges-class}.
@@ -381,6 +361,9 @@
 }
 
 \examples{
+library(Rsamtools)  # for the ex1.bam file
+library(GenomicAlignments)  # for readGAlignments()
+
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galp <- readGAlignmentPairs(ex1_file, use.names=TRUE)
 galp

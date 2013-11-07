@@ -308,7 +308,7 @@ setValidity2("GAlignments", .valid.GAlignments,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructors.
+### Constructor.
 ###
 
 .asFactorRle <- function(x)
@@ -400,20 +400,6 @@ setMethod("update", "GAlignments",
           {
             BiocGenerics:::updateS4(object, ...)
           })
-
-readGAlignments <- function(file, format="BAM", use.names=FALSE, ...)
-{
-    if (!isSingleString(format))
-        stop("'format' must be a single string")
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
-    if (format == "BAM") {
-        suppressMessages(library("Rsamtools"))
-        ans <- readGAlignmentsFromBam(file=file, use.names=use.names, ...)
-        return(ans)
-    }
-    stop("only BAM format is supported at the moment")
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

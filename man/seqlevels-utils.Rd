@@ -96,7 +96,9 @@ chr1 <- keepSeqlevels(gr, "chr1")
 ## Drop 'chr1'. Both 'chr2' and 'chr3' are kept.
 chr2 <- dropSeqlevels(gr, "chr1")
 
-library(Rsamtools)
+library(Rsamtools)  # for the ex1.bam file
+library(GenomicAlignments)  # for readGAlignments()
+
 fl <- system.file("extdata", "ex1.bam", package="Rsamtools")
 gal <- readGAlignments(fl)
 seqlevels(gal)

@@ -5,10 +5,9 @@
 \alias{class:GAlignments}
 \alias{GAlignments-class}
 
-% Constructors:
+% Constructor:
 \alias{GAlignments}
 \alias{updateObject,GAlignments-method}
-\alias{readGAlignments}
 
 % Accessors:
 \alias{length,GAlignments-method}
@@ -66,7 +65,6 @@
 \alias{class:GappedAlignments}
 \alias{GappedAlignments-class}
 \alias{show,GappedAlignments-method}
-\alias{readGappedAlignments}
 
 
 \title{GAlignments objects}
@@ -145,27 +143,8 @@
   }
 }
 
-\section{Constructors}{
+\section{Constructor}{
   \describe{
-    \item{}{
-      \code{readGAlignments(file, format="BAM", use.names=FALSE, ...)}:
-      Read a file containing aligned reads as a GAlignments object.
-      By default (i.e. \code{use.names=FALSE}), the resulting object has no
-      names. If \code{use.names} is \code{TRUE}, then the names are
-      constructed from the query template names (QNAME field in a SAM/BAM
-      file).
-
-      Note that this function is just a front-end that delegates to the
-      format-specific back-end function specified via the \code{format}
-      argument. The \code{use.names} argument and any extra argument are
-      passed to the back-end function.
-      Only the BAM format is supported for now. Its back-end is the
-      \code{\link[Rsamtools]{readGAlignmentsFromBam}} function defined
-      in the Rsamtools package.
-      See \code{?\link[Rsamtools]{readGAlignmentsFromBam}} for
-      more information (you might need to install and load the Rsamtools
-      package first).
-    }
     \item{}{
       \code{GAlignments(seqnames=Rle(factor()), pos=integer(0),
                         cigar=character(0),
@@ -186,9 +165,10 @@
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
-      Get or set the names of \code{x}.
-      See \code{readGAlignments} above for how to automatically extract
-      and set the names from the file to read.
+      Get or set the names on \code{x}.
+      See \code{\link[GenomicAlignments]{readGAlignments}} in the
+      \pkg{GenomicAlignments} package for how to automatically extract
+      and set the names when reading the alignments from a file.
     }
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
@@ -421,7 +401,7 @@
 \seealso{
   \itemize{
     \item \link{GAlignmentPairs-class}.
-    \item \code{\link[Rsamtools]{readGAlignmentsFromBam}}.
+    \item \code{\link[GenomicAlignments]{readGAlignments}}.
     \item \link{GRangesList-class}.
     \item \link{GRanges-class}.
     \item \link{findOverlaps-methods}.
@@ -433,7 +413,9 @@
 }
 
 \examples{
-library(Rsamtools)  # for ScanBamParam() and the ex1.bam file
+library(Rsamtools)  # for the ex1.bam file
+library(GenomicAlignments)  # for readGAlignments()
+
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 gal <- readGAlignments(ex1_file, param=ScanBamParam(what="flag"))
 gal

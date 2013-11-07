@@ -10,7 +10,6 @@
 \alias{GAlignmentsList}
 \alias{makeGAlignmentsListFromFeatureFragments}
 \alias{updateObject,GAlignmentsList-method}
-\alias{readGAlignmentsList}
 
 % Accessors:
 \alias{names,GAlignmentsList-method}
@@ -73,21 +72,6 @@
       \code{GAlignmentsList(...)}:
       Creates a GAlignmentsList from a list of \link{GAlignments} objects.
     }
-    \item{}{
-      \code{readGAlignmentsList(file, format="BAM", use.names=FALSE, ...)}:
-      Read a file containing aligned reads as a GAlignmentsList object.
-      Note that this function is just a front-end that delegates to the
-      \code{\link[Rsamtools]{readGAlignmentsListFromBam}} function defined
-      in the Rsamtools package. 
-      See \code{?\link[Rsamtools]{readGAlignmentsListFromBam}} for
-      more information.
- 
-      The \code{param} described on the
-      \code{\link[Rsamtools]{readGAlignmentsListFromBam}} man page fine tunes
-      which records are returned and how they are grouped. \code{param} is
-      specified by the standard \code{ScanBamParam()} options.
-    }
-
     \item{}{
       \code{makeGAlignmentsListFromFeatureFragments(seqnames=Rle(factor()), 
                                                     fragmentPos=list(),
@@ -292,8 +276,8 @@
   \itemize{
     \item \link{GAlignments-class}.
     \item \link{GAlignmentPairs-class}.
-    \item \code{\link[Rsamtools]{readGAlignmentsFromBam}}.
-    \item \code{\link[Rsamtools]{readGAlignmentPairsFromBam}}.
+    \item \code{\link[GenomicAlignments]{readGAlignmentsFromBam}}.
+    \item \code{\link[GenomicAlignments]{readGAlignmentPairsFromBam}}.
     \item \link{findOverlaps-methods}.
   }
 }
@@ -366,10 +350,10 @@ mcols(galist, level="within")
 
 
 ## ---------------------------------------------------------------------
-## D. readGAlignmentsListFromBam()
+## D. readGAlignmentsList()
 ## ---------------------------------------------------------------------
 
-library(Rsamtools)
+library(GenomicAlignments)  # for readGAlignmentsList()
 library(pasillaBamSubset)
 
 ## 'file' as character.

@@ -184,7 +184,9 @@ pintersect(gr, grlist)
 pintersect(grlist, gr)
 
 ## Parallel intersection of a GAlignments and a GRanges object
-library(Rsamtools)  # because file ex1.bam is in this package
+library(Rsamtools)  # for the ex1.bam file
+library(GenomicAlignments)  # for readGAlignments()
+
 galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galn <- readGAlignments(galn_file)
 pintersect(galn, shift(as(galn, "GRanges"), 6L))

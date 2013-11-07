@@ -164,7 +164,8 @@ sm_treated1 <- system.file("extdata", "sm_treated1.bam",
                            package="GenomicRanges", mustWork=TRUE)
 
 ## Load the alignments:
-library(Rsamtools)
+library(GenomicAlignments)  # for readGAlignments()
+
 flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
 gal <- readGAlignments(sm_treated1, use.names=TRUE, param=param0)

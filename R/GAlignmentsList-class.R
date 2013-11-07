@@ -236,19 +236,6 @@ setMethod("updateObject", "GAlignmentsList",
     }
 )
 
-readGAlignmentsList <- function(file, format="BAM", use.names=FALSE, ...)
-{
-    if (!isSingleString(format))
-        stop("'format' must be a single string")
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
-    if (format == "BAM") {
-        suppressMessages(library("Rsamtools"))
-        ans <- readGAlignmentsListFromBam(file=file, use.names=use.names, ...) 
-        return(ans)
-    }
-    stop("only BAM format is supported at the moment")
-}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.

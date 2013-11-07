@@ -327,7 +327,9 @@ subsetByOverlaps(grl, rev(grl))
 ## ---------------------------------------------------------------------
 ## WITH GAlignments AND/OR GAlignmentsList OBJECTS
 ## ---------------------------------------------------------------------
-library(Rsamtools)  # because file ex1.bam is in this package
+library(Rsamtools)  # for the ex1.bam file
+library(GenomicAlignments)  # for readGAlignments()
+
 ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 galn <- readGAlignments(ex1_file)
 
