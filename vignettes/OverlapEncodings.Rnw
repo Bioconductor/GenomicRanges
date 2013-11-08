@@ -81,7 +81,7 @@ untreated1_chr4()
 @
 
 We use the \Rfunction{readGAlignments} function defined in the
-\Rpackage{GenomicRanges} package to load the reads into a
+\Rpackage{GenomicAlignments} package to load the reads into a
 \Rclass{GAlignments} object.
 It's probably a good idea to get rid of the PCR or optical duplicates
 (flag bit 0x400 in the SAM format, see the SAM Spec
@@ -97,7 +97,7 @@ object):
 
 <<readGAlignments>>=
 library(GenomicRanges)
-library(Rsamtools)
+library(GenomicAlignments)
 flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
 U1.GAL <- readGAlignments(untreated1_chr4(), use.names=TRUE, param=param0)
