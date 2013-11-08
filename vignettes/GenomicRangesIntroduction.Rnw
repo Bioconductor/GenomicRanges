@@ -647,10 +647,11 @@ pairing information will be lost. This might change in the future.
 
 \subsection{Load a `BAM' file into a \Rclass{GAlignments} object}
 
-First we use the \Rfunction{readGAlignments} function to load
-a toy `BAM' file into a \Rclass{GAlignments} object:
+First we use the \Rfunction{readGAlignments} function from the
+\Rpackage{GenomicAlignments} package to load a toy `BAM' file into
+a \Rclass{GAlignments} object:
 <<readGAlignments>>=
-library(Rsamtools)
+library(GenomicAlignments)
 aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
 aln1 <- readGAlignments(aln1_file)
 aln1

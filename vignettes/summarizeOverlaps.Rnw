@@ -40,7 +40,7 @@ In this example reads are counted from a list of BAM files and returned in
 a \Robject{matrix} for use in further analysis such as those offered in 
 \Biocpkg{DESeq} and \Biocpkg{edgeR}. 
 <<firstExample, eval=TRUE, keep.source=TRUE>>=
-library(Rsamtools)
+library(GenomicAlignments)
 library(DESeq)
 library(edgeR)
 
