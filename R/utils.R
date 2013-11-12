@@ -25,28 +25,32 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
-showSeqlengths <- function(object, margin="")
+compactPrintNamedAtomicVector <- function(x, margin="")
 {
-    seqlens <- seqlengths(object)
-    nseq <- length(seqlens)
-    halfWidth <- getOption("width") %/% 2L
+    x_len <- length(x)
+    halfWidth <- (getOption("width") - nchar(margin)) %/% 2L
     first <- max(1L, halfWidth)
     showMatrix <-
-      rbind(as.character(head(names(seqlens), first)),
-            as.character(head(seqlens, first)))
-    if (nseq > first) {
-        last <- min(nseq - first, halfWidth)
+      rbind(as.character(head(names(x), first)),
+            as.character(head(x, first)))
+    if (x_len > first) {
+        last <- min(x_len - first, halfWidth)
         showMatrix <-
           cbind(showMatrix,
-                rbind(as.character(tail(names(seqlens), last)),
-                      as.character(tail(seqlens, last))))
+                rbind(as.character(tail(names(x), last)),
+                      as.character(tail(x, last))))
     }
     showMatrix <- format(showMatrix, justify="right")
+    cat(BiocGenerics:::labeledLine(margin, showMatrix[1L, ], count=FALSE,
+                                           labelSep=""), sep="")
+    cat(BiocGenerics:::labeledLine(margin, showMatrix[2L, ], count=FALSE,
+                                           labelSep=""), sep="")
+}
+
+showSeqlengths <- function(object, margin="")
+{
     cat(margin, "seqlengths:\n", sep="")
-    cat(margin, BiocGenerics:::labeledLine("", showMatrix[1L, ], count=FALSE,
-                                           labelSep=""), sep="")
-    cat(margin, BiocGenerics:::labeledLine("", showMatrix[2L, ], count=FALSE,
-                                           labelSep=""), sep="")
+    compactPrintNamedAtomicVector(seqlengths(object), margin=margin)
 }
 
 
