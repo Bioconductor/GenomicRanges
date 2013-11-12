@@ -169,9 +169,6 @@ export(
     assays, "assays<-",
     assay, "assay<-",
 
-    ## summarizeOverlaps.R:
-    summarizeOverlaps,
-
     ## encodeOverlaps-methods.R:
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
@@ -203,7 +200,6 @@ exportMethods(
     colData, "colData<-",
     assays, "assays<-",
     assay, "assay<-",
-    summarizeOverlaps,
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
     findCompatibleOverlaps,

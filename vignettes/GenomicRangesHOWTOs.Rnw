@@ -53,8 +53,7 @@ containers.
 Additional recommended readings after this vignette are the ``Software for
 Computing and Annotating Genomic Ranges'' paper[\citet{Lawrence2013ranges}]
 and the ``Counting reads with \Rfunction{summarizeOverlaps}'' vignette
-located in the \Biocpkg{GenomicRanges} package (in the same folder as this
-document).
+located in the \Biocpkg{GenomicAlignments} package.
 
 To display the list of vignettes available in the \Biocpkg{GenomicRanges},
 use \Rcode{browseVignettes("GenomicRanges")}.

@@ -138,7 +138,7 @@
       Get the name of the reference sequence for each alignment pair
       in \code{x}. When reading the alignments from a BAM file, this comes
       from the RNAME field which has the same value for the 2 records in a
-      pair (\code{\link[Rsamtools]{makeGAlignmentPairs}}, the function
+      pair (\code{\link[GenomicAlignments]{makeGAlignmentPairs}}, the function
       used by \code{\link[GenomicAlignments]{readGAlignmentPairsFromBam}}
       for doing the pairing, rejects pairs with incompatible RNAME values).
     }
@@ -351,7 +351,7 @@
   \itemize{
     \item \link{GAlignments-class}.
     \item \code{\link[GenomicAlignments]{readGAlignmentPairs}}.
-    \item \code{\link[Rsamtools]{makeGAlignmentPairs}}.
+    \item \code{\link[GenomicAlignments]{makeGAlignmentPairs}}.
     \item \link{GRangesList-class}.
     \item \link{GRanges-class}.
     \item \link{findOverlaps-methods}.

@@ -73,9 +73,8 @@
   NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and methods
   for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
   are defined and documented in the \pkg{IRanges} package.
-  The methods for \link[GenomicAlignments]{GAlignments},
-  \link[GenomicAlignments]{GAlignmentPairs}, and
-  \link[GenomicAlignments]{GAlignmentsList} objects are defined and
+  The methods for \link{GAlignments}, \link{GAlignmentPairs}, and
+  \link{GAlignmentsList} objects are defined and
   documented in the \pkg{GenomicAlignments} package.
 }
 
@@ -85,14 +84,17 @@
     type = c("any", "start", "end", "within", "equal"),
     select = c("all", "first", "last", "arbitrary"),
     ignore.strand = FALSE)
+
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"), 
     ignore.strand = FALSE)
+
 \S4method{overlapsAny}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"), 
     ignore.strand = FALSE)
+
 \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap = 0L, minoverlap = 1L,
     type = c("any", "start", "end", "within", "equal"),

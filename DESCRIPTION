@@ -50,7 +50,6 @@ Collate: utils.R
 	SummarizedExperiment-rowData-methods.R
 	seqlevels-utils.R
 	resolveHits-methods.R
-	summarizeOverlaps.R
 	RangesMapping-methods.R
 	RangedData-methods.R
 	intra-range-methods.R
