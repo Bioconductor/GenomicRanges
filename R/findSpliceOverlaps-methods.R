@@ -12,29 +12,6 @@ setGeneric("findSpliceOverlaps", signature=c("query", "subject"),
 ## subject as GRangesList 
 ##
 
-setMethod("findSpliceOverlaps", c("GAlignments", "GRangesList"),
-    function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
-{
-    callGeneric(grglist(query, order.as.in.query=TRUE), subject, 
-                ignore.strand, ..., cds=cds)
-})
-
-setMethod("findSpliceOverlaps", c("GAlignmentPairs", "GRangesList"),
-    function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
-{
-### FIXME: order.as.in.query = FALSE needed for insertGaps(). If we
-### really want to use insertGaps(), we need to make it robust to
-### different orderings.
-
-### FIXME:
-### instead of relying on query.break column, maybe we should add a
-### 'splice = .gaps(query)' argument to .findSpliceOverlaps that we
-### set to introns(query) here. The downside is that a GRangesList
-### derived from GAlignmentPairs will no longer work.
-    callGeneric(grglist(query, order.as.in.query=FALSE), subject,
-                ignore.strand, ..., cds=cds)
-})
-
 setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, ignore.strand=FALSE, ..., cds=NULL)
 {
@@ -76,7 +53,9 @@ setMethod("findSpliceOverlaps", c("GRangesList", "GRangesList"),
 }
 
 ## -------------------------------------------------------------------------
-## Methods in Rsamtools :
+## Methods in GenomicAlignments :
+## findSpliceOverlaps,GAlignments,GRangesList-method
+## findSpliceOverlaps,GAlignmentPairs,GRangesList-method
 ## findSpliceOverlaps,character,ANY-method
 ## findSpliceOverlaps,BamFile,ANY-method
  
