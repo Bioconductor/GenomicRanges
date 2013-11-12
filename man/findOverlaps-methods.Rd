@@ -14,17 +14,6 @@
 \alias{findOverlaps,RangedData,GRangesList-method}
 \alias{findOverlaps,GenomicRanges,RangedData-method}
 \alias{findOverlaps,GRangesList,RangedData-method}
-\alias{findOverlaps,GAlignments,Vector-method}
-\alias{findOverlaps,Vector,GAlignments-method}
-\alias{findOverlaps,GAlignments,GAlignments-method}
-\alias{findOverlaps,GAlignments,GRangesList-method}
-\alias{findOverlaps,GRangesList,GAlignments-method}
-\alias{findOverlaps,GAlignmentPairs,Vector-method}
-\alias{findOverlaps,Vector,GAlignmentPairs-method}
-\alias{findOverlaps,GAlignmentPairs,GAlignmentPairs-method}
-\alias{findOverlaps,GAlignmentsList,Vector-method}
-\alias{findOverlaps,Vector,GAlignmentsList-method}
-\alias{findOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 \alias{countOverlaps,GenomicRanges,Vector-method}
 \alias{countOverlaps,Vector,GenomicRanges-method}
@@ -34,19 +23,6 @@
 \alias{countOverlaps,GRangesList,GRangesList-method}
 \alias{countOverlaps,GRanges,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRanges-method}
-\alias{countOverlaps,GAlignments,Vector-method}
-\alias{countOverlaps,Vector,GAlignments-method}
-\alias{countOverlaps,GAlignments,GAlignments-method}
-\alias{countOverlaps,GAlignments,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,GAlignments-method}
-\alias{countOverlaps,GAlignments,GRangesList-method}
-\alias{countOverlaps,GRangesList,GAlignments-method}
-\alias{countOverlaps,GAlignmentPairs,Vector-method}
-\alias{countOverlaps,Vector,GAlignmentPairs-method}
-\alias{countOverlaps,GAlignmentPairs,GAlignmentPairs-method}
-\alias{countOverlaps,GAlignmentsList,Vector-method}
-\alias{countOverlaps,Vector,GAlignmentsList-method}
-\alias{countOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 \alias{overlapsAny,GenomicRanges,GenomicRanges-method}
 \alias{overlapsAny,GRangesList,GenomicRanges-method}
@@ -60,22 +36,6 @@
 \alias{overlapsAny,RangedData,GRangesList-method}
 \alias{overlapsAny,GenomicRanges,RangedData-method}
 \alias{overlapsAny,GRangesList,RangedData-method}
-\alias{overlapsAny,GAlignments,Vector-method}
-\alias{overlapsAny,Vector,GAlignments-method}
-
-\alias{countOverlaps,GAlignments,Vector-method}
-\alias{countOverlaps,Vector,GAlignments-method}
-\alias{countOverlaps,GAlignments,GAlignments-method}
-\alias{countOverlaps,GAlignments,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,GAlignments-method}
-\alias{countOverlaps,GAlignments,GRangesList-method}
-\alias{countOverlaps,GRangesList,GAlignments-method}
-\alias{countOverlaps,GAlignmentPairs,Vector-method}
-\alias{countOverlaps,Vector,GAlignmentPairs-method}
-\alias{countOverlaps,GAlignmentPairs,GAlignmentPairs-method}
-\alias{countOverlaps,GAlignmentsList,Vector-method}
-\alias{countOverlaps,Vector,GAlignmentsList-method}
-\alias{countOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 \alias{overlapsAny,GenomicRanges,GenomicRanges-method}
 \alias{overlapsAny,GRangesList,GenomicRanges-method}
@@ -89,14 +49,6 @@
 \alias{overlapsAny,RangedData,GRangesList-method}
 \alias{overlapsAny,GenomicRanges,RangedData-method}
 \alias{overlapsAny,GRangesList,RangedData-method}
-\alias{overlapsAny,GAlignments,Vector-method}
-\alias{overlapsAny,Vector,GAlignments-method}
-\alias{overlapsAny,GAlignments,GAlignments-method}
-\alias{overlapsAny,GAlignmentPairs,Vector-method}
-\alias{overlapsAny,Vector,GAlignmentPairs-method}
-\alias{overlapsAny,GAlignmentsList,Vector-method}
-\alias{overlapsAny,Vector,GAlignmentsList-method}
-\alias{overlapsAny,GAlignmentsList,GAlignmentsList-method}
 
 \alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
@@ -110,21 +62,21 @@
 \alias{subsetByOverlaps,RangedData,GRangesList-method}
 \alias{subsetByOverlaps,GenomicRanges,RangedData-method}
 \alias{subsetByOverlaps,GRangesList,RangedData-method}
-\alias{subsetByOverlaps,GAlignments,Vector-method}
-\alias{subsetByOverlaps,Vector,GAlignments-method}
-\alias{subsetByOverlaps,GAlignments,GAlignments-method}
-\alias{subsetByOverlaps,GAlignmentPairs,Vector-method}
-\alias{subsetByOverlaps,Vector,GAlignmentPairs-method}
-\alias{subsetByOverlaps,GAlignmentsList,Vector-method}
-\alias{subsetByOverlaps,Vector,GAlignmentsList-method}
-\alias{subsetByOverlaps,GAlignmentsList,GAlignmentsList-method}
 
 
 \title{Finding overlapping genomic ranges}
 
 \description{
-  Finds interval overlaps between a \link{GRanges}, \link{GIntervalTree}, \link{GRangesList}, \link{GAlignments}, \link{GAlignmentPairs}, 
-  or \link{GAlignmentsList} object, and another object containing ranges.
+  Finds interval overlaps between a \link{GRanges}, \link{GIntervalTree},
+  or \link{GRangesList} object, and another object containing ranges.
+
+  NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and methods
+  for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
+  are defined and documented in the \pkg{IRanges} package.
+  The methods for \link[GenomicAlignments]{GAlignments},
+  \link[GenomicAlignments]{GAlignmentPairs}, and
+  \link[GenomicAlignments]{GAlignmentsList} objects are defined and
+  documented in the \pkg{GenomicAlignments} package.
 }
 
 \usage{
@@ -149,11 +101,10 @@
 
 \arguments{
   \item{query, subject}{
-    A \link{GRanges}, \link{GRangesList}, \link{GAlignments},
-    \link{GAlignmentPairs}, or \link{GAlignmentsList} object. 
+    A \link{GRanges} or \link{GRangesList} object.
     \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
-    also accepted for one of \code{query} or \code{subject}. When
-    \code{query} is a \link{GRanges} or \link{GRangesList} then 
+    also accepted for one of \code{query} or \code{subject}.
+    When \code{query} is a \link{GRanges} or \link{GRangesList} then 
     \code{subject} can be a \link{GIntervalTree} object.
   }
   \item{maxgap, minoverlap, type, select}{
@@ -187,17 +138,6 @@
   a feature is a list element containing a set of ranges. In the results,
   the features are referred to by number, which run from 1 to
   \code{length(query)}/\code{length(subject)}.
-
-  When the query or the subject (or both) is a \link{GAlignments}
-  object, it is first turned into a \link{GRangesList} object (with
-  \code{as( , "GRangesList")}) and then the rules described previously
-  apply. \link{GAlignmentsList} objects are coerced to \link{GAlignments}
-  then to a \link{GRangesList}. Feature indices are mapped back to the 
-  original \link{GAlignmentsList} list elements.
-
-  When the query is a \link{GAlignmentPairs} object, it is first
-  turned into a \link{GRangesList} object (with \code{as( , "GRangesList")})
-  and then the rules described previously apply.
 
   When the query is a \link{GRanges} or \link{GRangesList} object then
   the \link{subject} can be a \link{GIntervalTree} object. For repeated queries against the same subject, it is more efficient to create a \code{GIntervalTree} once for the subject using the \link{GIntervalTree} constructor described below and then perform the queries against
@@ -235,17 +175,10 @@
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
     \item \link{GIntervalTree-class}.
-    \item \link{GAlignments-class}.
-    \item \link{GAlignmentPairs-class}.
-    \item \link{GAlignmentsList-class}.
   }
 }
 
 \examples{
-## ---------------------------------------------------------------------
-## WITH GRanges AND/OR GRangesList OBJECTS
-## ---------------------------------------------------------------------
-
 ## GRanges object:
 gr <-
   GRanges(seqnames =
@@ -318,48 +251,10 @@ findOverlaps(grl, gtree, type = "start")
 subsetByOverlaps(grl, gtree, type = "start")
 findOverlaps(grl, gtree, select = "first")
 
-
 ## Overlapping two GRangesList objects:
 countOverlaps(grl, rev(grl))
 findOverlaps(grl, rev(grl))
 subsetByOverlaps(grl, rev(grl))
-
-## ---------------------------------------------------------------------
-## WITH GAlignments AND/OR GAlignmentsList OBJECTS
-## ---------------------------------------------------------------------
-library(Rsamtools)  # for the ex1.bam file
-library(GenomicAlignments)  # for readGAlignments()
-
-ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGAlignments(ex1_file)
-
-subject <- granges(galn)[1]
-
-## Note the absence of query no. 9 (i.e. 'galn[9]') in this result:
-as.matrix(findOverlaps(galn, subject))
-
-## This is because, by default, findOverlaps()/countOverlaps() are
-## strand specific:
-galn[8:10]
-countOverlaps(galn[8:10], subject)
-countOverlaps(galn[8:10], subject, ignore.strand=TRUE)
-
-## Count alignments in 'galn' that DO overlap with 'subject' vs those
-## that do NOT:
-table(overlapsAny(galn, subject))
-## Extract those that DO:
-subsetByOverlaps(galn, subject)
-
-## GAlignmentsList
-galist <- GAlignmentsList(galn[8:10], galn[3000:3002])
-gr <- GRanges(c("seq1", "seq1", "seq2"), 
-              IRanges(c(15, 18, 1233), width=1),
-              strand=c("-", "+", "+"))
-
-countOverlaps(galist, gr)
-countOverlaps(galist, gr, ignore.strand=TRUE)
-findOverlaps(galist, gr)
-findOverlaps(galist, gr, ignore.strand=TRUE)
 }
 
 \keyword{methods}
