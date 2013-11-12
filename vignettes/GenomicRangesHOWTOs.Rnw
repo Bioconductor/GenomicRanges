@@ -71,9 +71,6 @@ of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
 for details.
 
 <<load, results=hide>>=
-library(GenomicRanges)
-library(Rsamtools)
-library(GenomicAlignments)
 library(pasillaBamSubset)
 un1 <- untreated1_chr4() ## single-end reads
 @
@@ -88,13 +85,14 @@ Several functions are available for reading BAM files into \R{}:
 \end{verbatim}
 
 \Rfunction{scanBam} is a low-level function that returns a list of lists
-and is not discussed further here. For details see ?\Rfunction{scanBam}.
+and is not discussed further here. For details see ?\Rfunction{scanBam}
+in the \Rpackage{Rsamtools} package.
 
 \subsection{Single-end reads}
 Single-end reads can be loaded with the \Rfunction{readGAlignments} function.
 
 <<readGAlignments>>=
-un1 <- untreated1_chr4()
+library(GenomicAlignments)
 gal <- readGAlignments(un1)
 @
 
@@ -223,8 +221,6 @@ a single-end BAM (untreated1\_chr4) and a paired-end BAM
 experiment. See ?\Biocpkg{pasillaBamSubset} for details.
 
 <<load, results=hide>>=
-library(GenomicRanges)
-library(Rsamtools)
 library(pasillaBamSubset)
 un1 <- untreated1_chr4() ## single-end records
 @
@@ -247,6 +243,7 @@ See ?\Rfunction{summarizeOverlaps} for details reguarding the
 count \Rcode{modes} and additional arguments. 
 
 <<count_2>>=
+library(GenomicAlignments)
 se <- summarizeOverlaps(exbygene, un1, mode="IntersectionNotEmpty")
 @
 

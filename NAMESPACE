@@ -126,7 +126,6 @@ export(
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,
     countCompatibleOverlaps,
-    Union, IntersectionNotEmpty, IntersectionStrict,
 
     keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels
 )
