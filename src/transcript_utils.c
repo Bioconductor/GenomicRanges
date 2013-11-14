@@ -144,7 +144,7 @@ static int tloc2rloc(int tloc,
 }
 
 
-static int copy_exon(char * out, const cachedCharSeq *in,
+static int copy_exon(char * out, const Chars_holder *in,
 		int start, int end, int on_minus_strand, SEXP lkup)
 {
 	int width;
@@ -165,7 +165,7 @@ static int copy_exon(char * out, const cachedCharSeq *in,
 	return width;
 }
 
-static void copy_transcript(char * out, const cachedCharSeq *in,
+static void copy_transcript(char * out, const Chars_holder *in,
 		SEXP starts, SEXP ends,
 		int on_minus_strand, int decreasing_rank_on_minus_strand,
 		SEXP lkup)
@@ -258,21 +258,21 @@ SEXP extract_transcripts(SEXP classname, SEXP x,
 		SEXP exonStarts, SEXP exonEnds, SEXP strand,
 		SEXP decreasing_rank_on_minus_strand, SEXP lkup)
 {
-	cachedCharSeq X, Y;
+	Chars_holder X, Y;
 	SEXP ans_width, ans, starts, ends;
-	cachedXVectorList cached_ans;
+	XVectorList_holder ans_holder;
 	int decreasing_rank_on_minus_strand0, ans_length,
 	    i, on_minus_strand;
 
-	X = cache_XRaw(x);
+	X = hold_XRaw(x);
 	decreasing_rank_on_minus_strand0 =
 		LOGICAL(decreasing_rank_on_minus_strand)[0];
 	PROTECT(ans_width = mk_transcript_widths(exonStarts,
 					exonEnds, X.length));
 	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
 					get_classname(x), ans_width));
-	cached_ans = cache_XVectorList(ans);
-	ans_length = get_cachedXVectorList_length(&cached_ans);
+	ans_holder = hold_XVectorList(ans);
+	ans_length = get_length_from_XVectorList_holder(&ans_holder);
 	for (i = 0; i < ans_length; i++) {
 		starts = VECTOR_ELT(exonStarts, i);
 		if (starts == R_NilValue || LENGTH(starts) == 0)
@@ -283,7 +283,7 @@ SEXP extract_transcripts(SEXP classname, SEXP x,
 			UNPROTECT(2);
 			error("%s", errmsg_buf);
 		}
-		Y = get_cachedXRawList_elt(&cached_ans, i);
+		Y = get_elt_from_XRawList_holder(&ans_holder, i);
 		/* Y.seq is a const char * so we need to cast it to
 		   char * before we can write to it */
 		copy_transcript((char *) Y.seq, &X,
