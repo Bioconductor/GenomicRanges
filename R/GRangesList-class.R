@@ -689,9 +689,27 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   matching <- new("Hits",
                   queryHits = qhits, subjectHits = toInd,
                   queryLength = length(from), subjectLength = length(to))
-  space <- names(to)[toInd]
-  if (is.null(space))
-    space <- as.character(seq_len(length(to))[subjectHits(ol)])
+  space <- seqnames(gr)[shits]
   new("RangesMapping", hits = matching, ranges = local,
       space = Rle(space))
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### matching
+### 
+
+setMethod("match", c("GRangesList", "GRangesList"), function(x, table) {
+  m <- findMatches(unlist(table, use.names=FALSE), unlist(x, use.names=FALSE))
+  x.part <- PartitioningByWidth(x)
+  table.part <- PartitioningByWidth(table)
+  x.hits <- togroup(x.part)[subjectHits(m)]
+  table.hits <- togroup(table.part)[queryHits(m)]
+  sm <- IRanges:::selfmatchIntegerPairs(x.hits, table.hits)
+  tab <- tabulate(sm, length(sm))
+  x.len <- width(x.part)[x.hits]
+  table.len <- width(table.part)[table.hits]
+  matched <- tab == x.len & tab == table.len
+  ans <- rep(NA, length(x))
+  ans[rev(x.hits[matched])] <- rev(table.hits[matched])
+  ans
 })
