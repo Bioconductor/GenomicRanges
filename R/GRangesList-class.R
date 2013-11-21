@@ -699,6 +699,9 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
 ### 
 
 setMethod("match", c("GRangesList", "GRangesList"), function(x, table) {
+  ### FIXME: broken because we need to check for duplications in the pairs:
+  ### (subjectHits(m), table.hits) or
+  ### (queryHits(m), x.hits)
   m <- findMatches(unlist(table, use.names=FALSE), unlist(x, use.names=FALSE))
   x.part <- PartitioningByWidth(x)
   table.part <- PartitioningByWidth(table)
