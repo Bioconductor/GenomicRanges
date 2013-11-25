@@ -241,8 +241,8 @@ queryLocs2refLocs(qlocs, cigar, pos=1L, flag=NULL)
   with 1 list element per element in \code{cigar}.
   However, if \code{f} is a factor, then the returned
   \link[IRanges]{IRangesList} object can be a \link[IRanges]{SimpleIRangesList}
-  object (instead of \link[IRanges]{CompressedIRangesList}), and it has
-  1 list element per level in \code{f} and is named with those levels.
+  object (instead of \link[IRanges]{CompressedIRangesList}), and in that case,
+  has 1 list element per level in \code{f} and is named with those levels.
 
   For \code{cigarWidthAlongReferenceSpace} and
   \code{cigarWidthAlongPairwiseSpace}: An integer vector of the same
