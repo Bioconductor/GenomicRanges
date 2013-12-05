@@ -289,7 +289,8 @@ setReplaceMethod("ranges", "GRangesList",
 }
 setReplaceMethod("strand", "GRangesList", .replaceStrandList)
 
-.replaceElementMetadataList <- 
+### NOT exported but used in GenomicAlignments package.
+replaceElementMetadataList <- 
     function(x, level = c("between", "within"), ..., value)
 {
         level <- match.arg(level)
@@ -323,7 +324,7 @@ setReplaceMethod("strand", "GRangesList", .replaceStrandList)
     }
     x
 }
-setReplaceMethod("elementMetadata", "GRangesList", .replaceElementMetadataList)
+setReplaceMethod("elementMetadata", "GRangesList", replaceElementMetadataList)
 
 .replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE, value)
 {
