@@ -161,7 +161,8 @@ setMethod("updateObject", "GRangesList",
 ### Coercion.
 ###
 
-.GRangesListAsdataframe <- function(x, row.names=NULL, optional=FALSE, ...)
+### NOT exported but used in GenomicAlignments package.
+GRangesListAsdataframe <- function(x, row.names=NULL, optional=FALSE, ...)
 {
     if (missing(row.names))
         row.names <- names(x@unlistData)
@@ -174,7 +175,7 @@ setMethod("updateObject", "GRangesList",
                              row.names = row.names),
                stringsAsFactors = FALSE)
 }
-setMethod("as.data.frame", "GRangesList", .GRangesListAsdataframe)
+setMethod("as.data.frame", "GRangesList", GRangesListAsdataframe)
 
 .GRangesListAsCompressedIRangesList <- function(from)
 {
