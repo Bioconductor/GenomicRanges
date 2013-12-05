@@ -93,8 +93,9 @@
   records corresponding to a multi-read will show up in the GAlignments
   object as if they were coming from different/unrelated queries.
   Also paired-end reads will be treated as single-end reads and the
-  pairing information will be lost (see \code{?\link{GAlignmentPairs}}
-  for how to handle aligned paired-end reads).
+  pairing information will be lost (see
+  \code{?\link[GenomicAlignments]{GAlignmentPairs}} in the
+  \pkg{GenomicAlignments} package for how to handle aligned paired-end reads).
 
   Each element of a GAlignments object consists of:
   \itemize{
@@ -370,9 +371,10 @@
       length is less than (or equal to) the sum of these 2 options
       plus 1, then the full object is displayed.
       Note that these options also affect the display of \link{GRanges}
-      and \link{GAlignmentPairs} objects, as well as other objects defined
-      in the IRanges and Biostrings packages (e.g. \link[IRanges]{Ranges}
-      and \link[Biostrings]{XStringSet} objects).
+      and \link[GenomicAlignments]{GAlignmentPairs} objects, as well as
+      other objects defined in the IRanges and Biostrings packages
+      (e.g. \link[IRanges]{Ranges} and \link[Biostrings]{DNAStringSet}
+      objects).
     }
   }
 }
@@ -387,7 +389,7 @@
 
 \seealso{
   \itemize{
-    \item \link{GAlignmentPairs-class}.
+    \item \link[GenomicAlignments]{GAlignmentPairs} objects.
     \item \code{\link[GenomicAlignments]{readGAlignments}}.
     \item \link{GRangesList-class}.
     \item \link{GRanges-class}.

@@ -15,8 +15,8 @@
   analyzed for the presence of novel splice events.
 
   NOTE: \code{findSpliceOverlaps} methods for \link{GAlignments},
-  \link{GAlignmentPairs}, and \link[Rsamtools]{BamFile} objects are defined
-  and documented in the \pkg{GenomicAlignments} package.
+  \link[GenomicAlignments]{GAlignmentPairs}, and \link[Rsamtools]{BamFile}
+  objects are defined and documented in the \pkg{GenomicAlignments} package.
   Methods for \link[GenomicFeatures]{TranscriptDb} objects are defined and
   documented in the \pkg{GenomicFeatures} package.
 }

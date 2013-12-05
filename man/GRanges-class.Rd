@@ -424,7 +424,7 @@
       length is less than (or equal to) the sum of these 2 options
       plus 1, then the full object is displayed.
       Note that these options also affect the display of
-      \link[GenomicAlignments]{GAlignments} and
+      \link{GAlignments} and
       \link[GenomicAlignments]{GAlignmentPairs} objects (defined in
       the \pkg{GenomicAlignments}), as well as other objects defined
       in the \pkg{IRanges} and \pkg{Biostrings} packages (e.g.
