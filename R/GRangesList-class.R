@@ -244,7 +244,8 @@ setMethod("elementMetadata", "GRangesList", getElementMetadataList)
 
 setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
 
-.replaceSeqnamesList <- function(x, value)
+### NOT exported but used in GenomicAlignments package.
+replaceSeqnamesList <- function(x, value)
 {
     if (!is(value, "AtomicList") ||
         !identical(elementLengths(x), elementLengths(value)))
@@ -258,7 +259,7 @@ setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
     seqnames(x@unlistData) <- value
     x
 }
-setReplaceMethod("seqnames", "GRangesList", .replaceSeqnamesList)
+setReplaceMethod("seqnames", "GRangesList", replaceSeqnamesList)
 
 setReplaceMethod("ranges", "GRangesList",
     function(x, value) 
@@ -327,7 +328,8 @@ replaceElementMetadataList <-
 }
 setReplaceMethod("elementMetadata", "GRangesList", replaceElementMetadataList)
 
-.replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE, value)
+### NOT exported but used in GenomicAlignments package.
+replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE, value)
 {
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
@@ -341,7 +343,7 @@ setReplaceMethod("elementMetadata", "GRangesList", replaceElementMetadataList)
     seqinfo(x@unlistData, new2old=new2old) <- value
     x
 }
-setReplaceMethod("seqinfo", "GRangesList", .replaceSeqinfoList)
+setReplaceMethod("seqinfo", "GRangesList", replaceSeqinfoList)
 
 setMethod("score", "GRangesList", function(x) {
   mcols(x)$score
