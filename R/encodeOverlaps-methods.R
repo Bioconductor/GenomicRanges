@@ -75,6 +75,7 @@
 ### Works on GRanges and GAlignments objects. More generally, it should
 ### work on any object that has: (1) a strand() getter that returns a
 ### 'factor'-Rle, and (2) a strand() setter.
+### NOT exported but used in GenomicAlignments package.
 invertRleStrand <- function(x)
 {
     x_strand <- strand(x)

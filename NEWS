@@ -5,7 +5,7 @@ NEW FEATURES
 
     o Add coercion from GenomicRangesList to RangedDataList.
 
-    o Add "c" method for GAlignmentsPairs objects. 
+    o Add "c" method for GAlignmentPairs objects. 
 
     o Add coercion from GAlignmentPairs to GAlignmentsList. 
 

@@ -64,21 +64,6 @@ GRangesList <- function(...)
     relist(unlistData, PartitioningByEnd(listData))
 }
 
-### TODO: Use this in GenomicFeatures::transcriptLocs2refLocs() and remove
-### GenomicFeatures:::.normargExonStartsOrEnds().
-.normargListOfIntegers <- function(arg, sep, argname) 
-{
-    if (is.list(arg)) 
-        return(arg)
-    if (is(arg, "IntegerList")) 
-        return(as.list(arg))
-    if (is.character(arg)) 
-        return(strsplitAsListOfIntegerVectors(arg, sep=sep))
-    stop("'", argname, "' must be a list of integer vectors, ", 
-        "an IntegerList object,\n  or a character vector where ", 
-        "each element is a comma-separated list of\n  integers")
-}
-
 ### Typically, the field values will come from a file that needs to be loaded
 ### into a data.frame first.
 makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
@@ -88,13 +73,13 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
                                                 strand=character(0),
                                                 sep=",")
 {
-    fragmentStarts <- .normargListOfIntegers(fragmentStarts, sep,
-                                             "fragmentStarts")
+    fragmentStarts <- normargListOfIntegers(fragmentStarts, sep,
+                                            "fragmentStarts")
     nfrag_per_feature <- elementLengths(fragmentStarts)
     start <- unlist(fragmentStarts, recursive=FALSE, use.names=FALSE)
 
-    fragmentEnds <- .normargListOfIntegers(fragmentEnds, sep,
-                                           "fragmentEnds")
+    fragmentEnds <- normargListOfIntegers(fragmentEnds, sep,
+                                          "fragmentEnds")
     nend_per_elt <- elementLengths(fragmentEnds)
     if (length(nend_per_elt) != 0L) {
         if (length(nfrag_per_feature) == 0L)
@@ -105,8 +90,8 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
     }
     end <- unlist(fragmentEnds, recursive=FALSE, use.names=FALSE)
 
-    fragmentWidths <- .normargListOfIntegers(fragmentWidths, sep,
-                                             "fragmentWidths")
+    fragmentWidths <- normargListOfIntegers(fragmentWidths, sep,
+                                            "fragmentWidths")
     nwidth_per_elt <- elementLengths(fragmentWidths)
     if (length(nwidth_per_elt) != 0L) {
         if (length(nfrag_per_feature) == 0L)
@@ -492,12 +477,8 @@ setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 ### show method.
 ###
 
-setMethod("show", "GRangesList",
-    function(object)
-        .showList(object, showGenomicRanges, TRUE)
-)
-
-.showList <- function(object, showFunction, with.classinfo, ...)
+### NOT exported but used in GenomicAlignments package.
+showList <- function(object, showFunction, with.classinfo, ...)
 {
     k <- length(object)
     cumsumN <- cumsum(elementLengths(object))
@@ -558,6 +539,12 @@ setMethod("show", "GRangesList",
     cat("---\n")
     showSeqlengths(object)
 }
+
+setMethod("show", "GRangesList",
+    function(object)
+        showList(object, showGenomicRanges, TRUE)
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Deconstruction/reconstruction of a GRangesList into/from a GRanges

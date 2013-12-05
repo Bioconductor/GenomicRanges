@@ -15,8 +15,7 @@ exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList, GIntervalTree,
     GenomicRangesORGRangesList,
-    GAlignments, GAlignmentPairs,
-    GappedAlignments, GappedAlignmentPairs,  # old names
+    GAlignments, GappedAlignments,
     SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -117,9 +116,7 @@ export(
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
     tileGenome,
-    GAlignments,
-    GAlignmentPairs,
-    GappedAlignments, GappedAlignmentPairs,  # old names
+    GAlignments, GappedAlignments, 
     flipQuery,
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,
@@ -154,9 +151,6 @@ export(
     rname, "rname<-", cigar, qwidth,
     grglist, granges, introns, rglist,
 
-    ## GAlignmentPairs-class.R:
-    first, last, left, right, isProperPair,
-
     ## SummarizedExperiment-class.R:
     SummarizedExperiment,
     exptData, "exptData<-",
@@ -188,7 +182,6 @@ exportMethods(
     seqnameStyle, "seqnameStyle<-",
     rname, "rname<-", cigar, qwidth,
     grglist, granges, introns, rglist,
-    first, last, left, right, isProperPair,
     SummarizedExperiment,
     exptData, "exptData<-",
     rowData, "rowData<-",

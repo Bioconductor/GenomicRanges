@@ -423,15 +423,17 @@
       \code{showHeadLines} and \code{showTailLines}. If the object
       length is less than (or equal to) the sum of these 2 options
       plus 1, then the full object is displayed.
-      Note that these options also affect the display of \link{GAlignments}
-      and \link{GAlignmentPairs} objects, as well as other objects defined
-      in the IRanges and Biostrings packages (e.g. \link[IRanges]{Ranges}
-      and \link[Biostrings]{XStringSet} objects).
+      Note that these options also affect the display of
+      \link[GenomicAlignments]{GAlignments} and
+      \link[GenomicAlignments]{GAlignmentPairs} objects (defined in
+      the \pkg{GenomicAlignments}), as well as other objects defined
+      in the \pkg{IRanges} and \pkg{Biostrings} packages (e.g.
+      \link[IRanges]{IRanges} and \link[Biostrings]{DNAStringSet} objects).
     }
   }
 }
 
-\author{P. Aboyoun}
+\author{P. Aboyoun and H. Pages}
 
 \seealso{
   \code{\link{makeGRangesFromDataFrame}},

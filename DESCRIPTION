@@ -44,7 +44,6 @@ Collate: utils.R
 	makeGRangesFromDataFrame.R
 	tileGenome.R
 	GAlignments-class.R
-	GAlignmentPairs-class.R
 	SummarizedExperiment-class.R
 	SummarizedExperiment-rowData-methods.R
 	seqlevels-utils.R

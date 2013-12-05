@@ -3,21 +3,20 @@
 
 \alias{coverage,GenomicRanges-method}
 \alias{coverage,GRangesList-method}
-\alias{coverage,GAlignments-method}
-\alias{coverage,GAlignmentPairs-method}
 
 
-\title{Coverage of a GRanges, GRangesList, GAlignments, or
-       GAlignmentPairs object}
+\title{Coverage of a GRanges or GRangesList object}
 
 \description{
-  \code{\link[IRanges]{coverage}} methods for \link{GRanges},
-  \link{GRangesList}, \link{GAlignments}, and \link{GAlignmentPairs}
-  objects.
+  \code{\link[IRanges]{coverage}} methods for \link{GRanges} and
+  \link{GRangesList} objects.
 
   NOTE: The \code{\link[IRanges]{coverage}} generic function and methods
   for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
   are defined and documented in the \pkg{IRanges} package.
+  Methods for \link{GAlignments} and
+  \link[GenomicAlignments]{GAlignmentPairs} objects are defined and
+  documented in the \pkg{GenomicAlignments} package.
 }
 
 \usage{
@@ -26,18 +25,11 @@
 
 \S4method{coverage}{GRangesList}(x, shift=0L, width=NULL, weight=1L,
             method=c("auto", "sort", "hash"))
-
-\S4method{coverage}{GAlignments}(x, shift=0L, width=NULL, weight=1L,
-            method=c("auto", "sort", "hash"), drop.D.ranges=FALSE)
-
-\S4method{coverage}{GAlignmentPairs}(x, shift=0L, width=NULL, weight=1L,
-            method=c("auto", "sort", "hash"), drop.D.ranges=FALSE)
 }
 
 \arguments{
   \item{x}{
-    A \link{GRanges}, \link{GRangesList}, \link{GAlignments},
-    or \link{GAlignmentPairs} object.
+    A \link{GRanges} or \link{GRangesList} object.
   }
   \item{shift}{
     A numeric vector or a list-like object. If numeric, it must be parallel
@@ -78,19 +70,11 @@
     See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
     for a description of this argument.
   }
-  \item{drop.D.ranges}{
-    Whether the coverage calculation should ignore ranges corresponding
-    to D (deletion) in the CIGAR string.
-  }
 }
 
 \details{
   When \code{x} is a \link{GRangesList} object, \code{coverage(x, ...)}
   is equivalent to \code{coverage(unlist(x), ...)}.
-
-  When \code{x} is a \link{GAlignments} or \link{GAlignmentPairs}
-  object, \code{coverage(x, ...)} is equivalent to
-  \code{coverage(grglist(x), ...)}.
 }
 
 \value{
@@ -102,12 +86,14 @@
 
 \seealso{
   \itemize{
-    \item \code{\link[IRanges]{coverage}}.
-    \item \link[IRanges]{RleList-class}.
-    \item \link{GRanges-class}.
-    \item \link{GRangesList-class}.
-    \item \link{GAlignments-class}.
-    \item \link{GAlignmentPairs-class}.
+    \item \code{\link[IRanges]{coverage}} in the \pkg{IRanges} package.
+
+    \item \link[GenomicAlignments]{coverage-methods} in the
+          \pkg{GenomicAlignments} package.
+
+    \item \link[IRanges]{RleList} objects in the \pkg{IRanges} package.
+
+    \item \link{GRanges} and \link{GRangesList} objects.
   }
 }
 
@@ -136,17 +122,6 @@ gr3 <- GRanges(seqnames=c("chr1", "chr2"),
                strand=c("-", "-"))
 grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 stopifnot(identical(coverage(grl), coverage(unlist(grl))))
-
-## Coverage of a GAlignments or GAlignmentPairs object:
-library(Rsamtools)  # for the ex1.bam file
-library(GenomicAlignments)  # for readGAlignments()
-                            # and readGAlignmentPairs()
-
-ex1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGAlignments(ex1_file)
-stopifnot(identical(coverage(galn), coverage(as(galn, "GRangesList"))))
-galp <- readGAlignmentPairs(ex1_file)
-stopifnot(identical(coverage(galp), coverage(as(galp, "GRangesList"))))
 }
 
 \keyword{methods}

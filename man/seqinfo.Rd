@@ -144,14 +144,17 @@ seqnameStyle(x) <- value
         a \code{seqinfo} setter, then all the corresponding setters will
         also work out-of-the-box.
 
-        See the \link{GRanges}, \link{GRangesList}, \link{GAlignments},
-        and \link{GAlignmentPairs} classes for examples of classes that
-        define the \code{seqinfo} getter and setter (those 4 classes are
-        defined in the GenomicRanges package).
-
-        See the \link[GenomicFeatures]{TranscriptDb} class (defined in the
-        GenomicFeatures package) for an example of a class that defines only
-        the \code{seqinfo} getter (no setter).
+        Examples of containers that have a \code{seqinfo} getter and setter:
+        the \link{GRanges}, \link{GRangesList}, and \link{SummarizedExperiment}
+        classes in the \pkg{GenomicRanges} package;
+        the \link[GenomicAlignments]{GAlignments},
+        \link[GenomicAlignments]{GAlignmentPairs},
+        and \link[GenomicAlignments]{GAlignmentsList} classes in the
+        \pkg{GenomicAlignments} package;
+        the \link[GenomicFeatures]{TranscriptDb} class in the
+        \pkg{GenomicFeatures} package;
+        the \link[BSgenome]{BSgenome} class in the
+        \pkg{BSgenome} package; etc...
       }
 
       The GenomicRanges package defines \code{seqinfo} and
@@ -181,14 +184,20 @@ seqnameStyle(x) <- value
 
 \seealso{
   \itemize{
-    \item \link{Seqinfo-class}.
+    \item \link{Seqinfo} objects.
 
-    \item \link{GRanges}, \link{GRangesList}, \link{SummarizedExperiment},
-          \link{GAlignments}, \link{GAlignmentPairs},
-          \link[GenomicAlignments]{GAlignmentsList},
-          and \link[GenomicFeatures]{TranscriptDb}, for examples
-          of objects on which the functions described in this man page
-          work.
+    \item \link{GRanges}, \link{GRangesList}, and \link{SummarizedExperiment}
+          objects in the \pkg{GenomicRanges} package.
+
+    \item \link[GenomicAlignments]{GAlignments},
+          \link[GenomicAlignments]{GAlignmentPairs},
+          and \link[GenomicAlignments]{GAlignmentsList} objects in the
+          \pkg{GenomicAlignments} package.
+
+    \item \link[GenomicFeatures]{TranscriptDb} objects in the
+          \pkg{GenomicFeatures} package.
+
+    \item \link[BSgenome]{BSgenome} objects in the \pkg{BSgenome} package.
 
     \item \link{seqlevels-utils} for convenience wrappers to the
           \code{seqlevels} getter and setter.

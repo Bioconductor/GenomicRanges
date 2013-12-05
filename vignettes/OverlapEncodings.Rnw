@@ -96,7 +96,6 @@ template names}, see QNAME field in the SAM Spec) from the BAM file
 object):
 
 <<readGAlignments>>=
-library(GenomicRanges)
 library(GenomicAlignments)
 flag0 <- scanBamFlag(isDuplicate=FALSE, isNotPassingQualityControls=FALSE)
 param0 <- ScanBamParam(flag=flag0)
