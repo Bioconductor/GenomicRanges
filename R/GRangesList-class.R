@@ -219,7 +219,8 @@ setMethod("strand", "GRangesList",
              unlistData = x@unlistData@strand, partitioning = x@partitioning,
              check=FALSE))
 
-.getElementMetadataList <- 
+### NOT exported but used in GenomicAlignments package.
+getElementMetadataList <- 
     function(x, use.names=FALSE, level = c("between", "within"), ...)
 {
     if (!isTRUEorFALSE(use.names))
@@ -239,7 +240,7 @@ setMethod("strand", "GRangesList",
     }
     ans
 }
-setMethod("elementMetadata", "GRangesList", .getElementMetadataList)
+setMethod("elementMetadata", "GRangesList", getElementMetadataList)
 
 setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
 
