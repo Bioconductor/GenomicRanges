@@ -45,7 +45,6 @@ Collate: utils.R
 	tileGenome.R
 	GAlignments-class.R
 	GAlignmentPairs-class.R
-	GAlignmentsList-class.R
 	SummarizedExperiment-class.R
 	SummarizedExperiment-rowData-methods.R
 	seqlevels-utils.R

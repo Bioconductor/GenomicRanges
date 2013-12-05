@@ -15,7 +15,7 @@ exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList, GIntervalTree,
     GenomicRangesORGRangesList,
-    GAlignments, GAlignmentPairs, GAlignmentsList,
+    GAlignments, GAlignmentPairs,
     GappedAlignments, GappedAlignmentPairs,  # old names
     SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
@@ -117,11 +117,9 @@ export(
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
     tileGenome,
-    makeGAlignmentsListFromFeatureFragments,
     GAlignments,
     GAlignmentPairs,
     GappedAlignments, GappedAlignmentPairs,  # old names
-    GAlignmentsList, 
     flipQuery,
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,

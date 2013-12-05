@@ -74,7 +74,7 @@
   for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
   are defined and documented in the \pkg{IRanges} package.
   The methods for \link{GAlignments}, \link{GAlignmentPairs}, and
-  \link{GAlignmentsList} objects are defined and
+  \link[GenomicAlignments]{GAlignmentsList} objects are defined and
   documented in the \pkg{GenomicAlignments} package.
 }
 

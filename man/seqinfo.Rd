@@ -183,9 +183,9 @@ seqnameStyle(x) <- value
   \itemize{
     \item \link{Seqinfo-class}.
 
-    \item \link{GRanges}, \link{GRangesList},
+    \item \link{GRanges}, \link{GRangesList}, \link{SummarizedExperiment},
           \link{GAlignments}, \link{GAlignmentPairs},
-          \link{GAlignmentsList}, \link{SummarizedExperiment},
+          \link[GenomicAlignments]{GAlignmentsList},
           and \link[GenomicFeatures]{TranscriptDb}, for examples
           of objects on which the functions described in this man page
           work.
