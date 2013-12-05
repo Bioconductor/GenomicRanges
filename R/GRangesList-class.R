@@ -272,7 +272,8 @@ setReplaceMethod("ranges", "GRangesList",
     }
 )
 
-.replaceStrandList <- function(x, value)
+### NOT exported but used in GenomicAlignments package.
+replaceStrandList <- function(x, value)
 {
     if (!is(value, "AtomicList") ||
         !identical(elementLengths(x), elementLengths(value)))
@@ -287,7 +288,7 @@ setReplaceMethod("ranges", "GRangesList",
     strand(x@unlistData) <- value
     x
 }
-setReplaceMethod("strand", "GRangesList", .replaceStrandList)
+setReplaceMethod("strand", "GRangesList", replaceStrandList)
 
 ### NOT exported but used in GenomicAlignments package.
 replaceElementMetadataList <- 
