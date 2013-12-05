@@ -3,56 +3,68 @@
 \alias{intra-range-methods}
 
 \alias{shift,GenomicRanges-method}
+\alias{shift,GRangesList-method}
 \alias{narrow,GenomicRanges-method}
-\alias{narrow,GAlignments-method}
-\alias{narrow,GAlignmentsList-method}
 \alias{flank,GenomicRanges-method}
+\alias{flank,GRangesList-method}
 \alias{promoters,GenomicRanges-method}
+\alias{promoters,GRangesList-method}
 \alias{resize,GenomicRanges-method}
-\alias{Ops,GenomicRanges,numeric-method}
 \alias{restrict,GenomicRanges-method}
+\alias{restrict,GRangesList-method}
 \alias{trim,GenomicRanges-method}
 
+\alias{Ops,GenomicRanges,numeric-method}
 
-\title{Intra range transformations of a GenomicRanges object}
+
+\title{Intra range transformations of a GRanges or GRangesList object}
 
 \description{
-  See \code{?`\link[IRanges]{intra-range-methods}`} and
-  \code{?`\link[IRanges]{inter-range-methods}`} in the IRanges package
-  for a quick introduction to intra range and inter range transformations.
-
   This man page documents intra range transformations of a
   \link{GenomicRanges} object (i.e. of an object that belongs to the
   \link{GenomicRanges} class or one of its subclasses, this includes
-  for example \link{GRanges} objects). 
+  for example \link{GRanges} objects), or a \link{GRangesList} object.
+
+  See \code{?`\link[IRanges]{intra-range-methods}`} and
+  \code{?`\link[IRanges]{inter-range-methods}`} in the \pkg{IRanges}
+  package for a quick introduction to intra range and inter range
+  transformations.
+
+  Intra range methods for \link{GAlignments} and \link{GAlignmentsList}
+  objects are defined and documented in the \pkg{GenomicAlignments} package.
 
   See \code{?`\link[GenomicRanges]{inter-range-methods}`} for
-  inter range transformations of a GenomicRanges object.
+  inter range transformations of a \link{GenomicRanges} or
+  \link{GRangesList} object.
 }
 
 \usage{
 \S4method{shift}{GenomicRanges}(x, shift=0L, use.names=TRUE)
+\S4method{shift}{GRangesList}(x, shift=0L, use.names=TRUE)
 
 \S4method{narrow}{GenomicRanges}(x, start=NA, end=NA, width=NA, use.names=TRUE)
-\S4method{narrow}{GAlignments}(x, start=NA, end=NA, width=NA, use.names=TRUE)
-\S4method{narrow}{GAlignmentsList}(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE,
-        use.names=TRUE, ignore.strand=FALSE)
+      use.names=TRUE, ignore.strand=FALSE)
+\S4method{flank}{GRangesList}(x, width, start=TRUE, both=FALSE,
+      use.names=TRUE, ignore.strand=FALSE)
 
 \S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, ...)
+\S4method{promoters}{GRangesList}(x, upstream=2000, downstream=200, ...)
 
 \S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE,
-        ignore.strand=FALSE)
+       ignore.strand=FALSE)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE,
-        use.names=TRUE)
+         use.names=TRUE)
+\S4method{restrict}{GRangesList}(x, start=NA, end=NA, keep.all.ranges=FALSE,
+         use.names=TRUE)
 
 \S4method{trim}{GenomicRanges}(x, use.names=TRUE)
 }
 
 \arguments{
-  \item{x}{A \link{GenomicRanges} object.}
+  \item{x}{A \link{GenomicRanges} or \link{GRangesList} object.}
   \item{shift, use.names, start, end, width, both, fix, keep.all.ranges,
         upstream, downstream}{
     See \code{?`\link[IRanges]{intra-range-methods}`}.
@@ -72,19 +84,14 @@
       \link[IRanges]{Ranges} objects. See 
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
-    \item(){\code{narrow} on GenomicRanges objects behaves like the 
-      \code{narrow} method for \link[IRanges]{Ranges} objects. See 
+    \item(){\code{narrow} on a \link{GenomicRanges} object behaves
+      like on a \link[IRanges]{Ranges} object. See 
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
 
-      When \code{x} is a \link{GAlignments} object, \code{narrow(x)} 
-      returns a new \link{GAlignments} object of the length of \code{x}
-      describing the narrowed alignments. Unlike with \code{qnarrow}
-      now the \code{start}/\code{end}/\code{width} arguments describe
-      the narrowing on the reference side, not the query side.
-      Like with \code{qnarrow}, they must be vectors of integers.
-      NAs and negative values are accepted and "solved" according to the
-      rules of the SEW (Start/End/Width) interface (see
-      \code{?\link[IRanges]{solveUserSEW}} for the details).
+      A major difference though is that it returns a \link{GenomicRanges}
+      object instead of a \link[IRanges]{Ranges} object.
+      The returned object is \emph{parallel} (i.e. same length and names)
+      to the original object \code{x}.
     }
     \item{}{\code{flank} returns an object of the same type and length 
       as \code{x} containing intervals of width \code{width} that flank 
@@ -146,14 +153,17 @@
 
 \seealso{
   \itemize{
-    \item The \link{GenomicRanges} and \link{GRanges} classes.
-    \item The \link[IRanges]{Ranges} class in the IRanges package.
+    \item \link{GenomicRanges}, \link{GRanges}, and \link{GRangesList} objects.
     \item The \link[IRanges]{intra-range-methods} man page in the
-          IRanges package.
+          \pkg{IRanges} package.
+    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
   }
 }
 
 \examples{
+## ---------------------------------------------------------------------
+## A. ON A GRanges OBJECT
+## ---------------------------------------------------------------------
 gr <- GRanges(
         seqnames=Rle(paste("chr", c(1, 2, 1, 3), sep=""), c(1, 3, 2, 4)),
         ranges=IRanges(1:10, width=10:1, names=letters[1:10]),
@@ -171,6 +181,22 @@ restrict(gr, start=3, end=7)
 
 gr <- GRanges("chr1", IRanges(rep(10, 3), width=6), c("+", "-", "*"))
 promoters(gr, 2, 2)
+
+## ---------------------------------------------------------------------
+## B. ON A GRangesList OBJECT
+## ---------------------------------------------------------------------
+gr1 <- GRanges("chr2", IRanges(3, 6))
+gr2 <- GRanges(c("chr1", "chr1"), IRanges(c(7,13), width=3),
+               strand=c("+", "-"))
+gr3 <- GRanges(c("chr1", "chr2"), IRanges(c(1, 4), c(3, 9)),
+               strand="-")
+grl <- GRangesList(gr1= gr1, gr2=gr2, gr3=gr3)
+grl
+
+flank(grl, width =20)
+
+restrict(grl, start=3)
 }
- 
+
+\keyword{methods}
 \keyword{utilities}

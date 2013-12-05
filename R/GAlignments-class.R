@@ -44,10 +44,6 @@ setClass("GAlignments",
 ###   GAlignments(x) - constructor.
 ###   x[i]        - GAlignments object of the same class as 'x' (endomorphism).
 ###
-###   updateCigarAndStart(x, cigar=NULL, start=NULL) - GAlignments
-###                 object of the same length and class as 'x' (endomorphism).
-###                 For internal use only (NOT EXPORTED).
-###
 ###   qnarrow(x, start=NA, end=NA, width=NA) - GAlignments object of the
 ###                 same length and class as 'x' (endomorphism).
 ###
@@ -72,14 +68,6 @@ setGeneric("rname<-", function(x, value) standardGeneric("rname<-"))
 setGeneric("cigar", function(x) standardGeneric("cigar"))
 
 setGeneric("qwidth", function(x) standardGeneric("qwidth"))
-
-setGeneric("updateCigarAndStart",  # not exported
-    function(x, cigar=NULL, start=NULL) standardGeneric("updateCigarAndStart")
-)
-
-setGeneric("qnarrow",
-    function(x, start=NA, end=NA, width=NA) standardGeneric("qnarrow")
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -746,55 +734,6 @@ setMethod("c", "GAlignments",
 setMethod("splitAsListReturnedClass", "GAlignments", 
     function(x) "GAlignmentsList"
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "updateCigarAndStart" method.
-###
-### Performs atomic update of the cigar/start information.
-### For internal use only (not exported).
-###
-
-setMethod("updateCigarAndStart", "GAlignments",  # not exported
-    function(x, cigar=NULL, start=NULL)
-    {
-        if (is.null(cigar)) {
-            cigar <- cigar(x)
-        } else {
-            if (!is.character(cigar) || length(cigar) != length(x))
-                stop("when not NULL, 'cigar' must be a character vector ",
-                     "of the same length as 'x'")
-            ## There might be an "rshift" attribute on 'cigar', typically.
-            ## We want to get rid of it as well as any other potential
-            ## attribute like names, dim, dimnames etc...
-            attributes(cigar) <- NULL
-        }
-        if (is.null(start))
-            start <- start(x)
-        else if (!is.integer(start) || length(start) != length(x))
-            stop("when not NULL, 'start' must be an integer vector ",
-                 "of the same length as 'x'")
-        x@cigar <- cigar
-        x@start <- start
-        x
-    }
-)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "qnarrow" method.
-###
-
-narrowGAlignments <- function(x, CIGAR_CUTTER, start, end, width)
-{
-    ans_cigar <- CIGAR_CUTTER(cigar(x), start=start, end=end, width=width)
-    ans_start <- start(x) + attr(ans_cigar, "rshift")
-    updateCigarAndStart(x, cigar=ans_cigar, start=ans_start)
-}
-
-setMethod("qnarrow", "GAlignments",
-    function(x, start=NA, end=NA, width=NA)
-        narrowGAlignments(x, cigarQNarrow, start, end, width)
-) 
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

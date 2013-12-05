@@ -108,11 +108,6 @@ test_GRangesList_RangesList <- function() {
     orig <- width(grl)
     width(grl) <- orig + 1L
     checkIdentical(width(grl), orig + 1L)
-
-    ## shift
-    grl <- make_test_GRangesList()
-    shifted <- shift(grl, 10)
-    checkIdentical(start(grl) + 10L, start(shifted))
 }
 
 test_GRangesList_Vector <- function() {

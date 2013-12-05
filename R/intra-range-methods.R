@@ -2,18 +2,10 @@
 ### Intra-range methods
 ### -------------------------------------------------------------------------
 ###
+### The methods implemented in this file should behave consistently with
+### those defined in IRanges intra-range-methods.R
+###
 
-### The methods documented in this page on this page are consistent with
-### those in IRanges intra-range-methods.R
-### shift()
-### narrow() 
-### flank()
-### reflect()
-### resize()
-### trim()
-### promoters()
-### restrict()
-### zoom()
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### shift()
@@ -43,6 +35,7 @@ setMethod("shift", "GRangesList",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### narrow()
 ###
@@ -57,19 +50,6 @@ setMethod("narrow", "GenomicRanges",
     }
 )
 
-setMethod("narrow", "GAlignments",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-        narrowGAlignments(x, cigarNarrow, start, end, width)
-)
-
-setMethod("narrow", "GAlignmentsList",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        gal <- narrow(x@unlistData, start=start, end=end, width=width,
-                      use.names=use.names)
-        relist(gal, x@partitioning)
-    }
-)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### flank()
@@ -107,6 +87,7 @@ setMethod("flank", "GRangesList",
                               ignore.strand = ignore.strand)
         x
     })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### promoters()
@@ -148,6 +129,7 @@ setMethod("promoters", "GRangesList",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reflect()
 ###
@@ -187,25 +169,6 @@ setMethod("resize", "GenomicRanges",
     }
 )
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### trim()
-###
-
-setMethod("trim", "GenomicRanges",
-    function(x, use.names=TRUE)
-    {
-        end <- NA_integer_ 
-        if (any(!is.na(seqlengths(x)))) {
-            seqlen <- seqlengths(x)
-            seqlen[isCircular(x) %in% TRUE] <- NA_integer_
-            idx <- match(as.character(seqnames(x)), names(seqlen))
-            end <- seqlen[idx]
-        }
-        x@ranges <- restrict(ranges(x), start=1L, end=end, 
-                             keep.all.ranges=TRUE, use.names=use.names)
-        x
-    }
-)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### restrict()
@@ -272,6 +235,28 @@ setMethod("restrict", "GRangesList",
                , use.names=use.names )
 
     })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### trim()
+###
+
+setMethod("trim", "GenomicRanges",
+    function(x, use.names=TRUE)
+    {
+        end <- NA_integer_ 
+        if (any(!is.na(seqlengths(x)))) {
+            seqlen <- seqlengths(x)
+            seqlen[isCircular(x) %in% TRUE] <- NA_integer_
+            idx <- match(as.character(seqnames(x)), names(seqlen))
+            end <- seqlen[idx]
+        }
+        x@ranges <- restrict(ranges(x), start=1L, end=end, 
+                             keep.all.ranges=TRUE, use.names=use.names)
+        x
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Zooming (symmetrically scales the width).

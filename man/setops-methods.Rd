@@ -13,8 +13,6 @@
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
 \alias{pintersect,GRangesList,GRangesList-method}
-\alias{pintersect,GAlignments,GRanges-method}
-\alias{pintersect,GRanges,GAlignments-method}
 
 \alias{psetdiff,GRanges,GRanges-method}
 \alias{psetdiff,GRanges,GRangesList-method}
@@ -22,10 +20,11 @@
 
 \alias{pgap,GRanges,GRanges-method}
 
-\title{Set operations on GRanges/GRangesList/GAlignments objects}
+
+\title{Set operations on GRanges and GRangesList objects}
 
 \description{
-  Performs set operations on GRanges/GRangesList/GAlignments objects.
+  Performs set operations on \link{GRanges} and \link{GRangesList} objects.
 }
 
 \usage{
@@ -37,7 +36,6 @@
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
 \S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ignore.strand=FALSE, ...)
-\S4method{pintersect}{GAlignments,GRanges}(x, y, ...)
 \S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 }
 
@@ -50,8 +48,7 @@
     object, the other one can be a \link{GRanges} or \link{GRangesList} object.
 
     For \code{pintersect}: one of \code{x} or \code{y} must be a \link{GRanges}
-    object, the other one can be a \link{GRanges}, \link{GRangesList} or
-    \link{GAlignments} object.
+    object, the other one can be a \link{GRanges} or \link{GRangesList} object.
 
     For \code{psetdiff}: \code{x} and \code{y} can be any combination of
     \link{GRanges} and/or \link{GRangesList} objects, with the exception

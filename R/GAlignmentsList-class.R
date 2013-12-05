@@ -365,14 +365,3 @@ setMethod("show", "GAlignmentsList",
         .showList(object, showGAlignments, FALSE)
 )
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "qnarrow" method.
-###
-
-setMethod("qnarrow", "GAlignmentsList",
-    function(x, start=NA, end=NA, width=NA) 
-    {
-        gal <- qnarrow(x@unlistData, start=start, end=end, width=width)
-        relist(gal, x@partitioning)
-    }
-)

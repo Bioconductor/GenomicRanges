@@ -89,7 +89,7 @@ test_GAlignmentsList_accessors <- function() {
     checkIdentical(mcols(GAList, level="within"), target)
 }
 
-test_GAlignments_subset_combine <- function()
+test_GAlignmentsList_subset_combine <- function()
 {
     galist <- GAList
     score <- 1:length(togroup(galist))
@@ -108,10 +108,3 @@ test_GAlignments_subset_combine <- function()
     checkIdentical(galist[c(TRUE, FALSE),], galist[1])
 }
 
-test_GAlignments_qnarrow <- function()
-{
-    galist <- GAlignmentsList(.noGaps[1:6], .Gaps)
-    qn <- qnarrow(galist, end=-4)
-    checkIdentical(qnarrow(galist[[1]], end=-4), qn[[1]])
-    checkIdentical(qnarrow(galist[[2]], end=-4), qn[[2]])
-}

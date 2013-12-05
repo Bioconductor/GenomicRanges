@@ -56,8 +56,6 @@
 \alias{show,GAlignments-method}
 
 % Other methods:
-\alias{qnarrow}
-\alias{qnarrow,GAlignments-method}
 \alias{splitAsListReturnedClass,GAlignments-method}
 
 % Old stuff:
@@ -365,17 +363,6 @@
 
   \describe{
     \item{}{
-      \code{qnarrow(x, start=NA, end=NA, width=NA)}:
-      \code{x} is a GAlignments object.
-      Return a new GAlignments object of the same length as \code{x}
-      describing how the narrowed query sequences align to the reference.
-      The \code{start}/\code{end}/\code{width} arguments describe how
-      to narrow the query sequences. They must be vectors of integers.
-      NAs and negative values are accepted and "solved" according to the
-      rules of the SEW (Start/End/Width) interface (see
-      \code{?\link[IRanges]{solveUserSEW}} for the details).
-    }
-    \item{}{
       \code{show(x)}:
       By default the \code{show} method displays 5 head and 5 tail
       elements. This can be changed by setting the global options
@@ -451,13 +438,13 @@ introns(gal)  # a GRangesList object
 stopifnot(identical(unname(elementLengths(introns(gal))), ngap(gal)))
 
 ## Modify the number of lines in 'show'
-options("showHeadLines"=3)
-options("showTailLines"=2)
+options(showHeadLines=3)
+options(showTailLines=2)
 gal
 
 ## Revert to default
-options("showHeadLines"=NULL)
-options("showTailLines"=NULL)
+options(showHeadLines=NULL)
+options(showTailLines=NULL)
 
 ## ---------------------------------------------------------------------
 ## B. SUBSETTING
@@ -488,23 +475,6 @@ gal[qwidth(gal) != width(gal)]
 gal[cigar(gal) == "35M" & qwidth(gal) != 35]
 ## but this doesn't have too:
 gal[cigar(gal) != "35M" & qwidth(gal) == 35]
-
-## ---------------------------------------------------------------------
-## C. qnarrow()/narrow()
-## ---------------------------------------------------------------------
-## Note that there is no difference between qnarrow() and narrow() when
-## all the alignments are simple and with no indels.
-
-## This trims 3 nucleotides on the left and 5 nucleotides on the right
-## of each alignment:
-qnarrow(gal, start=4, end=-6)
-## Note that the 'start' and 'end' arguments specify what part of each
-## query sequence should be kept (negative values being relative to the
-## right end of the query sequence), not what part should be trimmed.
-
-## Trimming on the left doesn't change the "end" of the queries.
-qnarrow(gal, start=21)
-stopifnot(identical(end(qnarrow(gal, start=21)), end(gal)))
 }
 
 \keyword{methods}

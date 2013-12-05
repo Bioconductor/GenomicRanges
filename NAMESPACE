@@ -76,11 +76,11 @@ exportMethods(
     score,
     shift, narrow, flank, resize, promoters, restrict,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
+    coverage,
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
-    encodeOverlaps,
-    coverage
+    encodeOverlaps
 )
 
 
@@ -125,7 +125,6 @@ export(
     flipQuery,
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,
-    countCompatibleOverlaps,
 
     keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels
 )
@@ -154,7 +153,7 @@ export(
     seqnameStyle, "seqnameStyle<-",
 
     ## GAlignments-class.R:
-    rname, "rname<-", cigar, qwidth, qnarrow,
+    rname, "rname<-", cigar, qwidth,
     grglist, granges, introns, rglist,
 
     ## GAlignmentPairs-class.R:
@@ -171,7 +170,6 @@ export(
     ## encodeOverlaps-methods.R:
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
-    findCompatibleOverlaps,
 
     ## findSpliceOverlaps-methods.R:
     findSpliceOverlaps
@@ -190,7 +188,7 @@ exportMethods(
     isCircular, "isCircular<-",
     genome, "genome<-",
     seqnameStyle, "seqnameStyle<-",
-    rname, "rname<-", cigar, qwidth, qnarrow,
+    rname, "rname<-", cigar, qwidth,
     grglist, granges, introns, rglist,
     first, last, left, right, isProperPair,
     SummarizedExperiment,
@@ -201,7 +199,6 @@ exportMethods(
     assay, "assay<-",
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
-    findCompatibleOverlaps,
     findSpliceOverlaps
 )
 

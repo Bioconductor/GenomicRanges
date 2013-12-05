@@ -6,7 +6,7 @@ Description: The ability to efficiently store genomic annotations and
 	defines general purpose containers for storing genomic intervals
 	as well as more specialized containers for storing alignments
 	against a reference genome.
-Version: 1.15.10
+Version: 1.15.11
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
@@ -54,12 +54,12 @@ Collate: utils.R
 	RangedData-methods.R
 	intra-range-methods.R
 	inter-range-methods.R
+	coverage-methods.R
 	setops-methods.R
 	findOverlaps-methods.R
 	findOverlaps-GIntervalTree-methods.R
 	nearest-methods.R
 	encodeOverlaps-methods.R
-	coverage-methods.R
 	findSpliceOverlaps-methods.R
 	findSpliceOverlaps-utils.R
 	test_GenomicRanges_package.R

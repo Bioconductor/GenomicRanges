@@ -37,7 +37,6 @@
 \alias{end<-,GRangesList-method}
 \alias{width,GRangesList-method}
 \alias{width<-,GRangesList-method}
-\alias{shift,GRangesList-method}
 \alias{isDisjoint,GRangesList-method}
 \alias{disjoin,GRangesList-method}
 
@@ -53,8 +52,6 @@
 % isomorphisms:
 \alias{range,GRangesList-method}
 \alias{reduce,GRangesList-method}
-\alias{restrict,GRangesList-method}
-\alias{flank,GRangesList-method}
 \alias{promoters,GRangesList-method}
 \title{GRangesList objects}
 
@@ -225,13 +222,6 @@
     \item{}{
       \code{width(x)}, \code{width(x) <- value}:
       Get or set \code{width(ranges(x))}.
-    }
-    \item{}{
-      \code{shift(x, shift, use.names=TRUE)}:
-      Returns a new GRangesList object containing intervals with start and
-      end values that have been shifted by integer vector \code{shift}.
-      The \code{use.names} argument determines whether or not to
-      keep the names on the ranges.
     }
     \item{}{
       \code{isDisjoint(x)} Return a vector of logical values indicating
@@ -408,7 +398,7 @@
   }
 }
 
-\section{The "range", "reduce" and "restrict" methods}{
+\section{The "range" and "reduce" methods}{
   In the code snippets below, \code{x} is a GRangesList object.
   The methods in this section are isomorphisms, that is, they are endomorphisms
   (i.e. they preserve the class of \code{x}) who also preserve the length &
@@ -427,16 +417,6 @@
       More precisely, it is equivalent to
       \code{endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
                       min.gapwidth=min.gapwidth)}.
-    }
-    \item{}{
-      \code{restrict(x, start = NA, end = NA, keep.all.ranges = FALSE, 
-          use.names = TRUE)}:
-      Applies \code{restrict} to each element in \code{x}.
-    }
-    \item{}{
-      \code{flank(x, width, start = TRUE, end = NA, keep.all.ranges = FALSE,
-          use.names = TRUE, ignore.strand = FALSE)}:
-      Applies \code{flank} to each element in \code{x}.
     }
   }
 }
@@ -491,9 +471,6 @@ reduce(grl)  # Doesn't really reduce anything but note the reordering
              # ranges are reordered by sequence name first (the order of
              # the sequence names is dictated by the sequence levels),
              # and then by strand.
-restrict(grl, start=3)
-### flank
-flank(grl, width =20)
 
 ## Coerce to IRangesList (seqnames and strand information is lost):
 as(grl, "IRangesList")
