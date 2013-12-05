@@ -52,7 +52,7 @@
 % isomorphisms:
 \alias{range,GRangesList-method}
 \alias{reduce,GRangesList-method}
-\alias{promoters,GRangesList-method}
+
 \title{GRangesList objects}
 
 \description{
