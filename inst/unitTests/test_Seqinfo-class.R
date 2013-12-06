@@ -20,14 +20,6 @@ test_Seqinfo_seqlevels_subset <- function()
     grl <- GRangesList(gr2)
     seqlevels(grl, force=TRUE) <- "chr1"
     checkIdentical(0L, length(grl))
-
-    ## GAlignments
-    gal <- GAlignments(seqnames=Rle(c("chr1", "chr2")),
-                        pos=as.integer(c(10, 100)),
-                        cigar=c("50M", "50M"),
-                        strand=strand(c("*", "*")))
-    seqlevels(gal, force=TRUE) <- "chr2"
-    checkIdentical("chr2", seqlevels(gal))
 }
 
 test_Seqinfo_seqlevels_rename <- function()
@@ -48,15 +40,6 @@ test_Seqinfo_seqlevels_rename <- function()
     checkException(seqlevels(grl)[idx] <- "chr1", silent=TRUE)
     seqlevels(grl)[seqlevels(grl) == "chr3"] <- "3"
     checkIdentical(c("chr1", "chr2", "3"), seqlevels(grl))
-
-
-    ## GAlignments
-    gal <- GAlignments(seqnames=Rle(c("chr1", "chr2")),
-                        pos=as.integer(c(10, 100)),
-                        cigar=c("50M", "50M"),
-                        strand=strand(c("*", "*")))
-    seqlevels(gal)[seqlevels(gal) == "chr2"] <- "2"
-    checkIdentical(c("chr1", "2"),  seqlevels(gal))
 }
 
 test_Seqinfo_seqlevels_drop_add <- function()

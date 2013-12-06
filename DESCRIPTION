@@ -1,12 +1,13 @@
 Package: GenomicRanges
 Title: Representation and manipulation of genomic intervals
-Description: The ability to efficiently store genomic annotations and
-	alignments is playing a central role when it comes to analyze
-	high-throughput sequencing data (a.k.a. NGS data). The package
-	defines general purpose containers for storing genomic intervals
-	as well as more specialized containers for storing alignments
-	against a reference genome.
-Version: 1.15.11
+Description: The ability to efficiently represent and manipulate genomic
+	annotations and alignments is playing a central role when it comes
+	to analyze high-throughput sequencing data (a.k.a. NGS data).
+	The package defines general purpose containers for storing genomic
+	intervals. Specialized containers for representating and manipulating
+	short alignments against a reference genome are defined in the
+	GenomicAlignments package.
+Version: 1.15.12
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
@@ -34,6 +35,7 @@ Collate: utils.R
 	makeSeqnameIds.R
 	seqinfo.R
 	strand-utils.R
+	range-squeezers.R
 	Seqinfo-class.R
 	GenomicRanges-class.R
 	GRanges-class.R
@@ -43,7 +45,6 @@ Collate: utils.R
 	GRangesList-class.R
 	makeGRangesFromDataFrame.R
 	tileGenome.R
-	GAlignments-class.R
 	SummarizedExperiment-class.R
 	SummarizedExperiment-rowData-methods.R
 	seqlevels-utils.R
@@ -57,6 +58,7 @@ Collate: utils.R
 	findOverlaps-methods.R
 	findOverlaps-GIntervalTree-methods.R
 	nearest-methods.R
+	map-methods.R
 	encodeOverlaps-methods.R
 	findSpliceOverlaps-methods.R
 	findSpliceOverlaps-utils.R

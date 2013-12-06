@@ -73,7 +73,7 @@
   NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and methods
   for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
   are defined and documented in the \pkg{IRanges} package.
-  The methods for \link{GAlignments},
+  The methods for \link[GenomicAlignments]{GAlignments},
   \link[GenomicAlignments]{GAlignmentPairs}, and
   \link[GenomicAlignments]{GAlignmentsList} objects are defined and
   documented in the \pkg{GenomicAlignments} package.

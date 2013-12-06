@@ -1,21 +1,24 @@
 \name{map-methods}
 
 \alias{map,GenomicRanges,GRangesList-method}
-\alias{map,GenomicRanges,GAlignments-method}
 
 \alias{coerce,RangesMapping,GenomicRanges-method}
 \alias{granges,RangesMapping-method}
 
 \title{Mapping ranges between sequences}
 \description{
-  The GenomicRanges package provides several methods for the
-  \code{\link[IRanges]{map}} generic. They each translate a set of input
-  ranges through a certain type of alignment and return a
-  \code{\link[IRanges:RangesMapping-class]{RangesMapping}} object.
+  A method for translating a set of input ranges through a
+  \link{GRangesList} object. Returns a \link[IRanges]{RangesMapping}
+  object.
+
+  NOTE: The \code{\link[IRanges]{map}} generic function is defined and
+  documented in the \pkg{IRanges} package.
+  A method for translating a set of input ranges through a
+  \link[GenomicAlignments]{GAlignments} object is defined and
+  documented in the \pkg{GenomicAlignments} package.
 }
 \usage{
 \S4method{map}{GenomicRanges,GRangesList}(from, to)
-\S4method{map}{GenomicRanges,GAlignments}(from, to)
 }
 \arguments{
   \item{from}{The input ranges to map, usually
@@ -24,7 +27,7 @@
     sequences in the result.}
 }
 \value{
-  An object of class \code{RangesMapping}. The GenomicRanges package
+  An object of class \code{RangesMapping}. The \pkg{GenomicRanges} package
   provides some additional methods on this object:
 
   \item{}{\code{as(from, "GenomicRanges")}: Creates a
@@ -38,27 +41,15 @@
   }
 }
 \details{
-  The methods currently depend on the type of \code{to}:
-  \describe{
-    \item{GRangesList}{Each element is taken to represent an alignment
-      of a sequence on a genome. The typical case is a set of transcript
-      models, as might be obtained via
-      \code{GenomicFeatures::exonsBy}. The method translates the input
-      ranges to be relative to the transcript start. This is useful, for
-      example, when predicting coding consequences of changes to the
-      genomic sequence.
-    }
-    \item{GAlignments}{Each element is taken to represent the
-      alignment of a (read) sequence. The CIGAR string is used to
-      translate the input ranges to be relative to the read start. This
-      is useful, for example, when determining the cycle (read position)
-      at which a particular genomic mismatch occurs.
-    }
-  }
+  Each element in \code{to} is taken to represent an alignment
+  of a sequence on a genome. The typical case is a set of transcript
+  models, as might be obtained via \code{GenomicFeatures::exonsBy}.
+  The method translates the input ranges to be relative to the transcript
+  start. This is useful, for example, when predicting coding consequences
+  of changes to the genomic sequence.
 }
 \seealso{
-  The \code{\link[IRanges:RangesMapping-class]{RangesMapping}} class is
-  the typical return value.
+  The \link[IRanges]{RangesMapping} class is the typical return value.
 }
 
 \author{M. Lawrence}

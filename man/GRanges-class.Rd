@@ -21,7 +21,6 @@
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
-\alias{coerce,GenomicRanges,GAlignments-method}
 \alias{coerce,RleList,GRanges-method}
 \alias{coerce,RleViewsList,GRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
@@ -150,12 +149,6 @@
       metadata columns (i.e. metadata columns on the ranges).
       The \code{seqlengths(from)}, \code{isCircular(from)}, and
       \code{genome(from)} vectors become the metadata columns.
-    }
-    \item{}{
-      \code{as(from, "GAlignments")}:
-      Creates a GAlignments object from a GRanges object. The metadata
-      columns are propagated. cigar values are created from the sequence
-      width unless a "cigar" metadata column already exists in \code{from}.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE, ...)}:
@@ -424,10 +417,10 @@
       length is less than (or equal to) the sum of these 2 options
       plus 1, then the full object is displayed.
       Note that these options also affect the display of
-      \link{GAlignments} and
+      \link[GenomicAlignments]{GAlignments} and
       \link[GenomicAlignments]{GAlignmentPairs} objects (defined in
-      the \pkg{GenomicAlignments}), as well as other objects defined
-      in the \pkg{IRanges} and \pkg{Biostrings} packages (e.g.
+      the \pkg{GenomicAlignments} package), as well as other objects
+      defined in the \pkg{IRanges} and \pkg{Biostrings} packages (e.g.
       \link[IRanges]{IRanges} and \link[Biostrings]{DNAStringSet} objects).
     }
   }

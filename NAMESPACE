@@ -15,7 +15,6 @@ exportClasses(
     Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList, GIntervalTree,
     GenomicRangesORGRangesList,
-    GAlignments, GappedAlignments,
     SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -70,7 +69,6 @@ exportMethods(
     width, "start<-", "width<-", "end<-",
     compare,
     ranges, "ranges<-",
-    map,
     ngap,
     score,
     shift, narrow, flank, resize, promoters, restrict,
@@ -79,6 +77,7 @@ exportMethods(
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
+    map,
     encodeOverlaps
 )
 
@@ -116,7 +115,6 @@ export(
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
     tileGenome,
-    GAlignments, GappedAlignments, 
     flipQuery,
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,
@@ -147,9 +145,8 @@ export(
     genome, "genome<-",
     seqnameStyle, "seqnameStyle<-",
 
-    ## GAlignments-class.R:
-    rname, "rname<-", cigar, qwidth,
-    grglist, granges, introns, rglist,
+    ## range-squeezers.R:
+    granges, grglist, rglist,
 
     ## SummarizedExperiment-class.R:
     SummarizedExperiment,
@@ -180,8 +177,7 @@ exportMethods(
     isCircular, "isCircular<-",
     genome, "genome<-",
     seqnameStyle, "seqnameStyle<-",
-    rname, "rname<-", cigar, qwidth,
-    grglist, granges, introns, rglist,
+    granges, grglist, rglist,
     SummarizedExperiment,
     exptData, "exptData<-",
     rowData, "rowData<-",

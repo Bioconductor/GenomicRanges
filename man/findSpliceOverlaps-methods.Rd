@@ -14,7 +14,8 @@
   compatible with a specific transcript isoform. The non-compatible ranges are
   analyzed for the presence of novel splice events.
 
-  NOTE: \code{findSpliceOverlaps} methods for \link{GAlignments},
+  NOTE: \code{findSpliceOverlaps} methods for
+  \link[GenomicAlignments]{GAlignments},
   \link[GenomicAlignments]{GAlignmentPairs}, and \link[Rsamtools]{BamFile}
   objects are defined and documented in the \pkg{GenomicAlignments} package.
   Methods for \link[GenomicFeatures]{TranscriptDb} objects are defined and
