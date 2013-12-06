@@ -30,7 +30,7 @@
   package for a quick introduction to intra range and inter range
   transformations.
 
-  Intra range methods for \link{GAlignments} and
+  Intra range methods for \link[GenomicAlignments]{GAlignments} and
   \link[GenomicAlignments]{GAlignmentsList} objects are defined and
   documented in the \pkg{GenomicAlignments} package.
 

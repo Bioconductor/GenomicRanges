@@ -8,7 +8,7 @@
 \title{Mapping ranges between sequences}
 \description{
   A method for translating a set of input ranges through a
-  \link{GRangesList} object. Returns a \link[IRanges]{RangesMapping}
+  \link{GRangesList} object. Returns a \linkS4class{RangesMapping}
   object.
 
   NOTE: The \code{\link[IRanges]{map}} generic function is defined and
@@ -49,7 +49,7 @@
   of changes to the genomic sequence.
 }
 \seealso{
-  The \link[IRanges]{RangesMapping} class is the typical return value.
+  The \linkS4class{RangesMapping} class is the typical return value.
 }
 
 \author{M. Lawrence}

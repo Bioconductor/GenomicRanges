@@ -1,13 +1,9 @@
 useDynLib(GenomicRanges)
 
 import(methods)
-
 import(utils)  # for as.roman()
-
 importFrom(stats, setNames)
-
 import(BiocGenerics)
-
 import(IRanges)
 
 exportClasses(
@@ -88,25 +84,6 @@ exportMethods(
 
 export(
     phicoef,
-
-    validCigar,
-    CIGAR_OPS,
-    explodeCigarOps, explodeCigarOpLengths,
-    cigarToRleList,
-    splitCigar,
-    cigarRangesAlongReferenceSpace,
-    cigarRangesAlongQuerySpace,
-    cigarRangesAlongPairwiseSpace,
-    extractAlignmentRangesOnReference,
-    cigarToIRanges,
-    cigarToIRangesListByAlignment, cigarToIRangesListByRName,
-    cigarWidthAlongReferenceSpace,
-    cigarWidthAlongQuerySpace,
-    cigarWidthAlongPairwiseSpace,
-    cigarToWidth, cigarToQWidth,
-    cigarNarrow, cigarQNarrow,
-    cigarOpTable, cigarToCigarTable, summarizeCigarTable,
-    queryLoc2refLoc, queryLocs2refLocs,
 
     makeSeqnameIds,
     Seqinfo,

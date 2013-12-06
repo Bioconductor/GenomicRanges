@@ -86,11 +86,11 @@
 }
 
 \details{
-  The \code{pintersect} methods involving \link{GRanges}, \link{GRangesList}
-  and/or \link{GAlignments} objects use the triplet (sequence name, range,
-  strand) to determine the element by element intersection of features,
-  where a strand value of \code{"*"} is treated as occurring on both the
-  \code{"+"} and \code{"-"} strand.
+  The \code{pintersect} methods involving \link{GRanges} and/or
+  \link{GRangesList} objects use the triplet (sequence name, range, strand)
+  to determine the element by element intersection of features, where a
+  strand value of \code{"*"} is treated as occurring on both the \code{"+"}
+  and \code{"-"} strand.
 
   The \code{psetdiff} methods involving \link{GRanges} and/or
   \link{GRangesList} objects use the triplet (sequence name, range,
@@ -112,13 +112,12 @@
   when \code{y} is a \link{GRangesList} object.
 }
 
-\author{P. Aboyoun}
+\author{P. Aboyoun and H. Pages}
 
 \seealso{
   \link[IRanges]{setops-methods},
   \link{GRanges-class},
   \link{GRangesList-class},
-  \link{GAlignments-class},
   \link{findOverlaps-methods}
 }
 
@@ -179,14 +178,6 @@ grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 ## Parallel intersection of a GRanges and a GRangesList object
 pintersect(gr, grlist)
 pintersect(grlist, gr)
-
-## Parallel intersection of a GAlignments and a GRanges object
-library(Rsamtools)  # for the ex1.bam file
-library(GenomicAlignments)  # for readGAlignments()
-
-galn_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-galn <- readGAlignments(galn_file)
-pintersect(galn, shift(as(galn, "GRanges"), 6L))
 
 ## Parallel set difference of a GRanges and a GRangesList object
 psetdiff(gr, grlist)

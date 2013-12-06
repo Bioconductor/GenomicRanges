@@ -14,7 +14,7 @@
   NOTE: The \code{\link[IRanges]{coverage}} generic function and methods
   for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
   are defined and documented in the \pkg{IRanges} package.
-  Methods for \link{GAlignments} and
+  Methods for \link[GenomicAlignments]{GAlignments} and
   \link[GenomicAlignments]{GAlignmentPairs} objects are defined and
   documented in the \pkg{GenomicAlignments} package.
 }

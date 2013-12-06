@@ -29,7 +29,6 @@ Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub,
 License: Artistic-2.0
 Collate: utils.R
 	phicoef.R
-	cigar-utils.R
 	transcript-utils.R
 	constraint.R
 	makeSeqnameIds.R
