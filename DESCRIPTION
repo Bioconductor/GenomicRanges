@@ -61,5 +61,6 @@ Collate: utils.R
 	encodeOverlaps-methods.R
 	findSpliceOverlaps-methods.R
 	findSpliceOverlaps-utils.R
+        tile-methods.R
 	test_GenomicRanges_package.R
 	zzz.R
