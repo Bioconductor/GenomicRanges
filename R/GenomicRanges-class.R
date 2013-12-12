@@ -634,7 +634,7 @@ setReplaceMethod("[", "GenomicRanges",
 
 ### Subsetting a named list-like object *by* a GenomicRanges subscript.
 ### The returned object has the class of 'x' and is parallel to 'gr'.
-.subset_listlike_by_GenomicRanges <- function(x, gr)
+.subset_by_GenomicRanges <- function(x, gr)
 {
     x_names <- names(x)
     if (!(is.list(x) || is(x, "List")) || is.null(x_names))
@@ -669,7 +669,7 @@ setMethod("[", c("ANY", "GenomicRanges"),
     {
         if (!missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
-        .subset_listlike_by_GenomicRanges(x, i)
+        .subset_by_GenomicRanges(x, i)
     }
 )
 
