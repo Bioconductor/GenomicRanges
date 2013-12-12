@@ -519,9 +519,9 @@ setReplaceMethod("width", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting and combining.
+### Subsetting.
 ###
-        
+
 setMethod(IRanges:::extractROWS, "GenomicRanges",
     function(x, i)
     {
@@ -632,6 +632,78 @@ setReplaceMethod("[", "GenomicRanges",
     }
 )
 
+### Subsetting a named list-like object *by* a GenomicRanges subscript.
+### The returned object has the class of 'x' and is parallel to 'gr'.
+.subset_listlike_by_GenomicRanges <- function(x, gr)
+{
+    x_names <- names(x)
+    if (!(is.list(x) || is(x, "List")) || is.null(x_names))
+        stop("subsetting by a GenomicRanges subscript only works ",
+             "on a list-like object with names")
+    irl <- split(ranges(gr), seqnames(gr), drop=TRUE)
+    seqlevels_in_use <- names(irl)
+    seqlevels2names <- match(seqlevels_in_use, x_names)
+    if (any(is.na(seqlevels2names)))
+        stop("subsetting by a GenomicRanges subscript, the names of the ",
+             "object to subset must contain the seqnames of the subscript")
+    tmp <- lapply(seq_along(seqlevels_in_use),
+                  function(i) {
+                      seqlevel <- seqlevels_in_use[i]
+                      name <- x_names[seqlevels2names[i]]
+                      as(Views(x[[name]], irl[[seqlevel]]), class(x))
+                  })
+
+    ## Unsplit 'tmp'.
+    ans <- do.call(c, tmp)
+    ans_len <- length(gr)
+    idx <- unlist(split(seq_len(ans_len), seqnames(gr), drop=TRUE))
+    revidx <- integer(ans_len)
+    revidx[idx] <- seq_len(ans_len)
+    names(ans) <- names(idx)
+    ans <- ans[revidx]
+    ans
+}
+
+setMethod("[", c("ANY", "GenomicRanges"),
+    function(x, i, j, ..., drop=TRUE)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        .subset_listlike_by_GenomicRanges(x, i)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### $ and $<- methods
+###
+### Provided as a convenience, for GenomicRanges *only*, and as the result
+### of strong popular demand.
+### Note that those methods are not consistent with the other $ and $<-
+### methods in the IRanges/GenomicRanges infrastructure, and might confuse
+### some users by making them believe that a GenomicRanges object can be
+### manipulated as a data.frame-like object.
+### Therefore we recommend using them only interactively, and we discourage
+### their use in scripts or packages. For the latter, use 'mcols(x)$name'
+### instead of 'x$name'.
+###
+
+.DollarNames.GenomicRanges <- function(x, pattern)
+    grep(pattern, names(mcols(x)), value=TRUE)
+
+setMethod("$", "GenomicRanges",
+    function(x, name) mcols(x)[[name]]
+)
+
+setReplaceMethod("$", "GenomicRanges",
+    function(x, name, value) {mcols(x)[[name]] <- value; x}
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining.
+###
+
 ### Not exported. 'x' *must* be an unnamed list of length >= 1 (not checked).
 .unlist_list_of_GenomicRanges <- function(x, ignore.mcols=FALSE)
 {
@@ -669,32 +741,6 @@ setMethod("c", "GenomicRanges",
             args <- unname(list(x, ...))
         .unlist_list_of_GenomicRanges(args, ignore.mcols=ignore.mcols)
     }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### $ and $<- methods
-###
-### Provided as a convenience, for GenomicRanges *only*, and as the result
-### of strong popular demand.
-### Note that those methods are not consistent with the other $ and $<-
-### methods in the IRanges/GenomicRanges infrastructure, and might confuse
-### some users by making them believe that a GenomicRanges object can be
-### manipulated as a data.frame-like object.
-### Therefore we recommend using them only interactively, and we discourage
-### their use in scripts or packages. For the latter, use 'mcols(x)$name'
-### instead of 'x$name'.
-###
-
-.DollarNames.GenomicRanges <- function(x, pattern)
-    grep(pattern, names(mcols(x)), value=TRUE)
-
-setMethod("$", "GenomicRanges",
-    function(x, name) mcols(x)[[name]]
-)
-
-setReplaceMethod("$", "GenomicRanges",
-    function(x, name, value) {mcols(x)[[name]] <- value; x}
 )
 
 
