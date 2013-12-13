@@ -650,11 +650,11 @@ setReplaceMethod("[", "GenomicRanges",
                   function(i) {
                       seqlevel <- seqlevels_in_use[i]
                       name <- x_names[seqlevels2names[i]]
-                      as(Views(x[[name]], irl[[seqlevel]]), class(x))
+                      extractList(x[[name]], irl[[seqlevel]])
                   })
 
     ## Unsplit 'tmp'.
-    ans <- do.call(c, tmp)
+    ans <- as(do.call(c, tmp), class(x))
     ans_len <- length(gr)
     idx <- unlist(split(seq_len(ans_len), seqnames(gr), drop=TRUE))
     revidx <- integer(ans_len)
@@ -664,7 +664,16 @@ setReplaceMethod("[", "GenomicRanges",
     ans
 }
 
-setMethod("[", c("ANY", "GenomicRanges"),
+setMethod("[", c("List", "GenomicRanges"),
+    function(x, i, j, ..., drop=TRUE)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        .subset_by_GenomicRanges(x, i)
+    }
+)
+
+setMethod("[", c("list", "GenomicRanges"),
     function(x, i, j, ..., drop=TRUE)
     {
         if (!missing(j) || length(list(...)) > 0L)
