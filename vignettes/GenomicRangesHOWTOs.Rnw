@@ -560,18 +560,20 @@ cds_seqs
 @
 
 Our final step is to collect the coding and UTR regions (currently 
-organzied by transcript) into groups by gene id. The \Rfunction{split} 
-function splits the sequences in the \Robject{DNAStringSet} by the partition
-object. The partition object represents the number of transcript ranges 
-(defined as the width) in each gene id group. These widths are different for 
-each region because not all transcripts had a coding or 3' or 5' UTR region 
-defined. 
+organzied by transcript) into groups by gene id. The \Rfunction{relist} 
+function groups the sequences of a \Robject{DNAStringSet} object into
+a \Robject{DNAStringSetList} object, based on the specified \Rcode{skeleton}
+argument. The \Rcode{skeleton} must be a list-like object and only its shape
+(i.e. its element lengths) matters (its exact content is ignored). A simple
+form of \Rcode{skeleton} is to use a partitioning object that we make by
+specifying the size of each partition. The partitioning objects are different
+for each type of region because not all transcripts had a coding or 3' or 5'
+UTR region defined. 
 
 <<cancer_13>>=
-lst3 <- split(threeUTR_seqs, PartitioningByWidth(sum(map %in% names(threeUTR))))
-lst5 <- split(fiveUTR_seqs, PartitioningByWidth(sum(map %in% names(fiveUTR))))
-lstc <- split(cds_seqs, PartitioningByWidth(sum(map %in% names(cds))))
-names(lst3) <- names(lst5) <- names(lstc) <- names(map)
+lst3 <- relist(threeUTR_seqs, PartitioningByWidth(sum(map %in% names(threeUTR))))
+lst5 <- relist(fiveUTR_seqs, PartitioningByWidth(sum(map %in% names(fiveUTR))))
+lstc <- relist(cds_seqs, PartitioningByWidth(sum(map %in% names(cds))))
 @
 
 There are 239 genes in \Rcode{map} each of which have 1 or more transcripts. 
