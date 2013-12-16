@@ -16,7 +16,6 @@
 \alias{updateObject,GRanges-method}
 
 % Coercion:
-\alias{splitAsListReturnedClass,GRange}
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,RangesList,GRanges-method}
@@ -60,9 +59,6 @@
 
 % "show" method:
 \alias{show,GenomicRanges-method}
-
-% other methods:
-\alias{splitAsListReturnedClass,GRanges-method}
 
 \title{GRanges objects}
 

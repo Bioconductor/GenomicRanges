@@ -225,10 +225,3 @@ setMethod("ranges", "GRanges", function(x, ...) x@ranges)
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining and Splitting
-###
-
-setMethod("splitAsListReturnedClass", "GRanges", function(x) "GRangesList")
-

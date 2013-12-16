@@ -120,7 +120,6 @@
 \alias{sort,SummarizedExperiment-method}
 \alias{split,SummarizedExperiment-method}
 \alias{split,SummarizedExperiment,ANY-method}
-\alias{splitAsListReturnedClass,SummarizedExperiment-method}
 \alias{start,SummarizedExperiment-method}
 \alias{start<-,SummarizedExperiment-method}
 \alias{strand,SummarizedExperiment-method}
@@ -425,7 +424,7 @@ exptData(x, ...) <- value
   \code{\link{restrict}}, \code{\link{seqinfo}},
   \code{\link{seqinfo<-}}, \code{\link{seqnames}},
   \code{\link{shift}},
-  \code{\link{sort}}, \code{split}, \code{splitAsListReturnedClass},
+  \code{\link{sort}}, \code{split}, \code{relistReturnedClass},
   \code{\link{start}}, \code{\link{start<-}},
   \code{\link{strand}}, \code{\link{strand<-}},
   \code{\link{subsetByOverlaps}}, \code{\link{width}},

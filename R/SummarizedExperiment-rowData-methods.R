@@ -272,9 +272,6 @@ setMethod(IRanges:::replaceROWS, "SummarizedExperiment",
     x
 })
 
-setMethod(splitAsListReturnedClass, "SummarizedExperiment",
-    function(x) "SimpleList")
-
 setMethod(split, "SummarizedExperiment",
     function(x, f, drop=FALSE, ...) 
 {

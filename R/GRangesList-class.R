@@ -474,6 +474,16 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Going from GRanges to GRangesList with extractList() and family.
+###
+
+setMethod("relistReturnedClass", "GRanges", function(x) "GRangesList")
+
+setMethod("splitAsListReturnedClass", "GRanges",
+    function(x) {.Deprecated("relistReturnedClass"); "GRangesList"}
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.
 ###
 

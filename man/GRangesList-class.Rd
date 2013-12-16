@@ -46,6 +46,10 @@
 \alias{[[<-,GRangesList-method}
 \alias{[[<-,GRangesList,ANY,ANY-method}
 
+% extractList() and family:
+\alias{relistReturnedClass,GRanges-method}
+\alias{splitAsListReturnedClass,GRanges-method}
+
 % show method:
 \alias{show,GRangesList-method}
 
