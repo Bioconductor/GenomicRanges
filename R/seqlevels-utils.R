@@ -8,7 +8,8 @@ keepSeqlevels <- function(x, value, ...)
     if (any(nomatch <- !value %in% seqlevels(x)))
         warning("invalid seqlevels '", 
                 paste(value[nomatch], collapse=","), "' were ignored")
-    seqlevels(x, force=TRUE) <- value[!nomatch]
+    force <- any(class(x) %in% c("Seqinfo", "BSgenome"))
+    seqlevels(x, force=!force) <- value[!nomatch]
     x
 }
 
