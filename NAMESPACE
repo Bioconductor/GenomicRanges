@@ -5,6 +5,7 @@ import(utils)  # for as.roman()
 importFrom(stats, setNames)
 import(BiocGenerics)
 import(IRanges)
+importFrom(AnnotationDbi, isSupportedSeqnamesStyle, extractSeqnameSet)
 
 exportClasses(
     Constraint, ConstraintORNULL,
@@ -97,7 +98,8 @@ export(
     selectEncodingWithCompatibleStrand,
     extractQueryStartInTranscript,
 
-    keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels
+    keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels,
+    keepStandardChromosomes
 )
 
 
@@ -140,6 +142,8 @@ export(
 
     ## findSpliceOverlaps-methods.R:
     findSpliceOverlaps
+
+     
 )
 
 ### Exactly the same list as above.
@@ -165,5 +169,6 @@ exportMethods(
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
     extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
     findSpliceOverlaps
+  
 )
 

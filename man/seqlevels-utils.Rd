@@ -5,6 +5,7 @@
 \alias{dropSeqlevels}
 \alias{renameSeqlevels}
 \alias{restoreSeqlevels}
+\alias{keepStandardChromosomes}
 
 \title{
   seqlevels utility functions
@@ -19,6 +20,7 @@ keepSeqlevels(x, value, ...)
 dropSeqlevels(x, value, ...)
 renameSeqlevels(x, value, ...)
 restoreSeqlevels(x, ...)
+keepStandardChromosomes(x, species, style,...)
 }
 
 \arguments{
@@ -37,6 +39,14 @@ restoreSeqlevels(x, ...)
     sequence levels to the old (names correspond to the old levels). When 
     \code{value} is unnamed, the replacement vector must the same length
     and in the same order as the original \code{seqlevels(x)}.
+  }
+  \item{species}{
+    The species name of the \link{Seqinfo} class in which the seqlevels will
+    be kept, dropped or renamed.
+  }
+ \item{style}{
+    The style or provider of the \link{Seqinfo} class in which the seqlevels will
+    be kept, dropped or renamed.eg: UCSC,NCBI and so on.
   }
   \item{...}{
     Arguments passed to other functions.
@@ -72,6 +82,10 @@ restoreSeqlevels(x, ...)
   original values. Applicable only when \code{x} is a TranscriptDb. The 
   function re-initializes the TranscriptDb which resets the seqlevels, 
   removes masks and any other previous modifications.
+  
+  \code{keepStandardChromosomes}:Subsetting operation that returns only the 
+  primary Chromosomes and the autosomes. Applicable when \code{obj}
+  has a Seqinfo object.
 }
 
 \seealso{
@@ -166,9 +180,29 @@ identical(seqlevels(txdb), seqlevels(transcripts))
 restoreSeqlevels(txdb)
 seqlevels(txdb)
 }
+
+## ---------------------------------------------------------------------
+## keepStandardChromosomes
+## ---------------------------------------------------------------------
+
+ gr <- GRanges(c("chr1","chr2", "chr3", "chr4","chr5","chr6",
+           "chr7","chr8","chr9","chr10", "chr11","chr12","chr13","chr14",
+           "chr15","chr16" ,"chr17" , "chr18", "chr19", "chr20" , "chr21",
+           "chr22" , "chrX", "chrY" , "chrM", "chr1_gl000191_random",
+           "chr1_gl000192_random" ,"chr4_ctg9_hap1", "chr4_gl000193_random",
+           "chr4_gl000194_random" ,"chr6_apd_hap1"), IRanges(1:31, width=3))
+grl <- split(gr,seqnames(gr))
+
+##GRanges
+keepStandardChromosomes(gr,style="UCSC", species="Homo sapiens")
+
+##GRangesList
+keepStandardChromosomes(grl,style="UCSC", species="Homo sapiens")
+
 }
 
-\author{Valerie Obenchain \email{vobencha@fhcrc.org}}
+\author{Valerie Obenchain \email{vobencha@fhcrc.org}, 
+        Sonali Arora \email{sarora@fhcrc.org}}
 
 \keyword{methods}
 \keyword{utilities}
