@@ -18,8 +18,6 @@
   \link[GenomicAlignments]{GAlignments},
   \link[GenomicAlignments]{GAlignmentPairs}, and \link[Rsamtools]{BamFile}
   objects are defined and documented in the \pkg{GenomicAlignments} package.
-  Methods for \link[GenomicFeatures]{TranscriptDb} objects are defined and
-  documented in the \pkg{GenomicFeatures} package.
 }
 
 \usage{
@@ -100,8 +98,6 @@ findSpliceOverlaps(query, subject, ignore.strand=FALSE, ...)
     \item The \link{GRangesList} class.
     \item \link[GenomicAlignments]{findSpliceOverlaps-methods} in the
           \pkg{GenomicAlignments} package.
-    \item \link[GenomicFeatures]{findSpliceOverlaps-methods} in the
-          \pkg{GenomicFeatures} package.
   }
 }
 

@@ -8,7 +8,9 @@ keepSeqlevels <- function(x, value, ...)
     if (any(nomatch <- !value %in% seqlevels(x)))
         warning("invalid seqlevels '", 
                 paste(value[nomatch], collapse=","), "' were ignored")
-    force <- any(class(x) %in% c("Seqinfo", "BSgenome"))
+    if (is(x, "BSgenome"))
+        stop("seqlevels cannot be dropped from a BSgenome object")
+    force <- is(x, "Seqinfo")
     seqlevels(x, force=!force) <- value[!nomatch]
     x
 }
@@ -19,7 +21,10 @@ dropSeqlevels <- function(x, value, ...)
     if (any(nomatch <- !value %in% seqlevels(x)))
         warning("invalid seqlevels '", 
                 paste(value[nomatch], collapse=","), "' were ignored")
-    seqlevels(x, force=TRUE) <- seqlevels(x)[!seqlevels(x) %in% value]
+    if (is(x, "BSgenome"))
+        stop("seqlevels cannot be dropped from a BSgenome object")
+    force <- is(x, "Seqinfo")
+    seqlevels(x, force=!force) <- seqlevels(x)[!seqlevels(x) %in% value]
     x
 }
 
