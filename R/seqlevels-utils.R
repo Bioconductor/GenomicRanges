@@ -58,9 +58,10 @@ restoreSeqlevels <- function(x, ...)
     x
 }
 
-.checkStyleSpecies <- function(style, species, xlevels){
-    
-    if(isSupportedSeqnamesStyle(style, species) ){
+.checkStyleSpecies <- function(style, species, xlevels)
+{
+   require(AnnotationDbi)
+   if(isSupportedSeqnamesStyle(style, species) ){
         #extract the standard chromsomes using species and style
         seqvec <- extractSeqnameSet(style, species)
         seqvec[na.omit(match(xlevels,seqvec))]

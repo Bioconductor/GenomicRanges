@@ -5,7 +5,7 @@ import(utils)  # for as.roman()
 importFrom(stats, setNames)
 import(BiocGenerics)
 import(IRanges)
-importFrom(AnnotationDbi, isSupportedSeqnamesStyle, extractSeqnameSet)
+
 
 exportClasses(
     Constraint, ConstraintORNULL,
