@@ -147,6 +147,9 @@ setMethod(SummarizedExperiment, "list",
 setMethod(SummarizedExperiment, "matrix",
     function(assays, ...)
 {
+    if (is.list(assays))
+        ## special case -- matrix of lists
+        assays <- list(assays)
     SummarizedExperiment(SimpleList(assays), ...)
 })
 

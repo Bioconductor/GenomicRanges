@@ -51,6 +51,12 @@ test_SummarizedExperiment_construction <- function() {
     assays(ss) <- SimpleList(array(1:5, c(5,3,2)))
     checkTrue(validObject(ss))
     checkTrue(all(dim(assays(ss[1:3,1:2])[[1]]) == c(3, 2, 2)))
+
+    ## matrix-of-list in assay slot
+    m <- matrix(list(), 2, 3, dimnames=list(LETTERS[1:2], letters[1:3]))
+    checkTrue(validObject(se <- SummarizedExperiment(m)))
+    checkIdentical(m, assay(se))
+    checkIdentical(m[,1:2], assay(se[,1:2]))
 }
 
 test_SummarizedExperiment_getters <- function() {
