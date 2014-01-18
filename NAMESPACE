@@ -75,7 +75,6 @@ exportMethods(
     findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
     map,
-    encodeOverlaps,
     tile
 )
 
@@ -94,9 +93,6 @@ export(
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
     tileGenome,
-    flipQuery,
-    selectEncodingWithCompatibleStrand,
-    extractQueryStartInTranscript,
 
     keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels,
     keepStandardChromosomes
@@ -134,11 +130,7 @@ export(
     rowData, "rowData<-",
     colData, "colData<-",
     assays, "assays<-",
-    assay, "assay<-",
-
-    ## encodeOverlaps-methods.R:
-    isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks
+    assay, "assay<-"
 )
 
 ### Exactly the same list as above.
@@ -160,8 +152,6 @@ exportMethods(
     rowData, "rowData<-",
     colData, "colData<-",
     assays, "assays<-",
-    assay, "assay<-",
-    isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks
+    assay, "assay<-"
 )
 

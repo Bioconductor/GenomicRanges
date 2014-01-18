@@ -7,7 +7,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	intervals. Specialized containers for representating and manipulating
 	short alignments against a reference genome are defined in the
 	GenomicAlignments package.
-Version: 1.15.21
+Version: 1.15.22
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
@@ -17,7 +17,7 @@ Imports: methods, utils, stats, BiocGenerics, IRanges
 LinkingTo: IRanges, XVector
 Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub,
 	BSgenome, BSgenome.Hsapiens.UCSC.hg19,
-	BSgenome.Scerevisiae.UCSC.sacCer2, BSgenome.Dmelanogaster.UCSC.dm3,
+	BSgenome.Scerevisiae.UCSC.sacCer2,
 	Biostrings (>= 2.25.3), Rsamtools (>= 1.13.53), GenomicAlignments,
 	rtracklayer, 
 	KEGG.db, KEGGgraph, GenomicFeatures,
@@ -58,7 +58,6 @@ Collate: utils.R
 	findOverlaps-GIntervalTree-methods.R
 	nearest-methods.R
 	map-methods.R
-	encodeOverlaps-methods.R
 	tile-methods.R
 	test_GenomicRanges_package.R
 	zzz.R
