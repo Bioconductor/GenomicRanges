@@ -51,6 +51,19 @@ rglist(x, ...)
   and \code{as(x, "RangesList")}, respectively.
 }
 
+\value{
+  A \link{GRanges} object for \code{granges}.
+
+  A \link{GRangesList} object for \code{grglist}.
+
+  A \link[IRanges]{RangesList} object for \code{rglist}.
+
+  If \code{x} is a vector-like object (e.g.
+  \link[GenomicAlignments]{GAlignments}), the returned object is expected
+  to be \emph{parallel} to \code{x}, that is, the i-th element in the output
+  corresponds to the i-th element in the input.
+}
+
 \author{H. Pages}
 
 \seealso{
