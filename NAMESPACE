@@ -138,12 +138,7 @@ export(
 
     ## encodeOverlaps-methods.R:
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
-
-    ## findSpliceOverlaps-methods.R:
-    findSpliceOverlaps
-
-     
+    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks
 )
 
 ### Exactly the same list as above.
@@ -167,8 +162,6 @@ exportMethods(
     assays, "assays<-",
     assay, "assay<-",
     isCompatibleWithSplicing, isCompatibleWithSkippedExons,
-    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks,
-    findSpliceOverlaps
-  
+    extractSteppedExonRanks, extractSpannedExonRanks, extractSkippedExonRanks
 )
 
