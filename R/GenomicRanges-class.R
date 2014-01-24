@@ -762,7 +762,7 @@ setMethod("c", "GenomicRanges",
     lx <- length(x)
     nc <- ncol(mcols(x))
     ans <- cbind(seqnames=as.character(seqnames(x)),
-                 ranges=IRanges:::showAsCell(ranges(x)),
+                 ranges=showAsCell(ranges(x)),
                  strand=as.character(strand(x)))
     extraColumnNames <- extraColumnSlotNames(x)
     if (length(extraColumnNames) > 0L) {
@@ -770,8 +770,7 @@ setMethod("c", "GenomicRanges",
                        c(list(ans), lapply(extraColumnSlots(x), showAsCell)))
     }
     if (nc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(mcols(x),
-                                            IRanges:::showAsCell),
+        tmp <- do.call(data.frame, c(lapply(mcols(x), showAsCell),
                                      list(check.names=FALSE)))
         ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
     }

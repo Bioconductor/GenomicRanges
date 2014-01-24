@@ -240,9 +240,9 @@ setMethod("order", "GenomicRanges",
         stop("'ignore.strand' must be TRUE or FALSE")
     if (ignore.strand) {
         x2 <- unstrand(x)
-        i <- order(x2, na.last=na.last, decreasing=decreasing)
+        i <- order(x2, decreasing=decreasing)
     } else {
-        i <- order(x, na.last=na.last, decreasing=decreasing)
+        i <- order(x, decreasing=decreasing)
     }
     IRanges:::extractROWS(x, i)
 }
