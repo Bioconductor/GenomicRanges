@@ -13,6 +13,8 @@
 \alias{match,GenomicRanges,GenomicRanges-method}
 
 \alias{order,GenomicRanges-method}
+\alias{sort,GenomicRanges-method}
+\alias{sort.GenomicRanges}
 \alias{rank,GenomicRanges-method}
 
 
@@ -47,6 +49,8 @@
 ## ----------------------------
 
 \S4method{order}{GenomicRanges}(..., na.last=TRUE, decreasing=FALSE)
+
+\S4method{sort}{GenomicRanges}(x, decreasing=FALSE, ignore.strand=FALSE)
 
 \S4method{rank}{GenomicRanges}(x, na.last=TRUE,
      ties.method=c("average", "first", "random", "max", "min"))
@@ -141,6 +145,7 @@ gr0 <- GRanges(
         strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
         seqlengths=c(chr1=11, chr2=12, chr3=13))
 gr <- c(gr0, gr0[7:3])
+names(gr) <- LETTERS[seq_along(gr)]
 
 ## ---------------------------------------------------------------------
 ## A. ELEMENT-WISE (AKA "PARALLEL") COMPARISON OF 2 GenomicRanges OBJECTS
@@ -182,6 +187,7 @@ countMatches(gr_levels, gr)
 ## ---------------------------------------------------------------------
 order(gr)
 sort(gr)
+sort(gr, ignore.strand=TRUE)
 rank(gr)
 
 ## ---------------------------------------------------------------------

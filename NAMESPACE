@@ -23,12 +23,17 @@ exportClasses(
 
 S3method(duplicated, GenomicRanges)
 
+S3method(sort, GenomicRanges)
+
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
 ### and (c) methods() doesn't asterisk them.
 export(
-    duplicated.GenomicRanges
+    duplicated.GenomicRanges,
+
+    sort.GenomicRanges
 )
+
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

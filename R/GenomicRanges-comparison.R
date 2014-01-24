@@ -233,6 +233,23 @@ setMethod("order", "GenomicRanges",
     }
 )
 
+### S3/S4 combo for sort.GenomicRanges
+.sort.GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
+{
+    if (!isTRUEorFALSE(ignore.strand))
+        stop("'ignore.strand' must be TRUE or FALSE")
+    if (ignore.strand) {
+        x2 <- unstrand(x)
+        i <- order(x2, na.last=na.last, decreasing=decreasing)
+    } else {
+        i <- order(x, na.last=na.last, decreasing=decreasing)
+    }
+    IRanges:::extractROWS(x, i)
+}
+sort.GenomicRanges <- function(x, decreasing=FALSE, ...)
+    .sort.GenomicRanges(x, decreasing=decreasing, ...)
+setMethod("sort", "GenomicRanges", .sort.GenomicRanges)
+
 setMethod("rank", "GenomicRanges",
     function(x, na.last=TRUE,
              ties.method=c("average", "first", "random", "max", "min"))
