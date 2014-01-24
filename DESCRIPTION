@@ -12,7 +12,7 @@ Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Sequencing, HighThroughputSequencing, Annotation
 Depends: R (>= 2.10), methods, BiocGenerics (>= 0.7.7), IRanges (>= 1.21.16)
-Imports: methods, utils, stats, BiocGenerics, IRanges
+Imports: methods, utils, stats, BiocGenerics, IRanges, XVector
 LinkingTo: IRanges, XVector (>= 0.3.4)
 Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub,
 	BSgenome, BSgenome.Hsapiens.UCSC.hg19,

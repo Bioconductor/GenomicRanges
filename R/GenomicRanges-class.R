@@ -32,6 +32,15 @@ setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
 minStartPerGRangesSequence <- function(x)
 {
     cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
+    ## The 4 lines below are equivalent to:
+    ##   ans <- min(cil)
+    ##   ans[elementLengths(v) == 0L] <- NA_integer_
+    ## but much faster!
+    ## TODO: Replace with the above, but only when the "min" method for
+    ## CompressedIntegerList objects (implemented in the IRanges package)
+    ## is as fast as the "viewMins" method for XIntegerViews objects
+    ## (implemented in C in the XVector package). Ideally, the 2 methods
+    ## should share the same underlying code.
     v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
     ans <- viewMins(v)
     ans[width(v) == 0L] <- NA_integer_
@@ -42,6 +51,15 @@ minStartPerGRangesSequence <- function(x)
 maxEndPerGRangesSequence <- function(x)
 {
     cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
+    ## The 4 lines below are equivalent to:
+    ##   ans <- max(cil)
+    ##   ans[elementLengths(v) == 0L] <- NA_integer_
+    ## but much faster!
+    ## TODO: Replace with the above, but only when the "max" method for
+    ## CompressedIntegerList objects (implemented in the IRanges package)
+    ## is as fast as the "viewMaxs" method for XIntegerViews objects
+    ## (implemented in C in the XVector package). Ideally, the 2 methods
+    ## should share the same underlying code.
     v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
     ans <- viewMaxs(v)
     ans[width(v) == 0L] <- NA_integer_

@@ -178,8 +178,13 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     f <- paste(by[,1], by[,2], sep="|")
     f <- factor(f, levels=unique(f))
     cil <- splitAsList(x, f)  # CompressedIntegerList
-    v <- Views(cil@unlistData, cil@partitioning)
-    viewSums(v)
+    ## The line below is equivalent to 'sum(unname(cil))', but much faster!
+    ## TODO: Replace with 'sum(unname(cil))', but only when the "sum" method
+    ## for CompressedIntegerList objects (implemented in the IRanges package)
+    ## is as fast as the "viewSums" method for XIntegerViews objects
+    ## (implemented in C in the XVector package). Ideally, the 2 methods
+    ## should share the same underlying code.
+    viewSums(Views(cil@unlistData, cil@partitioning))
 }
 
 .updateMatchMatrix <- function(matchMatrix, intrsct, minoverlap) {

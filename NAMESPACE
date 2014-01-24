@@ -5,6 +5,9 @@ import(utils)  # for as.roman()
 importFrom(stats, setNames)
 import(BiocGenerics)
 import(IRanges)
+import(XVector)  # only for the "Views" method for integer vectors, the
+                 # XIntegerViews class, and the "viewMins", "viewMaxs", and
+                 # "viewSums" methods for XIntegerViews objects
 
 
 exportClasses(
