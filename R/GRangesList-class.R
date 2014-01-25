@@ -637,25 +637,3 @@ reconstructGRLfromGR <- function(gr, x)
     ans
 }
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### matching
-### 
-
-setMethod("match", c("GRangesList", "GRangesList"), function(x, table) {
-  ### FIXME: broken because we need to check for duplications in the pairs:
-  ### (subjectHits(m), table.hits) or
-  ### (queryHits(m), x.hits)
-  m <- findMatches(unlist(table, use.names=FALSE), unlist(x, use.names=FALSE))
-  x.part <- PartitioningByWidth(x)
-  table.part <- PartitioningByWidth(table)
-  x.hits <- togroup(x.part)[subjectHits(m)]
-  table.hits <- togroup(table.part)[queryHits(m)]
-  sm <- IRanges:::selfmatchIntegerPairs(x.hits, table.hits)
-  tab <- tabulate(sm, length(sm))
-  x.len <- width(x.part)[x.hits]
-  table.len <- width(table.part)[table.hits]
-  matched <- tab == x.len & tab == table.len
-  ans <- rep(NA, length(x))
-  ans[rev(x.hits[matched])] <- rev(table.hits[matched])
-  ans
-})
