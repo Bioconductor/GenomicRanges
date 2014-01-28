@@ -400,5 +400,27 @@ test_findOverlaps_with_circular_sequences <- function()
                    subjectHits = unname(matchMatrix3[ , 2L]),
                    queryLength = 4L, subjectLength = 4L)
     checkIdentical(target3, current3)
-}
 
+    ## type = "within"
+    ## With A of length 8 --> range 3 is within range 2 
+    gr <- GRanges(seqnames=rep.int("A", 4),
+                  ranges=IRanges(start=c(2, 4, 6, 8), width=c(3, 3, 3, 5)))
+    gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=8, isCircular=TRUE)
+    current4 <- findOverlaps(gr, gr, type="within")
+    matchMatrix4 <- matrix(c(1L, 1L, 2L, 3L, 4L, 
+                             1L, 4L, 2L, 3L, 4L), ncol = 2,
+                           dimnames = list(NULL, c("queryHits", "subjectHits")))
+    target4 <- new("Hits",
+                   queryHits = unname(matchMatrix4[ , 1L]),
+                   subjectHits = unname(matchMatrix4[ , 2L]),
+                   queryLength = 4L, subjectLength = 4L)
+    checkIdentical(target4, current4)
+    ## With A of length 9 --> range 3 is not within range 2 
+    gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=9, isCircular=TRUE)
+    current5 <- findOverlaps(gr, gr, type="within")
+    target5 <- new("Hits",
+                   queryHits = unname(matchMatrix2[ , 1L]),
+                   subjectHits = unname(matchMatrix2[ , 2L]),
+                   queryLength = 4L, subjectLength = 4L)
+    checkIdentical(target5, current5)
+}

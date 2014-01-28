@@ -24,9 +24,9 @@
     s_len <- length(subject)
     if (q_len == 0L || s_len == 0L)
         return(new("Hits", queryLength=q_len, subjectLength=s_len))
-    if (type != "any")
-        stop("overlap type \"", type, "\" is not yet supported ",
-             "for circular sequence ", names(circle.length))
+    #if (type != "any")
+    #    stop("overlap type \"", type, "\" is not yet supported ",
+    #         "for circular sequence ", names(circle.length))
     subject0 <- .putRangesOnFirstCircle(subject, circle.length)
     inttree0 <- IntervalTree(subject0)
     query0 <- .putRangesOnFirstCircle(query, circle.length)
