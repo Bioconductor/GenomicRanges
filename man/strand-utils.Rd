@@ -36,27 +36,24 @@
 
 \details{
   If \code{x} is missing, returns an empty factor with the
-  standard levels that any strand factor should have: \code{+},
-  \code{-}, and \code{*}.
+  "standard strand levels" i.e. \code{+}, \code{-}, and \code{*}.
 
-  If \code{x} is a character vector or factor, it is coerced to a factor
-  with the levels listed above.
+  If \code{x} is a character vector or factor, it is coerced to a
+  factor with the levels listed above.
 
   If \code{x} is an integer vector, it is coerced to a factor
-  with the levels listed above. \code{1} and \code{-1}
-  values in \code{x} are mapped to the \code{+} and \code{-}
-  levels respectively. \code{NA}s in \code{x} produce \code{NA}s
-  in the result.
+  with the levels listed above. \code{1}, \code{-1}, and \code{NA}
+  values in \code{x} are mapped to the \code{+}, \code{-}, and
+  \code{*} levels respectively.
 
   If \code{x} is a logical vector, it is coerced to a factor
-  with the levels listed above. \code{FALSE} and \code{TRUE}
-  values in \code{x} are mapped to the \code{+} and \code{-}
-  levels respectively. \code{NA}s in \code{x} produce \code{NA}s
-  in the result.
+  with the levels listed above. \code{FALSE}, \code{TRUE}, and \code{NA}
+  values in \code{x} are mapped to the \code{+}, \code{-}, and
+  \code{*} levels respectively.
 
-  If \code{x} is a 'logical'-\link[IRanges]{Rle} vector, it is
-  transformed with \code{runValue(x) <- strand(runValue(x))}
-  and returned.
+  If \code{x} is a character-, factor-, integer-, or
+  logical-\link[IRanges]{Rle}, it is transformed with
+  \code{runValue(x) <- strand(runValue(x))} and returned.
 
   If \code{x} inherits from \code{DataTable}, the \code{"strand"}
   column is returned as a factor with the levels listed above. If
@@ -64,7 +61,7 @@
   populated with \code{NA}s.
 }
 
-\author{ Michael Lawrence }
+\author{Michael Lawrence and H. Pages}
 
 \seealso{
   \code{\link[BiocGenerics]{strand}}
@@ -72,10 +69,27 @@
 
 \examples{
 strand()
-strand(c("+", "-", NA, "*"))
-strand(c(-1L, 1L, NA, -1L, NA))
-strand(c(FALSE, FALSE, TRUE, NA, TRUE, FALSE))
-strand(Rle(c(FALSE, FALSE, TRUE, NA, TRUE, FALSE)))
+
+x1 <- c("-", "*", "*", "+", "-", "*")
+x2 <- c(-1L, NA, NA, 1L, -1L, NA)
+x3 <- c(TRUE, NA, NA, FALSE, TRUE, NA)
+
+strand(x1)
+strand(x2)
+strand(x3)
+
+strand(Rle(x1))
+strand(Rle(x2))
+strand(Rle(x3))
+
+## Sanity checks:
+target <- strand(x1)
+stopifnot(identical(target, strand(x2)))
+stopifnot(identical(target, strand(x3)))
+target <- Rle(target)
+stopifnot(identical(target, strand(Rle(x1))))
+stopifnot(identical(target, strand(Rle(x2))))
+stopifnot(identical(target, strand(Rle(x3))))
 }
 
 \keyword{methods}

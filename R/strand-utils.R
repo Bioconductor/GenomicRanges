@@ -1,53 +1,63 @@
-### Strand utilities.
+### =========================================================================
+### Strand utilities
+### -------------------------------------------------------------------------
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some "strand" and "strand<-" methods
+###
 
 setMethod("strand", "missing", function(x) factor(levels=c("+","-","*")))
 
 setMethod("strand", "character",
-    function(x) {
+    function(x)
+    {
         lvls <- levels(strand())
-        if (!all(is.na(x) | (x %in% lvls)))
+        if (!all(x %in% lvls))
             stop("strand values must be in '", paste(lvls, collapse="' '"), "'")
         factor(x, levels=lvls)
-    })
+    }
+)
 
-setMethod("strand", "factor",
-    function(x) {
-        lvls <- levels(strand())
-        if (length(setdiff(levels(x), lvls)))
-            stop("strand values must be in '", paste(lvls, collapse="' '"), "'")
-        factor(x, levels=lvls)
-    })
+setMethod("strand", "factor", function(x) strand(as.character(x)))
 
 setMethod("strand", "integer",
-    function(x) {
+    function(x)
+    {
         lvls <- c(1L, -1L, NA)
-        if (length(setdiff(x, lvls)))
+        if (!all(x %in% lvls))
             stop("strand values must be in '", paste(lvls, collapse="' '"), "'")
-        ans <- strand()
-        length(ans) <- length(x)
+        ans <- rep.int(strand("*"), length(x))
         ans[x ==  1L] <- "+"
         ans[x == -1L] <- "-"
         ans
-    })
+    }
+)
 
 setMethod("strand", "logical",
-    function(x) {
-        ans <- strand()
-        length(ans) <- length(x)
+    function(x)
+    {
+        ans <- rep.int(strand("*"), length(x))
         ans[!x] <- "+"
         ans[ x] <- "-"
         ans
-    })
+    }
+)
 
 setMethod("strand", "Rle",
-    function(x) {
+    function(x)
+    {
         x_runValue <- runValue(x)
-        if (!is.logical(x_runValue))
-            stop("only 'logical'-Rle's are supported by \"strand\" method",
-                 "for Rle objects at the moment, sorry")
+        if (!(is.character(x_runValue) ||
+              is.factor(x_runValue) ||
+              is.integer(x_runValue) ||
+              is.logical(x_runValue)))
+            stop("\"strand\" method for Rle objects only works on a ",
+                 "character-, factor-, integer-, or logical-Rle object")
         runValue(x) <- strand(x_runValue)
         x
-    })
+    }
+)
 
 setMethod("strand", "DataTable",
     function(x) {
@@ -65,6 +75,11 @@ setReplaceMethod("strand", "DataTable", function(x, value) {
   x$strand <- normargGenomicRangesStrand(value, nrow(x))
   x
 })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### compatibleStrand() generic and methods
+###
 
 setGeneric("compatibleStrand", signature=c("x","y"),  # not exported
     function(x, y) standardGeneric("compatibleStrand")
@@ -123,3 +138,4 @@ setMethod("compatibleStrand", c("Rle", "Rle"),  # not exported
         ans
     }
 )
+
