@@ -3,6 +3,7 @@
 \alias{strand-utils}
 
 \alias{strand,missing-method}
+\alias{strand,NULL-method}
 \alias{strand,character-method}
 \alias{strand,factor-method}
 \alias{strand,integer-method}

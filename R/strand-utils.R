@@ -8,6 +8,7 @@
 ###
 
 setMethod("strand", "missing", function(x) factor(levels=c("+","-","*")))
+setMethod("strand", "NULL", function(x) strand())
 
 setMethod("strand", "character",
     function(x)
