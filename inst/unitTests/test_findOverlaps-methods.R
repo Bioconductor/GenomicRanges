@@ -402,6 +402,26 @@ test_findOverlaps_with_circular_sequences <- function()
     checkIdentical(target3, current3)
 
     ## type = "within"
+    q0 <- GRanges("A", IRanges(c(11, 5, 4, 11, 11, 4), 
+                     c(30, 30, 30, 50, 51, 51)))
+    s0 <- GRanges("A", IRanges(5, width=46))
+    s0@seqinfo <- Seqinfo(seqnames="A", seqlengths=100, isCircular=TRUE)
+    ## sanity check with linear shift 
+    fo0 <- findOverlaps(q0, s0, type="within")
+    expected <- c(1L, 2L, 4L)
+    checkIdentical(queryHits(fo0), expected)
+    A=90
+    q1 <- shift(q0, A)
+    s1 <- shift(s0, A)
+    fo1 <- findOverlaps(q1, s1, type="within")
+    checkIdentical(queryHits(fo1), expected)
+    ## circular shift 
+    n1=-1; n2=0
+    q2 <- shift(q0, A + 100 * n1)
+    s2 <- shift(s0, A + 100 * n2)
+    fo1 <- findOverlaps(q1, s1, type="within")
+    checkIdentical(queryHits(fo1), expected)
+
     ## With A of length 8 --> range 3 is within range 2 
     gr <- GRanges(seqnames=rep.int("A", 4),
                   ranges=IRanges(start=c(2, 4, 6, 8), width=c(3, 3, 3, 5)))
