@@ -63,8 +63,8 @@
 }
 
 \value{
-  A factor (or factor-Rle) with the "standard strand levels" (i.e.
-  \code{+}, \code{-}, and \code{*}) and no NAs.
+  A factor (or factor-\link[IRanges]{Rle}) with the "standard strand levels"
+  (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
 }
 
 \author{Michael Lawrence and H. Pages}
