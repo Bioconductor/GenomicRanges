@@ -57,9 +57,14 @@
   \code{runValue(x) <- strand(runValue(x))} and returned.
 
   If \code{x} inherits from \code{DataTable}, the \code{"strand"}
-  column is returned as a factor with the levels listed above. If
-  \code{x} has no \code{"strand"} column, this return value is
-  populated with \code{NA}s.
+  column is passed thru \code{strand()} and returned.
+  If \code{x} has no \code{"strand"} column, this return value is
+  populated with \code{*}s.
+}
+
+\value{
+  A factor (or factor-Rle) with the "standard strand levels" (i.e.
+  \code{+}, \code{-}, and \code{*}) and no NAs.
 }
 
 \author{Michael Lawrence and H. Pages}
@@ -82,6 +87,10 @@ strand(x3)
 strand(Rle(x1))
 strand(Rle(x2))
 strand(Rle(x3))
+
+strand(DataFrame(score=2:-3))
+strand(DataFrame(score=2:-3, strand=x2))
+strand(DataFrame(score=2:-3, strand=Rle(x2)))
 
 ## Sanity checks:
 target <- strand(x1)

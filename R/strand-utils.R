@@ -61,16 +61,17 @@ setMethod("strand", "Rle",
 )
 
 setMethod("strand", "DataTable",
-    function(x) {
+    function(x)
+    {
         ans <- x[["strand"]]
-        if (is.null(ans))
-            ans <- strand(rep(NA_character_, nrow(x)))
-        else if (is.character(ans))
+        if (is.null(ans)) {
+            ans <- rep.int(strand("*"), nrow(x))
+        } else {
             ans <- strand(ans)
-        else if (is(ans, "Rle"))
-            ans <- as.factor(ans)
+        }
         ans
-    })
+    }
+)
 
 setReplaceMethod("strand", "DataTable", function(x, value) {
   x$strand <- normargGenomicRangesStrand(value, nrow(x))
