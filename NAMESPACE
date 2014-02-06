@@ -70,7 +70,7 @@ exportMethods(
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
-    relistReturnedClass, splitAsListReturnedClass,
+    relistToClass, splitAsListReturnedClass,
     width, "start<-", "width<-", "end<-",
     compare,
     ranges, "ranges<-",

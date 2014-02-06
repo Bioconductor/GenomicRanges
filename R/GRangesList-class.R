@@ -477,10 +477,10 @@ setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 ### Going from GRanges to GRangesList with extractList() and family.
 ###
 
-setMethod("relistReturnedClass", "GRanges", function(x) "GRangesList")
+setMethod("relistToClass", "GRanges", function(x) "GRangesList")
 
 setMethod("splitAsListReturnedClass", "GRanges",
-    function(x) {.Deprecated("relistReturnedClass"); "GRangesList"}
+    function(x) {.Deprecated("relistToClass"); "GRangesList"}
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

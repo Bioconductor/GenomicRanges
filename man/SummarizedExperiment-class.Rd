@@ -424,7 +424,7 @@ exptData(x, ...) <- value
   \code{\link{restrict}}, \code{\link{seqinfo}},
   \code{\link{seqinfo<-}}, \code{\link{seqnames}},
   \code{\link{shift}},
-  \code{\link{sort}}, \code{split}, \code{relistReturnedClass},
+  \code{\link{sort}}, \code{split}, \code{relistToClass},
   \code{\link{start}}, \code{\link{start<-}},
   \code{\link{strand}}, \code{\link{strand<-}},
   \code{\link{subsetByOverlaps}}, \code{\link{width}},
