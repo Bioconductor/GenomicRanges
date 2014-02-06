@@ -40,7 +40,8 @@
   "standard strand levels" i.e. \code{+}, \code{-}, and \code{*}.
 
   If \code{x} is a character vector or factor, it is coerced to a
-  factor with the levels listed above.
+  factor with the levels listed above. \code{NA} values in \code{x}
+  are not accepted.
 
   If \code{x} is an integer vector, it is coerced to a factor
   with the levels listed above. \code{1}, \code{-1}, and \code{NA}
@@ -77,29 +78,33 @@
 strand()
 
 x1 <- c("-", "*", "*", "+", "-", "*")
-x2 <- c(-1L, NA, NA, 1L, -1L, NA)
-x3 <- c(TRUE, NA, NA, FALSE, TRUE, NA)
+x2 <- factor(c("-", "-", "+", "-"))
+x3 <- c(-1L, NA, NA, 1L, -1L, NA)
+x4 <- c(TRUE, NA, NA, FALSE, TRUE, NA)
 
 strand(x1)
 strand(x2)
 strand(x3)
+strand(x4)
 
 strand(Rle(x1))
 strand(Rle(x2))
 strand(Rle(x3))
+strand(Rle(x4))
 
 strand(DataFrame(score=2:-3))
-strand(DataFrame(score=2:-3, strand=x2))
-strand(DataFrame(score=2:-3, strand=Rle(x2)))
+strand(DataFrame(score=2:-3, strand=x3))
+strand(DataFrame(score=2:-3, strand=Rle(x3)))
 
 ## Sanity checks:
 target <- strand(x1)
-stopifnot(identical(target, strand(x2)))
 stopifnot(identical(target, strand(x3)))
-target <- Rle(target)
-stopifnot(identical(target, strand(Rle(x1))))
-stopifnot(identical(target, strand(Rle(x2))))
-stopifnot(identical(target, strand(Rle(x3))))
+stopifnot(identical(target, strand(x4)))
+
+stopifnot(identical(Rle(strand(x1)), strand(Rle(x1))))
+stopifnot(identical(Rle(strand(x2)), strand(Rle(x2))))
+stopifnot(identical(Rle(strand(x3)), strand(Rle(x3))))
+stopifnot(identical(Rle(strand(x4)), strand(Rle(x4))))
 }
 
 \keyword{methods}

@@ -20,7 +20,22 @@ setMethod("strand", "character",
     }
 )
 
-setMethod("strand", "factor", function(x) strand(as.character(x)))
+setMethod("strand", "factor",
+    function(x)
+    {
+        if (any(is.na(x)))
+            stop("NA not a valid strand value, use \"*\" instead")
+        lvls <- levels(strand())
+        x_levels <- levels(x)
+        if (identical(x_levels, lvls))
+            return(x)
+        invalid_levels <- setdiff(x_levels, lvls)
+        if (length(invalid_levels) != 0L)
+            stop("invalid strand levels in 'x': ",
+                 paste(invalid_levels, collapse=", "))
+        factor(x, levels=lvls)
+    }
+)
 
 setMethod("strand", "integer",
     function(x)
