@@ -75,7 +75,7 @@ exportMethods(
     compare,
     ranges, "ranges<-",
     ngap,
-    score,
+    score, "score<-",
     shift, narrow, flank, resize, promoters, restrict,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,

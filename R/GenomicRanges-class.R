@@ -96,6 +96,10 @@ setGeneric("extraColumnSlotNames",
 
 setMethod("extraColumnSlotNames", "ANY", function(x) character())
 
+setMethod("fixedColumnNames", "GenomicRanges", function(x) {
+  colnames(as.data.frame(new(class(x))))
+})
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
 ###
@@ -423,6 +427,10 @@ setReplaceMethod("seqinfo", "GenomicRanges",
 )
 
 setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
+setReplaceMethod("score", "GenomicRanges", function(x, value) {
+  mcols(x)$score <- value
+  x
+})
 
 #setReplaceMethod("constraint", "GenomicRanges",
 #    function(x, value)
