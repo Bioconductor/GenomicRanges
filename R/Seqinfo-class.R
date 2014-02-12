@@ -539,7 +539,6 @@ setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
 {
   ## We load AnnotationDbi to get supportedSeqnames() and
   ## listAllSupportedSeqnameStyles().
-  library(AnnotationDbi)
   seqnames <- seqnames(x)
   ## Get vector of ALL possible chromosome names
   allNames <- AnnotationDbi::supportedSeqnames()  
@@ -574,8 +573,6 @@ setMethod("seqnameStyle", "Seqinfo", .getSeqnameStyle)
 setReplaceMethod("seqnameStyle", "Seqinfo",
     function(x, value)
     {
-        ## We load AnnotationDbi to get findSequenceRenamingMaps().
-        library(AnnotationDbi)
         x_seqnames <- seqnames(x)
         renaming_maps <- AnnotationDbi::findSequenceRenamingMaps(x_seqnames,
                                                                  value,
