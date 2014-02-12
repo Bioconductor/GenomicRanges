@@ -4,7 +4,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	annotations and alignments is playing a central role when it comes
 	to analyze high-throughput sequencing data (a.k.a. NGS data).
 	The package defines general purpose containers for storing genomic
-	intervals. Specialized containers for representating and manipulating
+	intervals. Specialized containers for representing and manipulating
 	short alignments against a reference genome are defined in the
 	GenomicAlignments package.
 Version: 1.15.28
