@@ -335,6 +335,11 @@ setMethod("score", "GRangesList", function(x) {
   mcols(x)$score
 })
 
+setReplaceMethod("score", "GRangesList", function(x, value) {
+  mcols(x)$score <- value
+  x
+})
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### RangesList methods.
 ###
