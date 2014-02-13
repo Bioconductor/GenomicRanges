@@ -234,8 +234,14 @@ setMethod("order", "GenomicRanges",
 )
 
 ### S3/S4 combo for sort.GenomicRanges
-.sort.GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
+.sort.GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE, by)
 {
+    if (!missing(by)) {
+        if (!missing(ignore.strand)) {
+            warning("'ignore.strand' ignored when 'by' is specified")
+        }
+        return(IRanges:::sortBy(x, by, decreasing=decreasing))
+    }
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
     if (ignore.strand) {
