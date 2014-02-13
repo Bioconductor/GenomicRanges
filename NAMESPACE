@@ -83,7 +83,8 @@ exportMethods(
     findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
     map,
-    tile
+    tile,
+    subset
 )
 
 

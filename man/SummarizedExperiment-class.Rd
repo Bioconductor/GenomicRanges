@@ -52,6 +52,7 @@
 
 % Subset methods
 \alias{[,SummarizedExperiment-method}
+\alias{[,SummarizedExperiment,ANY-method}
 \alias{[<-,SummarizedExperiment,ANY,ANY,SummarizedExperiment-method}
 \alias{$,SummarizedExperiment-method}
 \alias{$<-,SummarizedExperiment,ANY-method}
@@ -124,6 +125,7 @@
 \alias{start<-,SummarizedExperiment-method}
 \alias{strand,SummarizedExperiment-method}
 \alias{strand<-,SummarizedExperiment-method}
+\alias{subset,SummarizedExperiment-method}
 \alias{subsetByOverlaps,SummarizedExperiment,SummarizedExperiment-method}
 \alias{subsetByOverlaps,SummarizedExperiment,Vector-method}
 \alias{subsetByOverlaps,Vector,SummarizedExperiment-method}
@@ -191,6 +193,7 @@ exptData(x, ...) <- value
 
 \S4method{[}{SummarizedExperiment}(x, i, j, ..., drop=TRUE)
 \S4method{[}{SummarizedExperiment,ANY,ANY,SummarizedExperiment}(x, i, j) <- value
+\S4method{subset}{SummarizedExperiment}(x, subset, select, ...)
 
 ## Combining 
 
@@ -257,6 +260,14 @@ exptData(x, ...) <- value
     \code{colData}.
 
   }
+
+  \item{subset}{An expression which, when evaluated in the
+    context of \code{rowData(x)}, is a logical vector indicating
+    elements or rows to keep: missing values are taken as false.}
+
+  \item{select}{An expression which, when evaluated in the
+    context of \code{colData(x)}, is a logical vector indicating
+    elements or rows to keep: missing values are taken as false.}
 
   \item{name}{A symbol representing the name of a column of
   \code{colData}.}
@@ -452,6 +463,13 @@ exptData(x, ...) <- value
       must be a \code{SummarizedExperiment} instance with dimensions,
       dimension names, and assay elements consistent with the subset
       \code{x[i,j]} being replaced.}
+
+    \item{\code{subset(x, subset, select)}:}{Create a subset of \code{x}
+      using an expression \code{subset} referring to columns of
+      \code{rowData(x)} (including \sQuote{seqnames}, \sQuote{start},
+      \sQuote{end}, \sQuote{width}, \sQuote{strand}, and
+      \code{names(mcols(x))}) and / or \code{select} referring to
+      column names of \code{colData(x)}.}
 
   }
 
