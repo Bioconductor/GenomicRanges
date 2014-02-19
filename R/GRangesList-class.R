@@ -172,6 +172,10 @@ setMethod("as.data.frame", "GRangesList", GRangesListAsdataframe)
         elementMetadata=from@elementMetadata)
 }
 
+setAs("GRangesList", "RangesList",
+    .GRangesListAsCompressedIRangesList
+)
+
 setAs("GRangesList", "CompressedIRangesList",
     .GRangesListAsCompressedIRangesList
 )
