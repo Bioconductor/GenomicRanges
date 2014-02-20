@@ -1,6 +1,7 @@
 \name{findOverlaps-methods}
 \alias{findOverlaps-methods}
 
+\alias{findOverlaps}
 \alias{findOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GIntervalTree-method}
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
@@ -15,6 +16,7 @@
 \alias{findOverlaps,GenomicRanges,RangedData-method}
 \alias{findOverlaps,GRangesList,RangedData-method}
 
+\alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,Vector-method}
 \alias{countOverlaps,Vector,GenomicRanges-method}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
@@ -24,6 +26,7 @@
 \alias{countOverlaps,GRanges,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRanges-method}
 
+\alias{overlapsAny}
 \alias{overlapsAny,GenomicRanges,GenomicRanges-method}
 \alias{overlapsAny,GRangesList,GenomicRanges-method}
 \alias{overlapsAny,GenomicRanges,GRangesList-method}
@@ -37,19 +40,7 @@
 \alias{overlapsAny,GenomicRanges,RangedData-method}
 \alias{overlapsAny,GRangesList,RangedData-method}
 
-\alias{overlapsAny,GenomicRanges,GenomicRanges-method}
-\alias{overlapsAny,GRangesList,GenomicRanges-method}
-\alias{overlapsAny,GenomicRanges,GRangesList-method}
-\alias{overlapsAny,GRangesList,GRangesList-method}
-\alias{overlapsAny,RangesList,GenomicRanges-method}
-\alias{overlapsAny,RangesList,GRangesList-method}
-\alias{overlapsAny,GenomicRanges,RangesList-method}
-\alias{overlapsAny,GRangesList,RangesList-method}
-\alias{overlapsAny,RangedData,GenomicRanges-method}
-\alias{overlapsAny,RangedData,GRangesList-method}
-\alias{overlapsAny,GenomicRanges,RangedData-method}
-\alias{overlapsAny,GRangesList,RangedData-method}
-
+\alias{subsetByOverlaps}
 \alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
 \alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
