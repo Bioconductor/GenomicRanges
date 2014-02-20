@@ -2,11 +2,22 @@
 
 \alias{inter-range-methods}
 
-\alias{reduce,GenomicRanges-method}
+\alias{range}
 \alias{range,GenomicRanges-method}
+
+\alias{reduce}
+\alias{reduce,GenomicRanges-method}
+
+\alias{gaps}
 \alias{gaps,GenomicRanges-method}
+
+\alias{disjoin}
 \alias{disjoin,GenomicRanges-method}
+
+\alias{isDisjoint}
 \alias{isDisjoint,GenomicRanges-method}
+
+\alias{disjointBins}
 \alias{disjointBins,GenomicRanges-method}
 
 

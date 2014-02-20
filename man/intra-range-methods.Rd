@@ -2,16 +2,29 @@
 
 \alias{intra-range-methods}
 
+\alias{shift}
 \alias{shift,GenomicRanges-method}
 \alias{shift,GRangesList-method}
+
+\alias{narrow}
 \alias{narrow,GenomicRanges-method}
+
+\alias{flank}
 \alias{flank,GenomicRanges-method}
 \alias{flank,GRangesList-method}
+
+\alias{promoters}
 \alias{promoters,GenomicRanges-method}
 \alias{promoters,GRangesList-method}
+
+\alias{resize}
 \alias{resize,GenomicRanges-method}
+
+\alias{restrict}
 \alias{restrict,GenomicRanges-method}
 \alias{restrict,GRangesList-method}
+
+\alias{trim}
 \alias{trim,GenomicRanges-method}
 
 \alias{Ops,GenomicRanges,numeric-method}
