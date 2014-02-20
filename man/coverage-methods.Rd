@@ -1,6 +1,7 @@
 \name{coverage-methods}
 \alias{coverage-methods}
 
+\alias{coverage}
 \alias{coverage,GenomicRanges-method}
 \alias{coverage,GRangesList-method}
 
