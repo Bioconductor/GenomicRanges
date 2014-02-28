@@ -18,9 +18,9 @@
 }
 
 \usage{
-granges(x, ...)
-grglist(x, ...)
-rglist(x, ...)
+granges(x, use.mcols=FALSE, ...)
+grglist(x, use.mcols=FALSE, ...)
+rglist(x, use.mcols=FALSE, ...)
 }
 
 \arguments{
@@ -29,6 +29,11 @@ rglist(x, ...)
     \link[GenomicAlignments]{GAlignments},
     \link[GenomicAlignments]{GAlignmentPairs},
     or \link[GenomicAlignments]{GAlignmentsList} object.
+  }
+  \item{use.mcols}{
+    \code{TRUE} or \code{FALSE} (the default).
+    Whether the metadata columns on \code{x} (accessible with \code{mcols(x)})
+    should be propagated to the returned object or not.
   }
   \item{...}{
     Additional arguments, for use in specific methods.
@@ -61,7 +66,10 @@ rglist(x, ...)
   If \code{x} is a vector-like object (e.g.
   \link[GenomicAlignments]{GAlignments}), the returned object is expected
   to be \emph{parallel} to \code{x}, that is, the i-th element in the output
-  corresponds to the i-th element in the input.
+  corresponds to the i-th element in the input. If \code{x} has names on it,
+  they're propagated to the returned object. If \code{use.mcols=TRUE} and
+  \code{x} has metadata columns on it, they're propagated to the returned
+  object.
 }
 
 \author{H. Pages}

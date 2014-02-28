@@ -90,7 +90,13 @@ local({
 })
 
 setMethod("granges", "SummarizedExperiment",
-    function(x, ...) rowData(x))
+    function(x, use.mcols=FALSE, ...)
+{
+    if (!identical(use.mcols, FALSE))
+        stop("\"granges\" method for SummarizedExperiment objects ",
+             "does not support the 'use.mcols' argument")
+    rowData(x)
+})
 
 ## 2-argument dispatch:
 ## compare / Compare 

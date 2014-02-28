@@ -3,12 +3,18 @@
 ### -------------------------------------------------------------------------
 
 ### Extract the ranges as a GRanges object.
-setGeneric("granges", function(x, ...) standardGeneric("granges"))
+setGeneric("granges", signature="x",
+    function(x, use.mcols=FALSE, ...) standardGeneric("granges")
+)
 
 ### Extract the ranges as a GRangesList object.
-setGeneric("grglist", function(x, ...) standardGeneric("grglist"))
+setGeneric("grglist", signature="x",
+    function(x, use.mcols=FALSE, ...) standardGeneric("grglist")
+)
 
 ### Extract the ranges as a RangesList object.
-### TODO: Maybe this one should be in IRanges?
-setGeneric("rglist", function(x, ...) standardGeneric("rglist"))
+### TODO: This one should probably be in IRanges.
+setGeneric("rglist", signature="x",
+    function(x, use.mcols=FALSE, ...) standardGeneric("rglist")
+)
 

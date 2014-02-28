@@ -3,7 +3,10 @@
 ### -------------------------------------------------------------------------
 ###
 
-setMethod("granges",  "RangesMapping", function(x) {
+setMethod("granges",  "RangesMapping", function(x, use.mcols=FALSE) {
+  if (!identical(use.mcols, FALSE))
+    stop("\"granges\" method for RangesMapping objects ",
+         "does not support the 'use.mcols' argument")
   GRanges(space(x), ranges(x))
 })
 
