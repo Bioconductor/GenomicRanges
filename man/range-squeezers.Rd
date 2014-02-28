@@ -51,9 +51,10 @@ rglist(x, use.mcols=FALSE, ...)
   Note that these functions can be seen as a specific kind of \emph{object
   getters} as well as functions performing coercion.
   For some objects (e.g. \link[GenomicAlignments]{GAlignments}),
-  \code{granges(x)}, \code{grglist(x)}, and \code{rglist(x)} are actually
-  equivalent to \code{as(x, "GRanges")}, \code{as(x, "GRangesList")},
-  and \code{as(x, "RangesList")}, respectively.
+  \code{as(x, "GRanges")}, \code{as(x, "GRangesList")}, and
+  \code{as(x, "RangesList")}, are equivalent to
+  \code{granges(x, use.mcols=TRUE)}, \code{grglist(x, use.mcols=TRUE)},
+  and \code{rglist(x, use.mcols=TRUE)}, respectively.
 }
 
 \value{
