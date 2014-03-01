@@ -68,9 +68,9 @@ rglist(x, use.mcols=FALSE, ...)
   \link[GenomicAlignments]{GAlignments}), the returned object is expected
   to be \emph{parallel} to \code{x}, that is, the i-th element in the output
   corresponds to the i-th element in the input. If \code{x} has names on it,
-  they're propagated to the returned object. If \code{use.mcols=TRUE} and
-  \code{x} has metadata columns on it, they're propagated to the returned
-  object.
+  they're propagated to the returned object. If \code{use.mcols} is TRUE and
+  \code{x} has metadata columns on it (accessible with \code{mcols(x)}),
+  they're propagated to the returned object.
 }
 
 \author{H. Pages}
