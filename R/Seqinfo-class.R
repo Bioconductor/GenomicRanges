@@ -574,9 +574,7 @@ setReplaceMethod("seqnameStyle", "Seqinfo",
     function(x, value)
     {
         x_seqnames <- seqnames(x)
-        renaming_maps <- AnnotationDbi::findSequenceRenamingMaps(x_seqnames,
-                                                                 value,
-                                                                 drop=FALSE)
+        renaming_maps <- mapSeqlevels(x_seqnames, value, drop=FALSE)
         if (nrow(renaming_maps) == 0L) {
             msg <- c("found no sequence renaming map compatible ",
                      "with seqname style \"", value, "\" for this object")
