@@ -201,7 +201,7 @@ setGeneric("sortSeqlevels", signature="x",
 setMethod("sortSeqlevels", "character",
     function(x, X.is.sexchrom=NA)
     {
-        x[order(makeSeqnameIds(x, X.is.sexchrom=X.is.sexchrom))]
+        x[order(rankSeqlevels(x, X.is.sexchrom=X.is.sexchrom))]
     }
 )
 
