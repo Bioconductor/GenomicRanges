@@ -58,26 +58,21 @@ restoreSeqlevels <- function(x, ...)
     x
 }
 
-.checkStyleSpecies <- function(style, species, xlevels)
+.checkStyleSpecies <- function(species, style, xlevels)
 {
-   require(AnnotationDbi)
-   if(isSupportedSeqnamesStyle(style, species) ){
-        #extract the standard chromsomes using species and style
-        seqvec <- extractSeqnameSet(style, species)
-        seqvec[na.omit(match(xlevels,seqvec))]
-        
-    }else{
-        stop("please check the species entered for object x.")
-    }
+   require(GenomeInfoDb)
+   #extract the standard chromsomes using species and style
+   seqvec <- extractSeqlevels(species, style)
+   seqvec[na.omit(match(xlevels,seqvec))]
 }
 
-keepStandardChromosomes <- function(x, species, style, ...)
+keepStandardChromosomes <- function(x, species=species, style=style, ...)
 {
     #check if user has entered same style as the given object
     originalstyle <- seqnameStyle(x)
     
     if(identical(originalstyle,style)){
-        seq_vec <- .checkStyleSpecies(style,species,seqlevels(x))
+        seq_vec <- .checkStyleSpecies(species=species,style=style,seqlevels(x))
         x <- keepSeqlevels(x,seq_vec)
         return(x)
     }else{

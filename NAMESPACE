@@ -8,7 +8,7 @@ import(IRanges)
 import(XVector)  # only for the "Views" method for integer vectors, the
                  # XIntegerViews class, and the "viewMins", "viewMaxs", and
                  # "viewSums" methods for XIntegerViews objects
-importFrom(GenomeInfoDb, rankSeqlevels, mapSeqlevels)
+importFrom(GenomeInfoDb, rankSeqlevels, mapSeqlevels, extractSeqlevels)
 
 exportClasses(
     Constraint, ConstraintORNULL,
