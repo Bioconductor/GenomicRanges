@@ -38,4 +38,4 @@ Collate: utils.R phicoef.R transcript-utils.R constraint.R
         findOverlaps-methods.R findOverlaps-GIntervalTree-methods.R
         nearest-methods.R map-methods.R tile-methods.R
         test_GenomicRanges_package.R zzz.R
-biocViews: Genetics, Sequencing, Sequencing, Annotation
+biocViews: Genetics, Sequencing, Annotation
