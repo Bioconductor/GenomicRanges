@@ -9,33 +9,55 @@ Description: The ability to efficiently represent and manipulate genomic
 	GenomicAlignments package.
 Version: 1.15.35
 Author: P. Aboyoun, H. Pages and M. Lawrence
-Maintainer: Bioconductor Package Maintainer
-        <maintainer@bioconductor.org>
-Depends: R (>= 2.10), methods, BiocGenerics (>= 0.7.7), IRanges (>=
-        1.21.31)
+Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
+biocViews: Genetics, Infrastructure, Sequencing, Annotation
+Depends: R (>= 2.10), methods, BiocGenerics (>= 0.7.7), IRanges (>= 1.21.31),
+         GenomeInfoDb(>= 0.99.17)
 Imports: methods, utils, stats, BiocGenerics, IRanges, XVector
 LinkingTo: IRanges, XVector (>= 0.3.4)
-Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,
-        BSgenome.Hsapiens.UCSC.hg19, BSgenome.Scerevisiae.UCSC.sacCer2,
-        Biostrings (>= 2.25.3), Rsamtools (>= 1.13.53),
-        GenomicAlignments, rtracklayer, KEGG.db, KEGGgraph,
-        GenomicFeatures, TxDb.Dmelanogaster.UCSC.dm3.ensGene,
-        TxDb.Hsapiens.UCSC.hg19.knownGene, seqnames.db, org.Sc.sgd.db,
-        VariantAnnotation, edgeR, DESeq, DEXSeq, pasilla,
-        pasillaBamSubset, RUnit, digest, BiocStyle
+Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub,
+	BSgenome, BSgenome.Hsapiens.UCSC.hg19,
+	BSgenome.Scerevisiae.UCSC.sacCer2,
+	Biostrings (>= 2.25.3), Rsamtools (>= 1.13.53), GenomicAlignments,
+	rtracklayer, 
+	KEGG.db, KEGGgraph, GenomicFeatures,
+	TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Hsapiens.UCSC.hg19.knownGene,
+	seqnames.db, org.Sc.sgd.db,
+	VariantAnnotation, edgeR, DESeq, DEXSeq,
+	pasilla, pasillaBamSubset,
+	RUnit, digest, BiocStyle
 License: Artistic-2.0
-Collate: utils.R phicoef.R transcript-utils.R constraint.R
-        makeSeqnameIds.R seqinfo.R strand-utils.R range-squeezers.R
-        Seqinfo-class.R GenomicRanges-class.R GRanges-class.R
-        GIntervalTree-class.R GenomicRanges-comparison.R
-        GenomicRangesList-class.R GRangesList-class.R
-        makeGRangesFromDataFrame.R tileGenome.R
-        SummarizedExperiment-class.R
-        SummarizedExperiment-rowData-methods.R seqlevels-utils.R
-        resolveHits-methods.R RangesMapping-methods.R
-        RangedData-methods.R intra-range-methods.R
-        inter-range-methods.R coverage-methods.R setops-methods.R
-        findOverlaps-methods.R findOverlaps-GIntervalTree-methods.R
-        nearest-methods.R map-methods.R tile-methods.R
-        test_GenomicRanges_package.R zzz.R
-biocViews: Genetics, Sequencing, Annotation
+Collate: utils.R
+	phicoef.R
+	transcript-utils.R
+	constraint.R
+	makeSeqnameIds.R
+	seqinfo.R
+	strand-utils.R
+	range-squeezers.R
+	Seqinfo-class.R
+	GenomicRanges-class.R
+	GRanges-class.R
+	GIntervalTree-class.R
+	GenomicRanges-comparison.R
+	GenomicRangesList-class.R
+	GRangesList-class.R
+	makeGRangesFromDataFrame.R
+	tileGenome.R
+	SummarizedExperiment-class.R
+	SummarizedExperiment-rowData-methods.R
+	seqlevels-utils.R
+	resolveHits-methods.R
+	RangesMapping-methods.R
+	RangedData-methods.R
+	intra-range-methods.R
+	inter-range-methods.R
+	coverage-methods.R
+	setops-methods.R
+	findOverlaps-methods.R
+	findOverlaps-GIntervalTree-methods.R
+	nearest-methods.R
+	map-methods.R
+	tile-methods.R
+	test_GenomicRanges_package.R
+	zzz.R
