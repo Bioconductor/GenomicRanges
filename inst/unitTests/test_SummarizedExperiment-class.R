@@ -57,6 +57,10 @@ test_SummarizedExperiment_construction <- function() {
     checkTrue(validObject(se <- SummarizedExperiment(m)))
     checkIdentical(m, assay(se))
     checkIdentical(m[,1:2], assay(se[,1:2]))
+
+    ## DataFrame in assay slot
+    df <- DataFrame(a=1:3, b=1:3, row.names=LETTERS[1:3])
+    checkTrue(validObject(SummarizedExperiment(list(df))))
 }
 
 test_SummarizedExperiment_getters <- function() {

@@ -60,10 +60,9 @@ restoreSeqlevels <- function(x, ...)
 
 .checkStyleSpecies <- function(species, style, xlevels)
 {
-   require(GenomeInfoDb)
    #extract the standard chromsomes using species and style
    seqvec <- extractSeqlevels(species, style)
-   seqvec[na.omit(match(xlevels,seqvec))]
+   seqvec[na.omit(match(xlevels, seqvec))]
 }
 
 keepStandardChromosomes <- function(x, species=species, style=style, ...)

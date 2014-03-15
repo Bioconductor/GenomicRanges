@@ -120,9 +120,13 @@ setMethod(SummarizedExperiment, "SimpleList",
         colData <- DataFrame(row.names=nms)
     }
 
-    FUN <- function(x)
+    FUN <- function(x) {
+        exp <- list(names(rowData), rownames(colData))
         ## dimnames as NULL or list(NULL, NULL)
-        all(sapply(dimnames(x), is.null))
+        all(sapply(dimnames(x), is.null)) ||
+            ## or consistent with row / colData
+            identical(dimnames(x)[1:2], exp)
+    }
     if (!all(sapply(assays, FUN)))
         assays <- endoapply(assays, unname)
     if (!is(assays, "Assays"))
