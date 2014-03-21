@@ -41,7 +41,8 @@
 \S4method{range}{GenomicRanges}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-        with.mapping=FALSE, with.inframe.attrib=FALSE, ignore.strand=FALSE)
+       with.revmap=FALSE, with.mapping=FALSE, with.inframe.attrib=FALSE,
+       ignore.strand=FALSE)
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
@@ -54,7 +55,7 @@
 
 \arguments{
   \item{x}{A \link{GenomicRanges} object.}
-  \item{drop.empty.ranges, min.gapwidth, with.mapping, with.inframe.attrib, start, end}{
+  \item{drop.empty.ranges, min.gapwidth, with.revmap, with.mapping, with.inframe.attrib, start, end}{
     See \code{?`\link[IRanges]{inter-range-methods}`} in the IRanges package.
   } 
   \item{ignore.strand}{
@@ -133,21 +134,21 @@ range(gr)
 ## ---------------------------------------------------------------------
 reduce(gr)
 
-gr2 <- reduce(gr, with.mapping=TRUE)
-mapping <- mcols(gr2)$mapping  # an IntegerList
+gr2 <- reduce(gr, with.revmap=TRUE)
+revmap <- mcols(gr2)$revmap  # an IntegerList
 
 ## Use the mapping from reduced to original ranges to group the original
 ## ranges by reduced range:
-relist(gr[unlist(mapping)], mapping)
+relist(gr[unlist(revmap)], revmap)
 
 ## Or use it to split the DataFrame of original metadata columns by
 ## reduced range:
-relist(mcols(gr)[unlist(mapping), ], mapping)  # a SplitDataFrameList
+relist(mcols(gr)[unlist(revmap), ], revmap)  # a SplitDataFrameList
 
-## [For advanced users] Use the mapping to compare the reduced ranges
-## with the ranges they originate from:
-expanded_gr2 <- rep(gr2, elementLengths(mapping))
-reordered_gr <- gr[unlist(mapping)]
+## [For advanced users] Use this reverse mapping to compare the reduced
+## ranges with the ranges they originate from:
+expanded_gr2 <- rep(gr2, elementLengths(revmap))
+reordered_gr <- gr[unlist(revmap)]
 codes <- compare(expanded_gr2, reordered_gr)
 ## All the codes should translate to "d", "e", "g", or "h" (the 4 letters
 ## indicating that the range on the left contains the range on the right):
@@ -163,10 +164,10 @@ set.seed(33)
 seqnames(biggr) <- sample(factor(seqlevels(biggr), levels=seqlevels(biggr)),
                           length(biggr), replace=TRUE)
 
-biggr2 <- reduce(biggr, with.mapping=TRUE)
-mapping <- mcols(biggr2)$mapping
-expanded_biggr2 <- rep(biggr2, elementLengths(mapping))
-reordered_biggr <- biggr[unlist(mapping)]
+biggr2 <- reduce(biggr, with.revmap=TRUE)
+revmap <- mcols(biggr2)$revmap
+expanded_biggr2 <- rep(biggr2, elementLengths(revmap))
+reordered_biggr <- biggr[unlist(revmap)]
 codes <- compare(expanded_biggr2, reordered_biggr)
 alphacodes <- rangeComparisonCodeToLetter(compare(expanded_biggr2,
                                                   reordered_biggr))
