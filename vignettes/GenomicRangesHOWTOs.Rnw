@@ -395,7 +395,7 @@ elementLengths(exonsbytx)
 @
 
 Next we want the DNA sequences for these intron and exon regions.
-The \Rfunction{extractTranscriptsFromGenome} function in the 
+The \Rfunction{extractTranscriptSeqs} function in the 
 \Biocpkg{Biostrings} package will query a \Biocpkg{BSGenome} package 
 with a set of genomic positions and retrieve the DNA sequences. 
 
@@ -407,14 +407,14 @@ library(BSgenome.Hsapiens.UCSC.hg19)
 Extract the intron sequences ...
 
 <<trak_9>>=
-intron_seqs <- extractTranscriptsFromGenome(Hsapiens, intronsbytx)
+intron_seqs <- extractTranscriptSeqs(Hsapiens, intronsbytx)
 intron_seqs
 @
 
 and the exon sequences.
 
 <<trak_10>>=
-exon_seqs <- extractTranscriptsFromGenome(Hsapiens, exonsbytx)
+exon_seqs <- extractTranscriptSeqs(Hsapiens, exonsbytx)
 exon_seqs
 @
 
@@ -542,15 +542,15 @@ library(BSgenome.Hsapiens.UCSC.hg19)
 genome <- BSgenome.Hsapiens.UCSC.hg19
 @
 
-Use \Rfunction{extractTranscriptsFromGenome} to extract the UTR and coding 
+Use \Rfunction{extractTranscriptSeqs} to extract the UTR and coding 
 regions from the \Rcode{BSGenome}. This function retrieves the sequences 
 for an any \Robject{GRanges} or \Robject{GRangesList} (i.e., not just 
 transcripts like the name implies).
 
 <<cancer_11>>=
-threeUTR_seqs <- extractTranscriptsFromGenome(genome, threeUTR) 
-fiveUTR_seqs <- extractTranscriptsFromGenome(genome, fiveUTR) 
-cds_seqs <- extractTranscriptsFromGenome(genome, cds) 
+threeUTR_seqs <- extractTranscriptSeqs(genome, threeUTR) 
+fiveUTR_seqs <- extractTranscriptSeqs(genome, fiveUTR) 
+cds_seqs <- extractTranscriptSeqs(genome, cds) 
 @
 
 The return values are \Robject{DNAStringSet} objects.
