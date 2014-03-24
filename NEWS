@@ -3,7 +3,65 @@ CHANGES IN VERSION 1.16.0
 
 NEW FEATURES
 
-    o add subset,SummarizedExperiment-method
+    o Add "subset" method for SummarizedExperiment objects.
+
+    o Allow DataFrame in SummarizedExperiment assays.
+
+    o Add 'use.mcols' arg (FALSE by default) to the granges(), grglist(), and
+      rglist() generics (a.k.a. the range-squeezer generics).
+
+    o Add coercion method from GRangesList to RangesList.
+
+    o Add score() setter for GRangesList objects.
+
+    o findOverlaps(..., type="within") now works on circular chromosomes.
+
+    o Add 'ignore.strand' arg to "sort" method for GRanges objects.
+
+    o Support subsetting of a named list-like object *by* a GenomicRanges
+      subscript.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Move many functionalities to the new GenomicAlignments package:
+      - The GAlignments, GAlignmentPairs, and GAlignmentsList classes.
+      - The qnarrow() generic and methods.
+      - The "narrow" and "pintersect" methods for GAlignments and
+        GAlignmentsList objects.
+      - The low-level CIGAR utilities.
+      - The "findOverlaps" methods for GAlignment* objects.
+      - The summarizeOverlaps() generic and methods, and the "Counting reads
+        with summarizeOverlaps" vignette.
+      - findCompatibleOverlaps() and countCompatibleOverlaps().
+      - The findSpliceOverlaps() generic and methods.
+      - The "overlap encodings" stuff i.e. the "encodeOverlaps" method for
+        GRangesList objects, flipQuery(), selectEncodingWithCompatibleStrand(),
+        isCompatibleWithSplicing(), isCompatibleWithSkippedExons(),
+        extractSteppedExonRanks(), extractSpannedExonRanks(),
+        extractSkippedExonRanks(), and extractQueryStartInTranscript(), and
+        the "OverlapEncodings" vignette.
+
+    o Rename 'with.mapping' arg -> 'with.revmap' in "reduce" methods. The old
+      arg name is still working but deprecated.
+
+    o Move makeSeqnameIds() function to the new GenomeInfoDb package and rename
+      it rankSeqlevels(). The old name is still working but deprecated.
+
+    o The "strand" methods now perform stricter checking and are guaranteed
+      to always return a factor (or factor-Rle) with the "standard strand
+      levels" and no NAs. Or to fail.
+
+DEPRECATED AND DEFUNCT
+ 
+BUG FIXES
+
+    o Tweaks and fixes to various "strand" methods:
+      - Methods for character vectors and factors do not accept NAs anymore
+        (they raise an error).
+      - Methods for integer and logical vectors map NAs to * (instead of NA).
+      - Method for Rle objects now also works on character-, factor-, and
+        integer-Rle objects (in addition to logical-Rle objects).
+
 
 CHANGES IN VERSION 1.14.0
 -------------------------
