@@ -6,7 +6,8 @@
 \alias{renameSeqlevels}
 \alias{restoreSeqlevels}
 \alias{keepStandardChromosomes}
-
+\alias{seqlevelsStyle}
+\alias{seqlevelsStyle,ANY-method}
 \title{
   seqlevels utility functions
 }
@@ -21,6 +22,7 @@ dropSeqlevels(x, value, ...)
 renameSeqlevels(x, value, ...)
 restoreSeqlevels(x, ...)
 keepStandardChromosomes(x, species, style,...)
+seqlevelsStyle(x)
 }
 
 \arguments{
@@ -56,7 +58,8 @@ keepStandardChromosomes(x, species, style,...)
 \value{
   The \code{x} object with seqlevels removed or renamed. If \code{x} has
   no seqlevels (empty object) or no replacement values match the current
-  seqlevels in \code{x} the unchanged \code{x} is returned.
+  seqlevels in \code{x} the unchanged \code{x} is returned.In case of 
+  \code{seqlevelsStyle}, the default seqlevel style of \code{x} is returned.
 }
 
 \details{
@@ -86,6 +89,9 @@ keepStandardChromosomes(x, species, style,...)
   \code{keepStandardChromosomes}:Subsetting operation that returns only the 
   primary Chromosomes and the autosomes. Applicable when \code{obj}
   has a Seqinfo object.
+  
+  \code{seqlevelsStyle}: returns a single character string containing the
+  default seqlevel Style of \code{x}
 }
 
 \seealso{
@@ -105,6 +111,7 @@ keepStandardChromosomes(x, species, style,...)
 
 gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3))
 seqlevels(gr)
+seqlevelsStyle(gr)
 ## Keep only 'chr1'
 chr1 <- keepSeqlevels(gr, "chr1")
 ## Drop 'chr1'. Both 'chr2' and 'chr3' are kept.
@@ -115,7 +122,6 @@ library(GenomicAlignments)  # for readGAlignments()
 
 fl <- system.file("extdata", "ex1.bam", package="Rsamtools")
 gal <- readGAlignments(fl)
-seqlevels(gal)
 ## If 'value' is named, the names are ignored.
 seq2 <- keepSeqlevels(gal, c(foo="seq2"))
 seqlevels(seq2)
@@ -198,6 +204,8 @@ keepStandardChromosomes(gr,style="UCSC", species="Homo sapiens")
 
 ##GRangesList
 keepStandardChromosomes(grl,style="UCSC", species="Homo sapiens")
+
+
 
 }
 

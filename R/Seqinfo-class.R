@@ -533,6 +533,9 @@ setMethod("intersect", c("Seqinfo", "Seqinfo"), function(x, y) {
 setMethod("seqnameStyle", "Seqinfo",
     function(x)
 {
+     txt <- "'seqnameStyle' is deprecated.
+           Use 'seqlevelsStyle()' instead."
+    .Deprecated("seqlevelsStyle", msg=paste(strwrap(txt), collapse="\n"))
     seqlevelsStyle(seqnames(x))
 })
 

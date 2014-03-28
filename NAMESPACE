@@ -84,7 +84,8 @@ exportMethods(
     precede, follow, nearest, distance, distanceToNearest,
     map,
     tile,
-    subset
+    subset,
+    seqlevelsStyle
 )
 
 

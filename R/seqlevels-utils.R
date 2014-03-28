@@ -79,3 +79,13 @@ keepStandardChromosomes <- function(x, species=species, style=style, ...)
     }
 }
 
+
+
+setMethod("seqlevelsStyle", "ANY",
+    function(x)
+{
+    seqlevelsStyle(seqlevels(x))
+})
+
+
+
