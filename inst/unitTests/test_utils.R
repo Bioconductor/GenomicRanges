@@ -74,6 +74,9 @@ test_dropSeqlevels <- function()
 
 test_renameSeqlevels <- function()
 {
+    opt <- options(useFancyQuotes=FALSE)
+    on.exit(options(opt))
+
     gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3))
     checkException(renameSeqlevels(gr, "CHR1"), silent=TRUE)
     got <- seqlevels(renameSeqlevels(gr, c("chr2", "CHR1", "chr3")))
@@ -82,6 +85,19 @@ test_renameSeqlevels <- function()
     checkIdentical(seqlevels(gr), got)
     got <- seqlevels(renameSeqlevels(gr, c(chr2="CHR2")))
     checkIdentical(c("chr1", "CHR2", "chr3"), got)
+
+    ## incomplete rename, order different from seqlevels
+    gr <- GRanges(c("chr1", "chr1", "chr2", "chr3"), IRanges(1:4, width=3),
+                  seqlengths=c(chr1=10, chr2=20, chr3=30))
+    got <- renameSeqlevels(gr, c(chr3="3", chr1="1"))
+    checkIdentical(c("1", "1", "chr2", "3"), as.vector(seqnames(got)))
+    checkIdentical(structure(c(10L, 20L, 30L), .Names = c("1", "chr2", "3")),
+                   seqlengths(got))
+
+    ## expected warning
+    txt <- tryCatch(renameSeqlevels(gr, c(chrX="X", chrY="Y", chr1="1")),
+                    warning=conditionMessage)
+    checkIdentical("invalid seqlevels 'chrX', 'chrY' ignored", txt)
 }
 
 test_keepStandardChromosomes <- function()
