@@ -69,7 +69,7 @@ restoreSeqlevels <- function(x, ...)
 keepStandardChromosomes <- function(x, species=species, style=style, ...)
 {
     #check if user has entered same style as the given object
-    originalstyle <- seqnameStyle(x)
+    originalstyle <- seqlevelsStyle(x)
     
     if(identical(originalstyle,style)){
         seq_vec <- .checkStyleSpecies(species=species,style=style,seqlevels(x))
