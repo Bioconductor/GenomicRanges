@@ -43,8 +43,9 @@ renameSeqlevels <- function(x, value, ...)
                     paste(nms[nomatch], collapse=","), "' were ignored")
         if (length(value) != length(seqlevels(x))) {
             level <- seqlevels(x)
-            level[level %in% nms] <- value
-            value <- level
+            idx <- match(nms,level)
+            idx <- idx[complete.cases(idx)]
+            value <- replace(level,idx , value[1:length(idx)])
         } 
     } 
     seqlevels(x) <- value  
