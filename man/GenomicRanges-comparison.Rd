@@ -50,7 +50,7 @@
 
 \S4method{order}{GenomicRanges}(..., na.last=TRUE, decreasing=FALSE)
 
-\S4method{sort}{GenomicRanges}(x, decreasing=FALSE, ignore.strand=FALSE)
+\S4method{sort}{GenomicRanges}(x, decreasing=FALSE, ignore.strand=FALSE, by)
 
 \S4method{rank}{GenomicRanges}(x, na.last=TRUE,
      ties.method=c("average", "first", "random", "max", "min"))
@@ -95,6 +95,11 @@
   \item{ties.method}{
     A character string specifying how ties are treated. Only \code{"first"}
     is supported for now.
+  }
+  \item{by}{
+    An optional formula that is resolved against \code{as.env(x)}; 
+    the resulting variables are passed to \code{order} to generate the
+    ordering permutation.
   }
 }
 
@@ -188,6 +193,9 @@ countMatches(gr_levels, gr)
 order(gr)
 sort(gr)
 sort(gr, ignore.strand=TRUE)
+sort(gr, by = ~ seqnames + start + end) # equivalent to (but slower than) above
+score(gr) <- rev(seq_len(length(gr)))
+sort(gr, by = ~ score)
 rank(gr)
 
 ## ---------------------------------------------------------------------

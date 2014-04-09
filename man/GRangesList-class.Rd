@@ -29,6 +29,7 @@
 \alias{seqinfo,GRangesList-method}
 \alias{seqinfo<-,GRangesList-method}
 \alias{score,GRangesList-method}
+\alias{score<-,GRangesList-method}
 
 % RangesList methods:
 \alias{start,GRangesList-method}
@@ -181,8 +182,8 @@
       in case the style cannot be determined unambiguously.
     }
     \item{}{
-      \code{score(x)}: Get the \dQuote{score} column from the element
-      metadata, if any.
+      \code{score(x), score(x) <- value}: Get or set the \dQuote{score}
+      column from the element metadata.
     }
   }
 }
