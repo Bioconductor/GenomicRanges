@@ -21,6 +21,9 @@ NEW FEATURES
     o Support subsetting of a named list-like object *by* a GenomicRanges
       subscript.
 
+    o Support sort(granges, by = ~ score), i.e., a formula-based interface for
+      sorting by the mcols.
+
 SIGNIFICANT USER-LEVEL CHANGES
 
     o Move many functionalities to the new GenomicAlignments package:
