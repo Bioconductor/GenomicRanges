@@ -85,6 +85,8 @@ exportMethods(
     map,
     tile,
     subset,
+
+    ## Generics defined in GenomeInfoDb:
     seqlevelsStyle
 )
 

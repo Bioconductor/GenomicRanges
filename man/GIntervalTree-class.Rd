@@ -162,8 +162,10 @@
       Get or the genome identifier or assembly name for each sequence.
     }
     \item{}{
-      \code{seqnameStyle(x)}:
+      \code{seqlevelsStyle(x)}:
       Get the seqname style for \code{x}.
+      See the \link[GenomeInfoDb]{seqlevelsStyle} generic getter
+      in the \pkg{GenomeInfoDb} package for more information.
     }
     \item{}{
       \code{score(x)}: Get the \dQuote{score} column from the element

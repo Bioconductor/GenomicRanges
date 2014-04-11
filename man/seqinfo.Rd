@@ -27,10 +27,8 @@
 \alias{genome,ANY-method}
 \alias{genome<-}
 \alias{genome<-,ANY-method}
-\alias{seqnameStyle}
-\alias{seqnameStyle,ANY-method}
-\alias{seqnameStyle<-}
-\alias{seqnameStyle<-,ANY-method}
+\alias{seqlevelsStyle,ANY-method}
+\alias{seqlevelsStyle<-,ANY-method}
 
 \alias{seqinfo,List-method}
 \alias{seqinfo<-,List-method}
@@ -39,6 +37,13 @@
 \alias{seqinfo,RangesList-method}
 \alias{seqnames,RangesList-method}
 \alias{seqnames,RangedData-method}
+
+% Old stuff (Deprecated or Defunct):
+\alias{seqnameStyle}
+\alias{seqnameStyle,ANY-method}
+\alias{seqnameStyle<-}
+\alias{seqnameStyle<-,ANY-method}
+
 
 \title{Accessing/modifying sequence information}
 
@@ -69,8 +74,8 @@ isCircular(x) <- value
 genome(x)
 genome(x) <- value
 
-seqnameStyle(x)
-seqnameStyle(x) <- value
+\S4method{seqlevelsStyle}{ANY}(x)
+\S4method{seqlevelsStyle}{ANY}(x) <- value
 }
 
 \arguments{
@@ -132,13 +137,13 @@ seqnameStyle(x) <- value
         return a \link{Seqinfo} object.
 
   \item Default \code{seqlevels}, \code{seqlengths}, \code{isCircular},
-        \code{genome}, and \code{seqnameStyle} getters and setters are
+        \code{genome}, and \code{seqlevelsStyle} getters and setters are
         provided.
         By default, \code{seqlevels(x)} does \code{seqlevels(seqinfo(x))},
         \code{seqlengths(x)} does \code{seqlengths(seqinfo(x))},
         \code{isCircular(x)} does \code{isCircular(seqinfo(x))},
         \code{genome(x)} does \code{genome(seqinfo(x))},
-        and \code{seqnameStyle(x)} does \code{seqnameStyle(seqinfo(x))}.
+        and \code{seqlevelsStyle(x)} does \code{seqlevelsStyle(seqlevels(x))}.
         So any class with a \code{seqinfo} getter will have all the above
         getters work out-of-the-box. If, in addition, the class defines
         a \code{seqinfo} setter, then all the corresponding setters will
@@ -184,6 +189,9 @@ seqnameStyle(x) <- value
 
 \seealso{
   \itemize{
+    \item The \link[GenomeInfoDb]{seqlevelsStyle} generic getter and setter
+          in the \pkg{GenomeInfoDb} package.
+
     \item \link{Seqinfo} objects.
 
     \item \link{GRanges}, \link{GRangesList}, and \link{SummarizedExperiment}
@@ -249,24 +257,36 @@ seqlevels(txdb)
 seqlevels(txdb)[seqlevels(txdb) == "CHM"] <- "M"
 seqlevels(txdb)
 
+## Rename using seqlevelsStyle():
+gr <- GRanges(rep(c("chr2", "chr3", "chrM"), 2), IRanges(1:6, 10))
+
+seqlevelsStyle(gr) 
+seqlevelsStyle(gr) <- "NCBI"
+gr
+
+seqlevelsStyle(gr)
+seqlevelsStyle(gr) <- "UCSC"
+gr
+
 ## Add:
-gr <- GRanges(c("chr1", "chr2", "chr3"), IRanges(1:3, 5))
+seqlevels(gr) <- c("chr1", seqlevels(gr), "chr4")
 seqlevels(gr)
-seqlevels(gr) <- c(seqlevels(gr), "chr4")
-seqlevels(gr)
+seqlevelsInUse(gr)
 
 ## Reorder:
-seqlevels(gr) <- c("chr2", "chr3", "chr1", "chr4")
+seqlevels(gr) <- rev(seqlevels(gr))
 seqlevels(gr)
 
-## Drop:
-seqlevels(gr, force=TRUE) <- c("chr2", "chr1", "chr4")
-seqlevels(gr)
+## Drop all unused seqlevels:
+seqlevels(gr) <- seqlevelsInUse(gr)
+
+## Drop some seqlevels in use:
+seqlevels(gr, force=TRUE) <- setdiff(seqlevels(gr), "chr3")
+gr
 
 ## Rename/Add/Reorder:
-seqlevels(gr) <- c(chr1="1", chr2="2", "chr4", "chr5")
+seqlevels(gr) <- c("chr1", chr2="chr2", chrM="Mitochondrion")
 seqlevels(gr)
-
 
 ## ---------------------------------------------------------------------
 ## Sort seqlevels in "natural" order

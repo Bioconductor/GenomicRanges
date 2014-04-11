@@ -172,14 +172,10 @@
       \code{value} must be a named character vector eventually with NAs.
     }
     \item{}{
-      \code{seqnameStyle(x)}:
+      \code{seqlevelsStyle(x)}, \code{seqlevelsStyle(x) <- value}:
       Get or set the seqname style for \code{x}.
-      Note that this information is not stored in \code{x} but inferred
-      by looking up \code{seqnames(x)} against a seqname style database
-      stored in the seqnames.db metadata package (required).
-      \code{seqnameStyle(x)} is equivalent to \code{seqnameStyle(seqinfo(x))}
-      and can return more than 1 seqname style (with a warning)
-      in case the style cannot be determined unambiguously.
+      See the \link[GenomeInfoDb]{seqlevelsStyle} generic getter and setter
+      in the \pkg{GenomeInfoDb} package for more information.
     }
     \item{}{
       \code{score(x), score(x) <- value}: Get or set the \dQuote{score}

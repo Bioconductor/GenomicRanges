@@ -320,29 +320,64 @@ setReplaceMethod("genome", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqnameStyle() getter and setter
+### "seqlevelsStyle" and "seqlevelsStyle<-" default methods
+###
+### They work on any object 'x' with working "seqlevels" and "seqlevels<-"
+### methods.
+###
+
+setMethod("seqlevelsStyle", "ANY", function(x) seqlevelsStyle(seqlevels(x)))
+
+setReplaceMethod("seqlevelsStyle", "ANY",
+    function(x, value)
+    {
+        x_seqlevels <- seqlevels(x)
+        renaming_maps <- mapSeqlevels(x_seqlevels, value, drop=FALSE)
+        if (nrow(renaming_maps) == 0L) {
+            msg <- c("found no sequence renaming map compatible ",
+                     "with seqname style \"", value, "\" for this object")
+            stop(msg)
+        }
+        ## Use 1st best renaming map.
+        if (nrow(renaming_maps) != 1L) {
+            msg <- c("found more than one best sequence renaming map ",
+                     "compatible with seqname style \"", value, "\" for ",
+                     "this object, using the first one")
+            warning(msg)
+            renaming_maps <- renaming_maps[1L, , drop=FALSE]
+        }
+        new_seqlevels <- as.vector(renaming_maps)
+        na_idx <- which(is.na(new_seqlevels))
+        new_seqlevels[na_idx] <- x_seqlevels[na_idx]
+        seqlevels(x) <- new_seqlevels
+        x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Old stuff (deprecated & defunct)
 ###
 
 setGeneric("seqnameStyle", function(x) standardGeneric("seqnameStyle"))
 
-### Default "seqnameStyle" method works on any object 'x' with a working
-### "seqinfo" method.
-setMethod("seqnameStyle", "ANY", function(x) seqnameStyle(seqinfo(x)))
+setMethod("seqnameStyle", "ANY",
+    function(x)
+    {
+        .Deprecated("seqlevelsStyle")
+        seqlevelsStyle(x)
+    }
+)
 
 setGeneric("seqnameStyle<-", signature="x",
     function(x, value) standardGeneric("seqnameStyle<-")
 )
 
-### Default "seqnameStyle<-" method works on any object 'x' with working
-### "seqinfo" and "seqinfo<-" methods.
 setReplaceMethod("seqnameStyle", "ANY",
     function(x, value)
     {
-        x_seqinfo <- seqinfo(x)
-        seqnameStyle(x_seqinfo) <- value
-        new2old <- seq_len(length(x_seqinfo))
-        seqinfo(x, new2old=new2old) <- x_seqinfo
-        x
+        .Deprecated("seqlevelsStyle")
+        `seqlevelsStyle<-`(x, value)
     }
 )
 
