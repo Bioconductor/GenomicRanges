@@ -504,7 +504,8 @@ setMethod("findOverlaps", c("GRangesList", "RangedData"),
 setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within", "equal"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first", "last", "arbitrary"),
+             ignore.strand = FALSE)
     {
         findOverlaps(rowData(query), subject,
                      maxgap = maxgap, minoverlap = minoverlap,
@@ -516,7 +517,8 @@ setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
 setMethod("findOverlaps", c("Vector", "SummarizedExperiment"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within", "equal"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first", "last", "arbitrary"),
+             ignore.strand = FALSE)
     {
         findOverlaps(query, rowData(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
@@ -527,8 +529,9 @@ setMethod("findOverlaps", c("Vector", "SummarizedExperiment"),
 
 setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
-             type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             type = c("any", "start", "end", "within", "equal"),
+             select = c("all", "first", "last", "arbitrary"),
+             ignore.strand = FALSE)
     {
         findOverlaps(rowData(query), rowData(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
