@@ -233,23 +233,8 @@ setMethod("sort", "SummarizedExperiment",
 setMethod("subset", "SummarizedExperiment",
     function(x, subset, select, ...)
 {
-    top_prenv <- IRanges:::top_prenv
-    i <- if (missing(subset))
-        TRUE
-    else {
-        i <- eval(substitute(subset), rowData(x), top_prenv(subset))
-        i <- tryCatch(as.logical(i), error=function(err) {
-            txt <- sprintf("'subset' must be coercible to logical: %s",
-                           conditionMessage(err))
-            stop(paste(strwrap(txt, exdent=2, "\n")))
-        })
-        i & !is.na(i)
-    }
-    j <- if (missing(select))
-        TRUE
-    else {
-        j <- eval(substitute(select), colData(x), top_prenv(select))
-    }
+    i <- IRanges:::evalqForSubset(subset, rowData(x), ...)
+    j <- IRanges:::evalqForSubset(select, colData(x), ...)
     x[i, j]
 })
 
