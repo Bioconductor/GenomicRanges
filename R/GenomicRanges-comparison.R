@@ -236,38 +236,24 @@ setMethod("order", "GenomicRanges",
 ### S3/S4 combo for sort.GenomicRanges
 .sort.GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE, by)
 {
-    if (!missing(by)) {
-        if (!missing(ignore.strand)) {
-            warning("'ignore.strand' ignored when 'by' is specified")
-        }
-        return(IRanges:::sortBy(x, by, decreasing=decreasing))
-    }
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
     if (ignore.strand) {
         x2 <- unstrand(x)
         i <- order(x2, decreasing=decreasing)
     } else {
-        i <- order(x, decreasing=decreasing)
+        if (!missing(by)) {
+            if (!missing(ignore.strand)) {
+                warning("'ignore.strand' ignored when 'by' is specified")
+            }
+            i <- IRanges:::orderBy(by, x, decreasing=decreasing)
+        } else {
+            i <- order(x, decreasing=decreasing)
+        }
     }
     IRanges:::extractROWS(x, i)
 }
 sort.GenomicRanges <- function(x, decreasing=FALSE, ...)
     .sort.GenomicRanges(x, decreasing=decreasing, ...)
 setMethod("sort", "GenomicRanges", .sort.GenomicRanges)
-
-setMethod("rank", "GenomicRanges",
-    function(x, na.last=TRUE,
-             ties.method=c("average", "first", "random", "max", "min"))
-    {
-        if (!missing(ties.method) && !identical(ties.method, "first"))
-            stop("only 'ties.method=\"first\"' is supported ",
-                 "when ranking genomic ranges")
-        oo <- order(x)
-        ## 'ans' is the reverse permutation of 'oo'
-        ans <- integer(length(oo))
-        ans[oo] <- seq_len(length(oo))
-        ans
-    }
-)
 
