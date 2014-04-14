@@ -54,8 +54,6 @@ SIGNIFICANT USER-LEVEL CHANGES
       to always return a factor (or factor-Rle) with the "standard strand
       levels" and no NAs. Or to fail.
 
-DEPRECATED AND DEFUNCT
- 
 BUG FIXES
 
     o Tweaks and fixes to various "strand" methods:
