@@ -142,50 +142,6 @@ setMethod("updateObject", "GRangesList",
     }
 )
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-### NOT exported but used in GenomicAlignments package.
-GRangesListAsdataframe <- function(x, row.names=NULL, optional=FALSE, ...)
-{
-    if (missing(row.names))
-        row.names <- names(x@unlistData)
-    if (is.null(names(x)))
-        element <- rep.int(seq_len(length(x)), elementLengths(x))
-    else
-        element <- rep.int(names(x), elementLengths(x))
-    data.frame(element = element,
-               as.data.frame(unlist(x, use.names = FALSE),
-                             row.names = row.names),
-               stringsAsFactors = FALSE)
-}
-setMethod("as.data.frame", "GRangesList", GRangesListAsdataframe)
-
-.GRangesListAsCompressedIRangesList <- function(from)
-{
-    ans_ranges <- from@unlistData@ranges
-    ans_ranges@elementMetadata <- from@unlistData@elementMetadata
-    new("CompressedIRangesList",
-        unlistData=ans_ranges,
-        partitioning=from@partitioning,
-        elementMetadata=from@elementMetadata)
-}
-
-setAs("GRangesList", "RangesList",
-    .GRangesListAsCompressedIRangesList
-)
-
-setAs("GRangesList", "CompressedIRangesList",
-    .GRangesListAsCompressedIRangesList
-)
-
-setAs("GRangesList", "IRangesList",
-    .GRangesListAsCompressedIRangesList
-)
-
-setAs("RangedDataList", "GRangesList",
-      function(from) GRangesList(lapply(from, as, "GRanges")))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
@@ -198,10 +154,19 @@ setMethod("seqnames", "GRangesList",
              check=FALSE))
 
 setMethod("ranges", "GRangesList",
-    function(x, ...)
-        new2("CompressedIRangesList",
-             unlistData = x@unlistData@ranges, partitioning = x@partitioning,
-             check=FALSE))
+    function(x, use.mcols=FALSE)
+    {
+        if (!isTRUEorFALSE(use.mcols))
+            stop("'use.mcols' must be TRUE or FALSE")
+        unlisted_x <- unlist(x, use.names=FALSE)
+        unlisted_ans <- unlisted_x@ranges
+        mcols(unlisted_ans) <- mcols(unlisted_x)
+        ans <- relist(unlisted_ans, x)
+        if (use.mcols)
+            mcols(ans) <- mcols(x)
+        ans
+    }
+)
 
 setMethod("strand", "GRangesList",
     function(x)
@@ -405,8 +370,43 @@ setReplaceMethod("width", "GRangesList",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Vector methods.
+### Coercion.
+###
+
+### NOT exported but used in GenomicAlignments package.
+GRangesListAsdataframe <- function(x, row.names=NULL, optional=FALSE, ...)
+{
+    if (missing(row.names))
+        row.names <- names(x@unlistData)
+    if (is.null(names(x)))
+        element <- rep.int(seq_len(length(x)), elementLengths(x))
+    else
+        element <- rep.int(names(x), elementLengths(x))
+    data.frame(element = element,
+               as.data.frame(unlist(x, use.names = FALSE),
+                             row.names = row.names),
+               stringsAsFactors = FALSE)
+}
+setMethod("as.data.frame", "GRangesList", GRangesListAsdataframe)
+
+setAs("GRangesList", "CompressedIRangesList",
+    function(from) ranges(from, use.mcols=TRUE)
+)
+setAs("GRangesList", "IRangesList",
+    function(from) ranges(from, use.mcols=TRUE)
+)
+setAs("GRangesList", "RangesList",
+    function(from) ranges(from, use.mcols=TRUE)
+)
+
+setAs("RangedDataList", "GRangesList",
+      function(from) GRangesList(lapply(from, as, "GRanges")))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
 ###
 
 .sBracketSubsetGRList <- function(x, i, j, ..., drop)
@@ -482,6 +482,7 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 }
 setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Going from GRanges to GRangesList with extractList() and family.
 ###
@@ -491,6 +492,7 @@ setMethod("relistToClass", "GRanges", function(x) "GRangesList")
 setMethod("splitAsListReturnedClass", "GRanges",
     function(x) {.Deprecated("relistToClass"); "GRangesList"}
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### show method.

@@ -118,7 +118,7 @@
       can be an RleList or CharacterList.
     }
     \item{}{
-      \code{ranges(x)}, \code{ranges(x) <- value}:
+      \code{ranges(x, use.mcols=FALSE)}, \code{ranges(x) <- value}:
       Get or set the ranges in the form of a CompressedIRangesList.
       \code{value} can be a RangesList object.
     }
