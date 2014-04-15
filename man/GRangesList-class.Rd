@@ -6,22 +6,22 @@
 \alias{GRangesList-class}
 \alias{GRangesList}
 
-% Constructor-like function:
+% Constructors:
 \alias{GRangesList}
 \alias{makeGRangesListFromFeatureFragments}
 \alias{updateObject,GRangesList-method}
-
-% Coercion methods:
-\alias{as.data.frame,GRangesList-method}
-\alias{coerce,GRangesList,CompressedIRangesList-method}
-\alias{coerce,GRangesList,IRangesList-method}
-\alias{coerce,RangedDataList,GRangesList-method}
 
 % Accessor methods:
 \alias{seqnames,GRangesList-method}
 \alias{seqnames<-,GRangesList-method}
 \alias{ranges,GRangesList-method}
 \alias{ranges<-,GRangesList-method}
+\alias{start,GRangesList-method}
+\alias{start<-,GRangesList-method}
+\alias{end,GRangesList-method}
+\alias{end<-,GRangesList-method}
+\alias{width,GRangesList-method}
+\alias{width<-,GRangesList-method}
 \alias{strand,GRangesList-method}
 \alias{strand<-,GRangesList-method}
 \alias{elementMetadata,GRangesList-method}
@@ -31,21 +31,17 @@
 \alias{score,GRangesList-method}
 \alias{score<-,GRangesList-method}
 
-% RangesList methods:
-\alias{start,GRangesList-method}
-\alias{start<-,GRangesList-method}
-\alias{end,GRangesList-method}
-\alias{end<-,GRangesList-method}
-\alias{width,GRangesList-method}
-\alias{width<-,GRangesList-method}
-\alias{isDisjoint,GRangesList-method}
-\alias{disjoin,GRangesList-method}
+% Coercion:
+\alias{as.data.frame,GRangesList-method}
+\alias{coerce,GRangesList,CompressedIRangesList-method}
+\alias{coerce,GRangesList,IRangesList-method}
+\alias{coerce,GRangesList,RangesList-method}
+\alias{coerce,RangedDataList,GRangesList-method}
 
-% Vector methods:
-\alias{[,GRangesList-method}
+% Subsetting:
+\alias{[,GRangesList,ANY-method}
 \alias{[<-,GRangesList,ANY,ANY,ANY-method}
-\alias{[[<-,GRangesList-method}
-\alias{[[<-,GRangesList,ANY,ANY-method}
+\alias{[[<-,GRangesList,ANY,ANY,ANY-method}
 
 % extractList() and family:
 \alias{relistToClass,GRanges-method}
@@ -54,9 +50,6 @@
 % show method:
 \alias{show,GRangesList-method}
 
-% isomorphisms:
-\alias{range,GRangesList-method}
-\alias{reduce,GRangesList-method}
 
 \title{GRangesList objects}
 
@@ -82,45 +75,48 @@
   }
 }
 
-\section{Coercion}{
-  In the code snippets below, \code{x} is a GRangesList object.
-
-  \describe{
-    \item{}{
-      \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
-      Creates a data.frame with columns \code{element} (character),
-      \code{seqnames} (factor), \code{start} (integer),
-      \code{end} (integer), \code{width} (integer), \code{strand} (factor),
-      as well as the additional metadata columns (accessed with
-      \code{mcols(unlist(x))}).
-    }
-    \item{}{\code{as.list(x, use.names = TRUE)}:
-      Creates a list containing the elements of \code{x}.
-    }
-    \item{}{\code{as(x, "IRangesList")}:
-      Turns \code{x} into an \link[IRanges]{IRangesList} object.
-    }
-    \item{}{
-      \code{as(from, "GRangesList")}:
-      Creates a GRangesList object from a \link[IRanges]{RangedDataList}
-      object.
-    }
-  }
-}
-
 \section{Accessors}{
   In the following code snippets, \code{x} is a GRanges object.
   
   \describe{
     \item{}{
+      \code{length(x)}:
+      Get the number of list elements.
+    }
+    \item{}{
+      \code{names(x)}, \code{names(x) <- value}:
+      Get or set the names on \code{x}.
+    }
+    \item{}{
+      \code{elementLengths(x)}:
+      Get the \code{length} of each of the list elements.
+    }
+    \item{}{
+      \code{isEmpty(x)}:
+      Returns a logical indicating either if the GRangesList has no
+      elements or if all its elements are empty.
+    }
+    \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Get or set the sequence names in the form of an RleList. \code{value}
-      can be an RleList or CharacterList.
+      can be an RleList or CharacterList object.
     }
     \item{}{
       \code{ranges(x, use.mcols=FALSE)}, \code{ranges(x) <- value}:
       Get or set the ranges in the form of a CompressedIRangesList.
       \code{value} can be a RangesList object.
+    }
+    \item{}{
+      \code{start(x)}, \code{start(x) <- value}:
+      Get or set \code{start(ranges(x))}.
+    }
+    \item{}{
+      \code{end(x)}, \code{end(x) <- value}:
+      Get or set \code{end(ranges(x))}.
+    }
+    \item{}{
+      \code{width(x)}, \code{width(x) <- value}:
+      Get or set \code{width(ranges(x))}.
     }
     \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
@@ -179,82 +175,31 @@
     }
     \item{}{
       \code{score(x), score(x) <- value}: Get or set the \dQuote{score}
-      column from the element metadata.
+      metadata column.
     }
   }
 }
 
-\section{List methods}{
-  In the following code snippets, \code{x} is a GRangesList object.
-
-  \describe{
-    \item{}{
-      \code{length(x)}:
-      Get the number of elements.
-    }
-    \item{}{
-      \code{names(x)}, \code{names(x) <- value}:
-      Get or set the names of the elements.
-    }
-    \item{}{
-      \code{elementLengths(x)}:
-      Get the \code{length} of each of the elements.
-    }
-    \item{}{
-      \code{isEmpty(x)}:
-      Returns a logical indicating either if the GRangesList has no
-      elements or if all its elements are empty.
-    }
-  }
-}
-
-\section{RangesList methods}{
-  In the following code snippets, \code{x} is a GRangesList object.
-
-  \describe{
-    \item{}{
-      \code{start(x)}, \code{start(x) <- value}:
-      Get or set \code{start(ranges(x))}.
-    }
-    \item{}{
-      \code{end(x)}, \code{end(x) <- value}:
-      Get or set \code{end(ranges(x))}.
-    }
-    \item{}{
-      \code{width(x)}, \code{width(x) <- value}:
-      Get or set \code{width(ranges(x))}.
-    }
-    \item{}{
-      \code{isDisjoint(x)} Return a vector of logical values indicating
-      whether the ranges of each element of \code{x} are disjoint
-      (i.e. non-overlapping). 
-    }
-    \item{}{
-      \code{disjoin(x, ...)} Returns an object of the same type as
-      \code{x} containing disjoint ranges calculated on each element of
-      \code{x}.
-    }
-  }
-}
-
-\section{Combining}{
+\section{Coercion}{
   In the code snippets below, \code{x} is a GRangesList object.
 
   \describe{
-    \item{}{\code{append(x, values, after = length(x))}:
-      Inserts the \code{values} into \code{x} at the position given by
-      \code{after}, where \code{x} and \code{values} are of the same
-      class.
-    }
     \item{}{
-      \code{c(x, ...)}:
-      Combines \code{x} and the GRangesList objects in \code{...}
-      together. Any object in \code{...} must belong to the same class
-      as \code{x}, or to one of its subclasses, or must be \code{NULL}.
-      The result is an object of the same class as \code{x}.
+      \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
+      Creates a data.frame with columns \code{element} (character),
+      \code{seqnames} (factor), \code{start} (integer),
+      \code{end} (integer), \code{width} (integer), \code{strand} (factor),
+      as well as the additional metadata columns (accessed with
+      \code{mcols(unlist(x))}).
     }
-    \item{}{\code{unlist(x, recursive = TRUE, use.names = TRUE)}:
-      Concatenates the elements of \code{x} into a single GRanges
+    \item{}{\code{as.list(x, use.names = TRUE)}:
+      Creates a list containing the elements of \code{x}.
+    }
+    \item{}{\code{as(x, "IRangesList")}:
+      Turns \code{x} into an \link[IRanges]{IRangesList} object.
+    }
+    \item{}{\code{as(from, "GRangesList")}:
+      Creates a GRangesList object from a \link[IRanges]{RangedDataList}
       object.
     }
   }
@@ -314,30 +259,29 @@
       If \code{n} is negative, returns all but the first \code{abs(n)} elements
       of the GRanges object.
     }
+  }
+}
+
+\section{Combining}{
+  In the code snippets below, \code{x} is a GRangesList object.
+
+  \describe{
     \item{}{
-      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
-      Extracts the subsequence window from the GRanges object using:
-      \describe{
-        \item{\code{start}, \code{end}, \code{width}}{The start, end, or width
-          of the window. Two of the three are required.}
-        \item{\code{frequency}, \code{delta}}{Optional arguments that specify
-          the sampling frequency and increment within the window.}
-      }
-      In general, this is more efficient than using \code{"["} operator.
+      \code{c(x, ...)}:
+      Combines \code{x} and the GRangesList objects in \code{...}
+      together. Any object in \code{...} must belong to the same class
+      as \code{x}, or to one of its subclasses, or must be \code{NULL}.
+      The result is an object of the same class as \code{x}.
     }
     \item{}{
-      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
-      Replaces the subsequence window specified on the left (i.e. the subsequence
-      in \code{x} specified by \code{start}, \code{end} and \code{width})
-      by \code{value}.
-      \code{value} must either be of class \code{class(x)}, belong to a subclass
-      of \code{class(x)}, be coercible to \code{class(x)}, or be \code{NULL}.
-      If \code{keepLength} is \code{TRUE}, the elements of \code{value} are
-      repeated to create a GRanges object with the same number of elements
-      as the width of the subsequence window it is replacing.
-      If \code{keepLength} is \code{FALSE}, this replacement method can modify
-      the length of \code{x}, depending on how the length of the left
-      subsequence window compares to the length of \code{value}.
+      \code{append(x, values, after = length(x))}:
+      Inserts the \code{values} into \code{x} at the position given by
+      \code{after}, where \code{x} and \code{values} are of the same
+      class.
+    }
+    \item{}{\code{unlist(x, recursive = TRUE, use.names = TRUE)}:
+      Concatenates the elements of \code{x} into a single GRanges
+      object.
     }
   }
 }
@@ -399,29 +343,6 @@
   }
 }
 
-\section{The "range" and "reduce" methods}{
-  In the code snippets below, \code{x} is a GRangesList object.
-  The methods in this section are isomorphisms, that is, they are endomorphisms
-  (i.e. they preserve the class of \code{x}) who also preserve the length &
-  names & metadata columns of \code{x}. In addition, the seqinfo is preserved
-  too.
-
-  \describe{
-    \item{}{
-      \code{range(x)}:
-      Applies \code{range} to each element in \code{x}.
-      More precisely, it is equivalent to \code{endoapply(x, range)}.
-    }
-    \item{}{
-      \code{reduce(x, drop.empty.ranges=FALSE, min.gapwidth=1L)}:
-      Applies \code{reduce} to each element in \code{x}.
-      More precisely, it is equivalent to
-      \code{endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
-                      min.gapwidth=min.gapwidth)}.
-    }
-  }
-}
-
 \author{P. Aboyoun & H. Pages}
 
 \seealso{
@@ -431,6 +352,8 @@
   \link[IRanges]{RangesList-class},
   \link[IRanges]{RleList-class},
   \link[IRanges]{DataFrameList-class},
+  \link[GenomicRanges]{intra-range-methods},
+  \link[GenomicRanges]{inter-range-methods},
   \link{coverage-methods},
   \link{setops-methods},
   \link{findOverlaps-methods}
@@ -464,14 +387,6 @@ grl[seqnames(grl) == "chr1" & strand(grl) == "+", ]
 seqlevels(grl)
 seqlevels(grl) <- sub("chr", "Chrom", seqlevels(grl))
 grl
-
-## range() and reduce():
-range(grl)
-reduce(grl)  # Doesn't really reduce anything but note the reordering
-             # of the inner elements in the 3rd top-level element: the
-             # ranges are reordered by sequence name first (the order of
-             # the sequence names is dictated by the sequence levels),
-             # and then by strand.
 
 ## Coerce to IRangesList (seqnames and strand information is lost):
 as(grl, "IRangesList")

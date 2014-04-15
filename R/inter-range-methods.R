@@ -120,6 +120,7 @@
            elementMetadata=new("DataFrame", nrows=length(ansSeqnames)))
 }
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### range()
 ###
@@ -130,6 +131,7 @@ setMethod("range", "GenomicRanges",
                                      ignore.strand=ignore.strand)
 )
 
+### TODO: Support the 'ignore.strand' arg.
 setMethod("range", "GRangesList",
     function(x, ..., na.rm=FALSE)
     {
@@ -142,6 +144,7 @@ setMethod("range", "GRangesList",
         reconstructGRLfromGR(gr, x)
     }
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reduce()
@@ -167,6 +170,7 @@ setMethod("reduce", "GenomicRanges",
     }
 )
 
+### TODO: Support the 'ignore.strand' arg.
 setMethod("reduce", "GRangesList",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
              with.inframe.attrib=FALSE)
@@ -181,6 +185,7 @@ setMethod("reduce", "GRangesList",
         reconstructGRLfromGR(gr, x)
     }
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### gaps()
@@ -201,6 +206,7 @@ setMethod("gaps", "GenomicRanges",
         .interIntervalGenomicRanges(x, gaps, start=start, end=end)
     }
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### disjoin()
@@ -230,6 +236,7 @@ setMethod("disjoin", "GRangesList",
     d <- disjoin(gr, ...)
     reconstructGRLfromGR(d, x)
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isDisjoint()
@@ -267,6 +274,7 @@ setMethod("isDisjoint", "GRangesList",
         ans
     }
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### disjointBins()

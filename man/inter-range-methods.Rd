@@ -4,24 +4,28 @@
 
 \alias{range}
 \alias{range,GenomicRanges-method}
+\alias{range,GRangesList-method}
 
 \alias{reduce}
 \alias{reduce,GenomicRanges-method}
+\alias{reduce,GRangesList-method}
 
 \alias{gaps}
 \alias{gaps,GenomicRanges-method}
 
 \alias{disjoin}
 \alias{disjoin,GenomicRanges-method}
+\alias{disjoin,GRangesList-method}
 
 \alias{isDisjoint}
 \alias{isDisjoint,GenomicRanges-method}
+\alias{isDisjoint,GRangesList-method}
 
 \alias{disjointBins}
 \alias{disjointBins,GenomicRanges-method}
 
 
-\title{Inter range transformations of a GenomicRanges object}
+\title{Inter range transformations of a GenomicRanges or GRangesList object}
 
 \description{
   See \code{?`\link[IRanges]{intra-range-methods}`} and
@@ -39,16 +43,21 @@
 
 \usage{
 \S4method{range}{GenomicRanges}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+\S4method{range}{GRangesList}(x, ..., na.rm=FALSE)
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
        with.revmap=FALSE, with.mapping=FALSE, with.inframe.attrib=FALSE,
        ignore.strand=FALSE)
+\S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
+       with.inframe.attrib=FALSE)
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
 \S4method{disjoin}{GenomicRanges}(x, ignore.strand=FALSE)
+\S4method{disjoin}{GRangesList}(x, ignore.strand=FALSE)
 
 \S4method{isDisjoint}{GenomicRanges}(x, ignore.strand=FALSE)
+\S4method{isDisjoint}{GRangesList}(x, ignore.strand=FALSE)
 
 \S4method{disjointBins}{GenomicRanges}(x, ignore.strand=FALSE)
 }
@@ -70,35 +79,47 @@
 }
 
 \details{
-\code{range} returns an object of the same type as \code{x}
-containing range bounds for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
+  \subsection{On a GRanges object} {
+    \code{range} returns an object of the same type as \code{x}
+    containing range bounds for each distinct (seqname, strand) pairing.
+    The names (\code{names(x)}) and the metadata columns in \code{x} are
+    dropped.
 
-\code{reduce} returns an object of the same type as \code{x}
-containing reduced ranges for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
-See \code{?\link[IRanges]{reduce}} for more information about range
-reduction and for a description of the optional arguments.
+    \code{reduce} returns an object of the same type as \code{x}
+    containing reduced ranges for each distinct (seqname, strand) pairing.
+    The names (\code{names(x)}) and the metadata columns in \code{x} are
+    dropped.
+    See \code{?\link[IRanges]{reduce}} for more information about range
+    reduction and for a description of the optional arguments.
 
-\code{gaps} returns an object of the same type as \code{x}
-containing complemented ranges for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the columns in \code{x} are dropped.
-For the start and end arguments of this gaps method, it is expected that
-the user will supply a named integer vector (where the names correspond to
-the appropriate seqlevels). See \code{?\link[IRanges]{gaps}} for more
-information about range complements and for a description of the optional
-arguments.
+    \code{gaps} returns an object of the same type as \code{x}
+    containing complemented ranges for each distinct (seqname, strand) pairing.
+    The names (\code{names(x)}) and the columns in \code{x} are dropped.
+    For the start and end arguments of this gaps method, it is expected that
+    the user will supply a named integer vector (where the names correspond to
+    the appropriate seqlevels). See \code{?\link[IRanges]{gaps}} for more
+    information about range complements and for a description of the optional
+    arguments.
 
-\code{disjoin} returns an object of the same type as \code{x}
-containing disjoint ranges for each distinct (seqname, strand) pairing.
-The names (\code{names(x)}) and the metadata columns in \code{x} are dropped.
+    \code{disjoin} returns an object of the same type as \code{x}
+    containing disjoint ranges for each distinct (seqname, strand) pairing.
+    The names (\code{names(x)}) and the metadata columns in \code{x} are
+    dropped.
 
-\code{isDisjoint} returns a logical value indicating whether the ranges
-in \code{x} are disjoint (i.e. non-overlapping).
+    \code{isDisjoint} returns a logical value indicating whether the ranges
+    in \code{x} are disjoint (i.e. non-overlapping).
 
-\code{disjointBins} returns bin indexes for the ranges in \code{x}, such
-that ranges in the same bin do not overlap. If \code{ignore.strand=FALSE},
-the two features cannot overlap if they are on different strands.
+    \code{disjointBins} returns bin indexes for the ranges in \code{x}, such
+    that ranges in the same bin do not overlap. If \code{ignore.strand=FALSE},
+    the two features cannot overlap if they are on different strands.
+  }
+  \subsection{On a GRangesList object} {
+    When they are supported on GRangesList object \code{x}, the above inter
+    range transformations will apply the transformation to each of the list
+    elements in \code{x} and return a list-like object \emph{parallel} to
+    \code{x} (i.e. with 1 list element per list element in \code{x}).
+    If \code{x} has names on it, they're propagated to the returned object.
+  }
 }
 
 \author{H. Pages and P. Aboyoun}
@@ -124,10 +145,26 @@ gr <- GRanges(
       )
 gr
 
+gr1 <- GRanges(seqnames="chr2", ranges=IRanges(3, 6),
+               strand="+", score=5L, GC=0.45)
+gr2 <- GRanges(seqnames=c("chr1", "chr1"),
+               ranges=IRanges(c(7,13), width=3),
+               strand=c("+", "-"), score=3:4, GC=c(0.3, 0.5))
+gr3 <- GRanges(seqnames=c("chr1", "chr2"),
+               ranges=IRanges(c(1, 4), c(3, 9)),
+               strand=c("-", "-"), score=c(6L, 2L), GC=c(0.4, 0.1))
+grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
+grl
+
 ## ---------------------------------------------------------------------
 ## range()
 ## ---------------------------------------------------------------------
+
+## On a GRanges object:
 range(gr)
+
+## On a GRangesList object:
+range(grl)
 
 # ---------------------------------------------------------------------
 ## reduce()
@@ -174,10 +211,17 @@ alphacodes <- rangeComparisonCodeToLetter(compare(expanded_biggr2,
 stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
 table(alphacodes)
 
+## On a GRangesList object:
+reduce(grl)  # Doesn't really reduce anything but note the reordering
+             # of the inner elements in the 3rd top-level element: the
+             # ranges are reordered by sequence name first (the order of
+             # the sequence names is dictated by the sequence levels),
+             # and then by strand.
+
 ## ---------------------------------------------------------------------
 ## gaps()
 ## ---------------------------------------------------------------------
-gaps(gr, start = 1, end = 10)
+gaps(gr, start=1, end=10)
 
 ## ---------------------------------------------------------------------
 ## disjoin(), isDisjoint(), disjointBins()
