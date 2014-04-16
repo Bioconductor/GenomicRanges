@@ -364,7 +364,7 @@ setGeneric("seqnameStyle", function(x) standardGeneric("seqnameStyle"))
 setMethod("seqnameStyle", "ANY",
     function(x)
     {
-        .Deprecated("seqlevelsStyle")
+        .Defunct("seqlevelsStyle")
         seqlevelsStyle(x)
     }
 )
@@ -376,7 +376,7 @@ setGeneric("seqnameStyle<-", signature="x",
 setReplaceMethod("seqnameStyle", "ANY",
     function(x, value)
     {
-        .Deprecated("seqlevelsStyle")
+        .Defunct("seqlevelsStyle")
         `seqlevelsStyle<-`(x, value)
     }
 )

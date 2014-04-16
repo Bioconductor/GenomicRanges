@@ -499,7 +499,7 @@ setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
 setMethod("relistToClass", "GRanges", function(x) "GRangesList")
 
 setMethod("splitAsListReturnedClass", "GRanges",
-    function(x) {.Deprecated("relistToClass"); "GRangesList"}
+    function(x) {.Defunct("relistToClass"); "GRangesList"}
 )
 
 
