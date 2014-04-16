@@ -79,7 +79,7 @@
 }
 
 \details{
-  \subsection{On a GRanges object} {
+  \subsection{On a GRanges object}{
     \code{range} returns an object of the same type as \code{x}
     containing range bounds for each distinct (seqname, strand) pairing.
     The names (\code{names(x)}) and the metadata columns in \code{x} are
@@ -113,7 +113,7 @@
     that ranges in the same bin do not overlap. If \code{ignore.strand=FALSE},
     the two features cannot overlap if they are on different strands.
   }
-  \subsection{On a GRangesList object} {
+  \subsection{On a GRangesList object}{
     When they are supported on GRangesList object \code{x}, the above inter
     range transformations will apply the transformation to each of the list
     elements in \code{x} and return a list-like object \emph{parallel} to

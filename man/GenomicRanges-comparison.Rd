@@ -43,7 +43,7 @@
 ## -------
 
 \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch=NA_integer_, incomparables=NULL,
-      method=c("auto", "quick", "hash"), ignore.strand=FALSE, match.if.overlap=FALSE)
+      method=c("auto", "quick", "hash"), ignore.strand=FALSE)
 
 ## order() and related methods
 ## ----------------------------
@@ -76,12 +76,6 @@
   \item{ignore.strand}{
     Whether or not the strand should be ignored when comparing 2 genomic
     ranges.
-  }
-  \item{match.if.overlap}{
-    This argument is defunct in BioC 2.14. Please use
-    \code{findOverlaps(x, table, select="first", ignore.strand=ignore.strand)}
-    if you need to do
-    \code{match(x, table, ignore.strand=ignore.strand, match.if.overlap=TRUE)}.
   }
   \item{...}{
     Additional \link{GenomicRanges} objects used for breaking ties.

@@ -135,7 +135,7 @@ setMethod("duplicated", "GenomicRanges", .duplicated.GenomicRanges)
 setMethod("match", c("GenomicRanges", "GenomicRanges"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL,
                        method=c("auto", "quick", "hash"),
-                       ignore.strand=FALSE, match.if.overlap=FALSE)
+                       ignore.strand=FALSE)
     {
         if (!isSingleNumberOrNA(nomatch))
             stop("'nomatch' must be a single number or NA")
@@ -146,24 +146,6 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
                  "only accepts 'incomparables=NULL'")
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
-        if (!isTRUEorFALSE(match.if.overlap))
-            stop("'match.if.overlap' must be TRUE or FALSE")
-        if (match.if.overlap) {
-            msg <- c("  Starting with BioC 2.14, ",
-                     "match() on GRanges objects\n  does not support ",
-                     "the 'match.if.overlap' argument anymore. Please use\n\n",
-                     "    findOverlaps(x, table, select=\"first\", ",
-                     "ignore.strand=ignore.strand)\n\n",
-                     "  if you need to do\n\n",
-                     "    match(x, table, ignore.strand=ignore.strand, ",
-                     "match.if.overlap=TRUE)")
-            .Defunct(msg=msg)
-            ans <- findOverlaps(x, table,
-                                select="first", ignore.strand=ignore.strand)
-            if (!is.na(nomatch) && anyMissing(ans))
-                ans[is.na(ans)] <- nomatch
-            return(ans)
-        }
         ## Calling merge() is the way to check that 'x' and 'table' are based
         ## on the same reference genome.
         merge(seqinfo(x), seqinfo(table))
