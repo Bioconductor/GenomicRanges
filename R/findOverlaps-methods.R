@@ -219,7 +219,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
-        if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
+        if (!isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
@@ -268,7 +268,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
-        if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
+        if (!isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
@@ -338,7 +338,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
              type = c("any", "start", "end", "within"),
              select = c("all", "first"), ignore.strand = FALSE)
     {
-        if (!IRanges:::isSingleNumber(maxgap) || maxgap < 0)
+        if (!isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)

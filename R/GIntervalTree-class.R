@@ -45,7 +45,7 @@ setValidity2("GIntervalTree", .valid.GIntervalTree)
 
 .GT_getIndex <- function(from) {
   fvals <- as.integer(runValue(seqnames(from)))
-  if (IRanges:::isNotSorted(fvals)) {
+  if (S4Vectors:::isNotSorted(fvals)) {
     flens <- runLength(seqnames(from))
     idx <- IRanges:::orderInteger(fvals)
     rngidx <- successiveIRanges(flens)[idx]

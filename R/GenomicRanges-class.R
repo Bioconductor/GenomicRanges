@@ -813,7 +813,7 @@ showGenomicRanges <- function(x, margin="",
         " and ",
         nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
-    out <- IRanges:::makePrettyMatrixForCompactPrinting(x,
+    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
     if (with.classinfo) {
         .COL2CLASS <- c(

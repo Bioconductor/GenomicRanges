@@ -187,7 +187,10 @@ countMatches(gr_levels, gr)
 order(gr)
 sort(gr)
 sort(gr, ignore.strand=TRUE)
-sort(gr, by = ~ seqnames + start + end) # equivalent to (but slower than) above
+
+## TODO: Broken. Please fix!
+#sort(gr, by = ~ seqnames + start + end) # equivalent to (but slower than) above
+
 score(gr) <- rev(seq_len(length(gr)))
 sort(gr, by = ~ score)
 rank(gr)

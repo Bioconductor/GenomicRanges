@@ -475,7 +475,7 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 .dBracketReplaceGRList <- function(x, i, j, ..., value)
 {
     nameValue <- if (is.character(i)) i else ""
-    i <- IRanges:::normargSubset2_iOnly(x, i, j, ...,
+    i <- S4Vectors:::normargSubset2_iOnly(x, i, j, ...,
              .conditionPrefix=paste0("[[<-,", class(x)[1], "-method: "))
     len <- length(x)
     if (i > len) {

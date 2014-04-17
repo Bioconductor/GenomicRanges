@@ -199,9 +199,9 @@ setMethod("gaps", "GenomicRanges",
             start <- start[seqlevels]
         if (!is.null(names(end)))
             end <- end[seqlevels]
-        start <- IRanges:::recycleVector(start, length(seqlevels))
+        start <- S4Vectors:::recycleVector(start, length(seqlevels))
         start <- rep(start, each=3L)
-        end <- IRanges:::recycleVector(end, length(seqlevels))
+        end <- S4Vectors:::recycleVector(end, length(seqlevels))
         end <- rep(end, each=3L)
         .interIntervalGenomicRanges(x, gaps, start=start, end=end)
     }

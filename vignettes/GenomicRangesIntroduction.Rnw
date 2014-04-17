@@ -683,7 +683,7 @@ head(qwidth(aln1))
 head(start(aln1))
 head(end(aln1))
 head(width(aln1))
-head(ngap(aln1))
+head(njunc(aln1))
 @
 
 \subsection{More accessor methods}
