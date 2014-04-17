@@ -72,7 +72,7 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
     if (!is.factor(runValue(strand)) ||
         !identical(levels(runValue(strand)), levels(strand())))
         runValue(strand) <- strand(runValue(strand))
-    if (IRanges:::anyMissing(runValue(strand))) {
+    if (S4Vectors:::anyMissing(runValue(strand))) {
         warning("missing values in strand converted to \"*\"")
         runValue(strand)[is.na(runValue(strand))] <- "*"
     }

@@ -131,7 +131,7 @@ setMethod("fixedColumnNames", "GenomicRanges", function(x) {
 {
     if (!is.factor(runValue(seqnames(x))))
         return("'seqnames' should be a 'factor' Rle")
-    if (IRanges:::anyMissing(runValue(seqnames(x))))
+    if (S4Vectors:::anyMissing(runValue(seqnames(x))))
         return("'seqnames' contains missing values")
     NULL
 }
@@ -153,7 +153,7 @@ setMethod("fixedColumnNames", "GenomicRanges", function(x) {
                  ")")
         return(paste(msg, collapse=""))
     }
-    if (IRanges:::anyMissing(runValue(strand(x))))
+    if (S4Vectors:::anyMissing(runValue(strand(x))))
         return("'strand' contains missing values")
     NULL
 }
@@ -492,7 +492,7 @@ setReplaceMethod("start", "GenomicRanges",
         starts <- start(ranges)
         starts[] <- value
         ## TODO: Revisit this to handle circularity (maybe).
-        if (!IRanges:::anyMissing(seqlengths(x))) {
+        if (!S4Vectors:::anyMissing(seqlengths(x))) {
             if (IRanges:::anyMissingOrOutside(starts, 1L)) {
                 warning("trimmed start values to be positive")
                 starts[starts < 1L] <- 1L
@@ -513,7 +513,7 @@ setReplaceMethod("end", "GenomicRanges",
         ends[] <- value
         seqlengths <- seqlengths(x)
         ## TODO: Revisit this to handle circularity.
-        if (!IRanges:::anyMissing(seqlengths)) {
+        if (!S4Vectors:::anyMissing(seqlengths)) {
             seqlengths <- seqlengths[seqlevels(x)]
             maxEnds <- seqlengths[as.integer(seqnames(x))]
             trim <- which(ends > maxEnds)
@@ -532,7 +532,7 @@ setReplaceMethod("width", "GenomicRanges",
     {
         if (!is.integer(value))
             value <- as.integer(value)
-        if (!IRanges:::anyMissing(seqlengths(x))) {
+        if (!S4Vectors:::anyMissing(seqlengths(x))) {
             end(x) <- start(x) + (value - 1L)
         } else {
             ranges <- ranges(x)

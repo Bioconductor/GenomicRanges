@@ -172,7 +172,7 @@ setMethod("checkConstraint", c("GenomicRanges", "HasRangeTypeCol"),
         rangeType <- x_mcols[[idx]]
         .LEVELS <- c("gene", "transcript", "exon", "cds", "5utr", "3utr")
         if (!is(rangeType, "Rle") ||
-            IRanges:::anyMissing(runValue(rangeType)) ||
+            S4Vectors:::anyMissing(runValue(rangeType)) ||
             !identical(levels(rangeType), .LEVELS))
         {
             msg <- c("'mcols(x)$rangeType' must be a ",
@@ -270,7 +270,7 @@ setMethod("checkConstraint", c("GenomicRanges", "HasGCCol"),
         }
         GC <- x_mcols[[idx]]
         if (!is.numeric(GC) ||
-            IRanges:::anyMissing(GC) ||
+            S4Vectors:::anyMissing(GC) ||
             any(GC < 0) || any(GC > 1))
         {
             msg <- c("'mcols(x)$GC' must be a numeric vector ",

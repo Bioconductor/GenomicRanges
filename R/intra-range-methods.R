@@ -68,7 +68,7 @@ setMethod("flank", "GenomicRanges",
         ranges <-
             flank(ranges(x), width=width, start=start, both=both,
                   use.names=use.names)
-        if (!IRanges:::anyMissing(seqlengths(x))) {
+        if (!S4Vectors:::anyMissing(seqlengths(x))) {
             start(x) <- start(ranges)
             end(x) <- end(ranges)
         } else {
@@ -159,7 +159,7 @@ setMethod("resize", "GenomicRanges",
         }
         ranges <-
             resize(ranges(x), width=width, fix=fix, use.names=use.names)
-        if (!IRanges:::anyMissing(seqlengths(x))) {
+        if (!S4Vectors:::anyMissing(seqlengths(x))) {
             start(x) <- start(ranges)
             end(x) <- end(ranges)
         } else {
@@ -265,7 +265,7 @@ setMethod("trim", "GenomicRanges",
 setMethod("Ops", c("GenomicRanges", "numeric"),
     function(e1, e2)
     {
-        if (IRanges:::anyMissing(e2))
+        if (S4Vectors:::anyMissing(e2))
             stop("NA not allowed as zoom factor")
         e2 <- recycleNumericArg(e2, "e2", length(e1))
         if (.Generic == "*") {
