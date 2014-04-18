@@ -68,7 +68,7 @@ test_GRangesList_coercion <- function() {
 test_GRangesList_accessors <- function() {
     grl <- make_test_GRangesList()
     checkIdentical(seqnames(grl), RleList(lapply(grl, seqnames), compress=TRUE))
-    checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges, use.mcols=TRUE)))
+    checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges)))
     checkIdentical(strand(grl), RleList(lapply(grl, strand), compress=TRUE))
     checkIdentical(seqlengths(grl), seqlengths(grl@unlistData))
     checkIdentical(mcols(grl, level="within"),
