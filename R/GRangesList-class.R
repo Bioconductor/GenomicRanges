@@ -181,7 +181,8 @@ setMethod("ranges", "GRangesList",
             stop("'use.mcols' must be TRUE or FALSE")
         unlisted_x <- unlist(x, use.names=FALSE)
         unlisted_ans <- unlisted_x@ranges
-        mcols(unlisted_ans) <- mcols(unlisted_x)
+        if (use.mcols)
+            mcols(unlisted_ans) <- mcols(unlisted_x)
         ans <- relist(unlisted_ans, x)
         if (use.mcols)
             mcols(ans) <- mcols(x)
