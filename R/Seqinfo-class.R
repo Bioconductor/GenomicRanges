@@ -138,15 +138,15 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 ###
 
 ### Make sure this always returns an *unnamed* character vector.
-.normargSeqnames <- function(seqnames)
+.normargSeqlevels <- function(seqlevels)
 {
-    if (is.null(seqnames))
+    if (is.null(seqlevels))
         return(character(0))
-    seqnames <- unname(seqnames)
-    errmsg <- .valid.Seqinfo.seqnames(seqnames, what="supplied 'seqnames'")
+    seqlevels <- unname(seqlevels)
+    errmsg <- .valid.Seqinfo.seqnames(seqlevels, what="supplied 'seqlevels'")
     if (!is.null(errmsg))
         stop(errmsg)
-    seqnames
+    seqlevels
 }
 
 ### Make sure this always returns an *unnamed* integer vector.
@@ -231,7 +231,7 @@ setValidity2("Seqinfo", .valid.Seqinfo)
 
 Seqinfo <- function(seqnames=NULL, seqlengths=NA, isCircular=NA, genome=NA)
 {
-    seqnames <- .normargSeqnames(seqnames)
+    seqnames <- .normargSeqlevels(seqnames)
     seqlengths <- .normargSeqlengths(seqlengths, seqnames)
     is_circular <- .normargIsCircular(isCircular, seqnames)
     genome <- .normargGenome(genome, seqnames)
@@ -292,7 +292,7 @@ setMethod("[", "Seqinfo",
 setReplaceMethod("seqnames", "Seqinfo",
     function(x, value)
     {
-        value <- .normargSeqnames(value)
+        value <- .normargSeqlevels(value)
         if (length(value) != length(x))
             stop("length of supplied 'seqnames' vector must equal ",
                  "the number of sequences")
