@@ -217,7 +217,21 @@ setMethod("disjoin", "GenomicRanges",
         .interIntervalGenomicRanges2(x, disjoin, ignore.strand=ignore.strand)
 )
 
-applyOnRangesBySpace <- function(x, FUN, ..., ignore.strand = FALSE) {
+setMethod("disjoin", "GRangesList",
+    function(x, ignore.strand=FALSE)
+    {
+        gr <- deconstructGRLintoGR(x)
+        d <- disjoin(gr, ignore.strand=ignore.strand)
+        reconstructGRLfromGR(d, x)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### isDisjoint()
+###
+
+.applyOnRangesBySpace <- function(x, FUN, ..., ignore.strand = FALSE) {
   if (ignore.strand)
     f <- seqnames(x)
   else
@@ -229,23 +243,10 @@ applyOnRangesBySpace <- function(x, FUN, ..., ignore.strand = FALSE) {
   ans
 }
 
-setMethod("disjoin", "GRangesList",
-    function(x, ...)
-{
-    gr <- deconstructGRLintoGR(x)
-    d <- disjoin(gr, ...)
-    reconstructGRLfromGR(d, x)
-})
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### isDisjoint()
-###
-
 setMethod("isDisjoint", "GenomicRanges",
     function(x, ignore.strand=FALSE)
     {
-        all(applyOnRangesBySpace(x, isDisjoint, ignore.strand = ignore.strand))
+        all(.applyOnRangesBySpace(x, isDisjoint, ignore.strand = ignore.strand))
     }
 )
 
@@ -282,7 +283,7 @@ setMethod("isDisjoint", "GRangesList",
 
 setMethod("disjointBins", "GenomicRanges",
           function(x, ignore.strand = FALSE) {
-            applyOnRangesBySpace(x, disjointBins,
-                                 ignore.strand = ignore.strand)
+            .applyOnRangesBySpace(x, disjointBins,
+                                  ignore.strand = ignore.strand)
           })
 
