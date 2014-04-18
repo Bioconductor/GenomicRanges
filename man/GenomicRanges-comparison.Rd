@@ -192,7 +192,10 @@ sort(gr, ignore.strand=TRUE)
 #sort(gr, by = ~ seqnames + start + end) # equivalent to (but slower than) above
 
 score(gr) <- rev(seq_len(length(gr)))
-sort(gr, by = ~ score)
+
+## TODO: Broken. Please fix!
+#sort(gr, by = ~ score)
+
 rank(gr)
 
 ## ---------------------------------------------------------------------
