@@ -221,7 +221,17 @@ setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
 ###
 
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
-setMethod("ranges", "GRanges", function(x, ...) x@ranges)
+setMethod("ranges", "GRanges",
+    function(x, use.mcols=FALSE)
+    {
+        if (!isTRUEorFALSE(use.mcols))
+            stop("'use.mcols' must be TRUE or FALSE")
+        ans <- x@ranges
+        if (use.mcols)
+            mcols(ans) <- mcols(x)
+        ans
+    }
+)
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 

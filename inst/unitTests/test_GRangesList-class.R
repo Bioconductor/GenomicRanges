@@ -1,19 +1,18 @@
 make_test_GRangesList <- function() {
     GRangesList(
-        a =
-        new("GRanges",
+        a = GRanges(
             seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
             ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
             strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
             seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-            elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10))),
-        b =
-        new("GRanges",
+            score = 1:10, GC = seq(1, 0, length=10)),
+        b = GRanges(
             seqnames = Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
             ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
             strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
             seqinfo = Seqinfo(seqnames = paste("chr", c(2L, 4:5), sep="")),
-            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
+            score = 1:13, GC = seq(0, 1, length=13))
+    )
 }
 
 test_GRangesList_construction <- function() {
@@ -69,7 +68,7 @@ test_GRangesList_coercion <- function() {
 test_GRangesList_accessors <- function() {
     grl <- make_test_GRangesList()
     checkIdentical(seqnames(grl), RleList(lapply(grl, seqnames), compress=TRUE))
-    checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges)))
+    checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges, use.mcols=TRUE)))
     checkIdentical(strand(grl), RleList(lapply(grl, strand), compress=TRUE))
     checkIdentical(seqlengths(grl), seqlengths(grl@unlistData))
     checkIdentical(mcols(grl, level="within"),
