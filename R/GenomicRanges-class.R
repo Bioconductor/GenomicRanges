@@ -493,7 +493,7 @@ setReplaceMethod("start", "GenomicRanges",
         starts[] <- value
         ## TODO: Revisit this to handle circularity (maybe).
         if (!S4Vectors:::anyMissing(seqlengths(x))) {
-            if (IRanges:::anyMissingOrOutside(starts, 1L)) {
+            if (S4Vectors:::anyMissingOrOutside(starts, 1L)) {
                 warning("trimmed start values to be positive")
                 starts[starts < 1L] <- 1L
             }

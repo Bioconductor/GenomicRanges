@@ -1,6 +1,7 @@
 #include "GenomicRanges.h"
-#include "IRanges_interface.h"
 #include "XVector_interface.h"
+#include "IRanges_interface.h"
+#include "S4Vectors_interface.h"
 
 static char errmsg_buf[200];
 
@@ -270,7 +271,7 @@ SEXP extract_transcripts(SEXP classname, SEXP x,
 	PROTECT(ans_width = mk_transcript_widths(exonStarts,
 					exonEnds, X.length));
 	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
-					get_classname(x), ans_width));
+				     get_classname(x), ans_width));
 	ans_holder = hold_XVectorList(ans);
 	ans_length = get_length_from_XVectorList_holder(&ans_holder);
 	for (i = 0; i < ans_length; i++) {

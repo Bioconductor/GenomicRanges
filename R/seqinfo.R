@@ -19,7 +19,7 @@
     }
     if (any(duplicated(new2old) & !is.na(new2old)))
         stop("duplicates are not allowed among non-NA values in 'new2old'")
-    IRanges:::reverseIntegerInjection(new2old, old_N)
+    S4Vectors:::reverseIntegerInjection(new2old, old_N)
 }
 
 ### The dangling seqlevels in 'x' are those seqlevels that the user wants to

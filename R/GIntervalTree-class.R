@@ -47,9 +47,9 @@ setValidity2("GIntervalTree", .valid.GIntervalTree)
   fvals <- as.integer(runValue(seqnames(from)))
   if (S4Vectors:::isNotSorted(fvals)) {
     flens <- runLength(seqnames(from))
-    idx <- IRanges:::orderInteger(fvals)
+    idx <- S4Vectors:::orderInteger(fvals)
     rngidx <- successiveIRanges(flens)[idx]
-    idx <- IRanges:::orderInteger(start(rngidx))
+    idx <- S4Vectors:::orderInteger(start(rngidx))
     return(IRanges(end=cumsum(width(rngidx))[idx], width=width(rngidx)[idx]))
   }
   IRanges()

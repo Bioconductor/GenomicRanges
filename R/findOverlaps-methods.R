@@ -128,11 +128,11 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         }
         if (select == "first") {
             ans <- rep.int(NA_integer_, q_len)
-            oo <- IRanges:::orderIntegerPairs(q_hits, s_hits, decreasing=TRUE)
+            oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits, decreasing=TRUE)
             ans[q_hits[oo]] <- s_hits[oo]
             return(ans)
         }
-        oo <- IRanges:::orderIntegerPairs(q_hits, s_hits)
+        oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits)
         q_hits <- q_hits[oo]
         s_hits <- s_hits[oo]
         if (select == "last") {
@@ -154,19 +154,19 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 ### TODO: Make this a function of 2 integer vectors (of equal length) and
 ### move it to IRanges/R/int-utils.R
 ### TODO: Try to invert the order i.e. first extract unique rows with
-### IRanges:::duplicatedIntegerPairs() and then sort them. Could this be
+### S4Vectors:::duplicatedIntegerPairs() and then sort them. Could this be
 ### faster?
 .cleanMatchMatrix <- function(matchMatrix)
 {
     if (nrow(matchMatrix) <= 1L)
         return(matchMatrix)
     ## First sort the rows.
-    oo <- IRanges:::orderIntegerPairs(matchMatrix[ , 1L],
-                                      matchMatrix[ , 2L])
+    oo <- S4Vectors:::orderIntegerPairs(matchMatrix[ , 1L],
+                                        matchMatrix[ , 2L])
     matchMatrix <- matchMatrix[oo, , drop=FALSE]
     ## Then keep the unique rows.
-    keep <- IRanges:::runEndsOfIntegerPairs(matchMatrix[ , 1L],
-                                            matchMatrix[ , 2L])
+    keep <- S4Vectors:::runEndsOfIntegerPairs(matchMatrix[ , 1L],
+                                              matchMatrix[ , 2L])
     matchMatrix[keep, , drop=FALSE]
 }
 
@@ -186,8 +186,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
 .updateMatchMatrix <- function(matchMatrix, intrsct, minoverlap) {
     widthSum <- .groupSums(width(intrsct), matchMatrix)
-    is_dup <- IRanges:::duplicatedIntegerPairs(matchMatrix[ , 1L],
-                                               matchMatrix[ , 2L])
+    is_dup <- S4Vectors:::duplicatedIntegerPairs(matchMatrix[ , 1L],
+                                                 matchMatrix[ , 2L])
     indx <- (widthSum >= minoverlap)
     matchMatrix <- matchMatrix[!is_dup,  , drop=FALSE]           
     matchMatrix <- matchMatrix[indx,  , drop=FALSE]  
@@ -198,16 +198,16 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 {
     query0 <- unname(mm00[ , 1L])
     subject0 <- unname(mm00[ , 2L])
-    oo <- IRanges:::orderIntegerPairs(subject0, query0)
+    oo <- S4Vectors:::orderIntegerPairs(subject0, query0)
     mm00 <- mm00[oo, , drop=FALSE]
 
     query1 <- togroup(qpartitioning, j=unname(mm00[ , 1L]))
     subject0 <- unname(mm00[ , 2L])
-    runend <- IRanges:::runEndsOfIntegerPairs(query1, subject0)
+    runend <- S4Vectors:::runEndsOfIntegerPairs(query1, subject0)
     mm10 <- cbind(queryHits=query1, subjectHits=subject0)[runend, , drop=FALSE]
 
     if (type.is.within) {
-        runlen <- IRanges:::diffWithInitialZero(runend)
+        runlen <- S4Vectors:::diffWithInitialZero(runend)
         keep <- width(qpartitioning)[mm10[ , 1L]] == runlen
         mm10 <- mm10[keep, , drop=FALSE]
     }
@@ -258,7 +258,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
                        queryLength = length(query),
                        subjectLength = length(subject))
         } else {
-            IRanges:::.hitsMatrixToVector(mm10, length(query))
+            IRanges:::hitsMatrixToVector(mm10, length(query))
         }
     }
 )
@@ -276,7 +276,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
         unlistSubject <- unlist(subject, use.names=FALSE)
         subjectGroups <- togroup(subject)
         if (type == "start") {
-            keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
+            keep <- which(S4Vectors:::diffWithInitialZero(subjectGroups) != 0L)
             unlistSubject <-  unlistSubject[keep]
             subjectGroups <- subjectGroups[keep]
         } else if (type == "end") {
@@ -304,7 +304,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
                        queryLength = length(query),
                        subjectLength = length(subject))
         } else {
-            IRanges:::.hitsMatrixToVector(matchMatrix, length(query))
+            IRanges:::hitsMatrixToVector(matchMatrix, length(query))
         }
     }
 )
@@ -314,19 +314,19 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 {
     query0 <- unname(mm00[ , 1L])
     subject1 <- togroup(spartitioning, j=unname(mm00[ , 2L]))
-    oo <- IRanges:::orderIntegerPairs(subject1, query0)
+    oo <- S4Vectors:::orderIntegerPairs(subject1, query0)
     mm01 <- cbind(queryHits=query0, subjectHits=subject1)[oo, , drop=FALSE]
-    is_dup <- IRanges:::duplicatedIntegerPairs(mm01[ , 1L],
-                                               mm01[ , 2L])
+    is_dup <- S4Vectors:::duplicatedIntegerPairs(mm01[ , 1L],
+                                                 mm01[ , 2L])
     mm01 <- mm01[!is_dup, , drop=FALSE]
 
     query1 <- togroup(qpartitioning, j=unname(mm01[ , 1L]))
     subject1 <- unname(mm01[ , 2L])
-    runend <- IRanges:::runEndsOfIntegerPairs(query1, subject1)
+    runend <- S4Vectors:::runEndsOfIntegerPairs(query1, subject1)
     mm11 <- cbind(queryHits=query1, subjectHits=subject1)[runend, , drop=FALSE]
 
     if (type.is.within) {
-        runlen <- IRanges:::diffWithInitialZero(runend)
+        runlen <- S4Vectors:::diffWithInitialZero(runend)
         keep <- width(qpartitioning)[mm11[ , 1L]] == runlen
         mm11 <- mm11[keep, , drop=FALSE]
     }
@@ -349,7 +349,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         queryGroups <- togroup(query)
  
         if (type == "start") {
-            keep <- which(IRanges:::diffWithInitialZero(subjectGroups) != 0L)
+            keep <- which(S4Vectors:::diffWithInitialZero(subjectGroups) != 0L)
             unlistSubject <- unlistSubject[keep]
             subjectGroups <- subjectGroups[keep]
         } else if (type == "end") {
@@ -392,7 +392,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                        queryLength = length(query),
                        subjectLength = length(subject))
         } else {
-            IRanges:::.hitsMatrixToVector(mm11, length(query))
+            IRanges:::hitsMatrixToVector(mm11, length(query))
         }
     }
 )

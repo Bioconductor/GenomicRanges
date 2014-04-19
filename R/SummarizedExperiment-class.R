@@ -162,7 +162,7 @@ setMethod(SummarizedExperiment, "matrix",
 setMethod("clone", "SummarizedExperiment",  # not exported
     function(x, ...)
 {
-    ## IRanges:::extraArgsAsList would prevent using clone on
+    ## S4Vectors:::extraArgsAsList would prevent using clone on
     ## subclasses
     args <- list(...)
     firstTime <- TRUE

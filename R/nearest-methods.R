@@ -29,7 +29,7 @@
     i <- findInterval(query - !leftOf, subject) + leftOf
     i[subject[i] %in% sentinel] <- NA_integer_
  
-    IRanges:::.vectorToHits(i, rle, ord)
+    IRanges:::vectorToHits(i, rle, ord)
 }
 
 .findNearest_distance <-
@@ -47,7 +47,7 @@
              queryLength=as.integer(max(c(0, queryHits))),
              subjectLength=as.integer(max(c(0, subjectHits))))
 {
-    o <- IRanges:::orderIntegerPairs(queryHits, subjectHits)
+    o <- S4Vectors:::orderIntegerPairs(queryHits, subjectHits)
     new("Hits", queryHits=queryHits[o], subjectHits=subjectHits[o],
         queryLength=queryLength, subjectLength=subjectLength)
 }
@@ -238,7 +238,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
     }
     if (select == "all") {
         m <- as.matrix(ol)
-        olv <- IRanges:::.hitsMatrixToVector(m, length(x))
+        olv <- IRanges:::hitsMatrixToVector(m, length(x))
     } else {
         olv <- ol
     }
@@ -251,8 +251,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
         if (select == "all") {
             pmat <- as.matrix(p)
             fmat <- as.matrix(f)
-            p <- IRanges:::.hitsMatrixToVector(as.matrix(pmat), length(x))
-            f <- IRanges:::.hitsMatrixToVector(as.matrix(fmat), length(x))
+            p <- IRanges:::hitsMatrixToVector(as.matrix(pmat), length(x))
+            f <- IRanges:::hitsMatrixToVector(as.matrix(fmat), length(x))
         }
 
         ## choose nearest or not missing
@@ -267,7 +267,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
             pnearest[pdist == fdist] <- TRUE
             m <- rbind(m, .filterMatchMatrix(pmat, pnearest, map), 
                 .filterMatchMatrix(fmat, !pnearest, map))
-            m <- m[IRanges:::orderIntegerPairs(m[, 1L], m[, 2L]), , 
+            m <- m[S4Vectors:::orderIntegerPairs(m[, 1L], m[, 2L]), , 
                 drop = FALSE]
             ol@queryHits <- unname(m[, 1L])
             ol@subjectHits <- unname(m[, 2L])

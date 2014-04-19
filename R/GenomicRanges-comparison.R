@@ -114,10 +114,10 @@ setMethod("<=", signature(e1="GenomicRanges", e2="GenomicRanges"),
     if (!identical(incomparables, FALSE))
         stop("\"duplicated\" method for GenomicRanges objects ",
              "only accepts 'incomparables=FALSE'")
-    IRanges:::duplicatedIntegerQuads(as.factor(seqnames(x)),
-                                     as.factor(strand(x)),
-                                     start(x), width(x),
-                                     fromLast=fromLast, method=method)
+    S4Vectors:::duplicatedIntegerQuads(as.factor(seqnames(x)),
+                                       as.factor(strand(x)),
+                                       start(x), width(x),
+                                       fromLast=fromLast, method=method)
 }
 ### S3/S4 combo for duplicated.GenomicRanges
 duplicated.GenomicRanges <- function(x, incomparables=FALSE, ...)
@@ -160,11 +160,11 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
         ## Equivalent to (but faster than):
         ##     findOverlaps(x, table, type="equal", select="first")
         ## except when 'x' and 'table' both contain empty ranges.
-        IRanges:::matchIntegerQuads(x_seqnames, x_strand,
-                                    start(x), width(x),
-                                    as.factor(seqnames(table)), table_strand,
-                                    start(table), width(table),
-                                    nomatch=nomatch, method=method)
+        S4Vectors:::matchIntegerQuads(x_seqnames, x_strand,
+                                      start(x), width(x),
+                                      as.factor(seqnames(table)), table_strand,
+                                      start(table), width(table),
+                                      nomatch=nomatch, method=method)
     }
 )
 
@@ -197,10 +197,10 @@ setMethod("order", "GenomicRanges",
         args <- list(...)
         if (length(args) == 1L) {
             x <- args[[1L]]
-            return(IRanges:::orderIntegerQuads(as.factor(seqnames(x)),
-                                               as.factor(strand(x)),
-                                               start(x), width(x),
-                                               decreasing=decreasing))
+            return(S4Vectors:::orderIntegerQuads(as.factor(seqnames(x)),
+                                                 as.factor(strand(x)),
+                                                 start(x), width(x),
+                                                 decreasing=decreasing))
         }
         order_args <- vector("list", 4L*length(args))
         idx <- 4L*seq_len(length(args))

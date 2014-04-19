@@ -24,7 +24,7 @@
   gr <- gr[order(togroup(x), start(gr))]
   part <- PartitioningByWidth(x)
   neg <- strand(gr)[start(part)] == "-"
-  ord <- IRanges:::mseq(ifelse(neg, end(part), start(part)),
+  ord <- S4Vectors:::mseq(ifelse(neg, end(part), start(part)),
                           ifelse(neg, start(part), end(part)))
   relist(gr[ord], x)
 }

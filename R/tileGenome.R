@@ -61,7 +61,7 @@
     relative_starts <- rep.int(1L, length(relative_ends))
     run_lens <- runLength(seqnames)
     run_starts <- c(1L, cumsum(head(run_lens, n=-1L)) + 1L)
-    idx <- IRanges:::fancy_mseq(run_lens - 1L, offset=run_starts)
+    idx <- S4Vectors:::fancy_mseq(run_lens - 1L, offset=run_starts)
     relative_starts[idx] <- relative_ends[idx - 1L] + 1L
     relative_starts
 }
@@ -94,7 +94,7 @@ tileGenome <- function(seqlengths, ntile, tilewidth,
         stop("'seqlengths' has duplicated names")
     if (!is.integer(seqlengths))
         seqlengths <- setNames(as.integer(seqlengths), seqlengths_names)
-    if (IRanges:::anyMissingOrOutside(seqlengths, lower=0L))
+    if (S4Vectors:::anyMissingOrOutside(seqlengths, lower=0L))
         stop("'seqlengths' contains NAs or negative values")
 
     chrom_breakpoints <- setNames(cumsum(as.numeric(seqlengths)),
