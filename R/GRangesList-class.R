@@ -385,22 +385,6 @@ setReplaceMethod("score", "GRangesList", function(x, value) {
 ### Coercion.
 ###
 
-### NOT exported but used in GenomicAlignments package.
-GRangesListAsdataframe <- function(x, row.names=NULL, optional=FALSE, ...)
-{
-    if (missing(row.names))
-        row.names <- names(x@unlistData)
-    if (is.null(names(x)))
-        element <- rep.int(seq_len(length(x)), elementLengths(x))
-    else
-        element <- rep.int(names(x), elementLengths(x))
-    data.frame(element = element,
-               as.data.frame(unlist(x, use.names = FALSE),
-                             row.names = row.names),
-               stringsAsFactors = FALSE)
-}
-setMethod("as.data.frame", "GRangesList", GRangesListAsdataframe)
-
 setAs("GRangesList", "CompressedIRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )

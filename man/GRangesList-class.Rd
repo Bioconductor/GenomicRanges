@@ -32,7 +32,6 @@
 \alias{score<-,GRangesList-method}
 
 % Coercion:
-\alias{as.data.frame,GRangesList-method}
 \alias{coerce,GRangesList,CompressedIRangesList-method}
 \alias{coerce,GRangesList,IRangesList-method}
 \alias{coerce,GRangesList,RangesList-method}
@@ -185,12 +184,10 @@
 
   \describe{
     \item{}{
-      \code{as.data.frame(x, row.names = NULL, optional = FALSE)}:
-      Creates a data.frame with columns \code{element} (character),
-      \code{seqnames} (factor), \code{start} (integer),
-      \code{end} (integer), \code{width} (integer), \code{strand} (factor),
-      as well as the additional metadata columns (accessed with
-      \code{mcols(unlist(x))}).
+      \code{as.data.frame(x, row.names = NULL, optional = FALSE,
+         value.name = "value", use.outer.mcols = FALSE, 
+         group_name.as.factor = FALSE, ...)}: 
+      See description for as.data.frame on ?\code{List} man page. 
     }
     \item{}{\code{as.list(x, use.names = TRUE)}:
       Creates a list containing the elements of \code{x}.
