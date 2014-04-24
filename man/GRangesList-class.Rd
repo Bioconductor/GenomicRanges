@@ -187,7 +187,8 @@
       \code{as.data.frame(x, row.names = NULL, optional = FALSE,
          value.name = "value", use.outer.mcols = FALSE, 
          group_name.as.factor = FALSE, ...)}: 
-      See description for as.data.frame on ?\code{List} man page. 
+      Coerces \code{x} to a \code{data.frame}. See as.data.frame on the 
+      \code{List} man page for details (?\code{List}). 
     }
     \item{}{\code{as.list(x, use.names = TRUE)}:
       Creates a list containing the elements of \code{x}.
