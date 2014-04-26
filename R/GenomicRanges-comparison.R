@@ -233,7 +233,7 @@ setMethod("order", "GenomicRanges",
             i <- order(x, decreasing=decreasing)
         }
     }
-    IRanges:::extractROWS(x, i)
+    extractROWS(x, i)
 }
 sort.GenomicRanges <- function(x, decreasing=FALSE, ...)
     .sort.GenomicRanges(x, decreasing=decreasing, ...)

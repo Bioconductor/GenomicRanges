@@ -97,14 +97,14 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                 q_idx <- q_splitranges[[seqlevel]]
                 s_idx <- s_splitranges[[seqlevel]]
                 hits <- .findOverlaps.circle(circle.length,
-                            IRanges:::extractROWS(q_ranges, q_idx),
-                            IRanges:::extractROWS(s_ranges, s_idx),
+                            extractROWS(q_ranges, q_idx),
+                            extractROWS(s_ranges, s_idx),
                             maxgap, minoverlap, type)
                 q_hits <- queryHits(hits)
                 s_hits <- subjectHits(hits)
                 compatible_strand <-
-                    IRanges:::extractROWS(q_strand, q_idx)[q_hits] *
-                    IRanges:::extractROWS(s_strand, s_idx)[s_hits] != -1L
+                    extractROWS(q_strand, q_idx)[q_hits] *
+                    extractROWS(s_strand, s_idx)[s_hits] != -1L
                 hits <- hits[compatible_strand]
                 remapHits(hits, query.map=as.integer(q_idx),
                                 new.queryLength=q_len,

@@ -273,17 +273,17 @@ setReplaceMethod("seqinfo", "SummarizedExperiment",
 
 ## extractROWS, replaceROWS
 
-setMethod(IRanges:::extractROWS, "SummarizedExperiment",
+setMethod("extractROWS", "SummarizedExperiment",
     function(x, i)
 {
-    ridx <- IRanges:::extractROWS(seq_len(nrow(x)), i)
+    ridx <- extractROWS(seq_len(nrow(x)), i)
     x[ridx,]
 })
 
-setMethod(IRanges:::replaceROWS, "SummarizedExperiment",
+setMethod("replaceROWS", "SummarizedExperiment",
     function (x, i, value)
 {
-    ridx <- IRanges:::extractROWS(seq_len(nrow(x)), i)
+    ridx <- extractROWS(seq_len(nrow(x)), i)
     x[ridx,] <- value
     x
 })

@@ -548,16 +548,16 @@ setReplaceMethod("width", "GenomicRanges",
 ### Subsetting.
 ###
 
-setMethod(IRanges:::extractROWS, "GenomicRanges",
+setMethod("extractROWS", "GenomicRanges",
     function(x, i)
     {
         if (missing(i) || !is(i, "Ranges"))
-            i <- IRanges:::normalizeSingleBracketSubscript(i, x)
-        ans_seqnames <- IRanges:::extractROWS(seqnames(x), i)
-        ans_ranges <- IRanges:::extractROWS(ranges(x), i)
-        ans_strand <- IRanges:::extractROWS(strand(x), i)
-        ans_mcols <- IRanges:::extractROWS(mcols(x), i)
-        ans_ecs <- lapply(extraColumnSlots(x), IRanges:::extractROWS, i)
+            i <- normalizeSingleBracketSubscript(i, x)
+        ans_seqnames <- extractROWS(seqnames(x), i)
+        ans_ranges <- extractROWS(ranges(x), i)
+        ans_strand <- extractROWS(strand(x), i)
+        ans_mcols <- extractROWS(mcols(x), i)
+        ans_ecs <- lapply(extraColumnSlots(x), extractROWS, i)
         clone(x, seqnames=ans_seqnames,
                  ranges=ans_ranges,
                  strand=ans_strand,
@@ -572,7 +572,7 @@ setMethod("[", "GenomicRanges",
     {
         if (length(list(...)) > 0L)
             stop("invalid subsetting")
-        ans <- IRanges:::extractROWS(x, i)
+        ans <- extractROWS(x, i)
         if (missing(j))
             return(ans)
         ans_mcols <- mcols(ans)[ , j, drop=FALSE]
@@ -580,16 +580,16 @@ setMethod("[", "GenomicRanges",
     }
 )
 
-setMethod(IRanges:::replaceROWS, "GenomicRanges",
+setMethod("replaceROWS", "GenomicRanges",
     function(x, i, value)
     {
         if (missing(i) || !is(i, "Ranges"))
-            i <- IRanges:::normalizeSingleBracketSubscript(i, x)
+            i <- normalizeSingleBracketSubscript(i, x)
         seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
-        ans_seqnames <- IRanges:::replaceROWS(seqnames(x), i, seqnames(value))
-        ans_ranges <- IRanges:::replaceROWS(ranges(x), i, ranges(value))
-        ans_strand <- IRanges:::replaceROWS(strand(x), i, strand(value))
-        ans_mcols <- IRanges:::replaceROWS(mcols(x), i, mcols(value))
+        ans_seqnames <- replaceROWS(seqnames(x), i, seqnames(value))
+        ans_ranges <- replaceROWS(ranges(x), i, ranges(value))
+        ans_strand <- replaceROWS(strand(x), i, strand(value))
+        ans_mcols <- replaceROWS(mcols(x), i, mcols(value))
         ans_ecs_names <- extraColumnSlotNames(x)
         ans_necs <- length(ans_ecs_names)
         if (ans_necs == 0L) {
@@ -601,8 +601,7 @@ setMethod(IRanges:::replaceROWS, "GenomicRanges",
                 stop("'value' can have more extra column slots but not less")
             ans_ecs <- extraColumnSlotsAsDF(x)
             value_ecs <- extraColumnSlotsAsDF(value)
-            ans_ecs <- IRanges:::replaceROWS(ans_ecs, i,
-                                             value_ecs[seq_len(ans_necs)])
+            ans_ecs <- replaceROWS(ans_ecs, i, value_ecs[seq_len(ans_necs)])
         }
         update(x, seqnames=ans_seqnames,
                   ranges=ans_ranges,
@@ -638,7 +637,7 @@ setReplaceMethod("[", "GenomicRanges",
                 ans_mcols[names(new_ecs)] <- new_ecs
             x_ecs[ecs_to_replace] <- value_ecs[ecs_to_replace]
         } else {
-            i <- IRanges:::extractROWS(setNames(seq_along(x), names(x)), i)
+            i <- extractROWS(setNames(seq_along(x), names(x)), i)
             seqnames[i] <- seqnames(value)
             ranges[i] <- ranges(value)
             strand[i] <- strand(value)

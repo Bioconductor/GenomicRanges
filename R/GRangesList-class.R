@@ -430,7 +430,7 @@ setMethod("[", "GRangesList", .sBracketSubsetGRList)
     if (!is(value, class(x)[1]))
         stop(paste0("replacement value must be a ", class(x)[1], " object"))
     if (!missing(i))
-        i <- IRanges:::extractROWS(setNames(seq_along(x), names(x)), i)
+        i <- extractROWS(setNames(seq_along(x), names(x)), i)
     if (!missing(j)) {
         if (!is.character(j))
             stop("'j' must be a character vector")

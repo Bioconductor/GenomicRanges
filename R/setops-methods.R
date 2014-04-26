@@ -162,7 +162,7 @@ setMethod("pintersect", c("GRanges", "GRanges"),
         resolveStrand <- as(ansStrand == "*", "IRanges")
         if (length(resolveStrand) > 0L)
             ansStrand[as.integer(resolveStrand)] <-
-              IRanges:::extractROWS(strand(y), resolveStrand)
+              extractROWS(strand(y), resolveStrand)
         strand(x) <- ansStrand
         x
     }
@@ -246,16 +246,16 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
               compatibleStrand(strand(x), strand(y))
         ## Update the ranges.
         ansRanges <- ranges(x)
-        ansRanges <- IRanges:::replaceROWS(ansRanges, ok,
-                         callGeneric(IRanges:::extractROWS(ranges(x), ok),
-                                     IRanges:::extractROWS(ranges(y), ok)))
+        ansRanges <- replaceROWS(ansRanges, ok,
+                         callGeneric(extractROWS(ranges(x), ok),
+                                     extractROWS(ranges(y), ok)))
         ranges(x) <- ansRanges
         ## Update the strand.
         ansStrand <- strand(x)
         resolveStrand <- as(ansStrand == "*", "IRanges")
         if (length(resolveStrand) > 0L)
             ansStrand[as.integer(resolveStrand)] <-
-              IRanges:::extractROWS(strand(y), resolveStrand)
+              extractROWS(strand(y), resolveStrand)
         strand(x) <- ansStrand
         x
     }
