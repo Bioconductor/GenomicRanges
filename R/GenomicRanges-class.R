@@ -572,11 +572,12 @@ setMethod("[", "GenomicRanges",
     {
         if (length(list(...)) > 0L)
             stop("invalid subsetting")
-        ans <- extractROWS(x, i)
+        if (!missing(i))
+            x <- extractROWS(x, i)
         if (missing(j))
-            return(ans)
-        ans_mcols <- mcols(ans)[ , j, drop=FALSE]
-        clone(ans, elementMetadata=ans_mcols)
+            return(x)
+        new_mcols <- mcols(x)[ , j, drop=FALSE]
+        clone(x, elementMetadata=new_mcols)
     }
 )
 
@@ -611,6 +612,8 @@ setMethod("replaceROWS", "GenomicRanges",
     }
 )
 
+### TODO: Refactor to use replaceROWS(). This will make the code much simpler
+### and avoid a lot of duplication with the above "replaceROWS" method.
 setReplaceMethod("[", "GenomicRanges",
     function(x, i, j, ..., value)
     {
