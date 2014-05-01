@@ -62,7 +62,8 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
     if (!is(seqnames, "Rle"))
         seqnames <- Rle(seqnames)
     if (!is.factor(runValue(seqnames))) 
-        runValue(seqnames) <- factor(runValue(seqnames))
+        runValue(seqnames) <- factor(runValue(seqnames),
+                                     levels=unique(runValue(seqnames)))
 
     if (class(ranges) != "IRanges")
         ranges <- as(ranges, "IRanges")
