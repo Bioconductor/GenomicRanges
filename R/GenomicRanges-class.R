@@ -311,6 +311,9 @@ setMethod("as.data.frame", "GenomicRanges",
 }
 
 setAs("Seqinfo", "GenomicRanges", .fromSeqinfoToGRanges)
+setAs("Seqinfo", "RangesList",
+    function(from) as(as(from, "GenomicRanges"), "RangesList")
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -407,16 +410,17 @@ setReplaceMethod("seqinfo", "GenomicRanges",
     {
         if (!is(value, "Seqinfo"))
             stop("the supplied 'seqinfo' must be a Seqinfo object")
-        dangling_seqlevels <- getDanglingSeqlevels(x,
+        dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
                                   new2old=new2old, force=force,
                                   seqlevels(value))
         if (length(dangling_seqlevels) != 0L)
             x <- x[!(seqnames(x) %in% dangling_seqlevels)]
         old_seqinfo <- seqinfo(x)
-        new_seqnames <- makeNewSeqnames(x, new2old=new2old, seqlevels(value))
+        new_seqnames <- GenomeInfoDb:::makeNewSeqnames(x,
+                                  new2old=new2old, seqlevels(value))
         x <- update(x, seqnames=new_seqnames, seqinfo=value, check=FALSE)
-        geom_has_changed <- sequenceGeometryHasChanged(seqinfo(x), old_seqinfo,
-                                                       new2old=new2old)
+        geom_has_changed <- GenomeInfoDb:::sequenceGeometryHasChanged(
+                                  seqinfo(x), old_seqinfo, new2old=new2old)
         if (any(geom_has_changed, na.rm=TRUE)) {
             msg <- valid.GenomicRanges.seqinfo(x)
             if (!is.null(msg))

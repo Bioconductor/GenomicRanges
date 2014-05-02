@@ -6,14 +6,13 @@ importFrom(stats, setNames)
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
+import(GenomeInfoDb)
 import(XVector)  # only for the "Views" method for integer vectors, the
                  # XIntegerViews class, and the "viewMins", "viewMaxs", and
                  # "viewSums" methods for XIntegerViews objects
-import(GenomeInfoDb)
 
 exportClasses(
     Constraint, ConstraintORNULL,
-    Seqinfo,
     GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList, GIntervalTree,
     GenomicRangesORGRangesList,
     SummarizedExperiment, Assays,
@@ -88,7 +87,8 @@ exportMethods(
     subset,
 
     ## Generics defined in GenomeInfoDb:
-    seqlevelsStyle
+    seqinfo, "seqinfo<-",
+    seqnames, "seqnames<-"
 )
 
 
@@ -100,15 +100,11 @@ export(
     phicoef,
 
     makeSeqnameIds,
-    Seqinfo,
     GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
-    tileGenome,
-
-    keepSeqlevels, dropSeqlevels, renameSeqlevels, restoreSeqlevels,
-    keepStandardChromosomes
+    tileGenome
 )
 
 
@@ -121,18 +117,6 @@ export(
     ## constraint.R:
     #constraint, "constraint<-",
     checkConstraint,
-
-    ## seqinfo.R:
-    seqinfo, "seqinfo<-",
-    seqnames, "seqnames<-",
-    seqlevels, "seqlevels<-",
-    sortSeqlevels,
-    seqlevelsInUse,
-    seqlevels0,
-    seqlengths, "seqlengths<-",
-    isCircular, "isCircular<-",
-    genome, "genome<-",
-    seqnameStyle, "seqnameStyle<-",
 
     ## range-squeezers.R:
     granges, grglist, rglist,
@@ -150,15 +134,6 @@ export(
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    seqinfo, "seqinfo<-",
-    seqnames, "seqnames<-",
-    seqlevels, "seqlevels<-",
-    sortSeqlevels,
-    seqlevelsInUse,
-    seqlengths, "seqlengths<-",
-    isCircular, "isCircular<-",
-    genome, "genome<-",
-    seqnameStyle, "seqnameStyle<-",
     granges, grglist, rglist,
     SummarizedExperiment,
     exptData, "exptData<-",

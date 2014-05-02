@@ -228,7 +228,7 @@ setMethod("order", "GenomicRanges",
             if (!missing(ignore.strand)) {
                 warning("'ignore.strand' ignored when 'by' is specified")
             }
-            i <- IRanges:::orderBy(by, x, decreasing=decreasing)
+            i <- S4Vectors:::orderBy(by, x, decreasing=decreasing)
         } else {
             i <- order(x, decreasing=decreasing)
         }

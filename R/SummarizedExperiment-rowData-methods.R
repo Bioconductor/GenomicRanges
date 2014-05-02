@@ -246,25 +246,20 @@ setMethod(seqinfo, "SummarizedExperiment",
     seqinfo(x@rowData)
 })
 
-setMethod("seqlevelsInUse", "SummarizedExperiment",
-    function(x)
-{
-    seqlevelsInUse(rowData(x))
-})
-
 setReplaceMethod("seqinfo", "SummarizedExperiment",
     function (x, new2old = NULL, force = FALSE, value)
 {
     if (!is(value, "Seqinfo")) 
         stop("the supplied 'seqinfo' must be a Seqinfo object")
     dangling_seqlevels <-
-        getDanglingSeqlevels(x@rowData, new2old = new2old,
-                             force = force, seqlevels(value))
+        GenomeInfoDb:::getDanglingSeqlevels(x@rowData, new2old = new2old,
+                                            force = force, seqlevels(value))
     if (length(dangling_seqlevels) != 0L) 
         x <- x[!(seqnames(x) %in% dangling_seqlevels)]
     x@rowData <-
         update(x@rowData,
-               seqnames = makeNewSeqnames(x, new2old, seqlevels(value)),
+               seqnames = GenomeInfoDb:::makeNewSeqnames(x, new2old,
+                                                         seqlevels(value)),
                seqinfo = value)
     if (is.character(msg <- .valid.SummarizedExperiment(x)))
         stop(msg)

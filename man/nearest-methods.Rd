@@ -52,9 +52,10 @@
     the first by order in \code{subject} for \code{precede}, and the
     last for \code{follow}). 
 
-    When \code{select="all"} a \link[IRanges]{Hits} object is returned with 
+    When \code{select="all"} a \link[S4Vectors]{Hits} object is returned with 
     all matches for \code{x}. If \code{x} does not have a match in 
-    \code{subject} the \code{x} is not included in the \code{Hits} object. 
+    \code{subject} the \code{x} is not included in the \link[S4Vectors]{Hits}
+    object. 
   }
   \item{ignore.strand}{
     A \code{logical} indicating if the strand of the input ranges
@@ -126,12 +127,12 @@
 
 \value{
   For \code{nearest}, \code{precede} and \code{follow}, an integer
-  vector of indices in \code{subject}, or a \code{\linkS4class{Hits}} if 
+  vector of indices in \code{subject}, or a \link[S4Vectors]{Hits} if 
   \code{select="all"}.
 
-  For \code{distanceToNearest}, a \code{Hits} object with a column for
-  the \code{query} index (queryHits), \code{subject} index (subjectHits)
-  and the \code{distance} between the pair.
+  For \code{distanceToNearest}, a \link[S4Vectors]{Hits} object with a
+  column for the \code{query} index (queryHits), \code{subject} index
+  (subjectHits) and the \code{distance} between the pair.
 
   For \code{distance}, an integer vector of distances between the ranges
   in \code{x} and \code{y}.
@@ -142,8 +143,8 @@
 \seealso{
   \itemize{
     \item The \link{GenomicRanges} and \link{GRanges} classes.
-    \item The \link[IRanges]{Ranges} and \link[IRanges]{Hits} classes in the
-          IRanges package.
+    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+    \item The \link[S4Vectors]{Hits} class in the \pkg{S4Vectors} package.
     \item The \link[IRanges]{nearest-methods} man page in the IRanges package.
     \item \link[GenomicRanges]{findOverlaps-methods} for finding just the
           overlapping ranges.

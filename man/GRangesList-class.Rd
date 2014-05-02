@@ -345,8 +345,8 @@
 
 \seealso{
   \link{GRanges-class},
-  \code{\link{seqinfo}},
-  \link[IRanges]{Vector-class},
+  \code{\link[GenomeInfoDb]{seqinfo}},
+  \link[S4Vectors]{Vector-class},
   \link[IRanges]{RangesList-class},
   \link[IRanges]{RleList-class},
   \link[IRanges]{DataFrameList-class},

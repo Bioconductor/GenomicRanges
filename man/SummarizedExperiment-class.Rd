@@ -114,7 +114,6 @@
 \alias{resize,SummarizedExperiment-method}
 \alias{restrict,SummarizedExperiment-method}
 \alias{seqinfo,SummarizedExperiment-method}
-\alias{seqlevelsInUse,SummarizedExperiment-method}
 \alias{seqinfo<-,SummarizedExperiment-method}
 \alias{seqnames,SummarizedExperiment-method}
 \alias{shift,SummarizedExperiment-method}

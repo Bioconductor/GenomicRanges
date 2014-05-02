@@ -140,7 +140,7 @@
 }
 
 \value{
-  For \code{findOverlaps} either a \link[IRanges]{Hits} object when
+  For \code{findOverlaps} either a \link[S4Vectors]{Hits} object when
   \code{select = "all"} or an integer vector otherwise. 
 
   For \code{countOverlaps} an integer vector containing the tabulated
@@ -165,7 +165,7 @@
 \seealso{
   \itemize{
     \item \code{\link[IRanges]{findOverlaps}}.
-    \item \link[IRanges]{Hits-class}.
+    \item \link[S4Vectors]{Hits-class}.
     \item \link{GRanges-class}.
     \item \link{GRangesList-class}.
     \item \link{GIntervalTree-class}.

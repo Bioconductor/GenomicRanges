@@ -15,15 +15,6 @@
 \alias{GRanges}
 \alias{updateObject,GRanges-method}
 
-% Coercion:
-\alias{coerce,RangedData,GRanges-method}
-\alias{coerce,GenomicRanges,RangedData-method}
-\alias{coerce,RangesList,GRanges-method}
-\alias{coerce,GenomicRanges,RangesList-method}
-\alias{coerce,RleList,GRanges-method}
-\alias{coerce,RleViewsList,GRanges-method}
-\alias{as.data.frame,GenomicRanges-method}
-
 % Accessors:
 \alias{seqnames,GRanges-method}
 \alias{seqnames<-,GenomicRanges-method}
@@ -38,6 +29,18 @@
 \alias{seqinfo<-,GenomicRanges-method}
 \alias{score,GenomicRanges-method}
 \alias{score<-,GenomicRanges-method}
+
+% Coercion:
+\alias{coerce,RangedData,GRanges-method}
+\alias{coerce,GenomicRanges,RangedData-method}
+\alias{coerce,RangesList,GRanges-method}
+\alias{coerce,GenomicRanges,RangesList-method}
+\alias{coerce,RleList,GRanges-method}
+\alias{coerce,RleViewsList,GRanges-method}
+\alias{as.data.frame,GenomicRanges-method}
+\alias{coerce,Seqinfo,GRanges-method}
+\alias{coerce,Seqinfo,GenomicRanges-method}
+\alias{coerce,Seqinfo,RangesList-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
@@ -156,6 +159,17 @@
       \code{stringsAsFactors=TRUE/FALSE} argument via \code{\ldots} to
       override the default conversions for the metadata columns in
       \code{mcols(x)}.
+    }
+  }
+
+  In the code snippets below, \code{x} is a \link[GenomeInfoDb]{Seqinfo}
+  object.
+
+  \describe{
+    \item{}{
+      \code{as(x, "GRanges")}, \code{as(x, "GenomicRanges")},
+      \code{as(x, "RangesList")}: Turns \link[GenomeInfoDb]{Seqinfo} object
+      \code{x} (with no \code{NA} lengths) into a GRanges or RangesList.
     }
   }
 }
@@ -433,8 +447,8 @@
 \seealso{
   \code{\link{makeGRangesFromDataFrame}},
   \link{GRangesList-class},
-  \code{\link{seqinfo}},
-  \link[IRanges]{Vector-class},
+  \code{\link[GenomeInfoDb]{seqinfo}},
+  \link[S4Vectors]{Vector-class},
   \link[IRanges]{Ranges-class},
   \link[IRanges]{Rle-class},
   \link[IRanges]{DataFrame-class},
