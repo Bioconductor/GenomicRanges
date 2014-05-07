@@ -219,7 +219,8 @@ setGeneric("assays",
     signature="x")
 
 setGeneric("assays<-",
-    function(x, ..., value) standardGeneric("assays<-"))
+    function(x, ..., withDimnames=TRUE, value) standardGeneric("assays<-"),
+    signature=c("x", "value"))
 
 setGeneric("assay", function(x, i, ...) standardGeneric("assay"))
 
@@ -285,8 +286,9 @@ setMethod(assays, "SummarizedExperiment",
 })
 
 .SummarizedExperiment.assays.replace <-
-    function(x, ..., value)
+    function(x, ..., withDimnames=TRUE, value)
 {
+    ## withDimnames arg allows names(assays(se, withDimnames=FALSE)) <- value
     x <- clone(x, ..., assays=value)
     msg <- .valid.SummarizedExperiment(x)
     if (!is.null(msg))

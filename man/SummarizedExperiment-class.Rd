@@ -164,7 +164,7 @@ SummarizedExperiment(assays, ...)
 ## Accessors
 
 assays(x, ..., withDimnames=TRUE)
-assays(x, ...) <- value
+assays(x, ..., withDimnames=TRUE) <- value
 assay(x, i, ...)
 assay(x, i, ...) <- value
 rowData(x, ...)
@@ -272,7 +272,8 @@ exptData(x, ...) <- value
   \code{colData}.}
 
   \item{withDimnames}{A \code{logical(1)}, indicating whether dimnames
-    should be applied to extracted assay elements.}
+    should be applied to extracted assay elements (this argument is
+    ignored for the setter \code{assays<-}).}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
 

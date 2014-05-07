@@ -1,3 +1,11 @@
+CHANGES IN VERSION 1.18.0
+-------------------------
+
+BUG FIXES
+
+    o assays(se, withDimnames=TRUE) <- value no longer tries to access
+      a slot 'withDimnames'.
+
 CHANGES IN VERSION 1.16.0
 -------------------------
 
