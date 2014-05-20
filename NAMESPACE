@@ -78,7 +78,7 @@ exportMethods(
     relistToClass, splitAsListReturnedClass,
     width, "start<-", "width<-", "end<-",
     compare,
-    ranges, "ranges<-",
+    ranges, "ranges<-", trim,
     ngap,
     score, "score<-",
     shift, narrow, flank, resize, promoters, restrict,
