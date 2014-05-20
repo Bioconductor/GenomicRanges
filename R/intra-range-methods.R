@@ -231,8 +231,8 @@ setMethod("trim", "GenomicRanges",
     function(x, use.names=TRUE)
     {
         ## We trim only out-of-bound ranges on non-circular sequences whose
-        ## length is not NA. See trimIndex() in GenomicRanges-class.R. 
-        idx <- trimIndex(x)
+        ## length is not NA. See getTrimIndex() in GenomicRanges-class.R. 
+        idx <- getTrimIndex(x)
         if (length(idx) == 0L)
             return(x)
         new_ranges <- ranges(x)

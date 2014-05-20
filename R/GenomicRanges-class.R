@@ -22,27 +22,6 @@ setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Non-exported helper function.
-###
-### Returns index of out-of-bound ranges located on non-circular sequences
-### whose length is not NA. Works on a GenomicRanges or GAlignments object.
-###
-
-trimIndex <- function(x)
-{
-    if (length(x) == 0L)
-        return(integer(0))
-    x_seqnames_id <- as.integer(seqnames(x))
-    x_seqlengths <- unname(seqlengths(x))
-    seqlevel_is_circ <- unname(isCircular(x)) %in% TRUE
-    seqlength_is_na <- is.na(x_seqlengths)
-    seqlevel_has_bounds <- !(seqlevel_is_circ | seqlength_is_na)
-    which(seqlevel_has_bounds[x_seqnames_id] &
-          (start(x) < 1L | end(x) > x_seqlengths[x_seqnames_id]))
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
 ###
 
@@ -51,6 +30,7 @@ setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
 #setMethod("constraint", "GenomicRanges", function(x) x@constraint)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Extra column slots (implemented by subclasses)
@@ -73,6 +53,28 @@ setMethod("extraColumnSlotNames", "ANY", function(x) character())
 setMethod("fixedColumnNames", "GenomicRanges", function(x) {
   colnames(as.data.frame(new(class(x))))
 })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Non-exported helper function.
+###
+### Returns index of out-of-bound ranges located on non-circular sequences
+### whose length is not NA. Works on a GenomicRanges or GAlignments object.
+###
+
+getTrimIndex <- function(x)
+{
+    if (length(x) == 0L)
+        return(integer(0))
+    x_seqnames_id <- as.integer(seqnames(x))
+    x_seqlengths <- unname(seqlengths(x))
+    seqlevel_is_circ <- unname(isCircular(x)) %in% TRUE
+    seqlength_is_na <- is.na(x_seqlengths)
+    seqlevel_has_bounds <- !(seqlevel_is_circ | seqlength_is_na)
+    which(seqlevel_has_bounds[x_seqnames_id] &
+          (start(x) < 1L | end(x) > x_seqlengths[x_seqnames_id]))
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
@@ -164,7 +166,7 @@ valid.GenomicRanges.seqinfo <- function(x)
     ## TODO: This should be checked by validity method for Seqinfo objects.
     if (any(x_seqlengths < 0L, na.rm=TRUE))
         return("'seqlengths(x)' contains negative values")
-    idx <- trimIndex(x)
+    idx <- getTrimIndex(x)
     if (length(idx) != 0L)
         warning("'ranges' contains values outside of sequence bounds. ",
                 "See ?trim to subset ranges.")

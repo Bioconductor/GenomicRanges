@@ -6,13 +6,13 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### 2 non-exported low-level helper functions.
+### 2 low-level helper functions.
 ###
 ### Both return a named integer vector where the names are guaranteed to be
 ### 'seqlevels(x)'.
 ###
 
-minStartPerGRangesSequence <- function(x)
+.minStartPerGRangesSequence <- function(x)
 {
     cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
     ## The 4 lines below are equivalent to:
@@ -31,7 +31,7 @@ minStartPerGRangesSequence <- function(x)
     ans
 }
 
-maxEndPerGRangesSequence <- function(x)
+.maxEndPerGRangesSequence <- function(x)
 {
     cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
     ## The 4 lines below are equivalent to:
@@ -83,7 +83,7 @@ setMethod("intersect", c("GRanges", "GRanges"),
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
-            maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
+            .maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
         setdiff(x, gaps(y, end=seqlengths))
     }
 )
@@ -104,7 +104,7 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
-            maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
+            .maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
         gaps(union(gaps(x, end=seqlengths), y), end=seqlengths)
     }
 )
