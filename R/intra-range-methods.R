@@ -227,21 +227,19 @@ setMethod("restrict", "GRangesList",
 ### trim()
 ###
 
-### We trim only out-of-bound ranges on non-circular sequences whose length
-### is not NA.
 setMethod("trim", "GenomicRanges",
     function(x, use.names=TRUE)
     {
-        x_seqlengths <- seqlengths(x)
-        idx0 <- which(!(is.na(x_seqlengths) | (isCircular(x) %in% TRUE)))
-        if (length(idx0) == 0L)
+        ## We trim only out-of-bound ranges on non-circular sequences whose
+        ## length is not NA. See trimIndex() in GenomicRanges-class.R. 
+        idx <- trimIndex(x)
+        if (length(idx) == 0L)
             return(x)
-        tmp <- as.integer(seqnames(x))
-        idx1 <- which(tmp %in% idx0)
-        new_end <- unname(x_seqlengths)[tmp[idx1]]
         new_ranges <- ranges(x)
-        new_ranges[idx1] <- restrict(new_ranges[idx1], start=1L, end=new_end,
-                                                       keep.all.ranges=TRUE)
+        seqnames_id <- as.integer(seqnames(x))[idx]
+        new_end <- unname(seqlengths(x))[seqnames_id]
+        new_ranges[idx] <- restrict(new_ranges[idx], start=1L, end=new_end,
+                                                     keep.all.ranges=TRUE)
         clone(x, ranges=new_ranges)
     }
 )

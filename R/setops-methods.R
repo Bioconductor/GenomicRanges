@@ -4,6 +4,57 @@
 
 ### TODO: What's the impact of circularity on the set operations?
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### 2 non-exported low-level helper functions.
+###
+### Both return a named integer vector where the names are guaranteed to be
+### 'seqlevels(x)'.
+###
+
+minStartPerGRangesSequence <- function(x)
+{
+    cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
+    ## The 4 lines below are equivalent to:
+    ##   ans <- min(cil)
+    ##   ans[elementLengths(v) == 0L] <- NA_integer_
+    ## but much faster!
+    ## TODO: Replace with the above, but only when the "min" method for
+    ## CompressedIntegerList objects (implemented in the IRanges package)
+    ## is as fast as the "viewMins" method for XIntegerViews objects
+    ## (implemented in C in the XVector package). Ideally, the 2 methods
+    ## should share the same underlying code.
+    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
+    ans <- viewMins(v)
+    ans[width(v) == 0L] <- NA_integer_
+    names(ans) <- names(v)
+    ans
+}
+
+maxEndPerGRangesSequence <- function(x)
+{
+    cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
+    ## The 4 lines below are equivalent to:
+    ##   ans <- max(cil)
+    ##   ans[elementLengths(v) == 0L] <- NA_integer_
+    ## but much faster!
+    ## TODO: Replace with the above, but only when the "max" method for
+    ## CompressedIntegerList objects (implemented in the IRanges package)
+    ## is as fast as the "viewMaxs" method for XIntegerViews objects
+    ## (implemented in C in the XVector package). Ideally, the 2 methods
+    ## should share the same underlying code.
+    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
+    ans <- viewMaxs(v)
+    ans[width(v) == 0L] <- NA_integer_
+    names(ans) <- names(v)
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### union(), intersect(), setdiff()
+###
+
 setMethod("union", c("GRanges", "GRanges"),
     function(x, y, ignore.strand=FALSE, ...)
     {

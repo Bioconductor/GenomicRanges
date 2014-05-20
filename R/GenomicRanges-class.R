@@ -22,49 +22,23 @@ setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### 2 non-exported low-level helper functions.
+### Non-exported helper function.
 ###
-### For the 2 functions below, 'x' must be a GenomicRanges object.
-### They both return a named integer vector where the names are guaranteed
-### to be 'seqlevels(x)'.
+### Returns index of out-of-bound ranges located on non-circular sequences
+### whose length is not NA. Works on a GenomicRanges or GAlignments object.
 ###
 
-minStartPerGRangesSequence <- function(x)
+trimIndex <- function(x)
 {
-    cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
-    ## The 4 lines below are equivalent to:
-    ##   ans <- min(cil)
-    ##   ans[elementLengths(v) == 0L] <- NA_integer_
-    ## but much faster!
-    ## TODO: Replace with the above, but only when the "min" method for
-    ## CompressedIntegerList objects (implemented in the IRanges package)
-    ## is as fast as the "viewMins" method for XIntegerViews objects
-    ## (implemented in C in the XVector package). Ideally, the 2 methods
-    ## should share the same underlying code.
-    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
-    ans <- viewMins(v)
-    ans[width(v) == 0L] <- NA_integer_
-    names(ans) <- names(v)
-    ans
-}
-
-maxEndPerGRangesSequence <- function(x)
-{
-    cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
-    ## The 4 lines below are equivalent to:
-    ##   ans <- max(cil)
-    ##   ans[elementLengths(v) == 0L] <- NA_integer_
-    ## but much faster!
-    ## TODO: Replace with the above, but only when the "max" method for
-    ## CompressedIntegerList objects (implemented in the IRanges package)
-    ## is as fast as the "viewMaxs" method for XIntegerViews objects
-    ## (implemented in C in the XVector package). Ideally, the 2 methods
-    ## should share the same underlying code.
-    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
-    ans <- viewMaxs(v)
-    ans[width(v) == 0L] <- NA_integer_
-    names(ans) <- names(v)
-    ans
+    if (length(x) == 0L)
+        return(integer(0))
+    x_seqnames_id <- as.integer(seqnames(x))
+    x_seqlengths <- unname(seqlengths(x))
+    seqlevel_is_circ <- unname(isCircular(x)) %in% TRUE
+    seqlength_is_na <- is.na(x_seqlengths)
+    seqlevel_has_bounds <- !(seqlevel_is_circ | seqlength_is_na)
+    which(seqlevel_has_bounds[x_seqnames_id] &
+          (start(x) < 1L | end(x) > x_seqlengths[x_seqnames_id]))
 }
 
 
@@ -187,25 +161,11 @@ valid.GenomicRanges.seqinfo <- function(x)
         return(paste(msg, collapse=" "))
     }
     x_seqlengths <- seqlengths(x_seqinfo)
-    seqs_with_known_length <- names(x_seqlengths)[!is.na(x_seqlengths)]
-    if (length(seqs_with_known_length) == 0L)
-        return(NULL)
+    ## TODO: This should be checked by validity method for Seqinfo objects.
     if (any(x_seqlengths < 0L, na.rm=TRUE))
         return("'seqlengths(x)' contains negative values")
-    ## We check only the ranges that are on a non-circular sequence with
-    ## a known length.
-    x_isCircular <- isCircular(x_seqinfo)
-    non_circ_seqs <- names(x_isCircular)[!(x_isCircular %in% TRUE)]
-    ncswkl <- intersect(non_circ_seqs, seqs_with_known_length)
-    if (length(ncswkl) == 0L)
-        return(NULL)
-    x_seqnames <- seqnames(x)
-    runValue(x_seqnames) <- runValue(x_seqnames)[drop=TRUE]
-    minStarts <- minStartPerGRangesSequence(x)
-    maxEnds <- maxEndPerGRangesSequence(x)
-    if (any(minStarts[ncswkl] < 1L, na.rm=TRUE)
-     || any(maxEnds[ncswkl] >
-            seqlengths(x)[ncswkl], na.rm=TRUE))
+    idx <- trimIndex(x)
+    if (length(idx) != 0L)
         warning("'ranges' contains values outside of sequence bounds. ",
                 "See ?trim to subset ranges.")
     NULL
