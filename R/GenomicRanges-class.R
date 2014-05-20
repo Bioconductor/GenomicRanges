@@ -56,13 +56,12 @@ setMethod("fixedColumnNames", "GenomicRanges", function(x) {
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Non-exported helper function.
-###
-### Returns index of out-of-bound ranges located on non-circular sequences
-### whose length is not NA. Works on a GenomicRanges or GAlignments object.
+### 2 low-level helper functions to deal with out-of-bound ranges.
 ###
 
-getTrimIndex <- function(x)
+### Returns index of out-of-bound ranges located on non-circular sequences
+### whose length is not NA. Works on a GenomicRanges or GAlignments object.
+get_out_of_bound_index <- function(x)
 {
     if (length(x) == 0L)
         return(integer(0))
@@ -73,6 +72,34 @@ getTrimIndex <- function(x)
     seqlevel_has_bounds <- !(seqlevel_is_circ | seqlength_is_na)
     which(seqlevel_has_bounds[x_seqnames_id] &
           (start(x) < 1L | end(x) > x_seqlengths[x_seqnames_id]))
+}
+
+### Also works on a GenomicRanges or GAlignments object. Note that GAlignments
+### objects are not trimmable so use 'suggest.trim=FALSE' on them.
+make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
+{
+    where <- seqlevels(x)[unique(as.integer(seqnames(x))[idx])]
+    if (length(where) == 1L) {
+        on_what <- paste0("sequence ", where)
+    } else if (length(where) == 2L) {
+        on_what <- paste0("sequences ", where[1L], " and ", where[2L])
+    } else {
+        seqlevels_in1string <- paste0(head(where, n=-1L), collapse=", ")
+        on_what <- paste0("sequences ", seqlevels_in1string,
+                              ", and ", tail(where, n=1L))
+    }
+    msg <- c(class(x), " object contains ", length(idx), " out-of-bound ",
+             "range", if (length(idx) >= 2L) "s" else "", " located on ",
+             on_what, ". ",
+             "Note that only ranges located on a non-circular ",
+             "sequence whose length is not NA can be considered ",
+             "out-of-bound (use seqlengths() and isCircular() to ",
+             "get the lengths and circularity flags of the underlying ",
+             "sequences).")
+    if (suggest.trim)
+        msg <- c(msg, " You can use trim() to trim these ranges. ",
+                 "See ?`trim,GenomicRanges-method` for more information.")
+    msg
 }
 
 
@@ -154,7 +181,7 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
 }
 
 ### Also used by the validity method for GAlignments objects.
-valid.GenomicRanges.seqinfo <- function(x)
+valid.GenomicRanges.seqinfo <- function(x, suggest.trim=FALSE)
 {
     x_seqinfo <- seqinfo(x)
     if (!identical(seqlevels(x_seqinfo), levels(seqnames(x)))) {
@@ -162,33 +189,9 @@ valid.GenomicRanges.seqinfo <- function(x)
                  "are not identical")
         return(paste(msg, collapse=" "))
     }
-    x_seqlengths <- seqlengths(x_seqinfo)
-    ## TODO: This should be checked by validity method for Seqinfo objects.
-    if (any(x_seqlengths < 0L, na.rm=TRUE))
-        return("'seqlengths(x)' contains negative values")
-    idx <- getTrimIndex(x)
+    idx <- get_out_of_bound_index(x)
     if (length(idx) != 0L) {
-        which_seqlevels <- seqlevels(x)[unique(as.integer(seqnames(x))[idx])]
-        if (length(which_seqlevels) == 1L) {
-            on_what <- paste0("sequence ", which_seqlevels)
-        } else if (length(which_seqlevels) == 2L) {
-            on_what <- paste0("sequences ", which_seqlevels[1L],
-                                   " and ", which_seqlevels[2L])
-        } else {
-            seqlevels_in1string <- paste0(head(which_seqlevels, n=-1L),
-                                          collapse=", ")
-            on_what <- paste0("sequences ", seqlevels_in1string,
-                                  ", and ", tail(which_seqlevels, n=1L))
-        }
-        msg <- c(class(x), " object contains ", length(idx), " out-of-bound ",
-                 "range", if (length(idx) >= 2L) "s" else "", " located on ",
-                 on_what, ". ",
-                 "Note that only ranges located on a non-circular ",
-                 "sequence whose length is not NA can be considered ",
-                 "out-of-bound (use seqlengths() and isCircular() to ",
-                 "get the lengths and circularity flags of the underlying ",
-                 "sequences). You can use trim() to trim these ranges. ",
-                 "See ?`trim,GenomicRanges-method` for more information.")
+        msg <- make_out_of_bound_warning_msg(x, idx, suggest.trim)
         warning(wmsg(msg))
     }
     NULL
@@ -209,7 +212,7 @@ valid.GenomicRanges.seqinfo <- function(x)
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.mcols(x),
-      valid.GenomicRanges.seqinfo(x),
+      valid.GenomicRanges.seqinfo(x, suggest.trim=TRUE),
       .valid.GenomicRanges.ecs(x))
       #checkConstraint(x, constraint(x)))
 }
@@ -405,7 +408,7 @@ setReplaceMethod("seqinfo", "GenomicRanges",
         geom_has_changed <- GenomeInfoDb:::sequenceGeometryHasChanged(
                                   seqinfo(x), old_seqinfo, new2old=new2old)
         if (any(geom_has_changed, na.rm=TRUE)) {
-            msg <- valid.GenomicRanges.seqinfo(x)
+            msg <- valid.GenomicRanges.seqinfo(x, suggest.trim=TRUE)
             if (!is.null(msg))
                 stop(msg)
         }
