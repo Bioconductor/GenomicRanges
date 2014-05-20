@@ -167,9 +167,30 @@ valid.GenomicRanges.seqinfo <- function(x)
     if (any(x_seqlengths < 0L, na.rm=TRUE))
         return("'seqlengths(x)' contains negative values")
     idx <- getTrimIndex(x)
-    if (length(idx) != 0L)
-        warning("'ranges' contains values outside of sequence bounds. ",
-                "See ?trim to subset ranges.")
+    if (length(idx) != 0L) {
+        which_seqlevels <- seqlevels(x)[unique(as.integer(seqnames(x))[idx])]
+        if (length(which_seqlevels) == 1L) {
+            on_what <- paste0("sequence ", which_seqlevels)
+        } else if (length(which_seqlevels) == 2L) {
+            on_what <- paste0("sequences ", which_seqlevels[1L],
+                                   " and ", which_seqlevels[2L])
+        } else {
+            seqlevels_in1string <- paste0(head(which_seqlevels, n=-1L),
+                                          collapse=", ")
+            on_what <- paste0("sequences ", seqlevels_in1string,
+                                  ", and ", tail(which_seqlevels, n=1L))
+        }
+        msg <- c(class(x), " object contains ", length(idx), " out-of-bound ",
+                 "range", if (length(idx) >= 2L) "s" else "", " located on ",
+                 on_what, ". ",
+                 "Note that only ranges located on a non-circular ",
+                 "sequence whose length is not NA can be considered ",
+                 "out-of-bound (use seqlengths() and isCircular() to ",
+                 "get the lengths and circularity flags of the underlying ",
+                 "sequences). You can use trim() to trim these ranges. ",
+                 "See ?`trim,GenomicRanges-method` for more information.")
+        warning(wmsg(msg))
+    }
     NULL
 }
 
