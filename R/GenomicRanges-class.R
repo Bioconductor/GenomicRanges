@@ -490,60 +490,24 @@ setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 setReplaceMethod("start", "GenomicRanges",
     function(x, check=TRUE, value)
     {
-        if (!is.integer(value))
-            value <- as.integer(value)
-        ranges <- ranges(x)
-        starts <- start(ranges)
-        starts[] <- value
-        ## TODO: Revisit this to handle circularity (maybe).
-        if (!S4Vectors:::anyMissing(seqlengths(x))) {
-            if (S4Vectors:::anyMissingOrOutside(starts, 1L)) {
-                warning("trimmed start values to be positive")
-                starts[starts < 1L] <- 1L
-            }
-        }
-        start(ranges, check=check) <- starts
-        update(x, ranges=ranges, check=FALSE)
+        new_ranges <- `start<-`(ranges(x), check=check, value=value)
+        update(x, ranges=new_ranges, check=check)
     }
 )
 
 setReplaceMethod("end", "GenomicRanges",
     function(x, check=TRUE, value)
     {
-        if (!is.integer(value))
-            value <- as.integer(value)
-        ranges <- ranges(x)
-        ends <- end(ranges)
-        ends[] <- value
-        seqlengths <- seqlengths(x)
-        ## TODO: Revisit this to handle circularity.
-        if (!S4Vectors:::anyMissing(seqlengths)) {
-            seqlengths <- seqlengths[seqlevels(x)]
-            maxEnds <- seqlengths[as.integer(seqnames(x))]
-            trim <- which(ends > maxEnds)
-            if (length(trim) > 0L) {
-                warning("trimmed end values to be <= seqlengths")
-                ends[trim] <- maxEnds[trim]
-            }
-        }
-        end(ranges, check=check) <- ends
-        update(x, ranges=ranges, check=FALSE)
+        new_ranges <- `end<-`(ranges(x), check=check, value=value)
+        update(x, ranges=new_ranges, check=check)
     }
 )
 
 setReplaceMethod("width", "GenomicRanges",
     function(x, check=TRUE, value)
     {
-        if (!is.integer(value))
-            value <- as.integer(value)
-        if (!S4Vectors:::anyMissing(seqlengths(x))) {
-            end(x) <- start(x) + (value - 1L)
-        } else {
-            ranges <- ranges(x)
-            width(ranges, check=check) <- value
-            x <- update(x, ranges=ranges, check=FALSE)
-        }
-        x
+        new_ranges <- `width<-`(ranges(x), check=check, value=value)
+        update(x, ranges=new_ranges, check=check)
     }
 )
 

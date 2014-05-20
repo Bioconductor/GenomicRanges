@@ -14,8 +14,8 @@
 setMethod("shift", "GenomicRanges",
     function(x, shift=0L, use.names=TRUE)
     {
-        ranges <- shift(ranges(x), shift, use.names=use.names)
-        clone(x, ranges=ranges) 
+        new_ranges <- shift(ranges(x), shift=shift, use.names=use.names)
+        clone(x, ranges=new_ranges) 
     }
 )
 
@@ -43,10 +43,9 @@ setMethod("shift", "GRangesList",
 setMethod("narrow", "GenomicRanges",
     function(x, start=NA, end=NA, width=NA, use.names=TRUE)
     {
-        rng <- narrow(ranges(x), start=start, end=end, width=width,
-                      use.names=TRUE)
-        ranges(x) <- rng
-        x
+        new_ranges <- narrow(ranges(x), start=start, end=end, width=width,
+                                        use.names=use.names)
+        clone(x, ranges=new_ranges) 
     }
 )
 
@@ -65,16 +64,9 @@ setMethod("flank", "GenomicRanges",
             start <- rep.int(start, length(x))
         else 
             start <- as.vector(start == (strand(x) != "-"))
-        ranges <-
-            flank(ranges(x), width=width, start=start, both=both,
-                  use.names=use.names)
-        if (!S4Vectors:::anyMissing(seqlengths(x))) {
-            start(x) <- start(ranges)
-            end(x) <- end(ranges)
-        } else {
-            x <- clone(x, ranges=ranges)
-        }
-        x
+        new_ranges <- flank(ranges(x), width=width, start=start, both=both,
+                                       use.names=use.names)
+        clone(x, ranges=new_ranges) 
     }
 )
 
@@ -157,15 +149,9 @@ setMethod("resize", "GenomicRanges",
               fix <- character()
             else fix <- ifelse(strand(x) == "-", revFix[fix], fix)
         }
-        ranges <-
-            resize(ranges(x), width=width, fix=fix, use.names=use.names)
-        if (!S4Vectors:::anyMissing(seqlengths(x))) {
-            start(x) <- start(ranges)
-            end(x) <- end(ranges)
-        } else {
-            x <- clone(x, ranges=ranges)
-        }
-        x
+        new_ranges <- resize(ranges(x), width=width, fix=fix,
+                                        use.names=use.names)
+        clone(x, ranges=new_ranges)
     }
 )
 

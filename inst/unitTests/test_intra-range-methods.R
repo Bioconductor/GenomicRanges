@@ -79,15 +79,76 @@ test_GRangesList_shift <- function()
 
 test_GenomicRanges_flank <- function()
 {
-    gr <- make_test_GRanges()
-    flanked <- flank(gr, 10)
-    checkIdentical(rep(10L, length(gr)), width(flanked))
-    checkIdentical(ifelse(as.vector(strand(gr) != "-"),
-                          start(gr) - 10L, end(gr) + 1L), start(flanked))
-    flanked <- flank(gr, 10, FALSE)
-    checkIdentical(rep(10L, length(gr)), width(flanked))
-    checkIdentical(ifelse(as.vector(strand(gr) != "-"),
-                          end(gr) + 1L, start(gr) - 10L), start(flanked))
+    gr_seqnames <- c("chr1", "chr2", "chr1", "chrM")
+    gr_ranges <- IRanges(21:24, width=10)
+    gr_strand <- strand(c("+", "-", "*", "-"))
+    gr <- GRanges(gr_seqnames, gr_ranges, gr_strand)
+
+    ## NO warning expected.
+    S4Vectors:::errorIfWarning(current <- flank(gr, 10))
+    checkTrue(S4Vectors:::errorIfWarning(validObject(current, complete=TRUE)))
+    target_ranges <- IRanges(c(11, 32, 13, 34), width=10)
+    target <- GRanges(gr_seqnames, target_ranges, gr_strand)
+    checkIdentical(target, current)
+
+    ## NO warning expected.
+    S4Vectors:::errorIfWarning(current <- flank(gr, 10, start=FALSE))
+    checkTrue(S4Vectors:::errorIfWarning(validObject(current, complete=TRUE)))
+    target_ranges <- IRanges(c(31, 12, 33, 14), width=10)
+    target <- GRanges(gr_seqnames, target_ranges, gr_strand)
+    checkIdentical(target, current)
+
+    ## NO warning expected.
+    S4Vectors:::errorIfWarning(current <- flank(gr, 30))
+    checkTrue(S4Vectors:::errorIfWarning(validObject(current, complete=TRUE)))
+    target_ranges <- IRanges(c(-9, 32, -7, 34), width=30)
+    target <- GRanges(gr_seqnames, target_ranges, gr_strand)
+    checkIdentical(target, current)
+
+    ## NO warning expected.
+    S4Vectors:::errorIfWarning(current <- flank(gr, 30, start=FALSE))
+    checkTrue(S4Vectors:::errorIfWarning(validObject(current, complete=TRUE)))
+    target_ranges <- IRanges(c(31, -8, 33, -6), width=30)
+    target <- GRanges(gr_seqnames, target_ranges, gr_strand)
+    checkIdentical(target, current)
+
+    seqlengths(gr) <- c(chr1=60, chr2=50, chrM=35)
+
+    ## Warning expected.
+    checkException(S4Vectors:::errorIfWarning(
+                       current <- flank(gr, 10)
+                   ), silent=TRUE)
+    suppressWarnings(current <- flank(gr, 10))
+
+    checkException(S4Vectors:::errorIfWarning(
+                       validObject(current, complete=TRUE)
+                   ), silent=TRUE)
+    checkTrue(suppressWarnings(validObject(current, complete=TRUE)))
+
+    target_ranges <- IRanges(c(11, 32, 13, 34), width=10)
+    checkIdentical(target_ranges, ranges(current))
+
+    isCircular(gr) <- c(chr1=NA, chr2=FALSE, chrM=TRUE)
+
+    ## NO warning expected.
+    S4Vectors:::errorIfWarning(current <- flank(gr, 10))
+    checkTrue(S4Vectors:::errorIfWarning(validObject(current, complete=TRUE)))
+    target_ranges <- IRanges(c(11, 32, 13, 34), width=10)
+    checkIdentical(target_ranges, ranges(current))
+
+    ## Warning expected.
+    checkException(S4Vectors:::errorIfWarning(
+                       current <- flank(gr, 20)
+                   ), silent=TRUE)
+    suppressWarnings(current <- flank(gr, 20))
+
+    checkException(S4Vectors:::errorIfWarning(
+                       validObject(current, complete=TRUE)
+                   ), silent=TRUE)
+    checkTrue(suppressWarnings(validObject(current, complete=TRUE)))
+
+    target_ranges <- IRanges(c(1, 32, 3, 34), width=20)
+    checkIdentical(target_ranges, ranges(current))
 }
 
 test_GenomicRanges_promoters <- function()
