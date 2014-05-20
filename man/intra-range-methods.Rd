@@ -24,7 +24,6 @@
 \alias{restrict,GenomicRanges-method}
 \alias{restrict,GRangesList-method}
 
-\alias{trim}
 \alias{trim,GenomicRanges-method}
 
 \alias{Ops,GenomicRanges,numeric-method}
@@ -156,9 +155,8 @@
       information about range restriction and for a description of the optional 
       arguments.
     }
-    \item{}{\code{trim} subsets the ranges in \code{x} to fall within the valid
-      seqlengths. If no seqlenths are present, negative start values are set 
-      to 1L and end values are not touched.
+    \item{}{\code{trim} trims out-of-bound ranges located on non-circular
+      sequences whose length is not NA.
     }
   }
 }
