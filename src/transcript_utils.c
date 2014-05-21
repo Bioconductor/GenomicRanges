@@ -1,5 +1,4 @@
 #include "GenomicRanges.h"
-#include "XVector_interface.h"
 #include "IRanges_interface.h"
 #include "S4Vectors_interface.h"
 
@@ -145,54 +144,6 @@ static int tloc2rloc(int tloc,
 }
 
 
-static int copy_exon(char * out, const Chars_holder *in,
-		int start, int end, int on_minus_strand, SEXP lkup)
-{
-	int width;
-
-	start--; end--;
-	width = end - start + 1;
-	if (on_minus_strand) {
-		Orevcopy_bytes_from_i1i2_with_lkup(start, end,
-			out, width,
-			in->seq, in->length,
-			INTEGER(lkup), LENGTH(lkup));
-	} else {
-		Ocopy_bytes_from_i1i2_with_lkup(start, end,
-			out, width,
-			in->seq, in->length,
-			NULL, 0);
-	}
-	return width;
-}
-
-static void copy_transcript(char * out, const Chars_holder *in,
-		SEXP starts, SEXP ends,
-		int on_minus_strand, int decreasing_rank_on_minus_strand,
-		SEXP lkup)
-{
-	int nexons, j, start, end;
-
-	nexons = LENGTH(starts);
-	if (on_minus_strand && decreasing_rank_on_minus_strand) {
-		for (j = nexons - 1; j >= 0; j--) {
-			start = INTEGER(starts)[j];
-			end = INTEGER(ends)[j];
-			out += copy_exon(out, in,
-				start, end, on_minus_strand, lkup);
-		}
-	} else {
-		for (j = 0; j < nexons; j++) {
-			start = INTEGER(starts)[j];
-			end = INTEGER(ends)[j];
-			out += copy_exon(out, in,
-				start, end, on_minus_strand, lkup);
-		}
-	}
-	return;
-}
-
-
 /****************************************************************************
  *                        --- .Call ENTRY POINTS ---                        *
  ****************************************************************************/
@@ -252,47 +203,6 @@ SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 		}
 	}
 	UNPROTECT(1);
-	return ans;
-}
-
-SEXP extract_transcripts(SEXP classname, SEXP x,
-		SEXP exonStarts, SEXP exonEnds, SEXP strand,
-		SEXP decreasing_rank_on_minus_strand, SEXP lkup)
-{
-	Chars_holder X, Y;
-	SEXP ans_width, ans, starts, ends;
-	XVectorList_holder ans_holder;
-	int decreasing_rank_on_minus_strand0, ans_length,
-	    i, on_minus_strand;
-
-	X = hold_XRaw(x);
-	decreasing_rank_on_minus_strand0 =
-		LOGICAL(decreasing_rank_on_minus_strand)[0];
-	PROTECT(ans_width = mk_transcript_widths(exonStarts,
-					exonEnds, X.length));
-	PROTECT(ans = alloc_XRawList(CHAR(STRING_ELT(classname, 0)),
-				     get_classname(x), ans_width));
-	ans_holder = hold_XVectorList(ans);
-	ans_length = get_length_from_XVectorList_holder(&ans_holder);
-	for (i = 0; i < ans_length; i++) {
-		starts = VECTOR_ELT(exonStarts, i);
-		if (starts == R_NilValue || LENGTH(starts) == 0)
-			continue;
-		ends = VECTOR_ELT(exonEnds, i);
-		on_minus_strand = strand_is_minus(strand, i);
-		if (on_minus_strand == -1) {
-			UNPROTECT(2);
-			error("%s", errmsg_buf);
-		}
-		Y = get_elt_from_XRawList_holder(&ans_holder, i);
-		/* Y.seq is a const char * so we need to cast it to
-		   char * before we can write to it */
-		copy_transcript((char *) Y.seq, &X,
-			starts, ends,
-			on_minus_strand, decreasing_rank_on_minus_strand0,
-			lkup);
-	}
-	UNPROTECT(2);
 	return ans;
 }
 

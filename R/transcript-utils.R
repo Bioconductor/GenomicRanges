@@ -38,14 +38,3 @@ unsafe.transcriptLocs2refLocs <- function(tlocs,
           PACKAGE="GenomicRanges")
 }
 
-unsafe.extractTranscripts <- function(classname, x,
-                exonStarts, exonEnds, strand,
-                decreasing.rank.on.minus.strand, lkup)
-{
-    .Call2("extract_transcripts",
-          classname, x,
-          exonStarts, exonEnds, strand,
-          decreasing.rank.on.minus.strand, lkup,
-          PACKAGE="GenomicRanges")
-}
-

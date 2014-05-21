@@ -16,13 +16,3 @@ SEXP tlocs2rlocs(
 	SEXP decreasing_rank_on_minus_strand
 );
 
-SEXP extract_transcripts(
-	SEXP classname,
-	SEXP x,
-	SEXP exonStarts,
-	SEXP exonEnds,
-	SEXP strand,
-	SEXP decreasing_rank_on_minus_strand,
-	SEXP lkup
-);
-
