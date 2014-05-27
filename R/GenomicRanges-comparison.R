@@ -86,22 +86,6 @@ setMethod("compare", c("GenomicRanges", "GenomicRanges"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Element-wise (aka "parallel") comparison of 2 GenomicRanges objects.
-###
-### We only need to implement "==" and "<=" methods. The other comparison
-### binary operators (!=, >=, <, >) will then work out-of-the-box on
-### GenomicRanges objects thanks to the methods for Vector objects.
-###
-
-setMethod("==", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { .GenomicRanges.compare(e1, e2) == 0L }
-)
-
-setMethod("<=", signature(e1="GenomicRanges", e2="GenomicRanges"),
-    function(e1, e2) { .GenomicRanges.compare(e1, e2) <= 0L }
-)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### duplicated()
 ###
 ### unique() will work out-of-the-box on a GenomicRanges object thanks to the

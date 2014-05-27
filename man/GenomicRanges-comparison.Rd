@@ -4,9 +4,6 @@
 
 \alias{compare,GenomicRanges,GenomicRanges-method}
 
-\alias{==,GenomicRanges,GenomicRanges-method}
-\alias{<=,GenomicRanges,GenomicRanges-method}
-
 \alias{duplicated,GenomicRanges-method}
 \alias{duplicated.GenomicRanges}
 
@@ -26,13 +23,6 @@
 }
 
 \usage{
-## Element-wise (aka "parallel") comparison of 2 GenomicRanges objects
-## -------------------------------------------------------------------
-
-\S4method{==}{GenomicRanges,GenomicRanges}(e1, e2)
-
-\S4method{<=}{GenomicRanges,GenomicRanges}(e1, e2)
-
 ## duplicated()
 ## ------------
 
@@ -115,9 +105,8 @@
   \code{order()}, \code{sort()}, and \code{rank()} on a \link{GenomicRanges}
   object are using this "natural order".
 
-  Also the \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<} and \code{>}
-  operators between 2 \link{GenomicRanges} objects are using this "natural
-  order".
+  Also \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<} and \code{>}
+  on \link{GenomicRanges} objects are using this "natural order".
 }
 
 \author{H. Pages}
