@@ -597,7 +597,7 @@ exptData(x, ...) <- value
   colnames(se2) <- letters[1:ncol(se2)] 
   cmb1 <- cbind(se1, se2)
 
-  ## rbind combins objects with the same samples and different ranges.
+  ## rbind combines objects with the same samples and different ranges.
   se1 <- sset
   se2 <- se1[1:50,]
   rownames(se2) <- letters[1:nrow(se2)] 
