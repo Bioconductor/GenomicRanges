@@ -74,9 +74,9 @@ test_SummarizedExperiment_GRanges_values <- function()
     .funs <- setdiff(.singleDispatch,
                      c(isAssign, needArgs, isEndomorphism))
     ## 'exp' created after manual inspection of results
-    exp <- setNames(c("d8c3a", "35e2c", "02dde", "80339", "a2e98",
-                      "72f53", "86757", "77198", "fa247", "35e2c",
-                      "df03b", "3c90a"), .funs)
+    exp <- setNames(c("1f7c0", "35e2c", "02dde", "80339", "90260",
+                      "72f53", "86757", "77198", "ec53a", "35e2c",
+                      "625d9", "3c90a"), .funs)
     obs <- sapply(.funs, function(.fun) {
         substr(digest(getGeneric(.fun)(x)), 1, 5)
     })

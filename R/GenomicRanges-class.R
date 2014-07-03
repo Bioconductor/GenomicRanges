@@ -344,7 +344,7 @@ setReplaceMethod("ranges", "GenomicRanges",
         k <- length(value)
         if (k != n) {
             if ((k == 0L) || (k > n) || (n %% k != 0L))
-                stop(k, " elements in value to replace ", n, "elements")
+                stop(k, " elements in value to replace ", n, " elements")
             value <- rep(value, length.out=n)
         }
         update(x, ranges=value, check=FALSE)
@@ -474,26 +474,26 @@ setMethod("end", "GenomicRanges", function(x, ...) end(ranges(x)))
 setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 
 setReplaceMethod("start", "GenomicRanges",
-    function(x, check=TRUE, value)
+    function(x, ..., value)
     {
-        new_ranges <- `start<-`(ranges(x), check=check, value=value)
-        update(x, ranges=new_ranges, check=check)
+        new_ranges <- `start<-`(ranges(x), ..., value=value)
+        update(x, ranges=new_ranges, ...)
     }
 )
 
 setReplaceMethod("end", "GenomicRanges",
-    function(x, check=TRUE, value)
+    function(x, ..., value)
     {
-        new_ranges <- `end<-`(ranges(x), check=check, value=value)
-        update(x, ranges=new_ranges, check=check)
+        new_ranges <- `end<-`(ranges(x), ..., value=value)
+        update(x, ranges=new_ranges, ...)
     }
 )
 
 setReplaceMethod("width", "GenomicRanges",
-    function(x, check=TRUE, value)
+    function(x, ..., value)
     {
-        new_ranges <- `width<-`(ranges(x), check=check, value=value)
-        update(x, ranges=new_ranges, check=check)
+        new_ranges <- `width<-`(ranges(x), ..., value=value)
+        update(x, ranges=new_ranges, ...)
     }
 )
 

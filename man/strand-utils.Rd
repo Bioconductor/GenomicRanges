@@ -54,7 +54,7 @@
   \code{*} levels respectively.
 
   If \code{x} is a character-, factor-, integer-, or
-  logical-\link[IRanges]{Rle}, it is transformed with
+  logical-\link[S4Vectors]{Rle}, it is transformed with
   \code{runValue(x) <- strand(runValue(x))} and returned.
 
   If \code{x} inherits from \code{DataTable}, the \code{"strand"}
@@ -64,7 +64,7 @@
 }
 
 \value{
-  A factor (or factor-\link[IRanges]{Rle}) with the "standard strand levels"
+  A factor (or factor-\link[S4Vectors]{Rle}) with the "standard strand levels"
   (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
 }
 

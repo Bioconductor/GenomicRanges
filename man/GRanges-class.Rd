@@ -77,11 +77,11 @@
   an interval, a \link{strand}, and optional metadata columns (e.g. score, GC
   content, etc.). This information is stored in four components:
   \describe{
-    \item{\code{seqnames}}{a 'factor' \link[IRanges]{Rle} object
+    \item{\code{seqnames}}{a 'factor' \link[S4Vectors]{Rle} object
       containing the sequence names.}
     \item{\code{ranges}}{an \link[IRanges]{IRanges} object containing
       the ranges.}
-    \item{\code{strand}}{a 'factor' \link[IRanges]{Rle} object containing
+    \item{\code{strand}}{a 'factor' \link[S4Vectors]{Rle} object containing
       the \link{strand} information.}
     \item{\code{mcols}}{a \link[IRanges]{DataFrame} object
       containing the metadata columns. Columns cannot be named
@@ -185,7 +185,7 @@
     \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Get or set the sequence names.
-      \code{value} can be an \link[IRanges]{Rle} object, a character vector,
+      \code{value} can be an \link[S4Vectors]{Rle} object, a character vector,
       or a factor.
     }
     \item{}{
@@ -449,8 +449,8 @@
   \link{GRangesList-class},
   \code{\link[GenomeInfoDb]{seqinfo}},
   \link[S4Vectors]{Vector-class},
+  \link[S4Vectors]{Rle-class},
   \link[IRanges]{Ranges-class},
-  \link[IRanges]{Rle-class},
   \link[IRanges]{DataFrame-class},
   \link[GenomicRanges]{intra-range-methods},
   \link[GenomicRanges]{inter-range-methods},

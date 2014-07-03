@@ -212,14 +212,14 @@ setMethod("start", "GRangesList",
 )
 
 setReplaceMethod("start", "GRangesList",
-    function(x, check = TRUE, value)
+    function(x, ..., value)
     {
         if (!is(value, "IntegerList") ||
             !identical(elementLengths(x), elementLengths(value)))
             stop("replacement 'value' is not an IntegerList with the same ",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
-        start(ranges(x@unlistData), check = check) <- value
+        start(x@unlistData, ...) <- value
         x
     }
 )
@@ -234,14 +234,14 @@ setMethod("end", "GRangesList",
 )
 
 setReplaceMethod("end", "GRangesList",
-    function(x, check = TRUE, value)
+    function(x, ..., value)
     {
         if (!is(value, "IntegerList") ||
             !identical(elementLengths(x), elementLengths(value)))
             stop("replacement 'value' is not an IntegerList with the same ",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
-        end(ranges(x@unlistData), check = check) <- value
+        end(x@unlistData, ...) <- value
         x
     }
 )
@@ -256,14 +256,14 @@ setMethod("width", "GRangesList",
 )
 
 setReplaceMethod("width", "GRangesList",
-    function(x, check = TRUE, value)
+    function(x, ..., value)
     {
         if (!is(value, "IntegerList") ||
             !identical(elementLengths(x), elementLengths(value)))
             stop("replacement 'value' is not an IntegerList with the same ",
                  "elementLengths as 'x'")
         value <- unlist(value, use.names = FALSE)
-        width(ranges(x@unlistData), check = check) <- value
+        width(x@unlistData, ...) <- value
         x
     }
 )

@@ -51,7 +51,7 @@ test_GRanges_construction <- function()
     checkTrue(validObject(GRanges(factor(letters), IRanges(1:26, 1:26))))
     checkTrue(validObject(GRanges(1:10, IRanges(1:10, 1:10))))
 
-    current_seqnames <- IRanges:::decodeRle(.TARGET_seqnames)
+    current_seqnames <- S4Vectors:::decodeRle(.TARGET_seqnames)
     current_strand <- Rle(c("-", "+", "*", "+", "-"),
                           c(1, 2, 2, 3, 2))
     current <- GRanges(seqnames=current_seqnames,
