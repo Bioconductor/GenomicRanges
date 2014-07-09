@@ -88,6 +88,7 @@ exportMethods(
     map,
     tile,
     subset,
+    subjectHits, queryHits,
 
     ## Generics defined in GenomeInfoDb:
     seqinfo, "seqinfo<-",
@@ -107,7 +108,9 @@ export(
     .DollarNames.GenomicRanges,
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
-    tileGenome
+    tileGenome,
+
+    hits 
 )
 
 
