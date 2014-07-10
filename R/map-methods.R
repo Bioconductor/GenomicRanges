@@ -55,7 +55,9 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   matching <- new("Hits",
                   queryHits = qhits, subjectHits = toInd,
                   queryLength = length(from), subjectLength = length(to))
-  new("GRangesMapping", hits = matching, 
-                        granges = GRanges(seqnames(gr)[shits], local))
+
+  new("GRangesMapping", hits = matching,
+      granges = GRanges(seqnames(gr)[shits], local, 
+                        strand = strand(gr[shits])))
 })
 
