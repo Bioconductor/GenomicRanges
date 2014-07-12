@@ -32,7 +32,7 @@
 }
 
 setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
-  .deprecate("mapCoords")
+  .Deprecated(msg="map() has been deprecated. Use mapCoords() instead.")
 })
 
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), function(x, to, ...) {
