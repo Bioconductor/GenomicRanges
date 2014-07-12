@@ -6,11 +6,10 @@
 \title{Mapping ranges between sequences}
 
 \description{
-  \code{map} has been deprecated. Use \code{mapRanges} instead.
+  \code{map} has been deprecated. Use \code{mapCoords} instead.
 
   A method for translating a set of input ranges through a
-  \link{GRangesList} object. Returns a \linkS4class{GRangesMapping}
-  object.
+  \link{GRangesList} object. Returns a GRangesMapping object.
 
   NOTE: The \code{\link[IRanges]{map}} generic function is defined and
   documented in the \pkg{IRanges} package.
@@ -32,7 +31,7 @@
 }
 
 \value{
-  An object of class \code{GRangesMapping} which contains both a
+  An object of class GRangesMapping which contains both a
   \linkS4class{Hits} instance and a \linkS4class{GRanges} instance.
 
   \itemize{
@@ -61,11 +60,11 @@
 }
 
 \seealso{
-  The \linkS4class{GRangesMapping} class is the typical return value.
+  The GRangesMapping class is the typical return value.
 }
 
 \examples{
-## See ?mapRanges for examples
+## See ?mapCoords for examples
 }
 
 \author{M. Lawrence}

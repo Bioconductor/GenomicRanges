@@ -7,7 +7,7 @@
 
 \description{
   A method for translating a set of input ranges through a
-  \link{GRangesList} object. Returns a \linkS4class{GRangesMapping}
+  \link{GRangesList} object. Returns a \linkS4class{GenomicRanges}
   object.
 
   NOTE: The \code{\link[IRanges]{mapCoords}} generic function is 
