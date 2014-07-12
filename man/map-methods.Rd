@@ -6,6 +6,8 @@
 \title{Mapping ranges between sequences}
 
 \description{
+  \code{map} has been deprecated. Use \code{mapRanges} instead.
+
   A method for translating a set of input ranges through a
   \link{GRangesList} object. Returns a \linkS4class{GRangesMapping}
   object.
@@ -63,33 +65,7 @@
 }
 
 \examples{
-library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
-txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
-gr <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200,
-              names = LETTERS[1:3]))
-
-## Convert ranges in 'gr' to cds-centric coordinates.
-cdsbytx <- cdsBy(txdb, "tx")
-map1 <- map(gr, cdsbytx)
-map1
-
-## Mapped coordinates are returned for ranges completely 'within'
-## coding regions. Range 'A' overlaps regions but is not 'within'.
-findOverlaps(gr["A"], cdsbytx, type = "any")
-findOverlaps(gr["A"], cdsbytx, type = "within")
-
-## Convert to exon-centric coordinates.
-exonsbytx <- exonsBy(txdb, "tx")
-map2 <- map(gr, exonsbytx)
-
-## Coercion of the GRangesMapping class to GenomicRanges produces 
-## GRanges with the matching data (hits) as metadata columns.
-map3 <- as(map2, "GenomicRanges")
-map3
-
-## Add the transcript names from 'exonsbytx'. 
-mcols(map3)$tx_id <- names(exonsbytx)[map3$subjectHits]
-map3
+## See ?mapRanges for examples
 }
 
 \author{M. Lawrence}
