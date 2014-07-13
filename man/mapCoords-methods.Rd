@@ -18,15 +18,24 @@
 }
 
 \usage{
-\S4method{mapCoords}{GenomicRanges,GRangesList}(x, to, ...)
+\S4method{mapCoords}{GenomicRanges,GRangesList}(x, to, ..., 
+          ignore.strand = FALSE, eltHits = FALSE)
 }
 
 \arguments{
-  \item{x}{The input ranges to map, usually
-    a \code{\linkS4class{GenomicRanges}}}
+  \item{x}{The input ranges to map, usually a \code{\linkS4class{GRanges}}.}
  
   \item{to}{The alignment between the sequences in \code{x} and the
     sequences in the result.}
+
+  \item{ignore.strand}{Indicates if strand should be ignored in
+    overlap operations.}
+
+  \item{eltHits}{Indicates if element indices of the GRangesList
+    hit in the overlap operation should be returned as a metadata 
+    column. The `subjectHits` metadata column (always returned)
+    is an index for the outer list elements; `eltHits` is and 
+    index for the inner list elements.}
 
   \item{\dots}{Arguments passed to other methods.}
 }
@@ -35,8 +44,8 @@
   A \code{GRanges} object of mapped coordinates with matching data
   as metadata columns (`queryHits` and `subjectHits`).
 
-  The matching data is the result of calling \code{findOverlaps} with
-  type `within` on  ranges in \code{x} (the query) to the 
+  Matching data are the result of calling \code{findOverlaps} with
+  type `within` on  ranges in \code{x} (the query) and the 
   ranges in \code{to} (the subject). Matching can be many-to-one 
   or one-to-many; one row is reported for each match. 
 }

@@ -35,29 +35,39 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
   .Deprecated(msg="map() has been deprecated. Use mapCoords() instead.")
 })
 
-setMethod("mapCoords", c("GenomicRanges", "GRangesList"), function(x, to, ...) {
-  ## make sure 'to' is properly sorted by strand
-  to <- .orderElementsByTranscription(to)
+setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
+  function(x, to, ..., ignore.strand = FALSE, eltHits = FALSE) {
+    ## make sure 'to' is properly sorted by strand
+    to <- .orderElementsByTranscription(to)
 
-  ## find overlaps
-  gr <- unlist(to, use.names=FALSE)
-  ol <- findOverlaps(x, gr, type = "within")
-  shits <- subjectHits(ol)
-  qhits <- queryHits(ol)
-  local <- ranges(x)[qhits]
-  bounds <- ranges(gr)[shits]
+    ## find overlaps
+    gr <- unlist(to, use.names = FALSE)
+    ol <- findOverlaps(x, gr, type = "within", ..., ignore.strand=ignore.strand)
+    shits <- subjectHits(ol)
+    qhits <- queryHits(ol)
+    local <- ranges(x)[qhits]
+    bounds <- ranges(gr)[shits]
 
-  ## location wrt start of coding region 
-  neg <- as.vector(strand(gr)[shits] == "-")
-  local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
-  local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
-                        width = width(local)[neg])
+    ## location wrt start of individual list elements
+    if (ignore.strand) { 
+      local <- shift(local, - start(bounds))
+    } else {
+      neg <- as.vector(strand(gr)[shits] == "-")
+      local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
+      local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
+                            width = width(local)[neg])
+    }
 
-  ## location wrt transcript
-  cumsums <- .listCumsumShifted(width(to))
-  local <- shift(local, 1L + cumsums[shits])
+    ## location wrt transcript
+    cumsums <- .listCumsumShifted(width(to))
+    local <- shift(local, 1L + cumsums[shits])
 
-  toInd <- togroup(to)[shits]
-  GRanges(seqnames(gr)[shits], local, strand = strand(gr[shits]),
-          queryHits = qhits, subjectHits = toInd)
-})
+    toInd <- togroup(to)[shits]
+    if (eltHits)
+      GRanges(seqnames(gr)[shits], local, strand = strand(gr[shits]),
+              queryHits = qhits, subjectHits = toInd, eltHits = shits)
+    else
+      GRanges(seqnames(gr)[shits], local, strand = strand(gr[shits]),
+              queryHits = qhits, subjectHits = toInd)
+  }
+)
