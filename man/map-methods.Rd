@@ -6,7 +6,7 @@
 \title{Mapping ranges between sequences}
 
 \description{
-  \code{map} has been deprecated. Use \code{mapCoords} instead.
+  \code{map} is defunct. Use \code{mapCoords} instead.
 
   A method for translating a set of input ranges through a
   \link{GRangesList} object. Returns a GRangesMapping object.
