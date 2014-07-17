@@ -45,6 +45,11 @@ extraColumnSlotsAsDF <- function(x) {
   new("DataFrame", listData = extraColumnSlots(x), nrows = length(x))
 }
 
+copyExtraColumnSlotsToMcols <- function(x) {
+  mcols(x) <- cbind(extraColumnSlotsAsDF(x), mcols(x))
+  x
+}
+
 setGeneric("extraColumnSlotNames",
            function(x) standardGeneric("extraColumnSlotNames"))
 
@@ -301,6 +306,9 @@ setAs("Seqinfo", "RangesList",
     function(from) as(as(from, "GenomicRanges"), "RangesList")
 )
 
+setMethod("granges", "GenomicRanges", function(x) {
+  as(copyExtraColumnSlotsToMcols(x), "GRanges")
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
