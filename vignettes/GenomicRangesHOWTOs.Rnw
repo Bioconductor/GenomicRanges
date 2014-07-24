@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, AnnotationHub, DESeq, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, AnnotationHub, DESeq, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -13,7 +13,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
 \author{Bioconductor Team}
-\date{Edited: October 2013; Compiled: \today}
+\date{Edited: July 2014; Compiled: \today}
 
 \begin{document}
 
@@ -23,8 +23,8 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 <<options, echo=FALSE>>=
 options(width=72)
-options("showHeadLines" = 3)
-options("showTailLines" = 3)
+options(showHeadLines=3)
+options(showTailLines=3)
 @
 
 
@@ -40,8 +40,8 @@ packages (\Biocpkg{IRanges}, \Biocpkg{GenomicFeatures},
 \Biocpkg{Rsamtools}, and \Biocpkg{Biostrings}) to perform a task
 typically found in the context of a high throughput sequence analysis.
 
-The HOWTOs are self contained, independent of each other, and can be
-studied and reproduced in any order.
+Unless stated otherwise, the HOWTOs are self contained, independent of
+each other, and can be studied and reproduced in any order.
 
 We assume the reader has some previous experience with \R{} and
 with basic manipulation of \Rcode{GRanges}, \Rcode{GRangesList}, \Rcode{Rle},
@@ -62,7 +62,7 @@ use \Rcode{browseVignettes("GenomicRanges")}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to read BAM files into \R{}}
+\section{How to read single-end reads from a BAM file}
 
 As sample data we use the \Biocpkg{pasillaBamSubset} data package which
 contains both a BAM file with single-end reads (untreated1\_chr4) and
@@ -72,24 +72,24 @@ for details.
 
 <<load, results=hide>>=
 library(pasillaBamSubset)
-un1 <- untreated1_chr4() ## single-end reads
+un1 <- untreated1_chr4()  # single-end reads
 @
 
 Several functions are available for reading BAM files into \R{}:
 
 \begin{verbatim}
-  scanBam()
   readGAlignments()
   readGAlignmentPairs()
   readGAlignmentsList()
+  scanBam()
 \end{verbatim}
 
 \Rfunction{scanBam} is a low-level function that returns a list of lists
 and is not discussed further here. For details see ?\Rfunction{scanBam}
 in the \Rpackage{Rsamtools} package.
 
-\subsection{Single-end reads}
-Single-end reads can be loaded with the \Rfunction{readGAlignments} function.
+Single-end reads can be loaded with the \Rfunction{readGAlignments} function
+from the \Biocpkg{GenomicAlignments} package.
 
 <<readGAlignments>>=
 library(GenomicAlignments)
@@ -114,10 +114,26 @@ Another approach to subsetting the data is to use \Rfunction{filterBam}.
 This function creates a new BAM file of records passing user-defined 
 criteria. See ?\Rfunction{filterBam} for details.
 
-\subsection{Paired-end reads}
 
-Paired-end reads can be loaded with \Rfunction{readGAlignmentPairs}
-or \Rfunction{readGAlignmentsList}. These functions use the same
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to read paired-end reads from a BAM file}
+
+As sample data we use the \Biocpkg{pasillaBamSubset} data package which
+contains both a BAM file with single-end reads (untreated1\_chr4) and
+a BAM file with paired-end reads (untreated3\_chr4). Each file is a subset
+of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
+for details.
+
+<<load, results=hide>>=
+library(pasillaBamSubset)
+un3 <- untreated3_chr4()  # paired-end reads
+@
+
+Paired-end reads can be loaded with the \Rfunction{readGAlignmentPairs}
+or \Rfunction{readGAlignmentsList} function from the
+\Biocpkg{GenomicAlignments} package. These functions use the same
 mate paring algorithm but output different objects.
 
 Let's start with \Rfunction{readGAlignmentPairs}:
@@ -164,12 +180,19 @@ non_mates <- galist[unlist(mcols(galist)$mates) == FALSE]
 table(elementLengths(non_mates))
 @
 
-\subsection{Iterating with \Rcode{yieldSize}}
 
-Large files can be iterated through in chunks by setting a \Rcode{yieldSize} 
-on the \Rcode{BamFile}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to read and process a big BAM file by chunks in order to
+         reduce memory usage}
+
+A large BAM file can be iterated through in chunks by setting a
+\Rcode{yieldSize} on the \Rclass{BamFile} object.
 
 <<yieldSize>>=
+library(pasillaBamSubset)
+un1 <- untreated1_chr4()
 bf <- BamFile(un1, yieldSize=100000)
 @
 
