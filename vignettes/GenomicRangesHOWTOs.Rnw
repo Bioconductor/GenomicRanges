@@ -40,8 +40,8 @@ packages (\Biocpkg{IRanges}, \Biocpkg{GenomicFeatures},
 \Biocpkg{Rsamtools}, and \Biocpkg{Biostrings}) to perform a task
 typically found in the context of a high throughput sequence analysis.
 
-Unless stated otherwise, the HOWTOs are self contained, independent of
-each other, and can be studied and reproduced in any order.
+Unless stated otherwise, the {\it HOWTOs} are self contained, independent
+of each other, and can be studied and reproduced in any order.
 
 We assume the reader has some previous experience with \R{} and
 with basic manipulation of \Rcode{GRanges}, \Rcode{GRangesList}, \Rcode{Rle},
@@ -228,36 +228,39 @@ cvg
 
 Methods for RNA-Seq gene expression analysis generally require a table of
 counts that summarize the number of reads that overlap or `hit' a 
-particular gene. In this section we count with \Rcode{summarizeOverlaps}
-and create a count table from the results. 
+particular gene. In this {\it HOWTO} we count with the
+\Rcode{summarizeOverlaps} function from the \Biocpkg{GenomicAlignments}
+package and create a count table from the results. 
 
 Other packages that provide read counting are \Biocpkg{Rsubread} and 
 \Biocpkg{easyRNASeq}. The \Biocpkg{parathyroidSE} package vignette 
 contains a workflow on counting and other common operations required for 
 differential expression analysis. 
 
-\subsection{Counting with \Rfunction{summarizeOverlaps}}
-
-As sample data we use \Biocpkg{pasillaBamSubset} which contains both
-a single-end BAM (untreated1\_chr4) and a paired-end BAM
-(untreated3\_chr4). Each file is a subset of chr4 from the "Pasilla" 
-experiment. See ?\Biocpkg{pasillaBamSubset} for details.
+As sample data we use the \Biocpkg{pasillaBamSubset} data package which
+contains both a BAM file with single-end reads (untreated1\_chr4) and
+a BAM file with paired-end reads (untreated3\_chr4). Each file is a subset
+of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
+for details.
 
 <<load, results=hide>>=
 library(pasillaBamSubset)
-un1 <- untreated1_chr4() ## single-end records
+un1 <- untreated1_chr4()  # single-end reads
 @
 
-\Rcode{summarizeOverlaps} requires the name of a BAM file(s) and an
-annotation to count against. The annotation must match the genome 
-build the BAM records were aligned to. For the pasilla data this is 
-dm3 Dmelanogaster which is available as a \Bioconductor{} package. 
-Load the package and extract the exon ranges by gene.
+\Rcode{summarizeOverlaps} requires the name of a BAM file(s) and a gene
+model to count against. The gene model must match the genome build the
+reads in the BAM file were aligned to. For the pasilla data this is dm3
+Dmelanogaster which is available as a \Bioconductor{} package.
+Load the package and extract the exon ranges grouped by gene:
 
 <<count_1>>=
 library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
 exbygene <- exonsBy(TxDb.Dmelanogaster.UCSC.dm3.ensGene, "gene")
 @
+
+\Rcode{exbygene} is a \Rclass{GRangesList} object with one list
+element per gene in the gene model.
 
 \Rcode{summarizeOverlaps} automatically sets a \Rcode{yieldSize}
 on large BAM files and iterates over them in chunks. When reading
@@ -278,23 +281,42 @@ class(se)
 head(table(assays(se)$counts))
 @
 
-The count vector is the same length as the annotation.
+The count vector is the same length as \Rcode{exbygene}:
 
 <<count_4>>=
 identical(length(exbygene), length(assays(se)$counts))
 @
 
-The annotation is stored in the \Rcode{rowData} slot.
+A copy of \Rcode{exbygene} is stored in the \Rcode{rowData} slot:
 
 <<count_5>>=
 rowData(se)
 @
 
-\subsection{Retrieving annotations from \Biocpkg{AnnotationHub}}
+Two popular packages for RNA-Seq differential gene expression are
+\Biocpkg{DESeq} and \Biocpkg{edgeR}. Tables of counts per gene are required
+for both and can be easily created with a vector of counts. Here we use the
+counts from our \Rclass{SummarizedExperiment} object:
 
-When the annotation is not available as a \Rcode{GRanges} or a
-\Bioconductor{} package it may be available in \Rcode{AnnotationHub}.
-Create a `hub' and filter on Drosophila melanogaster.
+<<count_table>>=
+library(DESeq)
+deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
+library(edgeR)
+edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
+@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to retrieve a gene model from \Biocpkg{AnnotationHub}}
+
+When a gene model is not available as a \Rclass{GRanges} or
+\Rclass{GRangesList} object or as a \Bioconductor{} data package, it may
+be available on \Biocpkg{AnnotationHub}.
+In this {\it HOWTO}, will look for a gene model for Drosophila melanogaster
+on \Biocpkg{AnnotationHub}.
+Create a `hub' and filter on Drosophila melanogaster:
 
 <<hub_1>>=
 library(AnnotationHub)
@@ -323,31 +345,20 @@ names(metadata(gr)[[2]])
 metadata(gr)[[2]]$Tags
 @
 
-Split the GRanges by gene name to get a \Robject{GRangesList} of
-transcripts by gene.
+Split the \Rclass{GRanges} object by gene name to get a \Rclass{GRangesList}
+object of transcript ranges grouped by gene.
 
 <<hub_5>>= 
-split(gr, gr$name)
+txbygn <- split(gr, gr$name)
 @
 
-Before performing overlap operations confirm that the seqlevels 
-(chromosome names) in the annotation match those in the BAM file. See 
-?\Rfunction{renameSeqlevels}, ?\Rfunction{keepSeqlevels} and 
-?\Rfunction{seqlevels} for examples of renaming seqlevels.
+You can now use \Rcode{txbygn} with the \Rcode{summarizeOverlaps} function
+to prepare a table of read counts for RNA-Seq differential gene expression.
 
-\subsection{Count tables}
-
-Two popular packages for gene expression are \Biocpkg{DESeq} and 
-\Biocpkg{edgeR}. Tables of counts per gene are required for both and can be 
-easily created with a vector of counts. Here we use the counts from the 
-\Robject{SummarizedExperiment}.
-
-<<count_table>>=
-library(DESeq)
-deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
-library(edgeR)
-edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
-@
+Note that before passing \Rcode{txbygn} to \Rcode{summarizeOverlaps},
+you should confirm that the seqlevels (chromosome names) in it match those
+in the BAM file. See ?\Rfunction{renameSeqlevels}, ?\Rfunction{keepSeqlevels}
+and ?\Rfunction{seqlevels} for examples of renaming seqlevels.
 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -629,7 +640,7 @@ names(lst5)[elementLengths(lst5) == 0L] ## genes with no 5' UTR data
 
 \section{How to create DNA consensus sequences for read group `families'}
 
-The motivation for this HOWTO comes from a study which explored the
+The motivation for this {\it HOWTO} comes from a study which explored the
 dynamics of point mutations. The mutations of interest exist with a range 
 of frequencies in the control group (e.g., 0.1\% - 50\%). PCR and sequencing 
 error rates make it difficult to identify low frequency events 
