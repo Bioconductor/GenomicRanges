@@ -217,8 +217,8 @@
   query <- GRanges(c("A", "B"), IRanges(c(1, 5), width=1))
   distanceToNearest(query, subject)
 
-  ## distance() with GRanges and TranscriptDb see the 
-  ## ?'distance,GenomicRanges,TranscriptDb-method' man 
+  ## distance() with GRanges and TxDb see the 
+  ## ?'distance,GenomicRanges,TxDb-method' man 
   ## page in the GenomicFeatures package.
 }
  

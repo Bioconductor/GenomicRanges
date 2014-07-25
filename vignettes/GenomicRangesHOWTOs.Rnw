@@ -571,7 +571,7 @@ txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 If an annotation is not available as a \Bioconductor{} annotation package
 it may be available in \Biocpkg{AnnotationHub}. Additionally, there are
 functions in \Biocpkg{GenomicFeatures} which can retrieve data from UCSC and
-Ensembl to create a \Robject{TranscriptDb}. See 
+Ensembl to create a \Robject{TxDb}. See 
 ?\Rcode{makeTranscriptDbFromUCSC} for details.
 
 As in the previous {\it HOWTO} we need to identify the transcripts 
