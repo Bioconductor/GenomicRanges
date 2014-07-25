@@ -28,6 +28,8 @@ options(showTailLines=3)
 @
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -59,10 +61,18 @@ To display the list of vignettes available in the \Biocpkg{GenomicRanges},
 use \Rcode{browseVignettes("GenomicRanges")}.
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to read single-end reads from a BAM file}
+\section{HOWTOs}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{How to read single-end reads from a BAM file}
 
 As sample data we use the \Biocpkg{pasillaBamSubset} data package which
 contains both a BAM file with single-end reads (untreated1\_chr4) and
@@ -118,7 +128,7 @@ criteria. See ?\Rfunction{filterBam} for details.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to read paired-end reads from a BAM file}
+\subsection{How to read paired-end reads from a BAM file}
 
 As sample data we use the \Biocpkg{pasillaBamSubset} data package which
 contains both a BAM file with single-end reads (untreated1\_chr4) and
@@ -184,8 +194,8 @@ table(elementLengths(non_mates))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to read and process a big BAM file by chunks in order to
-         reduce memory usage}
+\subsection{How to read and process a big BAM file by chunks in order to
+            reduce memory usage}
 
 A large BAM file can be iterated through in chunks by setting a
 \Rcode{yieldSize} on the \Rclass{BamFile} object.
@@ -223,26 +233,26 @@ cvg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to compute read coverage}
+\subsection{How to compute read coverage}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to find peaks in read coverage}
+\subsection{How to find peaks in read coverage}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to annotate peaks in read coverage}
+\subsection{How to annotate peaks in read coverage}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to prepare a table of read counts for RNA-Seq differential
-         gene expression}
+\subsection{How to prepare a table of read counts for RNA-Seq differential
+            gene expression}
 
 Methods for RNA-Seq gene expression analysis generally require a table of
 counts that summarize the number of reads that overlap or `hit' a 
@@ -327,26 +337,26 @@ edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to retrieve a gene model from the UCSC genome browser}
+\subsection{How to retrieve a gene model from the UCSC genome browser}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to retrieve a gene model from Ensembl}
+\subsection{How to retrieve a gene model from Ensembl}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to load a gene model from a GTF or GFF file}
+\subsection{How to load a gene model from a GTF or GFF file}
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to retrieve a gene model from \Biocpkg{AnnotationHub}}
+\subsection{How to retrieve a gene model from \Biocpkg{AnnotationHub}}
 
 When a gene model is not available as a \Rclass{GRanges} or
 \Rclass{GRangesList} object or as a \Bioconductor{} data package, it may
@@ -401,14 +411,14 @@ and ?\Rfunction{seqlevels} for examples of renaming seqlevels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to summarize junctions from a BAM file containing RNA-Seq
-         reads}
+\subsection{How to summarize junctions from a BAM file containing RNA-Seq
+            reads}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to get the exon and intron sequences of a given gene}
+\subsection{How to get the exon and intron sequences of a given gene}
 
 The exon and intron sequences of a gene are essentially the DNA
 sequences of the introns and exons of all known transcripts of the gene.
@@ -504,15 +514,15 @@ trak2_in_seqs[["uc002uyc.2"]]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to get the CDS and UTR sequences of genes associated 
-         with colorectal cancer}
+\subsection{How to get the CDS and UTR sequences of genes associated 
+            with colorectal cancer}
 
 In this {\it HOWTO} we extract the CDS and UTR sequences of genes involved
 in colorectal cancer. The workflow extends the ideas presented in the
 previous {\it HOWTO} and suggests an approach for identifying
 disease-related genes.
 
-\subsection{Build a gene list}
+\subsubsection{Build a gene list}
 
 We start with a list of gene or transcript ids. If you do not have 
 pre-defined list one can be created with the \Biocpkg{KEGG.db} and 
@@ -547,7 +557,7 @@ crgenes <- unique(translateKEGGID2GeneID(crids))
 head(crgenes)
 @
 
-\subsection{Identify genomic coordinates}
+\subsubsection{Identify genomic coordinates}
 
 The list of gene ids is used to extract genomic positions of the regions 
 of interest. The Known Gene table from UCSC will be the annotation and
@@ -616,7 +626,7 @@ outer list element.
 cds
 @
 
-\subsection{Extract sequences from BSgenome}
+\subsubsection{Extract sequences from BSgenome}
 
 The \Rcode{BSgenome} packages contain complete genome sequences
 for a given organism.
@@ -690,7 +700,7 @@ names(lst5)[elementLengths(lst5) == 0L] ## genes with no 5' UTR data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to create DNA consensus sequences for read group `families'}
+\subsection{How to create DNA consensus sequences for read group `families'}
 
 The motivation for this {\it HOWTO} comes from a study which explored the
 dynamics of point mutations. The mutations of interest exist with a range 
@@ -708,7 +718,7 @@ position and discarding those that do not exceed a certain threshold within
 each family. A new consensus sequence will be created for each read group
 family.
 
-\subsection{Sort reads into groups by start position}
+\subsubsection{Sort reads into groups by start position}
 
 Load the BAM file into a GAlignments object.
 
@@ -803,7 +813,7 @@ Note that the sequence and quality strings are those projected to the
 reference so the first letter in those strings are on top of start 
 position 13, the 2nd letter on top of position 14, etc...
 
-\subsection{Remove low frequency reads}
+\subsubsection{Remove low frequency reads}
 
 For each start position, remove reads with and under-represented sequence 
 (e.g. threshold = 20\% for the data used here which is low coverage).
@@ -839,7 +849,7 @@ qseq_on_ref2 <- relist(unlist(qseq_on_ref, use.names=FALSE)[tmp],
                        qseq_on_ref_id2)
 @
 
-\subsection{Create a consensus sequence for each read group family}
+\subsubsection{Create a consensus sequence for each read group family}
 
 Compute 1 consensus matrix per chromosome:
 
@@ -892,7 +902,7 @@ cs_by_chrom
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to compute binned averages along a genome}
+\subsection{How to compute binned averages along a genome}
 
 In some applications, there is the need to compute the average of a 
 variable along a genome for a set of predefined fixed-width regions 
@@ -966,11 +976,23 @@ The bin size can be modified with the \Rcode{tilewidth} argument
 to \Rfunction{tileGenome}. For additional examples see
 ?\Rfunction{tileGenome}.
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Session Information}
 
 <<SessionInfo, echo=FALSE>>=
 sessionInfo()
 @
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bibliography{GenomicRanges}
 \bibliographystyle{plainnat}
