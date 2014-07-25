@@ -223,6 +223,24 @@ cvg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{How to compute read coverage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to find peaks in read coverage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to annotate peaks in read coverage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{How to prepare a table of read counts for RNA-Seq differential
          gene expression}
 
@@ -309,6 +327,25 @@ edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{How to retrieve a gene model from the UCSC genome browser}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to retrieve a gene model from Ensembl}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to load a gene model from a GTF or GFF file}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{How to retrieve a gene model from \Biocpkg{AnnotationHub}}
 
 When a gene model is not available as a \Rclass{GRanges} or
@@ -364,103 +401,118 @@ and ?\Rfunction{seqlevels} for examples of renaming seqlevels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{How to extract DNA sequences of gene regions}
+\section{How to summarize junctions from a BAM file containing RNA-Seq
+         reads}
 
-\subsection{DNA sequences for intron and exon regions of a single gene}
 
-DNA sequences for the introns and exons of a gene are essentially
-the sequences for the introns and exons for all known transcripts of
-a gene. The first task is to identify all transcripts associated
-with the gene of interest. Our sample gene is the human TRAK2
-which is involved in regulation of endosome-to-lysosome trafficking 
-of membrane cargo. The Entrez gene id is `66008'. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{How to get the exon and intron sequences of a given gene}
+
+The exon and intron sequences of a gene are essentially the DNA
+sequences of the introns and exons of all known transcripts of the gene.
+The first task is to identify all transcripts associated with the gene of
+interest. Our sample gene is the human TRAK2 which is involved in
+regulation of endosome-to-lysosome trafficking of membrane cargo.
+The Entrez gene id is `66008'. 
 
 <<trak_1>>=
 trak2 <- "66008"
 @
 
-Load the UCSC `Known Gene' table annotation available as a
-\Bioconductor{} package.
+The \Biocpkg{TxDb.Hsapiens.UCSC.hg19.knownGene} data package contains the
+gene model corresponding to the UCSC `Known Genes' track.
 
 <<trak_2>>=
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 @
 
-To get the transcripts associated with the trak2 gene we use the
-\Rfunction{transcriptsBy} function from the \Biocpkg{GenomicFeatures} 
-package. This returns a \Robject{GRangesList} of all transcripts
-grouped by gene. We are only interested in trak2 so we subset the 
-list on the trak2 gene id.
+The transcript ranges for all the genes in the gene model can be extracted
+with the \Rfunction{transcriptsBy} function from the \Biocpkg{GenomicFeatures}
+package. They will be returned in a named \Rclass{GRangesList} object
+containing all the transcripts grouped by gene. In order to keep only the
+transcripts of the TRAK2 gene we will subset the \Rclass{GRangesList}
+object using the \Rcode{[[} operator.
 
 <<trak_3>>=
 library(GenomicFeatures)
-txbygene <- transcriptsBy(txdb, by="gene")[trak2]
-txbygene
+trak2_txs <- transcriptsBy(txdb, by="gene")[[trak2]]
+trak2_txs
 @
 
-The transcript names corresponding to the trak2 gene will be used to 
-subset the extracted intron and exon regions. The \Rcode{txbygene} 
-object is a \Robject{GRangesList} and the transcript names are a 
-metadata column on the individual \Robject{GRanges}. To extract the 
-names we must first `flatten' or unlist \Rcode{txbygene}.
+\Rcode{trak2\_txs} is a \Rclass{GRanges} object with one range per
+transcript in the TRAK2 gene. The transcript names are stored in the 
+\Rcode{tx\_name} metadata column. We will need them to subset the
+extracted intron and exon regions:
 
 <<trak_4>>=
-tx_names <- mcols(unlist(txbygene))$tx_name
-tx_names
+trak2_tx_names <- mcols(trak2_txs)$tx_name
+trak2_tx_names
 @
 
-Intron and exon regions are extracted with \Rfunction{intronsByTranscript} 
-and \Rfunction{exonsBy}. The resulting \Robject{GRangesLists} are
-subset on the trak2 transcript names. 
+The exon and intron genomic ranges for all the transcripts in the gene model
+can be extracted with the \Rfunction{exonsBy} and
+\Rfunction{intronsByTranscript} functions, respectively. Both functions
+return a \Rclass{GRangesList} object. Then we keep only the exon and intron
+for the transcripts of the TRAK2 gene by subsetting each \Rclass{GRangesList}
+object by the TRAK2 transcript names.
 
-Extract the intron regions ...
+Extract the exon regions:
 
 <<trak_5>>=
-intronsbytx <- intronsByTranscript(txdb, use.names=TRUE)[tx_names]
-elementLengths(intronsbytx)
+trak2_exbytx <- exonsBy(txdb, "tx", use.names=TRUE)[trak2_tx_names]
+elementLengths(trak2_exbytx)
 @
 
-and the exon regions.
+... and the intron regions:
 
 <<trak_7>>=
-exonsbytx <- exonsBy(txdb, "tx", use.names=TRUE)[tx_names]
-elementLengths(exonsbytx)
+trak2_inbytx <- intronsByTranscript(txdb, use.names=TRUE)[trak2_tx_names]
+elementLengths(trak2_inbytx)
 @
 
-Next we want the DNA sequences for these intron and exon regions.
-The \Rfunction{extractTranscriptSeqs} function in the 
-\Biocpkg{Biostrings} package will query a \Biocpkg{BSGenome} package 
-with a set of genomic positions and retrieve the DNA sequences. 
+Next we want the DNA sequences for these exons and introns.
+The \Rfunction{getSeq} function from the \Biocpkg{Biostrings} package can
+be used to query a \Biocpkg{BSgenome} object with a set of genomic ranges
+and retrieve the corresponding DNA sequences. 
 
 <<trak_8>>=
-library(Biostrings)
 library(BSgenome.Hsapiens.UCSC.hg19)
 @
 
-Extract the intron sequences ...
+Extract the exon sequences:
 
 <<trak_9>>=
-intron_seqs <- extractTranscriptSeqs(Hsapiens, intronsbytx)
-intron_seqs
+trak2_ex_seqs <- getSeq(Hsapiens, trak2_exbytx)
+trak2_ex_seqs
+trak2_ex_seqs[["uc002uyb.4"]]
+trak2_ex_seqs[["uc002uyc.2"]]
 @
 
-and the exon sequences.
+... and the intron sequences:
 
 <<trak_10>>=
-exon_seqs <- extractTranscriptSeqs(Hsapiens, exonsbytx)
-exon_seqs
+trak2_in_seqs <- getSeq(Hsapiens, trak2_inbytx)
+trak2_in_seqs
+trak2_in_seqs[["uc002uyb.4"]]
+trak2_in_seqs[["uc002uyc.2"]]
 @
 
 
-\subsection{DNA sequences for coding and UTR regions of genes associated 
-            with colorectal cancer}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In this section we extract the coding and UTR sequences of genes involved
-in colorectal cancer. The workflow extends the ideas presented in the single 
-gene example and suggests an approach to identify disease-related genes.
+\section{How to get the CDS and UTR sequences of genes associated 
+         with colorectal cancer}
 
-\subsubsection{Build a gene list}
+In this {\it HOWTO} we extract the CDS and UTR sequences of genes involved
+in colorectal cancer. The workflow extends the ideas presented in the
+previous {\it HOWTO} and suggests an approach for identifying
+disease-related genes.
+
+\subsection{Build a gene list}
 
 We start with a list of gene or transcript ids. If you do not have 
 pre-defined list one can be created with the \Biocpkg{KEGG.db} and 
@@ -495,7 +547,7 @@ crgenes <- unique(translateKEGGID2GeneID(crids))
 head(crgenes)
 @
 
-\subsubsection{Identify genomic coordinates}
+\subsection{Identify genomic coordinates}
 
 The list of gene ids is used to extract genomic positions of the regions 
 of interest. The Known Gene table from UCSC will be the annotation and
@@ -512,7 +564,7 @@ functions in \Biocpkg{GenomicFeatures} which can retrieve data from UCSC and
 Ensembl to create a \Robject{TranscriptDb}. See 
 ?\Rcode{makeTranscriptDbFromUCSC} for details.
 
-As in the single gene example we need to identify the transcripts 
+As in the previous {\it HOWTO} we need to identify the transcripts 
 corresponding to each gene. The transcript id (or name) is used
 to isolate the UTR and coding regions of interest. This grouping of
 transcript by gene is also used to re-group the final sequence results.
@@ -564,7 +616,7 @@ outer list element.
 cds
 @
 
-\subsubsection{Extract sequences from BSgenome}
+\subsection{Extract sequences from BSgenome}
 
 The \Rcode{BSgenome} packages contain complete genome sequences
 for a given organism.
@@ -577,7 +629,7 @@ genome <- BSgenome.Hsapiens.UCSC.hg19
 @
 
 Use \Rfunction{extractTranscriptSeqs} to extract the UTR and coding 
-regions from the \Rcode{BSGenome}. This function retrieves the sequences 
+regions from the \Rcode{BSgenome}. This function retrieves the sequences 
 for an any \Robject{GRanges} or \Robject{GRangesList} (i.e., not just 
 transcripts like the name implies).
 
