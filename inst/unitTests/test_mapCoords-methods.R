@@ -22,10 +22,10 @@ test_mapCoords_strand <- function()
                GRanges("chrA", IRanges(43528406, 43528644), strand="-"),
                GRanges("chrA", IRanges(43522244, 43524145), strand="-"))
     map <- mapCoords(gr, grl, ignore.strand=FALSE)
-    checkIdentical(start(map) == 1797L)
-    checkIdentical(end(map) == 1797L)
+    checkTrue(start(map) == 1797L)
+    checkTrue(end(map) == 1797L)
 
     map <- mapCoords(gr, grl, ignore.strand=TRUE)
-    checkIdentical(start(map) == c(1797L, 1797L))
-    checkIdentical(end(map) == c(1797L, 1797L))
+    checkTrue(all(start(map) == c(1797L, 1797L)))
+    checkTrue(all(end(map) == c(1797L, 1797L)))
 }
