@@ -42,22 +42,20 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
 
     ## find overlaps
     gr <- unlist(to, use.names = FALSE)
-    ol <- findOverlaps(x, gr, type = "within", ..., ignore.strand=ignore.strand)
+    ol <- findOverlaps(x, gr, type = "within", ..., 
+                       ignore.strand=ignore.strand)
     shits <- subjectHits(ol)
     qhits <- queryHits(ol)
     local <- ranges(x)[qhits]
     bounds <- ranges(gr)[shits]
 
     ## location wrt start of individual list elements
-    if (ignore.strand) { 
-      local <- shift(local, - start(bounds))
-    } else {
-      neg <- as.vector(strand(gr)[shits] == "-")
-      local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
-      local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
-                            width = width(local)[neg])
-    }
+    neg <- as.vector(strand(gr)[shits] == "-")
+    local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
+    local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
+                          width = width(local)[neg])
 
+    toInd <- togroup(to)[shits]
     ## location wrt transcript
     cumsums <- .listCumsumShifted(width(to))
     local <- shift(local, 1L + cumsums[shits])
