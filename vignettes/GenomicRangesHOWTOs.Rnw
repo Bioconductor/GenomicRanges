@@ -35,15 +35,20 @@ options(showTailLines=3)
 
 \section{Introduction}
 
-This vignette is a collection of {\it HOWTOs}. Each {\it HOWTO} is
+\subsection{Purpose of this document}
+
+This document is a collection of {\it HOWTOs}. Each {\it HOWTO} is
 a short section that demonstrates how to use the containers and
 operations implemented in the \Biocpkg{GenomicRanges} and related
-packages (\Biocpkg{IRanges}, \Biocpkg{GenomicFeatures},
-\Biocpkg{Rsamtools}, and \Biocpkg{Biostrings}) to perform a task
-typically found in the context of a high throughput sequence analysis.
+packages (\Biocpkg{IRanges}, \Biocpkg{Biostrings}, \Biocpkg{Rsamtools},
+\Biocpkg{GenomicAlignments}, \Biocpkg{BSgenome}, and
+\Biocpkg{GenomicFeatures}) to perform a task typically found in the context
+of a high throughput sequence analysis.
 
 Unless stated otherwise, the {\it HOWTOs} are self contained, independent
 of each other, and can be studied and reproduced in any order.
+
+\subsection{Prerequisites and additional recommended reading}
 
 We assume the reader has some previous experience with \R{} and
 with basic manipulation of \Rcode{GRanges}, \Rcode{GRangesList}, \Rcode{Rle},
@@ -52,13 +57,26 @@ to Genomic Ranges Classes'' vignette located in the \Biocpkg{GenomicRanges}
 package (in the same folder as this document) for an introduction to these
 containers.
 
-Additional recommended readings after this vignette are the ``Software for
+Additional recommended readings after this document are the ``Software for
 Computing and Annotating Genomic Ranges'' paper[\citet{Lawrence2013ranges}]
 and the ``Counting reads with \Rfunction{summarizeOverlaps}'' vignette
 located in the \Biocpkg{GenomicAlignments} package.
 
-To display the list of vignettes available in the \Biocpkg{GenomicRanges},
-use \Rcode{browseVignettes("GenomicRanges")}.
+To display the list of vignettes available in the \Biocpkg{GenomicRanges}
+package, use \Rcode{browseVignettes("GenomicRanges")}.
+
+\subsection{Input data used in the HOWTOs}
+
+In order to avoid repetition, input data that is used in more than one
+{\it HOWTO} is described here:
+
+\begin{itemize}
+  \item The \Biocpkg{pasillaBamSubset} data package: contains both a BAM
+        file with single-end reads (untreated1\_chr4) and a BAM file with
+        paired-end reads (untreated3\_chr4). Each file is a subset of chr4
+        from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
+        for more information.
+\end{itemize}
 
 
 
@@ -74,11 +92,8 @@ use \Rcode{browseVignettes("GenomicRanges")}.
 
 \subsection{How to read single-end reads from a BAM file}
 
-As sample data we use the \Biocpkg{pasillaBamSubset} data package which
-contains both a BAM file with single-end reads (untreated1\_chr4) and
-a BAM file with paired-end reads (untreated3\_chr4). Each file is a subset
-of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
-for details.
+As sample data we use the \Biocpkg{pasillaBamSubset} data package
+described in the introduction.
 
 <<load, results=hide>>=
 library(pasillaBamSubset)
@@ -130,11 +145,8 @@ criteria. See ?\Rfunction{filterBam} for details.
 
 \subsection{How to read paired-end reads from a BAM file}
 
-As sample data we use the \Biocpkg{pasillaBamSubset} data package which
-contains both a BAM file with single-end reads (untreated1\_chr4) and
-a BAM file with paired-end reads (untreated3\_chr4). Each file is a subset
-of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
-for details.
+As sample data we use the \Biocpkg{pasillaBamSubset} data package
+described in the introduction.
 
 <<load, results=hide>>=
 library(pasillaBamSubset)
@@ -199,6 +211,8 @@ table(elementLengths(non_mates))
 
 A large BAM file can be iterated through in chunks by setting a
 \Rcode{yieldSize} on the \Rclass{BamFile} object.
+As sample data we use the \Biocpkg{pasillaBamSubset} data package
+described in the introduction.
 
 <<yieldSize>>=
 library(pasillaBamSubset)
@@ -265,11 +279,8 @@ Other packages that provide read counting are \Biocpkg{Rsubread} and
 contains a workflow on counting and other common operations required for 
 differential expression analysis. 
 
-As sample data we use the \Biocpkg{pasillaBamSubset} data package which
-contains both a BAM file with single-end reads (untreated1\_chr4) and
-a BAM file with paired-end reads (untreated3\_chr4). Each file is a subset
-of chr4 from the "Pasilla" experiment. See ?\Biocpkg{pasillaBamSubset}
-for details.
+As sample data we use the \Biocpkg{pasillaBamSubset} data package
+described in the introduction.
 
 <<load, results=hide>>=
 library(pasillaBamSubset)
