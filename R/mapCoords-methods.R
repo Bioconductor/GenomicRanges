@@ -18,7 +18,7 @@
   shifted
 }
 
-.orderElementsByTranscription <- function(x) {
+.orderElementsByTranscription <- function(x, reorder_neg=TRUE) {
   gr <- unlist(x, use.names = FALSE)
   gr <- gr[order(togroup(x), start(gr))]
   part <- PartitioningByWidth(x)
@@ -26,8 +26,11 @@
   pstart <- start(part)[width(part) != 0L]
   pend <- end(part)[width(part) != 0L]
   neg <- strand(gr)[pstart] == "-"
-  ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
-                          ifelse(neg, pstart, pend))
+  if (reorder_neg)
+    ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
+                            ifelse(neg, pstart, pend))
+  else
+    ord <- S4Vectors:::mseq(pstart, pend)
   relist(gr[ord], x)
 }
 
@@ -38,7 +41,7 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
   function(x, to, ..., ignore.strand = FALSE, eltHits = FALSE) {
     ## make sure 'to' is properly sorted by strand
-    to <- .orderElementsByTranscription(to)
+    to <- .orderElementsByTranscription(to, FALSE)
 
     ## find overlaps
     gr <- unlist(to, use.names = FALSE)

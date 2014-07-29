@@ -18,14 +18,37 @@ test_mapCoords_strand <- function()
 {
     gr <- GRanges("chrA", IRanges(c(43522349, 43522349),
                    width=c(1, 1)), strand=c("+", "-"))
-    grl <- GRangesList(
-               GRanges("chrA", IRanges(43528406, 43528644), strand="-"),
-               GRanges("chrA", IRanges(43522244, 43524145), strand="-"))
-    map <- mapCoords(gr, grl, ignore.strand=FALSE)
-    checkTrue(start(map) == 1797L)
-    checkTrue(end(map) == 1797L)
 
-    map <- mapCoords(gr, grl, ignore.strand=TRUE)
-    checkTrue(all(start(map) == c(1797L, 1797L)))
-    checkTrue(all(end(map) == c(1797L, 1797L)))
+    ## Strand '-' out of order
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43522244, 43528406),
+                c(43524145, 43528644)), strand="-"))
+    map_neg_out <- mapCoords(gr, grl, ignore.strand=FALSE)
+    checkIdentical(start(map_neg_out), start(map_neg_out))
+
+    ## Strand '-' in order
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43528406, 43522244),
+                c(43528644, 43524145)), strand="-"))
+    map_neg_in <- mapCoords(gr, grl, ignore.strand=FALSE)
+    checkTrue(start(map_neg_in) == 1797L)
+    checkTrue(end(map_neg_in) == 1797L)
+
+    ## Strand '+' out of order
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43528406, 43522244),
+                c(43528644, 43524145)), strand="+"))
+    map_pos_out <- mapCoords(gr, grl, ignore.strand=FALSE)
+    checkTrue(start(map_pos_out) == 106L)
+
+    ## Strand '+' in order
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43522244, 43528406),
+                c(43524145, 43528644)), strand="+"))
+    map_pos_in <- mapCoords(gr, grl, ignore.strand=FALSE)
+    checkTrue(start(map_pos_out) == 106L)
+
+    ## ignore.strand
+    map_pos_is <- mapCoords(gr, grl, ignore.strand=TRUE)
+    checkTrue(all(start(map_pos_is) == 106L))
 }
