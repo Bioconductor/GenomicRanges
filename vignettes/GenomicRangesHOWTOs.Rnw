@@ -7,7 +7,7 @@
 
 \usepackage[authoryear,round]{natbib}
 
-<<style, eval=TRUE, echo=FALSE, results=tex>>=
+<<style, echo=FALSE, results=tex>>=
 BiocStyle::latex(use.unsrturl=FALSE)
 @
 
@@ -85,7 +85,7 @@ untreated3_chr4()
 
         See \Rcode{?pasillaBamSubset} for more information.
 
-<<pasillaBamSubset_help,eval=FALSE>>=
+<<pasillaBamSubset_help, eval=FALSE>>=
 ?pasillaBamSubset
 @
 
@@ -459,7 +459,7 @@ In this {\it HOWTO}, will look for a gene model for Drosophila melanogaster
 on \Biocpkg{AnnotationHub}.
 Create a `hub' and filter on Drosophila melanogaster:
 
-<<hub_1,eval=FALSE>>=
+<<hub_1>>=
 library(AnnotationHub)
 ### Internet connection required!
 hub <- AnnotationHub()
@@ -468,21 +468,21 @@ filters(hub) <- list(Species="Drosophila melanogaster")
 
 There are 87 files that match Drosophila melanogaster.
 
-<<hub_2,eval=FALSE>>=
+<<hub_2>>=
 length(hub)
 head(names(hub))
 @
 
 Retrieve a dm3 file as a \Rcode{GRanges}. 
 
-<<hub_3,eval=FALSE>>=
+<<hub_3>>=
 gr <- hub$goldenpath.dm3.database.ensGene_0.0.1.RData
 summary(gr)
 @
 
 The metadata fields contain the details of file origin and content.
 
-<<hub_4,eval=FALSE>>=
+<<hub_4>>=
 names(metadata(gr)[[2]])
 metadata(gr)[[2]]$Tags
 @
@@ -490,7 +490,7 @@ metadata(gr)[[2]]$Tags
 Split the \Rclass{GRanges} object by gene name to get a \Rclass{GRangesList}
 object of transcript ranges grouped by gene.
 
-<<hub_5,eval=FALSE>>= 
+<<hub_5>>= 
 txbygn <- split(gr, gr$name)
 @
 
@@ -748,7 +748,7 @@ identifying pathway names and ids.
 
 Create a table of KEGG pathways and ids and search on the term `cancer'.
 
-<<cancer_1,eval=FALSE>>=
+<<cancer_1>>=
 library(KEGG.db)
 pathways <- toTable(KEGGPATHNAME2ID)
 pathways[grepl("cancer", pathways$path_name, fixed=TRUE),] 
@@ -757,7 +757,7 @@ pathways[grepl("cancer", pathways$path_name, fixed=TRUE),]
 Use the "05210" id to query the KEGG web resource (accesses the currently
 maintained data).
 
-<<cancer_2,eval=FALSE>>=
+<<cancer_2>>=
 library(KEGGgraph)
 dest <- tempfile()
 retrieveKGML("05200", "hsa", dest, "internal")
@@ -767,7 +767,7 @@ The suffix of the KEGG id is the Entrez gene id. The
 \Rfunction{translateKEGGID2GeneID} simply removes the prefix leaving 
 just the Entrez gene ids.
 
-<<cancer_3,eval=FALSE>>=
+<<cancer_3>>=
 crids <- as.character(parseKGML2DataFrame(dest)[,1])
 crgenes <- unique(translateKEGGID2GeneID(crids))
 head(crgenes)
@@ -779,7 +779,7 @@ The list of gene ids is used to extract genomic positions of the regions
 of interest. The Known Gene table from UCSC will be the annotation and
 is available as a \Bioconductor{} package.
 
-<<cancer_4,eval=FALSE>>=
+<<cancer_4>>=
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 @
@@ -800,7 +800,7 @@ identifiers which we use to create a map between the two. The
 \Rcode{map} is a \Robject{CharacterList} with gene ids as names and 
 transcript ids as the list elements.
 
-<<cancer_5,eval=FALSE>>=
+<<cancer_5>>=
 txbygene <- transcriptsBy(txdb, "gene")[crgenes] ## subset on colorectal genes
 map <- relist(unlist(txbygene, use.names=FALSE)$tx_id, txbygene)
 map
@@ -808,7 +808,7 @@ map
 
 Extract the UTR and coding regions.
 
-<<cancer_6,eval=FALSE>>=
+<<cancer_6>>=
 cds <- cdsBy(txdb, "tx")
 threeUTR <- threeUTRsByTranscript(txdb)
 fiveUTR <- fiveUTRsByTranscript(txdb)
@@ -819,7 +819,7 @@ in \Rcode{map}. Consequently, the subset results will not be the same
 length. This length discrepancy must be taken into account when re-listing 
 the final results by gene.
 
-<<cancer_7,eval=FALSE>>=
+<<cancer_7>>=
 txid <- unlist(map, use.names=FALSE)
 cds <- cds[names(cds) %in% txid]
 threeUTR <- threeUTR[names(threeUTR) %in% txid]
@@ -828,7 +828,7 @@ fiveUTR <- fiveUTR[names(fiveUTR) %in% txid]
 
 Note the different lengths of the subset regions.
 
-<<cancer_8,eval=FALSE>>=
+<<cancer_8>>=
 length(txid) ## all possible transcripts
 length(cds)
 length(threeUTR)
@@ -838,7 +838,7 @@ length(fiveUTR)
 These objects are \Robject{GRangesList}s with the transcript id as the 
 outer list element. 
 
-<<cancer_9,eval=FALSE>>=
+<<cancer_9>>=
 cds
 @
 
@@ -849,7 +849,7 @@ for a given organism.
 
 Load the \Rcode{BSgenome} package for homo sapiens.
 
-<<cancer_10,eval=FALSE>>=
+<<cancer_10>>=
 library(BSgenome.Hsapiens.UCSC.hg19)
 genome <- BSgenome.Hsapiens.UCSC.hg19
 @
@@ -859,7 +859,7 @@ regions from the \Rcode{BSgenome}. This function retrieves the sequences
 for an any \Robject{GRanges} or \Robject{GRangesList} (i.e., not just 
 transcripts like the name implies).
 
-<<cancer_11,eval=FALSE>>=
+<<cancer_11>>=
 threeUTR_seqs <- extractTranscriptSeqs(genome, threeUTR) 
 fiveUTR_seqs <- extractTranscriptSeqs(genome, fiveUTR) 
 cds_seqs <- extractTranscriptSeqs(genome, cds) 
@@ -867,7 +867,7 @@ cds_seqs <- extractTranscriptSeqs(genome, cds)
 
 The return values are \Robject{DNAStringSet} objects.
 
-<<cancer_12,eval=FALSE>>=
+<<cancer_12>>=
 cds_seqs
 @
 
@@ -882,7 +882,7 @@ specifying the size of each partition. The partitioning objects are different
 for each type of region because not all transcripts had a coding or 3' or 5'
 UTR region defined. 
 
-<<cancer_13,eval=FALSE>>=
+<<cancer_13>>=
 lst3 <- relist(threeUTR_seqs, PartitioningByWidth(sum(map %in% names(threeUTR))))
 lst5 <- relist(fiveUTR_seqs, PartitioningByWidth(sum(map %in% names(fiveUTR))))
 lstc <- relist(cds_seqs, PartitioningByWidth(sum(map %in% names(cds))))
@@ -892,7 +892,7 @@ There are 239 genes in \Rcode{map} each of which have 1 or more transcripts.
 The table of element lengths shows how many genes have each number of
 transcripts. For example, 47 genes have 1 transcript, 48 genes have 2 etc.
 
-<<cancer_14,eval=FALSE>>=
+<<cancer_14>>=
 length(map)
 table(elementLengths(map))
 @
@@ -904,7 +904,7 @@ not available for that gene. The tables below show that there was at least
 are 0). However, both the 3' and 5' UTR results have element lengths of 0 
 which indicates no UTR data were available for that gene.
 
-<<cancer_15,eval=FALSE>>=
+<<cancer_15>>=
 table(elementLengths(lstc))
 table(elementLengths(lst3))
 names(lst3)[elementLengths(lst3) == 0L] ## genes with no 3' UTR data
