@@ -798,7 +798,10 @@ showGenomicRanges <- function(x, margin="",
     }
     if (nrow(out) != 0L)
         rownames(out) <- paste0(margin, rownames(out))
-    print(out, quote=FALSE, right=TRUE)
+    ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
+    ## limit that would typically be reached when 'showHeadLines' global
+    ## option is set to Inf.
+    print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.seqlengths) {
         cat(margin, "---\n", sep="")
         showSeqlengths(x, margin=margin)
