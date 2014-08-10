@@ -40,6 +40,11 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
            elt.hits = FALSE) {
     if (ignore.strand)
         strand(to) <- "*"
+    ## NOTE: overlaps performed separately for elt.hits b/c 
+    ##       .orderElementsByTranscription changes order
+    if (elt.hits)
+      fo <- findOverlaps(x, unlist(to, use.names=FALSE), type="within",
+                           ..., ignore.strand=ignore.strand)
     ## make sure 'to' is properly sorted by strand
     to <- .orderElementsByTranscription(to)
 
@@ -67,24 +72,17 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
     txLevel <- shift(local, 1L + cumsums[shits])
 
     toInd <- togroup(to)[shits]
-    ## NOTE: overlaps repeated below for elt.hits b/c 
-    ##       .orderElementsByTranscription changes order
     if (elt.loc || elt.hits) {
       if (elt.loc && elt.hits) { 
-        fo <- findOverlaps(x, unlist(to, use.names=FALSE), type="within",
-                           ..., ignore.strand=ignore.strand)
         mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
                            eltLoc=shift(local, 1L), eltHits=subjectHits(fo))
       } else {
-        if (elt.loc) {
+        if (elt.loc)
           mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
                              eltLoc=shift(local, 1L))
-        } else {
-          fo <- findOverlaps(x, unlist(to, use.names=FALSE), type="within",
-                             ..., ignore.strand=ignore.strand)
+        else
           mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
                              eltHits=subjectHits(fo))
-        }
       }
     } else {
       mcols <- DataFrame(queryHits=qhits, subjectHits=toInd)
@@ -93,3 +91,4 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
     GRanges(seqnames(gr)[shits], txLevel, strand = strand(gr[shits]), mcols)
   }
 )
+
