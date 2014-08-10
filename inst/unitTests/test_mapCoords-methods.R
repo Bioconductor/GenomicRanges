@@ -1,54 +1,81 @@
 library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
 txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
-gr <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200,
-              names = LETTERS[1:3]))
-cdsbytx <- cdsBy(txdb, "tx")
+cdsbytx <- cdsBy(txdb, "tx")[1:3]
 
-test_mapCoords <- function()
+test_mapCoords_output <- function()
 {
-    x <- mapCoords(gr, cdsbytx)
+    cds <- cdsbytx
+    from <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), 
+                    width = 200, names = LETTERS[1:3]))
+    x <- mapCoords(from, cds)
     checkTrue(length(x) == 3L)
     checkIdentical(names(x), c("B", "B", "C"))
     checkIdentical(names(mcols(x)), c("queryHits", "subjectHits"))
-    checkIdentical(start(x), c(645L, 609L, 1167L))
-    checkTrue(all(width(x) == 200L)) 
+    checkTrue(all(width(x) == 200L))
+
+    x <- mapCoords(from, cds, elt.hits=TRUE)
+    checkTrue("eltHits" %in% names(mcols(x)))
+
+    x <- mapCoords(from, cds, elt.loc=TRUE)
+    checkTrue("eltLoc" %in% names(mcols(x)))
 }
 
-test_mapCoords_strand <- function()
+test_mapCoords_outerlist_vs_listelt <- function()
 {
-    gr <- GRanges("chrA", IRanges(c(43522349, 43522349),
-                   width=c(1, 1)), strand=c("+", "-"))
+    cds <- cdsbytx
+    from <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200)) 
+    strand(from) <- "+" 
+    x <- mapCoords(from, cds, elt.loc=TRUE)
+    checkIdentical(start(x), c(645L, 609L, 1167L))
+    checkIdentical(start(mcols(x)$eltLoc), c(208L, 172L, 333L))
 
-    ## Strand '-' out of order
-    grl <- GRangesList(GRanges("chrA", 
-        IRanges(c(43522244, 43528406),
-                c(43524145, 43528644)), strand="-"))
-    map_neg_out <- mapCoords(gr, grl, ignore.strand=FALSE)
-    checkIdentical(start(map_neg_out), start(map_neg_out))
+    from <- GRanges("chr2L", IRanges(c(8200, 9000), width = 200))
+    strand(from) <- "-" 
+    strand(cds@unlistData) <- "-"
+    x <- mapCoords(from, cds, elt.loc=TRUE)
+    checkIdentical(start(x), c(212L, 800L, 78L))
+    checkIdentical(start(mcols(x)$eltLoc), c(212L, 191L, 78L))
+}
 
-    ## Strand '-' in order
-    grl <- GRangesList(GRanges("chrA", 
-        IRanges(c(43528406, 43522244),
-                c(43528644, 43524145)), strand="-"))
-    map_neg_in <- mapCoords(gr, grl, ignore.strand=FALSE)
-    checkTrue(start(map_neg_in) == 1797L)
-    checkTrue(end(map_neg_in) == 1797L)
-
-    ## Strand '+' out of order
-    grl <- GRangesList(GRanges("chrA", 
-        IRanges(c(43528406, 43522244),
-                c(43528644, 43524145)), strand="+"))
-    map_pos_out <- mapCoords(gr, grl, ignore.strand=FALSE)
-    checkTrue(start(map_pos_out) == 106L)
-
-    ## Strand '+' in order
+test_mapCoords_range_order_pos <- function()
+{
+    from <- GRanges("chrA", IRanges(43522349, width=1), strand="+")
+    ## Strand '+' smallest range first 
     grl <- GRangesList(GRanges("chrA", 
         IRanges(c(43522244, 43528406),
                 c(43524145, 43528644)), strand="+"))
-    map_pos_in <- mapCoords(gr, grl, ignore.strand=FALSE)
-    checkTrue(start(map_pos_out) == 106L)
+    x <- mapCoords(from, grl)
+    checkTrue(start(x) == 106L)
+
+    ## Strand '+' largest range first 
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43528406, 43522244),
+                c(43528644, 43524145)), strand="+"))
+    x <- mapCoords(from, grl)
+    checkTrue(start(x) == 106L)
+}
+
+test_mapCoords_range_order_neg <- function()
+{
+    from <- GRanges("chrA", IRanges(43522349, width=1), strand="-")
+
+    ## Strand '-' smallest range first
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43522244, 43528406),
+                c(43524145, 43528644)), strand="-"))
+    x <- mapCoords(from, grl, elt.loc = TRUE)
+    checkTrue(start(x) == 2036L)
+    checkTrue(start(mcols(x)$eltLoc) == 1797L)
+
+    ## Strand '-' largest range first
+    grl <- GRangesList(GRanges("chrA", 
+        IRanges(c(43528406, 43522244),
+                c(43528644, 43524145)), strand="-"))
+    x <- mapCoords(from, grl, elt.loc = TRUE)
+    checkTrue(start(x) == 2036L)
+    checkTrue(start(mcols(x)$eltLoc) == 1797L)
 
     ## ignore.strand
-    map_pos_is <- mapCoords(gr, grl, ignore.strand=TRUE)
-    checkTrue(all(start(map_pos_is) == 106L))
+    x <- mapCoords(from, grl, ignore.strand=TRUE)
+    checkTrue(all(start(x) == 106L))
 }

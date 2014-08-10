@@ -18,7 +18,7 @@
   shifted
 }
 
-.orderElementsByTranscription <- function(x, reorder_neg=TRUE) {
+.orderElementsByTranscription <- function(x) {
   gr <- unlist(x, use.names = FALSE)
   gr <- gr[order(togroup(x), start(gr))]
   part <- PartitioningByWidth(x)
@@ -26,11 +26,8 @@
   pstart <- start(part)[width(part) != 0L]
   pend <- end(part)[width(part) != 0L]
   neg <- strand(gr)[pstart] == "-"
-  if (reorder_neg)
-    ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
-                            ifelse(neg, pstart, pend))
-  else
-    ord <- S4Vectors:::mseq(pstart, pend)
+  ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
+                          ifelse(neg, pstart, pend))
   relist(gr[ord], x)
 }
 
@@ -39,9 +36,12 @@ setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
 })
 
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
-  function(x, to, ..., ignore.strand = FALSE, eltHits = FALSE) {
+  function(x, to, ..., ignore.strand = FALSE, elt.loc = FALSE,
+           elt.hits = FALSE) {
+    if (ignore.strand)
+        strand(to@unlistData) <- "*"
     ## make sure 'to' is properly sorted by strand
-    to <- .orderElementsByTranscription(to, FALSE)
+    to <- .orderElementsByTranscription(to)
 
     ## find overlaps
     gr <- unlist(to, use.names = FALSE)
@@ -59,16 +59,26 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
                           width = width(local)[neg])
 
     toInd <- togroup(to)[shits]
-    ## location wrt transcript
+    ## location wrt start of list elements combined (e.g., transcript)
     cumsums <- .listCumsumShifted(width(to))
-    local <- shift(local, 1L + cumsums[shits])
+    txLevel <- shift(local, 1L + cumsums[shits])
 
     toInd <- togroup(to)[shits]
-    if (eltHits)
-      GRanges(seqnames(gr)[shits], local, strand = strand(gr[shits]),
-              queryHits = qhits, subjectHits = toInd, eltHits = shits)
-    else
-      GRanges(seqnames(gr)[shits], local, strand = strand(gr[shits]),
-              queryHits = qhits, subjectHits = toInd)
+    if (elt.loc || elt.hits) {
+        if (elt.loc && elt.hits) {
+            mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
+                               eltLoc=local, eltHits=shits)
+        } else {
+        if (elt.loc)
+            mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
+                               eltLoc=shift(local, 1L))
+        else
+            mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
+                               eltHits=shits)
+        }
+    } else {
+        mcols <- DataFrame(queryHits=qhits, subjectHits=toInd)
+    }
+    GRanges(seqnames(gr)[shits], txLevel, strand = strand(gr[shits]), mcols)
   }
 )

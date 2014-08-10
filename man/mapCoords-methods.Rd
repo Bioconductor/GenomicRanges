@@ -19,35 +19,47 @@
 
 \usage{
 \S4method{mapCoords}{GenomicRanges,GRangesList}(x, to, ..., 
-          ignore.strand = FALSE, eltHits = FALSE)
+          ignore.strand = FALSE, elt.loc = FALSE, elt.hits = FALSE)
 }
 
 \arguments{
   \item{x}{The input ranges to map, usually a \code{\linkS4class{GRanges}}.}
  
   \item{to}{The alignment between the sequences in \code{x} and the
-    sequences in the result.}
+    sequences in the result, usually a \code{\linkS4class{GRangesList}}.}
 
-  \item{ignore.strand}{Indicates if strand should be ignored in
+  \item{ignore.strand}{\code{logical}; When TRUE strand is ignored in 
     overlap operations.}
 
-  \item{eltHits}{Indicates if element indices of the GRangesList
-    hit in the overlap operation should be returned as a metadata 
-    column. The `subjectHits` metadata column (always returned)
-    is an index for the outer list elements; `eltHits` is and 
-    index for the inner list elements.}
+  \item{elt.loc}{\code{logical}; When TRUE the location in the
+    individual list elements is returned as metadata column \code{eltLoc}. 
+    For example, if \code{to} is a GRangesList of coding regions by transcript
+    \code{eltLoc} is the position relative to each individual coding region.
+    In contrast, the range in the output \code{GRanges} is the position 
+    relative to the transcript, i.e., coding regions are concatenated.}
+
+  \item{elt.hits}{\code{logical}; When TRUE the indices of the unlisted
+    \code{to} hit by \code{x} in the overlap operation are returned
+    as metadata column \code{eltHits}. Internal use only.}
 
   \item{\dots}{Arguments passed to other methods.}
 }
 
 \value{
   A \code{GRanges} object of mapped coordinates with matching data
-  as metadata columns (`queryHits` and `subjectHits`).
-
+  as metadata columns \code{queryHits} and \code{subjectHits}. 
   Matching data are the result of calling \code{findOverlaps} with
   type `within` on  ranges in \code{x} (the query) and the 
   ranges in \code{to} (the subject). Matching can be many-to-one 
-  or one-to-many; one row is reported for each match. 
+  or one-to-many; one row is reported for each match.
+ 
+  Optional metadata columns are \code{eltLoc} and \code{eltHits},
+  see arguments section for details. The ranges in the output
+  \code{GRanges} are position relative to the outer list element
+  of \code{to}; all individual list elements are concatenated and
+  counting starts at the 5' or 3' end depending on strand. In
+  contrast, the \code{eltLoc} metadata column contains position
+  relative to the individual list elements. 
 }
 
 \details{
@@ -95,4 +107,4 @@ mcols(map3)$tx_id <- names(exonsbytx)[map3$subjectHits]
 map3
 }
 
-\author{M. Lawrence}
+\author{M. Lawrence and V. Obenchain \url{vobencha@fhcrc.org}}
