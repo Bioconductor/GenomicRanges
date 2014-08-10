@@ -23,7 +23,8 @@
 \alias{width,GRangesList-method}
 \alias{width<-,GRangesList-method}
 \alias{strand,GRangesList-method}
-\alias{strand<-,GRangesList-method}
+\alias{strand<-,GRangesList,ANY-method}
+\alias{strand<-,GRangesList,character-method}
 \alias{elementMetadata,GRangesList-method}
 \alias{elementMetadata<-,GRangesList-method}
 \alias{seqinfo,GRangesList-method}
@@ -120,7 +121,10 @@
     \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
       Get or set the strand in the form of an RleList. \code{value} can be
-      an RleList or CharacterList object.
+      an RleList, CharacterList or single character. \code{value} as a
+      single character converts all ranges in \code{x} to the same
+      \code{value}; for selective strand conversion (i.e., mixed \dQuote{+}
+      and \dQuote{-}) use RleList or CharacterList. 
     }
     \item{}{
       \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:

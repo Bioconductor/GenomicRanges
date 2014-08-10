@@ -292,7 +292,16 @@ replaceStrandList <- function(x, value)
     strand(x@unlistData) <- value
     x
 }
-setReplaceMethod("strand", "GRangesList", replaceStrandList)
+setReplaceMethod("strand", c("GRangesList", "ANY"), replaceStrandList)
+setReplaceMethod("strand", c("GRangesList", "character"), 
+    function(x, ..., value)
+    {
+        if (length(value) > 1L)
+            stop("length(value) must be 1")
+        strand(x@unlistData) <- value
+        x
+    }
+)
 
 ### NOT exported but used in GenomicAlignments package.
 getElementMetadataList <- 

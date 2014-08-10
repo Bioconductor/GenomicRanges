@@ -31,7 +31,7 @@ test_mapCoords_outerlist_vs_listelt <- function()
 
     from <- GRanges("chr2L", IRanges(c(8200, 9000), width = 200))
     strand(from) <- "-" 
-    strand(cds@unlistData) <- "-"
+    strand(cds) <- "-"
     x <- mapCoords(from, cds, elt.loc=TRUE)
     checkIdentical(start(x), c(212L, 800L, 78L))
     checkIdentical(start(mcols(x)$eltLoc), c(212L, 191L, 78L))

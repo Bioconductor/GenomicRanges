@@ -39,7 +39,7 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
   function(x, to, ..., ignore.strand = FALSE, elt.loc = FALSE,
            elt.hits = FALSE) {
     if (ignore.strand)
-        strand(to@unlistData) <- "*"
+        strand(to) <- "*"
     ## make sure 'to' is properly sorted by strand
     to <- .orderElementsByTranscription(to)
 
@@ -53,11 +53,14 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
     bounds <- ranges(gr)[shits]
 
     ## location wrt start of individual list elements
-    neg <- as.vector(strand(gr)[shits] == "-")
-    local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
-    local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
-                          width = width(local)[neg])
-
+    if (ignore.strand) {
+        local <- shift(local, - start(bounds))
+    } else {
+      neg <- as.vector(strand(gr)[shits] == "-")
+      local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
+      local[neg] <- IRanges(end(bounds)[neg] - end(local)[neg],
+                            width = width(local)[neg])
+    }
     toInd <- togroup(to)[shits]
     ## location wrt start of list elements combined (e.g., transcript)
     cumsums <- .listCumsumShifted(width(to))
@@ -65,17 +68,17 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
 
     toInd <- togroup(to)[shits]
     if (elt.loc || elt.hits) {
-        if (elt.loc && elt.hits) {
-            mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
-                               eltLoc=local, eltHits=shits)
-        } else {
-        if (elt.loc)
-            mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
-                               eltLoc=shift(local, 1L))
-        else
-            mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
-                               eltHits=shits)
-        }
+      if (elt.loc && elt.hits) {
+          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
+                             eltLoc=local, eltHits=shits)
+      } else {
+      if (elt.loc)
+          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
+                             eltLoc=shift(local, 1L))
+      else
+          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
+                             eltHits=shits)
+      }
     } else {
         mcols <- DataFrame(queryHits=qhits, subjectHits=toInd)
     }
