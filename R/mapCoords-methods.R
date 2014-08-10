@@ -54,7 +54,7 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
 
     ## location wrt start of individual list elements
     if (ignore.strand) {
-        local <- shift(local, - start(bounds))
+      local <- shift(local, - start(bounds))
     } else {
       neg <- as.vector(strand(gr)[shits] == "-")
       local[!neg] <- shift(local[!neg], - start(bounds)[!neg])
@@ -67,21 +67,29 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
     txLevel <- shift(local, 1L + cumsums[shits])
 
     toInd <- togroup(to)[shits]
+    ## NOTE: overlaps repeated below for elt.hits b/c 
+    ##       .orderElementsByTranscription changes order
     if (elt.loc || elt.hits) {
-      if (elt.loc && elt.hits) {
-          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
-                             eltLoc=local, eltHits=shits)
+      if (elt.loc && elt.hits) { 
+        fo <- findOverlaps(x, unlist(to, use.names=FALSE), type="within",
+                           ..., ignore.strand=ignore.strand)
+        mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
+                           eltLoc=shift(local, 1L), eltHits=subjectHits(fo))
       } else {
-      if (elt.loc)
-          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
+        if (elt.loc) {
+          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
                              eltLoc=shift(local, 1L))
-      else
-          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd,
-                             eltHits=shits)
+        } else {
+          fo <- findOverlaps(x, unlist(to, use.names=FALSE), type="within",
+                             ..., ignore.strand=ignore.strand)
+          mcols <- DataFrame(queryHits=qhits, subjectHits=toInd, 
+                             eltHits=subjectHits(fo))
+        }
       }
     } else {
-        mcols <- DataFrame(queryHits=qhits, subjectHits=toInd)
+      mcols <- DataFrame(queryHits=qhits, subjectHits=toInd)
     }
+
     GRanges(seqnames(gr)[shits], txLevel, strand = strand(gr[shits]), mcols)
   }
 )
