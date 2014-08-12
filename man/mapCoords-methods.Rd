@@ -1,5 +1,6 @@
 \name{mapCoords-methods}
 
+\alias{mapCoords}
 \alias{mapCoords-methods}
 \alias{mapCoords,GenomicRanges,GRangesList-method}
 
@@ -66,11 +67,20 @@
   Each element in \code{to} is taken to represent an alignment
   of a sequence on a genome. The typical case is a set of transcript
   models, as might be obtained via \code{GenomicFeatures::exonsBy}.
-  The method translates the input ranges to be relative to the transcript
-  start. This is useful, for example, when predicting coding consequences
-  of changes to the genomic sequence. Translated coordinates are only
-  reported for ranges in \code{x} that fall completely `within` ranges 
-  in \code{to}.
+  Each outer list element of the GRangesList represents a transcript
+  while each each individual element is an exon in the transcript.
+
+  \code{mapCoords} translates the ranges in \code{x} relative to 
+  the transcript start. The widths of the individual elements (i.e., 
+  exons) are concatenated and counting starts at the 5' or 3' end
+  depending on strand. Translated coordinates are only reported for 
+  ranges in \code{x} that fall completely `within` ranges in \code{to}.
+
+  The transcript-centric coordinates are are useful, for example, when 
+  predicting coding consequences of changes to the genomic sequence. 
+  Additionally, the position of \code{x} relative to the individual 
+  element (i.e., exon) is returned as a metadata column when 
+  \code{elt.loc = TRUE}.
 }
 
 \seealso{
@@ -83,28 +93,26 @@ txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
 gr <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200,
               names = LETTERS[1:3]))
 
-## Convert ranges in 'gr' to cds-centric coordinates.
+## Coding region coordinates relative to transcript:
 cdsbytx <- cdsBy(txdb, "tx")
 map1 <- mapCoords(gr, cdsbytx)
 map1
 
-## Mapped coordinates are returned for ranges that fall completely 
-## within ranges in 'to'. Range 'A' partially overlaps coding regions 
-## from 3 different transcripts but is not 'within' any of them.
+## Range A is not translated because it does not fall completely 
+## 'within' any ranges.
 findOverlaps(gr["A"], cdsbytx, type = "any")
 findOverlaps(gr["A"], cdsbytx, type = "within")
 
-## Convert to exon-centric coordinates.
+## Exon region coordinates relative to trancript:
 exonsbytx <- exonsBy(txdb, "tx")
 map2 <- mapCoords(gr, exonsbytx)
 
-## Use the mapping data to 
-map3 <- as(map2, "GenomicRanges")
+## Add exon coordinates relative to the individual exons:
+map3 <- mapCoords(gr, exonsbytx, elt.hits=TRUE, elt.loc=TRUE) 
 map3
 
-## Add the transcript names from 'exonsbytx'. 
-mcols(map3)$tx_id <- names(exonsbytx)[map3$subjectHits]
-map3
+## Extract the individual exons hit:
+unlist(exonsbytx, use.names=FALSE)[mcols(map3)$eltHits]
 }
 
-\author{M. Lawrence and V. Obenchain \url{vobencha@fhcrc.org}}
+\author{M. Lawrence and V. Obenchain \url{mailto:vobencha@fhcrc.org}}
