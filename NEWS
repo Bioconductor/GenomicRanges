@@ -6,6 +6,9 @@ BUG FIXES
     o assays(se, withDimnames=TRUE) <- value no longer tries to access
       a slot 'withDimnames'.
 
+    o cbind and rbind,SummarizedExperiment-methods respect derived
+      classes
+
 CHANGES IN VERSION 1.16.0
 -------------------------
 

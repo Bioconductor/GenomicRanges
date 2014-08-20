@@ -602,8 +602,8 @@ setMethod("rbind", "SummarizedExperiment",
     assays <- .bind.arrays(args, rbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    SummarizedExperiment(assays=assays, rowData=rowData, 
-                         colData=colData, exptData=exptData) 
+    initialize(args[[1]], assays=assays, rowData=rowData, 
+               colData=colData, exptData=exptData) 
 }
 
 ## Appropriate for objects with same ranges and different samples.
@@ -624,8 +624,8 @@ setMethod("cbind", "SummarizedExperiment",
     assays <- .bind.arrays(args, cbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    SummarizedExperiment(assays=assays, rowData=rowData, 
-                         colData=colData, exptData=exptData) 
+    initialize(args[[1]], assays=assays, rowData=rowData, 
+               colData=colData, exptData=exptData) 
 }
 
 .compare <- function(x, GenomicRanges=FALSE) 
@@ -679,7 +679,7 @@ setMethod("cbind", "SummarizedExperiment",
     lst <- lapply(args, accessor)
     var <- lapply(lst,  names)
     if (is.null(uvar <- unique(unlist(var))))
-        return(SimpleList())
+        return(.ShallowSimpleListAssays(SimpleList()))
     if (!.compare(var))
         stop("elements in ", sQuote(accessorName), 
              " must have the same names")
@@ -699,7 +699,7 @@ setMethod("cbind", "SummarizedExperiment",
         }
     })
     names(l1) <- uvar
-    SimpleList(l1)
+    .ShallowSimpleListAssays(data=SimpleList(l1))
 }
 
 .assay.dimension <- function(lst, bind)
