@@ -679,7 +679,7 @@ setMethod("cbind", "SummarizedExperiment",
     lst <- lapply(args, accessor)
     var <- lapply(lst,  names)
     if (is.null(uvar <- unique(unlist(var))))
-        return(.ShallowSimpleListAssays(SimpleList()))
+        return(.ShallowSimpleListAssays(data=SimpleList()))
     if (!.compare(var))
         stop("elements in ", sQuote(accessorName), 
              " must have the same names")
