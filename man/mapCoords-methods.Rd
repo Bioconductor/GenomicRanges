@@ -115,4 +115,4 @@ map3
 unlist(exonsbytx, use.names=FALSE)[mcols(map3)$eltHits]
 }
 
-\author{M. Lawrence and V. Obenchain \url{mailto:vobencha@fhcrc.org}}
+\author{M. Lawrence and V. Obenchain \url{vobencha@fhcrc.org}}

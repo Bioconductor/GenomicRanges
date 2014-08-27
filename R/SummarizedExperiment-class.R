@@ -597,7 +597,6 @@ setMethod("rbind", "SummarizedExperiment",
             stop("'...' objects must have the same number of samples")
     rowData <- do.call(c, lapply(args, 
         function(i) slot(i, "rowData")))
-    cdlst <- lapply(args, colData) 
     colData <- .cbind.DataFrame(args, colData, "colData") 
     assays <- .bind.arrays(args, rbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
