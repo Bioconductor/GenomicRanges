@@ -9,6 +9,10 @@
 \alias{narrow}
 \alias{narrow,GenomicRanges-method}
 
+\alias{resize}
+\alias{resize,GenomicRanges-method}
+\alias{resize,GRangesList-method}
+
 \alias{flank}
 \alias{flank,GenomicRanges-method}
 \alias{flank,GRangesList-method}
@@ -16,9 +20,6 @@
 \alias{promoters}
 \alias{promoters,GenomicRanges-method}
 \alias{promoters,GRangesList-method}
-
-\alias{resize}
-\alias{resize,GenomicRanges-method}
 
 \alias{restrict}
 \alias{restrict,GenomicRanges-method}
@@ -57,6 +58,11 @@
 
 \S4method{narrow}{GenomicRanges}(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
+\S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE,
+       ignore.strand=FALSE)
+\S4method{resize}{GRangesList}(x, width, fix="start", use.names=TRUE,
+       ignore.strand=FALSE)
+
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE,
       use.names=TRUE, ignore.strand=FALSE)
 \S4method{flank}{GRangesList}(x, width, start=TRUE, both=FALSE,
@@ -64,9 +70,6 @@
 
 \S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, ...)
 \S4method{promoters}{GRangesList}(x, upstream=2000, downstream=200, ...)
-
-\S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE,
-       ignore.strand=FALSE)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE,
          use.names=TRUE)
@@ -106,6 +109,14 @@
       The returned object is \emph{parallel} (i.e. same length and names)
       to the original object \code{x}.
     }
+    \item{}{\code{resize} returns an object of the same type and length as 
+      \code{x} containing intervals that have been resized to width 
+      \code{width} based on the \code{strand(x)} values.  Elements where 
+      \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at 
+      \code{start(x)} and elements where \code{strand(x) == "-"} are anchored 
+      at the \code{end(x)}. The \code{use.names} argument determines whether 
+      or not to keep the names on the ranges.
+    }
     \item{}{\code{flank} returns an object of the same type and length 
       as \code{x} containing intervals of width \code{width} that flank 
       the intervals in \code{x}. The \code{start} argument takes a 
@@ -137,14 +148,6 @@
       when (TSS + \code{downstream} + 1) > 'chromosome end'. When 
       \code{seqlengths} are not \code{NA} the promoter ranges are kept within 
       the bounds of the defined \code{seqlengths}.
-    }
-    \item{}{\code{resize} returns an object of the same type and length as 
-      \code{x} containing intervals that have been resized to width 
-      \code{width} based on the \code{strand(x)} values.  Elements where 
-      \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at 
-      \code{start(x)} and elements where \code{strand(x) == "-"} are anchored 
-      at the \code{end(x)}. The \code{use.names} argument determines whether 
-      or not to keep the names on the ranges.
     }
     \item{}{\code{restrict} returns an object of the same type and length as 
       \code{x} containing restricted ranges for distinct seqnames. The 
@@ -187,8 +190,8 @@ gr
 
 shift(gr, 1)
 narrow(gr[-10], start=2, end=-2)
-flank(gr, 10)
-resize(gr, 10)
+resize(gr, width=10)
+flank(gr, width=10)
 restrict(gr, start=3, end=7)
 
 gr <- GRanges("chr1", IRanges(rep(10, 3), width=6), c("+", "-", "*"))
@@ -205,8 +208,8 @@ gr3 <- GRanges(c("chr1", "chr2"), IRanges(c(1, 4), c(3, 9)),
 grl <- GRangesList(gr1= gr1, gr2=gr2, gr3=gr3)
 grl
 
-flank(grl, width =20)
-
+resize(grl, width=20)
+flank(grl, width=20)
 restrict(grl, start=3)
 }
 

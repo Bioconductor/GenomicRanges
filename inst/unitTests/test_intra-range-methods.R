@@ -25,7 +25,7 @@ make_test_GRangesList <- function() {
             elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
 }
 
-test_GenomicRanges_shift <- function()
+test_shift_GenomicRanges <- function()
 {
     ## empty, reversibility, recycling 'x'
     gr <- make_test_GRanges()
@@ -70,14 +70,14 @@ test_GenomicRanges_shift <- function()
     checkIdentical(start(res), -5L)
 }
 
-test_GRangesList_shift <- function()
+test_shift_GRangesList <- function()
 {
     grl <- make_test_GRangesList()
     shifted <- shift(grl, 10)
     checkIdentical(start(grl) + 10L, start(shifted))
 }
 
-test_GenomicRanges_flank <- function()
+test_flank_GenomicRanges <- function()
 {
     checkIdentical(flank(GRanges(), 10), GRanges())
 
@@ -153,7 +153,7 @@ test_GenomicRanges_flank <- function()
     checkIdentical(target_ranges, ranges(current))
 }
 
-test_GenomicRanges_promoters <- function()
+test_promoters_GenomicRanges <- function()
 {
     checkTrue(length(promoters(GRanges())) == 0)
 
@@ -199,7 +199,7 @@ test_GenomicRanges_promoters <- function()
     checkIdentical(seqinfo(gr), seqinfo(current))
 } 
 
-test_GenomicRanges_resize <- function()
+test_resize_GenomicRanges <- function()
 {
     gr <- make_test_GRanges()
     checkException(resize(gr, 10, fix = "middle"), silent = TRUE)
@@ -215,7 +215,7 @@ test_GenomicRanges_resize <- function()
                            width = 10, names = head(letters, 10)))
 } 
 
-test_GenomicRanges_restrict <- function()
+test_restrict_GenomicRanges <- function()
 {
     gr <-  make_test_GRanges()
     st <- structure(c(4,5), names = c("chr1", "chr2"))
@@ -230,7 +230,7 @@ test_GenomicRanges_restrict <- function()
     checkIdentical(ranges(res), target)
 }
 
-test_GenomicRanges_trim <- function()
+test_trim_GenomicRanges <- function()
 {
     checkIdentical(trim(GRanges()), GRanges())
 

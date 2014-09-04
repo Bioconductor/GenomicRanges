@@ -79,7 +79,7 @@ exportMethods(
     ranges, "ranges<-", trim,
     ngap,
     score, "score<-",
-    shift, narrow, flank, resize, promoters, restrict,
+    shift, narrow, resize, flank, promoters, restrict,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
     punion, pintersect, psetdiff, pgap,

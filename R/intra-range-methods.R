@@ -22,16 +22,18 @@ setMethod("shift", "GenomicRanges",
 setMethod("shift", "GRangesList",
     function(x, shift=0L, use.names=TRUE)
     {
-        if (is(shift, "IntegerList")) {
-            if (length(shift) != length(x) ||
-                any(elementLengths(shift) != elementLengths(x))) {
-                stop("IntegerList 'shift' not of same dimension as 'x'")
-            }
-            shift <- unlist(shift, use.names=FALSE)
-        }
-        ranges(x@unlistData) <-
-          shift(x@unlistData@ranges, shift, use.names=use.names)
-        x
+        ## Unlist 'x'.
+        unlisted_x <- unlist(x, use.names=FALSE)
+        ## Recycle and unlist 'shift'.
+        if (!is(shift, "List"))
+            shift <- as(shift, "List")
+        shift <- S4Vectors:::VH_recycle(shift, x, "shift", "x")
+        unlisted_shift <- unlist(shift, use.names=FALSE)
+        ## Compute unlisted 'ans'.
+        unlisted_ans <- shift(unlisted_x, shift=unlisted_shift,
+                              use.names=use.names)
+        ## Relist and return.
+        relist(unlisted_ans, x)
     }
 )
 
@@ -46,6 +48,51 @@ setMethod("narrow", "GenomicRanges",
         new_ranges <- narrow(ranges(x), start=start, end=end, width=width,
                                         use.names=use.names)
         clone(x, ranges=new_ranges) 
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### resize()
+###
+
+setMethod("resize", "GenomicRanges",
+    function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
+    {
+        if (!missing(fix) && length(x) > 0L && 
+            (length(fix) > length(x) || length(x) %% length(fix) > 0L))
+            stop("'x' is not a multiple of 'fix' length")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        if (ignore.strand) {
+            fix <- Rle(rep.int(fix, length(x)))
+        } else {
+            revFix <- c(start="end", end="start", center="center")
+            if (length(x) == 0L)
+              fix <- character()
+            else fix <- ifelse(strand(x) == "-", revFix[fix], fix)
+        }
+        new_ranges <- resize(ranges(x), width=width, fix=fix,
+                                        use.names=use.names)
+        clone(x, ranges=new_ranges)
+    }
+)
+
+setMethod("resize", "GRangesList",
+    function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
+    {
+        ## Unlist 'x'.
+        unlisted_x <- unlist(x, use.names=FALSE)
+        ## Recycle and unlist 'width'.
+        if (!is(width, "List"))
+            width <- as(width, "List")
+        width <- S4Vectors:::VH_recycle(width, x, "width", "x")
+        unlisted_width <- unlist(width, use.names=FALSE)
+        ## Compute unlisted 'ans'.
+        unlisted_ans <- resize(unlisted_x, unlisted_width, fix=fix, 
+                               use.names=use.names, ignore.strand=ignore.strand)
+        ## Relist and return.
+        relist(unlisted_ans, x)
     }
 )
 
@@ -74,11 +121,21 @@ setMethod("flank", "GRangesList",
     function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
              ignore.strand=FALSE)
     {
-        x@unlistData <- flank(x@unlistData, width = width, start = start,
-                              both = both, use.names = use.names,
-                              ignore.strand = ignore.strand)
-        x
-    })
+        ## Unlist 'x'.
+        unlisted_x <- unlist(x, use.names=FALSE)
+        ## Recycle and unlist 'width'.
+        if (!is(width, "List"))
+            width <- as(width, "List")
+        width <- S4Vectors:::VH_recycle(width, x, "width", "x")
+        unlisted_width <- unlist(width, use.names=FALSE)
+        ## Compute unlisted 'ans'.
+        unlisted_ans <- flank(unlisted_x, unlisted_width,
+                              start=start, both=both,
+                              use.names=use.names, ignore.strand=ignore.strand)
+        ## Relist and return.
+        relist(unlisted_ans, x)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,33 +184,6 @@ setMethod("promoters", "GRangesList",
 ###
 
 ### TODO: Add "reflect" method for GenomicRanges objects.
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### resize()
-###
-
-setMethod("resize", "GenomicRanges",
-    function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
-    {
-        if (!missing(fix) && length(x) > 0L && 
-            (length(fix) > length(x) || length(x) %% length(fix) > 0L))
-            stop("'x' is not a multiple of 'fix' length")
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE or FALSE")
-        if (ignore.strand) {
-            fix <- Rle(rep.int(fix, length(x)))
-        } else {
-            revFix <- c(start="end", end="start", center="center")
-            if (length(x) == 0L)
-              fix <- character()
-            else fix <- ifelse(strand(x) == "-", revFix[fix], fix)
-        }
-        new_ranges <- resize(ranges(x), width=width, fix=fix,
-                                        use.names=use.names)
-        clone(x, ranges=new_ranges)
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
