@@ -77,6 +77,39 @@ test_shift_GRangesList <- function()
     checkIdentical(start(grl) + 10L, start(shifted))
 }
 
+test_resize_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+    checkException(resize(gr, 10, fix = "middle"), silent = TRUE)
+    checkException(resize(gr, 10, fix = rep("end", 3)), silent = TRUE)
+    resized <- resize(gr, 10)
+    checkIdentical(rep(10L, length(gr)), width(resized))
+    checkIdentical(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 1L), start(resized))
+    checkIdentical(ranges(resize(gr, 10, fix = "center")),
+                   IRanges(rep(1:5, each=2), width = 10,
+                           names = head(letters, 10)))
+    checkIdentical(ranges(resize(gr, 10, fix = c("start", "end"))),
+                   IRanges(c(1L, 1L, 3L, 1L, 5L, 1L, 7L, 1L, 1L, 10L),
+                           width = 10, names = head(letters, 10)))
+    ## No-ops.
+    checkIdentical(gr, resize(gr, width=width(gr)))
+    checkIdentical(gr, resize(gr, width=width(gr), fix="end"))
+    checkIdentical(gr, resize(gr, width=width(gr), fix="center"))
+}
+
+test_resize_GRangesList <- function()
+{
+    grl <- make_test_GRangesList()
+    target <- endoapply(grl, resize, width=5)
+    current <- resize(grl, width=5)
+    checkIdentical(target, current)
+
+    ## No-ops.
+    checkIdentical(grl, resize(grl, width=width(grl)))
+    checkIdentical(grl, resize(grl, width=width(grl), fix="end"))
+    checkIdentical(grl, resize(grl, width=width(grl), fix="center"))
+}
+
 test_flank_GenomicRanges <- function()
 {
     checkIdentical(flank(GRanges(), 10), GRanges())
@@ -197,22 +230,6 @@ test_promoters_GenomicRanges <- function()
     checkIdentical(mcols(gr), mcols(current)) 
     checkIdentical(names(gr), names(current))
     checkIdentical(seqinfo(gr), seqinfo(current))
-} 
-
-test_resize_GenomicRanges <- function()
-{
-    gr <- make_test_GRanges()
-    checkException(resize(gr, 10, fix = "middle"), silent = TRUE)
-    checkException(resize(gr, 10, fix = rep("end", 3)), silent = TRUE)
-    resized <- resize(gr, 10)
-    checkIdentical(rep(10L, length(gr)), width(resized))
-    checkIdentical(c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 1L), start(resized))
-    checkIdentical(ranges(resize(gr, 10, fix = "center")),
-                   IRanges(rep(1:5, each=2), width = 10,
-                           names = head(letters, 10)))
-    checkIdentical(ranges(resize(gr, 10, fix = c("start", "end"))),
-                   IRanges(c(1L, 1L, 3L, 1L, 5L, 1L, 7L, 1L, 1L, 10L),
-                           width = 10, names = head(letters, 10)))
 } 
 
 test_restrict_GenomicRanges <- function()
