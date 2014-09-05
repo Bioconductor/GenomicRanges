@@ -17,7 +17,7 @@
 \title{GenomicRangesList objects}
 
 \description{
-  A \code{GenomicRangesList} is a \code{\link[IRanges:List-class]{List}}
+  A \code{GenomicRangesList} is a \code{\link[S4Vectors]{List}}
   of \code{\linkS4class{GenomicRanges}}. It is a virtual class;
   \code{SimpleGenomicRangesList} is the basic implementation.  The
   subclass \code{\linkS4class{GRangesList}} provides special behavior
