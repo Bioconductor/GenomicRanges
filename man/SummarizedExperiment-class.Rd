@@ -572,7 +572,7 @@ exptData(x, ...) <- value
 \seealso{
   \link{GRanges},
   \link[IRanges]{DataFrame},
-  \link[IRanges]{SimpleList},
+  \link[S4Vectors]{SimpleList},
 }
 
 \examples{

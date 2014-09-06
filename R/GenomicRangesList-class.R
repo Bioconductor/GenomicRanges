@@ -21,7 +21,7 @@ GenomicRangesList <- function(...) {
   args <- list(...)
   if (length(args) == 1 && is.list(args[[1]]))
     args <- args[[1]]
-  IRanges:::new_SimpleList_from_list("SimpleGenomicRangesList", args)
+  S4Vectors:::new_SimpleList_from_list("SimpleGenomicRangesList", args)
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
