@@ -83,7 +83,7 @@
       the ranges.}
     \item{\code{strand}}{a 'factor' \link[S4Vectors]{Rle} object containing
       the \link{strand} information.}
-    \item{\code{mcols}}{a \link[IRanges]{DataFrame} object
+    \item{\code{mcols}}{a \link[S4Vectors]{DataFrame} object
       containing the metadata columns. Columns cannot be named
       \code{"seqnames"}, \code{"ranges"}, \code{"strand"},
       \code{"seqlevels"}, \code{"seqlengths"}, \code{"isCircular"},
@@ -451,7 +451,7 @@
   \link[S4Vectors]{Vector-class},
   \link[S4Vectors]{Rle-class},
   \link[IRanges]{Ranges-class},
-  \link[IRanges]{DataFrame-class},
+  \link[S4Vectors]{DataFrame-class},
   \link[GenomicRanges]{intra-range-methods},
   \link[GenomicRanges]{inter-range-methods},
   \link[GenomicRanges]{setops-methods},

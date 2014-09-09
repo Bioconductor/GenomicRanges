@@ -11,7 +11,7 @@
   \code{makeGRangesFromDataFrame} finds the fields in the input that describe
   genomic ranges and returns them as a \link{GRanges} object.
 
-  For convenience, coercing a data.frame or \link[IRanges]{DataFrame}
+  For convenience, coercing a data.frame or \link[S4Vectors]{DataFrame}
   \code{df} into a \link{GRanges} object is supported and does
   \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}
 }
@@ -30,7 +30,7 @@ makeGRangesFromDataFrame(df,
 
 \arguments{
   \item{df}{
-    A data.frame or \link[IRanges]{DataFrame} object.
+    A data.frame or \link[S4Vectors]{DataFrame} object.
   }
   \item{keep.extra.columns}{
     \code{TRUE} or \code{FALSE} (the default).
@@ -123,7 +123,7 @@ makeGRangesFromDataFrame(df,
           \pkg{rtracklayer} package for an R interface to the UCSC
           Table Browser.
 
-    \item \link[IRanges]{DataFrame} objects in the \pkg{IRanges} package.
+    \item \link[S4Vectors]{DataFrame} objects in the \pkg{IRanges} package.
   }
 }
 
