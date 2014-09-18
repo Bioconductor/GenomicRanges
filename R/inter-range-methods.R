@@ -90,7 +90,7 @@
         }
     }
     if (length(extraColumnSlotNames(x)) > 0L)
-        x <- new("GRanges", x)
+        x <- granges(x)
     update(x, seqnames=ans_seqnames,
               ranges=ans_ranges,
               strand=ans_strand,
@@ -113,7 +113,7 @@
     ansSeqnames <- Rle(factor(listNameMatrix[1L, ], levels=seqlevels(x)), k)
     ansStrand <- Rle(strand(listNameMatrix[2L, ]), k)
     if (length(extraColumnSlotNames(x)) > 0L)
-        x <- new("GRanges", x)
+        x <- granges(x)
     update(x, seqnames=ansSeqnames,
            ranges=unlist(ansIRangesList, use.names=FALSE),
            strand=ansStrand,
