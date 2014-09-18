@@ -171,7 +171,7 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
                          "start", "end", "width", "element")
 
 .valid.GenomicRanges.mcols <- function(x)
-{    
+{
     if (any(INVALID.GR.COLNAMES %in% colnames(mcols(x)))) {
         msg <- c("names of metadata columns cannot be one of ",
                  paste0("\"", INVALID.GR.COLNAMES, "\"", collapse=", "))
@@ -327,7 +327,7 @@ setReplaceMethod("names", "GenomicRanges",
 )
 
 setReplaceMethod("seqnames", "GenomicRanges",
-    function(x, value) 
+    function(x, value)
     {
         if (!is(value, "Rle"))
             value <- Rle(value)
@@ -348,7 +348,7 @@ setReplaceMethod("seqnames", "GenomicRanges",
 )
 
 setReplaceMethod("ranges", "GenomicRanges",
-    function(x, value) 
+    function(x, value)
     {
         if (!is(value, "IRanges"))
             value <- as(value, "IRanges")
@@ -380,7 +380,7 @@ normargGenomicRangesStrand <- function(strand, n)
 }
 
 setReplaceMethod("strand", "GenomicRanges",
-    function(x, value) 
+    function(x, value)
     {
         value <- normargGenomicRangesStrand(value, length(x))
         x <- update(x, strand=value, check=FALSE)
@@ -528,7 +528,8 @@ setMethod("extractROWS", "GenomicRanges",
                  ranges=ans_ranges,
                  strand=ans_strand,
                  elementMetadata=ans_mcols,
-                 .slotList=ans_ecs)
+                 .slotList=ans_ecs,
+                 check=FALSE)
     }
 )
 
@@ -543,7 +544,7 @@ setMethod("[", "GenomicRanges",
         if (missing(j))
             return(x)
         new_mcols <- mcols(x)[ , j, drop=FALSE]
-        clone(x, elementMetadata=new_mcols)
+        clone(x, elementMetadata=new_mcols, check=FALSE)
     }
 )
 
@@ -593,7 +594,7 @@ setReplaceMethod("[", "GenomicRanges",
         value_ecs <- extraColumnSlotsAsDF(value)
         x_ecs <- extraColumnSlotsAsDF(x)
         new_ecs <- value_ecs[!names(value_ecs) %in% names(x_ecs)]
-        ecs_to_replace <- intersect(names(value_ecs), names(x_ecs))        
+        ecs_to_replace <- intersect(names(value_ecs), names(x_ecs))
         if (missing(i)) {
             seqnames[] <- seqnames(value)
             ranges[] <- ranges(value)
