@@ -773,18 +773,18 @@ setMethod("c", "GenomicRanges",
 }
 
 showGenomicRanges <- function(x, margin="",
-                              with.classinfo=FALSE, print.seqlengths=FALSE)
+                              print.classinfo=FALSE, print.seqinfo=FALSE)
 {
     lx <- length(x)
     nc <- ncol(mcols(x))
-    cat(class(x), " with ",
+    cat(class(x), " object with ",
         lx, " ", ifelse(lx == 1L, "range", "ranges"),
         " and ",
         nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
-    if (with.classinfo) {
+    if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
             ranges="IRanges",
@@ -803,16 +803,16 @@ showGenomicRanges <- function(x, margin="",
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
-    if (print.seqlengths) {
-        cat(margin, "---\n", sep="")
-        showSeqlengths(x, margin=margin)
+    if (print.seqinfo) {
+        cat(margin, "-------\n", sep="")
+        cat(margin, "seqinfo: ", summary(seqinfo(x)), "\n", sep="")
     }
 }
 
 setMethod("show", "GenomicRanges",
     function(object)
         showGenomicRanges(object, margin="  ",
-                          with.classinfo=TRUE, print.seqlengths=TRUE)
+                          print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
 setMethod("showAsCell", "GenomicRanges",

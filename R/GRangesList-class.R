@@ -502,12 +502,12 @@ setMethod("splitAsListReturnedClass", "GRanges",
 ###
 
 ### NOT exported but used in GenomicAlignments package.
-showList <- function(object, showFunction, with.classinfo, ...)
+showList <- function(object, showFunction, print.classinfo)
 {
     k <- length(object)
     cumsumN <- cumsum(elementLengths(object))
     N <- tail(cumsumN, 1)
-    cat(class(object), " of length ", k, ":\n", sep = "")
+    cat(class(object), " object of length ", k, ":\n", sep = "")
     if (k == 0L) {
         cat("<0 elements>\n\n")
     } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
@@ -523,9 +523,9 @@ showList <- function(object, showFunction, with.classinfo, ...)
         for (i in seq_len(k)) {
             cat(nms[i], "\n")
             showFunction(object[[i]], margin="  ",
-                         with.classinfo=with.classinfo)
-            if (with.classinfo)
-                with.classinfo <- FALSE
+                         print.classinfo=print.classinfo)
+            if (print.classinfo)
+                print.classinfo <- FALSE
             cat("\n")
         }
     } else {
@@ -549,9 +549,9 @@ showList <- function(object, showFunction, with.classinfo, ...)
         for (i in seq_len(showK)) {
             cat(nms[i], "\n")
             showFunction(object[[i]], margin="  ",
-                              with.classinfo=with.classinfo)
-            if (with.classinfo)
-                with.classinfo <- FALSE
+                         print.classinfo=print.classinfo)
+            if (print.classinfo)
+                print.classinfo <- FALSE
             cat("\n")
         }
         if (diffK > 0) {
@@ -560,8 +560,8 @@ showList <- function(object, showFunction, with.classinfo, ...)
                 sep="")
         }
     }
-    cat("---\n")
-    showSeqlengths(object)
+    cat("-------\n")
+    cat("seqinfo: ", summary(seqinfo(object)), "\n", sep="")
 }
 
 setMethod("show", "GRangesList",

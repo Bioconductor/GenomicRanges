@@ -47,12 +47,6 @@ compactPrintNamedAtomicVector <- function(x, margin="")
                                            labelSep=""), sep="")
 }
 
-showSeqlengths <- function(object, margin="")
-{
-    cat(margin, "seqlengths:\n", sep="")
-    compactPrintNamedAtomicVector(seqlengths(object), margin=margin)
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Used by "elementMetadata<-" methods.
