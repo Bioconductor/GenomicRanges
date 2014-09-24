@@ -25,28 +25,6 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
-compactPrintNamedAtomicVector <- function(x, margin="")
-{
-    x_len <- length(x)
-    halfWidth <- (getOption("width") - nchar(margin)) %/% 2L
-    first <- max(1L, halfWidth)
-    showMatrix <-
-      rbind(as.character(head(names(x), first)),
-            as.character(head(x, first)))
-    if (x_len > first) {
-        last <- min(x_len - first, halfWidth)
-        showMatrix <-
-          cbind(showMatrix,
-                rbind(as.character(tail(names(x), last)),
-                      as.character(tail(x, last))))
-    }
-    showMatrix <- format(showMatrix, justify="right")
-    cat(BiocGenerics:::labeledLine(margin, showMatrix[1L, ], count=FALSE,
-                                           labelSep=""), sep="")
-    cat(BiocGenerics:::labeledLine(margin, showMatrix[2L, ], count=FALSE,
-                                           labelSep=""), sep="")
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Used by "elementMetadata<-" methods.
