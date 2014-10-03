@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart21, AnnotationHub, DESeq, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -406,15 +406,15 @@ object wrapped into an annotation data package. Go to
 \url{http://bioconductor.org/packages/release/BiocViews.html#\_\_\_TxDb}
 to browse the list of available TxDb packages.
 
-<<TxDb.Athaliana.BioMart.plantsmart21_2>>=
-library(TxDb.Athaliana.BioMart.plantsmart21)
-txdb <- TxDb.Athaliana.BioMart.plantsmart21
+<<TxDb.Athaliana.BioMart.plantsmart22_1>>=
+library(TxDb.Athaliana.BioMart.plantsmart22)
+txdb <- TxDb.Athaliana.BioMart.plantsmart22
 txdb
 @
 
 Extract the exon coordinates from this gene model:
 
-<<TxDb.Athaliana.BioMart.plantsmart21_2>>=
+<<TxDb.Athaliana.BioMart.plantsmart22_2>>=
 exons(txdb)
 @
 
