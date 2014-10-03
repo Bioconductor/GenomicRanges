@@ -71,6 +71,7 @@ provide everything except for the actual data storage and retrieval,
 which \Rclass{GRanges} implements directly using slots. For example,
 the ranges are retrieved like this:
 <<granges-ranges>>=
+library(GenomicRanges)
 selectMethod(ranges, "GRanges")
 @ 
 
