@@ -45,11 +45,11 @@ The more we encounter a particular problem, the better we understand
 it. We eventually develop a systematic approach for solving the most
 frequently encountered problems, and every systematic approach
 deserves a systematic implementation. For example, we might want to
-formally store genetic variants, with information on alleles and
-read depths. The metadata columns, which were so useful during
-prototyping, are too informal for use in our systematic
-implementation: for the sake of data integrity, we need to ensure that
-the columns are always present and that they meet certain constraints.
+formally store genetic variants, with information on alleles and read
+depths. The metadata columns, which were so useful during prototyping,
+are inappropriate for extending the formal semantics of our data
+structure: for the sake of data integrity, we need to ensure that the
+columns are always present and that they meet certain constraints.
 
 We might also find that our prototype does not scale well to the
 increased data volume that often occurs when we advance past the
@@ -93,10 +93,10 @@ examples.
 
 \section{Formalizing \texttt{mcols}: Extra column slots}
 
-An orthogonal problem to data storage is the formalization of metadata
-columns, and we solve this problem using the ``extra column slot''
-mechanism. Whenever \Rclass{GenomicRanges} needs to operate on its
-metadata columns, it also delegates to the internal
+An orthogonal problem to data storage is adding semantics by the
+formalization of metadata columns, and we solve it using the ``extra
+column slot'' mechanism. Whenever \Rclass{GenomicRanges} needs to
+operate on its metadata columns, it also delegates to the internal
 \Rfunction{extraColumnSlotNames} generic, methods of which should
 return a character vector, naming the slots in the
 \Rclass{GenomicRanges} subclass that correspond to columns (i.e., they
