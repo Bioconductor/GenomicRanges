@@ -635,7 +635,7 @@ setMethod("cbind", "SummarizedExperiment",
             x <- lapply(x, unlist) 
             x1 <- x[[1]]
         }
-        for (i in seq_along(x[-1])) {
+        for (i in seq_along(x)[-1]) {
             if (length(x1) != length(x[[i]]))
                 return(FALSE)
             ok <- x1 == x[[i]]
