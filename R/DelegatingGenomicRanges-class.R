@@ -22,3 +22,8 @@ setMethod("ranges", "DelegatingGenomicRanges",
 
 setMethod("strand", "DelegatingGenomicRanges", function(x) strand(x@delegate))
 setMethod("seqinfo", "DelegatingGenomicRanges", function(x) seqinfo(x@delegate))
+
+setMethod("update", "DelegatingGenomicRanges", function (object, ...) {
+  object@delegate <- update(object@delegate, ...)
+  object
+})
