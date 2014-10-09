@@ -54,6 +54,8 @@
 \alias{length,GenomicRanges-method}
 \alias{[,GenomicRanges,ANY-method}
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
+\alias{[,List,GenomicRanges-method}
+\alias{[,list,GenomicRanges-method}
 \alias{c,GenomicRanges-method}
 \alias{tile,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
@@ -421,6 +423,24 @@
       of \code{x$name} and \code{x$name <- value}, respectively.
     }
   }
+
+  Note that a GRanges object can be used to subset a list-like object that
+  has names on it. In that case, the names on the list-like object are
+  interpreted as sequence names.
+  In the code snippets below, \code{x} is a list or \link{List} object with
+  names on it, and the subscript \code{i} is a GRanges object with all its
+  seqnames being valid \code{x} names.
+
+  \describe{
+    \item{}{
+      \code{x[i]}:
+      Return an object of the same class as \code{x} and \emph{parallel}
+      to \code{i}. More precisely, it's conceptually doing:
+      \preformatted{
+      as(lapply(i, function(ii) x[[seqnames(ii)]][ranges(ii)]), class(x))
+      }
+    }
+  }
 }
 
 \section{Other methods}{
@@ -500,6 +520,10 @@ some.gr <- c(gr, gr2)
  
 ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
 all.gr <- c(gr, gr2, gr3, ignore.mcols=TRUE)
+
+## Subsetting a named list-like object *by* a GRanges subscript
+x <- RleList(chr1=101:120, chr2=2:-8, chr3=31:40)
+x[gr]
 
 ## The number of lines displayed in the 'show' method
 ## are controlled with two global options.
