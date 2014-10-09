@@ -10,7 +10,7 @@
 \alias{strand,logical-method}
 \alias{strand,Rle-method}
 \alias{strand,DataTable-method}
-\alias{strand<-,DataTable-method}
+\alias{strand<-,DataTable,ANY-method}
 
 \title{Strand utilities}
 
@@ -26,7 +26,7 @@
 \S4method{strand}{logical}(x)
 \S4method{strand}{Rle}(x)
 \S4method{strand}{DataTable}(x)
-\S4method{strand}{DataTable}(x) <- value
+\S4method{strand}{DataTable,ANY}(x) <- value
 }
 
 \arguments{

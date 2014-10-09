@@ -53,7 +53,7 @@
 }
 
 \arguments{
-  \item{e1, e2, x, table, y}{
+  \item{x, table, y}{
     \link{GenomicRanges} objects.
   }
   \item{incomparables}{

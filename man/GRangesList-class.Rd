@@ -41,7 +41,7 @@
 % Subsetting:
 \alias{[,GRangesList,ANY-method}
 \alias{[<-,GRangesList,ANY,ANY,ANY-method}
-\alias{[[<-,GRangesList,ANY,ANY,ANY-method}
+\alias{[[<-,GRangesList,ANY,ANY-method}
 
 % extractList() and family:
 \alias{relistToClass,GRanges-method}

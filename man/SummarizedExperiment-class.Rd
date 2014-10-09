@@ -123,7 +123,7 @@
 \alias{start,SummarizedExperiment-method}
 \alias{start<-,SummarizedExperiment-method}
 \alias{strand,SummarizedExperiment-method}
-\alias{strand<-,SummarizedExperiment-method}
+\alias{strand<-,SummarizedExperiment,ANY-method}
 \alias{subset,SummarizedExperiment-method}
 \alias{subsetByOverlaps,SummarizedExperiment,SummarizedExperiment-method}
 \alias{subsetByOverlaps,SummarizedExperiment,Vector-method}

@@ -29,7 +29,7 @@
 \alias{width,GIntervalTree-method}
 
 % Vector methods:
-\alias{[,GIntervalTree-method}
+\alias{[,GIntervalTree,ANY-method}
 \alias{show,GIntervalTree-method}
 
 \title{GIntervalTree objects}

@@ -21,7 +21,7 @@
 \alias{ranges,GRanges-method}
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
-\alias{strand<-,GenomicRanges-method}
+\alias{strand<-,GenomicRanges,ANY-method}
 \alias{elementMetadata<-,GenomicRanges-method}
 \alias{names,GenomicRanges-method}
 \alias{names<-,GenomicRanges-method}
@@ -52,9 +52,10 @@
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
-\alias{[,GenomicRanges-method}
+\alias{[,GenomicRanges,ANY-method}
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{c,GenomicRanges-method}
+\alias{tile,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
 
 % $ and $<- methods:
