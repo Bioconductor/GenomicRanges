@@ -41,6 +41,7 @@
 \alias{coerce,Seqinfo,GRanges-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
 \alias{coerce,Seqinfo,RangesList-method}
+\alias{granges,GenomicRanges-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
@@ -261,6 +262,13 @@
     \item{}{
       \code{score(x), score(x) <- value}: Get or set the \dQuote{score}
       column from the element metadata.
+    }
+    \item{}{
+      \code{granges(x, use.mcols=FALSE)}: Gets a \code{GRanges} with
+      only the range information from \code{x}, unless \code{use.mcols}
+      is \code{TRUE}, in which case the metadata columns are also
+      returned. Those columns will include any "extra column slots" if
+      \code{x} is a specialized \code{GenomicRanges} derivative.
     }
   }
 }
