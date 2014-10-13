@@ -3,37 +3,29 @@ CHANGES IN VERSION 1.18.0
 
 NEW FEATURES
 
-    o Add 'use.mcols' arg to "ranges" method for GrangesList objects. 
+    o Add 'use.mcols' arg to "ranges" method for GRangesList objects. 
 
     o "assays<-" methods may be invoked with 'withDimnames' arg.
 
-    o Add mapCoords generic and methods (replacing 'map').
+    o Add mapCoords() generic and methods (replacing map()).
 
-    o Add 'ignore.strand' and 'eltHits' args to
-      mapCoords,GenomicRanges,GRangesList-method. 
+    o Add granges,GenomicRanges method. 
 
-    o Add granges,GenomicRanges-method. 
-
-    o Add strand<-,GRangesList,character-method for global replacement
+    o Add strand<-,GRangesList,character method for global replacement
       (i.e., all strands become 'value'). 
 
-    o [cr]bind,SummarizedExperiment-methods respect derived classes.
-
     o Add resize,GRangesList-method.
+
+    o Add DelegatingGenomicRanges class and vignette on how to extend
+      GenomicRanges.
+
+    o Document subsetting a named list-like object by a GRanges subscript.
+
+SIGNIFICANT USER-LEVEL CHANGES
 
     o Modify "show" methods for GRanges and GRangesList objects so
       they print a 1-line summary of the seqinfo component.
       
-    o Add DelegatingGenomicRanges class. 
-      
-    o Add vignette on how to extend GenomicRanges.
-
-    o Add update,DelegatingGenomicRanges-method.
-
-SIGNIFICANT USER-LEVEL CHANGES
-
-    o Update GenomicRanges sorting for changes in IRanges.
-
     o Remove as.data.frame,GRangesList-method; use as.data.frame,List.
 
     o "trim" method for GenomicRanges only trims out-of-bound
@@ -53,14 +45,6 @@ SIGNIFICANT USER-LEVEL CHANGES
 
     o Improve warning when GenomicRanges object contains out-of-bound ranges. 
 
-    o Remove "==" and "<=" methods for GenomicRanges objects (not needed). 
-
-    o Accommodate Rle move from IRanges to S4Vectors. 
-
-    o Deprecate "map" methods and replace with "mapCoords"
-
-    o Defunct "map" and "pmap" (skip deprecation).
-
     o Work on vignette HOWTOs:
       - split 'How to read BAM files into R' into 3 HOWTOs
       - split 'How to prepare a table of read counts for RNA-Seq
@@ -70,20 +54,15 @@ SIGNIFICANT USER-LEVEL CHANGES
 
     o Follow renaming of TranscriptDb class to TxDb. 
 
-    o Work on mapCoords:
-      - rename 'eltHits' arg to 'elt.hits'
-      - output local position relative to individual list elements
-
-    o Follow List move from IRanges to S4Vectors.
-
-    o Pass check=FALSE to clone() when certain data integrity has
-      been preserved.
-
     o Replace references to plantsmart21 with plantsmart22.
 
-    o Document subsetting a named list-like object by a GRanges subscript.
-    
+DEPRECATED AND DEFUNCT
+
+    o Defunct map() (skip deprecation). Replace with mapCoords().
+
 BUG FIXES
+
+    o [cr]bind,SummarizedExperiment methods respect derived classes.
 
     o assays(se, withDimnames=TRUE) <- value no longer tries to access
       a slot 'withDimnames'.
@@ -104,6 +83,8 @@ BUG FIXES
 
     o [rc]bind,SummarizeExperiment-methods now compare all elements.
     
+    o Remove "==" and "<=" methods for GenomicRanges objects (not needed). 
+
 
 CHANGES IN VERSION 1.16.0
 -------------------------
