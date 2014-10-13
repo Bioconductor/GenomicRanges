@@ -1,6 +1,88 @@
 CHANGES IN VERSION 1.18.0
 -------------------------
 
+NEW FEATURES
+
+    o Add 'use.mcols' arg to "ranges" method for GrangesList objects. 
+
+    o "assays<-" methods may be invoked with 'withDimnames' arg.
+
+    o Add mapCoords generic and methods (replacing 'map').
+
+    o Add 'ignore.strand' and 'eltHits' args to
+      mapCoords,GenomicRanges,GRangesList-method. 
+
+    o Add granges,GenomicRanges-method. 
+
+    o Add strand<-,GRangesList,character-method for global replacement
+      (i.e., all strands become 'value'). 
+
+    o [cr]bind,SummarizedExperiment-methods respect derived classes.
+
+    o Add resize,GRangesList-method.
+
+    o Modify "show" methods for GRanges and GRangesList objects so
+      they print a 1-line summary of the seqinfo component.
+      
+    o Add DelegatingGenomicRanges class. 
+      
+    o Add vignette on how to extend GenomicRanges.
+
+    o Add update,DelegatingGenomicRanges-method.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Update GenomicRanges sorting for changes in IRanges.
+
+    o Remove as.data.frame,GRangesList-method; use as.data.frame,List.
+
+    o "trim" method for GenomicRanges only trims out-of-bound
+      ranges on non-circular sequences whose length is not NA.
+      This behavior is consistent with the GenomicRanges validity method.
+
+    o Changes to flank(), resize() and start/end/width setters:
+      - no longer trim the result ranges when called on a GRanges
+      - warning is issued by GenomicRanges validity method when
+        out-of-bound ranges are on non-circular sequences whose
+        length is not NA
+      Note this behavior is now consistent with that of shift().
+
+    o Speed up validation of GenomicRanges objects by 1.2x. 
+
+    o Speed up trim() on GenomicRanges objects by 1.2x. 
+
+    o Improve warning when GenomicRanges object contains out-of-bound ranges. 
+
+    o Remove "==" and "<=" methods for GenomicRanges objects (not needed). 
+
+    o Accommodate Rle move from IRanges to S4Vectors. 
+
+    o Deprecate "map" methods and replace with "mapCoords"
+
+    o Defunct "map" and "pmap" (skip deprecation).
+
+    o Work on vignette HOWTOs:
+      - split 'How to read BAM files into R' into 3 HOWTOs
+      - split 'How to prepare a table of read counts for RNA-Seq
+        differential gene expression' into 3 HOWTOs
+      - split 'How to extract DNA sequences of gene regions' into 2 HOWTOs 
+      - make individual HOWTOs subsections of single HOWTO section
+
+    o Follow renaming of TranscriptDb class to TxDb. 
+
+    o Work on mapCoords:
+      - rename 'eltHits' arg to 'elt.hits'
+      - output local position relative to individual list elements
+
+    o Follow List move from IRanges to S4Vectors.
+
+    o Pass check=FALSE to clone() when certain data integrity has
+      been preserved.
+
+    o Replace references to plantsmart21 with plantsmart22.
+
+    o Document subsetting a named list-like object by a GRanges subscript.
+    
 BUG FIXES
 
     o assays(se, withDimnames=TRUE) <- value no longer tries to access
@@ -8,6 +90,20 @@ BUG FIXES
 
     o cbind and rbind,SummarizedExperiment-methods respect derived
       classes
+
+    o "ranges" method for GRangesList objects should not propagate
+      inner metadata columns by default.
+
+    o GRanges() constructor now preserves the seqlevels in the order
+      supplied by the user.
+
+    o Ensure tileGenome() breakpoints do not extend past end of genome. 
+
+    o Fix "show" method for GenomicRanges objects when 'showHeadLines'
+      global option is set to Inf.
+
+    o [rc]bind,SummarizeExperiment-methods now compare all elements.
+    
 
 CHANGES IN VERSION 1.16.0
 -------------------------
