@@ -20,27 +20,124 @@
          "of seqlevels, or a named numeric vector of sequence lengths")
 }
 
-.get_field_pos <- function(field, df, what, required=TRUE)
+.normarg_field <- function(field, what)
 {
     if (!is.character(field) || any(is.na(field)))
         stop("'", what, ".field' must be a character vector with no NAs")
-    pos <- match(field, names(df))
-    pos <- pos[which(!is.na(pos))[1L]]
-    if (required && is.na(pos))
-        stop("no field listed in '", what, ".field' is present in 'df'")
-    pos
+    tolower(field)
+}
+
+.collect_prefixes <- function(df_colnames, field)
+{
+    df_colnames_nc <- nchar(df_colnames)
+    prefixes <- lapply(field,
+        function(suf) {
+            pref_nc <- df_colnames_nc - nchar(suf)
+            idx <- which(substr(df_colnames, pref_nc + 1L, df_colnames_nc) ==
+                         suf)
+            substr(df_colnames[idx], 1L, pref_nc[idx])
+        })
+    unique(unlist(prefixes))
+}
+
+.find_start_end_cols <- function(df_colnames,
+                                 start.field="start",
+                                 end.field=c("end", "stop"))
+{
+    idx1 <- which(df_colnames %in% start.field)
+    idx2 <- which(df_colnames %in% end.field)
+    if (length(idx1) == 1L && length(idx2) == 1L)
+        return(list(c(start=idx1, end=idx2), ""))
+    if (length(idx1) == 0L && length(idx2) == 0L) {
+        prefixes1 <- .collect_prefixes(df_colnames, start.field)
+        prefixes2 <- .collect_prefixes(df_colnames, end.field)
+        if (length(prefixes1) == 1L && length(prefixes2) == 1L
+         && prefixes1 == prefixes2)
+        {
+            prefix <- prefixes1
+            idx1 <- which(df_colnames %in% paste0(prefix, start.field))
+            idx2 <- which(df_colnames %in% paste0(prefix, end.field))
+            if (length(idx1) == 1L && length(idx2) == 1L)
+                return(list(c(start=idx1, end=idx2), prefix))
+        }
+    }
+    stop("cannnot determine start/end fields")
+}
+
+.find_seqnames_col <- function(df_colnames,
+                               seqnames.field=c("seqnames", "seqname",
+                                                "chrom", "chr",
+                                                "chromosome_name"),
+                               prefix="")
+{
+    idx <- which(df_colnames %in% paste0(prefix, seqnames.field))
+    if (length(idx) == 1L)
+        return(idx)
+    if (length(idx) == 0L) {
+        idx <- which(df_colnames %in% seqnames.field)
+        if (length(idx) == 1L)
+            return(idx)
+    }
+    stop("cannnot determine seqnames field")
+}
+
+.find_strand_col <- function(df_colnames,
+                             strand.field="strand",
+                             prefix="")
+{
+    idx <- which(df_colnames %in% paste0(prefix, strand.field))
+    if (length(idx) == 1L)
+        return(idx)
+    if (length(idx) == 0L) {
+        idx <- which(df_colnames %in% strand.field)
+        if (length(idx) == 1L)
+            return(idx)
+    }
+    NA_integer_
+}
+
+### Returns an integer vector of length 4 with names "seqnames", "start",
+### "end", and "strand".
+.find_GRanges_cols <- function(df_colnames,
+                               seqnames.field=c("seqnames", "seqname",
+                                                "chrom", "chr",
+                                                "chromosome_name"),
+                               start.field="start",
+                               end.field=c("end", "stop"),
+                               strand.field="strand")
+{
+    ## Automatic detection of seqnames/start/end/strand fields is case
+    ## insensitive.
+    df_colnames0 <- tolower(df_colnames)
+    seqnames.field0 <- .normarg_field(seqnames.field, "seqnames")
+    start.field0 <- .normarg_field(start.field, "start")
+    end.field0 <- .normarg_field(end.field, "end")
+    strand.field0 <- .normarg_field(strand.field, "strand")
+
+    start_end_cols <- .find_start_end_cols(df_colnames0,
+                                           start.field=start.field0,
+                                           end.field=end.field0)
+    seqnames_col <- .find_seqnames_col(df_colnames0,
+                                       seqnames.field=seqnames.field0,
+                                       prefix=start_end_cols[[2L]])
+    strand_col <- .find_strand_col(df_colnames0,
+                                   strand.field=strand.field0,
+                                   prefix=start_end_cols[[2L]])
+    c(seqnames=seqnames_col, start_end_cols[[1L]], strand=strand_col)
 }
 
 ### 'df' must be a data.frame or DataFrame object.
 makeGRangesFromDataFrame <- function(df,
-    keep.extra.columns=FALSE,
-    ignore.strand=FALSE,
-    seqinfo=NULL,
-    seqnames.field=c("seqnames", "chr", "chrom"),
-    start.field=c("start", "chromStart"),
-    end.field=c("end", "chromEnd", "stop", "chromStop"),
-    strand.field="strand",
-    starts.in.df.are.0based=FALSE)
+                                     keep.extra.columns=FALSE,
+                                     ignore.strand=FALSE,
+                                     seqinfo=NULL,
+                                     seqnames.field=c("seqnames", "seqname",
+                                                      "chrom", "chr",
+                                                      "chromosome_name"),
+                                     start.field="start",
+                                     end.field=c("end", "stop"),
+                                     strand.field="strand",
+                                     starts.in.df.are.0based=FALSE)
 {
     ## Check args.
     if (!is.data.frame(df) && !is(df, "DataFrame"))
@@ -50,32 +147,36 @@ makeGRangesFromDataFrame <- function(df,
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
     ans_seqinfo <- .normarg_seqinfo(seqinfo)
-    seqnames_fpos <- .get_field_pos(seqnames.field, df, "seqnames")
-    start_fpos <- .get_field_pos(start.field, df, "start")
-    end_fpos <- .get_field_pos(end.field, df, "end")
-    strand_fpos <- .get_field_pos(strand.field, df, "strand", required=FALSE)
+    granges_cols <- .find_GRanges_cols(names(df),
+                                       seqnames.field=seqnames.field,
+                                       start.field=start.field,
+                                       end.field=end.field,
+                                       strand.field=strand.field)
     if (!isTRUEorFALSE(starts.in.df.are.0based))
         stop("'starts.in.df.are.0based' must be TRUE or FALSE")
 
     ## Prepare the GRanges components.
-    ans_seqnames <- df[[seqnames_fpos]]
-    ans_start <- df[[start_fpos]]
-    ans_end <- df[[end_fpos]]
+    ans_seqnames <- df[[granges_cols[["seqnames"]]]]
+    ans_start <- df[[granges_cols[["start"]]]]
+    ans_end <- df[[granges_cols[["end"]]]]
     if (!is.numeric(ans_start) || !is.numeric(ans_end))
-        stop("\"", names(df)[start_fpos], "\" and ",
-             "\"", names(df)[end_fpos], "\" columns must be numeric")
+        stop("\"", names(df)[granges_cols[["start"]]], "\" and ",
+             "\"", names(df)[granges_cols[["end"]]], "\" columns ",
+             "must be numeric")
     if (starts.in.df.are.0based)
         ans_start <- ans_start + 1L
     ans_ranges <- IRanges(ans_start, ans_end)
-    if (is.na(strand_fpos) || ignore.strand) {
+    if (is.na(granges_cols[["strand"]]) || ignore.strand) {
         ans_strand <- "*"
     } else {
-        ans_strand <- df[[strand_fpos]]
+        ans_strand <- df[[granges_cols[["strand"]]]]
     }
     if (keep.extra.columns) {
-        drop_idx <- c(seqnames_fpos, start_fpos, end_fpos)
-        if (!is.na(strand_fpos))
-            drop_idx <- c(drop_idx, strand_fpos)
+        drop_idx <- c(granges_cols[["seqnames"]],
+                      granges_cols[["start"]],
+                      granges_cols[["end"]])
+        if (!is.na(granges_cols[["strand"]]))
+            drop_idx <- c(drop_idx, granges_cols[["strand"]])
         ans_mcols <- df[-drop_idx]
     } else {
         ans_mcols <- NULL

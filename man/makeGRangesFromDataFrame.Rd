@@ -18,14 +18,16 @@
 
 \usage{
 makeGRangesFromDataFrame(df,
-    keep.extra.columns=FALSE,
-    ignore.strand=FALSE,
-    seqinfo=NULL,
-    seqnames.field=c("seqnames", "chr", "chrom"),
-    start.field=c("start", "chromStart"),
-    end.field=c("end", "chromEnd", "stop", "chromStop"),
-    strand.field="strand",
-    starts.in.df.are.0based=FALSE)
+                         keep.extra.columns=FALSE,
+                         ignore.strand=FALSE,
+                         seqinfo=NULL,
+                         seqnames.field=c("seqnames", "seqname",
+                                          "chrom", "chr",
+                                          "chromosome_name")
+                         start.field="start",
+                         end.field=c("end", "stop"),
+                         strand.field="strand",
+                         starts.in.df.are.0based=FALSE)
 }
 
 \arguments{
