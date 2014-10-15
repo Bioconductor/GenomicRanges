@@ -23,7 +23,7 @@ makeGRangesFromDataFrame(df,
                          seqinfo=NULL,
                          seqnames.field=c("seqnames", "seqname",
                                           "chrom", "chr",
-                                          "chromosome_name")
+                                          "chromosome_name"),
                          start.field="start",
                          end.field=c("end", "stop"),
                          strand.field="strand",
