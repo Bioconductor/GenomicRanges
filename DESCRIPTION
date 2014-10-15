@@ -39,4 +39,3 @@ Collate: utils.R phicoef.R transcript-utils.R constraint.R
         findOverlaps-GIntervalTree-methods.R nearest-methods.R
         mapCoords-methods.R tile-methods.R test_GenomicRanges_package.R
         zzz.R
-Packaged: 2014-10-01 23:27:18 UTC; dtenenba

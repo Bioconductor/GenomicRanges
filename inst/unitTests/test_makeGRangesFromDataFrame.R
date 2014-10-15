@@ -24,6 +24,11 @@ test_find_GRanges_cols <- function()
     current <- find_GRanges_cols(df_colnames)
     checkIdentical(target, current)
 
+    df_colnames <- c("Seqnames", "strand", "start", "end")
+    target <- c(seqnames=1L, start=3L, end=4L, strand=NA_integer_)
+    current <- find_GRanges_cols(df_colnames, ignore.strand=TRUE)
+    checkIdentical(target, current)
+
     df_colnames <- c("seqname", "start", "end")
     target <- c(seqnames=1L, start=2L, end=3L, strand=NA_integer_)
     current <- find_GRanges_cols(df_colnames)
@@ -41,6 +46,11 @@ test_find_GRanges_cols <- function()
 
     df_colnames <- c("strand", "txStart", "txEnd", "txChrom", "txStrand")
     target <- c(seqnames=4L, start=2L, end=3L, strand=5L)
+    current <- find_GRanges_cols(df_colnames)
+    checkIdentical(target, current)
+
+    df_colnames <- c("chrom", "txStrand", "start", "end")
+    target <- c(seqnames=1L, start=3L, end=4L, strand=NA_integer_)
     current <- find_GRanges_cols(df_colnames)
     checkIdentical(target, current)
 
@@ -104,5 +114,16 @@ test_find_GRanges_cols <- function()
 
     df_colnames <- c("chrom", "tx_start", "tx_end", "tx_stop")
     checkException(find_GRanges_cols(df_colnames), silent=TRUE)
+
+    df_colnames <- c("chrom", "tx_start", "start", "end")
+    target <- c(seqnames=1L, start=3L, end=4L, strand=NA_integer_)
+    current <- find_GRanges_cols(df_colnames)
+    checkIdentical(target, current)
+
+    df_colnames <- c("chrom", "strand", "start", "end", "STRAND")
+    checkException(find_GRanges_cols(df_colnames), silent=TRUE)
+    target <- c(seqnames=1L, start=3L, end=4L, strand=NA_integer_)
+    current <- find_GRanges_cols(df_colnames, ignore.strand=TRUE)
+    checkIdentical(target, current)
 }
 
