@@ -46,7 +46,7 @@
 \S4method{range}{GRangesList}(x, ..., na.rm=FALSE)
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-       with.revmap=FALSE, with.mapping=FALSE, with.inframe.attrib=FALSE,
+       with.revmap=FALSE, with.inframe.attrib=FALSE,
        ignore.strand=FALSE)
 \S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
        with.inframe.attrib=FALSE)
@@ -64,7 +64,7 @@
 
 \arguments{
   \item{x}{A \link{GenomicRanges} object.}
-  \item{drop.empty.ranges, min.gapwidth, with.revmap, with.mapping, with.inframe.attrib, start, end}{
+  \item{drop.empty.ranges, min.gapwidth, with.revmap, with.inframe.attrib, start, end}{
     See \code{?`\link[IRanges]{inter-range-methods}`} in the IRanges package.
   } 
   \item{ignore.strand}{

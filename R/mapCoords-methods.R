@@ -31,10 +31,6 @@
   relist(gr[ord], x)
 }
 
-setMethod("map", c("GenomicRanges", "GRangesList"), function(from, to) {
-  .Defunct(msg="map() is defunct. Use mapCoords() instead.")
-})
-
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
   function(x, to, ..., ignore.strand = FALSE, elt.loc = FALSE,
            elt.hits = FALSE) {

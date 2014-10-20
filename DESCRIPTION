@@ -13,7 +13,7 @@ Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
         GenomeAnnotation
 Depends: R (>= 2.10), methods, BiocGenerics (>= 0.11.3), S4Vectors (>=
-        0.2.3), IRanges (>= 1.99.28), GenomeInfoDb (>= 1.1.20)
+        0.2.3), IRanges (>= 2.1.2), GenomeInfoDb (>= 1.1.20)
 Imports: utils, stats, XVector
 LinkingTo: S4Vectors, IRanges
 Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,
@@ -27,7 +27,7 @@ Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,
         pasillaBamSubset, RUnit, digest, BiocStyle
 License: Artistic-2.0
 Collate: utils.R phicoef.R transcript-utils.R constraint.R
-        makeSeqnameIds.R strand-utils.R range-squeezers.R
+        strand-utils.R range-squeezers.R
         GenomicRanges-class.R GRanges-class.R
         DelegatingGenomicRanges-class.R GIntervalTree-class.R
         GenomicRanges-comparison.R GenomicRangesList-class.R

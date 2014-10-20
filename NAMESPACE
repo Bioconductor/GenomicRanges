@@ -74,7 +74,7 @@ exportMethods(
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
-    relistToClass, splitAsListReturnedClass,
+    relistToClass,
     compare,
     ranges, "ranges<-", trim,
     ngap,
@@ -85,7 +85,7 @@ exportMethods(
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
-    map, mapCoords,
+    mapCoords,
     tile,
     subset,
     subjectHits, queryHits,
@@ -103,7 +103,6 @@ exportMethods(
 export(
     phicoef,
 
-    makeSeqnameIds,
     GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
     .DollarNames.GenomicRanges,
     makeGRangesFromDataFrame,

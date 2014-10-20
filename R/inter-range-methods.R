@@ -42,17 +42,15 @@
 }
 
 .interIntervalGenomicRanges2 <- function(x, FUN,
-                                         with.revmap=FALSE, with.mapping=FALSE,
+                                         with.revmap=FALSE,
                                          ignore.strand=FALSE, ...)
 {
     x <- clone(x)
     mcols(x) <- NULL
     f <- .interIntervalSplitVariable(x, ignore.strand=ignore.strand)
     xIRangesList <- split(unname(ranges(x)), f)
-    if (with.revmap || with.mapping) {
-        ansIRangesList <- FUN(xIRangesList,
-                              with.revmap=with.revmap,
-                              with.mapping=with.mapping, ...)
+    if (with.revmap) {
+        ansIRangesList <- FUN(xIRangesList, with.revmap=with.revmap, ...)
     } else {
         ansIRangesList <- FUN(xIRangesList, ...)
     }
@@ -74,19 +72,14 @@
         ans_mcols <- new("DataFrame", nrows=length(ans_seqnames))
     } else {
         mcols(ans_ranges) <- NULL
-        if (with.revmap || with.mapping) {
-            if (with.revmap) {
-                revmap_colname <- "revmap"
-            } else {
-                revmap_colname <- "mapping"
-            }
-            revmap_unlisted <- ans_mcols[[revmap_colname]]
+        if (with.revmap) {
+            revmap_unlisted <- ans_mcols[["revmap"]]
             revmap_partitioning <- PartitioningByEnd(ansIRangesList)
             old2new <- splitAsList(seq_along(x), f)
             revmap_unlisted2 <- .translateRevmap(revmap_unlisted,
                                                  revmap_partitioning,
                                                  old2new)
-            ans_mcols[[revmap_colname]] <- revmap_unlisted2
+            ans_mcols[["revmap"]] <- revmap_unlisted2
         }
     }
     if (length(extraColumnSlotNames(x)) > 0L)
@@ -152,7 +145,7 @@ setMethod("range", "GRangesList",
 
 setMethod("reduce", "GenomicRanges",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-                with.revmap=FALSE, with.mapping=FALSE,
+                with.revmap=FALSE,
                 with.inframe.attrib=FALSE, ignore.strand=FALSE)
     {
         if (!identical(with.inframe.attrib, FALSE))
@@ -165,8 +158,7 @@ setMethod("reduce", "GenomicRanges",
         .interIntervalGenomicRanges2(x, reduce,
                                      drop.empty.ranges=drop.empty.ranges,
                                      min.gapwidth=min.gapwidth,
-                                     with.revmap=with.revmap,
-                                     with.mapping=with.mapping)
+                                     with.revmap=with.revmap)
     }
 )
 
