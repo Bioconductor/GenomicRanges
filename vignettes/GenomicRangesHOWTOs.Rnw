@@ -351,13 +351,13 @@ We can use the \Rcode{make\-Transcript\-Db\-From\-UCSC()} function from
 the \Biocpkg{GenomicFeatures} package to import a UCSC genome browser
 track as a \Rclass{TxDb} object.
 
-<<makeTranscriptDbFromUCSC_1, eval=FALSE>>=
+<<makeTxDbFromUCSC_1, eval=FALSE>>=
 library(GenomicFeatures)
 ### Internet connection required! Can take several minutes...
-txdb <- makeTranscriptDbFromUCSC(genome="sacCer2", tablename="ensGene")
+txdb <- makeTxDbFromUCSC(genome="sacCer2", tablename="ensGene")
 @
 
-See \Rcode{?makeTranscriptDbFromUCSC} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromUCSC} in the \Biocpkg{GenomicFeatures}
 package for more information.
 
 Note that some of the most frequently used gene models are available
@@ -390,14 +390,14 @@ We can use the \Rcode{make\-Transcript\-Db\-From\-Biomart()} function from
 the \Biocpkg{GenomicFeatures} package to retrieve a gene model from the
 Ensembl Mart.
 
-<<makeTranscriptDbFromBiomart_1, eval=FALSE>>=
+<<makeTxDbFromBiomart_1, eval=FALSE>>=
 library(GenomicFeatures)
 ### Internet connection required! Can take several minutes...
-txdb <- makeTranscriptDbFromBiomart(biomart="ensembl",
-                                    dataset="hsapiens_gene_ensembl")
+txdb <- makeTxDbFromBiomart(biomart="ensembl",
+                            dataset="hsapiens_gene_ensembl")
 @
 
-See \Rcode{?makeTranscriptDbFromBiomart} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromBiomart} in the \Biocpkg{GenomicFeatures}
 package for more information.
 
 Note that some of the most frequently used gene models are available
@@ -430,19 +430,19 @@ We can use the \Rcode{make\-Transcript\-Db\-From\-GFF()} function from
 the \Biocpkg{GenomicFeatures} package to import a GFF or GTF file as a
 \Rclass{TxDb} object.
 
-<<makeTranscriptDbFromGFF_1>>=
+<<makeTxDbFromGFF_1>>=
 library(GenomicFeatures)
 gff_file <- system.file("extdata", "a.gff3", package="GenomicFeatures")
-txdb <- makeTranscriptDbFromGFF(gff_file, format="gff3")
+txdb <- makeTxDbFromGFF(gff_file, format="gff3")
 txdb
 @
 
-See \Rcode{?makeTranscriptDbFromGFF} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromGFF} in the \Biocpkg{GenomicFeatures}
 package for more information.
 
 Extract the exon coordinates grouped by gene from this gene model:
 
-<<makeTranscriptDbFromGFF_2>>=
+<<makeTxDbFromGFF_2>>=
 exonsBy(txdb, by="gene")
 @
 
@@ -787,8 +787,8 @@ txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 If an annotation is not available as a \Bioconductor{} annotation package
 it may be available in \Biocpkg{AnnotationHub}. Additionally, there are
 functions in \Biocpkg{GenomicFeatures} which can retrieve data from UCSC and
-Ensembl to create a \Robject{TxDb}. See 
-\Rcode{?makeTranscriptDbFromUCSC} for more information.
+Ensembl to create a \Robject{TxDb}. See \Rcode{?makeTxDbFromUCSC} for more
+information.
 
 As in the previous {\it HOWTO} we need to identify the transcripts 
 corresponding to each gene. The transcript id (or name) is used
