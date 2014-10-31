@@ -54,11 +54,11 @@ setValidity2("GRangesList", .valid.GRangesList)
 GRangesList <- function(...)
 {
     listData <- list(...)
+    if (length(listData) == 1L && is.list(listData[[1L]]))
+        listData <- listData[[1L]]
     if (length(listData) == 0L) {
         unlistData <- GRanges()
     } else {
-        if (length(listData) == 1L && is.list(listData[[1L]]))
-            listData <- listData[[1L]]
         if (!all(sapply(listData, is, "GRanges")))
             stop("all elements in '...' must be GRanges objects")
         unlistData <- suppressWarnings(do.call("c", unname(listData)))
