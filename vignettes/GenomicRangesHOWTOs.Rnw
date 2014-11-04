@@ -457,34 +457,39 @@ When a gene model is not available as a \Rclass{GRanges} or
 be available on \Biocpkg{AnnotationHub}.
 In this {\it HOWTO}, will look for a gene model for Drosophila melanogaster
 on \Biocpkg{AnnotationHub}.
-Create a `hub' and filter on Drosophila melanogaster:
+Create a `hub' and then filter on Drosophila melanogaster:
 
 <<hub_1>>=
 library(AnnotationHub)
 ### Internet connection required!
 hub <- AnnotationHub()
-filters(hub) <- list(Species="Drosophila melanogaster")
+hub <- subset(hub, hub$species=='Drosophila melanogaster')
 @
 
-There are 87 files that match Drosophila melanogaster.
+There are 87 files that match Drosophila melanogaster. If you look at
+the metadata in hub, you can see that the 7th record representes a
+GRanges object from UCSC
+
 
 <<hub_2>>=
 length(hub)
 head(names(hub))
+head(hub$title, n=10)
+## then look at a specific slice of the hub object.
+hub[7]
 @
 
-Retrieve a dm3 file as a \Rcode{GRanges}. 
+So you can retrieve that dm3 file as a \Rcode{GRanges} like this:
 
 <<hub_3>>=
-gr <- hub$goldenpath.dm3.database.ensGene_0.0.1.RData
+gr <- hub[[names(hub)[7]]]
 summary(gr)
 @
 
 The metadata fields contain the details of file origin and content.
 
 <<hub_4>>=
-names(metadata(gr)[[2]])
-metadata(gr)[[2]]$Tags
+metadata(gr)
 @
 
 Split the \Rclass{GRanges} object by gene name to get a \Rclass{GRangesList}
