@@ -3,6 +3,8 @@
 \alias{mapCoords}
 \alias{mapCoords-methods}
 \alias{mapCoords,GenomicRanges,GRangesList-method}
+\alias{pmapCoords,GenomicRanges,GRangesList-method}
+
 
 \title{Mapping ranges between sequences}
 
@@ -11,16 +13,18 @@
   \link{GRangesList} object. Returns a \linkS4class{GenomicRanges}
   object.
 
-  NOTE: The \code{\link[IRanges]{mapCoords}} generic function is 
-  defined and documented in the \pkg{IRanges} package. A method for 
-  translating a set of input ranges through a
-  \link[GenomicAlignments]{GAlignments} object is defined and
-  documented in the \pkg{GenomicAlignments} package.
+  The generics for \code{mapCoords} and \code{pmapCoords} are defined in the
+  \pkg{IRanges} package. A method for translating a set of input ranges through
+  a \link[GenomicAlignments]{GAlignments} object is defined and in the
+  \pkg{GenomicAlignments} package.
 }
 
 \usage{
 \S4method{mapCoords}{GenomicRanges,GRangesList}(x, to, ..., 
-          ignore.strand = FALSE, elt.loc = FALSE, elt.hits = FALSE)
+          ignore.strand = TRUE, elt.loc = FALSE, elt.hits = FALSE)
+
+\S4method{pmapCoords}{GenomicRanges,GRangesList}(x, to, ..., 
+          ignore.strand = TRUE, elt.loc = FALSE, elt.hits = FALSE)
 }
 
 \arguments{
@@ -43,48 +47,60 @@
     \code{to} hit by \code{x} in the overlap operation are returned
     as metadata column \code{eltHits}. Internal use only.}
 
-  \item{\dots}{Arguments passed to other methods.}
+  \item{\dots}{Arguments passed to other methods. Currently not used.}
 }
 
 \value{
   A \code{GRanges} object of mapped coordinates with matching data
-  as metadata columns \code{queryHits} and \code{subjectHits}. 
-  Matching data are the result of calling \code{findOverlaps} with
-  type `within` on  ranges in \code{x} (the query) and the 
-  ranges in \code{to} (the subject). Matching can be many-to-one 
-  or one-to-many; one row is reported for each match.
+  as metadata columns \code{queryHits} and \code{subjectHits}.
+
+  Matching data are the result of calling \code{findOverlaps} with type `within`
+  on  ranges in \code{x} (the query) and the ranges in \code{to} (the subject).
+  In the case of \code{mapCoords} matching can be many-to-one or one-to-many;
+  one row is reported for each match. For \code{pmapCoords} matching is
+  one-to-one as the i-th element in \code{x} is only mapped to the i-th element
+  in \code{to}.
  
-  Optional metadata columns are \code{eltLoc} and \code{eltHits},
-  see arguments section for details. The ranges in the output
-  \code{GRanges} are position relative to the outer list element
-  of \code{to}; all individual list elements are concatenated and
-  counting starts at the 5' or 3' end depending on strand. In
-  contrast, the \code{eltLoc} metadata column contains position
-  relative to the individual list elements. 
+  Optional metadata columns are \code{eltLoc} and \code{eltHits}, see arguments
+  section for details. The ranges in the output \code{GRanges} are position
+  relative to the outer list element of \code{to}; all individual list elements
+  are concatenated and counting starts at the 5' or 3' end depending on strand.
+  In contrast, the \code{eltLoc} metadata column contains position relative to
+  the individual list elements. 
 }
 
 \details{
-  Each element in \code{to} is taken to represent an alignment
-  of a sequence on a genome. The typical case is a set of transcript
-  models, as might be obtained via \code{GenomicFeatures::exonsBy}.
-  Each outer list element of the GRangesList represents a transcript
-  while each each individual element is an exon in the transcript.
+  Each element in \code{to} is taken to represent an alignment of a sequence on
+  a genome. The typical case is a set of transcript models, as might be obtained
+  via \code{GenomicFeatures::exonsBy}.  Each outer list element of the
+  GRangesList represents a transcript while each each individual element is an
+  exon in the transcript.
 
-  \code{mapCoords} translates the ranges in \code{x} relative to 
-  the transcript start. The widths of the individual elements (i.e., 
-  exons) are concatenated and counting starts at the 5' or 3' end
-  depending on strand. Translated coordinates are only reported for 
-  ranges in \code{x} that fall completely `within` ranges in \code{to}.
+  \code{mapCoords} and \code{pmapCoords} translate the ranges in \code{x}
+  relative to the transcript start (i.e., start of all ranges in \code{to}). The
+  widths of the individual elements (exons in this example) are concatenated and
+  counting starts at the 5' or 3' end depending on strand. Translated
+  coordinates are only reported for ranges in \code{x} that fall completely
+  `within` ranges in \code{to}.
 
-  The transcript-centric coordinates are are useful, for example, when 
-  predicting coding consequences of changes to the genomic sequence. 
-  Additionally, the position of \code{x} relative to the individual 
-  element (i.e., exon) is returned as a metadata column when 
-  \code{elt.loc = TRUE}.
+  The transcript-centric coordinates are are useful, for example, when
+  predicting coding consequences of changes to the genomic sequence.
+  Additionally, the position of \code{x} relative to the individual element
+  (i.e., exon) is returned as a metadata column when \code{elt.loc = TRUE}.
+
+  \code{mapCoords} maps the i-th element in \code{x} to each element in
+  \code{to} returning in a many-to-many mapping. In contrast, \code{pmapCoords}
+  treats the two inputs as parallel vectors and maps the i-th element of
+  \code{x} to the i-th element of \code{to} returning a maximum of one result
+  per input element.
 }
 
 \seealso{
-  The generic \link[IRanges]{mapCoords-methods} in the IRanges package.
+  \itemize{
+    \item{The generic \link[IRanges]{mapCoords-methods} in the IRanges package.}
+    \item{Additional methods in the GenomicAlignments package 
+          \link[GenomicRanges]{mapCoords-methods}.}
+  }
 }
 
 \examples{

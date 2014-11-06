@@ -78,14 +78,18 @@
     i1 <- dist1 == dMin[i1]
 
     .Hits(c(queryHits(hit0)[i0], queryHits(hit1)[i1]),
-        c(subjectHits(hit0)[i0], subjectHits(hit1)[i1]),
-        queryLength(hit0), subjectLength(hit0))
+          c(subjectHits(hit0)[i0], subjectHits(hit1)[i1]),
+          queryLength(hit0), subjectLength(hit0))
 }
 
 .GenomicRanges_findPrecedeFollow <-
     function(query, subject, select, ignore.strand, 
              where=c("precede", "follow"))
 {
+    if (!length(query) || !length(subject))
+        return(new("Hits", queryLength=length(query), 
+               subjectLength=length(subject)))
+
     leftOf <- "precede" == match.arg(where)
     if (ignore.strand)
         strand(query) <- strand(subject) <- "+"
@@ -236,6 +240,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
         ol <- findOverlaps(x, subject, select=select,
                            ignore.strand=ignore.strand)
     }
+
     if (select == "all") {
         m <- as.matrix(ol)
         olv <- IRanges:::hitsMatrixToVector(m, length(x))
@@ -247,6 +252,17 @@ setMethod("follow", c("GenomicRanges", "missing"),
     if (length(x <- x[is.na(olv)]) != 0) {
         p <- precede(x, subject, select, ignore.strand)
         f <- follow(x, subject, select, ignore.strand)
+
+        ## terminate if no results
+        if (!length(p) && !length(f)) {
+            if (is(olv, "Hits") && !length(olv) || all(is.na(olv))) {
+                if (select == "all") 
+                    return(new("Hits", queryLength=length(x),
+                           subjectLength=length(subject)))
+                else if (select == "arbitrary")
+                    return (rep(NA, length(x)))
+            }
+        }
 
         if (select == "all") {
             pmat <- as.matrix(p)
@@ -281,9 +297,11 @@ setMethod("follow", c("GenomicRanges", "missing"),
 
 .nearestDistance <- function(x, subject, index)
 {
-    maxStart <- pmax.int(start(x), start(subject)[index])
-    minEnd <- pmin.int(end(x), end(subject)[index])
-    pmax.int(maxStart - minEnd - 1L, 0L)
+    if (length(index)) {
+        maxStart <- pmax.int(start(x), start(subject)[index])
+        minEnd <- pmin.int(end(x), end(subject)[index])
+        pmax.int(maxStart - minEnd - 1L, 0L)
+    } else NA
 }
 
 
@@ -335,7 +353,7 @@ setMethod("distance", c("GenomicRanges", "GenomicRanges"),
 setMethod("distanceToNearest", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
-        x_nearest <- nearest(x, subject, ignore.strand=ignore.strand)
+        x_nearest <- nearest(x, subject, ignore.strand=ignore.strand, ...)
         .distanceToNearest(x_nearest, x, subject, ignore.strand=ignore.strand)
     }
 )
@@ -343,27 +361,36 @@ setMethod("distanceToNearest", c("GenomicRanges", "GenomicRanges"),
 setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     function(x, subject, ignore.strand=FALSE, ...)
     {
-        x_nearest <- nearest(x, ignore.strand=ignore.strand)
+        x_nearest <- nearest(x, ignore.strand=ignore.strand, ...)
         .distanceToNearest(x_nearest, x, x, ignore.strand=ignore.strand)
     }
 )
 
 .distanceToNearest <- function(x_nearest, x, subject, ignore.strand)
-{ 
-    if (identical(integer(0), x_nearest)) {
-        DataFrame(queryHits=integer(), subjectHits=integer(),
-                  distance=integer())
+{
+    ## 'x_nearest' is Hits when select = all
+    if (is(x_nearest, "Hits")) {
+        queryHits <- queryHits(x_nearest)
+        subjectHits <- subjectHits(x_nearest)
     } else {
-        idx <- !is.na(x_nearest) 
-        queryHits=seq_len(length(x_nearest))
-        subjectHits=x_nearest
-        distance <- rep(NA_integer_, length(x_nearest))
-        distance[idx]=distance(x[idx], subject[na.omit(x_nearest)],
-                               ignore.strand=ignore.strand)
-        new("Hits", queryHits=queryHits, subjectHits=subjectHits,
-                    queryLength=length(x), 
-                    subjectLength=length(subject),
-                    elementMetadata=DataFrame(distance=distance))
+    ## 'x_nearest' is Integer vector when select = arbitrary
+        queryHits <- seq_along(x)[!is.na(x_nearest)]
+        subjectHits <- x_nearest[!is.na(x_nearest)]
+    }
+
+    if (!length(subjectHits) || all(is.na(subjectHits))) {
+        new("Hits", 
+            queryLength=length(x), 
+            subjectLength=length(subject),
+            elementMetadata=DataFrame(distance=NULL))
+    } else {
+        distance = distance(x[queryHits], subject[subjectHits],
+                            ignore.strand=ignore.strand)
+        new("Hits", 
+            queryHits=queryHits,
+            subjectHits=subjectHits,
+            queryLength=length(x), 
+            subjectLength=length(subject),
+            elementMetadata=DataFrame(distance=distance))
     }
 }
-
