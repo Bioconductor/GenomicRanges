@@ -313,4 +313,14 @@ test_GenomicRanges_distanceToNearest <- function()
     checkIdentical(1L, queryHits(current))
     checkIdentical(1L, subjectHits(current))
     checkIdentical(0L, mcols(current)$distance)
+
+    ## select = 'all' vs 'arbitrary'
+    x <- GRanges("chr1", IRanges(2, width=1))
+    subject <- GRanges("chr1", IRanges(c(8, 10, 8), width=1))
+    current <- distanceToNearest(x, subject, select="all") 
+    checkTrue(is(current, "Hits"))
+    checkIdentical(length(current), 2L)
+    current <- distanceToNearest(x, GRanges(), select="all")
+    checkIdentical(length(current), 0L)
+    checkIdentical(queryLength(current), 1L)
 }
