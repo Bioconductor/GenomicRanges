@@ -99,7 +99,7 @@
   \itemize{
     \item{The generic \link[IRanges]{mapCoords-methods} in the IRanges package.}
     \item{Additional methods in the GenomicAlignments package 
-          \link[GenomicRanges]{mapCoords-methods}.}
+          \link[GenomicAlignments]{mapCoords-methods}.}
   }
 }
 
