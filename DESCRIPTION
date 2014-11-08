@@ -7,13 +7,13 @@ Description: The ability to efficiently represent and manipulate genomic
 	intervals. Specialized containers for representing and manipulating
 	short alignments against a reference genome are defined in the
 	GenomicAlignments package.
-Version: 1.19.5
+Version: 1.19.6
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
         GenomeAnnotation
 Depends: R (>= 2.10), methods, BiocGenerics (>= 0.11.3), S4Vectors (>=
-        0.2.3), IRanges (>= 2.1.2), GenomeInfoDb (>= 1.1.20)
+        0.2.3), IRanges (>= 2.1.10), GenomeInfoDb (>= 1.1.20)
 Imports: utils, stats, XVector
 LinkingTo: S4Vectors, IRanges
 Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,

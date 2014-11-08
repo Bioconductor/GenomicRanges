@@ -14,28 +14,39 @@
 ### with the name of the sequence).
 ### 'query' and 'subject' must be IRanges objects.
 .findOverlaps.circle <- function(circle.length, query, subject,
-                                 maxgap, minoverlap, type)
+                                 maxgap, minoverlap, type, algorithm)
 {
     if (is.na(circle.length))
         return(findOverlaps(query, subject,
                             maxgap=maxgap, minoverlap=minoverlap,
-                            type=type, select="all"))
+                            type=type, select="all",
+                            algorithm=algorithm))
     q_len <- length(query)
     s_len <- length(subject)
     if (q_len == 0L || s_len == 0L)
         return(new("Hits", queryLength=q_len, subjectLength=s_len))
-    subject0 <- .putRangesOnFirstCircle(subject, circle.length)
-    inttree0 <- IntervalTree(subject0)
     query0 <- .putRangesOnFirstCircle(query, circle.length)
-    hits00 <- findOverlaps(query0, inttree0,
+    subject0 <- .putRangesOnFirstCircle(subject, circle.length)
+    if (algorithm == "intervaltree") {
+        pp_query <- query0
+        pp_subject <- IntervalTree(subject0)
+    } else {
+        which_to_preprocess <-
+            IRanges:::NCList_which_to_preprocess(query, subject)
+        if (which_to_preprocess == "query")
+            pp_query <- NCList(query0)
+        else
+            pp_subject <- NCList(subject0)
+    }
+    hits00 <- findOverlaps(pp_query, pp_subject,
                            maxgap=maxgap, minoverlap=minoverlap,
                            type=type, select="all")
     query1 <- shift(query0, circle.length)
-    hits10 <- findOverlaps(query1, inttree0,
+    hits10 <- findOverlaps(query1, pp_subject,
                            maxgap=maxgap, minoverlap=minoverlap,
                            type=type, select="all")
     subject1 <- shift(subject0, circle.length)
-    hits01 <- findOverlaps(query0, subject1,
+    hits01 <- findOverlaps(pp_query, subject1,
                            maxgap=maxgap, minoverlap=minoverlap,
                            type=type, select="all")
     ## Merge 'hits00', 'hits10' and 'hits01'.
@@ -56,12 +67,14 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
+             algorithm=c("intervaltree", "nclist"),
              ignore.strand=FALSE)
     {
         if (!isSingleNumber(maxgap) || maxgap < 0L)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
+        algorithm <- match.arg(algorithm)
 
         ## merge() also checks that 'query' and 'subject' are based on the
         ## same reference genome.
@@ -99,7 +112,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
                 hits <- .findOverlaps.circle(circle.length,
                             extractROWS(q_ranges, q_idx),
                             extractROWS(s_ranges, s_idx),
-                            maxgap, minoverlap, type)
+                            maxgap, minoverlap, type, algorithm)
                 q_hits <- queryHits(hits)
                 s_hits <- subjectHits(hits)
                 compatible_strand <-
@@ -217,16 +230,21 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         if (!isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
+        algorithm <- match.arg(algorithm)
         unlistQuery <- unlist(query, use.names = FALSE)
         queryGroups <- togroup(query)
         ans <- findOverlaps(unlistQuery, subject,
-                            maxgap = maxgap, type = type, select = "all",
+                            maxgap = maxgap,
+                            type = type, select = "all",
+                            algorithm = algorithm,
                             ignore.strand = ignore.strand)
         mm00 <- as.matrix(ans)
         if (minoverlap > 1L && nrow(mm00) > 0L) {
@@ -266,12 +284,15 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
 setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         if (!isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
+        algorithm <- match.arg(algorithm)
 
         unlistSubject <- unlist(subject, use.names=FALSE)
         subjectGroups <- togroup(subject)
@@ -285,7 +306,9 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
             subjectGroups <- subjectGroups[keep]
         }
         ans <- findOverlaps(query, unlistSubject,
-                            maxgap = maxgap, type = type, select = "all",
+                            maxgap = maxgap,
+                            type = type, select = "all",
+                            algorithm = algorithm,
                             ignore.strand = ignore.strand)
         matchMatrix <- as.matrix(ans)
         if(minoverlap > 1L && nrow(matchMatrix) > 0) {
@@ -336,12 +359,15 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         if (!isSingleNumber(maxgap) || maxgap < 0)
             stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
+        algorithm <- match.arg(algorithm)
 
         unlistSubject <- unlist(subject, use.names=FALSE)
         subjectGroups <- togroup(subject)
@@ -359,7 +385,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         }
  
         ans <- findOverlaps(unlistQuery, unlistSubject,
-                            maxgap = maxgap, type = type, select = "all",
+                            maxgap = maxgap,
+                            type = type, select = "all",
+                            algorithm = algorithm,
                             ignore.strand = ignore.strand)
         mm00 <- as.matrix(ans)
         if (minoverlap > 1L && nrow(mm00) > 0L) {
@@ -397,50 +425,86 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     }
 )
 
+### WARNING: Unlike most findOverlaps() methods, this method returns a Hits
+### object 'ans' that is *not* consistent with 'query', in the sense that
+### 'queryHits(ans)' is not a valid index into 'query'.
+### Seems that the only use case for this method was to support the method
+### for c("RangedData", "GenomicRanges").
+### TODO: Deprecate after RangedData is gone.
 setMethod("findOverlaps", c("RangesList", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
-        findOverlaps(as(query, "GRanges"), subject = subject,
+        findOverlaps(as(query, "GRanges"), subject,
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
 
+### WARNING: Unlike most findOverlaps() methods, this method returns a Hits
+### object 'ans' that is *not* consistent with 'query', in the sense that
+### 'queryHits(ans)' is not a valid index into 'query'.
+### Seems that the only use case for this method was to support the method
+### for c("RangedData", "GRangesList").
+### TODO: Deprecate after RangedData is gone.
 setMethod("findOverlaps", c("RangesList", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
-        findOverlaps(as(query, "GRanges"), subject = subject,
+        findOverlaps(as(query, "GRanges"), subject,
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
 
+### WARNING: Unlike most findOverlaps() methods, this method returns a Hits
+### object 'ans' that is *not* consistent with 'subject', in the sense that
+### 'subjectHits(ans)' is not a valid index into 'subject'.
+### Seems that the only use case for this method was to support the method
+### for c("GenomicRanges", "RangedData").
+### TODO: Deprecate after RangedData is gone.
 setMethod("findOverlaps", c("GenomicRanges", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         findOverlaps(query, as(subject, "GRanges"),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
 
+### WARNING: Unlike most findOverlaps() methods, this method returns a Hits
+### object 'ans' that is *not* consistent with 'subject', in the sense that
+### 'subjectHits(ans)' is not a valid index into 'subject'.
+### Seems that the only use case for this method was to support the method
+### for c("GRangesList", "RangedData").
+### TODO: Deprecate after RangedData is gone.
 setMethod("findOverlaps", c("GRangesList", "RangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         findOverlaps(query, as(subject, "GRanges"),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
@@ -448,13 +512,16 @@ setMethod("findOverlaps", c("GRangesList", "RangesList"),
 setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("RangesList", "GenomicRanges")
         ## defined above.
-        findOverlaps(ranges(query), subject = subject,
+        findOverlaps(ranges(query), subject,
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
@@ -462,13 +529,16 @@ setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
 setMethod("findOverlaps", c("RangedData", "GRangesList"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("RangesList", "GRangesList")
         ## defined above.
-        findOverlaps(ranges(query), subject = subject,
+        findOverlaps(ranges(query), subject,
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
@@ -476,13 +546,16 @@ setMethod("findOverlaps", c("RangedData", "GRangesList"),
 setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("GenomicRanges", "RangesList")
         ## defined above.
         findOverlaps(query, ranges(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
@@ -490,26 +563,37 @@ setMethod("findOverlaps", c("GenomicRanges", "RangedData"),
 setMethod("findOverlaps", c("GRangesList", "RangedData"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within"),
-             select = c("all", "first"), ignore.strand = FALSE)
+             select = c("all", "first"),
+             algorithm = c("intervaltree", "nclist"),
+             ignore.strand = FALSE)
     {
         ## Calls "findOverlaps" method for c("GRangesList", "RangesList")
         ## defined above.
         findOverlaps(query, ranges(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
+
+### WARNING: Unlike most findOverlaps() methods, the methods for
+### SummarizedExperiment below return a Hits object 'ans' that is *not*
+### consistent with 'query' (or 'subject'), in the sense that 'queryHits(ans)'
+### (or 'subjectHits(ans)') is not a valid index into 'query' (or 'subject')
+### when 'query' (or 'subject') is a SummarizedExperiment object.
 
 setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within", "equal"),
              select = c("all", "first", "last", "arbitrary"),
+             algorithm = c("intervaltree", "nclist"),
              ignore.strand = FALSE)
     {
         findOverlaps(rowData(query), subject,
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
@@ -518,11 +602,13 @@ setMethod("findOverlaps", c("Vector", "SummarizedExperiment"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within", "equal"),
              select = c("all", "first", "last", "arbitrary"),
+             algorithm = c("intervaltree", "nclist"),
              ignore.strand = FALSE)
     {
         findOverlaps(query, rowData(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )
@@ -531,11 +617,13 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
     function(query, subject, maxgap = 0L, minoverlap = 1L,
              type = c("any", "start", "end", "within", "equal"),
              select = c("all", "first", "last", "arbitrary"),
+             algorithm = c("intervaltree", "nclist"),
              ignore.strand = FALSE)
     {
         findOverlaps(rowData(query), rowData(subject),
                      maxgap = maxgap, minoverlap = minoverlap,
                      type = match.arg(type), select = match.arg(select),
+                     algorithm = match.arg(algorithm),
                      ignore.strand = ignore.strand)
     }
 )

@@ -2,6 +2,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
   function(query, subject, maxgap=0L, minoverlap=1L,
          type=c("any","start","end","within","equal"),
          select=c("all","first","last","arbitrary"),
+         algorithm=c("intervaltree", "nclist"),
          ignore.strand=FALSE) {
 
     if (any(isCircular(query), na.rm=TRUE)) 
@@ -11,7 +12,11 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
       stop("'maxgap' must be a non-negative integer")
     type <- match.arg(type)
     select <- match.arg(select)
-    
+    algorithm <- match.arg(algorithm)
+    if (algorithm != "intervaltree")
+      stop("'algorithm' must be \"intervaltree\" when 'subject' ",
+           "is a GIntervalTree object")
+ 
     ## merge() also checks that 'query' and 'subject' are based on the
     ## same reference genome.
     seqinfo <- merge(seqinfo(query), seqinfo(subject))
