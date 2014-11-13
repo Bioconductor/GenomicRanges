@@ -36,19 +36,20 @@
   \item{ignore.strand}{\code{logical}; When TRUE strand is ignored in 
     overlap operations.}
 
-  \item{elt.hits}{\code{logical}; When TRUE the indices of the unlisted
-    \code{to} hit by \code{from} in the overlap operation are returned
-    as metadata column \code{eltHits}. Internal use only.}
+  \item{elt.hits}{\code{logical}; When TRUE, the output includes a metadata 
+    column, eltHits, with indices of the inner list elements of \code{to}
+    hit by \code{from}. Useful for identifying elements of \code{to} hit
+    by \code{from}. See examples.}
 
   \item{\dots}{Arguments passed to other methods. Currently not used.}
 }
 
 \value{
   A \code{GRanges} object of mapped coordinates with matching data as metadata
-  columns \code{queryHits} and \code{subjectHits}.
-  The ranges in the output \code{GRanges} are position
-  relative to the outer list element of \code{to}; all individual list elements
-  are concatenated and counting starts at the 5' or 3' end depending on strand.
+  columns \code{queryHits} and \code{subjectHits}.  The ranges in the output
+  \code{GRanges} are position relative to the outer list element of \code{to};
+  all individual list elements are concatenated and counting starts at the 5' or
+  3' end depending on strand.
 
   Matching data are the result of calling \code{findOverlaps} with type `within`
   on  ranges in \code{from} (the query) and the ranges in \code{to} (the
@@ -57,8 +58,11 @@
   matching is one-to-one as the i-th element in \code{from} is only mapped to
   the i-th element in \code{to}.
  
-  When \code{elt.hits} is TRUE a metadata column, eltHits, contains the index
-  of the element hit in the unlisted \code{to}.
+  When \code{elt.hits} is TRUE, the \code{eltHits} metadata column includes 
+  the index of inner list elements in \code{to} hit by \code{from}. In
+  some applications it may be useful to identify the exact list element that
+  was overlapped. These elements can be extracted with the combination of
+  \code{subjectHits} (outer list index) and \code{eltHits} (inner list index). 
 }
 
 \details{
@@ -101,7 +105,7 @@ gr <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200,
 
 ## Coding region coordinates relative to transcript:
 cdsbytx <- cdsBy(txdb, "tx")
-map1 <- mapCoords(gr, cdsbytx)
+map1 <- mapCoords(gr, cdsbytx, ignore.strand = FALSE)
 map1
 
 ## Range A is not translated because it does not fall completely 
@@ -109,16 +113,30 @@ map1
 findOverlaps(gr["A"], cdsbytx, type = "any")
 findOverlaps(gr["A"], cdsbytx, type = "within")
 
-## Exon region coordinates relative to trancript:
+## Exon region coordinates relative to transcript:
 exonsbytx <- exonsBy(txdb, "tx")
-map2 <- mapCoords(gr, exonsbytx)
+map2 <- mapCoords(gr, exonsbytx, ignore.strand = FALSE)
 
-## Add exon coordinates relative to the individual exons:
-map3 <- mapCoords(gr, exonsbytx, elt.hits=TRUE) 
+## Extracting elements from 'to':
+##
+## Some applications may require a closer look at the elements
+## in 'to' used in the mapping. The subjectHits metadata column contains
+## indices of the outer list elements hit. When elt.hits = TRUE the output 
+## also includes an eltHits column which holds indices of the inner list
+## elements. Together these can be used to extract the elements of 'to',
+## which in this example are the exons.
+map3 <- mapCoords(gr, exonsbytx, ignore.strand = FALSE, elt.hits=TRUE) 
 map3
 
-## Extract the individual exons hit:
-unlist(exonsbytx, use.names=FALSE)[mcols(map3)$eltHits]
+## The first 2 rows of 'map3' show the second range in 'from' hit list 
+## elements 1 and 3.
+map3[1:2, ]
+
+## Extract list elements of 'to':
+outerlist <- exonsbytx[mcols(map3[1:2, ])$subjectHits]
+
+## Extract the exons from the list elements:
+exons <- Map("[", outerlist, mcols(map3[1:2, ])$eltHits)
 }
 
 \author{M. Lawrence and V. Obenchain \url{vobencha@fhcrc.org}}

@@ -88,8 +88,8 @@ test_pmapCoords <- function()
 
     from <- GRanges("chr1", IRanges(c(10, 100), width=1), strand=c("-", "+"))
     x <- pmapCoords(from, to, elt.hits=TRUE, ignore.strand=FALSE)
-    checkIdentical(mcols(x)$eltHits, 5L)
+    checkIdentical(mcols(x)$eltHits, 3L)
     from <- rev(from)
     x <- pmapCoords(from, to, elt.hits=TRUE, ignore.strand=FALSE)
-    checkIdentical(mcols(x)$eltHits, 4L)
+    checkIdentical(mcols(x)$eltHits, 2L)
 }

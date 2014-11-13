@@ -23,6 +23,8 @@
 ## This method differs from sort() in that negative strand
 ## elements are returned highest value to lowest.
 .orderElementsByTranscription <- function(x) {
+    original <- unlist(sapply(elementLengths(x), function(xx) 1:xx), 
+                       use.names=FALSE)
     ## order by position
     gr <- unlist(x, use.names = FALSE)
     idx <- order(togroup(x), start(gr))
@@ -36,7 +38,7 @@
     ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
                             ifelse(neg, pstart, pend))
     res <- relist(gr[ord], x)
-    res@unlistData$unordered <- seq_along(gr)[idx[ord]]
+    res@unlistData$unordered <- original[idx[ord]] 
     res
 }
 
