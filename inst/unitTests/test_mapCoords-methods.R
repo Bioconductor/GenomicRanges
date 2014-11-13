@@ -17,26 +17,6 @@ test_mapCoords_output <- function()
 
     x <- mapCoords(from, cds, elt.hits=TRUE, ignore.strand=FALSE)
     checkTrue("eltHits" %in% names(mcols(x)))
-
-    x <- mapCoords(from, cds, elt.loc=TRUE, ignore.strand=FALSE)
-    checkTrue("eltLoc" %in% names(mcols(x)))
-}
-
-test_mapCoords_eltLoc <- function()
-{
-    cds <- cdsbytx
-    from <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200)) 
-    strand(from) <- "+" 
-    x <- mapCoords(from, cds, elt.loc=TRUE, ignore.strand=FALSE)
-    checkIdentical(start(x), c(645L, 609L, 1167L))
-    checkIdentical(start(mcols(x)$eltLoc), c(208L, 172L, 333L))
-
-    from <- GRanges("chr2L", IRanges(c(8200, 9000), width = 200))
-    strand(from) <- "-" 
-    strand(cds) <- "-"
-    x <- mapCoords(from, cds, elt.loc=TRUE, ignore.strand=FALSE)
-    checkIdentical(start(x), c(212L, 800L, 78L))
-    checkIdentical(start(mcols(x)$eltLoc), c(212L, 191L, 78L))
 }
 
 test_mapCoords_range_order_pos <- function()
@@ -65,17 +45,15 @@ test_mapCoords_range_order_neg <- function()
     grl <- GRangesList(GRanges("chrA", 
         IRanges(c(43522244, 43528406),
                 c(43524145, 43528644)), strand="-"))
-    x <- mapCoords(from, grl, elt.loc = TRUE, ignore.strand=FALSE)
+    x <- mapCoords(from, grl, ignore.strand=FALSE)
     checkTrue(start(x) == 2036L)
-    checkTrue(start(mcols(x)$eltLoc) == 1797L)
 
     ## Strand '-' largest range first
     grl <- GRangesList(GRanges("chrA", 
         IRanges(c(43528406, 43522244),
                 c(43528644, 43524145)), strand="-"))
-    x <- mapCoords(from, grl, elt.loc = TRUE, ignore.strand=FALSE)
+    x <- mapCoords(from, grl, ignore.strand=FALSE)
     checkTrue(start(x) == 2036L)
-    checkTrue(start(mcols(x)$eltLoc) == 1797L)
 
     ## ignore.strand
     x <- mapCoords(from, grl, ignore.strand=TRUE)
@@ -90,9 +68,8 @@ test_pmapCoords <- function()
     from <- GRanges("chr2L", IRanges(c(7700, 8200, 8600, 8100), width = 200)) 
     checkException(pmapCoords(from, cds), silent=TRUE)
 
-    x <- pmapCoords(from[1:3], cds, elt.loc=TRUE, elt.hits=TRUE)
+    x <- pmapCoords(from[1:3], cds, elt.hits=TRUE)
     checkIdentical(start(x), c(21L, 445L))
-    checkIdentical(start(mcols(x)$eltLoc), c(21L, 8L))
     checkIdentical(mcols(x)$queryHits, mcols(x)$subjectHits)
 
     gr1 <- GRanges("chr12", IRanges(c(30, 10), width=6), strand="+")
@@ -101,7 +78,7 @@ test_pmapCoords <- function()
     to <- GRangesList(gr1, gr2)
 
     from <- GRanges("chr12", IRanges(c(30, 10), width=2))
-    x <- pmapCoords(from, to, elt.loc=TRUE, elt.hits=TRUE)
+    x <- pmapCoords(from, to, elt.hits=TRUE)
     checkIdentical(start(x), 7L)
     checkIdentical(mcols(x)$eltHits, 1L)
 
@@ -110,9 +87,9 @@ test_pmapCoords <- function()
     checkTrue(length(x) == 0L)
 
     from <- GRanges("chr1", IRanges(c(10, 100), width=1), strand=c("-", "+"))
-    x <- pmapCoords(from, to, elt.loc=TRUE, elt.hits=TRUE, ignore.strand=FALSE)
+    x <- pmapCoords(from, to, elt.hits=TRUE, ignore.strand=FALSE)
     checkIdentical(mcols(x)$eltHits, 5L)
     from <- rev(from)
-    x <- pmapCoords(from, to, elt.loc=TRUE, elt.hits=TRUE, ignore.strand=FALSE)
+    x <- pmapCoords(from, to, elt.hits=TRUE, ignore.strand=FALSE)
     checkIdentical(mcols(x)$eltHits, 4L)
 }

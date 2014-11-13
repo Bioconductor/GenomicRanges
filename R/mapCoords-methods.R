@@ -40,7 +40,7 @@
     res
 }
 
-.mapCoords <- function(x, to, ..., ignore.strand, elt.loc, elt.hits, p=FALSE) {
+.mapCoords <- function(from, to, ..., ignore.strand, elt.hits, p=FALSE) {
     if (ignore.strand)
         strand(to) <- "*"
 
@@ -49,7 +49,7 @@
     gr <- unlist(to, use.names = FALSE)
 
     ## overlaps
-    ol <- findOverlaps(x, gr, type="within", ignore.strand=ignore.strand)
+    ol <- findOverlaps(from, gr, type="within", ignore.strand=ignore.strand)
     if (p) {
         ith_hits <- queryHits(ol) == togroup(to)[subjectHits(ol)]
         ol <- ol[ith_hits] 
@@ -57,7 +57,7 @@
 
     sHits <- subjectHits(ol)
     qHits <- queryHits(ol)
-    eltPosition <- ranges(x)[qHits]
+    eltPosition <- ranges(from)[qHits]
     bounds <- ranges(gr)[sHits]
 
     ## location wrt start of individual list elements
@@ -74,19 +74,10 @@
     cumPosition <- shift(eltPosition, 1L + cumsums[sHits])
 
     toInd <- togroup(to)[sHits]
-    if (elt.loc || elt.hits) {
-      if (elt.loc && elt.hits) { 
+    if (elt.hits)
         mcols <- DataFrame(queryHits=qHits, subjectHits=toInd, 
-                           eltLoc=shift(eltPosition, 1L), 
                            eltHits=mcols(gr)$unordered[subjectHits(ol)])
-      } else if (elt.loc) {
-          mcols <- DataFrame(queryHits=qHits, subjectHits=toInd, 
-                             eltLoc=shift(eltPosition, 1L))
-      } else if (elt.hits) {
-          mcols <- DataFrame(queryHits=qHits, subjectHits=toInd, 
-                             eltHits=mcols(gr)$unordered[subjectHits(ol)])
-      }
-    } else mcols <- DataFrame(queryHits=qHits, subjectHits=toInd)
+    else mcols <- DataFrame(queryHits=qHits, subjectHits=toInd)
 
     GRanges(seqnames(gr)[sHits], cumPosition, strand = strand(gr[sHits]), mcols)
 }
@@ -94,20 +85,20 @@
 ### mapCoords:
 
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
-    function(x, to, ..., ignore.strand=TRUE, elt.loc=FALSE, elt.hits=FALSE) 
-        .mapCoords(x, to, ..., ignore.strand=ignore.strand, elt.loc=elt.loc, 
+    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
+        .mapCoords(from, to, ..., ignore.strand=ignore.strand,
                    elt.hits=elt.hits, p=FALSE)
 )
 
 ### pmapCoords:
 
 setMethod("pmapCoords", c("GenomicRanges", "GRangesList"), 
-    function(x, to, ..., ignore.strand=TRUE, elt.loc=FALSE, elt.hits=FALSE) 
+    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
     {
-        if (length(x) != length(to))
-            stop("'x' and 'to' must have the same length")
+        if (length(from) != length(to))
+            stop("'from' and 'to' must have the same length")
         ## FIXME: should be implemented as pfindOverlaps()
-        .mapCoords(x, to, ..., ignore.strand=ignore.strand, elt.loc=elt.loc, 
+        .mapCoords(from, to, ..., ignore.strand=ignore.strand,
                    elt.hits=elt.hits, p=TRUE)
     }
 )
