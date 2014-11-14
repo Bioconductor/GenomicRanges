@@ -221,7 +221,7 @@ Non-mated reads are returned as groups by QNAME and contain any number
 of records. Here the non-mate groups range in size from 1 to 9.
 
 <<readGAlignmentsList_3>>=
-non_mates <- galist[unlist(mcols(galist)$mates) == FALSE]
+non_mates <- galist[unlist(mcols(galist)$mate_status) == "unmated"]
 table(elementLengths(non_mates))
 @
 
