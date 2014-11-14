@@ -92,6 +92,12 @@ setMethod("mapCoords", c("GenomicRanges", "GRangesList"),
                    elt.hits=elt.hits, p=FALSE)
 )
 
+setMethod("mapCoords", c("GenomicRanges", "GenomicRanges"), 
+    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE)
+        callGeneric(from, relist(to, PartitioningByEnd(seq_along(to))),
+                    ..., ignore.strand=ignore.strand, elt.hits=elt.hits)
+)
+
 ### pmapCoords:
 
 setMethod("pmapCoords", c("GenomicRanges", "GRangesList"), 

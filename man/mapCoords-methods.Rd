@@ -3,6 +3,7 @@
 \alias{mapCoords}
 \alias{mapCoords-methods}
 \alias{mapCoords,GenomicRanges,GRangesList-method}
+\alias{mapCoords,GenomicRanges,GenomicRanges-method}
 \alias{pmapCoords,GenomicRanges,GRangesList-method}
 
 
