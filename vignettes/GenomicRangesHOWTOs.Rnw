@@ -209,7 +209,7 @@ galist <- readGAlignmentsList(BamFile(un3, asMates=TRUE))
 
 \Robject{GAlignmentsList} is a more general `list-like' structure
 that holds mate pairs as well as non-mates (i.e., singletons, records 
-with unmapped mates etc.) A \Rcode{mates_status} metadata column (accessed
+with unmapped mates etc.) A \Rcode{mates\_status} metadata column (accessed
 with \Rfunction{mcols}) indicates which records were paired.
 
 <<readGAlignmentsList_2>>=
