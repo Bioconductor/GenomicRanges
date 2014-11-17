@@ -18,8 +18,9 @@ import(XVector)  # only for the "Views" method for integer vectors, the
 
 exportClasses(
     Constraint, ConstraintORNULL,
-    GenomicRanges, GenomicRangesORmissing, GRanges, GRangesList, GIntervalTree,
-    DelegatingGenomicRanges, GenomicRangesORGRangesList,
+    GenomicRanges, GenomicRangesORmissing, GRanges, DelegatingGenomicRanges,
+    GNCList, GIntervalTree,
+    GenomicRangesORGRangesList, GRangesList,
     SummarizedExperiment, Assays,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -103,11 +104,13 @@ exportMethods(
 export(
     phicoef,
 
-    GRanges, GRangesList, GenomicRangesList, GIntervalTree, 
-    .DollarNames.GenomicRanges,
+    GRanges, .DollarNames.GenomicRanges,
+    GNCList, GIntervalTree,
+    GenomicRangesList, GRangesList,
+
     makeGRangesFromDataFrame,
-    makeGRangesListFromFeatureFragments,
-    tileGenome
+    tileGenome,
+    makeGRangesListFromFeatureFragments
 )
 
 

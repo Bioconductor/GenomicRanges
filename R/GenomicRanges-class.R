@@ -754,8 +754,9 @@ setMethod("c", "GenomicRanges",
 
 .makeNakedMatFromGenomicRanges <- function(x)
 {
-    lx <- length(x)
-    nc <- ncol(mcols(x))
+    x_len <- length(x)
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     ans <- cbind(seqnames=as.character(seqnames(x)),
                  ranges=showAsCell(ranges(x)),
                  strand=as.character(strand(x)))
@@ -764,10 +765,10 @@ setMethod("c", "GenomicRanges",
         ans <- do.call(cbind,
                        c(list(ans), lapply(extraColumnSlots(x), showAsCell)))
     }
-    if (nc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(mcols(x), showAsCell),
+    if (x_nmc > 0L) {
+        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
                                      list(check.names=FALSE)))
-        ans <- cbind(ans, `|`=rep.int("|", lx), as.matrix(tmp))
+        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
     }
     ans
 }
@@ -775,12 +776,13 @@ setMethod("c", "GenomicRanges",
 showGenomicRanges <- function(x, margin="",
                               print.classinfo=FALSE, print.seqinfo=FALSE)
 {
-    lx <- length(x)
-    nc <- ncol(mcols(x))
+    x_len <- length(x)
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     cat(class(x), " object with ",
-        lx, " ", ifelse(lx == 1L, "range", "ranges"),
+        x_len, " ", ifelse(x_len == 1L, "range", "ranges"),
         " and ",
-        nc, " metadata ", ifelse(nc == 1L, "column", "columns"),
+        x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
         ":\n", sep="")
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
