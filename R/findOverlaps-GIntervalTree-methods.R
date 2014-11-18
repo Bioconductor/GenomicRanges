@@ -14,8 +14,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
     select <- match.arg(select)
     algorithm <- match.arg(algorithm)
     if (algorithm != "intervaltree")
-      stop("'algorithm' must be \"intervaltree\" when 'subject' ",
-           "is a GIntervalTree object")
+      warning("'algorithm' is ignored when 'subject' ",
+              "is a GIntervalTree object")
  
     ## merge() also checks that 'query' and 'subject' are based on the
     ## same reference genome.

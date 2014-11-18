@@ -25,10 +25,9 @@
     s_len <- length(subject)
     if (q_len == 0L || s_len == 0L)
         return(new("Hits", queryLength=q_len, subjectLength=s_len))
-    query0 <- .putRangesOnFirstCircle(query, circle.length)
-    subject0 <- .putRangesOnFirstCircle(subject, circle.length)
+    pp_query <- query0 <- .putRangesOnFirstCircle(query, circle.length)
+    pp_subject <- subject0 <- .putRangesOnFirstCircle(subject, circle.length)
     if (algorithm == "intervaltree") {
-        pp_query <- query0
         pp_subject <- IntervalTree(subject0)
     } else {
         which_to_preprocess <-
@@ -156,6 +155,28 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
         new2("Hits", queryHits=q_hits, subjectHits=s_hits,
                      queryLength=q_len, subjectLength=s_len,
                      check=FALSE)
+    }
+)
+
+### findOverlaps methods for GNCList
+setMethods("findOverlaps", list(c("GNCList", "GenomicRanges"),
+                                c("GenomicRanges", "GNCList")),
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             algorithm=c("intervaltree", "nclist"),
+             ignore.strand=FALSE)
+    {
+        min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
+        type <- match.arg(type)
+        select <- match.arg(select)
+        algorithm <- match.arg(algorithm)
+        if (algorithm != "intervaltree")
+            warning("'algorithm' is ignored when 'query' or 'subject' ",
+                    "is a GNCList object")
+        findOverlaps_GNCList(query, subject, min.score=min.score,
+                             type=type, select=select,
+                             ignore.strand=ignore.strand)
     }
 )
 
