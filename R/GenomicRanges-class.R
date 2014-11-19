@@ -776,14 +776,22 @@ setMethod("c", "GenomicRanges",
 showGenomicRanges <- function(x, margin="",
                               print.classinfo=FALSE, print.seqinfo=FALSE)
 {
+    x_class <- class(x)
     x_len <- length(x)
     x_mcols <- mcols(x)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(class(x), " object with ",
+    cat(x_class, " object with ",
         x_len, " ", ifelse(x_len == 1L, "range", "ranges"),
         " and ",
         x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
         ":\n", sep="")
+    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that 'x' is
+    ## subsettable but not all GenomicRanges objects are (and if they are,
+    ## subsetting them could be costly). However GRanges objects are assumed
+    ## to be subsettable so if 'x' is not one then we turn it into one (this
+    ## coercion is expected to work on any GenomicRanges object).
+    if (!is(x, "GRanges"))
+        x <- as(x, "GRanges")
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
     if (print.classinfo) {
