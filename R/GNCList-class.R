@@ -84,7 +84,11 @@ setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### findOverlaps_GNCList()
+### combine_and_select_hits()
+###
+### A low-level (non exported) utility function for post-processing a list
+### of Hits objects. Used by findOverlaps_GNCList() below and "findOverlaps"
+### method for GenomicRanges objects.
 ###
 
 ### Rearrange the seqlevels in 'x' so that its first N seqlevels are exactly
@@ -130,15 +134,33 @@ setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
     qh_strand == "+" & sh_strand == "-" | qh_strand == "-" & sh_strand == "+"
 }
 
-.drop_overlaps_with_incompatible_strand <- function(hits, query, subject)
+.drop_overlaps_with_incompatible_strand <- function(hits, q_strand, s_strand)
 {
-    qh_strand <- strand(query)[queryHits(hits)]
-    sh_strand <- strand(subject)[subjectHits(hits)]
+    qh_strand <- q_strand[queryHits(hits)]
+    sh_strand <- s_strand[subjectHits(hits)]
     drop_idx <- which(.strand_is_incompatible(qh_strand, sh_strand))
     if (length(drop_idx) != 0L)
         hits <- hits[-drop_idx]
     hits
 }
+
+combine_and_select_hits <- function(list_of_Hits,
+                                    q_split_factor, s_split_factor,
+                                    q_strand, s_strand,
+                                    select, ignore.strand)
+{
+    hits <- .remap_and_combine_Hits_objects(list_of_Hits,
+                                            q_split_factor, s_split_factor)
+    if (!ignore.strand)
+        hits <- .drop_overlaps_with_incompatible_strand(hits,
+                                                        q_strand, s_strand)
+    selectHits(hits, select=select)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### findOverlaps_GNCList()
+###
 
 ### NOT exported.
 findOverlaps_GNCList <- function(query, subject, min.score=1L,
@@ -165,28 +187,27 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
        query <- .align_seqlevels(query, seqlevels(subject))
        q_split_factor <- .split_factor(query)
        s_split_factor <- .split_factor(subject)
-       q <- split(ranges(query), q_split_factor)
-       s <- as(subject, "NCLists")
+       q_rglist <- split(ranges(query), q_split_factor)
+       s_rglist <- as(subject, "NCLists")
     } else {
        si <- merge(seqinfo(query), seqinfo(subject))
        subject <- .align_seqlevels(subject, seqlevels(query))
        q_split_factor <- .split_factor(query)
        s_split_factor <- .split_factor(subject)
-       q <- as(query, "NCLists")
-       s <- split(ranges(subject), s_split_factor)
+       q_rglist <- as(query, "NCLists")
+       s_rglist <- split(ranges(subject), s_split_factor)
     }
     circle_length <- seqlengths(si)
     circle_length[!(isCircular(si) %in% TRUE)] <- NA_integer_
-    hits <- lapply(seq_len(min(length(q), length(s))),
-                   function(i)
-                       IRanges:::findOverlaps_NCList(q[[i]], s[[i]],
-                                         min.score=min.score,
-                                         type=type, select="all",
-                                         circle.length=circle_length[[i]]))
-    hits <- .remap_and_combine_Hits_objects(hits,
-                                            q_split_factor, s_split_factor)
-    if (!ignore.strand)
-        hits <- .drop_overlaps_with_incompatible_strand(hits, query, subject)
-    selectHits(hits, select=select)
+    circle_length <- head(circle_length, n=min(length(q_rglist),
+                                               length(s_rglist)))
+    list_of_Hits <- IRanges:::findOverlaps_NCLists(q_rglist, s_rglist,
+                                  min.score=min.score, type=type,
+                                  select="all",
+                                  circle.length=circle_length)
+    combine_and_select_hits(list_of_Hits,
+                            q_split_factor, s_split_factor,
+                            strand(query), strand(subject),
+                            select, ignore.strand)
 }
 
