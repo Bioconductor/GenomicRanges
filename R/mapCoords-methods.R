@@ -5,21 +5,6 @@
 
 ### Generics are in IRanges.
 
-.listCumsum <- function(x) {
-    x_unlisted <- unlist(x, use.names=FALSE)
-    x_cumsum <- cumsum(as.numeric(x_unlisted))
-    x_part <- PartitioningByWidth(elementLengths(x))
-    x_cumsum - rep(x_cumsum[start(x_part)] - x_unlisted[start(x_part)],
-                   width(x_part))
-}
-
-.listCumsumShifted <- function(x) {
-    cs <- .listCumsum(x)
-    shifted <- c(0L, head(cs, -1))
-    shifted[start(PartitioningByWidth(elementLengths(x)))] <- 0L
-    shifted
-}
-
 ## This method differs from sort() in that negative strand
 ## elements are returned highest value to lowest.
 .orderElementsByTranscription <- function(x) {
@@ -72,8 +57,10 @@
                                   width=width(eltPosition)[neg])
     }
     ## location wrt start of combined list elements (e.g., transcript-level)
-    cumsums <- .listCumsumShifted(width(to))
-    cumPosition <- shift(eltPosition, 1L + cumsums[sHits])
+    cs <- unlist(cumsum(width(to)), use.names=FALSE)
+    shifted <- c(0L, head(cs, -1))
+    shifted[start(PartitioningByWidth(elementLengths(to)))] <- 0L
+    cumPosition <- shift(eltPosition, 1L + shifted[sHits])
 
     toInd <- togroup(to)[sHits]
     if (elt.hits)
