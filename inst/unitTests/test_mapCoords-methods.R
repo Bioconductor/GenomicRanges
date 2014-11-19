@@ -12,7 +12,7 @@ test_mapCoords_output <- function()
     x <- mapCoords(from, cds, ignore.strand=FALSE)
     checkTrue(length(x) == 3L)
     checkIdentical(names(x), c("B", "B", "C"))
-    checkIdentical(names(mcols(x)), c("queryHits", "subjectHits"))
+    checkIdentical(names(mcols(x)), c("fromHits", "toHits"))
     checkTrue(all(width(x) == 200L))
 
     x <- mapCoords(from, cds, elt.hits=TRUE, ignore.strand=FALSE)
@@ -70,7 +70,7 @@ test_pmapCoords <- function()
 
     x <- pmapCoords(from[1:3], cds, elt.hits=TRUE)
     checkIdentical(start(x), c(21L, 445L))
-    checkIdentical(mcols(x)$queryHits, mcols(x)$subjectHits)
+    checkIdentical(mcols(x)$fromHits, mcols(x)$toHits)
 
     gr1 <- GRanges("chr12", IRanges(c(30, 10), width=6), strand="+")
     gr2 <- GRanges("chr1", IRanges(c(20, 10, 100, 200), width=1), 

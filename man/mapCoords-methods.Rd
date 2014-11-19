@@ -47,7 +47,7 @@
 
 \value{
   A \code{GRanges} object of mapped coordinates with matching data as metadata
-  columns \code{queryHits} and \code{subjectHits}.  The ranges in the output
+  columns \code{fromHits} and \code{toHits}.  The ranges in the output
   \code{GRanges} are position relative to the outer list element of \code{to};
   all individual list elements are concatenated and counting starts at the 5' or
   3' end depending on strand.
@@ -63,7 +63,7 @@
   the index of inner list elements in \code{to} hit by \code{from}. In
   some applications it may be useful to identify the exact list element that
   was overlapped. These elements can be extracted with the combination of
-  \code{subjectHits} (outer list index) and \code{eltHits} (inner list index). 
+  \code{toHits} (outer list index) and \code{eltHits} (inner list index). 
 }
 
 \details{
@@ -121,7 +121,7 @@ map2 <- mapCoords(gr, exonsbytx, ignore.strand = FALSE)
 ## Extracting elements from 'to':
 ##
 ## Some applications may require a closer look at the elements
-## in 'to' used in the mapping. The subjectHits metadata column contains
+## in 'to' used in the mapping. The toHits metadata column contains
 ## indices of the outer list elements hit. When elt.hits = TRUE the output 
 ## also includes an eltHits column which holds indices of the inner list
 ## elements. Together these can be used to extract the elements of 'to',
@@ -134,7 +134,7 @@ map3
 map3[1:2, ]
 
 ## Extract list elements of 'to':
-outerlist <- exonsbytx[mcols(map3[1:2, ])$subjectHits]
+outerlist <- exonsbytx[mcols(map3[1:2, ])$toHits]
 
 ## Extract the exons from the list elements:
 exons <- Map("[", outerlist, mcols(map3[1:2, ])$eltHits)

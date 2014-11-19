@@ -77,9 +77,9 @@
 
     toInd <- togroup(to)[sHits]
     if (elt.hits)
-        mcols <- DataFrame(queryHits=qHits, subjectHits=toInd, 
+        mcols <- DataFrame(fromHits=qHits, toHits=toInd, 
                            eltHits=mcols(gr)$unordered[subjectHits(ol)])
-    else mcols <- DataFrame(queryHits=qHits, subjectHits=toInd)
+    else mcols <- DataFrame(fromHits=qHits, toHits=toInd)
 
     GRanges(seqnames(gr)[sHits], cumPosition, strand = strand(gr[sHits]), mcols)
 }
