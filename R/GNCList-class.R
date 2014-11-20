@@ -199,8 +199,6 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
     }
     circle_length <- seqlengths(si)
     circle_length[!(isCircular(si) %in% TRUE)] <- NA_integer_
-    circle_length <- head(circle_length, n=min(length(q_rglist),
-                                               length(s_rglist)))
     query_maps <- split(seq_along(query), q_split_factor)
     subject_maps <- split(seq_along(subject), s_split_factor)
     hits <- IRanges:::NCLists_find_overlaps_and_combine(
