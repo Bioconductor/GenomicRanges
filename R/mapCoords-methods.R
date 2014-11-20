@@ -27,6 +27,13 @@
     res
 }
 
+.listCumsumShifted <- function(x) {
+  cs <- unlist(cumsum(x), use.names=FALSE)
+  shifted <- c(0L, head(cs, -1))
+  shifted[start(PartitioningByWidth(elementLengths(x)))] <- 0L
+  shifted
+}
+
 .mapCoords <- function(from, to, ..., ignore.strand, elt.hits, p=FALSE) {
     if (ignore.strand)
         strand(to) <- "*"
@@ -57,9 +64,7 @@
                                   width=width(eltPosition)[neg])
     }
     ## location wrt start of combined list elements (e.g., transcript-level)
-    cs <- unlist(cumsum(width(to)), use.names=FALSE)
-    shifted <- c(0L, head(cs, -1))
-    shifted[start(PartitioningByWidth(elementLengths(to)))] <- 0L
+    shifted <- .listCumsumShifted(width(to))
     cumPosition <- shift(eltPosition, 1L + shifted[sHits])
 
     toInd <- togroup(to)[sHits]
