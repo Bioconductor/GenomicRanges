@@ -26,6 +26,13 @@ setClass("GNCList",
     seqnames(x)
 }
 
+.get_circle_length <- function(x)
+{
+    circle_length <- seqlengths(x)
+    circle_length[!(isCircular(x) %in% TRUE)] <- NA_integer_
+    circle_length
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessors
@@ -76,8 +83,8 @@ GNCList <- function(x)
         x <- as(x, "GRanges")
     mcols(x) <- NULL
     rglist <- split(ranges(x), .split_factor(x))
-    ans_nclists <- NCLists(rglist)@nclists
-    new2("GNCList", nclists=ans_nclists, granges=x, check=FALSE)
+    nclists <- NCLists(rglist, circle.length=.get_circle_length(x))
+    new2("GNCList", nclists=nclists@nclists, granges=x, check=FALSE)
 }
 
 setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
@@ -197,8 +204,7 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
        q_rglist <- as(query, "NCLists")
        s_rglist <- split(ranges(subject), s_split_factor)
     }
-    circle_length <- seqlengths(si)
-    circle_length[!(isCircular(si) %in% TRUE)] <- NA_integer_
+    circle_length <- .get_circle_length(si)
     query_maps <- split(seq_along(query), q_split_factor)
     subject_maps <- split(seq_along(subject), s_split_factor)
     hits <- IRanges:::NCLists_find_overlaps_and_combine(
