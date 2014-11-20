@@ -201,13 +201,15 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
     circle_length[!(isCircular(si) %in% TRUE)] <- NA_integer_
     circle_length <- head(circle_length, n=min(length(q_rglist),
                                                length(s_rglist)))
-    list_of_Hits <- IRanges:::findOverlaps_NCLists(q_rglist, s_rglist,
-                                  min.score=min.score, type=type,
-                                  select="all",
-                                  circle.length=circle_length)
-    combine_and_select_hits(list_of_Hits,
-                            q_split_factor, s_split_factor,
-                            strand(query), strand(subject),
-                            select, ignore.strand)
+    query_maps <- split(seq_along(query), q_split_factor)
+    subject_maps <- split(seq_along(subject), s_split_factor)
+    hits <- IRanges:::NCLists_find_overlaps_and_combine(
+                                   q_rglist, s_rglist, min.score,
+                                   type, circle_length,
+                                   query_maps, subject_maps)
+    if (!ignore.strand)
+        hits <- .drop_overlaps_with_incompatible_strand(hits,
+                                   strand(query), strand(subject))
+    selectHits(hits, select=select)
 }
 
