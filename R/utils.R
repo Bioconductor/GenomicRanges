@@ -4,31 +4,6 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Used by "show" methods.
-###
-
-makeClassinfoRowForCompactPrinting <- function(x, col2class)
-{
-    ans_names <- names(col2class)
-    no_bracket <- ans_names == ""
-    ans_names[no_bracket] <- col2class[no_bracket]
-    left_brackets <- right_brackets <- character(length(col2class))
-    left_brackets[!no_bracket] <- "<"
-    right_brackets[!no_bracket] <- ">"
-    ans <- paste0(left_brackets, col2class, right_brackets)
-    names(ans) <- ans_names
-    x_mcols <- mcols(x)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    if (x_nmc > 0L) {
-        tmp <- sapply(x_mcols,
-                      function(xx) paste0("<", classNameForDisplay(xx), ">"))
-        ans <- c(ans, `|`="|", tmp)
-    }
-    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Used by "elementMetadata<-" methods.
 ###
 

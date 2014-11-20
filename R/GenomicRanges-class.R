@@ -802,7 +802,8 @@ showGenomicRanges <- function(x, margin="",
         )
         extraColumnNames <- extraColumnSlotNames(x)
         .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extraColumnNames])
-        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        classinfo <-
+            S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
