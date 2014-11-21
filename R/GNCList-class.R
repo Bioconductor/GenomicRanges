@@ -169,12 +169,41 @@ combine_and_select_hits <- function(list_of_Hits,
 ### findOverlaps_GNCList()
 ###
 
+### 'query.remap' and 'subject.remap' should be NA-free but we don't check
+### this.
+.normarg_remap <- function(query.remap, query_len, what)
+{
+    if (is.null(query.remap))
+        return(seq_len(query_len))
+    if (!(is.integer(query.remap) && length(query.remap) == query_len))
+        stop("'", what, ".remap' must be NULL or an integer vector ",
+             "of the length of '", what, "'")
+    query.remap
+}
+
+.normarg_relength <- function(query.relength, query_len, what)
+{
+    if (is.null(query.relength))
+        return(query_len)
+    msg <- c("'", what, ".relength' must be NULL or ",
+             "a single non-negative integer")
+    if (!isSingleNumber(query.relength))
+        stop(msg)
+    if (!is.integer(query.relength))
+        query.relength <- as.integer(query.relength)
+    if (is.na(query.relength) || query.relength < 0L)
+        stop(msg)
+    query.relength
+}
+
 ### NOT exported.
 findOverlaps_GNCList <- function(query, subject, min.score=1L,
                                  type=c("any", "start", "end",
                                         "within", "extend", "equal"),
                                  select=c("all", "first", "last", "arbitrary"),
-                                 ignore.strand=FALSE)
+                                 ignore.strand=FALSE,
+                                 query.remap=NULL, subject.remap=NULL,
+                                 query.relength=NULL, subject.relength=NULL)
 {
     if (!(is(query, "GNCList") || is(subject, "GNCList")))
         stop("'query' or 'subject' must be a GNCList object")
@@ -188,6 +217,13 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
     select <- match.arg(select)
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
+
+    query_len <- length(query)
+    subject_len <- length(subject)
+    query.remap <- .normarg_remap(query.remap, query_len, "query")
+    subject.remap <- .normarg_remap(subject.remap, subject_len, "subject")
+    q_relen <- .normarg_relength(query.relength, query_len, "query")
+    s_relen <- .normarg_relength(subject.relength, subject_len, "subject")
 
     if (is(subject, "GNCList")) {
        si <- merge(seqinfo(subject), seqinfo(query))
@@ -205,8 +241,8 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
        s_rglist <- split(ranges(subject), s_split_factor)
     }
     circle_length <- .get_circle_length(si)
-    q_maps <- split(seq_along(query), q_split_factor)
-    s_maps <- split(seq_along(subject), s_split_factor)
+    q_remap <- split(query.remap, q_split_factor)
+    s_remap <- split(subject.remap, s_split_factor)
     if (ignore.strand) {
         q_space <- s_space <- NULL
     } else {
@@ -216,7 +252,8 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
     IRanges:::NCLists_find_overlaps_and_combine(
                            q_rglist, s_rglist, min.score,
                            type, select, circle_length,
-                           q_maps, s_maps,
+                           q_remap, s_remap,
+                           q_relen, s_relen,
                            q_space, s_space)
 }
 

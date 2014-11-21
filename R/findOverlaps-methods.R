@@ -2,6 +2,11 @@
 ### findOverlaps methods
 ### -------------------------------------------------------------------------
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### findOverlaps_GenomicRanges_old()
+###
+
 .putRangesOnFirstCircle <- function(x, circle.length)
 {
     x_start0 <- start(x) - 1L  # 0-based start
@@ -31,7 +36,7 @@
         pp_subject <- IntervalTree(subject0)
     } else {
         which_to_preprocess <-
-            IRanges:::NCList_which_to_preprocess(query, subject)
+            IRanges:::NCList_which_to_preprocess(query, subject, "all")
         if (which_to_preprocess == "query")
             pp_query <- NCList(query0)
         else
@@ -62,6 +67,175 @@
     as.vector(x)
 }
 
+findOverlaps_GenomicRanges_old <- function(query, subject,
+             maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE,
+             algorithm=c("intervaltree", "nclist"))
+{
+    if (!isSingleNumber(maxgap) || maxgap < 0L)
+        stop("'maxgap' must be a non-negative integer")
+    type <- match.arg(type)
+    select <- match.arg(select)
+    algorithm <- match.arg(algorithm)
+
+    ## merge() also checks that 'query' and 'subject' are based on the
+    ## same reference genome.
+    seqinfo <- merge(seqinfo(query), seqinfo(subject))
+
+    q_len <- length(query)
+    s_len <- length(subject)
+    q_seqnames <- seqnames(query)
+    s_seqnames <- seqnames(subject)
+    q_splitranges <- splitRanges(q_seqnames)
+    s_splitranges <- splitRanges(s_seqnames)
+    q_seqlevels_nonempty <- names(q_splitranges)[sapply(q_splitranges, length) > 0]
+    s_seqlevels_nonempty <- names(s_splitranges)[sapply(s_splitranges, length) > 0]
+    q_ranges <- unname(ranges(query))
+    s_ranges <- unname(ranges(subject))
+    if (ignore.strand) {
+        q_strand <- rep.int(1L, q_len)
+        s_strand <- rep.int(1L, s_len)
+    } else {
+        q_strand <- .strandAsSignedNumber(strand(query))
+        s_strand <- .strandAsSignedNumber(strand(subject))
+    }
+
+    common_seqlevels <- intersect(q_seqlevels_nonempty, s_seqlevels_nonempty)
+    results <- lapply(common_seqlevels,
+        function(seqlevel)
+        {
+            if (isCircular(seqinfo)[seqlevel] %in% TRUE) {
+                circle.length <- seqlengths(seqinfo)[seqlevel]
+            } else {
+                circle.length <- NA
+            }
+            q_idx <- q_splitranges[[seqlevel]]
+            s_idx <- s_splitranges[[seqlevel]]
+            hits <- .findOverlaps.circle(circle.length,
+                        extractROWS(q_ranges, q_idx),
+                        extractROWS(s_ranges, s_idx),
+                        maxgap, minoverlap, type, algorithm)
+            q_hits <- queryHits(hits)
+            s_hits <- subjectHits(hits)
+            compatible_strand <-
+                extractROWS(q_strand, q_idx)[q_hits] *
+                extractROWS(s_strand, s_idx)[s_hits] != -1L
+            hits <- hits[compatible_strand]
+            remapHits(hits, query.map=as.integer(q_idx),
+                            new.queryLength=q_len,
+                            subject.map=as.integer(s_idx),
+                            new.subjectLength=s_len)
+        })
+
+    ## Combine the results.
+    q_hits <- unlist(lapply(results, queryHits))
+    if (is.null(q_hits))
+        q_hits <- integer(0)
+
+    s_hits <- unlist(lapply(results, subjectHits))
+    if (is.null(s_hits))
+        s_hits <- integer(0)
+
+    if (select == "arbitrary") {
+        ans <- rep.int(NA_integer_, q_len)
+        ans[q_hits] <- s_hits
+        return(ans)
+    }
+    if (select == "first") {
+        ans <- rep.int(NA_integer_, q_len)
+        oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits, decreasing=TRUE)
+        ans[q_hits[oo]] <- s_hits[oo]
+        return(ans)
+    }
+    oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits)
+    q_hits <- q_hits[oo]
+    s_hits <- s_hits[oo]
+    if (select == "last") {
+        ans <- rep.int(NA_integer_, q_len)
+        ans[q_hits] <- s_hits
+        return(ans)
+    }
+    new2("Hits", queryHits=q_hits, subjectHits=s_hits,
+                 queryLength=q_len, subjectLength=s_len,
+                 check=FALSE)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### findOverlaps_GenomicRanges()
+###
+
+findOverlaps_GenomicRanges <- function(query, subject,
+             maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE,
+             minimize.preprocessing=TRUE)
+{
+    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
+    type <- match.arg(type)
+    select <- match.arg(select)
+
+    q_remap <- s_remap <- q_relen <- s_relen <- NULL
+    which_to_preprocess0 <- IRanges:::NCList_which_to_preprocess(
+                                             query, subject,
+                                             select)
+    size0 <- ifelse(which_to_preprocess0 == "query", length(query),
+                                                     length(subject))
+    if (minimize.preprocessing) {
+        ## We're going to try to reduce the size of the object to preprocess.
+        keep_seqlevels <- intersect(seqlevelsInUse(query),
+                                    seqlevelsInUse(subject))
+        q_keep_idx <- which(seqnames(query) %in% keep_seqlevels)
+        s_keep_idx <- which(seqnames(subject) %in% keep_seqlevels)
+        which_to_preprocess1 <- IRanges:::NCList_which_to_preprocess(
+                                                 q_keep_idx, s_keep_idx,
+                                                 select)
+        size1 <- ifelse(which_to_preprocess1 == "query", length(q_keep_idx),
+                                                         length(s_keep_idx))
+        ## Subsetting has a cost so the criteria we use for now is not
+        ## just size1 < size0.
+        ## TODO: Refine strategy. This is too blunt!
+        if (2L* size1 < size0)  {
+            if (which_to_preprocess1 == "query") {
+                q_relen <- length(query)
+                q_remap <- q_keep_idx
+                query <- query[q_remap]
+                seqlevels(query) <- keep_seqlevels
+                query <- GNCList(query)
+            } else {
+                s_relen <- length(subject)
+                s_remap <- s_keep_idx
+                subject <- subject[s_remap]
+                seqlevels(subject) <- keep_seqlevels
+                subject <- GNCList(subject)
+            }
+        }
+    }
+    if (!(is(query, "GNCList") || is(subject, "GNCList"))) {
+        ## Preprocess the full object.
+        if (which_to_preprocess0 == "query")
+            query <- GNCList(query)
+        else
+            subject <- GNCList(subject)
+    }
+
+    findOverlaps_GNCList(query, subject, min.score=min.score,
+                         type=type, select=select,
+                         ignore.strand=ignore.strand,
+                         query.remap=q_remap,
+                         subject.remap=s_remap,
+                         query.relength=q_relen,
+                         subject.relength=s_relen)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### findOverlaps methods
+###
+
 setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     function(query, subject, maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end", "within", "equal"),
@@ -69,96 +243,20 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
              algorithm=c("intervaltree", "nclist"),
              ignore.strand=FALSE)
     {
-        if (!isSingleNumber(maxgap) || maxgap < 0L)
-            stop("'maxgap' must be a non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
         algorithm <- match.arg(algorithm)
-
-        ## merge() also checks that 'query' and 'subject' are based on the
-        ## same reference genome.
-        seqinfo <- merge(seqinfo(query), seqinfo(subject))
-
-        q_len <- length(query)
-        s_len <- length(subject)
-        q_seqnames <- seqnames(query)
-        s_seqnames <- seqnames(subject)
-        q_splitranges <- splitRanges(q_seqnames)
-        s_splitranges <- splitRanges(s_seqnames)
-        q_seqlevels_nonempty <- names(q_splitranges)[sapply(q_splitranges, length) > 0]
-        s_seqlevels_nonempty <- names(s_splitranges)[sapply(s_splitranges, length) > 0]
-        q_ranges <- unname(ranges(query))
-        s_ranges <- unname(ranges(subject))
-        if (ignore.strand) {
-            q_strand <- rep.int(1L, q_len)
-            s_strand <- rep.int(1L, s_len)
-        } else {
-            q_strand <- .strandAsSignedNumber(strand(query))
-            s_strand <- .strandAsSignedNumber(strand(subject))
-        }
-
-        common_seqlevels <- intersect(q_seqlevels_nonempty, s_seqlevels_nonempty)
-        results <- lapply(common_seqlevels,
-            function(seqlevel)
-            {
-                if (isCircular(seqinfo)[seqlevel] %in% TRUE) {
-                    circle.length <- seqlengths(seqinfo)[seqlevel]
-                } else {
-                    circle.length <- NA
-                }
-                q_idx <- q_splitranges[[seqlevel]]
-                s_idx <- s_splitranges[[seqlevel]]
-                hits <- .findOverlaps.circle(circle.length,
-                            extractROWS(q_ranges, q_idx),
-                            extractROWS(s_ranges, s_idx),
-                            maxgap, minoverlap, type, algorithm)
-                q_hits <- queryHits(hits)
-                s_hits <- subjectHits(hits)
-                compatible_strand <-
-                    extractROWS(q_strand, q_idx)[q_hits] *
-                    extractROWS(s_strand, s_idx)[s_hits] != -1L
-                hits <- hits[compatible_strand]
-                remapHits(hits, query.map=as.integer(q_idx),
-                                new.queryLength=q_len,
-                                subject.map=as.integer(s_idx),
-                                new.subjectLength=s_len)
-            })
-
-        ## Combine the results.
-        q_hits <- unlist(lapply(results, queryHits))
-        if (is.null(q_hits))
-            q_hits <- integer(0)
-
-        s_hits <- unlist(lapply(results, subjectHits))
-        if (is.null(s_hits))
-            s_hits <- integer(0)
-
-        if (select == "arbitrary") {
-            ans <- rep.int(NA_integer_, q_len)
-            ans[q_hits] <- s_hits
-            return(ans)
-        }
-        if (select == "first") {
-            ans <- rep.int(NA_integer_, q_len)
-            oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits, decreasing=TRUE)
-            ans[q_hits[oo]] <- s_hits[oo]
-            return(ans)
-        }
-        oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits)
-        q_hits <- q_hits[oo]
-        s_hits <- s_hits[oo]
-        if (select == "last") {
-            ans <- rep.int(NA_integer_, q_len)
-            ans[q_hits] <- s_hits
-            return(ans)
-        }
-        new2("Hits", queryHits=q_hits, subjectHits=s_hits,
-                     queryLength=q_len, subjectLength=s_len,
-                     check=FALSE)
+        if (algorithm == "intervaltree")
+            FUN <- findOverlaps_GenomicRanges_old
+        else
+            FUN <- findOverlaps_GenomicRanges
+        FUN(query, subject,
+            maxgap=maxgap, minoverlap=minoverlap,
+            type=type, select=select,
+            ignore.strand=ignore.strand)
     }
 )
 
-### findOverlaps methods for GNCList
 setMethods("findOverlaps", list(c("GNCList", "GenomicRanges"),
                                 c("GenomicRanges", "GNCList")),
     function(query, subject, maxgap=0L, minoverlap=1L,
