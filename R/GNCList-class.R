@@ -205,15 +205,18 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
        s_rglist <- split(ranges(subject), s_split_factor)
     }
     circle_length <- .get_circle_length(si)
-    query_maps <- split(seq_along(query), q_split_factor)
-    subject_maps <- split(seq_along(subject), s_split_factor)
-    hits <- IRanges:::NCLists_find_overlaps_and_combine(
-                                   q_rglist, s_rglist, min.score,
-                                   type, circle_length,
-                                   query_maps, subject_maps)
-    if (!ignore.strand)
-        hits <- .drop_overlaps_with_incompatible_strand(hits,
-                                   strand(query), strand(subject))
-    selectHits(hits, select=select)
+    q_maps <- split(seq_along(query), q_split_factor)
+    s_maps <- split(seq_along(subject), s_split_factor)
+    if (ignore.strand) {
+        q_space <- s_space <- NULL
+    } else {
+        q_space <- split(as.integer(strand(query)) - 3L, q_split_factor)
+        s_space <- split(as.integer(strand(subject)) - 3L, s_split_factor)
+    }
+    IRanges:::NCLists_find_overlaps_and_combine(
+                           q_rglist, s_rglist, min.score,
+                           type, select, circle_length,
+                           q_maps, s_maps,
+                           q_space, s_space)
 }
 
