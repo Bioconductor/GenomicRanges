@@ -171,64 +171,22 @@ findOverlaps_GenomicRanges <- function(query, subject,
              maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
-             ignore.strand=FALSE,
-             minimize.preprocessing=TRUE)
+             ignore.strand=FALSE)
 {
     min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
     select <- match.arg(select)
 
-    q_remap <- s_remap <- q_relen <- s_relen <- NULL
-    which_to_preprocess0 <- IRanges:::NCList_which_to_preprocess(
-                                             query, subject,
-                                             select)
-    size0 <- ifelse(which_to_preprocess0 == "query", length(query),
-                                                     length(subject))
-    if (minimize.preprocessing) {
-        ## We're going to try to reduce the size of the object to preprocess.
-        keep_seqlevels <- intersect(seqlevelsInUse(query),
-                                    seqlevelsInUse(subject))
-        q_keep_idx <- which(seqnames(query) %in% keep_seqlevels)
-        s_keep_idx <- which(seqnames(subject) %in% keep_seqlevels)
-        which_to_preprocess1 <- IRanges:::NCList_which_to_preprocess(
-                                                 q_keep_idx, s_keep_idx,
-                                                 select)
-        size1 <- ifelse(which_to_preprocess1 == "query", length(q_keep_idx),
-                                                         length(s_keep_idx))
-        ## Subsetting has a cost so the criteria we use for now is not
-        ## just size1 < size0.
-        ## TODO: Refine strategy. This is too blunt!
-        if (2L* size1 < size0)  {
-            if (which_to_preprocess1 == "query") {
-                q_relen <- length(query)
-                q_remap <- q_keep_idx
-                query <- query[q_remap]
-                seqlevels(query) <- keep_seqlevels
-                query <- GNCList(query)
-            } else {
-                s_relen <- length(subject)
-                s_remap <- s_keep_idx
-                subject <- subject[s_remap]
-                seqlevels(subject) <- keep_seqlevels
-                subject <- GNCList(subject)
-            }
-        }
-    }
-    if (!(is(query, "GNCList") || is(subject, "GNCList"))) {
-        ## Preprocess the full object.
-        if (which_to_preprocess0 == "query")
-            query <- GNCList(query)
-        else
-            subject <- GNCList(subject)
-    }
-
+    which_to_preprocess <- IRanges:::NCList_which_to_preprocess(
+                                            query, subject,
+                                            select)
+    if (which_to_preprocess == "query")
+        query <- GNCList(query)
+    else
+        subject <- GNCList(subject)
     findOverlaps_GNCList(query, subject, min.score=min.score,
                          type=type, select=select,
-                         ignore.strand=ignore.strand,
-                         query.remap=q_remap,
-                         subject.remap=s_remap,
-                         query.relength=q_relen,
-                         subject.relength=s_relen)
+                         ignore.strand=ignore.strand)
 }
 
 
