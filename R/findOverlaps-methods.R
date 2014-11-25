@@ -176,14 +176,6 @@ findOverlaps_GenomicRanges <- function(query, subject,
     min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
     select <- match.arg(select)
-
-    which_to_preprocess <- IRanges:::NCList_which_to_preprocess(
-                                            query, subject,
-                                            select)
-    if (which_to_preprocess == "query")
-        query <- GNCList(query)
-    else
-        subject <- GNCList(subject)
     findOverlaps_GNCList(query, subject, min.score=min.score,
                          type=type, select=select,
                          ignore.strand=ignore.strand)

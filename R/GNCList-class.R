@@ -97,8 +97,6 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
                                  select=c("all", "first", "last", "arbitrary"),
                                  ignore.strand=FALSE)
 {
-    if (!(is(query, "GNCList") || is(subject, "GNCList")))
-        stop("'query' or 'subject' must be a GNCList object")
     if (!(is(query, "GenomicRanges") && is(subject, "GenomicRanges")))
         stop("'query' and 'subject' must be GenomicRanges objects")
     if (!isSingleNumber(min.score))
@@ -112,16 +110,30 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
 
     q_len <- length(query)
     s_len <- length(subject)
+    q_seqlevels <- seqlevels(query)
+    s_seqlevels <- seqlevels(subject)
     if (is(subject, "GNCList")) {
-       si <- merge(seqinfo(subject), seqinfo(query))
-       query <- .align_seqlevels(query, seqlevels(subject))
-       nclists <- subject@nclists
-       nclist_is_q <- rep.int(FALSE, length(nclists))
+        si <- merge(seqinfo(subject), seqinfo(query))
+        query <- .align_seqlevels(query, s_seqlevels)
+        nclists <- subject@nclists
+        nclist_is_q <- rep.int(FALSE, length(nclists))
+    } else if (is(query, "GNCList")) {
+        si <- merge(seqinfo(query), seqinfo(subject))
+        subject <- .align_seqlevels(subject, q_seqlevels)
+        nclists <- query@nclists
+        nclist_is_q <- rep.int(TRUE, length(nclists))
     } else {
-       si <- merge(seqinfo(query), seqinfo(subject))
-       subject <- .align_seqlevels(subject, seqlevels(query))
-       nclists <- query@nclists
-       nclist_is_q <- rep.int(TRUE, length(nclists))
+        ## We'll do "on-the-fly preprocessing".
+        if (length(s_seqlevels) <= length(q_seqlevels)) {
+            si <- merge(seqinfo(subject), seqinfo(query))
+            query <- .align_seqlevels(query, s_seqlevels)
+            nclists <- vector(mode="list", length=length(s_seqlevels))
+        } else {
+            si <- merge(seqinfo(query), seqinfo(subject))
+            subject <- .align_seqlevels(subject, q_seqlevels)
+            nclists <- vector(mode="list", length=length(q_seqlevels))
+        }
+        nclist_is_q <- rep.int(NA, length(nclists))
     }
     if (ignore.strand) {
         q_space <- s_space <- NULL
