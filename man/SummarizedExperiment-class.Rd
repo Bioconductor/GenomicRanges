@@ -31,6 +31,10 @@
 \alias{assay<-,SummarizedExperiment,character,matrix-method}
 \alias{assay<-,SummarizedExperiment,numeric,matrix-method}
 \alias{assay<-,SummarizedExperiment,missing,matrix-method}
+\alias{assayNames}
+\alias{assayNames,SummarizedExperiment-method}
+\alias{assayNames<-}
+\alias{assayNames<-,SummarizedExperiment,character-method}
 \alias{rowData}
 \alias{rowData,SummarizedExperiment-method}
 \alias{rowData<-}
@@ -163,6 +167,8 @@ SummarizedExperiment(assays, ...)
 
 ## Accessors
 
+assayNames(x, ...)
+assayNames(x, ...) <- value
 assays(x, ..., withDimnames=TRUE)
 assays(x, ..., withDimnames=TRUE) <- value
 assay(x, i, ...)
@@ -273,7 +279,9 @@ exptData(x, ...) <- value
 
   \item{withDimnames}{A \code{logical(1)}, indicating whether dimnames
     should be applied to extracted assay elements (this argument is
-    ignored for the setter \code{assays<-}).}
+    ignored for the setter \code{assays<-}). Setting
+    \code{withDimnames=FALSE} increases the speed with which assays are
+    extracted.}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
 
@@ -385,6 +393,9 @@ exptData(x, ...) <- value
       element. \code{value} must be a matrix of the same dimension as
       \code{x}, and with dimension names \code{NULL} or consistent with
       those of \code{x}.}
+
+    \item{\code{assayNames(x)}, \code{assayNames(x) <- value}:}{Get or
+     set the names of \code{assay()} elements.}
 
     \item{\code{rowData(x)}, \code{rowData(x) <- value}:}{Get or set the
       row data. \code{value} is a \code{GenomicRanges} instance. Row
@@ -586,6 +597,7 @@ exptData(x, ...) <- value
   sset <- SummarizedExperiment(assays=SimpleList(counts=counts),
                  rowData=rowData, colData=colData)
   sset
+  assayNames(sset)
   assays(sset) <- endoapply(assays(sset), asinh)
   head(assay(sset))
 

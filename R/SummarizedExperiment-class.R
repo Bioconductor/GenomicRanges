@@ -214,6 +214,11 @@ setGeneric("colData", function(x, ...) standardGeneric("colData"))
 setGeneric("colData<-",
     function(x, ..., value) standardGeneric("colData<-"))
 
+setGeneric("assayNames", function(x, ...) standardGeneric("assayNames"))
+
+setGeneric("assayNames<-",
+    function(x, ..., value) standardGeneric("assayNames<-"))
+
 setGeneric("assays",
     function(x, ..., withDimnames=TRUE) standardGeneric("assays"),
     signature="x")
@@ -273,6 +278,19 @@ setReplaceMethod("colData", c("SummarizedExperiment", "DataFrame"),
     msg <- .valid.SummarizedExperiment.colData_dims(x)
     if (!is.null(msg))
         stop(msg)
+    x
+})
+
+setMethod("assayNames", "SummarizedExperiment",
+    function(x, ...)
+{
+    names(assays(x, withDimnames=FALSE))
+})
+
+setMethod("assayNames<-", c("SummarizedExperiment", "character"),
+    function(x, ..., value)
+{
+    names(assays(x, withDimnames=FALSE)) <- value
     x
 })
 
