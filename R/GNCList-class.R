@@ -97,11 +97,11 @@ setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
 }
 
 ### NOT exported.
-findOverlaps_GNCList <- function(query, subject, min.score=1L,
-                                 type=c("any", "start", "end",
-                                        "within", "extend", "equal"),
-                                 select=c("all", "first", "last", "arbitrary"),
-                                 ignore.strand=FALSE)
+findOverlaps_GNCList <- function(query, subject,
+             min.score=1L,
+             type=c("any", "start", "end", "within", "extend", "equal"),
+             select=c("all", "first", "last", "arbitrary", "count"),
+             ignore.strand=FALSE)
 {
     if (!(is(query, "GenomicRanges") && is(subject, "GenomicRanges")))
         stop("'query' and 'subject' must be GenomicRanges objects")
