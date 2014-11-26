@@ -49,19 +49,23 @@ setMethod("strand", "GNCList", function(x) strand(granges(x)))
 setMethod("seqinfo", "GNCList", function(x) seqinfo(granges(x)))
 
 setAs("GNCList", "GRanges", function(from) granges(from))
-setAs("GNCList", "NCLists",
-    function(from)
-    {
-        from_granges <- granges(from)
-        ans_rglist <- split(ranges(from_granges), seqnames(from_granges))
-        new2("NCLists", nclists=from@nclists, rglist=ans_rglist, check=FALSE)
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor
 ###
+
+.extract_groups_from_GenomicRanges <- function(x)
+    split(seq_along(x) - 1L, seqnames(x))
+
+.expand_circle.length <- function(circle.length, x_groups)
+{
+    unlisted_groups <- unlist(x_groups, use.names=FALSE)
+    circle_len <- integer(length(unlisted_groups))
+    circle_len[unlisted_groups + 1L] <-
+        rep.int(circle.length, elementLengths(x_groups))
+    circle_len
+}
 
 GNCList <- function(x)
 {
@@ -70,10 +74,10 @@ GNCList <- function(x)
     if (!is(x, "GRanges"))
         x <- as(x, "GRanges")
     mcols(x) <- NULL
-    x_groups <- split(seq_len(length(x)) - 1L, seqnames(x))
-    x_nclists <- IRanges:::NCList_by_group(ranges(x),
-                                           x_groups,
-                                           .get_circle_length(x))
+    x_groups <- .extract_groups_from_GenomicRanges(x)
+    circle_len <- .expand_circle.length(.get_circle_length(x), x_groups)
+    x_ranges <- IRanges:::.shift_ranges_to_first_circle(ranges(x), circle_len)
+    x_nclists <- IRanges:::.nclists(x_ranges, x_groups)
     new2("GNCList", nclists=x_nclists, granges=x, check=FALSE)
 }
 
@@ -143,10 +147,10 @@ findOverlaps_GNCList <- function(query, subject, min.score=1L,
         q_space <- as.integer(strand(query)) - 3L
         s_space <- as.integer(strand(subject)) - 3L
     }
-    q_groups <- split(seq_len(q_len) - 1L, seqnames(query))
-    s_groups <- split(seq_len(s_len) - 1L, seqnames(subject))
+    q_groups <- .extract_groups_from_GenomicRanges(query)
+    s_groups <- .extract_groups_from_GenomicRanges(subject)
     circle_length <- .get_circle_length(si)
-    IRanges:::NCList_find_overlaps_by_group_and_combine(
+    IRanges:::NCList_find_overlaps_in_groups(
                           ranges(query), q_space, q_groups,
                           ranges(subject), s_space, s_groups,
                           nclists, nclist_is_q,

@@ -30,19 +30,14 @@
     s_len <- length(subject)
     if (q_len == 0L || s_len == 0L)
         return(new("Hits", queryLength=q_len, subjectLength=s_len))
-    pp_query <- query0 <- .putRangesOnFirstCircle(query, circle.length)
+    query0 <- .putRangesOnFirstCircle(query, circle.length)
     pp_subject <- subject0 <- .putRangesOnFirstCircle(subject, circle.length)
     if (algorithm == "intervaltree") {
         pp_subject <- IntervalTree(subject0)
     } else {
-        which_to_preprocess <-
-            IRanges:::NCList_which_to_preprocess(query, subject, "all")
-        if (which_to_preprocess == "query")
-            pp_query <- NCList(query0)
-        else
-            pp_subject <- NCList(subject0)
+        pp_subject <- NCList(subject0)
     }
-    hits00 <- findOverlaps(pp_query, pp_subject,
+    hits00 <- findOverlaps(query0, pp_subject,
                            maxgap=maxgap, minoverlap=minoverlap,
                            type=type, select="all")
     query1 <- shift(query0, circle.length)
@@ -50,9 +45,9 @@
                            maxgap=maxgap, minoverlap=minoverlap,
                            type=type, select="all")
     subject1 <- shift(subject0, circle.length)
-    hits01 <- findOverlaps(pp_query, subject1,
+    hits01 <- findOverlaps(query0, subject1,
                            maxgap=maxgap, minoverlap=minoverlap,
-                           type=type, select="all")
+                           type=type, select="all", algorithm=algorithm)
     ## Merge 'hits00', 'hits10' and 'hits01'.
     union(union(hits00, hits10), hits01)
 }
@@ -71,8 +66,8 @@ findOverlaps_GenomicRanges_old <- function(query, subject,
              maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
-             ignore.strand=FALSE,
-             algorithm=c("intervaltree", "nclist"))
+             algorithm=c("intervaltree", "nclist"),
+             ignore.strand=FALSE)
 {
     if (!isSingleNumber(maxgap) || maxgap < 0L)
         stop("'maxgap' must be a non-negative integer")
@@ -171,11 +166,16 @@ findOverlaps_GenomicRanges <- function(query, subject,
              maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
+             algorithm=c("intervaltree", "nclist"),
              ignore.strand=FALSE)
 {
     min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
     select <- match.arg(select)
+    algorithm <- match.arg(algorithm)
+    if (algorithm != "intervaltree")
+        warning("'algorithm' is ignored when 'query' or 'subject' ",
+                "is a GNCList object")
     findOverlaps_GNCList(query, subject, min.score=min.score,
                          type=type, select=select,
                          ignore.strand=ignore.strand)
@@ -207,25 +207,12 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
     }
 )
 
-setMethods("findOverlaps", list(c("GNCList", "GenomicRanges"),
-                                c("GenomicRanges", "GNCList")),
-    function(query, subject, maxgap=0L, minoverlap=1L,
-             type=c("any", "start", "end", "within", "equal"),
-             select=c("all", "first", "last", "arbitrary"),
-             algorithm=c("intervaltree", "nclist"),
-             ignore.strand=FALSE)
-    {
-        min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
-        type <- match.arg(type)
-        select <- match.arg(select)
-        algorithm <- match.arg(algorithm)
-        if (algorithm != "intervaltree")
-            warning("'algorithm' is ignored when 'query' or 'subject' ",
-                    "is a GNCList object")
-        findOverlaps_GNCList(query, subject, min.score=min.score,
-                             type=type, select=select,
-                             ignore.strand=ignore.strand)
-    }
+setMethod("findOverlaps", c("GNCList", "GenomicRanges"),
+    findOverlaps_GenomicRanges
+)
+
+setMethod("findOverlaps", c("GenomicRanges", "GNCList"),
+    findOverlaps_GenomicRanges
 )
 
 ### Extract the unique rows from 2-col matrix 'matchMatrix' and return them
