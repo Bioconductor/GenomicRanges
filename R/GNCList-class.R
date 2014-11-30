@@ -58,15 +58,6 @@ setAs("GNCList", "GRanges", function(from) granges(from))
 .extract_groups_from_GenomicRanges <- function(x)
     split(seq_along(x) - 1L, seqnames(x))
 
-.expand_circle.length <- function(circle.length, x_groups)
-{
-    unlisted_groups <- unlist(x_groups, use.names=FALSE)
-    circle_len <- integer(length(unlisted_groups))
-    circle_len[unlisted_groups + 1L] <-
-        rep.int(circle.length, elementLengths(x_groups))
-    circle_len
-}
-
 GNCList <- function(x)
 {
     if (!is(x, "GenomicRanges"))
@@ -75,8 +66,9 @@ GNCList <- function(x)
         x <- as(x, "GRanges")
     mcols(x) <- NULL
     x_groups <- .extract_groups_from_GenomicRanges(x)
-    circle_len <- .expand_circle.length(.get_circle_length(x), x_groups)
-    x_ranges <- IRanges:::.shift_ranges_to_first_circle(ranges(x), circle_len)
+    x_ranges <- IRanges:::.shift_ranges_in_groups_to_first_circle(ranges(x),
+                                   x_groups, .get_circle_length(x))
+    ranges(x) <- x_ranges
     x_nclists <- IRanges:::.nclists(x_ranges, x_groups)
     new2("GNCList", nclists=x_nclists, granges=x, check=FALSE)
 }
