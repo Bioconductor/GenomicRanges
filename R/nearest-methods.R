@@ -176,39 +176,38 @@
 ###
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select = c("arbitrary", "all"), 
-             ignore.strand=FALSE, ...)
+    function(x, subject, select = c("arbitrary", "all"), ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-            "precede", ...) 
+                                         "precede") 
     }
 )
 
 setMethod("precede", c("GenomicRanges", "missing"),
-    function(x, subject, select = c("arbitrary", "all"), 
-             ignore.strand=FALSE, ...)
+    function(x, subject, select = c("arbitrary", "all"), ignore.strand=FALSE)
     {
-        callGeneric(x, subject=x, select=select, ignore.strand=ignore.strand, 
-            ...) 
+        select <- match.arg(select)
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
+                                         "precede") 
     }
 )
 
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select = c("arbitrary", "all"), 
-             ignore.strand=FALSE, ...)
+    function(x, subject, select = c("arbitrary", "all"), ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-            "follow", ...) 
+                                         "follow") 
     }
 )
 
 setMethod("follow", c("GenomicRanges", "missing"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE, ...)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
     {
-        callGeneric(x, subject=x, select=select, ignore.strand=ignore.strand, 
-            ...) 
+        select <- match.arg(select)
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
+                                         "follow") 
     }
 )
 
@@ -217,33 +216,27 @@ setMethod("follow", c("GenomicRanges", "missing"),
 ### nearest()
 ###
 
-.filterMatchMatrix <- function(m, i, map) 
+.filterHits <- function(hits, i, map) 
 {
-    qrle <- Rle(m[, 1L])
-    qstart <- qend <- integer(length(i))
-    qstart[runValue(qrle)] <- start(qrle)
-    qend[runValue(qrle)] <- end(qrle)
-    rows <- as.integer(IRanges(qstart[i], qend[i]))
-    m <- m[rows, , drop = FALSE]
+    m <- as.matrix(hits[as(hits, "IRanges")[i]])
     m[, 1L] <- map[m[, 1L]]
     m
 }
 
-.nearest <- function(x, subject, select, ignore.strand, ignoreSelf=FALSE, ...)
+.nearest <- function(x, subject, select, ignore.strand, ignoreSelf=FALSE)
 {
     ## overlapping ranges
     if (ignoreSelf) {
-        fo <- findOverlaps(x, subject, select="all",
-                           ignore.strand=ignore.strand)
-        ol <- IRanges:::processSelfMatching(fo, select, ignoreSelf=TRUE)
+        ol <- findOverlaps(x,
+                           select=select, ignore.strand=ignore.strand,
+                           ignoreSelf=TRUE)
     } else {
-        ol <- findOverlaps(x, subject, select=select,
-                           ignore.strand=ignore.strand)
+        ol <- findOverlaps(x, subject,
+                           select=select, ignore.strand=ignore.strand)
     }
 
     if (select == "all") {
-        m <- as.matrix(ol)
-        olv <- IRanges:::hitsMatrixToVector(m, length(x))
+        olv <- selectHits(ol, select="first")
     } else {
         olv <- ol
     }
@@ -265,10 +258,10 @@ setMethod("follow", c("GenomicRanges", "missing"),
         }
 
         if (select == "all") {
-            pmat <- as.matrix(p)
-            fmat <- as.matrix(f)
-            p <- IRanges:::hitsMatrixToVector(as.matrix(pmat), length(x))
-            f <- IRanges:::hitsMatrixToVector(as.matrix(fmat), length(x))
+            p0 <- p
+            p <- selectHits(p, select="first")
+            f0 <- f
+            f <- selectHits(f, select="first")
         }
 
         ## choose nearest or not missing
@@ -281,10 +274,9 @@ setMethod("follow", c("GenomicRanges", "missing"),
         if (select == "all") {
             map <- which(is.na(olv))
             pnearest[pdist == fdist] <- TRUE
-            m <- rbind(m, .filterMatchMatrix(pmat, pnearest, map), 
-                .filterMatchMatrix(fmat, !pnearest, map))
-            m <- m[S4Vectors:::orderIntegerPairs(m[, 1L], m[, 2L]), , 
-                drop = FALSE]
+            m <- rbind(as.matrix(ol), .filterHits(p0, pnearest, map),
+                                      .filterHits(f0, !pnearest, map))
+            m <- m[S4Vectors:::orderIntegerPairs(m[, 1L], m[, 2L]),, drop=FALSE]
             ol@queryHits <- unname(m[, 1L])
             ol@subjectHits <- unname(m[, 2L])
         } else {
@@ -306,20 +298,19 @@ setMethod("follow", c("GenomicRanges", "missing"),
 
 
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE, 
-             ...)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .nearest(x, subject, select=select, ignore.strand=ignore.strand, ...)
+        .nearest(x, subject, select=select, ignore.strand=ignore.strand)
     }
 )
 
 setMethod("nearest", c("GenomicRanges", "missing"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE, 
-             ...)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
     {
-        callGeneric(x, subject=x, select=select, ignore.strand=ignore.strand, 
-                    ignoreSelf=TRUE, ...)
+        select <- match.arg(select)
+        .nearest(x, x, select=select, ignore.strand=ignore.strand,
+                 ignoreSelf=TRUE)
     }
 )
 
@@ -394,3 +385,4 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
             elementMetadata=DataFrame(distance=distance))
     }
 }
+

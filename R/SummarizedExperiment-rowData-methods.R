@@ -126,12 +126,11 @@ setMethod("granges", "SummarizedExperiment",
 
 .SummarizedExperiment.nearest.missing <-
     function(x, subject, select = c("arbitrary", "all"),
-             ignore.strand = FALSE, ...)
+             ignore.strand = FALSE)
 {
     select <- match.arg(select)
     x <- rowData(x)
-    nearest(x=x, subject=x, select=select,
-            ignore.strand=ignore.strand, ignoreSelf=TRUE, ...)
+    nearest(x=x, select=select, ignore.strand=ignore.strand)
 }
 
 .SummarizedExperiment.distance <-
@@ -164,7 +163,7 @@ local({
     for (.sig in .signatures) {
         .funs <- c("nearest", "precede", "follow")
         tmpl <- function(x, subject, select = c("arbitrary", "all"),
-                         ignore.strand = FALSE, ...) {}
+                         ignore.strand = FALSE) {}
         environment(tmpl) <- parent.frame(2)
         for (.fun in .funs) {
             body(tmpl) <- substitute({
@@ -174,7 +173,7 @@ local({
                 if (is(subject, "SummarizedExperiment"))
                     subject <- rowData(subject)
                 FUN(x=x, subject=subject, select=select,
-                    ignore.strand=ignore.strand, ...)
+                    ignore.strand=ignore.strand)
             }, list(FUN=as.symbol(.fun)))
             setMethod(.fun, .sig, tmpl)
         }

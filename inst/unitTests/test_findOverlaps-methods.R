@@ -19,6 +19,15 @@ make_query <- function() {
                                    strand = "-"))
 }
 
+.checkHits <- function(q_hits, s_hits, q_len, s_len, current, select)
+{
+    target <- new("Hits", queryHits=as.integer(q_hits),
+                          subjectHits=as.integer(s_hits),
+                          queryLength=as.integer(q_len),
+                          subjectLength=as.integer(s_len))
+    checkIdentical(t(selectHits(target, select=select)), t(unname(current)))
+}
+
 test_findOverlaps_no_overlaps_returns_empty_matches <- function()
 {
     query <- make_query()
@@ -26,11 +35,9 @@ test_findOverlaps_no_overlaps_returns_empty_matches <- function()
     ranges(subject) <- shift(ranges(subject), 1000L)
 
     ## select = "all"
-    expect <- new("Hits", queryHits = integer(0), subjectHits = integer(0),
-                          queryLength = 3L, subjectLength = 10L)
     for (type in c("any", "start", "end")) {
-        ans <- findOverlaps(query, subject, type = type, select = "all")
-        checkIdentical(expect, ans)
+        current <- findOverlaps(query, subject, type = type, select = "all")
+        .checkHits(integer(0), integer(0), 3, 10, current, select="all")
 
         ans <- countOverlaps(query, subject, type = type)
         checkIdentical(structure(c(0L, 0L, 0L),
@@ -55,11 +62,9 @@ test_findOverlaps_empty_query <- function()
     subject <- make_subject()
 
     ## select = "all"
-    expect <- new("Hits", queryHits = integer(0), subjectHits = integer(0),
-                          queryLength = 0L, subjectLength = 10L)
     for (type in c("any", "start", "end")) {
-        ans <- findOverlaps(query, subject, type = type, select = "all")
-        checkIdentical(expect, ans)
+        current <- findOverlaps(query, subject, type = type, select = "all")
+        .checkHits(integer(0), integer(0), 0, 10, current, select="all")
 
         ans <- countOverlaps(query, subject, type = type)
         checkIdentical(integer(0), ans)
@@ -82,11 +87,9 @@ test_findOverlaps_empty_subject <- function()
     subject <- new("GRanges")
 
     ## select = "all"
-    expect <- new("Hits", queryHits = integer(0), subjectHits = integer(0),
-                          queryLength = 3L, subjectLength = 0L)
     for (type in c("any", "start", "end")) {
-        ans <- findOverlaps(query, subject, type = type, select = "all")
-        checkIdentical(expect, ans)
+        current <- findOverlaps(query, subject, type = type, select = "all")
+        .checkHits(integer(0), integer(0), 3, 0, current, select="all")
 
         ans <- countOverlaps(query, subject, type = type)
         checkIdentical(structure(c(0L, 0L, 0L),
@@ -111,53 +114,34 @@ test_findOverlaps_zero_one_two_matches <- function()
     subject <- make_subject()
 
     ## select = "all"
-    expectAny <- new("Hits",
-                     queryHits = c(2L, 3L, 3L), subjectHits = c(7L, 1L, 5L),
-                     queryLength = 3L, subjectLength = 10L)
-    expectStart <- new("Hits",
-                       queryHits = 3L, subjectHits = 1L,
-                       queryLength = 3L, subjectLength = 10L)
-    expectEnd <- new("Hits",
-                     queryHits = integer(0), subjectHits = integer(0),
-                     queryLength = 3L, subjectLength = 10L)
-    ansAny <- findOverlaps(query, subject, select = "all", type = "any")
-    ansStart <- findOverlaps(query, subject, select = "all", type = "start")
-    ansEnd <- findOverlaps(query, subject, select = "all", type = "end")
-    checkIdentical(expectAny, ansAny)
-    checkIdentical(expectStart, ansStart)
-    checkIdentical(expectEnd, ansEnd)
+    ansAny <- findOverlaps(query, subject, type="any", select="all")
+    ansStart <- findOverlaps(query, subject, type="start", select="all")
+    ansEnd <- findOverlaps(query, subject, type="end", select="all")
+    .checkHits(c(2, 3, 3), c(7, 1, 5), 3, 10, ansAny, select="all")
+    .checkHits(3, 1, 3, 10, ansStart, select="all")
+    .checkHits(integer(0), integer(0), 3, 10, ansEnd, select="all")
 
-    countsAny <- countOverlaps(query, subject, type = "any")
-    countsStart <- countOverlaps(query, subject, type = "start")
-    countsEnd <- countOverlaps(query, subject, type = "end")
-    checkIdentical(structure(tabulate(queryHits(expectAny), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsAny)
-    checkIdentical(structure(tabulate(queryHits(expectStart), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsStart)
-    checkIdentical(structure(tabulate(queryHits(expectEnd), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsEnd)
+    countsAny <- countOverlaps(query, subject, type="any")
+    countsStart <- countOverlaps(query, subject, type="start")
+    countsEnd <- countOverlaps(query, subject, type="end")
+    .checkHits(c(2, 3, 3), c(7, 1, 5), 3, 10, countsAny, select="count")
+    .checkHits(3, 1, 3, 10, countsStart, select="count")
+    .checkHits(integer(0), integer(0), 3, 10, countsEnd, select="count")
 
-    subsetAny <- subsetByOverlaps(query, subject, type = "any")
-    subsetStart <- subsetByOverlaps(query, subject, type = "start")
-    subsetEnd <- subsetByOverlaps(query, subject, type = "end")
+    subsetAny <- subsetByOverlaps(query, subject, type="any")
+    subsetStart <- subsetByOverlaps(query, subject, type="start")
+    subsetEnd <- subsetByOverlaps(query, subject, type="end")
     checkIdentical(query[countsAny > 0], subsetAny)
     checkIdentical(query[countsStart > 0], subsetStart)
     checkIdentical(query[countsEnd > 0], subsetEnd)
 
     ## select = "first"
-    expectAny <- c(NA_integer_, 7L, 1L)
-    expectStart <- c(NA_integer_, NA_integer_, 1L)
-    expectEnd <- c(NA_integer_, NA_integer_, NA_integer_)
-    ansAny <- findOverlaps(query, subject, type = "any", select = "first")
-    ansStart <- findOverlaps(query, subject, type = "start", select = "first")
-    ansEnd <- findOverlaps(query, subject, type = "end", select = "first")
-    checkIdentical(expectAny, ansAny)
-    checkIdentical(expectAny, findOverlaps(query, subject, select="first"))
-    checkIdentical(expectStart, ansStart)
-    checkIdentical(expectEnd, ansEnd)
+    ansAny <- findOverlaps(query, subject, type="any", select="first")
+    ansStart <- findOverlaps(query, subject, type="start", select="first")
+    ansEnd <- findOverlaps(query, subject, type="end", select="first")
+    .checkHits(c(2, 3, 3), c(7, 1, 5), 3, 10, ansAny, select="first")
+    .checkHits(3, 1, 3, 10, ansStart, select="first")
+    .checkHits(integer(0), integer(0), 3, 10, ansEnd, select="first")
 }
 
 test_findOverlaps_multimatch_within_one_query <- function()
@@ -167,53 +151,34 @@ test_findOverlaps_multimatch_within_one_query <- function()
     subject <- make_subject()
 
     ## select = "all"
-    expectAny <- new("Hits",
-                     queryHits = c(2L, 3L, 3L), subjectHits = c(7L, 1L, 5L),
-                     queryLength = 3L, subjectLength = 10L)
-    expectStart <- new("Hits",
-                       queryHits = 3L, subjectHits = 1L,
-                       queryLength = 3L, subjectLength = 10L)
-    expectEnd <- new("Hits",
-                     queryHits = integer(0), subjectHits = integer(0),
-                     queryLength = 3L, subjectLength = 10L)
-    ansAny <- findOverlaps(query, subject, select = "all", type = "any")
-    ansStart <- findOverlaps(query, subject, select = "all", type = "start")
-    ansEnd <- findOverlaps(query, subject, select = "all", type = "end")
-    checkIdentical(expectAny, ansAny)
-    checkIdentical(expectStart, ansStart)
-    checkIdentical(expectEnd, ansEnd)
+    ansAny <- findOverlaps(query, subject, type="any", select="all")
+    ansStart <- findOverlaps(query, subject, type="start", select="all")
+    ansEnd <- findOverlaps(query, subject, type="end", select="all")
+    .checkHits(c(2, 3, 3), c(7, 1, 5), 3, 10, ansAny, select="all")
+    .checkHits(3, 1, 3, 10, ansStart, select="all")
+    .checkHits(integer(0), integer(0), 3, 10, ansEnd, select="all")
 
-    countsAny <- countOverlaps(query, subject, type = "any")
-    countsStart <- countOverlaps(query, subject, type = "start")
-    countsEnd <- countOverlaps(query, subject, type = "end")
-    checkIdentical(structure(tabulate(queryHits(expectAny), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsAny)
-    checkIdentical(structure(tabulate(queryHits(expectStart), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsStart)
-    checkIdentical(structure(tabulate(queryHits(expectEnd), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsEnd)
+    countsAny <- countOverlaps(query, subject, type="any")
+    countsStart <- countOverlaps(query, subject, type="start")
+    countsEnd <- countOverlaps(query, subject, type="end")
+    .checkHits(c(2, 3, 3), c(7, 1, 5), 3, 10, countsAny, select="count")
+    .checkHits(3, 1, 3, 10, countsStart, select="count")
+    .checkHits(integer(0), integer(0), 3, 10, countsEnd, select="count")
 
-    subsetAny <- subsetByOverlaps(query, subject, type = "any")
-    subsetStart <- subsetByOverlaps(query, subject, type = "start")
-    subsetEnd <- subsetByOverlaps(query, subject, type = "end")
+    subsetAny <- subsetByOverlaps(query, subject, type="any")
+    subsetStart <- subsetByOverlaps(query, subject, type="start")
+    subsetEnd <- subsetByOverlaps(query, subject, type="end")
     checkIdentical(query[countsAny > 0], subsetAny)
     checkIdentical(query[countsStart > 0], subsetStart)
     checkIdentical(query[countsEnd > 0], subsetEnd)
 
     ## select = "first"
-    expectAny <- c(NA_integer_, 7L, 1L)
-    expectStart <- c(NA_integer_, NA_integer_, 1L)
-    expectEnd <- c(NA_integer_, NA_integer_, NA_integer_)
-    ansAny <- findOverlaps(query, subject, type = "any", select = "first")
-    ansStart <- findOverlaps(query, subject, type = "start", select = "first")
-    ansEnd <- findOverlaps(query, subject, type = "end", select = "first")
-    checkIdentical(expectAny, ansAny)
-    checkIdentical(expectAny, findOverlaps(query, subject, select="first"))
-    checkIdentical(expectStart, ansStart)
-    checkIdentical(expectEnd, ansEnd)
+    ansAny <- findOverlaps(query, subject, type="any", select="first")
+    ansStart <- findOverlaps(query, subject, type="start", select="first")
+    ansEnd <- findOverlaps(query, subject, type="end", select="first")
+    .checkHits(c(2, 3, 3), c(7, 1, 5), 3, 10, ansAny, select="first")
+    .checkHits(3, 1, 3, 10, ansStart, select="first")
+    .checkHits(integer(0), integer(0), 3, 10, ansEnd, select="first")
 }
 
 test_findOverlaps_either_strand <- function()
@@ -224,35 +189,21 @@ test_findOverlaps_either_strand <- function()
     query@unlistData@strand <- Rle(strand(c("*", "*", "-")))
 
     ## select = "all"
-    expectAny <- new("Hits",
-                     queryHits = c(1L, 1L, 1L, 2L, 3L, 3L),
-                     subjectHits = c(1L, 5L, 6L, 7L, 1L, 5L),
-                     queryLength = 3L, subjectLength = 10L)
-    expectStart <- new("Hits",
-                       queryHits = c(1L, 3L), subjectHits = c(5L, 1L),
-                       queryLength = 3L, subjectLength = 10L)
-    expectEnd <- new("Hits",
-                     queryHits = c(1L, 1L, 1L), subjectHits = c(1L, 5L, 6L),
-                     queryLength = 3L, subjectLength = 10L)
-    ansAny <- findOverlaps(query, subject, type = "any", select = "all")
-    ansStart <- findOverlaps(query, subject, type = "start", select = "all")
-    ansEnd <- findOverlaps(query, subject, type = "end", select = "all")
-    checkIdentical(expectAny, ansAny)
-    checkIdentical(expectStart, ansStart)
-    checkIdentical(expectEnd, ansEnd)
+    ansAny <- findOverlaps(query, subject, type="any", select="all")
+    ansStart <- findOverlaps(query, subject, type="start", select="all")
+    ansEnd <- findOverlaps(query, subject, type="end", select="all")
+    .checkHits(c(1, 1, 1, 2, 3, 3), c(1, 5, 6, 7, 1, 5), 3, 10,
+               ansAny, select="all")
+    .checkHits(c(1, 3), c(5, 1), 3, 10, ansStart, select="all")
+    .checkHits(c(1, 1, 1), c(1, 5, 6), 3, 10, ansEnd, select="all")
 
     countsAny <- countOverlaps(query, subject, type = "any")
     countsStart <- countOverlaps(query, subject, type = "start")
     countsEnd <- countOverlaps(query, subject, type = "end")
-    checkIdentical(structure(tabulate(queryHits(expectAny), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsAny)
-    checkIdentical(structure(tabulate(queryHits(expectStart), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsStart)
-    checkIdentical(structure(tabulate(queryHits(expectEnd), 3),
-                             names=c("nomatch", "onematch", "twomatch")),
-                   countsEnd)
+    .checkHits(c(1, 1, 1, 2, 3, 3), c(1, 5, 6, 7, 1, 5), 3, 10,
+               countsAny, select="count")
+    .checkHits(c(1, 3), c(5, 1), 3, 10, countsStart, select="count")
+    .checkHits(c(1, 1, 1), c(1, 5, 6), 3, 10, countsEnd, select="count")
 
     subsetAny <- subsetByOverlaps(query, subject, type = "any")
     subsetStart <- subsetByOverlaps(query, subject, type = "start")
@@ -262,16 +213,13 @@ test_findOverlaps_either_strand <- function()
     checkIdentical(query[countsEnd > 0], subsetEnd)
 
     # select = "first"
-    expectAny <- c(1L, 7L, 1L)
-    expectStart <- c(5L, NA_integer_, 1L)
-    expectEnd <- c(1L, NA_integer_, NA_integer_)
-    ansAny <- findOverlaps(query, subject, type = "any", select = "first")
-    ansStart <- findOverlaps(query, subject, type = "start", select = "first")
-    ansEnd <- findOverlaps(query, subject, type = "end", select = "first")
-    checkIdentical(expectAny, ansAny)
-    checkIdentical(expectAny, findOverlaps(query, subject, select="first"))
-    checkIdentical(expectStart, ansStart)
-    checkIdentical(expectEnd, ansEnd)
+    ansAny <- findOverlaps(query, subject, type="any", select="first")
+    ansStart <- findOverlaps(query, subject, type="start", select="first")
+    ansEnd <- findOverlaps(query, subject, type="end", select="first")
+    .checkHits(c(1, 1, 1, 2, 3, 3), c(1, 5, 6, 7, 1, 5), 3, 10,
+               ansAny, select="first")
+    .checkHits(c(1, 3), c(5, 1), 3, 10, ansStart, select="first")
+    .checkHits(c(1, 1, 1), c(1, 5, 6), 3, 10, ansEnd, select="first")
 }
 
 test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
@@ -279,16 +227,10 @@ test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
      query <- make_subject()
      subject <- make_query()
      current <- findOverlaps(query, subject, minoverlap = 5)
-     target <-  new("Hits",
-                    queryHits = 1L, subjectHits = 3L,
-                    queryLength = 10L, subjectLength = 3L)
-     checkIdentical(target, current)
+     .checkHits(1, 3, 10, 3, current, select="all")
 
      current <- findOverlaps(query, subject, minoverlap = 6)
-     target <-  new("Hits",
-                    queryHits = integer(0), subjectHits = integer(0),
-                    queryLength = 10L, subjectLength = 3L)
-     checkIdentical(target, current)
+     .checkHits(integer(0), integer(0), 10, 3, current, select="all")
 }
 
 
@@ -297,16 +239,10 @@ test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
      subject <- make_subject()
      query <- make_query()
      current <- findOverlaps(query, subject, minoverlap = 5)
-     target <-  new("Hits",
-                    queryHits = 3L, subjectHits = 1L,
-                    queryLength = 3L, subjectLength = 10L)
-     checkIdentical(target, current)
+     .checkHits(3, 1, 3, 10, current, select="all")
 
      current <- findOverlaps(query, subject, minoverlap = 6)
-     target <-  new("Hits",
-                    queryHits = integer(0), subjectHits = integer(0),
-                    queryLength = 3L, subjectLength = 10L)
-     checkIdentical(target, current)
+     .checkHits(integer(0), integer(0), 3, 10, current, select="all")
 }
 
 
@@ -315,33 +251,20 @@ test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
      current <- findOverlaps(query, subject, minoverlap = 1)
-     target <- new("Hits",
-                   queryHits = c(2L, 3L), subjectHits = c(1L, 1L),
-                   queryLength = 3L, subjectLength = 1L)
-     checkIdentical(target, current)
+     .checkHits(c(2, 3), c(1, 1), 3, 1, current, select="all")
      
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
      current <- findOverlaps(query, subject, minoverlap = 6)
-     target <- new("Hits",
-                   queryHits = 3L, subjectHits = 1L,
-                   queryLength = 3L, subjectLength = 1L)
-     checkIdentical(target, current)
+     .checkHits(3, 1, 3, 1, current, select="all")
 
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
      current <- findOverlaps(query, subject, minoverlap = 7)
-     target <-  new("Hits",
-                    queryHits = integer(0), subjectHits = integer(0),
-                    queryLength = 3L, subjectLength = 1L)
-     checkIdentical(target, current)
+     .checkHits(integer(0), integer(0), 3, 1, current, select="all")
 
      current <- findOverlaps(subject, query, minoverlap = 6)
-     target <-  new("Hits",
-                    queryHits = 1L, subjectHits = 3L,
-                    queryLength = 1L, subjectLength = 3L)
-     checkIdentical(target, current)
-
+     .checkHits(1, 3, 1, 3, current, select="all")
 }
 
 test_findOverlaps_with_circular_sequences <- function()
@@ -352,54 +275,26 @@ test_findOverlaps_with_circular_sequences <- function()
     ## With A of length 9 --> no overlap between last and first ranges.
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=9, isCircular=TRUE)
     current0 <- findOverlaps(gr, gr)
-    matchMatrix0 <- matrix(
-                        c(1L, 1L, 2L, 2L, 2L, 3L, 3L, 3L, 4L, 4L,
-                          1L, 2L, 1L, 2L, 3L, 2L, 3L, 4L, 3L, 4L),
-                        ncol = 2,
-                        dimnames = list(NULL, c("queryHits", "subjectHits")))
-    target0 <-  new("Hits",
-                    queryHits = unname(matchMatrix0[ , 1L]),
-                    subjectHits = unname(matchMatrix0[ , 2L]),
-                    queryLength = 4L, subjectLength = 4L)
-    checkIdentical(target0, current0)
+    target0_q_hits <- c(1L, 1L, 2L, 2L, 2L, 3L, 3L, 3L, 4L, 4L)
+    target0_s_hits <- c(1L, 2L, 1L, 2L, 3L, 2L, 3L, 4L, 3L, 4L)
+    .checkHits(target0_q_hits, target0_s_hits, 4, 4, current0, select="all")
 
     ## With A of length 8 --> last and first ranges do overlap.
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=8, isCircular=TRUE)
     current1 <- findOverlaps(gr, gr)
-    matchMatrix1 <- rbind(matchMatrix0, matrix(c(1L, 4L, 4L, 1L), ncol = 2))
-    o1 <- S4Vectors:::orderIntegerPairs(matchMatrix1[ , 1L],
-                                        matchMatrix1[ , 2L])
-    matchMatrix1 <- matchMatrix1[o1, ]
-    target1 <- new("Hits",
-                   queryHits = unname(matchMatrix1[ , 1L]),
-                   subjectHits = unname(matchMatrix1[ , 2L]),
-                   queryLength = 4L, subjectLength = 4L)
-    checkIdentical(target1, current1)
+    .checkHits(c(1, target0_q_hits, 4), c(4, target0_s_hits, 1), 4, 4,
+               current1, select="all")
 
     ## With A of length 8 and minoverlap=2 --> no overlap between last
     ## and first ranges.
     current2 <- findOverlaps(gr, gr, minoverlap=2)
-    matchMatrix2 <- matrix(c(1:4, 1:4), ncol = 2,
-                           dimnames = list(NULL, c("queryHits", "subjectHits")))
-    target2 <- new("Hits",
-                   queryHits = unname(matchMatrix2[ , 1L]),
-                   subjectHits = unname(matchMatrix2[ , 2L]),
-                   queryLength = 4L, subjectLength = 4L)
-    checkIdentical(target2, current2)
+    .checkHits(1:4, 1:4, 4, 4, current2, select="all")
 
     ## With A of length 7 and minoverlap=2 --> last and first ranges
     ## do overlap.
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=7, isCircular=TRUE)
     current3 <- findOverlaps(gr, gr, minoverlap=2)
-    matchMatrix3 <- rbind(matchMatrix2, matrix(c(1L, 4L, 4L, 1L), ncol = 2))
-    o3 <- S4Vectors:::orderIntegerPairs(matchMatrix3[ , 1L],
-                                        matchMatrix3[ , 2L])
-    matchMatrix3 <- matchMatrix3[o3, ]
-    target3 <- new("Hits",
-                   queryHits = unname(matchMatrix3[ , 1L]),
-                   subjectHits = unname(matchMatrix3[ , 2L]),
-                   queryLength = 4L, subjectLength = 4L)
-    checkIdentical(target3, current3)
+    .checkHits(c(1, 1:4, 4), c(4, 1:4, 1), 4, 4, current3, select="all")
 
     ## type = "within"
     q0 <- GRanges("A", IRanges(c(11, 5, 4, 11, 11, 4), 
@@ -427,20 +322,11 @@ test_findOverlaps_with_circular_sequences <- function()
                   ranges=IRanges(start=c(2, 4, 6, 8), width=c(3, 3, 3, 5)))
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=8, isCircular=TRUE)
     current4 <- findOverlaps(gr, gr, type="within")
-    matchMatrix4 <- matrix(c(1L, 1L, 2L, 3L, 4L, 
-                             1L, 4L, 2L, 3L, 4L), ncol = 2,
-                           dimnames = list(NULL, c("queryHits", "subjectHits")))
-    target4 <- new("Hits",
-                   queryHits = unname(matchMatrix4[ , 1L]),
-                   subjectHits = unname(matchMatrix4[ , 2L]),
-                   queryLength = 4L, subjectLength = 4L)
-    checkIdentical(target4, current4)
+    .checkHits(c(1, 1:4), c(1, 4, 2, 3, 4), 4, 4, current4, select="all")
+
     ## With A of length 9 --> range 3 is not within range 2 
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=9, isCircular=TRUE)
     current5 <- findOverlaps(gr, gr, type="within")
-    target5 <- new("Hits",
-                   queryHits = unname(matchMatrix2[ , 1L]),
-                   subjectHits = unname(matchMatrix2[ , 2L]),
-                   queryLength = 4L, subjectLength = 4L)
-    checkIdentical(target5, current5)
+    .checkHits(1:4, 1:4, 4, 4, current5, select="all")
 }
+

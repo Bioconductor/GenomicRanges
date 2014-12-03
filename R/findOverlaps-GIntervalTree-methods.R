@@ -2,7 +2,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
   function(query, subject, maxgap=0L, minoverlap=1L,
          type=c("any","start","end","within","equal"),
          select=c("all","first","last","arbitrary"),
-         algorithm=c("intervaltree", "nclist"),
+         algorithm=c("nclist", "intervaltree"),
          ignore.strand=FALSE) {
 
     if (any(isCircular(query), na.rm=TRUE)) 
@@ -13,7 +13,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
     type <- match.arg(type)
     select <- match.arg(select)
     algorithm <- match.arg(algorithm)
-    if (algorithm != "intervaltree")
+    if (algorithm != "nclist")
       warning("'algorithm' is ignored when 'subject' ",
               "is a GIntervalTree object")
  
