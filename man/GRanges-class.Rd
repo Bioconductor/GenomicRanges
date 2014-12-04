@@ -58,7 +58,6 @@
 \alias{[,List,GenomicRanges-method}
 \alias{[,list,GenomicRanges-method}
 \alias{c,GenomicRanges-method}
-\alias{tile,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
 
 % $ and $<- methods:
@@ -330,15 +329,6 @@
       Otherwise, if \code{f} is not a list-like object, empty list
       elements are removed from the returned object if \code{drop} is
       \code{TRUE}.
-    }
-    \item{}{
-      \code{tile(x, n, width)}: Splits \code{x} into a
-      \code{GRangesList}, each element of which corresponds to a tile,
-      or partition, of \code{x}. Specify the tile geometry with either
-      \code{n} or \code{width} (not both). Passing \code{n} creates
-      \code{n} tiles of approximately equal width, truncated by sequence
-      end, while passing \code{width} tiles the region with ranges of
-      the given width, again truncated by sequence end.
     }
   }
 }

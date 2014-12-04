@@ -35,7 +35,7 @@
 \title{GIntervalTree objects}
 
 \description{
-  The GRanges class is a container for the genomic locations and
+  The GIntervalTree class is a container for the genomic locations and
   their associated annotations.
 }
 

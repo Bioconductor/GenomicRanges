@@ -7,7 +7,7 @@
 
 \description{
   \code{\link[IRanges]{tile}} method for
-  \link{GenomicRanges}. Partitions the each range into a set of
+  \link{GenomicRanges}. Partitions each range into a set of
   tiles. Tiles are defined in terms of their number or width.
 }
 
@@ -29,6 +29,15 @@
     See \code{?\link[IRanges]{tile}} in the \pkg{IRanges} package
     for more information about this argument.
   }
+}
+
+\details{
+  Splits \code{x} into a \code{GRangesList}, each element of which corresponds
+  to a tile, or partition, of \code{x}. Specify the tile geometry with either
+  \code{n} or \code{width} (not both). Passing \code{n} creates \code{n} tiles
+  of approximately equal width, truncated by sequence end, while passing
+  \code{width} tiles the region with ranges of the given width, again truncated
+  by sequence end.
 }
 
 \value{

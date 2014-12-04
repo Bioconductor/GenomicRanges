@@ -85,3 +85,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
     Hits(q_hits, s_hits, q_len, s_len)
 })
 
+setMethod("countOverlaps", c("GenomicRanges", "GIntervalTree"),
+    countOverlaps.definition
+)
+

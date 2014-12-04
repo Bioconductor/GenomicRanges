@@ -46,7 +46,8 @@
                   queryLength=as.integer(max(c(0, queryHits))),
                   subjectLength=as.integer(max(c(0, subjectHits))))
 {
-    Hits(queryHits, subjectHits, queryLength, subjectLength)
+    o <- S4Vectors:::orderIntegerPairs(queryHits, subjectHits)
+    Hits(queryHits[o], subjectHits[o], queryLength, subjectLength)
 }
 
 .findPrecedeFollow_pmin <-

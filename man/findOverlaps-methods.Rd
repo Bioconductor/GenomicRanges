@@ -20,6 +20,7 @@
 \alias{countOverlaps,GenomicRanges,Vector-method}
 \alias{countOverlaps,Vector,GenomicRanges-method}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
+\alias{countOverlaps,GenomicRanges,GIntervalTree-method}
 \alias{countOverlaps,GRangesList,Vector-method}
 \alias{countOverlaps,Vector,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
@@ -72,25 +73,29 @@
 
 \usage{
 \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap = 0L, minoverlap = 1L,
-    type = c("any", "start", "end", "within", "equal"),
-    select = c("all", "first", "last", "arbitrary"),
-    ignore.strand = FALSE)
+    maxgap=0L, minoverlap=1L,
+    type=c("any", "start", "end", "within", "equal"),
+    select=c("all", "first", "last", "arbitrary"),
+    algorithm=c("nclist", "intervaltree"),
+    ignore.strand=FALSE)
 
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap = 0L, minoverlap = 1L,
-    type = c("any", "start", "end", "within", "equal"), 
-    ignore.strand = FALSE)
+    maxgap=0L, minoverlap=1L,
+    type=c("any", "start", "end", "within", "equal"),
+    algorithm=c("nclist", "intervaltree"),
+    ignore.strand=FALSE)
 
 \S4method{overlapsAny}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap = 0L, minoverlap = 1L,
-    type = c("any", "start", "end", "within", "equal"), 
-    ignore.strand = FALSE)
+    maxgap=0L, minoverlap=1L,
+    type=c("any", "start", "end", "within", "equal"),
+    algorithm=c("nclist", "intervaltree"),
+    ignore.strand=FALSE)
 
 \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap = 0L, minoverlap = 1L,
-    type = c("any", "start", "end", "within", "equal"),
-    ignore.strand = FALSE)
+    maxgap=0L, minoverlap=1L,
+    type=c("any", "start", "end", "within", "equal"),
+    algorithm=c("nclist", "intervaltree"),
+    ignore.strand=FALSE)
 }
 
 \arguments{
@@ -141,7 +146,7 @@
 
 \value{
   For \code{findOverlaps} either a \link[S4Vectors]{Hits} object when
-  \code{select = "all"} or an integer vector otherwise. 
+  \code{select="all"} or an integer vector otherwise. 
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
@@ -174,31 +179,25 @@
 
 \examples{
 ## GRanges object:
-gr <-
-  GRanges(seqnames =
-          Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-          ranges =
-          IRanges(1:10, width = 10:1, names = head(letters,10)),
-          strand =
-          Rle(strand(c("-", "+", "*", "+", "-")),
-              c(1, 2, 2, 3, 2)),
-          score = 1:10,
-          GC = seq(1, 0, length=10))
+gr <- GRanges(
+        seqnames=Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        ranges=IRanges(1:10, width=10:1, names=head(letters,10)),
+        strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        score=1:10,
+        GC=seq(1, 0, length=10)
+      )
 gr
 
 ## GRangesList object:
-gr1 <-
-  GRanges(seqnames = "chr2", ranges = IRanges(4:3, 6),
-          strand = "+", score = 5:4, GC = 0.45)
-gr2 <-
-  GRanges(seqnames = c("chr1", "chr1"),
-          ranges = IRanges(c(7,13), width = 3),
-          strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
-gr3 <-
-  GRanges(seqnames = c("chr1", "chr2"),
-          ranges = IRanges(c(1, 4), c(3, 9)),
-          strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
-grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+gr1 <- GRanges(seqnames="chr2", ranges=IRanges(4:3, 6),
+               strand="+", score=5:4, GC=0.45)
+gr2 <- GRanges(seqnames=c("chr1", "chr1"),
+               ranges=IRanges(c(7,13), width=3),
+               strand=c("+", "-"), score=3:4, GC=c(0.3, 0.5))
+gr3 <- GRanges(seqnames=c("chr1", "chr2"),
+               ranges=IRanges(c(1, 4), c(3, 9)),
+               strand=c("-", "-"), score=c(6L, 2L), GC=c(0.4, 0.1))
+grl <- GRangesList("gr1"=gr1, "gr2"=gr2, "gr3"=gr3)
 
 ## Overlapping two GRanges objects:
 table(!is.na(findOverlaps(gr, gr1, select="arbitrary")))
@@ -206,17 +205,17 @@ countOverlaps(gr, gr1)
 findOverlaps(gr, gr1)
 subsetByOverlaps(gr, gr1)
 
-countOverlaps(gr, gr1, type = "start")
-findOverlaps(gr, gr1, type = "start")
-subsetByOverlaps(gr, gr1, type = "start")
+countOverlaps(gr, gr1, type="start")
+findOverlaps(gr, gr1, type="start")
+subsetByOverlaps(gr, gr1, type="start")
 
-findOverlaps(gr, gr1, select = "first")
-findOverlaps(gr, gr1, select = "last")
+findOverlaps(gr, gr1, select="first")
+findOverlaps(gr, gr1, select="last")
 
 findOverlaps(gr1, gr)
-findOverlaps(gr1, gr, type = "start")
-findOverlaps(gr1, gr, type = "within")
-findOverlaps(gr1, gr, type = "equal")
+findOverlaps(gr1, gr, type="start")
+findOverlaps(gr1, gr, type="within")
+findOverlaps(gr1, gr, type="equal")
 
 ## using a GIntervalTree
 gtree <- GIntervalTree(gr1)
@@ -230,20 +229,20 @@ table(!is.na(findOverlaps(grl, gr, select="first")))
 countOverlaps(grl, gr)
 findOverlaps(grl, gr)
 subsetByOverlaps(grl, gr)
-countOverlaps(grl, gr, type = "start")
-findOverlaps(grl, gr, type = "start")
-subsetByOverlaps(grl, gr, type = "start")
-findOverlaps(grl, gr, select = "first")
+countOverlaps(grl, gr, type="start")
+findOverlaps(grl, gr, type="start")
+subsetByOverlaps(grl, gr, type="start")
+findOverlaps(grl, gr, select="first")
 
 ## using a GIntervalTree
 table(!is.na(findOverlaps(grl, gtree, select="first")))
 countOverlaps(grl, gtree)
 findOverlaps(grl, gtree)
 subsetByOverlaps(grl, gtree)
-countOverlaps(grl, gtree, type = "start")
-findOverlaps(grl, gtree, type = "start")
-subsetByOverlaps(grl, gtree, type = "start")
-findOverlaps(grl, gtree, select = "first")
+countOverlaps(grl, gtree, type="start")
+findOverlaps(grl, gtree, type="start")
+subsetByOverlaps(grl, gtree, type="start")
+findOverlaps(grl, gtree, select="first")
 
 ## Overlapping two GRangesList objects:
 countOverlaps(grl, rev(grl))
