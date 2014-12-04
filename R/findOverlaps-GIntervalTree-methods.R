@@ -82,8 +82,6 @@ setMethod("findOverlaps", c("GenomicRanges", "GIntervalTree"),
       return(ans)
     }
        
-    new2("Hits", queryHits=q_hits, subjectHits=s_hits,
-         queryLength=q_len, subjectLength=s_len,
-         check=FALSE)
+    Hits(q_hits, s_hits, q_len, s_len)
 })
 

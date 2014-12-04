@@ -42,14 +42,11 @@
         start(query)[queryHits(hit)] - end(subject)[subjectHits(hit)]
 }
 
-.Hits <-
-    function(queryHits, subjectHits,
-             queryLength=as.integer(max(c(0, queryHits))),
-             subjectLength=as.integer(max(c(0, subjectHits))))
+.Hits <- function(queryHits, subjectHits,
+                  queryLength=as.integer(max(c(0, queryHits))),
+                  subjectLength=as.integer(max(c(0, subjectHits))))
 {
-    o <- S4Vectors:::orderIntegerPairs(queryHits, subjectHits)
-    new("Hits", queryHits=queryHits[o], subjectHits=subjectHits[o],
-        queryLength=queryLength, subjectLength=subjectLength)
+    Hits(queryHits, subjectHits, queryLength, subjectLength)
 }
 
 .findPrecedeFollow_pmin <-
@@ -87,8 +84,7 @@
              where=c("precede", "follow"))
 {
     if (!length(query) || !length(subject))
-        return(new("Hits", queryLength=length(query), 
-               subjectLength=length(subject)))
+        return(Hits(queryLength=length(query), subjectLength=length(subject)))
 
     leftOf <- "precede" == match.arg(where)
     if (ignore.strand)
@@ -250,8 +246,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
         if (!length(p) && !length(f)) {
             if (is(olv, "Hits") && !length(olv) || all(is.na(olv))) {
                 if (select == "all") 
-                    return(new("Hits", queryLength=length(x),
-                           subjectLength=length(subject)))
+                    return(Hits(queryLength=length(x),
+                                subjectLength=length(subject)))
                 else if (select == "arbitrary")
                     return (rep(NA, length(x)))
             }
@@ -370,19 +366,13 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     }
 
     if (!length(subjectHits) || all(is.na(subjectHits))) {
-        new("Hits", 
-            queryLength=length(x), 
-            subjectLength=length(subject),
-            elementMetadata=DataFrame(distance=NULL))
+        Hits(queryLength=length(x), 
+             subjectLength=length(subject),
+             distance=integer(0))
     } else {
         distance = distance(x[queryHits], subject[subjectHits],
                             ignore.strand=ignore.strand)
-        new("Hits", 
-            queryHits=queryHits,
-            subjectHits=subjectHits,
-            queryLength=length(x), 
-            subjectLength=length(subject),
-            elementMetadata=DataFrame(distance=distance))
+        Hits(queryHits, subjectHits, length(x), length(subject), distance)
     }
 }
 

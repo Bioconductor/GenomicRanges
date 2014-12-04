@@ -29,7 +29,7 @@
     q_len <- length(query)
     s_len <- length(subject)
     if (q_len == 0L || s_len == 0L)
-        return(new("Hits", queryLength=q_len, subjectLength=s_len))
+        return(Hits(queryLength=q_len, subjectLength=s_len))
     query0 <- .putRangesOnFirstCircle(query, circle.length)
     subject0 <- .putRangesOnFirstCircle(subject, circle.length)
     pp_subject <- IntervalTree(subject0)
@@ -127,28 +127,7 @@ findOverlaps_GenomicRanges_old <- function(query, subject,
     if (is.null(s_hits))
         s_hits <- integer(0)
 
-    if (select == "arbitrary") {
-        ans <- rep.int(NA_integer_, q_len)
-        ans[q_hits] <- s_hits
-        return(ans)
-    }
-    if (select == "first") {
-        ans <- rep.int(NA_integer_, q_len)
-        oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits, decreasing=TRUE)
-        ans[q_hits[oo]] <- s_hits[oo]
-        return(ans)
-    }
-    oo <- S4Vectors:::orderIntegerPairs(q_hits, s_hits)
-    q_hits <- q_hits[oo]
-    s_hits <- s_hits[oo]
-    if (select == "last") {
-        ans <- rep.int(NA_integer_, q_len)
-        ans[q_hits] <- s_hits
-        return(ans)
-    }
-    new2("Hits", queryHits=q_hits, subjectHits=s_hits,
-                 queryLength=q_len, subjectLength=s_len,
-                 check=FALSE)
+    selectHits(Hits(q_hits, s_hits, q_len, s_len), select=select)
 }
 
 

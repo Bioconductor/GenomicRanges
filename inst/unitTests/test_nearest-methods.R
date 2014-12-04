@@ -279,8 +279,7 @@ test_GenomicRanges_distance <- function()
 
 test_GenomicRanges_distanceToNearest <- function()
 {
-    target <- new("Hits", queryLength=0L, subjectLength=0L,
-                  elementMetadata=DataFrame(distance=NULL))
+    target <- Hits(distance=integer(0))
     current <- quiet(distanceToNearest(GRanges()))
     checkIdentical(current, target)
 
