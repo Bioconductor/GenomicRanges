@@ -126,11 +126,12 @@ setMethod("granges", "SummarizedExperiment",
 
 .SummarizedExperiment.nearest.missing <-
     function(x, subject, select = c("arbitrary", "all"),
-             ignore.strand = FALSE)
+             algorithm = c("nclist", "intervaltree"), ignore.strand = FALSE)
 {
     select <- match.arg(select)
     x <- rowData(x)
-    nearest(x=x, select=select, ignore.strand=ignore.strand)
+    nearest(x=x, select=select,
+            algorithm=match.arg(algorithm), ignore.strand=ignore.strand)
 }
 
 .SummarizedExperiment.distance <-
@@ -144,14 +145,15 @@ setMethod("granges", "SummarizedExperiment",
 }
 
 .SummarizedExperiment.distanceToNearest <-
-    function(x, subject, ignore.strand = FALSE, ...)
+    function(x, subject, algorithm = c("nclist", "intervaltree"),
+             ignore.strand = FALSE, ...)
 {
     if (is(x, "SummarizedExperiment"))
         x <- rowData(x)
     if (is(subject, "SummarizedExperiment"))
         subject <- rowData(subject)
-    distanceToNearest(x, subject, ignore.strand=ignore.strand,
-                      ...)
+    distanceToNearest(x, subject, algorithm=match.arg(algorithm),
+                      ignore.strand=ignore.strand, ...)
 }
 
 local({
@@ -161,8 +163,25 @@ local({
         c("SummarizedExperiment", "SummarizedExperiment"))
 
     for (.sig in .signatures) {
-        .funs <- c("nearest", "precede", "follow")
+        .funs <- c("precede", "follow")
         tmpl <- function(x, subject, select = c("arbitrary", "all"),
+                         ignore.strand = FALSE) {}
+        environment(tmpl) <- parent.frame(2)
+        for (.fun in .funs) {
+            body(tmpl) <- substitute({
+                select <- match.arg(select)
+                if (is(x, "SummarizedExperiment"))
+                    x <- rowData(x)
+                if (is(subject, "SummarizedExperiment"))
+                    subject <- rowData(subject)
+                FUN(x=x, subject=subject, select=select,
+                    ignore.strand=ignore.strand)
+            }, list(FUN=as.symbol(.fun)))
+            setMethod(.fun, .sig, tmpl)
+        }
+        .funs <- "nearest"
+        tmpl <- function(x, subject, select = c("arbitrary", "all"),
+                         algorithm=c("nclist", "intervaltree"),
                          ignore.strand = FALSE) {}
         environment(tmpl) <- parent.frame(2)
         for (.fun in .funs) {
