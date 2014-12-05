@@ -27,11 +27,15 @@
 \S4method{follow}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
 \S4method{follow}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
 
-\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
-\S4method{nearest}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"),
+        algorithm=c("nclist", "intervaltree"), ignore.strand=FALSE)
+\S4method{nearest}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"),
+        algorithm=c("nclist", "intervaltree"), ignore.strand=FALSE)
 
-\S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, ignore.strand=FALSE, ...)
-\S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, ignore.strand=FALSE, ...)
+\S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, algorithm=c("nclist", "intervaltree"),
+                  ignore.strand=FALSE, ...)
+\S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, algorithm=c("nclist", "intervaltree"),
+                  ignore.strand=FALSE, ...)
 
 \S4method{distance}{GenomicRanges,GenomicRanges}(x, y, ignore.strand=FALSE, ...)
 }
