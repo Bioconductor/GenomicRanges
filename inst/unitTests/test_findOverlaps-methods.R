@@ -219,8 +219,8 @@ test_findOverlaps_either_strand <- function()
     .checkHits(c(1, 1, 1), c(1, 5, 6), 3, 10, ansEnd, select="first")
 }
 
-test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
-    
+test_findOverlaps_minoverlap_GRanges_GRangesList <- function()
+{
      query <- make_subject()
      subject <- make_query()
      current <- findOverlaps(query, subject, minoverlap = 5)
@@ -230,9 +230,8 @@ test_findOverlaps_minoverlap_GRanges_GRangesList <- function() {
      .checkHits(integer(0), integer(0), 10, 3, current, select="all")
 }
 
-
-test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
-    
+test_findOverlaps_minoverlap_GRangesList_GRanges <- function()
+{    
      subject <- make_subject()
      query <- make_query()
      current <- findOverlaps(query, subject, minoverlap = 5)
@@ -242,9 +241,8 @@ test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
      .checkHits(integer(0), integer(0), 3, 10, current, select="all")
 }
 
-
-test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
-
+test_findOverlaps_minoverlap_GRangesList_GRangesList <- function()
+{
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
      current <- findOverlaps(query, subject, minoverlap = 1)

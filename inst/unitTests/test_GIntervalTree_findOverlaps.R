@@ -268,9 +268,8 @@ test_findOverlaps_either_strand <- function()
 #      checkIdentical(target, current)
 # }
 
-
-test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
-    
+test_findOverlaps_minoverlap_GRangesList_GRanges <- function()
+{
      subject <- GIntervalTree(make_subject())
      query <- make_query()
      current <- findOverlaps(query, subject, minoverlap = 5)
@@ -282,7 +281,8 @@ test_findOverlaps_minoverlap_GRangesList_GRanges <- function() {
      checkIdentical(target, current)
 }
 
-test_findOverlaps_seqlevelIssues <- function() {
+test_findOverlaps_seqlevelIssues <- function()
+{
     gr=GRanges(seqnames=c("chr1","chr2"),ranges=IRanges(1:2,width=1))
     gtree=GIntervalTree(gr)
 
@@ -297,11 +297,10 @@ test_findOverlaps_seqlevelIssues <- function() {
     olaps1=findOverlaps(gr1,gr2)
     olaps2=findOverlaps(gr1,GIntervalTree(gr2))
     checkIdentical(olaps1,olaps2)
-
-
 }
+
 # this needs GIntervalTreeList?
-# test_findOverlaps_minoverlap_GrangesList_GRangesList <- function() {
+# test_findOverlaps_minoverlap_GRangesList_GRangesList <- function() {
 #      query <- make_query()
 #      subject <- GRangesList("g1" = make_subject())
 #      current <- findOverlaps(query, subject, minoverlap = 1)
