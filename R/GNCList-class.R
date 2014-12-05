@@ -56,7 +56,7 @@ setAs("GNCList", "GRanges", function(from) granges(from))
 ###
 
 .extract_groups_from_GenomicRanges <- function(x)
-    split(seq_along(x) - 1L, seqnames(x))
+    splitAsList(seq_along(x) - 1L, seqnames(x))
 
 GNCList <- function(x)
 {
@@ -80,14 +80,6 @@ setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
 ### findOverlaps_GNCList()
 ###
 
-### Rearrange the seqlevels in 'x' so that its first N seqlevels are exactly
-### 'seqlevels' (in the same order).
-.align_seqlevels <- function(x, seqlevels)
-{
-    seqlevels(x) <- union(seqlevels, seqlevels(x))
-    x
-}
-
 ### NOT exported.
 findOverlaps_GNCList <- function(query, subject,
              min.score=1L,
@@ -106,42 +98,43 @@ findOverlaps_GNCList <- function(query, subject,
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
 
-    q_len <- length(query)
-    s_len <- length(subject)
+    si <- merge(seqinfo(query), seqinfo(subject))
     q_seqlevels <- seqlevels(query)
     s_seqlevels <- seqlevels(subject)
+    common_seqlevels <- intersect(q_seqlevels, s_seqlevels)
+    NG <- length(common_seqlevels)
+    q_group_idx <- match(common_seqlevels, q_seqlevels)  # of length NG
+    s_group_idx <- match(common_seqlevels, s_seqlevels)  # of length NG
+
+    ## Extract 'q_groups' and 's_groups' (both of length NG).
+    q_groups <- .extract_groups_from_GenomicRanges(query)[q_group_idx]
+    s_groups <- .extract_groups_from_GenomicRanges(subject)[s_group_idx]
+
+    ## Extract 'nclists' and 'nclist_is_q' (both of length NG).
     if (is(subject, "GNCList")) {
-        si <- merge(seqinfo(subject), seqinfo(query))
-        query <- .align_seqlevels(query, s_seqlevels)
-        nclists <- subject@nclists
-        nclist_is_q <- rep.int(FALSE, length(nclists))
+        nclists <- subject@nclists[s_group_idx]
+        nclist_is_q <- rep.int(FALSE, NG)
     } else if (is(query, "GNCList")) {
-        si <- merge(seqinfo(query), seqinfo(subject))
-        subject <- .align_seqlevels(subject, q_seqlevels)
-        nclists <- query@nclists
-        nclist_is_q <- rep.int(TRUE, length(nclists))
+        nclists <- query@nclists[q_group_idx]
+        nclist_is_q <- rep.int(TRUE, NG)
     } else {
         ## We'll do "on-the-fly preprocessing".
-        if (length(s_seqlevels) <= length(q_seqlevels)) {
-            si <- merge(seqinfo(subject), seqinfo(query))
-            query <- .align_seqlevels(query, s_seqlevels)
-            nclists <- vector(mode="list", length=length(s_seqlevels))
-        } else {
-            si <- merge(seqinfo(query), seqinfo(subject))
-            subject <- .align_seqlevels(subject, q_seqlevels)
-            nclists <- vector(mode="list", length=length(q_seqlevels))
-        }
-        nclist_is_q <- rep.int(NA, length(nclists))
+        nclists <- vector(mode="list", length=NG)
+        nclist_is_q <- rep.int(NA, NG)
     }
+
+    ## Extract 'circle_length' (of length NG).
+    circle_length <- .get_circle_length(si)[q_group_idx]
+
+    ## Extract 'q_space' and 's_space'.
     if (ignore.strand) {
         q_space <- s_space <- NULL
     } else {
         q_space <- as.integer(strand(query)) - 3L
         s_space <- as.integer(strand(subject)) - 3L
     }
-    q_groups <- .extract_groups_from_GenomicRanges(query)
-    s_groups <- .extract_groups_from_GenomicRanges(subject)
-    circle_length <- .get_circle_length(si)
+
+    ## GO!
     IRanges:::NCList_find_overlaps_in_groups(
                           ranges(query), q_space, q_groups,
                           ranges(subject), s_space, s_groups,
