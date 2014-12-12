@@ -53,7 +53,7 @@ Collate: utils.R
 	findOverlaps-GIntervalTree-methods.R
 	nearest-methods.R
 	mapCoords-methods.R
-	mapping-methods.R
+	coordinate-mapping-methods.R
 	tile-methods.R
 	test_GenomicRanges_package.R
 	zzz.R
