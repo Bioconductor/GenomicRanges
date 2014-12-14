@@ -5,19 +5,19 @@
 
 ### Generics.
 
-setGeneric("mapToGenome", signature=c("from", "to"),
-    function(from, to, ...) standardGeneric("mapToGenome")
+setGeneric("mapToGenome", signature=c("x", "alignment"),
+    function(x, alignment, ...) standardGeneric("mapToGenome")
 )
 
-setGeneric("pmapToGenome", signature=c("from", "to"),
-    function(from, to, ...) standardGeneric("pmapToGenome")
+setGeneric("pmapToGenome", signature=c("x", "alignment"),
+    function(x, alignment, ...) standardGeneric("pmapToGenome")
 )
 
-setGeneric("mapToTranscript", signature=c("from", "to"),
-    function(from, to, ...) standardGeneric("mapToTranscript")
+setGeneric("mapToTranscript", signature=c("x", "alignment"),
+    function(x, alignment, ...) standardGeneric("mapToTranscript")
 )
 
-setGeneric("pmapToTranscript", signature=c("from", "to"),
-    function(from, to, ...) standardGeneric("pmapToTranscript")
+setGeneric("pmapToTranscript", signature=c("x", "alignment"),
+    function(x, alignment, ...) standardGeneric("pmapToTranscript")
 )
 

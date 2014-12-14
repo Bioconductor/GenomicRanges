@@ -23,24 +23,24 @@
 }
 
 \arguments{
-  \item{from}{
+  \item{x}{
     A \code{\linkS4class{Ranges}} or \code{\linkS4class{GenomicRanges}}
     object of positions to be mapped.
 
     \itemize{
-      \item{} For \code{mapToTranscript} \code{from} is in genome-based 
+      \item{} For \code{mapToTranscript} \code{x} is in genome-based 
         coordinates 
-      \item{} For \code{mapToGenome} \code{from} is in transcript-based 
+      \item{} For \code{mapToGenome} \code{x} is in transcript-based 
         coordinates 
     }
   }
-  \item{to}{
+  \item{alignment}{
     A \code{\linkS4class{GenomicRanges}} object that represents the alignment 
-    (aka mapping) between the sequences in \code{from} and the sequences in the
+    (aka mapping) between the sequences in \code{x} and the sequences in the
     result.
 
-    The current implementation assumes that positions in \code{from} 
-    occur within the \code{to} region.
+    The current implementation assumes that positions in \code{x} 
+    occur within the \code{alignment} region.
   }
   \item{ignore.strand}{
     When TRUE, strand is ignored in overlap operations.
@@ -56,7 +56,7 @@
 }
 
 \value{
-  An object the same class as \code{from}.
+  An object the same class as \code{x}.
 }
 
 \seealso{
