@@ -35,7 +35,7 @@ system.time(hits1 <- findOverlaps(exbygene, reads_grl))
 #  0.797   0.008   0.806 
 # Subsequent times:
 #   user  system elapsed 
-#  0.147   0.000   0.147 
+#  0.141   0.000   0.141 
 
 system.time(hits2 <- findOverlaps(exbygene, reads_grl, ignore.strand=TRUE))
 #digest(hits2)  # "3f1a62b338d431ef2705602ce6dfbf9a"
@@ -56,7 +56,7 @@ system.time(hits2 <- findOverlaps(exbygene, reads_grl, ignore.strand=TRUE))
 #  1.244   0.008   1.254 
 # Subsequent times:
 #   user  system elapsed 
-#  0.174   0.000   0.174 
+#  0.170   0.000   0.171 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Timing findOverlaps,GRangesList,GAlignments method
@@ -81,7 +81,7 @@ system.time(hits3 <- findOverlaps(exbygene, reads))
 #  1.792   0.008   1.802 
 # Subsequent times:
 #   user  system elapsed 
-#  0.373   0.000   0.373 
+#  0.366   0.000   0.367 
 
 system.time(hits4 <- findOverlaps(exbygene, reads, ignore.strand=TRUE))
 #digest(hits4)  # "3f1a62b338d431ef2705602ce6dfbf9a"
@@ -127,7 +127,7 @@ system.time(se1 <- summarizeOverlaps(exbygene, reads))
 #  1.783   0.004   1.789 
 # Subsequent times:
 #   user  system elapsed 
-#  0.429   0.020   0.450 
+#  0.436   0.004   0.441 
 
 system.time(se2 <- summarizeOverlaps(exbygene, reads, ignore.strand=TRUE))
 #digest(assay(se2))  # "7d473582932ee5704acbddd1ffc5c146"
@@ -148,5 +148,5 @@ system.time(se2 <- summarizeOverlaps(exbygene, reads, ignore.strand=TRUE))
 #  2.489   0.004   2.495 
 # Subsequent times:
 #   user  system elapsed 
-#  0.500   0.008   0.508 
+#  0.490   0.008   0.498 
 

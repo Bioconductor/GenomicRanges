@@ -98,21 +98,20 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
     ## in case we have seqlengths for unrepresented sequences
     runValue(seqnames) <- factor(runValue(seqnames), seqnames(seqinfo))
 
-    if (!is.null(mcols(ranges))) {
-        warning("'ranges' has metadata columns, dropping them")
-        mcols(ranges) <- NULL
-    }
-
     if (!is(mcols, "DataFrame"))  # should never happen when calling GRanges()
         stop("'mcols' must be a DataFrame object")
     if (ncol(mcols) == 0L) {
-        mcols <- new("DataFrame", nrows = length(seqnames))
-    } else if (!is.null(rownames(mcols))) {
+        mcols <- mcols(ranges)
+        if (is.null(mcols))
+            mcols <- new("DataFrame", nrows=length(seqnames))
+    }
+    if (!is.null(mcols(ranges)))
+        mcols(ranges) <- NULL
+    if (!is.null(rownames(mcols))) {
         if (is.null(names(ranges)))
             names(ranges) <- rownames(mcols)
         rownames(mcols) <- NULL
     }
-
     new(class, seqnames = seqnames, ranges = ranges, strand = strand,
         seqinfo = seqinfo, elementMetadata = mcols)
 }
