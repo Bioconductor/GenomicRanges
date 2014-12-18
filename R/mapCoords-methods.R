@@ -5,41 +5,12 @@
 
 ### Generics are in IRanges.
 
-## This method differs from sort() in that negative strand
-## elements are returned highest value to lowest.
-.orderElementsByTranscription <- function(x) {
-    original <- unlist(sapply(elementLengths(x), function(xx) 1:xx), 
-                       use.names=FALSE)
-    ## order by position
-    gr <- unlist(x, use.names = FALSE)
-    idx <- order(togroup(x), start(gr))
-    gr <- gr[idx]
-    part <- PartitioningByWidth(x)
-    ## handle zero-width ranges
-    pstart <- start(part)[width(part) != 0L]
-    pend <- end(part)[width(part) != 0L]
-    ## order by strand 
-    neg <- strand(gr)[pstart] == "-"
-    ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
-                            ifelse(neg, pstart, pend))
-    res <- relist(gr[ord], x)
-    res@unlistData$unordered <- original[idx[ord]] 
-    res
-}
-
-.listCumsumShifted <- function(x) {
-  cs <- unlist(cumsum(x), use.names=FALSE)
-  shifted <- c(0L, head(cs, -1))
-  shifted[start(PartitioningByWidth(elementLengths(x)))] <- 0L
-  shifted
-}
-
 .mapCoords <- function(from, to, ..., ignore.strand, elt.hits, p=FALSE) {
     if (ignore.strand)
         strand(to) <- "*"
 
     ## sort elements of 'to' by chrom, position and strand
-    to <- .orderElementsByTranscription(to)
+    to <- .orderElementsByTranscription(to, ignore.strand=ignore.strand)
     gr <- unlist(to, use.names = FALSE)
 
     ## overlaps

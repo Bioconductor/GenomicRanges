@@ -2,17 +2,25 @@
 \alias{coordinate-mapping-methods}
 \alias{coordinate-mapping}
 
-\alias{mapToGenome}
-\alias{pmapToGenome}
+%\alias{mapToGenome}
+%\alias{mapToGenome,GenomicRanges,GenomicRanges}
+%\alias{mapToGenome,GenomicRanges,GRangesList}
+%\alias{pmapToGenome}
+%\alias{pmapToGenome,GenomicRanges,GenomicRanges}
+%\alias{pmapToGenome,GenomicRanges,GRangesList}
 
 \alias{mapToTranscript}
+\alias{mapToTranscript,GenomicRanges,GenomicRanges}
+\alias{mapToTranscript,GenomicRanges,GRangesList}
 \alias{pmapToTranscript}
+\alias{pmapToTranscript,GenomicRanges,GenomicRanges}
+\alias{pmapToTranscript,GenomicRanges,GRangesList}
 
 
 \title{Map range coordinates between genome and transcript space}
 
 \description{
-  Coordinate mapping methods for \link{GenomicRanges} objects.
+  Coordinate mapping methods for \linkS4class{GenomicRanges} objects.
 
   Methods in this package are under construction. See the
   \code{?`coordinate-mapping-methods`} man page in \pkg{GenomicAlignments}
@@ -53,6 +61,10 @@
 \details{
   See \code{?`coordinate-mapping-methods`} in 
   the \pkg{GenomicAlignments} package for existing methods.
+
+  Methods where \code{alignment} is GRangesList assumes all inner list elements
+  in the same outer list element are of the same strand. 
+
 }
 
 \value{
@@ -62,12 +74,11 @@
 \seealso{
   \itemize{
     \item \code{?`coordinate-mapping-methods`} in the \pkg{GenomicAlignments} 
-      package for methods on \link{GAlignments} objects.
+      package for methods on \linkS4class{GAlignments} objects.
   }
 }
 
 \examples{
-## See examples in GenomicAlignments package.
 }
 
 \keyword{methods}
