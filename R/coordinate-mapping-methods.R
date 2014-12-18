@@ -31,8 +31,8 @@ setGeneric("pmapToTranscript", signature=c("x", "alignment"),
 ### Helpers
 ###
 
-## This method differs from sort() in that negative strand
-## elements are returned highest value to lowest.
+### This method differs from sort() in that negative strand
+### elements are returned highest value to lowest.
 .orderElementsByTranscription <- function(x, ignore.strand) {
     original <- unlist(sapply(elementLengths(x), function(xx) 1:xx), 
                        use.names=FALSE)
@@ -58,6 +58,8 @@ setGeneric("pmapToTranscript", signature=c("x", "alignment"),
     res
 }
 
+### 'x' is an IntegerList or NumericList
+### returns a numeric vector of cumulative sums within list elements
 .listCumsumShifted <- function(x) {
   cs <- unlist(cumsum(x), use.names=FALSE)
   shifted <- c(0L, head(cs, -1))
@@ -70,28 +72,26 @@ setGeneric("pmapToTranscript", signature=c("x", "alignment"),
 ### mapToTranscript() and pmapToTranscript() methods
 ###
 
-### 'alignment' is a GRanges
-.mapToTranscript_GR <- function(x, alignment, ignore.strand=TRUE) {
-    ol <- findOverlaps(x, alignment, type="within", ignore.strand=ignore.strand)
-    if (length(ol)) {
-        sHits <- subjectHits(ol)
-        qHits <- queryHits(ol)
-        eltPosition <- ranges(x)[qHits]
-        bounds <- ranges(alignment)[sHits]
+.mapToTranscript <- function(x, alignment, hits, ignore.strand) { 
+    if (length(hits)) {
+        alignmentHits <- subjectHits(hits)
+        xHits <- queryHits(hits)
+        position <- ranges(x)[xHits]
+        bounds <- ranges(alignment)[alignmentHits]
 
-        ## location wrt start of individual list elements
+        ## location wrt to start of individual list elements
         if (ignore.strand) {
-          eltPosition <- shift(eltPosition, - start(bounds))
+            position <- shift(position, - start(bounds))
         } else {
-          neg <- as.vector(strand(alignment)[sHits] == "-")
-          eltPosition[!neg] <- shift(eltPosition[!neg], - start(bounds)[!neg])
-          eltPosition[neg] <- IRanges(end(bounds)[neg] - end(eltPosition)[neg],
-                                      width=width(eltPosition)[neg])
+            neg <- as.vector(strand(alignment)[alignmentHits] == "-")
+            position[!neg] <- shift(position[!neg], - start(bounds)[!neg])
+            position[neg] <- IRanges(end(bounds)[neg] - end(position)[neg],
+                                        width=width(position)[neg])
         }
-        ans <- eltPosition 
-        mcols(ans) <- DataFrame(xHits=qHits, alignmentHits=sHits)
+        ans <- GRanges(seqnames(x)[xHits], position, strand(x)[xHits],
+                       DataFrame(xHits, alignmentHits))
     } else {
-        ans <- IRanges()
+        ans <- GRanges()
         mcols(ans) <- DataFrame(xHits=integer(), alignmentHits=integer())
     }
     ans
@@ -100,9 +100,9 @@ setGeneric("pmapToTranscript", signature=c("x", "alignment"),
 setMethod("mapToTranscript", c("GenomicRanges", "GenomicRanges"), 
     function(x, alignment, ignore.strand=TRUE, ...)
     {
-        map <- .mapToTranscript_GR(x, alignment, ignore.strand) 
-        GRanges(seqnames(x)[mcols(map)$xHits], map,
-                strand(alignment[mcols(map)$xHits]))
+        hits <- findOverlaps(x, alignment, type="within", 
+                             ignore.strand=ignore.strand)
+        .mapToTranscript(x, alignment, hits, ignore.strand)
     }
 )
 
@@ -117,58 +117,33 @@ setMethod("mapToTranscript", c("GenomicRanges", "GRangesList"),
 
         ## order within list elements by strand
         alignment <- .orderElementsByTranscription(alignment, ignore.strand)
-        map <- .mapToTranscript_GR(x, 
-                                   unlist(alignment, use.names=FALSE), 
-                                   ignore.strand)
+        hits <- findOverlaps(x, unlist(alignment, use.names=FALSE), 
+                             type="within", ignore.strand=ignore.strand)
+        map <- .mapToTranscript(x, unlist(alignment, use.names=FALSE), hits,
+                                ignore.strand)
 
+        ## location wrt start of concatenated list elements
         if (length(map)) {
-            xHits <- mcols(map)$xHits
-            alignmentHits <- mcols(map)$alignmentHits
-            ## adjust range positions to start of combined list elements
             shifted <- .listCumsumShifted(width(alignment))
-            cumPosition <- shift(map, 1L + shifted[alignmentHits])
-            GRanges(seqnames(x)[xHits], cumPosition, strand[xHits],
-                    DataFrame(xHits, 
-                              alignmentHits=togroup(alignment)[alignmentHits])) 
-        } else {
-            ans <- GRanges()
-            mcols(ans) <- DataFrame(xHits=integer(), alignmentHits=integer())
-            ans
+            map <- shift(map, 1L + shifted[subjectHits(hits)])
+            mcols(map)$alignmentHits <- togroup(alignment)[subjectHits(hits)]
         }
+        map
     }
 )
 
-### 'alignment' is a GRanges
-.pmapToTranscript_GR <- function(x, alignment, ignore.strand, elts) {
-    ol <- findOverlaps(x, alignment, type="within", ignore.strand=ignore.strand)
-    ith_hits <- queryHits(ol) == elts[subjectHits(ol)]
-    ol <- ol[ith_hits] 
-
+.pmapToTranscript <- function(x, alignment, hits, ignore.strand=TRUE) { 
+    ## FIXME: handle non-hits re: pintersect arg 'resolve.empty'
     starts <- rep(1L, length(x))
     ends <- rep(0L, length(x))
-    df <- DataFrame(xHits=seq_along(x), alignmentHits=seq_along(x))
-    if (length(ol)) {
-        sHits <- subjectHits(ol)
-        qHits <- queryHits(ol)
-        eltPosition <- ranges(x)[qHits]
-        bounds <- ranges(alignment)[sHits]
-
-        ## location wrt start of individual list elements
-        if (ignore.strand) {
-          eltPosition <- shift(eltPosition, - start(bounds))
-        } else {
-          neg <- as.vector(strand(alignment)[sHits] == "-")
-          eltPosition[!neg] <- shift(eltPosition[!neg], - start(bounds)[!neg])
-          eltPosition[neg] <- IRanges(end(bounds)[neg] - end(eltPosition)[neg],
-                                      width=width(eltPosition)[neg])
-        }
-        ## FIXME: handle non-hits re: pintersect arg 'resolve.empty'
-        starts[qHits] <- start(eltPosition)
-        ends[qHits] <- end(eltPosition)
-        df$alignmentHits[qHits] <- sHits
+    map <- .mapToTranscript(x, alignment, hits, ignore.strand)
+    if (length(map)) {
+        xHits <- mcols(map)$xHits
+        starts[xHits] <- start(map)
+        ends[xHits] <- end(map)
     }
-    ans <- IRanges(starts, ends)
-    mcols(ans) <- df
+    ans <- GRanges(seqnames(x), IRanges(starts, ends), strand(x))
+    names(ans) <- names(x)
     ans
 }
 
@@ -177,44 +152,50 @@ setMethod("pmapToTranscript", c("GenomicRanges", "GenomicRanges"),
     {
         if (length(x) != length(alignment))
             stop("'x' and 'alignment' must have the same length")
-        map <- .pmapToTranscript_GR(x, alignment, ignore.strand,
-                                    togroup(alignment))
-        mcols(map) <- NULL
-        GRanges(seqnames(x)[mcols(map)$xHits], map,
-                strand(alignment[mcols(map)$xHits]))
+
+        ## FIXME: pfindOverlaps?
+        hits <- findOverlaps(x, alignment, type="within", 
+                             ignore.strand=ignore.strand)
+        ith_hits <- queryHits(hits) == subjectHits(hits)
+        hits <- hits[ith_hits] 
+        .pmapToTranscript(x, alignment, hits, ignore.strand)
     }
 )
 
 setMethod("pmapToTranscript", c("GenomicRanges", "GRangesList"), 
     function(x, alignment, ignore.strand=TRUE, ...) 
     {
+        if (length(x) != length(alignment))
+            stop("'x' and 'alignment' must have the same length")
         strand <- strand(x)
         if (!ignore.strand)
             if (!all(elementLengths(runLength(strand(alignment))) == 1))
                 stop(paste0("when ignore.strand=TRUE all inner list ",
-                            "elements of 'alignments' must be the same strand")) 
-        if (length(x) != length(alignment))
-            stop("'x' and 'alignment' must have the same length")
+                            "elements of 'alignments' must be the same strand"))
 
         ## order within list elements by strand
         alignment <- .orderElementsByTranscription(alignment, ignore.strand)
-        map <- .pmapToTranscript_GR(x, 
-                                    unlist(alignment, use.names=FALSE),
-                                    ignore.strand, togroup(alignment))
+        ## FIXME: pfindOverlaps?
+        hits <- findOverlaps(x, unlist(alignment, use.names=FALSE), 
+                             type="within", ignore.strand=ignore.strand)
+        ith_hits <- queryHits(hits) == togroup(alignment)[subjectHits(hits)]
+        hits <- hits[ith_hits] 
+        map <- .pmapToTranscript(x, unlist(alignment, use.names=FALSE), 
+                                 hits, ignore.strand)
 
-        ## adjust range positions to start of combined list elements
-        ## shift only non-zero width ranges
+        ## location wrt start of concatenated list elements
+        ## shift zero-width ranges only
         if (any(hasWidth <- width(map) != 0L)) {
             shifted <- .listCumsumShifted(width(alignment))
-            alignmentHits <- mcols(map)$alignmentHits
             map[hasWidth] <- shift(map[hasWidth], 
-                                   1L + shifted[alignmentHits[hasWidth]])
+                                   1L + shifted[subjectHits(hits)])
         }
-        mcols(map) <- NULL
-        GRanges(seqnames(x), map, strand(x))
+        map
     }
 )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### mapToGenome() and pmapToGenome() methods
 ###
+
+

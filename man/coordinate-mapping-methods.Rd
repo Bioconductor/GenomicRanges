@@ -32,8 +32,7 @@
 
 \arguments{
   \item{x}{
-    A \code{\linkS4class{Ranges}} or \code{\linkS4class{GenomicRanges}}
-    object of positions to be mapped.
+    \code{\linkS4class{GenomicRanges}} object of positions to be mapped.
 
     \itemize{
       \item{} For \code{mapToTranscript} \code{x} is in genome-based 
@@ -74,7 +73,7 @@
 \seealso{
   \itemize{
     \item \code{?`coordinate-mapping-methods`} in the \pkg{GenomicAlignments} 
-      package for methods on \linkS4class{GAlignments} objects.
+      package for methods on \link[GenomicAlignments]{GAlignments} objects.
   }
 }
 

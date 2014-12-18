@@ -81,7 +81,7 @@ test_pmapToTranscript <- function()
     checkException(pmapToTranscript(x, GRangesList()), silent=TRUE)
 
     ## strand
-    x <- GRanges("chr1", IRanges(c(6, 16, 1), width=1))
+    x <- GRanges("chr1", IRanges(c(6, 16, 1), width=1, names=LETTERS[1:3]))
     align <- GRangesList(GRanges("chr1", IRanges(5, 10)),
                          GRanges("chr1", IRanges(c(5, 15), width=6)),
                          GRanges("chr1", IRanges(5, 10)))
@@ -91,6 +91,7 @@ test_pmapToTranscript <- function()
     ans <- pmapToTranscript(x, align, ignore.strand=FALSE)
     checkTrue(length(x) == length(x))
     checkTrue(all(width(ans) == 0L))
+    checkIdentical(names(ans), LETTERS[1:3])
 
     strand(align[[2]][1]) <- "-"
     checkException(pmapToTranscript(x, align, ignore.strand=FALSE), silent=TRUE) 
