@@ -13,6 +13,7 @@ SEXP tlocs2rlocs(
 	SEXP exonStarts,
 	SEXP exonEnds,
 	SEXP strand,
-	SEXP decreasing_rank_on_minus_strand
+	SEXP decreasing_rank_on_minus_strand,
+	SEXP error_if_out_of_bounds 
 );
 
