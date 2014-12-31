@@ -17,6 +17,7 @@
 ###   o 'strand' is assumed to be a character vector with allowed values
 ###     "+" and "-" only;
 ###   o 'decreasing.rank.on.minus.strand' is assumed to be TRUE or FALSE.
+###   o 'error.if.out.of.bounds' is assumed to be TRUE or FALSE.
 
 unsafe.transcriptWidths <- function(exonStarts, exonEnds)
 {
@@ -29,12 +30,13 @@ unsafe.transcriptWidths <- function(exonStarts, exonEnds)
 ### not necessarily the "same shape") as 'exonStarts' and 'exonEnds'.
 unsafe.transcriptLocs2refLocs <- function(tlocs,
                 exonStarts, exonEnds, strand,
-                decreasing.rank.on.minus.strand)
+                decreasing.rank.on.minus.strand, error.if.out.of.bounds)
 {
     .Call2("tlocs2rlocs",
           tlocs,
           exonStarts, exonEnds, strand,
           decreasing.rank.on.minus.strand,
+          error.if.out.of.bounds,
           PACKAGE="GenomicRanges")
 }
 

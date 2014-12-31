@@ -154,14 +154,16 @@ SEXP transcript_widths(SEXP exonStarts, SEXP exonEnds)
 }
 
 SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
-		SEXP strand, SEXP decreasing_rank_on_minus_strand)
+		SEXP strand, SEXP decreasing_rank_on_minus_strand,
+                SEXP error_if_out_of_bounds)
 {
 	SEXP ans, starts, ends, ans_elt;
-	int decreasing_rank_on_minus_strand0, ans_length,
+	int decreasing_rank_on_minus_strand0, oob_error, ans_length,
 	    i, transcript_width, on_minus_strand, nlocs, j, tloc;
 
 	decreasing_rank_on_minus_strand0 =
 		LOGICAL(decreasing_rank_on_minus_strand)[0];
+	oob_error = LOGICAL(error_if_out_of_bounds)[0];
 	ans_length = LENGTH(tlocs);
 	PROTECT(ans = duplicate(tlocs));
 	for (i = 0; i < ans_length; i++) {
@@ -191,11 +193,18 @@ SEXP tlocs2rlocs(SEXP tlocs, SEXP exonStarts, SEXP exonEnds,
 			if (tloc == NA_INTEGER)
 				continue;
 			if (tloc < 1 || tloc > transcript_width) {
-				UNPROTECT(1);
-				error("'tlocs[[%d]]' contains \"out of limits\" "
-				      "transcript locations (length of "
-				      "transcript is %d)", j + 1, transcript_width);
-			}
+                                if (oob_error) {
+				        UNPROTECT(1);
+				        error("'tlocs[[%d]]' contains "
+                                              "\"out of limits\" transcript "
+                                              "locations (length of "
+				              "transcript is %d)", j + 1, 
+                                        transcript_width);
+				} else {
+			                INTEGER(ans_elt)[j] = NA_INTEGER;
+                                        break;
+                                }
+                        }
 			INTEGER(ans_elt)[j] = tloc2rloc(tloc,
 				starts, ends,
 				on_minus_strand,

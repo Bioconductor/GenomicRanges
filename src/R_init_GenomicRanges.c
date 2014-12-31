@@ -7,7 +7,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* transcript_utils.c */
 	CALLMETHOD_DEF(transcript_widths, 2),
-	CALLMETHOD_DEF(tlocs2rlocs, 5),
+	CALLMETHOD_DEF(tlocs2rlocs, 6),
 
 	{NULL, NULL, 0}
 };
