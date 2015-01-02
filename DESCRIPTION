@@ -7,7 +7,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	intervals. Specialized containers for representing and manipulating
 	short alignments against a reference genome are defined in the
 	GenomicAlignments package.
-Version: 1.19.28
+Version: 1.19.29
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
@@ -25,8 +25,9 @@ Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,
         TxDb.Hsapiens.UCSC.hg19.lincRNAsTranscripts,
         TxDb.Hsapiens.UCSC.hg38.knownGene,
         TxDb.Mmusculus.UCSC.mm10.knownGene,
-	TxDb.Athaliana.BioMart.plantsmart22, org.Sc.sgd.db,
-        org.Hs.eg.db, org.Mm.eg.db,
+	TxDb.Athaliana.BioMart.plantsmart22,
+        SNPlocs.Hsapiens.dbSNP141.GRCh38,
+        org.Sc.sgd.db, org.Hs.eg.db, org.Mm.eg.db,
 	VariantAnnotation, edgeR, DESeq, DEXSeq, pasilla,
 	pasillaBamSubset, RUnit, digest, BiocStyle
 License: Artistic-2.0

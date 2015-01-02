@@ -56,21 +56,14 @@
 \arguments{
   \item{x}{
     \code{\linkS4class{GenomicRanges}} object of positions to be mapped.
-
-    \itemize{
-      \item{} For \code{mapToTranscript} \code{x} is in genome-based 
-        coordinates 
-      \item{} For \code{mapToGenome} \code{x} is in transcript-based 
-        coordinates 
-    }
+    The \code{mapToGenome} methods require both \code{x} and 
+    \code{alignment} to have names.
   }
   \item{alignment}{
-    A \code{\linkS4class{GenomicRanges}} object that represents the alignment 
-    (aka mapping) between the sequences in \code{x} and the sequences in the
-    result.
-
-    The current implementation assumes that positions in \code{x} 
-    occur within the \code{alignment} region.
+    A \code{\linkS4class{GenomicRanges}} or \code{\linkS4class{GRangesList}}
+    object that represents the alignment (aka mapping) between positions in 
+    \code{x} and the result. The \code{mapToGenome} methods require both 
+    \code{x} and \code{alignment} to have names.
   }
   \item{ignore.strand}{
     When TRUE, strand is ignored in overlap operations. When \code{alignment} 
@@ -84,34 +77,45 @@
 
 \details{
 
-  In this documentation the term `parallel` is used to describe the mapping
-  of i-th element with i-th element and is not related to code execution
-  with multiple cores or threads.
+  In this document the term `parallel` is used to describe the element-wise
+  mapping of i-th element with i-th element and is not related to code 
+  execution with multiple cores or threads.
 
   \itemize{
-    \item{Mapping strategy:}{
-      \itemize{
-        \item \code{mapToTranscript} attempts to map all elements of \code{x} to
-          all elements of \code{alignment}. The rational is that \code{x} is in
-          genomic (global) coordinate and could potentially map to any of the
-          transcript-centric ranges in \code{alignment}.
-
-        \item \code{mapToGenome} uses name matching between \code{x} and
-          \code{alignment} to determine which pairs should be mapped. In this 
-          case \code{x} is in transcript-based coordinates and is only mapped
-          to ranges in \code{alignment} with the same name (i.e., from the same 
-          gene or transcript).
-
-        \item Both `parallel` methods, \code{pmapToTranscript} and
-          \code{pmapToGenome} map only the i-th element of \code{x} with the 
-          i-th element of \code{alignment}.
-      }
+    \item{mapToTranscript:}{
+      This method attempts to map all elements of \code{x} to all elements of
+      \code{alignment}. A successful mapping ("+" strand) occurs when \code{x}
+      is completely within \code{alignment}; think of \code{findOverlaps(...,
+      type="within")}.  The resulting coordinates start the count at 1 at the
+      beginning of the \code{alignment} range and return the positions where
+      \code{x} was aligned. 
     }
-    \item{Unmapped ranges:}{
-      In the element-wise (aka "parallel") methods, ranges in \code{x} that 
-      do not map to \code{alignment} are returned as zero-width ranges
-      starting at 1 with a seqname of "unmapped". In the non-parallel
-      methods unmapped ranges are not returned.
+    \item{mapToGenome:}{
+      Instead of mapping all possible \code{x}-\code{alignment} pairs,
+      \code{mapToGenome} uses name matching to determine potential pairs.
+      Ranges in \code{x} are only mapped to ranges in \code{alignment} with the
+      same name (both objects must have names). The name matching is motivated
+      by a use case such as differential expression analysis. Expressed regions
+      in \code{x} may be related (and therefore need to be mapped) to one or
+      more genomic regions in \code{alignment} e.g., transcripts or genes. 
+
+      A successful mapping ("+" strand) occurs when the following is TRUE:
+
+      \code{width(alignment) >= start(x) + width(x)}
+
+      \code{x} is aligned to \code{alignment} by moving \code{start(x)} 
+      positions in from the beginning of the \code{alignment} range.
+      The resulting coordinates are taken directly from \code{alignment}
+      (vs starting the count at 1).
+    }
+    \item{element-wise (aka `parallel`) methods:}{
+      Both \code{pmapToTranscript} and \code{pmapToGenome} map the i-th 
+      element of \code{x} with the i-th element of \code{alignment}.
+      Ranges in \code{x} that do not map (out of bounds or strand mismatch) 
+      are returned as zero-width ranges starting at 1. These ranges are given
+      the special seqname of "unmapped". Note the non-parallel methods do not 
+      return unmapped ranges so the "unmapped" seqname is unique to 
+      \code{pmapToTranscript} and \code{pmapToGenome}.
     }
   }
 }
@@ -120,8 +124,8 @@
   An object the same class as \code{x}.
 
   Parallel methods return an object the same shape as \code{x}. Ranges that
-  are non-hits (out of bounds) or a strand-mismatch are returned as zero-width
-  ranges starting at 1.
+  are non-hits (out of bounds or strand-mismatch) are returned as zero-width
+  ranges starting at 1. The seqname of the non-hits is "unmapped".
 
   Non-parallel methods return an object that varies in length similar to a
   Hits object. The result only contains mapped records, strand mismatch
@@ -134,6 +138,8 @@
       package for methods on \link[GenomicAlignments]{GAlignments} objects.
   }
 }
+
+\author{V. Obenchain, M. Lawrence and H. Pages}
 
 \examples{
 

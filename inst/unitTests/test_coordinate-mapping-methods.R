@@ -113,10 +113,10 @@ test_pmapToTranscript <- function()
     checkIdentical(start(ans), c(5L, 5L, 1L))
 
     ## out of bounds
-    x <- GRanges("chr1", IRanges(rep(40, 3), width=10))
-    align <- GRanges("chr1", IRanges(c(1, 50, 100), width=20))
+    x <- GRanges("chr1", IRanges(rep(40, 4), width=11))
+    align <- GRanges("chr1", IRanges(c(1, 35, 45, 55), width=11))
     ans <- pmapToTranscript(x, align) 
-    checkIdentical(seqnames(ans), Rle(as.factor("unmapped"), 3)) 
+    checkIdentical(seqnames(ans), Rle(as.factor("unmapped"), 4)) 
 }
 
 ### mapToGenome and pmapToGenome
@@ -204,8 +204,8 @@ test_pmapToGenome <- function()
     checkIdentical(start(ans), c(399L, 350L, 150L))
 
     ## out of bounds
-    x <- GRanges("chr1", IRanges(c(1, 50, 100), width=50))
-    align <- GRanges("chr1", IRanges(rep(40, 3), width=20))
+    x <- GRanges("chr1", IRanges(rep(40, 3), width=11))
+    align <- GRanges("chr1", IRanges(c(35, 45, 55), width=20))
     ans <- pmapToGenome(x, align) 
     checkIdentical(seqnames(ans), Rle(as.factor("unmapped"), 3)) 
 }
