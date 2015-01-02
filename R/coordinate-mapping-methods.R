@@ -12,7 +12,8 @@
 ### i-th element of 'alignment'.
 ###
 ### - findOverlaps handles strand
-### - shift coords manually when 'alignment' is GRangesList
+### - shift ranges manually to account for multiple elements when 'alignment' 
+###   is GRangesList
 ###
 ### transcript -> genome:
 ### The *ToGenome methods use the C code beneath transcriptLocs2refLocs()
@@ -22,7 +23,8 @@
 ### element of 'x' with the i-th element of 'alignment'.
 ###
 ### - check strand manually
-### - tlocs2rlocs handles shifting of coords when 'alignment' is GRangesList
+### - tlocs2rlocs shifts ranges to account for multiple elements when 
+###   'alignment' is GRangesList
 
 
 ### II. Output format
