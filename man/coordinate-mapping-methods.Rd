@@ -29,7 +29,6 @@
 }
 
 \usage{
-
 ## mapToGenome, pmapToGenome
 \S4method{mapToGenome}{GenomicRanges,GenomicRanges}(x, alignment, 
           ignore.strand = TRUE, ...) 
@@ -76,6 +75,21 @@
 }
 
 \details{
+  NGS data analysis often requires conversion between the genome (reference) and
+  transcriptome. Transcript-based coordinates are used in RNA-Seq
+  analysis steps such as mapping spliced reads against the genome,
+  quantification, and detection of novel exons. In DNA-Seq, they are used to
+  predict the effect of variants detected in the sample. As part of these
+  analyses it is often of interest to map positions back to the linear genome.
+
+  In the reverse direction, reference coordinates for a chromosomal region of
+  interest or dbSNP variants need to be mapped to the transcriptome for the
+  exploration of coding regions or other gene features of interest.
+
+  On this man page the terms `genomic` and `reference` are used interchangeably;
+  `transcriptome` refers to any transcript-based coordinates such as gene ranges,
+  exons, introns, etc.
+  
 
   In this document the term `parallel` is used to describe the element-wise
   mapping of i-th element with i-th element and is not related to code 
@@ -134,7 +148,7 @@
 
 \seealso{
   \itemize{
-    \item \code{?`coordinate-mapping-methods`} in the \pkg{GenomicAlignments} 
+    \item ?\code{mapToAlignment} in the \pkg{GenomicAlignments} 
       package for methods on \link[GenomicAlignments]{GAlignments} objects.
   }
 }
