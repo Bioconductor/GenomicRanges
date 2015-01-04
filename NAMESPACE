@@ -134,10 +134,7 @@ export(
     colData, "colData<-",
     assays, "assays<-",
     assay, "assay<-",
-    assayNames, "assayNames<-",
-
-    ## mapping-methods.R
-    mapToGenome, pmapToGenome, mapToTranscript, pmapToTranscript
+    assayNames, "assayNames<-"
 )
 
 ### Exactly the same list as above.
@@ -151,7 +148,6 @@ exportMethods(
     colData, "colData<-",
     assays, "assays<-",
     assay, "assay<-",
-    assayNames, "assayNames<-",
-    mapToTranscript, pmapToTranscript
+    assayNames, "assayNames<-"
 )
 

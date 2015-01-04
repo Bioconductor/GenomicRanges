@@ -5,6 +5,46 @@
 
 ### Generics are in IRanges.
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Helpers
+###
+
+### 'x' is a GRangesList
+### Returns a GRangesList with sorted elements. This method differs from 
+### sort() in that "-" strand elements are returned highest value to lowest.
+.orderElementsByTranscription <- function(x, ignore.strand) {
+    original <- unlist(sapply(elementLengths(x), function(xx) 1:xx), 
+                       use.names=FALSE)
+    ## order by position
+    gr <- unlist(x, use.names = FALSE)
+    idx <- order(togroup(x), start(gr))
+    gr <- gr[idx]
+    part <- PartitioningByWidth(x)
+    ## handle zero-width ranges
+    pstart <- start(part)[width(part) != 0L]
+    pend <- end(part)[width(part) != 0L]
+
+    if (ignore.strand) {
+        ord <- S4Vectors:::mseq(pstart, pend)
+    } else {
+        neg <- strand(gr)[pstart] == "-"
+        ord <- S4Vectors:::mseq(ifelse(neg, pend, pstart),
+                                ifelse(neg, pstart, pend))
+    }
+    res <- relist(gr[ord], x)
+    res@unlistData$unordered <- original[idx[ord]] 
+    res
+}
+
+### 'x' is an IntegerList or NumericList
+### Returns a numeric vector of cumulative sums within list elements.
+.listCumsumShifted <- function(x) {
+    cs <- unlist(cumsum(x), use.names=FALSE)
+    shifted <- c(0L, head(cs, -1))
+    shifted[start(PartitioningByWidth(elementLengths(x)))] <- 0L
+    shifted
+}
+
 .mapCoords <- function(from, to, ..., ignore.strand, elt.hits, p=FALSE) {
     if (ignore.strand)
         strand(to) <- "*"
