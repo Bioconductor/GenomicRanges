@@ -12,9 +12,9 @@
   input and tries to automatically find the columns that describe
   genomic ranges. It returns them as a \link{GRanges} object.
 
-  For convenience, coercing a data.frame or \link[S4Vectors]{DataFrame}
-  \code{df} into a \link{GRanges} object is supported and does
-  \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}
+  \code{makeGRangesFromDataFrame} is also the workhorse behind the
+  coercion method from data.frame (or \link[S4Vectors]{DataFrame}) to
+  \link{GRanges}.
 }
 
 \usage{
@@ -33,7 +33,9 @@ makeGRangesFromDataFrame(df,
 
 \arguments{
   \item{df}{
-    A data.frame or \link[S4Vectors]{DataFrame} object.
+    A data.frame or \link[S4Vectors]{DataFrame} object. If not, then
+    the function tries to turn \code{df} into a data frame with
+    \code{as.data.frame(df)}.
   }
   \item{keep.extra.columns}{
     \code{TRUE} or \code{FALSE} (the default).
@@ -106,6 +108,12 @@ makeGRangesFromDataFrame(df,
   If \code{df} has non-automatic row names (i.e. \code{rownames(df)} is
   not \code{NULL} and is not \code{seq_len(nrow(df))}), then they will be
   used to set names on the returned \link{GRanges} object.
+}
+
+\note{
+  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} into a
+  \link{GRanges} object (with \code{as(df, "GRanges")}) is equivalent
+  to calling \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}.
 }
 
 \author{

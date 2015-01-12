@@ -138,8 +138,8 @@ makeGRangesFromDataFrame <- function(df,
                                      starts.in.df.are.0based=FALSE)
 {
     ## Check args.
-    if (!is.data.frame(df) && !is(df, "DataFrame"))
-        stop("'df' must be a data.frame or DataFrame object")
+    if (!(is.data.frame(df) || is(df, "DataFrame")))
+        df <- as.data.frame(df)
     if (!isTRUEorFALSE(keep.extra.columns))
         stop("'keep.extra.columns' must be TRUE or FALSE")
     if (!isTRUEorFALSE(ignore.strand))

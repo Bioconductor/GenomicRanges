@@ -261,6 +261,7 @@ setAs("GenomicRanges", "RangesList",
     }
 )
 
+### TODO: Turn this into an S3/S4 combo for as.data.frame.GenomicRanges
 setMethod("as.data.frame", "GenomicRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
