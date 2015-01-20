@@ -431,7 +431,8 @@ the \Biocpkg{GenomicFeatures} package to import a GFF or GTF file as a
 
 <<makeTxDbFromGFF_1>>=
 library(GenomicFeatures)
-gff_file <- system.file("extdata", "a.gff3", package="GenomicFeatures")
+gff_file <- system.file("extdata", "GFF3_files", "a.gff3",
+                        package="GenomicFeatures")
 txdb <- makeTxDbFromGFF(gff_file, format="gff3")
 txdb
 @
