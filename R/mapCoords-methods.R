@@ -91,14 +91,20 @@
 
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
     function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
+    {
+        .Deprecated("mapToTranscripts")
         .mapCoords(from, to, ..., ignore.strand=ignore.strand,
                    elt.hits=elt.hits, p=FALSE)
+    }
 )
 
 setMethod("mapCoords", c("GenomicRanges", "GenomicRanges"), 
-    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE)
+    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
+    {
+        .Deprecated("mapToTranscripts")
         callGeneric(from, relist(to, PartitioningByEnd(seq_along(to))),
                     ..., ignore.strand=ignore.strand, elt.hits=elt.hits)
+    }
 )
 
 ### pmapCoords:
@@ -106,6 +112,7 @@ setMethod("mapCoords", c("GenomicRanges", "GenomicRanges"),
 setMethod("pmapCoords", c("GenomicRanges", "GRangesList"), 
     function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
     {
+        .Deprecated("pmapToTranscripts")
         if (length(from) != length(to))
             stop("'from' and 'to' must have the same length")
         ## FIXME: should be implemented as pfindOverlaps()
