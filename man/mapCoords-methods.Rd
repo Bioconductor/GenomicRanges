@@ -10,6 +10,7 @@
 \title{Mapping ranges between sequences}
 
 \description{
+  Deprecated. Use \code{mapToTranscript} instead.
   A method for translating a set of input ranges through a
   \link{GRangesList} object. Returns a \linkS4class{GenomicRanges}
   object.
@@ -67,6 +68,8 @@
 }
 
 \details{
+  Deprecated. Use \code{mapToTranscript} instead.
+
   Each element in \code{to} is taken to represent an alignment of a sequence on
   a genome. The typical case is a set of transcript models, as might be obtained
   via \code{GenomicFeatures::exonsBy}.  Each outer list element of the
