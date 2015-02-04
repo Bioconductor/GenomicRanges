@@ -373,8 +373,8 @@ dev.off()
       \centering
       \includegraphics[width=0.8\textwidth,height=!]{ranges-ir0-plot}\\
       \includegraphics[width=0.8\textwidth,height=!]{ranges-shift-ir0-plot}\\
-      \includegraphics[width=0.8\textwidth,height=!]{ranges-reduce-ir0-plot}
-      \includegraphics[width=0.8\textwidth,height=!]{ranges-disjoin-ir0-plot}\\
+      \includegraphics[width=0.8\textwidth,height=!]{ranges-reduce-ir0-plot}\\
+      \includegraphics[width=0.8\textwidth,height=!]{ranges-disjoin-ir0-plot}
       %\caption{Range-based operations}
     \end{figure}
   \end{exampleblock}
