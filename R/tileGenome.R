@@ -31,7 +31,7 @@
 .superimpose_breakpoints <- function(old_breakpoints, new_breakpoints)
 {
     ## Set names on 'new_breakpoints'.
-    new_breakpoints <- pmin(new_breakpoints, tail(old_breakpoints, 1))
+    new_breakpoints <- pmin.int(new_breakpoints, tail(old_breakpoints, 1))
     new2old <- 1L + findInterval(new_breakpoints - 1L, old_breakpoints)
     names(new_breakpoints) <- names(old_breakpoints)[new2old]
 

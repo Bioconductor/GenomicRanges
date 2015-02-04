@@ -1,0 +1,989 @@
+%\VignetteIndexEntry{A quick introduction to GRanges and GRangesList objects}
+%\VignetteDepends{IRanges, GenomicRanges, pasillaBamSubset, GenomicAlignments, TxDb.Dmelanogaster.UCSC.dm3.ensGene}
+
+\SweaveOpts{keep.source=TRUE, eps=FALSE, width=9, height=3}
+
+\documentclass[8pt]{beamer}
+
+\usepackage{slides}
+\renewcommand\Rclass[1]{{\texttt{#1}\index{#1 (class)}}}
+
+% A Beamer Quickstart:
+%   http://www.math.umbc.edu/~rouben/beamer/
+\newcommand\DefaultBackground{\setbeamertemplate{background canvas}[vertical shading][bottom=black!10,top=black!10]\setbeamertemplate{background canvas}[vertical shading][bottom=blue!40,top=blue!15]}
+\DefaultBackground
+\setbeamercolor{block body example}{bg=white}
+\definecolor{YESgreen}{RGB}{0, 160, 80}
+\newcommand\YES{\textcolor{YESgreen}{\textbf{YES}}}
+\newcommand\PartiallySupported{\textcolor{YESgreen}{\textbf{partially supported}}}
+\definecolor{NOgray}{RGB}{144, 144, 144}
+\newcommand\NO{\textcolor{NOgray}{\textbf{NO}}}
+
+%\AtBeginSection[]
+%{
+%  \setbeamertemplate{background canvas}[vertical shading][bottom=black!47,top=black!47]
+%  \begin{frame}<beamer>{}
+%    \tableofcontents[currentsection,currentsubsection]
+%  \end{frame}
+%  \DefaultBackground
+%}
+%\AtBeginSubsection[]
+%{
+%  \setbeamertemplate{background canvas}[vertical shading][bottom=black!47,top=black!47]
+%  \begin{frame}<beamer>{}
+%    \tableofcontents[currentsection,currentsubsection]
+%  \end{frame}
+%  \DefaultBackground
+%}
+
+\title{A quick introduction to GRanges and GRangesList objects}
+
+\author{Herv\'e Pag\`es\\
+        \href{mailto:hpages@fhcrc.org}{hpages@fhcrc.org}}
+
+\institute[FHCRC]{Fred Hutchinson Cancer Research Center\\
+                  Seattle, WA}
+
+\date{February 2015}
+
+\begin{document}
+
+<<setup,echo=FALSE>>=
+options(width=84)
+plotRanges <- function(x, xlim = x, main = deparse(substitute(x)),
+                       col = "black", sep = 0.5, ...)
+{
+  height <- 1
+  if (is(xlim, "Ranges"))
+    xlim <- c(min(start(xlim)), max(end(xlim)))
+  bins <- disjointBins(IRanges(start(x), end(x) + 1))
+  plot.new()
+  par(mai=c(0.5, 0.2, 1.2, 0.2))
+  plot.window(xlim, c(0, max(bins)*(height + sep)))
+  ybottom <- bins * (sep + height) - height
+  rect(start(x)-0.5, ybottom, end(x)+0.5, ybottom + height, col = col, ...)
+  title(main, cex.main=2.8, font.main=1)
+  axis(1)
+}
+@
+
+\maketitle
+
+\frame{\tableofcontents}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\Rclass{GRanges} objects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}[fragile]
+  \frametitle{The \Rclass{GRanges} class is a container for...}
+  ... storing a set of {\em genomic ranges} (a.k.a. {\em genomic regions}
+  or {\em genomic intervals}).
+
+  \begin{block}{}
+    \begin{itemize}
+      \item Each genomic range is described by a chromosome name,
+            a {\em start}, an {\em end}, and a strand.
+      \item {\em start} and {\em end} are both {\bf 1-based} positions
+            relative to the 5' end of the plus strand of the chromosome,
+            even when the range is on the minus strand.
+      \item {\em start} and {\em end} are both considered to be included
+            in the interval (except when the range is empty).
+      \item The {\em width} of the range is the number of genomic positions
+            included in it. So {\em width} = {\em end} - {\em start} + 1.
+      \item {\em end} is always >= {\em start}, except for empty ranges
+            (a.k.a. zero-width ranges) where {\em end} = {\em start} - 1.
+    \end{itemize}
+
+    Note that the {\em start} is always the leftmost position and the
+    {\em end} the rightmost, even when the range is on the minus strand.
+ 
+    Gotcha: A TSS is at the {\em end} of the range associated with a
+    transcript located on the minus strand.
+  \end{block}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The \Rcode{GRanges()} constructor}
+
+\begin{frame}[fragile]
+  \frametitle{The \Rcode{GRanges()} constructor}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_constructor>>=
+library(GenomicRanges)
+gr1 <- GRanges(seqnames=Rle(c("ch1", "chMT"), c(2, 4)),
+               ranges=IRanges(16:21, 20),
+               strand=rep(c("+", "-", "*"), 2))
+gr1
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\Rclass{GRanges} accessors}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRanges} accessors}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_accessors1>>=
+length(gr1)
+seqnames(gr1)
+ranges(gr1)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRanges} accessors (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_accessors2>>=
+start(gr1)
+end(gr1)
+width(gr1)
+strand(gr1)
+strand(gr1) <- c("-", "-", "+")
+strand(gr1)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRanges} accessors (continued)}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRanges_accessors3>>=
+names(gr1) <- LETTERS[1:6]
+names(gr1)
+mcols(gr1) <- DataFrame(score=11:16, GC=seq(1, 0, length=6))
+mcols(gr1)
+gr1
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRanges} accessors (continued)}
+  \begin{exampleblock}{}
+<<GRanges_accessors4>>=
+seqinfo(gr1)
+seqlevels(gr1)
+seqlengths(gr1)
+seqlengths(gr1) <- c(50000, 800)
+seqlengths(gr1)
+@
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Vector operations on \Rclass{GRanges} objects}
+
+\setbeamertemplate{background canvas}[vertical shading][bottom=green!20,top=green!20]
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRanges} objects}
+  \begin{block}{}
+    What we call {\em vector operations} are operations that work on any
+    ordinary vector:
+
+    \begin{itemize}
+      \item \Rcode{length()}, \Rcode{names()}
+      \item Single-bracket subsetting: \Rcode{[}
+      \item Combining: \Rcode{c()}
+      \item \Rcode{split()}, \Rcode{relist()}
+      \item Comparing: \Rcode{==}, \Rcode{!=}, \Rcode{match()}, \Rcode{\%in\%},
+                       \Rcode{duplicated()}, \Rcode{unique()}
+      \item Ordering: \Rcode{<=}, \Rcode{>=}, \Rcode{<}, \Rcode{>},
+                      \Rcode{order()}, \Rcode{sort()}, \Rcode{rank()}
+    \end{itemize}
+
+    \Rclass{GRanges} objects support all these {\em vector operations}
+    $==>$ They're considered {\em vector-like} objects.
+  \end{block}
+\end{frame}
+\DefaultBackground
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Vector_ops1>>=
+gr1[c("F", "A")]
+gr1[strand(gr1) == "+"]
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Vector_ops2>>=
+gr1 <- gr1[-5]
+gr1
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Vector_ops3>>=
+gr2 <- GRanges(seqnames="ch2",
+               ranges=IRanges(start=c(2:1,2), width=6),
+               score=15:13,
+               GC=seq(0, 0.4, length=3))
+gr12 <- c(gr1, gr2)
+gr12
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Vector_ops4>>=
+gr12[length(gr12)] == gr12
+duplicated(gr12)
+unique(gr12)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_sort>>=
+sort(gr12)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Splitting a \Rclass{GRanges} object}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_split>>=
+split(gr12, seqnames(gr12))
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Range-based operations on \Rclass{GRanges} objects}
+
+\setbeamertemplate{background canvas}[vertical shading][bottom=green!20,top=green!20]
+\begin{frame}[fragile]
+  \frametitle{An overview of {\em range-based} operations}
+
+  \begin{columns}[t]
+    \begin{column}{0.44\textwidth}
+      \begin{block}{}
+        {\bf Intra range transformations}
+
+        \Rcode{shift()}, \Rcode{narrow()}, \Rcode{resize()}, \Rcode{flank()}
+      \end{block}
+      \begin{block}{}
+        {\bf Inter range transformations}
+
+        \Rcode{range()}, \Rcode{reduce()}, \Rcode{gaps()}, \Rcode{disjoin()}
+      \end{block}
+      \begin{block}{}
+        {\bf Range-based set operations}
+
+        \Rcode{union()}, \Rcode{intersect()}, \Rcode{setdiff()},
+        \Rcode{punion()}, \Rcode{pintersect()}, \Rcode{psetdiff()},
+        \Rcode{pgap()}
+      \end{block}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{block}{}
+        {\bf Coverage and slicing}
+
+        \Rcode{coverage()}, \Rcode{slice()}
+      \end{block}
+      \begin{block}{}
+        {\bf Finding/counting overlapping ranges}
+
+        \Rcode{findOverlaps()}, \Rcode{countOverlaps()}
+      \end{block}
+      \begin{block}{}
+        {\bf Finding the nearest range neighbor}
+
+        \Rcode{nearest()}, \Rcode{precede()}, \Rcode{follow()}
+      \end{block}
+      \begin{block}{}
+        and more...
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Examples of some common {\em range-based} operations}
+  \begin{exampleblock}{}
+<<ranges-ir0-plot,results=hide,echo=FALSE,fig=FALSE>>=
+library(IRanges)
+ir0 <- IRanges(start=c(7, 9, 12, 14, 22:24),
+               end=c(15, 11, 12, 18, 26, 27, 28))
+
+png("ranges-ir0-plot.png", width=800, height=170)
+plotRanges(ir0, xlim=c(5, 35), main="ir0", col="blue")
+dev.off()
+@
+<<ranges-shift-ir0-plot,results=hide,echo=FALSE,fig=FALSE>>=
+png("ranges-shift-ir0-plot.png", width=800, height=170)
+plotRanges(shift(ir0, 5), xlim=c(5, 35), main="shift(ir0, 5)", col="blue")
+dev.off()
+@
+<<ranges-reduce-ir0-plot,results=hide,echo=FALSE,fig=FALSE>>=
+png("ranges-reduce-ir0-plot.png", width=800, height=170)
+plotRanges(reduce(ir0), xlim=c(5, 35), main="reduce(ir0)", col="blue")
+dev.off()
+@
+<<ranges-disjoin-ir0-plot,results=hide,echo=FALSE,fig=FALSE>>=
+png("ranges-disjoin-ir0-plot.png", width=800, height=170)
+plotRanges(disjoin(ir0), xlim=c(5, 35), main="disjoin(ir0)", col="blue")
+dev.off()
+@
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.8\textwidth,height=!]{ranges-ir0-plot}\\
+      \includegraphics[width=0.8\textwidth,height=!]{ranges-shift-ir0-plot}\\
+      \includegraphics[width=0.8\textwidth,height=!]{ranges-reduce-ir0-plot}
+      \includegraphics[width=0.8\textwidth,height=!]{ranges-disjoin-ir0-plot}\\
+      %\caption{Range-based operations}
+    \end{figure}
+  \end{exampleblock}
+\end{frame}
+\DefaultBackground
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Ranges_ops1>>=
+gr2
+shift(gr2, 50)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Ranges_ops2>>=
+gr1
+resize(gr1, 12)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_Ranges_ops3>>=
+gr1
+flank(gr1, 3)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_range>>=
+gr3 <- shift(gr1, c(35000, rep(0, 3), 100))
+width(gr3)[c(3,5)] <- 117
+gr3
+range(gr3)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_reduce>>=
+gr3
+reduce(gr3)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRanges_gaps>>=
+gr3
+gaps(gr3)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRanges} objects (continued)}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRanges_disjoin>>=
+gr3
+disjoin(gr3)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Coverage}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_coverage1>>=
+cvg12 <- coverage(gr12)
+cvg12
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Coverage (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_coverage2>>=
+mean(cvg12)
+max(cvg12)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Slicing the coverage}
+  \begin{exampleblock}{}
+{\small
+<<slice_coverage>>=
+sl12 <- slice(cvg12, lower=1)
+sl12
+elementLengths(sl12)
+sl12$chMT
+mean(sl12$chMT)
+max(sl12$chMT)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{findOverlaps()}
+
+  \begin{block}{}
+  Load aligned reads from a BAM file:
+  \end{block}
+  \begin{exampleblock}{}
+{\small
+<<findOverlaps1>>=
+library(pasillaBamSubset)
+untreated1_chr4()
+library(GenomicAlignments)
+reads <- readGAlignments(untreated1_chr4())
+@
+}
+  \end{exampleblock}
+
+  \begin{block}{}
+  and store them in a \Rclass{GRanges} object:
+  \end{block}
+  \begin{exampleblock}{}
+{\small
+<<findOverlaps2>>=
+reads <- as(reads, "GRanges")
+reads[1:4]
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{findOverlaps() (continued)}
+
+  \begin{block}{}
+  Load the gene ranges from a {\em TxDb} package: 
+  \end{block}
+  \begin{exampleblock}{}
+{\small
+<<findOverlaps3>>=
+library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
+txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
+dm3_genes <- genes(txdb)
+@
+}
+  \end{exampleblock}
+
+  \begin{block}{}
+  and find the overlaps between the reads and the genes:
+  \end{block}
+  \begin{exampleblock}{}
+{\small
+<<findOverlaps4>>=
+hits <- findOverlaps(reads, dm3_genes)
+head(hits)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\Rclass{GRangesList} objects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}[fragile]
+  \frametitle{The \Rclass{GRangesList} class is a container for...}
+  storing a list of {\em compatible} \Rclass{GRanges} objects.
+
+  \begin{block}{}
+    {\em compatible} means:
+    \begin{itemize}
+      \item they are relative to the same genome,
+      \item AND they have the same metadata columns (accessible with
+            the \Rcode{mcols()} accessor).
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The \Rcode{GRangesList()} constructor}
+
+\begin{frame}[fragile]
+  \frametitle{The \Rcode{GRangesList()} constructor}
+  \begin{exampleblock}{}
+{\small
+<<GRangesList_constructor>>=
+grl <- GRangesList(gr3, gr2)
+grl
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\Rclass{GRangesList} accessors}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRangesList} accessors}
+  \begin{exampleblock}{}
+<<GRangesList_accessors1>>=
+length(grl)
+@
+  \end{exampleblock}
+  \begin{columns}[t]
+    \begin{column}{0.44\textwidth}
+      \begin{exampleblock}{}
+{\small
+<<GRangesList_accessors2>>=
+seqnames(grl)
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{exampleblock}{}
+{\small
+<<GRangesList_accessors3>>=
+strand(grl)
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRangesList} accessors (continued)}
+  \begin{columns}[t]
+    \begin{column}{0.44\textwidth}
+      \begin{exampleblock}{}
+{\small
+<<GRangesList_accessors4>>=
+ranges(grl)
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{exampleblock}{}
+{\small
+<<GRangesList_accessors5>>=
+start(grl)
+end(grl)
+width(grl)
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRangesList} accessors (continued)}
+  \begin{exampleblock}{}
+{\small
+<<GRangesList_accessors6>>=
+names(grl) <- c("TX1", "TX2")
+grl
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRangesList} accessors (continued)}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_accessors7>>=
+mcols(grl)$geneid <- c("GENE1", "GENE2") 
+mcols(grl)
+grl
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRangesList} accessors (continued)}
+  \begin{exampleblock}{}
+<<GRangesList_accessors8>>=
+seqinfo(grl)
+@
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Vector operations on \Rclass{GRangesList} objects}
+
+\setbeamertemplate{background canvas}[vertical shading][bottom=green!20,top=green!20]
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRangesList} objects}
+  \begin{block}{}
+  Only the following {\em vector operations} are supported on
+  \Rclass{GRangesList} objects:
+    \begin{itemize}
+      \item \Rcode{length()}, \Rcode{names()}
+      \item Single-bracket subsetting: \Rcode{[}
+      \item Combining: \Rcode{c()}
+    \end{itemize}
+  \end{block}
+\end{frame}
+\DefaultBackground
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRangesList} objects}
+  \begin{exampleblock}{}
+{\small
+<<GRangesList_Vector_ops1>>=
+grl[c("TX2", "TX1")]
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vector operations on \Rclass{GRangesList} objects (continued)}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Vector_ops2>>=
+c(grl, GRangesList(gr3))
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{List operations on \Rclass{GRangesList} objects}
+
+\setbeamertemplate{background canvas}[vertical shading][bottom=green!20,top=green!20]
+\begin{frame}[fragile]
+  \frametitle{List operations on \Rclass{GRangesList} objects}
+  \begin{block}{}
+    What we call {\em list operations} are operations that work on an
+    ordinary list:
+    \begin{itemize}
+      \item Double-bracket subsetting: \Rcode{[[}
+      \item \Rcode{elementLengths()}, \Rcode{unlist()}
+      \item \Rcode{lapply()}, \Rcode{sapply()}, \Rcode{endoapply()}
+      \item \Rcode{mendoapply()} (not covered in this presentation)
+    \end{itemize}
+
+    \Rclass{GRangesList} objects support all these {\em list operations}
+    $==>$ They're considered {\em list-like} objects.
+  \end{block}
+\end{frame}
+\DefaultBackground
+
+\begin{frame}[fragile]
+  \frametitle{elementLengths() and unlist()}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_List_ops1>>=
+grl[[2]]
+elementLengths(grl)
+unlisted <- unlist(grl, use.names=FALSE)  # same as c(grl[[1]], grl[[2]])
+unlisted
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{relist()}
+  \begin{exampleblock}{}
+{\small
+<<GRangesList_List_ops2>>=
+grl100 <- relist(shift(unlisted, 100), grl)
+grl100
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{endoapply()}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_List_ops3>>=
+grl100b <- endoapply(grl, shift, 100)
+grl100b
+mcols(grl100)
+mcols(grl100b)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Range-based operations on \Rclass{GRangesList} objects}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRangesList} objects}
+  \begin{columns}[t]
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops1>>=
+grl
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops2>>=
+shift(grl, 100)
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{block}{}
+    \Rcode{shift(grl, 100)} is equivalent to \Rcode{endoapply(grl, shift, 100)}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRangesList}
+              objects (continued)}
+  \begin{columns}[t]
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops3>>=
+grl
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops4>>=
+flank(grl, 10)
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{block}{}
+    \Rcode{flank(grl, 10)} is equivalent to \Rcode{endoapply(grl, flank, 10)}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRangesList}
+              objects (continued)}
+  \begin{columns}[t]
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops5>>=
+grl
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops6>>=
+range(grl) 
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{block}{}
+    \Rcode{range(grl)} is equivalent to \Rcode{endoapply(grl, range)}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRangesList}
+              objects (continued)}
+  \begin{columns}[t]
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops7>>=
+grl
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops8>>=
+reduce(grl) 
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{block}{}
+    \Rcode{reduce(grl)} is equivalent to \Rcode{endoapply(grl, reduce)}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Range-based operations on \Rclass{GRangesList}
+              objects (continued)}
+<<GRangesList_Ranges_ops9,results=hide,echo=FALSE>>=
+grl2 <- grl
+grl2[[1]] <- grl2[[1]][3]; grl2[[2]] <- grl2[[2]][1]
+grl3 <- unname(grl2)
+grl3[[1]] <- narrow(unname(grl3[[1]]), start=5, end=-5)
+@
+  \begin{columns}[t]
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops10>>=
+grl2
+grl3
+@
+}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{exampleblock}{}
+{\scriptsize
+<<GRangesList_Ranges_ops11>>=
+psetdiff(grl2, grl3)
+@
+}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  \begin{block}{}
+    \Rcode{psetdiff(grl2, grl)} is equivalent to
+    \Rcode{mendoapply(setdiff, grl2, grl)}
+  \end{block}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Other resources}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{Other resources}
+  \begin{block}{}
+    Vignettes in the \Rpackage{GenomicRanges} package
+    (\Rcode{browseVignettes("GenomicRanges")}).
+  \end{block}
+
+  \begin{block}{}
+    \Rclass{GRanges} and \Rclass{GRangesList} man pages in the
+    \Rpackage{GenomicRanges} package.
+  \end{block}
+
+  \begin{block}{}
+    Vignettes and \Rclass{GAlignments} man page in the
+    \Rpackage{GenomicAlignments} package.
+  \end{block}
+
+  \begin{block}{}
+    \Bioconductor{} support site: \url{http://support.bioconductor.org/}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+

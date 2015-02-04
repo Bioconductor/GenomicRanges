@@ -192,8 +192,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 {
     q_ranges <- ranges(query)[queryHits(hits)]
     s_ranges <- ranges(subject)[subjectHits(hits)]
-    1L + pmin(end(q_ranges), end(s_ranges)) -
-         pmax(start(q_ranges), start(s_ranges))
+    1L + pmin.int(end(q_ranges), end(s_ranges)) -
+         pmax.int(start(q_ranges), start(s_ranges))
 }
 
 .aggregated_sum <- function(x, f1, f2)
