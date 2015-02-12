@@ -43,6 +43,11 @@ relativeRanges(x, seqlengths)
   A \link{GRanges} object for \code{relativeRanges}.
 }
 
+\note{
+  \code{absoluteRanges} might fail because of an integer overflow if the
+  length of the genome is >= \code{.Machine$integer.max} (e.g. Human genome).
+}
+
 \author{
   H. Pages
 }
