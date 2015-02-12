@@ -11,20 +11,20 @@
 normarg_seqlengths <- function(seqlengths)
 {
     if (!is.numeric(seqlengths)) 
-        stop("'seqlengths' must be a non-empty numeric vector")
+        stop(wmsg("'seqlengths' must be a non-empty numeric vector"))
     if (length(seqlengths) == 0L)
         return(setNames(integer(0), character(0)))
     seqlengths_names <- names(seqlengths)
     if (is.null(seqlengths_names)) 
-        stop("'seqlengths' must be named")
+        stop(wmsg("'seqlengths' must be named"))
     if (any(seqlengths_names %in% c(NA_character_, ""))) 
-        stop("'seqlengths' has names that are NA or the empty string")
+        stop(wmsg("'seqlengths' has names that are NA or the empty string"))
     if (any(duplicated(seqlengths_names))) 
-        stop("'seqlengths' has duplicated names")
+        stop(wmsg("'seqlengths' has duplicated names"))
     if (!is.integer(seqlengths)) 
         seqlengths <- setNames(as.integer(seqlengths), seqlengths_names)
     if (any(seqlengths < 0L, na.rm=TRUE))
-        stop("'seqlengths' contains negative values")
+        stop(wmsg("'seqlengths' contains negative values"))
     seqlengths
 }
 
@@ -61,7 +61,7 @@ isSmallGenome <- function(seqlengths)
 absoluteRanges <- function(x)
 {
     if (!is(x, "GenomicRanges"))
-        stop("'x' must be a GenomicRanges object")
+        stop(wmsg("'x' must be a GenomicRanges object"))
     x_seqlengths <- seqlengths(x)
     if (!isTRUE(isSmallGenome(x_seqlengths)))
         stop(wmsg("the total length of the underlying sequences is too big ",
@@ -87,7 +87,7 @@ absoluteRanges <- function(x)
 relativeRanges <- function(x, seqlengths)
 {
     if (!is(x, "Ranges"))
-        stop("'x' must be a Ranges object")
+        stop(wmsg("'x' must be a Ranges object"))
     if (is.numeric(seqlengths)) {
         ans_seqlengths <- normarg_seqlengths(seqlengths)
         ans_seqinfo <- Seqinfo(seqnames=names(ans_seqlengths),
@@ -104,15 +104,23 @@ relativeRanges <- function(x, seqlengths)
         stop(wmsg("the total length of the sequences specified ",
                   "thru 'seqlengths' is too big or couldn't be ",
                   "computed (because some lengths are NA)"))
-    offsets <- c(0L, cumsum(unname(ans_seqlengths)[-length(ans_seqlengths)]))
-    chrom_starts <- offsets + 1L
-    start2chrom <- findInterval(start(x), chrom_starts)
-    end2chrom <- findInterval(end(x), chrom_starts)
-    if (!identical(start2chrom, end2chrom))
-        stop(wmsg("Some ranges in 'x' are crossing sequence boundaries. ",
+    offsets <- c(0L, cumsum(unname(ans_seqlengths)))
+
+    ## Map each range in 'x' to a sequence in the genome.
+    ticks <- offsets + 1L
+    start2seqid <- findInterval(start(x), ticks)
+    end2seqid <- findInterval(end(x),  ticks)
+    if (!identical(start2seqid, end2seqid))
+        stop(wmsg("Some ranges in 'x' cannot be mapped to a sequence in the ",
+                  "genome because they cross sequence boundaries. ",
                   "Cannot convert them into relative ranges."))
-    ans_ranges <- shift(x, shift=-offsets[start2chrom])
-    ans_seqnames <- names(ans_seqlengths)[start2chrom]
+    if (any(start2seqid < 1L) || any(start2seqid > length(ans_seqlengths)))
+        stop(wmsg("Some ranges in 'x' cannot be mapped to a sequence in the ",
+                  "genome because they are outside the boundaries of the ",
+                  "genome. Cannot convert them into relative ranges."))
+
+    ans_ranges <- shift(x, shift=-offsets[start2seqid])
+    ans_seqnames <- names(ans_seqlengths)[start2seqid]
     GRanges(ans_seqnames, ans_ranges, seqinfo=ans_seqinfo)
 }
 

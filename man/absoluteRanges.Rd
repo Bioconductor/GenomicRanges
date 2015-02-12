@@ -46,13 +46,19 @@ isSmallGenome(seqlengths)
 }
 
 \details{
-  Because ranges in Bioconductor are using integer vectors for their
-  internal representation, \code{absoluteRanges} and \code{relativeRanges}
-  cannot be used on genomes for which the total sequence length is >
-  \code{.Machine$integer.max}. Utility function \code{isSmallGenome} is
-  provided as a mean for the user to check upfront whether the size of a
-  genome is <= \code{.Machine$integer.max}, and thus compatible with
-  \code{absoluteRanges} and \code{relativeRanges}.
+  Because \code{absoluteRanges} returns the \emph{absolute} ranges in an
+  \link[IRanges]{IRanges} object, and because an \link[IRanges]{IRanges}
+  object cannot hold ranges with an end > \code{.Machine$integer.max}
+  (i.e. >= 2^31 on most platforms), \code{absoluteRanges} cannot be used
+  if the size of the underlying genome (i.e. the total length of the
+  sequences in it) is > \code{.Machine$integer.max}. Utility function
+  \code{isSmallGenome} is provided as a mean for the user to check
+  upfront whether the genome is \emph{small} (i.e. its size is <=
+  \code{.Machine$integer.max}) or not, and thus compatible with
+  \code{absoluteRanges} or not.
+
+  \code{relativeRanges} applies the same restriction by looking at the
+  \code{seqlengths} argument.
 }
 
 \value{
@@ -106,27 +112,50 @@ stopifnot(all(gr == gr2))
 ## ON REAL DATA
 ## ---------------------------------------------------------------------
 
+## With a "small" genome
+
 library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
 txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
-isSmallGenome(txdb)
 ex <- exons(txdb)
 ex
 
-ar <- absoluteRanges(ex)
-ar
+isSmallGenome(ex)
 
-ex2 <- relativeRanges(ar, seqlengths(ex))
-ex2  # original strand is not restored
-strand(ex2) <- strand(ex)  # set it back
-stopifnot(all(ex == ex2))
+## Note that because isSmallGenome() can return NA (see Value section
+## above), its result should always be wrapped inside isTRUE() when
+## used in an if statement:
+if (isTRUE(isSmallGenome(ex))) {
+    ar <- absoluteRanges(ex)
+    ar
+
+    ex2 <- relativeRanges(ar, seqlengths(ex))
+    ex2  # original strand is not restored
+
+    ## Sanity check:
+    strand(ex2) <- strand(ex)  # restore the strand
+    stopifnot(all(ex == ex2))
+}
+
+## With a "big" genome (but we can reduce it)
 
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-isSmallGenome(txdb)
-if (interactive()) {
-    ex <- exons(txdb)
+ex <- exons(txdb)
+isSmallGenome(ex)
+\dontrun{
     absoluteRanges(ex)  # error!
 }
+
+## However, if we are only interested in some chromosomes, we might
+## still be able to use absoluteRanges():
+seqlevels(ex, force=TRUE) <- paste0("chr", 1:10)
+isSmallGenome(ex)  # TRUE!
+ar <- absoluteRanges(ex)
+ex2 <- relativeRanges(ar, seqlengths(ex))
+
+## Sanity check:
+strand(ex2) <- strand(ex) 
+stopifnot(all(ex == ex2))
 }
 
 \keyword{manip}
