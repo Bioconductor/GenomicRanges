@@ -109,8 +109,9 @@ export(
     GenomicRangesList, GRangesList,
 
     makeGRangesFromDataFrame,
-    tileGenome,
-    makeGRangesListFromFeatureFragments
+    makeGRangesListFromFeatureFragments,
+    absoluteRanges, relativeRanges,
+    tileGenome
 )
 
 
