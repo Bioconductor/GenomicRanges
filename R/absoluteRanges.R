@@ -1,16 +1,71 @@
+### =========================================================================
+### absoluteRanges() & related
+### -------------------------------------------------------------------------
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### isSmallGenome()
+###
+
+### TODO: Maybe this could be re-used in tileGenome().
+normarg_seqlengths <- function(seqlengths)
+{
+    if (!is.numeric(seqlengths)) 
+        stop("'seqlengths' must be a non-empty numeric vector")
+    if (length(seqlengths) == 0L)
+        return(setNames(integer(0), character(0)))
+    seqlengths_names <- names(seqlengths)
+    if (is.null(seqlengths_names)) 
+        stop("'seqlengths' must be named")
+    if (any(seqlengths_names %in% c(NA_character_, ""))) 
+        stop("'seqlengths' has names that are NA or the empty string")
+    if (any(duplicated(seqlengths_names))) 
+        stop("'seqlengths' has duplicated names")
+    if (!is.integer(seqlengths)) 
+        seqlengths <- setNames(as.integer(seqlengths), seqlengths_names)
+    if (any(seqlengths < 0L, na.rm=TRUE))
+        stop("'seqlengths' contains negative values")
+    seqlengths
+}
+
+### 'seqlengths' can be an integer or numeric vector, or any object from which
+### the sequence lengths can be extracted with seqlengths().
+### Returns TRUE if the total length of the underlying sequences is <= 
+### '.Machine$integer.max' (e.g. Fly genome), FALSE if not (e.g. Human genome),
+### or NA if it cannot be computed (because some sequence lengths are NA).
+isSmallGenome <- function(seqlengths)
+{
+    if (is.numeric(seqlengths)) {
+        seqlengths <- normarg_seqlengths(seqlengths)
+    } else {
+        seqlengths <- seqlengths(seqlengths)
+    }
+    if (any(is.na(seqlengths)))
+        return(NA)
+    ## sum() will emit a "integer overflow" warning and return NA if the sum
+    ## is > .Machine$integer.max
+    total_length <- suppressWarnings(sum(seqlengths))
+    !is.na(total_length)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### absoluteRanges()
+###
+
 ### Transform the genomic ranges in 'x' into "absolute" ranges i.e. into
 ### ranges counted from the beginning of the virtual sequence obtained by
 ### concatenating all the sequences in the genome (in the order reported by
 ### 'seqlevels(x)'). Ignore the strand.
-### IMPORTANT NOTE: The function might fail because of an integer overflow if
-### the length of the genome is >= 2^31 (e.g. if it's the Human genome).
+### ONLY WORK ON A SMALL GENOME! (see isSmallGenome() above)
 absoluteRanges <- function(x)
 {
     if (!is(x, "GenomicRanges"))
         stop("'x' must be a GenomicRanges object")
     x_seqlengths <- seqlengths(x)
-    if (any(is.na(x_seqlengths)))
-        stop("'seqlengths(x)' cannot contain NAs")
+    if (!isTRUE(isSmallGenome(x_seqlengths)))
+        stop(wmsg("the total length of the underlying sequences is too big ",
+                  "or couldn't be computed (because some lengths are NA)"))
     x_seqids <- as.integer(seqnames(x))
     idx <- which(start(x) < 1L | end(x) > x_seqlengths[x_seqids])
     if (length(idx) != 0L)
@@ -22,39 +77,34 @@ absoluteRanges <- function(x)
     shift(x_ranges, shift=offsets[x_seqids])
 }
 
-### TODO: Use this in tileGenome().
-normarg_seqlengths <- function(seqlengths)
-{
-    if (!is.numeric(seqlengths) || length(seqlengths) == 0L) 
-        stop("'seqlengths' must be a non-empty numeric vector")
-    seqlengths_names <- names(seqlengths)
-    if (is.null(seqlengths_names)) 
-        stop("'seqlengths' must be named")
-    if (any(seqlengths_names %in% c(NA_character_, ""))) 
-        stop("'seqlengths' has names that are NA or the empty string")
-    if (any(duplicated(seqlengths_names))) 
-        stop("'seqlengths' has duplicated names")
-    if (!is.integer(seqlengths)) 
-        seqlengths <- setNames(as.integer(seqlengths), seqlengths_names)
-    if (S4Vectors:::anyMissingOrOutside(seqlengths, lower=0L)) 
-        stop("'seqlengths' contains NAs or negative values")
-    seqlengths
-}
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### relativeRanges()
+###
 
 ### The reverse of absoluteRanges().
+### ONLY WORK ON A SMALL GENOME! (see isSmallGenome() above)
 relativeRanges <- function(x, seqlengths)
 {
     if (!is(x, "Ranges"))
         stop("'x' must be a Ranges object")
-    if (is(seqlengths, "Seqinfo")) {
-        ans_seqinfo <- seqlengths
-        seqlengths <- seqlengths(ans_seqinfo)
+    if (is.numeric(seqlengths)) {
+        ans_seqlengths <- normarg_seqlengths(seqlengths)
+        ans_seqinfo <- Seqinfo(seqnames=names(ans_seqlengths),
+                               seqlengths=ans_seqlengths)
     } else {
-        seqlengths <- normarg_seqlengths(seqlengths)
-        ans_seqinfo <- Seqinfo(seqnames=names(seqlengths),
-                               seqlengths=seqlengths)
+        if (is(seqlengths, "Seqinfo")) {
+            ans_seqinfo <- seqlengths
+        } else {
+            ans_seqinfo <- seqinfo(seqlengths)
+        }
+        ans_seqlengths <- seqlengths(ans_seqinfo)
     }
-    offsets <- c(0L, cumsum(unname(seqlengths)[-length(seqlengths)]))
+    if (!isTRUE(isSmallGenome(ans_seqlengths)))
+        stop(wmsg("the total length of the sequences specified ",
+                  "thru 'seqlengths' is too big or couldn't be ",
+                  "computed (because some lengths are NA)"))
+    offsets <- c(0L, cumsum(unname(ans_seqlengths)[-length(ans_seqlengths)]))
     chrom_starts <- offsets + 1L
     start2chrom <- findInterval(start(x), chrom_starts)
     end2chrom <- findInterval(end(x), chrom_starts)
@@ -62,7 +112,7 @@ relativeRanges <- function(x, seqlengths)
         stop(wmsg("Some ranges in 'x' are crossing sequence boundaries. ",
                   "Cannot convert them into relative ranges."))
     ans_ranges <- shift(x, shift=-offsets[start2chrom])
-    ans_seqnames <- names(seqlengths)[start2chrom]
+    ans_seqnames <- names(ans_seqlengths)[start2chrom]
     GRanges(ans_seqnames, ans_ranges, seqinfo=ans_seqinfo)
 }
 

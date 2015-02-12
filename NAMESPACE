@@ -110,7 +110,7 @@ export(
 
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
-    absoluteRanges, relativeRanges,
+    isSmallGenome, absoluteRanges, relativeRanges,
     tileGenome
 )
 
