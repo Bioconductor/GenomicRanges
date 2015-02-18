@@ -2,13 +2,18 @@
 
 \alias{nearest-methods}
 
+\alias{precede}
 \alias{precede,GenomicRanges,GenomicRanges-method}
 \alias{precede,GenomicRanges,missing-method}
+\alias{follow}
 \alias{follow,GenomicRanges,GenomicRanges-method}
 \alias{follow,GenomicRanges,missing-method}
+\alias{nearest}
 \alias{nearest,GenomicRanges,GenomicRanges-method}
 \alias{nearest,GenomicRanges,missing-method}
+\alias{distance}
 \alias{distance,GenomicRanges,GenomicRanges-method}
+\alias{distanceToNearest}
 \alias{distanceToNearest,GenomicRanges,GenomicRanges-method}
 \alias{distanceToNearest,GenomicRanges,missing-method}
 
