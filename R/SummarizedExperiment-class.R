@@ -307,6 +307,7 @@ setMethod(assays, "SummarizedExperiment",
     function(x, ..., withDimnames=TRUE, value)
 {
     ## withDimnames arg allows names(assays(se, withDimnames=FALSE)) <- value
+    value <- endoapply(value, "dimnames<-", NULL)
     x <- clone(x, ..., assays=value)
     msg <- .valid.SummarizedExperiment(x)
     if (!is.null(msg))
@@ -318,12 +319,7 @@ setReplaceMethod("assays", c("SummarizedExperiment", "SimpleList"),
     .SummarizedExperiment.assays.replace)
 
 setReplaceMethod("assays", c("SummarizedExperiment", "list"),
-    function(x, ..., value)
-{
-    value <- lapply(x, "dimnames<-", NULL)
-    .SummarizedExperiment.assays.replace(x, ...,
-                                         value=SimpleList(value))
-})
+    .SummarizedExperiment.assays.replace)
 
 ## convenience for common use case 
 setMethod(assay, c("SummarizedExperiment", "missing"),
