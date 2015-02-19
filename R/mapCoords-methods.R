@@ -111,7 +111,7 @@ setMethod("mapCoords", c("GenomicRanges", "GenomicRanges"),
 setMethod("pmapCoords", c("GenomicRanges", "GRangesList"), 
     function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
     {
-        .Deprecated("mapToTranscripts", old="mapCoords")
+        .Deprecated("pmapToTranscripts", old="pmapCoords")
         if (length(from) != length(to))
             stop("'from' and 'to' must have the same length")
         ## FIXME: should be implemented as pfindOverlaps()
