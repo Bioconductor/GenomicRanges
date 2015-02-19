@@ -15,6 +15,7 @@
 
 % Coercion methods:
 \alias{updateObject,SummarizedExperiment-method}
+\alias{coerce,ExpressionSet,SummarizedExperiment-method}
 
 % Accessor methods:
 \alias{assays}
@@ -208,6 +209,7 @@ exptData(x, ...) <- value
 ## Coercion
 
 \S4method{updateObject}{SummarizedExperiment}(object, ..., verbose=FALSE)
+\S4method{coerce}{ExpressionSet,SummarizedExperiment}(from, to = "SummarizedExperiment", strict = TRUE)
 
 }
 
@@ -291,6 +293,13 @@ exptData(x, ...) <- value
   \item{deparse.level}{See \code{?base::\link[base]{cbind}} for a description of
     this argument.}
 
+  \item{from}{the object to be coerced}
+
+  \item{to}{the class to coerce to}
+
+  \item{strict}{logical flag.  If 'TRUE', the returned object must be strictly
+    from the target class.}
+
 }
 
 \details{
@@ -373,6 +382,12 @@ exptData(x, ...) <- value
   with a version of GenomicRanges prior to 1.9.59), it should be updated
   by invoking \code{x <- updateObject(x)}.
 
+  \describe{
+    \item{}{
+      \code{as(from, "SummarizedExperiment")}: Creates a
+      \code{SummarizedExperiment} object from a \code{ExpressionSet} object.
+    }
+  }
 }
 
 \section{Accessors}{

@@ -25,7 +25,7 @@ Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,
 	TxDb.Athaliana.BioMart.plantsmart22,
         org.Sc.sgd.db, org.Hs.eg.db, org.Mm.eg.db,
 	VariantAnnotation, edgeR, DESeq, DEXSeq, pasilla,
-	pasillaBamSubset, RUnit, digest, BiocStyle
+	pasillaBamSubset, RUnit, digest, BiocStyle, Biobase
 License: Artistic-2.0
 Collate: utils.R
 	phicoef.R

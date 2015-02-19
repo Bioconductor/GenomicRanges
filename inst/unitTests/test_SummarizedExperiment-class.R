@@ -344,3 +344,31 @@ test_SummarizedExperiment_rbind <- function()
     names(assays(se1)) <- c("mm", "aa")
     checkException(rbind(se1, se2), silent=TRUE) ## different variables
 }
+
+test_SummarizedExperiment_coercion <- function()
+{
+    eset1 <- Biobase::ExpressionSet()
+
+    checkTrue(validObject(eset1))
+
+    se1 <- as(eset1, "SummarizedExperiment")
+
+    checkTrue(validObject(se1))
+
+    data("sample.ExpressionSet", package = "Biobase")
+
+    eset2 <- sample.ExpressionSet
+    checkTrue(validObject(eset2))
+
+    se2 <- as(eset2, "SummarizedExperiment")
+
+    checkTrue(validObject(se2))
+
+    checkIdentical(Biobase::experimentData(eset2), exptData(se2)$experimentData)
+    checkIdentical(Biobase::annotation(eset2), exptData(se2)$annotation)
+    checkIdentical(Biobase::protocolData(eset2), exptData(se2)$protocolData)
+
+    checkIdentical(SimpleList(as.list(Biobase::assayData(eset2))), assays(se2))
+    checkIdentical(Biobase::featureNames(eset2), rownames(se2))
+    checkIdentical(Biobase::sampleNames(eset2), colnames(se2))
+}

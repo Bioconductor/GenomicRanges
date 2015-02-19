@@ -799,3 +799,39 @@ setMethod(show, "SummarizedExperiment",
     else cat("colnames: NULL\n")
     scat("colData names(%d): %s\n", names(colData(object)))
 })
+
+.FeatureDataToGRangesList <- function(from) {
+    nms <- Biobase::featureNames(from)
+    res <- relist(GRanges(), vector("list", length=length(nms)))
+    names(res) <- nms
+    mcols(res) <- .AnnotatedDataFrameToDataFrame(Biobase::featureData(from))
+    res
+}
+
+.AnnotatedDataFrameToDataFrame <- function(from) {
+    df <- DataFrame(Biobase::pData(from))
+    mcols(df) <- DataFrame(Biobase::varMetadata(from))
+    df
+}
+
+suppressMessages(
+    setAs("ExpressionSet", "SummarizedExperiment", function(from) {
+        if (requireNamespace("Biobase", quietly = TRUE)) {
+            assays <- as.list(Biobase::assayData(from))
+            rowData <- .FeatureDataToGRangesList(from)
+            colData = .AnnotatedDataFrameToDataFrame(Biobase::phenoData(from))
+            exptData = SimpleList(
+                experimentData = Biobase::experimentData(from),
+                annotation = Biobase::annotation(from),
+                protocolData = Biobase::protocolData(from)
+            )
+
+            SummarizedExperiment(
+                assays = assays,
+                rowData = rowData,
+                colData = colData,
+                exptData = exptData
+            )
+        }
+    })
+)
