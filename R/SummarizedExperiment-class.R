@@ -1,4 +1,4 @@
-## 
+##
 ## Helper classes: Assays, ShallowData, ShallowSimpleListAssays
 
 setClass("Assays")
@@ -29,7 +29,7 @@ setMethod("clone", "ShallowData",  # not exported
     xx
 }
 
-## 
+##
 ## SummarizedExperiment
 
 setClass("SummarizedExperiment",
@@ -321,7 +321,7 @@ setReplaceMethod("assays", c("SummarizedExperiment", "SimpleList"),
 setReplaceMethod("assays", c("SummarizedExperiment", "list"),
     .SummarizedExperiment.assays.replace)
 
-## convenience for common use case 
+## convenience for common use case
 setMethod(assay, c("SummarizedExperiment", "missing"),
     function(x, i, ...)
 {
@@ -333,7 +333,7 @@ setMethod(assay, c("SummarizedExperiment", "missing"),
 })
 
 setMethod(assay, c("SummarizedExperiment", "numeric"),
-    function(x, i, ...) 
+    function(x, i, ...)
 {
     tryCatch({
         assays(x, ...)[[i]]
@@ -344,7 +344,7 @@ setMethod(assay, c("SummarizedExperiment", "numeric"),
 })
 
 setMethod(assay, c("SummarizedExperiment", "character"),
-    function(x, i = names(x)[1], ...) 
+    function(x, i = names(x)[1], ...)
 {
     msg <- paste0("'assay(<", class(x), ">, i=\"character\", ...)' ",
                   "invalid subscript 'i'")
@@ -390,7 +390,7 @@ setReplaceMethod("assay",
 ## <SummarizedExperiment> but not assays. dimnames need to be added on
 ## to assays when assays() invoked
 setMethod(dim, "SummarizedExperiment",
-    function(x) 
+    function(x)
 {
     c(length(rowData(x)), nrow(colData(x)))
 })
@@ -402,7 +402,7 @@ setMethod(dimnames, "SummarizedExperiment",
 })
 
 setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
-    function(x, value) 
+    function(x, value)
 {
     rowData <- rowData(x)
     names(rowData) <- value[[1]]
@@ -410,7 +410,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
     rownames(colData) <- value[[2]]
     clone(x, rowData=rowData, colData=colData)
 })
- 
+
 setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     function(x, value)
 {
@@ -537,7 +537,7 @@ setReplaceMethod("[",
 {
     if (missing(i) && missing(j))
         return(value)
- 
+
     if (!missing(i) && is.character(i)) {
         fmt <- paste0("<", class(x), ">[i,] index out of bounds: %s")
         i <- .SummarizedExperiment.charbound(i, rownames(x), fmt)
@@ -609,14 +609,14 @@ setMethod("rbind", "SummarizedExperiment",
             stop("'...' objects must have the same colnames")
     if (!.compare(lapply(args, ncol)))
             stop("'...' objects must have the same number of samples")
-    rowData <- do.call(c, lapply(args, 
+    rowData <- do.call(c, lapply(args,
         function(i) slot(i, "rowData")))
-    colData <- .cbind.DataFrame(args, colData, "colData") 
+    colData <- .cbind.DataFrame(args, colData, "colData")
     assays <- .bind.arrays(args, rbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    initialize(args[[1]], assays=assays, rowData=rowData, 
-               colData=colData, exptData=exptData) 
+    initialize(args[[1]], assays=assays, rowData=rowData,
+               colData=colData, exptData=exptData)
 }
 
 ## Appropriate for objects with same ranges and different samples.
@@ -637,16 +637,16 @@ setMethod("cbind", "SummarizedExperiment",
     assays <- .bind.arrays(args, cbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    initialize(args[[1]], assays=assays, rowData=rowData, 
-               colData=colData, exptData=exptData) 
+    initialize(args[[1]], assays=assays, rowData=rowData,
+               colData=colData, exptData=exptData)
 }
 
-.compare <- function(x, GenomicRanges=FALSE) 
+.compare <- function(x, GenomicRanges=FALSE)
 {
     x1 <- x[[1]]
     if (GenomicRanges) {
         if (is(x1, "GRangesList")) {
-            x <- lapply(x, unlist) 
+            x <- lapply(x, unlist)
             x1 <- x[[1]]
         }
         for (i in seq_along(x)[-1]) {
@@ -656,9 +656,9 @@ setMethod("cbind", "SummarizedExperiment",
             if (!all(ok))
                 return(FALSE)
         }
-        return(TRUE) 
+        return(TRUE)
     } else {
-        all(sapply(x[-1], 
+        all(sapply(x[-1],
             function(xelt) all(identical(xelt, x[[1]]))))
     }
 }
@@ -671,10 +671,10 @@ setMethod("cbind", "SummarizedExperiment",
         nmsv <- unlist(nms, use.names=FALSE)
         names(nmsv) <- rep(seq_along(nms), elementLengths(nms))
         dups <- duplicated(nmsv)
-        ## no duplicates 
+        ## no duplicates
         if (!any(dups))
             return(do.call(cbind, lst))
-        ## confirm duplicates are the same 
+        ## confirm duplicates are the same
         lapply(nmsv[duplicated(nmsv)], function(d) {
             if (!.compare(lapply(lst, "[", d)))
                 stop("column(s) '", unname(d),
@@ -694,7 +694,7 @@ setMethod("cbind", "SummarizedExperiment",
     if (is.null(uvar <- unique(unlist(var))))
         return(.ShallowSimpleListAssays(data=SimpleList()))
     if (!.compare(var))
-        stop("elements in ", sQuote(accessorName), 
+        stop("elements in ", sQuote(accessorName),
              " must have the same names")
 
     ## extract variable
@@ -703,7 +703,7 @@ setMethod("cbind", "SummarizedExperiment",
         dim <- .assay.dimension(l2, bind)
         if (!is.na(dim[3])) {
             ## assay: combine each dimension of each element
-            l3 <- lapply(1:dim[3], 
+            l3 <- lapply(1:dim[3],
                       function(i) do.call(bind, lapply(l2, "[", ,,i)))
             array(do.call(c, l3), dim=dim)
         } else {
@@ -800,15 +800,15 @@ setMethod(show, "SummarizedExperiment",
     scat("colData names(%d): %s\n", names(colData(object)))
 })
 
-.FeatureDataToGRangesList <- function(from) {
+.from_FeatureData_to_GRangesList <- function(from) {
     nms <- Biobase::featureNames(from)
     res <- relist(GRanges(), vector("list", length=length(nms)))
     names(res) <- nms
-    mcols(res) <- .AnnotatedDataFrameToDataFrame(Biobase::featureData(from))
+    mcols(res) <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::featureData(from))
     res
 }
 
-.AnnotatedDataFrameToDataFrame <- function(from) {
+.from_AnnotatedDataFrame_to_DataFrame <- function(from) {
     df <- DataFrame(Biobase::pData(from))
     mcols(df) <- DataFrame(Biobase::varMetadata(from))
     df
@@ -818,8 +818,8 @@ suppressMessages(
     setAs("ExpressionSet", "SummarizedExperiment", function(from) {
         if (requireNamespace("Biobase", quietly = TRUE)) {
             assays <- as.list(Biobase::assayData(from))
-            rowData <- .FeatureDataToGRangesList(from)
-            colData = .AnnotatedDataFrameToDataFrame(Biobase::phenoData(from))
+            rowData <- .from_FeatureData_to_GRangesList(from)
+            colData = .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
             exptData = SimpleList(
                 experimentData = Biobase::experimentData(from),
                 annotation = Biobase::annotation(from),
