@@ -39,7 +39,7 @@
 \title{A quick introduction to GRanges and GRangesList objects}
 
 \author{Herv\'e Pag\`es\\
-        \href{mailto:hpages@fhcrc.org}{hpages@fhcrc.org}}
+        \href{mailto:hpages@fredhutch.org}{hpages@fredhutch.org}}
 
 \institute[FHCRC]{Fred Hutchinson Cancer Research Center\\
                   Seattle, WA}
