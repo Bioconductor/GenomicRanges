@@ -102,45 +102,7 @@
 }
 
 \examples{
-library(TxDb.Dmelanogaster.UCSC.dm3.ensGene)
-txdb <- TxDb.Dmelanogaster.UCSC.dm3.ensGene
-gr <- GRanges("chr2L", IRanges(c(7500, 8400, 9000), width = 200,
-              names = LETTERS[1:3]))
-
-## Coding region coordinates relative to transcript:
-cdsbytx <- cdsBy(txdb, "tx")
-map1 <- mapCoords(gr, cdsbytx, ignore.strand = FALSE)
-map1
-
-## Range A is not translated because it does not fall completely 
-## 'within' any ranges.
-findOverlaps(gr["A"], cdsbytx, type = "any")
-findOverlaps(gr["A"], cdsbytx, type = "within")
-
-## Exon region coordinates relative to transcript:
-exonsbytx <- exonsBy(txdb, "tx")
-map2 <- mapCoords(gr, exonsbytx, ignore.strand = FALSE)
-
-## Extracting elements from 'to':
-##
-## Some applications may require a closer look at the elements
-## in 'to' used in the mapping. The toHits metadata column contains
-## indices of the outer list elements hit. When elt.hits = TRUE the output 
-## also includes an eltHits column which holds indices of the inner list
-## elements. Together these can be used to extract the elements of 'to',
-## which in this example are the exons.
-map3 <- mapCoords(gr, exonsbytx, ignore.strand = FALSE, elt.hits=TRUE) 
-map3
-
-## The first 2 rows of 'map3' show the second range in 'from' hit list 
-## elements 1 and 3.
-map3[1:2, ]
-
-## Extract list elements of 'to':
-outerlist <- exonsbytx[mcols(map3[1:2, ])$toHits]
-
-## Extract the exons from the list elements:
-exons <- Map("[", outerlist, mcols(map3[1:2, ])$eltHits)
+## See ?mapToTranscript and ?mapToAlignment
 }
 
 \author{M. Lawrence and V. Obenchain \url{vobencha@fhcrc.org}}
