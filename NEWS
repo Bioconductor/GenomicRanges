@@ -4,6 +4,8 @@ CHANGES IN VERSION 1.20.0
 NEW FEATURES
 
     o Add 'assayNames', 'assayNames<-' for SummarizedExperiment
+    o Deprecate 'rowData', 'rowData<-' for SummarizedExperiment
+    o Add 'rowRanges', 'rowRanges<-' for SummarizedExperiment
 
 CHANGES IN VERSION 1.18.0
 -------------------------

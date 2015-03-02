@@ -18,21 +18,21 @@ m <- matrix(1, 5, 3, dimnames=list(NULL, NULL))
 mlst <- matrix(1, 3, 3, dimnames=list(NULL, NULL))
 mList <- list(m, mlst)
 assaysList <- list(gr=SimpleList(m=m), grl=SimpleList(m=mlst))
-rowDataList <- 
+rowRangesList <- 
     list(gr=GRanges("chr1", IRanges(1:5, 10)), 
          grl=split(GRanges("chr1", IRanges(1:5, 10)), c(1,1,2,2,3)))
-names(rowDataList[["grl"]]) <- NULL
+names(rowRangesList[["grl"]]) <- NULL
 colData <- DataFrame(x=letters[1:3])
 
 ## a list of one SE with GRanges and one with GRangesList
 ssetList <- 
     list(SummarizedExperiment(
            assays=assaysList[["gr"]], 
-           rowData=rowDataList[["gr"]], 
+           rowData=rowRangesList[["gr"]], 
            colData=colData),
          SummarizedExperiment(
            assays=assaysList[["grl"]], 
-           rowData=rowDataList[["grl"]], 
+           rowData=rowRangesList[["grl"]], 
            colData=colData))
 
 test_SummarizedExperiment_GRanges_API <- function() {
@@ -92,16 +92,16 @@ test_SummarizedExperiment_GRanges_values <- function()
     }
 
     for (.fun in needArgs) {
-        ## all needArgs operate on rowData
+        ## all needArgs operate on rowRanges
         generic <- getGeneric(.fun)
-        x1 <- x; rowData(x1) <- generic(rowData(x1), 5)
+        x1 <- x; rowRanges(x1) <- generic(rowRanges(x1), 5)
         checkIdentical(x1, generic(x, 5))
     }
     ## isEndomorphism
     for (.fun in isEndomorphism) {
         generic <- getGeneric(.fun)
         obs <- generic(x)
-        checkIdentical(generic(rowData(x)), rowData(obs))
+        checkIdentical(generic(rowRanges(x)), rowRanges(obs))
         checkIdentical(assays(x), assays(obs))
     }
 
@@ -110,14 +110,14 @@ test_SummarizedExperiment_GRanges_values <- function()
     x1 <- shift(x, seq_len(nrow(x)) * 5)
     for (.fun in .funs) {
         generic <- getGeneric(.fun)
-        exp <- generic(rowData(x1), rowData(x1))
+        exp <- generic(rowRanges(x1), rowRanges(x1))
         obs <- generic(x1, x1)
         checkIdentical(obs, exp)
     }
     # nearest,SummarizedExperiment,missing-method
-    checkIdentical(nearest(rowData(x1)), nearest(x1)) 
-    checkIdentical(subsetByOverlaps(rowData(x1), rowData(x1)[3]),
-                   rowData(subsetByOverlaps(x1, x1[3])))
+    checkIdentical(nearest(rowRanges(x1)), nearest(x1)) 
+    checkIdentical(subsetByOverlaps(rowRanges(x1), rowRanges(x1)[3]),
+                   rowRanges(subsetByOverlaps(x1, x1[3])))
 }
 
 test_SummarizedExperiment_split <- function() {

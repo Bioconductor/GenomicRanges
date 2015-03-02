@@ -61,11 +61,11 @@ setClass("SummarizedExperiment",
     NULL
 }
 
-.valid.SummarizedExperiment.rowData_dims <- function(x)
+.valid.SummarizedExperiment.rowRanges_dims <- function(x)
 {
     if (!all(sapply(assays(x, withDimnames=FALSE), nrow) ==
-             length(rowData(x))))
-        return("'rowData' length differs from 'assays' nrow")
+             length(rowRanges(x))))
+        return("'rowRanges' length differs from 'assays' nrow")
     NULL
 }
 
@@ -79,7 +79,7 @@ setClass("SummarizedExperiment",
 
 .valid.SummarizedExperiment.assays_dims <- function(x)
 {
-    c(.valid.SummarizedExperiment.rowData_dims(x),
+    c(.valid.SummarizedExperiment.rowRanges_dims(x),
       .valid.SummarizedExperiment.colData_dims(x))
 }
 
@@ -204,10 +204,22 @@ setGeneric("exptData<-",
 ## rowData, colData seem too vague, but from eSet derived classes wanted to
 ## call the rows / cols something different from 'features' or 'samples', so
 ## might as well avoid the issue
-setGeneric("rowData", function(x, ...) standardGeneric("rowData"))
+setGeneric("rowRanges", function(x, ...) standardGeneric("rowRanges"))
 
-setGeneric("rowData<-",
-    function(x, ..., value) standardGeneric("rowData<-"))
+setGeneric("rowRanges<-",
+    function(x, ..., value) standardGeneric("rowRanges<-"))
+
+rowData <- function(...)
+{
+    .Deprecated("rowRanges")
+    rowRanges(...)
+}
+
+`rowData<-` <- function(x, ..., value)
+{
+    .Deprecated("rowRanges<-")
+    rowRanges(x, ...) <- value
+}
 
 setGeneric("colData", function(x, ...) standardGeneric("colData"))
 
@@ -249,24 +261,24 @@ setReplaceMethod("exptData", c("SummarizedExperiment", "list"),
     clone(x, ..., exptData=SimpleList(value))
 })
 
-setMethod(rowData, "SummarizedExperiment",
+setMethod(rowRanges, "SummarizedExperiment",
     function(x, ...) value(x, "rowData"))
 
-.SummarizedExperiment.rowData.replace <-
+.SummarizedExperiment.rowRanges.replace <-
     function(x, ..., value)
 {
     x <- clone(x, ..., rowData=value)
-    msg <- .valid.SummarizedExperiment.rowData_dims(x)
+    msg <- .valid.SummarizedExperiment.rowRanges_dims(x)
     if (!is.null(msg))
         stop(msg)
     x
 }
 
-setReplaceMethod("rowData", c("SummarizedExperiment", "GenomicRanges"),
-    .SummarizedExperiment.rowData.replace)
+setReplaceMethod("rowRanges", c("SummarizedExperiment", "GenomicRanges"),
+    .SummarizedExperiment.rowRanges.replace)
 
-setReplaceMethod("rowData", c("SummarizedExperiment", "GRangesList"),
-    .SummarizedExperiment.rowData.replace)
+setReplaceMethod("rowRanges", c("SummarizedExperiment", "GRangesList"),
+    .SummarizedExperiment.rowRanges.replace)
 
 setMethod(colData, "SummarizedExperiment",
     function(x, ...) value(x, "colData"))
@@ -392,23 +404,23 @@ setReplaceMethod("assay",
 setMethod(dim, "SummarizedExperiment",
     function(x)
 {
-    c(length(rowData(x)), nrow(colData(x)))
+    c(length(rowRanges(x)), nrow(colData(x)))
 })
 
 setMethod(dimnames, "SummarizedExperiment",
     function(x)
 {
-    list(names(rowData(x)), rownames(colData(x)))
+    list(names(rowRanges(x)), rownames(colData(x)))
 })
 
 setReplaceMethod("dimnames", c("SummarizedExperiment", "list"),
     function(x, value)
 {
-    rowData <- rowData(x)
-    names(rowData) <- value[[1]]
+    rowRanges <- rowRanges(x)
+    names(rowRanges) <- value[[1]]
     colData <- colData(x)
     rownames(colData) <- value[[2]]
-    clone(x, rowData=rowData, colData=colData)
+    clone(x, rowData=rowRanges, colData=colData)
 })
 
 setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
@@ -482,7 +494,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     if (!missing(i) && !missing(j)) {
         ii <- as.vector(i)
         jj <- as.vector(j)
-        x <- clone(x, ..., rowData=rowData(x)[i],
+        x <- clone(x, ..., rowData=rowRanges(x)[i],
             colData=colData(x)[j, , drop=FALSE],
             assays=.SummarizedExperiment.assays.subset(x, ii, jj))
     } else if (missing(i)) {
@@ -491,7 +503,7 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
             assays=.SummarizedExperiment.assays.subset(x, j=jj))
     } else {                            # missing(j)
         ii <- as.vector(i)
-        x <- clone(x, ..., rowData=rowData(x)[i],
+        x <- clone(x, ..., rowData=rowRanges(x)[i],
             assays=.SummarizedExperiment.assays.subset(x, ii))
     }
     x
@@ -553,9 +565,9 @@ setReplaceMethod("[",
         jj <- as.vector(j)
         x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
             rowData=local({
-                r <- rowData(x)
-                r[i] <- rowData(value)
-                names(r)[ii] <- names(rowData(value))
+                r <- rowRanges(x)
+                r[i] <- rowRanges(value)
+                names(r)[ii] <- names(rowRanges(value))
                 r
             }), colData=local({
                 c <- colData(x)
@@ -580,13 +592,13 @@ setReplaceMethod("[",
         ii <- as.vector(i)
         x <- clone(x, ..., exptData=c(exptData(x), exptData(value)),
             rowData=local({
-                r <- rowData(x)
-                r[i] <- rowData(value)
-                names(r)[ii] <- names(rowData(value))
+                r <- rowRanges(x)
+                r[i] <- rowRanges(value)
+                names(r)[ii] <- names(rowRanges(value))
                 r
             }), assays=.SummarizedExperiment.assays.subsetgets(x, ii,
                   ..., value=value))
-        msg <- .valid.SummarizedExperiment.rowData_dims(x)
+        msg <- .valid.SummarizedExperiment.rowRanges_dims(x)
     }
     if (!is.null(msg))
         stop(msg)
@@ -609,13 +621,12 @@ setMethod("rbind", "SummarizedExperiment",
             stop("'...' objects must have the same colnames")
     if (!.compare(lapply(args, ncol)))
             stop("'...' objects must have the same number of samples")
-    rowData <- do.call(c, lapply(args,
-        function(i) slot(i, "rowData")))
+    rowRanges <- do.call(c, lapply(args, rowRanges))
     colData <- .cbind.DataFrame(args, colData, "colData")
     assays <- .bind.arrays(args, rbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    initialize(args[[1]], assays=assays, rowData=rowData,
+    initialize(args[[1]], assays=assays, rowData=rowRanges,
                colData=colData, exptData=exptData)
 }
 
@@ -629,15 +640,15 @@ setMethod("cbind", "SummarizedExperiment",
 
 .cbind.SummarizedExperiment <- function(args)
 {
-    if (!.compare(lapply(args, rowData), TRUE))
+    if (!.compare(lapply(args, rowRanges), TRUE))
         stop("'...' object ranges (rows) are not compatible")
-    rowData <- rowData(args[[1]])
-    mcols(rowData) <- .cbind.DataFrame(args, mcols, "mcols")
+    rowRanges <- rowRanges(args[[1]])
+    mcols(rowRanges) <- .cbind.DataFrame(args, mcols, "mcols")
     colData <- do.call(rbind, lapply(args, colData))
     assays <- .bind.arrays(args, cbind, "assays")
     exptData <- do.call(c, lapply(args, exptData))
 
-    initialize(args[[1]], assays=assays, rowData=rowData,
+    initialize(args[[1]], assays=assays, rowData=rowRanges,
                colData=colData, exptData=exptData)
 }
 
@@ -793,8 +804,8 @@ setMethod(show, "SummarizedExperiment",
     dlen <- sapply(dimnames, length)
     if (dlen[[1]]) scat("rownames(%d): %s\n", dimnames[[1]])
     else scat("rownames: NULL\n")
-    scat("rowData metadata column names(%d): %s\n",
-         names(mcols(rowData(object))))
+    scat("rowRanges metadata column names(%d): %s\n",
+         names(mcols(rowRanges(object))))
     if (dlen[[2]]) scat("colnames(%d): %s\n", dimnames[[2]])
     else cat("colnames: NULL\n")
     scat("colData names(%d): %s\n", names(colData(object)))

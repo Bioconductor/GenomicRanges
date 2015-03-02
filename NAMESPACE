@@ -131,6 +131,7 @@ export(
     ## SummarizedExperiment-class.R:
     SummarizedExperiment,
     exptData, "exptData<-",
+    rowRanges, "rowRanges<-",
     rowData, "rowData<-",
     colData, "colData<-",
     assays, "assays<-",
@@ -145,7 +146,7 @@ exportMethods(
     granges, grglist, rglist,
     SummarizedExperiment,
     exptData, "exptData<-",
-    rowData, "rowData<-",
+    rowRanges, "rowRanges<-",
     colData, "colData<-",
     assays, "assays<-",
     assay, "assay<-",

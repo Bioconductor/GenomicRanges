@@ -14,14 +14,14 @@
 setMethod(mcols, "SummarizedExperiment",
     function(x, use.names=FALSE, ...)
 {
-    mcols(rowData(x), use.names=use.names, ...)
+    mcols(rowRanges(x), use.names=use.names, ...)
 })
 
 setReplaceMethod("mcols", "SummarizedExperiment",
     function(x, ..., value)
 {
     clone(x, rowData=local({
-        r <- rowData(x)
+        r <- rowRanges(x)
         mcols(r) <- value
         r
     }))
@@ -33,26 +33,26 @@ setReplaceMethod("mcols", "SummarizedExperiment",
 setMethod(elementMetadata, "SummarizedExperiment",
     function(x, use.names=FALSE, ...)
 {
-    elementMetadata(rowData(x), use.names=use.names, ...)
+    elementMetadata(rowRanges(x), use.names=use.names, ...)
 })
 
 setReplaceMethod("elementMetadata", "SummarizedExperiment",
     function(x, ..., value)
 {
-    elementMetadata(rowData(x), ...) <- value
+    elementMetadata(rowRanges(x), ...) <- value
     x
 })
 
 setMethod(values, "SummarizedExperiment",
     function(x, ...)
 {
-    values(rowData(x), ...)
+    values(rowRanges(x), ...)
 })
 
 setReplaceMethod("values", "SummarizedExperiment",
     function(x, ..., value)
 {
-    values(rowData(x), ...) <- value
+    values(rowRanges(x), ...) <- value
     x
 })
 
@@ -75,10 +75,10 @@ local({
         formals(tmpl) <- formals(generic)
         fmls <- as.list(formals(tmpl))
         fmls[] <- sapply(names(fmls), as.symbol)
-        fmls[[generic@signature]] <- quote(rowData(x))
+        fmls[[generic@signature]] <- quote(rowRanges(x))
         if (.fun %in% endomorphisms)
             body(tmpl) <- substitute({
-                rowData(x) <- do.call(FUN, ARGS)
+                rowRanges(x) <- do.call(FUN, ARGS)
                 x
             }, list(FUN=.fun, ARGS=fmls))
         else
@@ -95,7 +95,7 @@ setMethod("granges", "SummarizedExperiment",
     if (!identical(use.mcols, FALSE))
         stop("\"granges\" method for SummarizedExperiment objects ",
              "does not support the 'use.mcols' argument")
-    rowData(x)
+    rowRanges(x)
 })
 
 ## 2-argument dispatch:
@@ -108,9 +108,9 @@ setMethod("granges", "SummarizedExperiment",
     function(x, y)
 {
     if (is(x, "SummarizedExperiment"))
-        x <- rowData(x)
+        x <- rowRanges(x)
     if (is(y, "SummarizedExperiment"))
-        y <- rowData(y)
+        y <- rowRanges(y)
     compare(x, y)
 }
 
@@ -118,9 +118,9 @@ setMethod("granges", "SummarizedExperiment",
     function(e1, e2)
 {
     if (is(e1, "SummarizedExperiment"))
-        e1 <- rowData(e1)
+        e1 <- rowRanges(e1)
     if (is(e2, "SummarizedExperiment"))
-        e2 <- rowData(e2)
+        e2 <- rowRanges(e2)
     callGeneric(e1=e1, e2=e2)
 }
 
@@ -129,7 +129,7 @@ setMethod("granges", "SummarizedExperiment",
              algorithm = c("nclist", "intervaltree"), ignore.strand = FALSE)
 {
     select <- match.arg(select)
-    x <- rowData(x)
+    x <- rowRanges(x)
     nearest(x=x, select=select,
             algorithm=match.arg(algorithm), ignore.strand=ignore.strand)
 }
@@ -138,9 +138,9 @@ setMethod("granges", "SummarizedExperiment",
     function(x, y, ignore.strand = FALSE, ...)
 {
     if (is(x, "SummarizedExperiment"))
-        x <- rowData(x)
+        x <- rowRanges(x)
     if (is(y, "SummarizedExperiment"))
-        y <- rowData(y)
+        y <- rowRanges(y)
     distance(x, y, ignore.strand=ignore.strand, ...)
 }
 
@@ -149,9 +149,9 @@ setMethod("granges", "SummarizedExperiment",
              ignore.strand = FALSE, ...)
 {
     if (is(x, "SummarizedExperiment"))
-        x <- rowData(x)
+        x <- rowRanges(x)
     if (is(subject, "SummarizedExperiment"))
-        subject <- rowData(subject)
+        subject <- rowRanges(subject)
     distanceToNearest(x, subject, algorithm=match.arg(algorithm),
                       ignore.strand=ignore.strand, ...)
 }
@@ -171,9 +171,9 @@ local({
             body(tmpl) <- substitute({
                 select <- match.arg(select)
                 if (is(x, "SummarizedExperiment"))
-                    x <- rowData(x)
+                    x <- rowRanges(x)
                 if (is(subject, "SummarizedExperiment"))
-                    subject <- rowData(subject)
+                    subject <- rowRanges(subject)
                 FUN(x=x, subject=subject, select=select,
                     ignore.strand=ignore.strand)
             }, list(FUN=as.symbol(.fun)))
@@ -188,9 +188,9 @@ local({
             body(tmpl) <- substitute({
                 select <- match.arg(select)
                 if (is(x, "SummarizedExperiment"))
-                    x <- rowData(x)
+                    x <- rowRanges(x)
                 if (is(subject, "SummarizedExperiment"))
-                    subject <- rowData(subject)
+                    subject <- rowRanges(subject)
                 FUN(x=x, subject=subject, select=select,
                     ignore.strand=ignore.strand)
             }, list(FUN=as.symbol(.fun)))
@@ -211,14 +211,14 @@ local({
 setReplaceMethod("strand", "SummarizedExperiment",
     function(x, ..., value)
 {
-    strand(rowData(x)) <- value
+    strand(rowRanges(x)) <- value
     x
 })
 
 setReplaceMethod("ranges", "SummarizedExperiment",
     function(x, ..., value)
 {
-    ranges(rowData(x)) <- value
+    ranges(rowRanges(x)) <- value
     x
 })
 
@@ -227,7 +227,7 @@ setReplaceMethod("ranges", "SummarizedExperiment",
 setMethod("order", "SummarizedExperiment",
     function(..., na.last = TRUE, decreasing = FALSE)
 {
-    args <- lapply(list(...), rowData)
+    args <- lapply(list(...), rowRanges)
     do.call("order",
             c(args, list(na.last=na.last, decreasing=decreasing)))
 })
@@ -237,13 +237,13 @@ setMethod("rank", "SummarizedExperiment",
               ties.method = c("average", "first", "random", "max", "min"))
 {
     ties.method <- match.arg(ties.method)
-    rank(rowData(x), na.last=na.last, ties.method=ties.method)
+    rank(rowRanges(x), na.last=na.last, ties.method=ties.method)
 })
 
 setMethod("sort", "SummarizedExperiment",
     function(x, decreasing = FALSE, ...)
 {
-    x[order(rowData(x), decreasing=decreasing),]
+    x[order(rowRanges(x), decreasing=decreasing),]
 })
 
 ## subset
@@ -251,7 +251,7 @@ setMethod("sort", "SummarizedExperiment",
 setMethod("subset", "SummarizedExperiment",
     function(x, subset, select, ...)
 {
-    i <- S4Vectors:::evalqForSubset(subset, rowData(x), ...)
+    i <- S4Vectors:::evalqForSubset(subset, rowRanges(x), ...)
     j <- S4Vectors:::evalqForSubset(select, colData(x), ...)
     x[i, j]
 })

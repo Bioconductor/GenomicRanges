@@ -585,7 +585,7 @@ identical(length(exbygene), length(assays(se)$counts))
 A copy of \Rcode{exbygene} is stored in the \Rcode{rowData} slot:
 
 <<count_6>>=
-rowData(se)
+rowRanges(se)
 @
 
 Two popular packages for RNA-Seq differential gene expression are

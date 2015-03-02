@@ -535,7 +535,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "Vector"),
              algorithm=c("nclist", "intervaltree"),
              ignore.strand=FALSE)
     {
-        findOverlaps(rowData(query), subject,
+        findOverlaps(rowRanges(query), subject,
                      maxgap=maxgap, minoverlap=minoverlap,
                      type=match.arg(type), select=match.arg(select),
                      algorithm=match.arg(algorithm),
@@ -550,7 +550,7 @@ setMethod("findOverlaps", c("Vector", "SummarizedExperiment"),
              algorithm=c("nclist", "intervaltree"),
              ignore.strand=FALSE)
     {
-        findOverlaps(query, rowData(subject),
+        findOverlaps(query, rowRanges(subject),
                      maxgap=maxgap, minoverlap=minoverlap,
                      type=match.arg(type), select=match.arg(select),
                      algorithm=match.arg(algorithm),
@@ -565,7 +565,7 @@ setMethod("findOverlaps", c("SummarizedExperiment", "SummarizedExperiment"),
              algorithm=c("nclist", "intervaltree"),
              ignore.strand=FALSE)
     {
-        findOverlaps(rowData(query), rowData(subject),
+        findOverlaps(rowRanges(query), rowRanges(subject),
                      maxgap=maxgap, minoverlap=minoverlap,
                      type=match.arg(type), select=match.arg(select),
                      algorithm=match.arg(algorithm),

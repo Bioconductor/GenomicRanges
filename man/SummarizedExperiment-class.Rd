@@ -36,11 +36,11 @@
 \alias{assayNames,SummarizedExperiment-method}
 \alias{assayNames<-}
 \alias{assayNames<-,SummarizedExperiment,character-method}
-\alias{rowData}
-\alias{rowData,SummarizedExperiment-method}
-\alias{rowData<-}
-\alias{rowData<-,SummarizedExperiment,GenomicRanges-method}
-\alias{rowData<-,SummarizedExperiment,GRangesList-method}
+\alias{rowRanges}
+\alias{rowRanges,SummarizedExperiment-method}
+\alias{rowRanges<-}
+\alias{rowRanges<-,SummarizedExperiment,GenomicRanges-method}
+\alias{rowRanges<-,SummarizedExperiment,GRangesList-method}
 \alias{colData}
 \alias{colData,SummarizedExperiment-method}
 \alias{colData<-}
@@ -174,8 +174,8 @@ assays(x, ..., withDimnames=TRUE)
 assays(x, ..., withDimnames=TRUE) <- value
 assay(x, i, ...)
 assay(x, i, ...) <- value
-rowData(x, ...)
-rowData(x, ...) <- value
+rowRanges(x, ...)
+rowRanges(x, ...) <- value
 colData(x, ...)
 colData(x, ...) <- value
 exptData(x, ...)
@@ -218,7 +218,7 @@ exptData(x, ...) <- value
   \item{assays}{A \code{list} or \code{SimpleList} of matrix elements,
     or a \code{matrix}. All elements of the list must have the same
     dimensions, and dimension names (if present) must be consistent
-    across elements and with the row names of \code{rowData} and
+    across elements and with the row names of \code{rowRanges} and
     \code{colData}.}
 
   \item{rowData}{A \code{GRanges} or \code{GRangesList} instance describing 
@@ -258,7 +258,7 @@ exptData(x, ...) <- value
 
     For \code{[,SummarizedExperiment}, \code{[,SummarizedExperiment<-},
     \code{i}, \code{j} are instances that can act to subset the
-    underlying \code{rowData}, \code{colData}, and \code{matrix}
+    underlying \code{rowRanges}, \code{colData}, and \code{matrix}
     elements of \code{assays}.
 
     For \code{[[,SummarizedExperiment},
@@ -269,7 +269,7 @@ exptData(x, ...) <- value
   }
 
   \item{subset}{An expression which, when evaluated in the
-    context of \code{rowData(x)}, is a logical vector indicating
+    context of \code{rowRanges(x)}, is a logical vector indicating
     elements or rows to keep: missing values are taken as false.}
 
   \item{select}{An expression which, when evaluated in the
@@ -314,7 +314,7 @@ exptData(x, ...) <- value
   (in genomic coordinates) of interest. The ranges of interest are
   described by a \code{\linkS4class{GRanges}-class} or a
   \code{\linkS4class{GRangesList}-class} instance, accessible using the
-  \code{rowData} function, described below. The \code{GRanges} and
+  \code{rowRanges} function, described below. The \code{GRanges} and
   \code{GRangesList} classes contains sequence (e.g., chromosome) name,
   genomic coordinates, and strand information. Each range can be
   annotated with additional data; this data might be used to describe
@@ -412,7 +412,7 @@ exptData(x, ...) <- value
     \item{\code{assayNames(x)}, \code{assayNames(x) <- value}:}{Get or
      set the names of \code{assay()} elements.}
 
-    \item{\code{rowData(x)}, \code{rowData(x) <- value}:}{Get or set the
+    \item{\code{rowRanges(x)}, \code{rowRanges(x) <- value}:}{Get or set the
       row data. \code{value} is a \code{GenomicRanges} instance. Row
       names of \code{value} must be NULL or consistent with the existing
       row names of \code{x}.}
@@ -445,7 +445,7 @@ exptData(x, ...) <- value
   Many \code{\linkS4class{GRanges}-class} and
   \code{\linkS4class{GRangesList}-class} operations are supported on
   \sQuote{SummarizedExperiment} and derived instances, using
-  \code{rowData}.
+  \code{rowRanges}.
 
   Supported operations include: \code{\link{compare}},
   \code{\link{countOverlaps}}, \code{\link{coverage}},
@@ -492,7 +492,7 @@ exptData(x, ...) <- value
 
     \item{\code{subset(x, subset, select)}:}{Create a subset of \code{x}
       using an expression \code{subset} referring to columns of
-      \code{rowData(x)} (including \sQuote{seqnames}, \sQuote{start},
+      \code{rowRanges(x)} (including \sQuote{seqnames}, \sQuote{start},
       \sQuote{end}, \sQuote{width}, \sQuote{strand}, and
       \code{names(mcols(x))}) and / or \code{select} referring to
       column names of \code{colData(x)}.}
@@ -522,13 +522,13 @@ exptData(x, ...) <- value
   \describe{
 
     \item{\code{cbind(...)}, \code{rbind(...)}:}{
-      \code{cbind} combines objects with identical ranges (\code{rowData}) 
+      \code{cbind} combines objects with identical ranges (\code{rowRanges}) 
       but different samples (columns in \code{assays}). The colnames in
       \code{colData} must match or an error is thrown. Duplicate columns
-      of \code{mcols(rowData(SummarizedExperiment))} must contain the same
+      of \code{mcols(rowRanges(SummarizedExperiment))} must contain the same
       data. 
 
-      \code{rbind} combines objects with different ranges (\code{rowData}) 
+      \code{rbind} combines objects with different ranges (\code{rowRanges}) 
       and the same subjects (columns in \code{assays}). Duplicate columns
       of \code{colData} must contain the same data. 
 
@@ -604,13 +604,13 @@ exptData(x, ...) <- value
 \examples{
   nrows <- 200; ncols <- 6
   counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
-  rowData <- GRanges(rep(c("chr1", "chr2"), c(50, 150)),
+  rowRanges <- GRanges(rep(c("chr1", "chr2"), c(50, 150)),
                      IRanges(floor(runif(200, 1e5, 1e6)), width=100),
                      strand=sample(c("+", "-"), 200, TRUE))
   colData <- DataFrame(Treatment=rep(c("ChIP", "Input"), 3),
                        row.names=LETTERS[1:6])
   sset <- SummarizedExperiment(assays=SimpleList(counts=counts),
-                 rowData=rowData, colData=colData)
+                 rowData=rowRanges, colData=colData)
   sset
   assayNames(sset)
   assays(sset) <- endoapply(assays(sset), asinh)

@@ -2,7 +2,7 @@
 
 Long term
 - Separate package
-- Separate classes for 'DataFrame' and '*Ranges' rowData
+- Separate classes for 'DataFrame' and '\*Ranges' rowData
 
 Immediate
 
@@ -11,7 +11,7 @@ Immediate
 
 Short term (start of next release cycle)
 
-3. Implement separate classes for DataFrame and *Ranges rowData()
+3. Implement separate classes for DataFrame and \*Ranges rowData()
 
 Possibilities?
 
@@ -22,14 +22,14 @@ Possibilities?
 
   - SummarizedExperimentGR
     @rowRanges: *Ranges; rowData() == mcols(rowRanges())
- 
+
 - SummarizedExperiment as 'DataFrame' base class,
   SummarizedExperimentGR as derived class
-  
+
   - SummarizedExperiment
     @rowData: DataFrame
 
   - SummarizedExperimentGR
-    @rowRanges: *Ranges; no mcols() (rowData() from inheritted
+    @rowRanges: \*Ranges; no mcols() (rowData() from inheritted
     @rowData)
 
