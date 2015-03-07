@@ -62,6 +62,20 @@
     stop("cannnot determine start/end columns")
 }
 
+.find_width_col <- function(df_colnames, width.field, prefix)
+{
+    idx <- which(df_colnames %in% paste0(prefix, width.field))
+    if (length(idx) == 0L)
+        idx <- which(df_colnames %in% width.field)
+    if (length(idx) == 0L)
+        return(NA_integer_)
+    if (length(idx) >= 2L) {
+        warning("cannnot determine width column unambiguously")
+        return(idx[[1L]])
+    }
+    idx
+}
+
 .find_seqnames_col <- function(df_colnames, seqnames.field, prefix)
 {
     idx <- which(df_colnames %in% paste0(prefix, seqnames.field))
@@ -88,8 +102,9 @@
     idx
 }
 
-### Returns an integer vector of length 4 with names "seqnames", "start",
-### "end", and "strand".
+### Returns a named integer vector of length 5. Names are: seqnames, start,
+### end, width, and strand. The values must be valid column numbers, except
+### for the width and strand elements that can also be NAs.
 .find_GRanges_cols <- function(df_colnames,
                                seqnames.field=c("seqnames", "seqname",
                                                 "chromosome", "chrom",
@@ -110,6 +125,9 @@
                                            start.field0,
                                            end.field0)
     prefix <- start_end_cols[[2L]]
+    ## Name of "width" field is not under user control for now (until we need
+    ## need that).
+    width_col <- .find_width_col(df_colnames0, "width", prefix)
     seqnames_col <- .find_seqnames_col(df_colnames0,
                                        seqnames.field0,
                                        prefix)
@@ -121,7 +139,8 @@
                                        strand.field0,
                                        prefix)
     }
-    c(seqnames=seqnames_col, start_end_cols[[1L]], strand=strand_col)
+    c(seqnames=seqnames_col, start_end_cols[[1L]], width=width_col,
+      strand=strand_col)
 }
 
 ### 'df' must be a data.frame or DataFrame object.
@@ -155,8 +174,10 @@ makeGRangesFromDataFrame <- function(df,
                                        strand.field=strand.field,
                                        ignore.strand=ignore.strand)
 
-    ## Prepare the GRanges components.
+    ## Prepare 'ans_seqnames'.
     ans_seqnames <- df[[granges_cols[["seqnames"]]]]
+
+    ## Prepare 'ans_ranges'.
     ans_start <- df[[granges_cols[["start"]]]]
     ans_end <- df[[granges_cols[["end"]]]]
     if (!is.numeric(ans_start) || !is.numeric(ans_end))
@@ -165,32 +186,51 @@ makeGRangesFromDataFrame <- function(df,
              "must be numeric")
     if (starts.in.df.are.0based)
         ans_start <- ans_start + 1L
-    ans_ranges <- IRanges(ans_start, ans_end)
+    ans_names <- rownames(df)
+    if (identical(ans_names, as.character(seq_len(nrow(df)))))
+        ans_names <- NULL
+    ans_ranges <- IRanges(ans_start, ans_end, names=ans_names)
+
+    ## Prepare 'ans_strand'.
     if (is.na(granges_cols[["strand"]]) || ignore.strand) {
         ans_strand <- "*"
     } else {
         ans_strand <- df[[granges_cols[["strand"]]]]
     }
+
+    ## Prepare 'ans_mcols'.
     if (keep.extra.columns) {
         drop_idx <- c(granges_cols[["seqnames"]],
                       granges_cols[["start"]],
                       granges_cols[["end"]])
+        if (!is.na(granges_cols[["width"]]))
+            drop_idx <- c(drop_idx, granges_cols[["width"]])
         if (!is.na(granges_cols[["strand"]]))
             drop_idx <- c(drop_idx, granges_cols[["strand"]])
         ans_mcols <- df[-drop_idx]
     } else {
         ans_mcols <- NULL
     }
-    ans_names <- rownames(df)
-    if (identical(as.character(seq_len(nrow(df))), ans_names))
-        ans_names <- NULL
 
-    ## Make the GRanges object and return it.
-    ans <- GRanges(ans_seqnames, ans_ranges, strand=ans_strand,
-                   ans_mcols, seqinfo=ans_seqinfo)
-    if (!is.null(ans_names))
-        names(ans) <- ans_names
-    ans
+    ## Prepare 'ans_seqinfo'.
+    if (is.null(ans_seqinfo)) {
+        ## Only if 'ans_seqnames' is a factor-Rle, we preserve the seqlevels
+        ## in the order they are in 'levels(ans_seqnames)'. Otherwise, we
+        ## order them according to rankSeqlevels().
+        seqlevels <- levels(ans_seqnames)
+        if (is.null(seqlevels)) {
+            seqlevels <- unique(ans_seqnames)
+            if (!is.character(seqlevels))
+                seqlevels <- as.character(seqlevels)
+        }
+        if (!(is(ans_seqnames, "Rle") && is.factor(runValue(ans_seqnames))))
+            seqlevels[rankSeqlevels(seqlevels)] <- seqlevels
+        ans_seqinfo <- Seqinfo(seqlevels)
+    }
+
+    ## Make and return the GRanges object.
+    GRanges(ans_seqnames, ans_ranges, strand=ans_strand,
+            ans_mcols, seqinfo=ans_seqinfo)
 }
 
 setAs("data.frame", "GRanges",

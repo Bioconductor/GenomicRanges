@@ -39,14 +39,15 @@ makeGRangesFromDataFrame(df,
   }
   \item{keep.extra.columns}{
     \code{TRUE} or \code{FALSE} (the default).
-    If \code{TRUE}, then the columns in \code{df} that are not used to form
-    the genomic ranges returned in the \link{GRanges} object will be stored
-    in it as metadata columns. Otherwise, they will be ignored.
+    If \code{TRUE}, the columns in \code{df} that are not used to form
+    the genomic ranges of the returned \link{GRanges} object are then
+    returned as metadata columns on the object. Otherwise, they are ignored.
+    If \code{df} has a \code{width} column, then it's always ignored.
   }
   \item{ignore.strand}{
     \code{TRUE} or \code{FALSE} (the default).
     If \code{TRUE}, then the strand of the returned \link{GRanges} object
-    will be set to \code{"*"}.
+    is set to \code{"*"}.
   }
   \item{seqinfo}{
     Either \code{NULL}, or a \link{Seqinfo} object, or a character vector
@@ -60,30 +61,30 @@ makeGRangesFromDataFrame(df,
     that contains the chromosome name (a.k.a. sequence name) associated
     with each genomic range.
     Only the first name in \code{seqnames.field} that is found
-    in \code{colnames(df)} will be used.
+    in \code{colnames(df)} is used.
     If no one is found, then an error is raised.
   }
   \item{start.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the start positions of the genomic ranges.
     Only the first name in \code{start.field} that is found
-    in \code{colnames(df)} will be used.
+    in \code{colnames(df)} is used.
     If no one is found, then an error is raised.
   }
   \item{end.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the end positions of the genomic ranges.
     Only the first name in \code{start.field} that is found
-    in \code{colnames(df)} will be used.
+    in \code{colnames(df)} is used.
     If no one is found, then an error is raised.
   }
   \item{strand.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the strand associated with each genomic range.
     Only the first name in \code{strand.field} that is found
-    in \code{colnames(df)} will be used.
+    in \code{colnames(df)} is used.
     If no one is found or if \code{ignore.strand} is \code{TRUE},
-    then the strand of the returned \link{GRanges} object will be
+    then the strand of the returned \link{GRanges} object is
     set to \code{"*"}.
   }
   \item{starts.in.df.are.0based}{
@@ -103,7 +104,11 @@ makeGRangesFromDataFrame(df,
 
   If the \code{seqinfo} argument was supplied, the returned object will
   have exactly the seqlevels specified in \code{seqinfo} and in the same
-  order.
+  order. Otherwise, the seqlevels are ordered according to the output of
+  the \code{\link[GenomeInfoDb]{rankSeqlevels}} function (except if
+  \code{df} contains the seqnames in the form of a factor-Rle, in which
+  case the levels of the factor-Rle become the seqlevels of the returned
+  object and with no re-ordering).
 
   If \code{df} has non-automatic row names (i.e. \code{rownames(df)} is
   not \code{NULL} and is not \code{seq_len(nrow(df))}), then they will be
@@ -124,7 +129,9 @@ makeGRangesFromDataFrame(df,
   \itemize{
     \item \link{GRanges} objects.
 
-    \item \link{Seqinfo} objects.
+    \item \link[GenomeInfoDb]{Seqinfo} objects and the
+          \code{\link[GenomeInfoDb]{rankSeqlevels}} function in the
+          \pkg{GenomeInfoDb} package.
 
     \item The \code{\link{makeGRangesListFromFeatureFragments}} function
           for making a \link{GRangesList} object from a list of fragmented
