@@ -698,35 +698,43 @@ setMethod("cbind", "SummarizedExperiment",
     }
 }
 
-.bind.arrays <- function(args, bind, accessor, accessorName)
-{
-    lst <- lapply(args, accessor)
-    var <- lapply(lst,  names)
-    if (is.null(uvar <- unique(unlist(var))))
-        return(.ShallowSimpleListAssays(data=SimpleList()))
-    if (!.compare(var))
-        stop("elements in ", sQuote(accessorName),
-             " must have the same names")
-
-    ## extract variable
-    l1 <- lapply(uvar, function(v) {
-        l2 <- lapply(lst, "[[", v)
-        dim <- .assay.dimension(l2, bind)
-        if (!is.na(dim[3])) {
-            ## assay: combine each dimension of each element
-            l3 <- lapply(1:dim[3],
-                      function(i) do.call(bind, lapply(l2, "[", ,,i)))
-            array(do.call(c, l3), dim=dim)
-        } else {
-            ## matrix: combine each element
-            do.call(bind, l2)
-        }
-    })
-    names(l1) <- uvar
-    .ShallowSimpleListAssays(data=SimpleList(l1))
+.bind.array.elements <- function(index, lst, bind) {
+    e1 <- lapply(lst, "[[", index)
+    dim <- .get.assay.dimension(e1, bind)
+    if (is.na(dim[3])) {
+        do.call(bind, e1)
+    } else {
+        e2 <- lapply(1:dim[3], function(i) {
+            do.call(bind, lapply(e1, "[", ,,i))
+        })
+        array(do.call(c, e2), dim=dim)
+    }
 }
 
-.assay.dimension <- function(lst, bind)
+.bind.arrays <- function(args, bind, accessor)
+{
+    lst <- lapply(args, accessor)
+    if (!length(elts <- unique(elementLengths(lst))) == 1L)
+        stop("elements in ", sQuote(accessor),
+             " must have the same length")
+    if (elts == 0L)
+        return(.ShallowSimpleListAssays(data=SimpleList()))
+    var <- lapply(lst,  names)
+    if (is.null(uvar <- unique(unlist(var)))) {
+        ## no names, match by position
+        res <- lapply(seq_along(elts), .bind.array.elements, lst=lst, bind=bind)
+    } else {
+        ## match by name
+        if (!.compare(var))
+            stop("elements in ", sQuote(accessor),
+                 " must have the same names")
+        res <- lapply(uvar, .bind.array.elements, lst=lst, bind=bind)
+        names(res) <- uvar
+    }
+    .ShallowSimpleListAssays(data=SimpleList(res))
+}
+
+.get.assay.dimension <- function(lst, bind)
 {
     dim <- lapply(lst, dim)
     if (!.compare(lapply(dim, "[", 3)))

@@ -526,7 +526,9 @@ exptData(x, ...) <- value
       but different samples (columns in \code{assays}). The colnames in
       \code{colData} must match or an error is thrown. Duplicate columns
       of \code{mcols(rowRanges(SummarizedExperiment))} must contain the same
-      data. 
+      data. Data in \code{assays} are combined by name matching; if all names 
+      are NULL matching is by position. A mixture of names and NULL throws an 
+      error.
 
       \code{rbind} combines objects with different ranges (\code{rowRanges}) 
       and the same subjects (columns in \code{assays}). Duplicate columns
