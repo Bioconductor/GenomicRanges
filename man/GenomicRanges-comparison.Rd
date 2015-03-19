@@ -2,6 +2,7 @@
 
 \alias{GenomicRanges-comparison}
 
+\alias{compare}
 \alias{compare,GenomicRanges,GenomicRanges-method}
 
 \alias{duplicated,GenomicRanges-method}
