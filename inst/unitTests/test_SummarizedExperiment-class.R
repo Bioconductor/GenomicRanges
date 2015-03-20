@@ -12,11 +12,11 @@ colData <- DataFrame(x=letters[1:3])
 ssetList <- 
     list(SummarizedExperiment(
            assays=assaysList[["gr"]], 
-           rowData=rowRangesList[["gr"]], 
+           rowRanges=rowRangesList[["gr"]], 
            colData=colData),
          SummarizedExperiment(
            assays=assaysList[["grl"]], 
-           rowData=rowRangesList[["grl"]], 
+           rowRanges=rowRangesList[["grl"]], 
            colData=colData))
 
 
@@ -208,7 +208,7 @@ test_SummarizedExperiment_subset <- function()
     }
 
     ## 0 columns
-    se <- SummarizedExperiment(rowData=GRanges("chr1", IRanges(1:10, width=1)))
+    se <- SummarizedExperiment(rowRanges=GRanges("chr1", IRanges(1:10, width=1)))
     checkIdentical(dim(se[1:5, ]), c(5L, 0L)) 
     ## 0 rows 
     se <- SummarizedExperiment(colData=DataFrame(samples=1:10))

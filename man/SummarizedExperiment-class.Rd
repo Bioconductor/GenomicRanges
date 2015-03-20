@@ -159,7 +159,7 @@
 ## Constructors
 
 SummarizedExperiment(assays, ...)
-\S4method{SummarizedExperiment}{SimpleList}(assays, rowData = GRangesList(),
+\S4method{SummarizedExperiment}{SimpleList}(assays, rowRanges = GRangesList(),
     colData = DataFrame(), exptData = SimpleList(), ...,
     verbose = FALSE)
 \S4method{SummarizedExperiment}{missing}(assays, ...)
@@ -192,7 +192,7 @@ exptData(x, ...) <- value
 \S4method{[[}{SummarizedExperiment,ANY,missing}(x, i, j, ...)
 \S4method{[[}{SummarizedExperiment,ANY,missing,ANY}(x, i, j, ...) <- value
 
-## rowData access
+## rowRanges access
 ## see 'GRanges compatibility', below
 
 ## Subsetting
@@ -221,7 +221,7 @@ exptData(x, ...) <- value
     across elements and with the row names of \code{rowRanges} and
     \code{colData}.}
 
-  \item{rowData}{A \code{GRanges} or \code{GRangesList} instance describing 
+  \item{rowRanges}{A \code{GRanges} or \code{GRangesList} instance describing 
     the ranges of interest. Row names, if present, become the row names of the
     \code{SummarizedExperiment}. The length of the \code{GRanges} or the
     \code{GRangesList} must equal the number of rows of the 
@@ -358,7 +358,8 @@ exptData(x, ...) <- value
     \item{\code{exptData}}{A \link{SimpleList}-class instance containing
       information about the overall experiment.}
     \item{\code{rowData}}{A \link{GRanges}-class instance defining the
-      ranges of interest and associated metadata.}
+      ranges of interest and associated metadata. WARNING: The accessor
+      for this slot is \code{rowRanges}, not \code{rowData}!}
     \item{\code{colData}}{A \link{DataFrame}-class instance describing
       the samples and associated metadata.}
     \item{\code{assays}}{A \link{SimpleList}-class instance, each
@@ -440,7 +441,7 @@ exptData(x, ...) <- value
   }
 }
 
-\section{GRanges compatibility (rowData access)}{
+\section{GRanges compatibility (rowRanges access)}{
 
   Many \code{\linkS4class{GRanges}-class} and
   \code{\linkS4class{GRangesList}-class} operations are supported on
@@ -612,7 +613,7 @@ exptData(x, ...) <- value
   colData <- DataFrame(Treatment=rep(c("ChIP", "Input"), 3),
                        row.names=LETTERS[1:6])
   sset <- SummarizedExperiment(assays=SimpleList(counts=counts),
-                 rowData=rowRanges, colData=colData)
+                 rowRanges=rowRanges, colData=colData)
   sset
   assayNames(sset)
   assays(sset) <- endoapply(assays(sset), asinh)

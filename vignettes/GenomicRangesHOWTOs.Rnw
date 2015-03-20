@@ -568,8 +568,8 @@ library(GenomicAlignments)
 se <- summarizeOverlaps(exbygene, un1, mode="IntersectionNotEmpty")
 @
 
-The return object is a \Rcode{SummarizedExperiment} with counts in 
-the \Rcode{assays} slot.
+The return object is a \Rcode{SummarizedExperiment} with counts
+accessible with the \Rcode{assays} accessor:
 
 <<count_4>>=
 class(se)
@@ -582,7 +582,8 @@ The count vector is the same length as \Rcode{exbygene}:
 identical(length(exbygene), length(assays(se)$counts))
 @
 
-A copy of \Rcode{exbygene} is stored in the \Rcode{rowData} slot:
+A copy of \Rcode{exbygene} is stored in the \Rcode{se} object and
+accessible with \Rcode{rowRanges} accessor:
 
 <<count_6>>=
 rowRanges(se)

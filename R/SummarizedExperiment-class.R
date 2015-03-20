@@ -107,12 +107,23 @@ setGeneric("SummarizedExperiment",
 }
 
 setMethod(SummarizedExperiment, "SimpleList",
-   function(assays, rowData=GRangesList(), colData=DataFrame(),
+   function(assays, rowRanges=GRangesList(), colData=DataFrame(),
              exptData=SimpleList(), ...,
              verbose=FALSE)
 {
-    if (missing(rowData) && 0L != length(assays))
-        rowData <- .GRangesList_assays(assays)
+    extra_args <- list(...)
+    rowData <- extra_args$rowData
+    if (!is.null(rowData)) {
+        if (!missing(rowRanges))
+            stop("both 'rowRanges' and 'rowData' are specified")
+        msg <- c("The 'rowData' argument is deprecated. ",
+                 "Please use 'rowRanges' instead.")
+        .Deprecated(msg=msg)
+        rowRanges <- rowData
+        extra_args$rowData <- NULL
+    } else if (missing(rowRanges) && 0L != length(assays)) {
+        rowRanges <- .GRangesList_assays(assays)
+    }
     if (missing(colData) && 0L != length(assays)) {
         nms <- colnames(assays[[1]])
         if (is.null(nms) && 0L != ncol(assays[[1]]))
@@ -121,7 +132,7 @@ setMethod(SummarizedExperiment, "SimpleList",
     }
 
     FUN <- function(x) {
-        exp <- list(names(rowData), rownames(colData))
+        exp <- list(names(rowRanges), rownames(colData))
         ## dimnames as NULL or list(NULL, NULL)
         all(sapply(dimnames(x), is.null)) ||
             ## or consistent with row / colData
@@ -131,9 +142,12 @@ setMethod(SummarizedExperiment, "SimpleList",
         assays <- endoapply(assays, unname)
     if (!is(assays, "Assays"))
         assays <- .ShallowSimpleListAssays(data=assays)
-
-    new("SummarizedExperiment", exptData=exptData, rowData=rowData,
-        colData=colData, assays=assays, ...)
+    do.call(new, c(list("SummarizedExperiment",
+                        exptData=exptData,
+                        rowData=rowRanges,
+                        colData=colData,
+                        assays=assays),
+                   extra_args))
 })
 
 setMethod(SummarizedExperiment, "missing",
@@ -201,7 +215,7 @@ setGeneric("exptData", function(x, ...) standardGeneric("exptData"))
 setGeneric("exptData<-",
     function(x, ..., value) standardGeneric("exptData<-"))
 
-## rowData, colData seem too vague, but from eSet derived classes wanted to
+## rowRanges, colData seem too vague, but from eSet derived classes wanted to
 ## call the rows / cols something different from 'features' or 'samples', so
 ## might as well avoid the issue
 setGeneric("rowRanges", function(x, ...) standardGeneric("rowRanges"))
@@ -837,7 +851,7 @@ suppressMessages(
     setAs("ExpressionSet", "SummarizedExperiment", function(from) {
         if (requireNamespace("Biobase", quietly = TRUE)) {
             assays <- as.list(Biobase::assayData(from))
-            rowData <- .from_FeatureData_to_GRangesList(from)
+            rowRanges <- .from_FeatureData_to_GRangesList(from)
             colData = .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
             exptData = SimpleList(
                 experimentData = Biobase::experimentData(from),
@@ -847,7 +861,7 @@ suppressMessages(
 
             SummarizedExperiment(
                 assays = assays,
-                rowData = rowData,
+                rowRanges = rowRanges,
                 colData = colData,
                 exptData = exptData
             )
