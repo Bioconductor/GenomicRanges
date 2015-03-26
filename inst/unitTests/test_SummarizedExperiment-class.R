@@ -345,30 +345,126 @@ test_SummarizedExperiment_rbind <- function()
     checkException(rbind(se1, se2), silent=TRUE) ## different variables
 }
 
-test_SummarizedExperiment_coercion <- function()
+test_SummarizedExperiment_GenomicRanges_coercion <- function()
 {
-    eset1 <- Biobase::ExpressionSet()
+    if (requireNamespace("Biobase", quietly = TRUE)) {
+        eset1 <- Biobase::ExpressionSet()
 
-    checkTrue(validObject(eset1))
+        checkTrue(validObject(eset1))
 
-    se1 <- as(eset1, "SummarizedExperiment")
+        se1 <- as(eset1, "SummarizedExperiment")
 
-    checkTrue(validObject(se1))
+        checkTrue(validObject(se1))
 
-    data("sample.ExpressionSet", package = "Biobase")
+        data("sample.ExpressionSet", package = "Biobase")
 
-    eset2 <- sample.ExpressionSet
-    checkTrue(validObject(eset2))
+        eset2 <- sample.ExpressionSet
+        checkTrue(validObject(eset2))
 
-    se2 <- as(eset2, "SummarizedExperiment")
+        se2 <- as(eset2, "SummarizedExperiment")
 
-    checkTrue(validObject(se2))
+        checkTrue(validObject(se2))
 
-    checkIdentical(Biobase::experimentData(eset2), exptData(se2)$experimentData)
-    checkIdentical(Biobase::annotation(eset2), exptData(se2)$annotation)
-    checkIdentical(Biobase::protocolData(eset2), exptData(se2)$protocolData)
+        checkIdentical(Biobase::experimentData(eset2),
+                       exptData(se2)$experimentData)
 
-    checkIdentical(SimpleList(as.list(Biobase::assayData(eset2))), assays(se2))
-    checkIdentical(Biobase::featureNames(eset2), rownames(se2))
-    checkIdentical(Biobase::sampleNames(eset2), colnames(se2))
+        checkIdentical(Biobase::annotation(eset2),
+                       exptData(se2)$annotation)
+
+        checkIdentical(Biobase::protocolData(eset2),
+                       exptData(se2)$protocolData)
+
+        checkIdentical(SimpleList(as.list(Biobase::assayData(eset2))),
+                       assays(se2))
+
+        checkIdentical(Biobase::featureNames(eset2),
+                       rownames(se2))
+
+        checkIdentical(Biobase::sampleNames(eset2),
+                       colnames(se2))
+    }
+}
+
+test_GenomicRanges_SummarizedExperiment_coercion <- function()
+{
+    if (requireNamespace("Biobase", quietly = TRUE)) {
+        assayData <- Biobase::assayData
+        experimentData <- Biobase::experimentData
+        annotation <- Biobase::annotation
+        protocolData <- Biobase::protocolData
+        featureNames <- Biobase::featureNames
+        featureData <- Biobase::featureData
+        sampleNames <- Biobase::sampleNames
+        pData <- Biobase::pData
+
+        ## empty SE
+        simpleSE <- SummarizedExperiment()
+
+        eset1 <- as(simpleSE, "ExpressionSet")
+
+        checkTrue(validObject(eset1))
+
+        ## Back and forth empty ES
+        simpleES <- Biobase::ExpressionSet()
+
+        simpleES2 <- as(as(simpleES, "SummarizedExperiment"), "ExpressionSet")
+
+        checkTrue(validObject(simpleES2))
+
+        checkEquals(as.list(assayData(simpleES)),
+                    as.list(assayData(simpleES2)))
+
+        ## Simple SE
+        eset2 <- as(ssetList[[1]], "ExpressionSet")
+        checkTrue(validObject(eset2))
+
+        ## The ExpressionSet features should have the data from the
+        ## SummarizedExperiment rows if they are from GRanges.
+        checkIdentical(pData(featureData(eset2)),
+                       as.data.frame(rowRanges(ssetList[[1]])))
+
+        eset3 <- as(ssetList[[2]], "ExpressionSet")
+        checkTrue(validObject(eset3))
+
+        ## The ExpressionSet features should not have the data from the
+        ## SummarizedExperiment rows if they are from GRangesList, but they
+        ## should be empty and the same length as the number of ranges.
+        checkEquals(unname(NROW(featureData(eset3))),
+                       unname(length(rowRanges(ssetList[[2]]))))
+
+        data("sample.ExpressionSet", package = "Biobase")
+        eset4 <- sample.ExpressionSet
+
+        eset5 <- as(as(eset4, "SummarizedExperiment"), "ExpressionSet")
+
+        checkTrue(validObject(eset5))
+
+        ## this is necessary because the order in environments is undefined.
+        compareLists <- function(x, y) {
+            nmsX <- names(x)
+            nmsY <- names(y)
+
+            reorderY <- match(nmsY, nmsX)
+
+            checkIdentical(x, y[reorderY])
+        }
+
+        compareLists(as.list(assayData(eset4)),
+                       as.list(assayData(eset5)))
+
+        checkIdentical(experimentData(eset4),
+                       experimentData(eset5))
+
+        checkIdentical(annotation(eset4),
+                       annotation(eset5))
+
+        checkIdentical(protocolData(eset4),
+                       protocolData(eset5))
+
+        checkIdentical(featureNames(eset4),
+                       featureNames(eset5))
+
+        checkIdentical(sampleNames(eset4),
+                       sampleNames(eset5))
+    }
 }

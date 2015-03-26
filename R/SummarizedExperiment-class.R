@@ -833,7 +833,8 @@ setMethod(show, "SummarizedExperiment",
     scat("colData names(%d): %s\n", names(colData(object)))
 })
 
-.from_FeatureData_to_GRangesList <- function(from) {
+.from_FeatureData_to_GRangesList <- function(from)
+{
     nms <- Biobase::featureNames(from)
     res <- relist(GRanges(), vector("list", length=length(nms)))
     names(res) <- nms
@@ -841,19 +842,77 @@ setMethod(show, "SummarizedExperiment",
     res
 }
 
-.from_AnnotatedDataFrame_to_DataFrame <- function(from) {
+.from_rowRanges_to_FeatureData <- function(from)
+{
+    if (is(from, "GRanges")) {
+        fd <- .from_GRanges_to_FeatureData(from)
+    } else if (is(from, "GRangesList")) {
+        fd <- .from_GRangesList_to_FeatureData(from)
+    } else {
+        stop("class: ", sQuote(class(from)), " is not a supported type for rowRanges coercion")
+    }
+    Biobase::featureNames(fd) <- names(from)
+    fd
+}
+
+.from_GRanges_to_FeatureData <- function(from)
+{
+    data <- as.data.frame(from)
+
+    ## the first mcols are automatically included in the data.frame from
+    ## as.data.frame, the secondary mcols holds the metadata for the first
+    ## metadata columns.
+    metaData <- mcols(mcols(from))
+    if (is.null(metaData)) {
+        metaData <- as.data.frame(matrix(ncol=0, nrow=NCOL(data)))
+    } else {
+        metaData <- as.data.frame(metaData)
+    }
+    Biobase::AnnotatedDataFrame(data, metaData)
+}
+.from_GRangesList_to_FeatureData <- function(from)
+{
+    data <- as.data.frame(mcols(from))
+
+    ## the first mcols are automatically included in the data.frame from
+    ## as.data.frame, the secondary mcols holds the metadata for the first
+    ## metadata columns.
+    metaData <- mcols(mcols(from))
+    if (is.null(metaData)) {
+        metaData <- as.data.frame(matrix(ncol=0, nrow=NCOL(data)))
+    } else {
+        metaData <- as.data.frame(metaData)
+    }
+    Biobase::AnnotatedDataFrame(data, metaData)
+}
+
+.from_AnnotatedDataFrame_to_DataFrame <- function(from)
+{
     df <- DataFrame(Biobase::pData(from))
     mcols(df) <- DataFrame(Biobase::varMetadata(from))
     df
 }
 
+.from_DataFrame_to_AnnotatedDataFrame <- function(df)
+{
+    data <- as(df, "data.frame")
+    metaData <- mcols(df)
+    if (is.null(metaData)) {
+        metaData <- as.data.frame(matrix(ncol=0, nrow=NCOL(data)))
+    } else {
+        metaData <- as(metaData, "data.frame")
+    }
+    Biobase::AnnotatedDataFrame(data, metaData)
+}
+
 suppressMessages(
-    setAs("ExpressionSet", "SummarizedExperiment", function(from) {
+    setAs("ExpressionSet", "SummarizedExperiment", function(from)
+    {
         if (requireNamespace("Biobase", quietly = TRUE)) {
             assays <- as.list(Biobase::assayData(from))
             rowRanges <- .from_FeatureData_to_GRangesList(from)
-            colData = .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
-            exptData = SimpleList(
+            colData <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
+            exptData <- SimpleList(
                 experimentData = Biobase::experimentData(from),
                 annotation = Biobase::annotation(from),
                 protocolData = Biobase::protocolData(from)
@@ -865,6 +924,61 @@ suppressMessages(
                 colData = colData,
                 exptData = exptData
             )
+        }
+    })
+)
+
+suppressMessages(
+    setAs("SummarizedExperiment", "ExpressionSet", function(from)
+    {
+        if (requireNamespace("Biobase", quietly = TRUE)) {
+
+            assayData <- list2env(as.list(assays(from)))
+
+            numAssays <- length(assayData)
+
+            if(numAssays == 0) {
+                assayData$exprs <- new("matrix")
+            } else if (!"exprs" %in% ls(assayData)) {
+                ## if there isn't an exprs assay we need to pick one as exprs, so
+                ## rename the first element exprs and issue a warning.
+                exprs <- ls(assayData)[[1]]
+                warning("No assay named ", sQuote("exprs"), " found, renaming ",
+                        exprs, " to ", sQuote("exprs"), ".")
+                assayData[["exprs"]] <- assayData[[exprs]]
+                rm(list=exprs, envir=assayData)
+            }
+
+            featureData <- .from_rowRanges_to_FeatureData(rowRanges(from))
+            phenoData <- .from_DataFrame_to_AnnotatedDataFrame(colData(from))
+
+            ed <- exptData(from)
+
+            experimentData <- if (!is.null(ed$experimentData)) {
+                ed$experimentData
+            } else {
+                Biobase::MIAME()
+            }
+
+            annotation <- if (!is.null(ed$annotation)) {
+                ed$annotation
+            } else {
+                character()
+            }
+
+            protocolData <- if (!is.null(ed$protocolData)) {
+                ed$protocolData
+            } else {
+                Biobase::annotatedDataFrameFrom(assayData, byrow=FALSE)
+            }
+
+            Biobase::ExpressionSet(assayData,
+                                   phenoData = phenoData,
+                                   featureData = featureData,
+                                   experimentData = experimentData,
+                                   annotation = annotation,
+                                   protocolData = protocolData
+                                   )
         }
     })
 )

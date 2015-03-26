@@ -16,6 +16,7 @@
 % Coercion methods:
 \alias{updateObject,SummarizedExperiment-method}
 \alias{coerce,ExpressionSet,SummarizedExperiment-method}
+\alias{coerce,SummarizedExperiment,ExpressionSet-method}
 
 % Accessor methods:
 \alias{assays}
@@ -210,6 +211,7 @@ exptData(x, ...) <- value
 
 \S4method{updateObject}{SummarizedExperiment}(object, ..., verbose=FALSE)
 \S4method{coerce}{ExpressionSet,SummarizedExperiment}(from, to = "SummarizedExperiment", strict = TRUE)
+\S4method{coerce}{SummarizedExperiment,ExpressionSet}(from, to = "ExpressionSet", strict = TRUE)
 
 }
 
@@ -384,11 +386,35 @@ exptData(x, ...) <- value
   by invoking \code{x <- updateObject(x)}.
 
   \describe{
-    \item{}{
-      \code{as(from, "SummarizedExperiment")}: Creates a
+    \item{
+      \code{as(from, "SummarizedExperiment")}:}{Creates a
       \code{SummarizedExperiment} object from a \code{ExpressionSet} object.
     }
   }
+  \describe{
+    \item{
+      \code{as(from, "ExpressionSet")}:}{Creates a
+      \code{ExpressionSet} object from a \code{SummarizedExperiment} object.
+    }
+  }
+  The following data mappings are used for coercion between
+  \code{ExpressionSet} and \code{SummarizedExperiment}.
+  \describe{
+      \item{\code{assayData}}{\code{assays}}
+      \item{\code{featureData}}{\code{rowData}}
+      \item{\code{phenoData}}{\code{colData}}
+      \item{\code{experimentData}, \code{annotation},
+      \code{protocolData}}{\code{colData}}
+  }
+
+  If the \code{SummarizedExperiment} being coerced uses \code{GRanges} to store
+  it's range data that data will be included in the \code{featureData} of the
+  \code{ExpressionSet}.
+
+  Because \code{ExpressionSet} objects require an assay named \sQuote{exprs} if
+  the \code{SummarizedExperiment} object being coerced does not have an assay
+  named \sQuote{exprs} the first assay will be renamed and a warning will be
+  issued.
 }
 
 \section{Accessors}{
