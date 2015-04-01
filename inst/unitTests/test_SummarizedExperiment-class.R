@@ -468,3 +468,24 @@ test_GenomicRanges_SummarizedExperiment_coercion <- function()
                        sampleNames(eset5))
     }
 }
+
+test_SummarizedExperiment_assays_4d <- function()
+{
+    ## [
+    a <- array(0, c(3, 3, 3, 3), list(LETTERS[1:3], letters[1:3], NULL, NULL))
+    assays <- SimpleList(a=a)
+    se <- SummarizedExperiment(assays)
+    checkIdentical(assays(se[1,])[[1]], a[1,,,,drop=FALSE])
+
+    ## [<-
+    a1 <- a; a1[1,,,] <- a[1,,,,drop=FALSE] + 1
+    assays(se[1,])[[1]] <- 1 + assays(se[1,])[[1]]
+    checkIdentical(assays(se)[[1]], a1)
+
+    ## [, [<- don't support more than 4 dimensions
+    a <- array(0, c(3, 3, 3, 3, 3),
+               list(LETTERS[1:3], letters[1:3], NULL, NULL, NULL))
+    assays <- SimpleList(a=a)
+    se <- SummarizedExperiment(assays)
+    checkException(se[1,], silent=TRUE)
+}

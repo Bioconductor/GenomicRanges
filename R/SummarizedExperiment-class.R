@@ -333,8 +333,14 @@ setMethod(assays, "SummarizedExperiment",
     function(x, ..., withDimnames=TRUE, value)
 {
     ## withDimnames arg allows names(assays(se, withDimnames=FALSE)) <- value
+    dimnames <- dimnames(value[[1]])[1:2]
+    for (i in seq_along(value)[-1])
+        if (!identical(dimnames, dimnames(value[[i]])[1:2]))
+            stop("'dimnames' differ between assay elements")
     value <- endoapply(value, "dimnames<-", NULL)
     x <- clone(x, ..., assays=value)
+    if (!identical(dimnames(x), dimnames))
+        dimnames(x) <- dimnames
     msg <- .valid.SummarizedExperiment(x)
     if (!is.null(msg))
         stop(msg)
@@ -464,24 +470,30 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     ## need to expand Rle's for subsetting standard matrix
     if (!missing(i) && !missing(j)) {
         fun <- function(x) {
-            if (length(dim(x)) == 2L)
-                x[i, j, drop=FALSE]
-            else
-                x[i, j, , drop=FALSE]
+            switch(length(dim(x)),
+                   stop("'[' on assays() with 1 dimension not supported"),
+                   x[i, j, drop=FALSE],
+                   x[i, j, , drop=FALSE],
+                   x[i, j, , , drop=FALSE],
+                   stop("'[' on assays() with >4 dimensions not supported"))
         }
     } else if (!missing(i)) {
         fun <- function(x) {
-            if (length(dim(x)) == 2L)
-                x[i, , drop=FALSE]
-            else
-                x[i, , , drop=FALSE]
+            switch(length(dim(x)),
+                   stop("'[' on assays() with 1 dimension not supported"),
+                   x[i, , drop=FALSE],
+                   x[i, , , drop=FALSE],
+                   x[i, , , , drop=FALSE],
+                   stop("'[' on assays() with >4 dimensions not supported"))
         }
     } else if (!missing(j)) {
         fun <- function(x) {
-            if (length(dim(x)) == 2L)
-                x[, j, drop=FALSE]
-            else
-                x[, j, , drop=FALSE]
+            switch(length(dim(x)),
+                   stop("'[' on assays() with 1 dimension not supported"),
+                   x[, j, drop=FALSE],
+                   x[, j, , drop=FALSE],
+                   x[, j, , , drop=FALSE],
+                   stop("'[' on assays() with >4 dimensions not supported"))
         }
     }
     endoapply(assays(x, withDimnames=FALSE), fun)
@@ -529,26 +541,32 @@ setMethod("[", c("SummarizedExperiment", "ANY", "ANY"),
     ## need to expand Rle's for subsetting standard matrix
     if (!missing(i) && !missing(j)) {
         fun <- function(x, value) {
-            if (length(dim(x)) == 2L)
-                x[i, j] <- value
-            else
-                x[i, j, ] <- value
+            switch(length(dim(x)),
+                   stop("'[<-' on assays() with 1 dimension not supported"),
+                   x[i, j] <- value,
+                   x[i, j, ] <- value,
+                   x[i, j, , ] <- value,
+                   stop("'[<-' on assays() with >4 dimensions not supported"))
             x
         }
     } else if (!missing(i)) {
         fun <- function(x, value) {
-            if (length(dim(x)) == 2L)
-                x[i, ] <- value
-            else
-                x[i, , ] <- value
+            switch(length(dim(x)),
+                   stop("'[<-' on assays() with 1 dimension not supported"),
+                   x[i, ] <- value,
+                   x[i, , ] <- value,
+                   x[i, , , ] <- value,
+                   stop("'[<-' on assays() with >4 dimensions not supported"))
             x
         }
     } else if (!missing(j)) {
         fun <- function(x, value) {
-            if (length(dim(x)) == 2L)
-                x[, j] <- value
-            else
-                x[, j, ] <- value
+            switch(length(dim(x)),
+                   stop("'[<-' on assays() with 1 dimension not supported"),
+                   x[, j] <- value,
+                   x[, j, ] <- value,
+                   x[, j, , ] <- value,
+                   stop("'[<-' on assays() with >4 dimensions not supported"))
             x
         }
     }

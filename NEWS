@@ -4,8 +4,12 @@ CHANGES IN VERSION 1.20.0
 NEW FEATURES
 
     o Add 'assayNames', 'assayNames<-' for SummarizedExperiment
+
     o Deprecate 'rowData', 'rowData<-' for SummarizedExperiment
+
     o Add 'rowRanges', 'rowRanges<-' for SummarizedExperiment
+
+    o assays() supports arrays of up to 4 dimensions.
 
 CHANGES IN VERSION 1.18.0
 -------------------------
