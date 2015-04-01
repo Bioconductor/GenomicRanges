@@ -284,8 +284,8 @@ exptData(x, ...) <- value
   \item{withDimnames}{A \code{logical(1)}, indicating whether dimnames
     should be applied to extracted assay elements (this argument is
     ignored for the setter \code{assays<-}). Setting
-    \code{withDimnames=FALSE} increases the speed with which assays are
-    extracted.}
+    \code{withDimnames=FALSE} increases the speed and memory efficiency
+    with which assays are extracted.}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
 
@@ -595,7 +595,11 @@ exptData(x, ...) <- value
   slots does not copy the (large) assay data, and at the same time the
   user is not surprised by reference-based semantics. Updates to
   non-assay slots are very fast; updating the assays slot itself can be
-  5x or more faster than with an S4 instance in the slot.
+  5x or more faster than with an S4 instance in the slot. One useful
+  technique when working with \code{assay} or \code{assays} function is
+  use of the \code{withDimnames=FALSE} argument, which benefits speed
+  and memory use by not copying dimnames from the row- and colData
+  elements to each assay.
 
   In a little more detail, a small reference class hierarchy (not
   exported from the GenomicRanges name space) defines a reference class

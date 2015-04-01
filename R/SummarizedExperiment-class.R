@@ -337,7 +337,10 @@ setMethod(assays, "SummarizedExperiment",
     for (i in seq_along(value)[-1])
         if (!identical(dimnames, dimnames(value[[i]])[1:2]))
             stop("'dimnames' differ between assay elements")
-    value <- endoapply(value, "dimnames<-", NULL)
+    idx <- !vapply(value, function(elt) {
+        is.null(dimnames(elt)) || identical(dimnames(elt)[1:2], dimnames(x))
+      }, logical(1))
+    value[idx] <- endoapply(value[idx], "dimnames<-", NULL)
     x <- clone(x, ..., assays=value)
     if (!identical(dimnames(x), dimnames))
         dimnames(x) <- dimnames
