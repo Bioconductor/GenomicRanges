@@ -333,17 +333,14 @@ setMethod(assays, "SummarizedExperiment",
     function(x, ..., withDimnames=TRUE, value)
 {
     ## withDimnames arg allows names(assays(se, withDimnames=FALSE)) <- value
-    dimnames <- dimnames(value[[1]])[1:2]
-    for (i in seq_along(value)[-1])
-        if (!identical(dimnames, dimnames(value[[i]])[1:2]))
-            stop("'dimnames' differ between assay elements")
-    idx <- !vapply(value, function(elt) {
-        is.null(dimnames(elt)) || identical(dimnames(elt)[1:2], dimnames(x))
-      }, logical(1))
-    value[idx] <- endoapply(value[idx], "dimnames<-", NULL)
+    ok <- vapply(value, function(elt, xdimnames) {
+        e <- dimnames(elt)
+        (is.null(e[[1]]) || identical(e[[1]], xdimnames[[1]])) &&
+             (is.null(e[[2]]) || identical(e[[2]], xdimnames[[2]]))
+    }, logical(1), xdimnames=dimnames(x))
+    if (!all(ok))
+        stop("current and replacement dimnames() differ")
     x <- clone(x, ..., assays=value)
-    if (!identical(dimnames(x), dimnames))
-        dimnames(x) <- dimnames
     msg <- .valid.SummarizedExperiment(x)
     if (!is.null(msg))
         stop(msg)
