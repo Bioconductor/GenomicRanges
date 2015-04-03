@@ -279,13 +279,16 @@ exptData(x, ...) <- value
     elements or rows to keep: missing values are taken as false.}
 
   \item{name}{A symbol representing the name of a column of
-  \code{colData}.}
+    \code{colData}.}
 
   \item{withDimnames}{A \code{logical(1)}, indicating whether dimnames
-    should be applied to extracted assay elements (this argument is
-    ignored for the setter \code{assays<-}). Setting
+    should be applied to extracted assay elements. Setting
     \code{withDimnames=FALSE} increases the speed and memory efficiency
-    with which assays are extracted.}
+    with which assays are extracted. \code{withDimnames=TRUE} in the
+    getter \code{assays<-} allows efficient complex assignments (e.g.,
+    updating names of assays, \code{names(assays(x, withDimnames=FALSE))
+    = ...} is more efficient than \code{names(assays(x)) = ...}); it
+    does not influence actual assignment of dimnames to assays.}
 
   \item{drop}{A \code{logical(1)}, ignored by these methods.}
 
