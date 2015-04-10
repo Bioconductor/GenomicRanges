@@ -115,6 +115,7 @@ export(
 
     rowData, "rowData<-",
 
+    makeSummarizedExperimentFromExpressionSet,
     naiveRangeMapper, geneRangeMapper, probeRangeMapper
 )
 
