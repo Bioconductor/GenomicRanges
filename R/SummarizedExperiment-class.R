@@ -919,13 +919,12 @@ setMethod(show, "SummarizedExperiment",
 naiveRangeMapper <- function(from)
 {
     nms <- Biobase::featureNames(from)
-    without_coercion <- function(e) {
-        res <- relist(GRanges(), vector("list", length=length(nms)))
-        mcols(res) <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::featureData(from))
-        res
-    }
     res <- tryCatch(makeGRangesFromDataFrame(Biobase::pData(Biobase::featureData(from)), keep.extra.columns = TRUE),
-             error = without_coercion)
+             error = function(e) {
+                 res <- relist(GRanges(), vector("list", length=length(nms)))
+                 mcols(res) <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::featureData(from))
+                 res
+             })
     names(res) <- nms
     res
 }
@@ -938,23 +937,27 @@ probeRangeMapper <- function(from)
 {
     if (requireNamespace("annotate", quietly = TRUE)) {
         annotationPackage <- annotate::annPkgName(Biobase::annotation(from))
-        if (requireNamespace(annotationPackage, quietly = TRUE)) {
+        if (require(annotationPackage, character.only = TRUE, quietly = TRUE)) {
             db <- get(annotationPackage, envir = asNamespace(annotationPackage))
             pid <- Biobase::featureNames(from)
-            locs <- AnnotationDbi::select(db, pid, columns = c("CHR", "CHRLOC", "CHRLOCEND"))
+            locs <- select(db, pid, columns = c("CHR", "CHRLOC", "CHRLOCEND"))
             locs <- na.omit(locs)
             dups <- duplicated(locs$PROBEID)
             if (any(dups)) {
-                locs <- locs[ !dups, ]
+                locs <- locs[!dups, , drop = FALSE]
             }
             strand <- ifelse(locs$CHRLOC > 0, "+", "-")
             res <- GRanges(seqnames = locs$CHR,
                            ranges = IRanges(abs(locs$CHRLOC), abs(locs$CHRLOCEND)),
                            strand = strand)
             names(res) <- locs$PROBEID
+
+            if (NROW(res) < length(pid)) {
+                warning(length(pid) - NROW(res), " probes could not be mapped.", call. = FALSE)
+            }
             res
         } else {
-            stop("Failed to load ", annotationPackage, " package", call. = FALSE)
+            stop("Failed to load ", sQuote(annotationPackage), " package", call. = FALSE)
         }
     } else {
         stop("Failed to load annotate package", call. = FALSE)
@@ -972,7 +975,7 @@ geneRangeMapper <- function(txDbPackage, key = "ENTREZID")
                 db <- get(annotationPackage, envir = asNamespace(annotationPackage))
                 pid <- Biobase::featureNames(sample.ExpressionSet)
                 probeIdToGeneId <- AnnotationDbi::mapIds(db, pid, key, "PROBEID")
-                geneIdToProbeId <- structure(names(probeIdToGeneId), names = probeIdToGeneId)
+                geneIdToProbeId <- setNames(names(probeIdToGeneId), probeIdToGeneId)
 
                 if (requireNamespace(txDbPackage, quietly = TRUE)) {
                     txDb <- get(txDbPackage, envir = asNamespace(txDbPackage))
@@ -980,13 +983,16 @@ geneRangeMapper <- function(txDbPackage, key = "ENTREZID")
                     probesWithAMatch <- probeIdToGeneId[probeIdToGeneId %in% names(genes)]
                     res <- genes[probesWithAMatch]
                     names(res) <- geneIdToProbeId[names(res)]
+                    if (NROW(res) < length(pid)) {
+                        warning(length(pid) - NROW(res), " probes could not be mapped.", call. = FALSE)
+                    }
                     res
                 } else {
-                    stop("Failed to load ", txDbPackage, " package", call. = FALSE)
+                    stop("Failed to load ", sQuote(txDbPackage), " package", call. = FALSE)
                 }
 
             } else {
-                stop("Failed to load ", annotationPackage, " package", call. = FALSE)
+                stop("Failed to load ", sQuote(annotationPackage), " package", call. = FALSE)
             }
         } else {
             stop("Failed to load annotate package", call. = FALSE)
@@ -999,12 +1005,10 @@ makeSummarizedExperimentFromExpressionSet <- function(from, mapFun = naiveRangeM
     if (requireNamespace("Biobase", quietly = TRUE)) {
         mapFun <- match.fun(mapFun)
         rowRanges <- mapFun(from)
-        if (NROW(rowRanges) != NROW(from)) {
-            matches <- match(names(rowRanges),
-                             Biobase::featureNames(from),
-                             nomatch = 0)
-            from <- from[matches, ]
-        }
+        matches <- match(names(rowRanges),
+                         Biobase::featureNames(from),
+                         nomatch = 0)
+        from <- from[matches, drop = FALSE]
         assays <- as.list(Biobase::assayData(from))
         colData <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
         exptData <- SimpleList(
