@@ -423,6 +423,10 @@ test_GenomicRanges_SummarizedExperiment_coercion <- function()
         checkIdentical(pData(featureData(eset2)),
                        as.data.frame(rowRanges(ssetList[[1]])))
 
+        # the rowRanges are retained if the object has them to begin with.
+        se2_2 <- as(eset2, "SummarizedExperiment")
+        checkIdentical(rowRanges(se2_2), rowRanges(ssetList[[1]]))
+
         eset3 <- as(ssetList[[2]], "ExpressionSet")
         checkTrue(validObject(eset3))
 

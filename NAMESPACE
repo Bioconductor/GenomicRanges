@@ -113,7 +113,9 @@ export(
     isSmallGenome, absoluteRanges, relativeRanges,
     tileGenome,
 
-    rowData, "rowData<-"
+    rowData, "rowData<-",
+
+    naiveRangeMapper, geneRangeMapper, probeRangeMapper
 )
 
 

@@ -851,15 +851,6 @@ setMethod(show, "SummarizedExperiment",
     scat("colData names(%d): %s\n", names(colData(object)))
 })
 
-.from_FeatureData_to_GRangesList <- function(from)
-{
-    nms <- Biobase::featureNames(from)
-    res <- relist(GRanges(), vector("list", length=length(nms)))
-    names(res) <- nms
-    mcols(res) <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::featureData(from))
-    res
-}
-
 .from_rowRanges_to_FeatureData <- function(from)
 {
     if (is(from, "GRanges")) {
@@ -923,26 +914,118 @@ setMethod(show, "SummarizedExperiment",
     Biobase::AnnotatedDataFrame(data, metaData)
 }
 
+# If the ExpressionSet has featureData with range information make GRanges out
+# of that, otherwise make an empty GRangesList with names from the featureNames
+naiveRangeMapper <- function(from)
+{
+    nms <- Biobase::featureNames(from)
+    without_coercion <- function(e) {
+        res <- relist(GRanges(), vector("list", length=length(nms)))
+        mcols(res) <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::featureData(from))
+        res
+    }
+    res <- tryCatch(makeGRangesFromDataFrame(Biobase::pData(Biobase::featureData(from)), keep.extra.columns = TRUE),
+             error = without_coercion)
+    names(res) <- nms
+    res
+}
+
+# Simple ProbeId to Range mapper
+# Probes with multiple ranges are dropped
+# The sign of the chromosome location is assumed to contain the strand
+# information
+probeRangeMapper <- function(from)
+{
+    if (requireNamespace("annotate", quietly = TRUE)) {
+        annotationPackage <- annotate::annPkgName(Biobase::annotation(from))
+        if (requireNamespace(annotationPackage, quietly = TRUE)) {
+            db <- get(annotationPackage, envir = asNamespace(annotationPackage))
+            pid <- Biobase::featureNames(from)
+            locs <- AnnotationDbi::select(db, pid, columns = c("CHR", "CHRLOC", "CHRLOCEND"))
+            locs <- na.omit(locs)
+            dups <- duplicated(locs$PROBEID)
+            if (any(dups)) {
+                locs <- locs[ !dups, ]
+            }
+            strand <- ifelse(locs$CHRLOC > 0, "+", "-")
+            res <- GRanges(seqnames = locs$CHR,
+                           ranges = IRanges(abs(locs$CHRLOC), abs(locs$CHRLOCEND)),
+                           strand = strand)
+            names(res) <- locs$PROBEID
+            res
+        } else {
+            stop("Failed to load ", annotationPackage, " package", call. = FALSE)
+        }
+    } else {
+        stop("Failed to load annotate package", call. = FALSE)
+    }
+}
+
+# Simple ProbeId to Gene mapper
+# Is there a way to get the txDb given the annotation package?
+geneRangeMapper <- function(txDbPackage, key = "ENTREZID")
+{
+    function(from) {
+        if (requireNamespace("annotate", quietly = TRUE)) {
+            annotationPackage <- annotate::annPkgName(Biobase::annotation(from))
+            if (require(annotationPackage, character.only = TRUE, quietly = TRUE)) {
+                db <- get(annotationPackage, envir = asNamespace(annotationPackage))
+                pid <- Biobase::featureNames(sample.ExpressionSet)
+                probeIdToGeneId <- AnnotationDbi::mapIds(db, pid, key, "PROBEID")
+                geneIdToProbeId <- structure(names(probeIdToGeneId), names = probeIdToGeneId)
+
+                if (requireNamespace(txDbPackage, quietly = TRUE)) {
+                    txDb <- get(txDbPackage, envir = asNamespace(txDbPackage))
+                    genes <- GenomicFeatures::genes(txDb)
+                    probesWithAMatch <- probeIdToGeneId[probeIdToGeneId %in% names(genes)]
+                    res <- genes[probesWithAMatch]
+                    names(res) <- geneIdToProbeId[names(res)]
+                    res
+                } else {
+                    stop("Failed to load ", txDbPackage, " package", call. = FALSE)
+                }
+
+            } else {
+                stop("Failed to load ", annotationPackage, " package", call. = FALSE)
+            }
+        } else {
+            stop("Failed to load annotate package", call. = FALSE)
+        }
+    }
+}
+
+makeSummarizedExperimentFromExpressionSet <- function(from, mapFun = naiveRangeMapper)
+{
+    if (requireNamespace("Biobase", quietly = TRUE)) {
+        mapFun <- match.fun(mapFun)
+        rowRanges <- mapFun(from)
+        if (NROW(rowRanges) != NROW(from)) {
+            matches <- match(names(rowRanges),
+                             Biobase::featureNames(from),
+                             nomatch = 0)
+            from <- from[matches, ]
+        }
+        assays <- as.list(Biobase::assayData(from))
+        colData <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
+        exptData <- SimpleList(
+                               experimentData = Biobase::experimentData(from),
+                               annotation = Biobase::annotation(from),
+                               protocolData = Biobase::protocolData(from)
+                               )
+
+        SummarizedExperiment(
+                             assays = assays,
+                             rowRanges = rowRanges,
+                             colData = colData,
+                             exptData = exptData
+                             )
+    }
+}
+
 suppressMessages(
     setAs("ExpressionSet", "SummarizedExperiment", function(from)
     {
-        if (requireNamespace("Biobase", quietly = TRUE)) {
-            assays <- as.list(Biobase::assayData(from))
-            rowRanges <- .from_FeatureData_to_GRangesList(from)
-            colData <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
-            exptData <- SimpleList(
-                experimentData = Biobase::experimentData(from),
-                annotation = Biobase::annotation(from),
-                protocolData = Biobase::protocolData(from)
-            )
-
-            SummarizedExperiment(
-                assays = assays,
-                rowRanges = rowRanges,
-                colData = colData,
-                exptData = exptData
-            )
-        }
+        makeSummarizedExperimentFromExpressionSet(from, naiveRangeMapper)
     })
 )
 
