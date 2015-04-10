@@ -17,7 +17,7 @@
 
   probeRangeMapper(from)
 
-  geneRangeMapper(txDbPackage, key = "ENTREZID")(from)
+  geneRangeMapper(txDbPackage, key = "ENTREZID")
 }
 
 \arguments{

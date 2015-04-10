@@ -5,13 +5,14 @@
 \title{Make an SummarizedExperiment object from an ExpressionSet}
 
 \description{
-  \code{makeExpressionSetFromSummarizedExperiment} takes a \link[Biobase]{ExpressionSet}
-  object as input and a Range mapping function that maps the features to
-  ranges.  It then returns a \link{SummarizedExperiment} object.
+  \code{makeSummarizedExperimentFromExpressionSet} takes a
+  \link[Biobase]{ExpressionSet} object as input and a Range mapping function
+  that maps the features to ranges.  It then returns a
+  \link{SummarizedExperiment} object.
 }
 
 \usage{
-makeExpressionSetFromSummarizedExperiment(from,
+makeSummarizedExperimentFromExpressionSet(from,
                                           mapFun=naiveRangeMapper)
 }
 

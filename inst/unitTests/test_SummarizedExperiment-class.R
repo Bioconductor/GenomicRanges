@@ -374,8 +374,10 @@ test_SummarizedExperiment_GenomicRanges_coercion <- function()
         checkIdentical(Biobase::protocolData(eset2),
                        exptData(se2)$protocolData)
 
-        checkIdentical(SimpleList(as.list(Biobase::assayData(eset2))),
-                       assays(se2))
+        eset2Assays <- SimpleList(as.list(Biobase::assayData(eset2)))
+        se2Assays <- assays(se2)
+        checkIdentical(eset2Assays$exprs, se2Assays$exprs)
+        checkIdentical(eset2Assays$se.exprs, se2Assays$se.exprs)
 
         checkIdentical(Biobase::featureNames(eset2),
                        rownames(se2))
@@ -425,7 +427,9 @@ test_GenomicRanges_SummarizedExperiment_coercion <- function()
 
         # the rowRanges are retained if the object has them to begin with.
         se2_2 <- as(eset2, "SummarizedExperiment")
-        checkIdentical(rowRanges(se2_2), rowRanges(ssetList[[1]]))
+        rr_se2_2 <- unname(rowRanges(se2_2))
+        rr_eset2 <- rowRanges(ssetList[[1]])
+        checkEquals(rr_se2_2, rr_eset2)
 
         eset3 <- as(ssetList[[2]], "ExpressionSet")
         checkTrue(validObject(eset3))
@@ -471,6 +475,52 @@ test_GenomicRanges_SummarizedExperiment_coercion <- function()
         checkIdentical(sampleNames(eset4),
                        sampleNames(eset5))
     }
+}
+
+test_GenomicRanges_SummarizedExperiment_coercion_mappingFunctions <- function()
+{
+    ExpressionSet <- Biobase::ExpressionSet
+
+    ## naiveRangeMapper
+    ## valid object from empty object
+    checkTrue(validObject(makeSummarizedExperimentFromExpressionSet(ExpressionSet())))
+
+    ## valid object from sample ExpressionSet
+    data("sample.ExpressionSet", package = "Biobase")
+    eset1 <- sample.ExpressionSet
+    checkTrue(validObject(makeSummarizedExperimentFromExpressionSet(eset1)))
+
+    ## makeSummarizedExperimentFromExpressionSet should be the same as `as`
+    ## with default args
+    checkEquals(makeSummarizedExperimentFromExpressionSet(eset1),
+                as(eset1, "SummarizedExperiment"))
+
+    ## probeRangeMapper
+    ## valid object from empty object
+    checkTrue(validObject(
+            makeSummarizedExperimentFromExpressionSet(ExpressionSet(),
+                probeRangeMapper)))
+
+    ## valid object from sample ExpressionSet
+    se1 <- makeSummarizedExperimentFromExpressionSet(eset1, probeRangeMapper)
+    checkTrue(validObject(se1))
+
+    ## Granges returned have rownames that were from the featureNames
+    checkTrue(all(rownames(rowRanges(se1)) %in% Biobase::featureNames(eset1)))
+
+    ## geneRangeMapper
+    ## valid object from empty object
+    checkTrue(validObject(
+            makeSummarizedExperimentFromExpressionSet(ExpressionSet(),
+                geneRangeMapper(NULL))))
+
+    ## valid object from sample ExpressionSet
+    se2 <- makeSummarizedExperimentFromExpressionSet(eset1,
+        geneRangeMapper("TxDb.Hsapiens.UCSC.hg19.knownGene"))
+    checkTrue(validObject(se2))
+
+    ## Granges returned have rownames that were from the featureNames
+    checkTrue(all(rownames(rowRanges(se2)) %in% Biobase::featureNames(eset1)))
 }
 
 test_SummarizedExperiment_assays_4d <- function()

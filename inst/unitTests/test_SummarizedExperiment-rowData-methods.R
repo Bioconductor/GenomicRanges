@@ -28,11 +28,11 @@ colData <- DataFrame(x=letters[1:3])
 ssetList <- 
     list(SummarizedExperiment(
            assays=assaysList[["gr"]], 
-           rowData=rowRangesList[["gr"]], 
+           rowRanges=rowRangesList[["gr"]], 
            colData=colData),
          SummarizedExperiment(
            assays=assaysList[["grl"]], 
-           rowData=rowRangesList[["grl"]], 
+           rowRanges=rowRangesList[["grl"]], 
            colData=colData))
 
 test_SummarizedExperiment_GRanges_API <- function() {
@@ -122,7 +122,7 @@ test_SummarizedExperiment_GRanges_values <- function()
 
 test_SummarizedExperiment_split <- function() {
     gr <- GRanges(Rle(c("A", "B"), c(2, 3)), IRanges(1:5, 10))
-    se <- SummarizedExperiment(m, rowData=gr, colData=colData)
+    se <- SummarizedExperiment(m, rowRanges=gr, colData=colData)
     ## FIXME: unname should not be necessary
     obs <- split(se, seqnames(se))
     exp <- SimpleList(A=se[1:2], B=se[3:5])

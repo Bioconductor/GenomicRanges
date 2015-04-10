@@ -935,12 +935,16 @@ naiveRangeMapper <- function(from)
 # information
 probeRangeMapper <- function(from)
 {
+    annotation <- Biobase::annotation(from)
+    if (identical(annotation, character(0))) {
+        return(naiveRangeMapper(from))
+    }
     if (requireNamespace("annotate", quietly = TRUE)) {
-        annotationPackage <- annotate::annPkgName(Biobase::annotation(from))
+        annotationPackage <- annotate::annPkgName(annotation)
         if (require(annotationPackage, character.only = TRUE, quietly = TRUE)) {
             db <- get(annotationPackage, envir = asNamespace(annotationPackage))
             pid <- Biobase::featureNames(from)
-            locs <- select(db, pid, columns = c("CHR", "CHRLOC", "CHRLOCEND"))
+            locs <- AnnotationDbi::select(db, pid, columns = c("CHR", "CHRLOC", "CHRLOCEND"))
             locs <- na.omit(locs)
             dups <- duplicated(locs$PROBEID)
             if (any(dups)) {
@@ -969,11 +973,15 @@ probeRangeMapper <- function(from)
 geneRangeMapper <- function(txDbPackage, key = "ENTREZID")
 {
     function(from) {
+        annotation <- Biobase::annotation(from)
+        if (identical(annotation, character(0))) {
+            return(naiveRangeMapper(from))
+        }
         if (requireNamespace("annotate", quietly = TRUE)) {
-            annotationPackage <- annotate::annPkgName(Biobase::annotation(from))
+            annotationPackage <- annotate::annPkgName(annotation)
             if (require(annotationPackage, character.only = TRUE, quietly = TRUE)) {
                 db <- get(annotationPackage, envir = asNamespace(annotationPackage))
-                pid <- Biobase::featureNames(sample.ExpressionSet)
+                pid <- Biobase::featureNames(from)
                 probeIdToGeneId <- AnnotationDbi::mapIds(db, pid, key, "PROBEID")
                 geneIdToProbeId <- setNames(names(probeIdToGeneId), probeIdToGeneId)
 
