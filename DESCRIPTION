@@ -7,7 +7,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	intervals. Specialized containers for representing and manipulating
 	short alignments against a reference genome are defined in the
 	GenomicAlignments package.
-Version: 1.19.52
+Version: 1.19.53
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
@@ -17,15 +17,13 @@ Depends: R (>= 2.10), methods, BiocGenerics (>= 0.11.3), S4Vectors (>= 0.5.14),
 Imports: utils, stats, XVector
 LinkingTo: S4Vectors, IRanges
 Suggests: AnnotationDbi (>= 1.21.1), AnnotationHub, BSgenome,
-	BSgenome.Hsapiens.UCSC.hg19, BSgenome.Scerevisiae.UCSC.sacCer2,
-	Biostrings (>= 2.25.3), Rsamtools (>= 1.13.53),
-	GenomicAlignments, rtracklayer, KEGG.db, KEGGgraph,
-	GenomicFeatures, TxDb.Dmelanogaster.UCSC.dm3.ensGene,
-	TxDb.Hsapiens.UCSC.hg19.knownGene, 
-	TxDb.Athaliana.BioMart.plantsmart22,
-        org.Sc.sgd.db, org.Hs.eg.db, org.Mm.eg.db,
-	VariantAnnotation, edgeR, DESeq, DEXSeq, pasilla,
-	pasillaBamSubset, RUnit, digest, BiocStyle, Biobase
+	BSgenome.Hsapiens.UCSC.hg19, BSgenome.Scerevisiae.UCSC.sacCer2, Biobase,
+	BiocStyle, Biostrings (>= 2.25.3), DESeq, DEXSeq, GenomicAlignments,
+	GenomicFeatures, KEGG.db, KEGGgraph, RUnit, Rsamtools (>= 1.13.53),
+	TxDb.Athaliana.BioMart.plantsmart22, TxDb.Dmelanogaster.UCSC.dm3.ensGene,
+	TxDb.Hsapiens.UCSC.hg19.knownGene, VariantAnnotation, annotate, digest, edgeR,
+	hgu95av2.db, org.Hs.eg.db, org.Mm.eg.db, org.Sc.sgd.db, pasilla,
+	pasillaBamSubset, rtracklayer
 License: Artistic-2.0
 Collate: utils.R
 	phicoef.R
