@@ -115,6 +115,7 @@ export(
 
     rowData, "rowData<-",
 
+    .DollarNames.SummarizedExperiment,
     makeSummarizedExperimentFromExpressionSet,
     naiveRangeMapper, geneRangeMapper, probeRangeMapper
 )
