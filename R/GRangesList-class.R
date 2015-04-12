@@ -407,6 +407,7 @@ setAs("GRangesList", "RangesList",
 setAs("RangedDataList", "GRangesList",
       function(from) GRangesList(lapply(from, as, "GRanges")))
 
+setAs("GRanges", "GRangesList", function(from) as(from, "List"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
