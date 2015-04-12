@@ -193,6 +193,9 @@ setAs("RangesList", "GRanges",
         ranges <- unlist(from, use.names=FALSE)
         ranges <- IRanges(start=start(ranges), width=width(ranges))
         ## From now, ranges is guaranteed to be an IRanges *instance*.
+        if (is.null(space(from))) {
+          stop("Cannot create GRanges when 'space(from)' is NULL")
+        }
         gr <- GRanges(seqnames = space(from),
                       ranges = ranges,
                       strand = Rle("*", length(ranges)))
