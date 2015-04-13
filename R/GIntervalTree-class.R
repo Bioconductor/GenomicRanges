@@ -116,6 +116,13 @@ setMethod("width", "GIntervalTree",
 #' @importClassesFrom GenomicRanges GRanges
 setAs("GRanges", "GIntervalTree",
       function(from) {
+        msg <- c("GIntervalTree objects and the \"intervaltree\" algorithm ",
+                 "used in findOverlaps() and family are deprecated. Please ",
+                 "use GNCList objects or the \"nclist\" algorithm instead. ",
+                 "See ?GNCList and the 'algorithm' argument in ?findOverlaps ",
+                 "for more information.")
+        .Deprecated(msg=wmsg(msg))
+
         if (any(isCircular(from), na.rm=TRUE))
           stop("'GIntervalTree' objects not supported for circular sequences")
 

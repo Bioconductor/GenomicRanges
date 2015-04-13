@@ -218,36 +218,41 @@ findOverlaps(gr1, gr, type="within")
 findOverlaps(gr1, gr, type="equal")
 
 ## using a GIntervalTree
-gtree <- GIntervalTree(gr1)
-table(!is.na(findOverlaps(gr, gtree, select="arbitrary")))
-countOverlaps(gr, gtree)
-findOverlaps(gr, gtree)
-subsetByOverlaps(gr, gtree)
+if (interactive()) {
+  ## GIntervalTree objects are deprecated. Please use GNCList objects
+  ## instead. See ?GNCList for more information.
 
-## Overlapping a GRanges and a GRangesList object:
-table(!is.na(findOverlaps(grl, gr, select="first")))
-countOverlaps(grl, gr)
-findOverlaps(grl, gr)
-subsetByOverlaps(grl, gr)
-countOverlaps(grl, gr, type="start")
-findOverlaps(grl, gr, type="start")
-subsetByOverlaps(grl, gr, type="start")
-findOverlaps(grl, gr, select="first")
+  gtree <- GIntervalTree(gr1)
+  table(!is.na(findOverlaps(gr, gtree, select="arbitrary")))
+  countOverlaps(gr, gtree)
+  findOverlaps(gr, gtree)
+  subsetByOverlaps(gr, gtree)
 
-## using a GIntervalTree
-table(!is.na(findOverlaps(grl, gtree, select="first")))
-countOverlaps(grl, gtree)
-findOverlaps(grl, gtree)
-subsetByOverlaps(grl, gtree)
-countOverlaps(grl, gtree, type="start")
-findOverlaps(grl, gtree, type="start")
-subsetByOverlaps(grl, gtree, type="start")
-findOverlaps(grl, gtree, select="first")
+  ## Overlapping a GRanges and a GRangesList object:
+  table(!is.na(findOverlaps(grl, gr, select="first")))
+  countOverlaps(grl, gr)
+  findOverlaps(grl, gr)
+  subsetByOverlaps(grl, gr)
+  countOverlaps(grl, gr, type="start")
+  findOverlaps(grl, gr, type="start")
+  subsetByOverlaps(grl, gr, type="start")
+  findOverlaps(grl, gr, select="first")
 
-## Overlapping two GRangesList objects:
-countOverlaps(grl, rev(grl))
-findOverlaps(grl, rev(grl))
-subsetByOverlaps(grl, rev(grl))
+  ## using a GIntervalTree
+  table(!is.na(findOverlaps(grl, gtree, select="first")))
+  countOverlaps(grl, gtree)
+  findOverlaps(grl, gtree)
+  subsetByOverlaps(grl, gtree)
+  countOverlaps(grl, gtree, type="start")
+  findOverlaps(grl, gtree, type="start")
+  subsetByOverlaps(grl, gtree, type="start")
+  findOverlaps(grl, gtree, select="first")
+
+  ## Overlapping two GRangesList objects:
+  countOverlaps(grl, rev(grl))
+  findOverlaps(grl, rev(grl))
+  subsetByOverlaps(grl, rev(grl))
+}
 }
 
 \keyword{methods}

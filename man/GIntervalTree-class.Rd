@@ -37,6 +37,9 @@
 \description{
   The GIntervalTree class is a container for the genomic locations and
   their associated annotations.
+
+  WARNING: GIntervalTree objects are deprecated. Please use \link{GNCList}
+  objects instead. See \code{?\link{GNCList}} for more information.
 }
 
 \details{
@@ -230,9 +233,12 @@
 }
 
 \examples{
-seqinfo <- Seqinfo(paste0("chr", 1:3), c(1000, 2000, 1500), NA, "mock1")
-gr <-
-  GRanges(seqnames =
+if (interactive()) {
+  ## GIntervalTree objects are deprecated. Please use GNCList objects
+  ## instead. See ?GNCList for more information.
+  seqinfo <- Seqinfo(paste0("chr", 1:3), c(1000, 2000, 1500), NA, "mock1")
+  gr <-
+    GRanges(seqnames =
           Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
           ranges = IRanges(
             1:10, width = 10:1, names = head(letters,10)),
@@ -242,16 +248,16 @@ gr <-
           score = 1:10,
           GC = seq(1, 0, length=10),
           seqinfo=seqinfo)
-tree <- GIntervalTree(gr)
-tree
+  tree <- GIntervalTree(gr)
+  tree
 
-## Summarizing elements
-table(seqnames(tree))
-sum(width(tree))
-summary(mcols(tree)[,"score"])
+  ## Summarizing elements
+  table(seqnames(tree))
+  sum(width(tree))
+  summary(mcols(tree)[,"score"])
 
-## find Overlaps
-subject <-
+  ## find Overlaps
+  subject <-
     GRanges(seqnames =
               Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
             ranges =
@@ -268,4 +274,5 @@ subject <-
   stree <- GIntervalTree(subject)
   findOverlaps(query, stree)
   countOverlaps(query, stree)
+}
 }
