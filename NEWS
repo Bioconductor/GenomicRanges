@@ -13,7 +13,13 @@ NEW FEATURES
     o Add GNCList() for preprocessing a GenomicRanges object into a GNCList
       object that can be used for fast overlap seach with findOverlaps().
       GNCList() is a replacement for GIntervalTree() that uses Nested
-      Containment Lists instead of interval trees.
+      Containment Lists instead of interval trees. Unlike GIntervalTree(),
+      GNCList() supports preprocessing of a GenomicRanges object with
+      ranges located on a circular sequence. For a one time use, it's not
+      advised to explicitely preprocess the input. This is because
+      findOverlaps() or countOverlaps() will take care of it and do a better
+      job at it (that is, they preprocess only what's needed when it's needed
+      and release memory as they go).
 
     o All "findOverlaps" methods now support 'select' equal "last" or
       "arbitrary" (in addition to "all" and "first").
