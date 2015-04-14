@@ -4,13 +4,18 @@
 \alias{mapCoords-methods}
 \alias{mapCoords,GenomicRanges,GRangesList-method}
 \alias{mapCoords,GenomicRanges,GenomicRanges-method}
+\alias{pmapCoords}
 \alias{pmapCoords,GenomicRanges,GRangesList-method}
 
 
 \title{Mapping ranges between sequences}
 
 \description{
-  Deprecated. Use \code{mapToTranscript} instead.
+  DEPRECATED! Use \code{\link[GenomicFeatures]{mapToTranscripts}} from the
+  \pkg{GenomicFeatures} package or
+  \code{\link[GenomicAlignments]{mapToAlignments}} from the
+  \pkg{GenomicAlignments} package instead.
+
   A method for translating a set of input ranges through a
   \link{GRangesList} object. Returns a \linkS4class{GenomicRanges}
   object.
@@ -68,7 +73,10 @@
 }
 
 \details{
-  Deprecated. Use \code{mapToTranscript} instead.
+  DEPRECATED! Use \code{\link[GenomicFeatures]{mapToTranscripts}} from the
+  \pkg{GenomicFeatures} package or
+  \code{\link[GenomicAlignments]{mapToAlignments}} from the
+  \pkg{GenomicAlignments} package instead.
 
   Each element in \code{to} is taken to represent an alignment of a sequence on
   a genome. The typical case is a set of transcript models, as might be obtained
@@ -102,7 +110,8 @@
 }
 
 \examples{
-## See ?mapToTranscript and ?mapToAlignment
+## DEPRECATED! See ?mapToTranscripts in the GenomicFeatures package and
+## ?mapToAlignments in the GenomicAlignments package.
 }
 
 \author{M. Lawrence and V. Obenchain \url{vobencha@fhcrc.org}}
