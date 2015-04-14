@@ -42,7 +42,10 @@ DEPRECATED AND DEFUNCT
     o Deprecated 'rowData' and 'rowData<-' in favor of 'rowRanges' and
       'rowRanges<-'.
 
-    o Deprecated mapCoords() and pmapCoords().
+    o Deprecated mapCoords() and pmapCoords(). They're replaced by
+      mapToTranscripts() and pmapToTranscripts() from the GenomicFeatures
+      package and mapToAlignments() and pmapToAlignments() from the
+      GenomicAlignments package.
 
     o Deprecated GIntervalTree objects.
 
