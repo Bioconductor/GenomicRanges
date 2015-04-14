@@ -10,10 +10,10 @@ NEW FEATURES
 
     o assays() supports arrays of up to 4 dimensions.
 
-    o Add GNCList() for preprocessing a GenomicRanges into a GNCList object
-      that can be used for fast findOverlaps(). GNCList() is a replacement for
-      GIntervalTree() that uses Nested Containment Lists instead of interval
-      trees.
+    o Add GNCList() for preprocessing a GenomicRanges object into a GNCList
+      object that can be used for fast findOverlaps(). GNCList() is a
+      replacement for GIntervalTree() that uses Nested Containment Lists
+      instead of interval trees.
 
     o All "findOverlaps" methods now support 'select' equal "last" or
       "arbitrary" (in addition to "all" and "first").
