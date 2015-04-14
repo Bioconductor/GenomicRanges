@@ -62,6 +62,9 @@ BUG FIXES
     o Fix 'findOverlaps(..., type="start")' on GRangesList objects which has
       been broken for years.
 
+    o Fix self overlap search on a GRanges object when 'ignore.strand=TRUE'
+      (i.e. 'findOverlaps(gr, ignore.strand=TRUE)').
+
 
 CHANGES IN VERSION 1.18.0
 -------------------------
