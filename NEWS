@@ -3,13 +3,62 @@ CHANGES IN VERSION 1.20.0
 
 NEW FEATURES
 
+    o Add coercion methods to go back and forth between ExpressionSet and
+      SummarizedExperiment.
+
     o Add 'assayNames', 'assayNames<-' for SummarizedExperiment
 
-    o Deprecate 'rowData', 'rowData<-' for SummarizedExperiment
-
-    o Add 'rowRanges', 'rowRanges<-' for SummarizedExperiment
-
     o assays() supports arrays of up to 4 dimensions.
+
+    o Add GNCList() for preprocessing a GenomicRanges into a GNCList object
+      that can be used for fast findOverlaps(). GNCList() is a replacement for
+      GIntervalTree() that uses Nested Containment Lists instead of interval
+      trees.
+
+    o All "findOverlaps" methods now support 'select' equal "last" or
+      "arbitrary" (in addition to "all" and "first").
+
+    o Add absoluteRanges() and relativeRanges() to transform back and forth
+      between absolute and relative genomic ranges.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Renamed 'rowData' and 'rowData<-' -> 'rowRanges', 'rowRanges<-'.
+      Old names still work but are deprecated.
+
+    o Some improvements to makeGRangesFromDataFrame():
+      - Improve internal logic used for finding the GRanges columns in the
+        input.
+      - If 'seqinfo' is not supplied, the seqlevels are now ordered according
+        to the output of GenomeInfoDb::rankSeqlevels().
+      - Now an attempt is made to turn 'df' into a data frame (with
+        'as.data.frame(df)') if it's not a data frame or a DataFrame object.
+
+    o The GRanges() constructor now propagates the metadata cols that are on
+      'ranges' if no metadata cols are explicitly passed to the constructor.
+
+DEPRECATED AND DEFUNCT
+
+    o Deprecated 'rowData' and 'rowData<-' in favor of 'rowRanges' and
+      'rowRanges<-'.
+
+    o Deprecated mapCoords() and pmapCoords().
+
+    o Deprecated GIntervalTree objects.
+
+    o Removed "map" and "splitAsListReturnedClass" methods (were defunct in
+      GenomicRanges 1.18.0).
+
+    o Removed makeSeqnameIds() (was defunct in GenomicRanges 1.18.0).
+
+    o Removed 'with.mapping' argunment from "reduce" methods (was defunct in
+      GenomicRanges 1.18.0).
+
+BUG FIXES
+
+    o Fix 'findOverlaps(..., type="start")' on GRangesList objects which has
+      been broken for years.
+
 
 CHANGES IN VERSION 1.18.0
 -------------------------
