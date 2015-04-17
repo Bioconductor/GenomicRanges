@@ -139,7 +139,7 @@ hits3
 
 ## Circularity introduces more hits:
 
-stopifnot(all(hits1a %in% hits3))
+stopifnot(all(hits1a \%in\% hits3))
 new_hits <- setdiff(hits3, hits1a)
 new_hits  # 1 new hit
 query[queryHits(new_hits)]

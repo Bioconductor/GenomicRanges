@@ -2,6 +2,8 @@
 \alias{findOverlaps-methods}
 
 \alias{findOverlaps}
+\alias{findOverlaps,GNCList,GenomicRanges-method}
+\alias{findOverlaps,GenomicRanges,GNCList-method}
 \alias{findOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GIntervalTree-method}
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
@@ -17,6 +19,8 @@
 \alias{findOverlaps,GRangesList,RangedData-method}
 
 \alias{countOverlaps}
+\alias{countOverlaps,GNCList,GenomicRanges-method}
+\alias{countOverlaps,GenomicRanges,GNCList-method}
 \alias{countOverlaps,GenomicRanges,Vector-method}
 \alias{countOverlaps,Vector,GenomicRanges-method}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
