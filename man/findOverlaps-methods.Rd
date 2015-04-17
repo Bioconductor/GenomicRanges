@@ -59,12 +59,13 @@
 \title{Finding overlapping genomic ranges}
 
 \description{
-  Finds interval overlaps between a \link{GRanges}, \link{GIntervalTree},
-  or \link{GRangesList} object, and another object containing ranges.
+  Various methods for finding/counting overlaps between objects containing
+  genomic ranges. This man page describes the methods that operate on
+  \link{GenomicRanges} or \link{GRangesList} objects.
 
-  NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and methods
-  for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
-  are defined and documented in the \pkg{IRanges} package.
+  NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and
+  methods for \link[IRanges]{Ranges} and \link[IRanges]{RangesList}
+  objects are defined and documented in the \pkg{IRanges} package.
   The methods for \link[GenomicAlignments]{GAlignments},
   \link[GenomicAlignments]{GAlignmentPairs}, and
   \link[GenomicAlignments]{GAlignmentsList} objects are defined and
@@ -103,12 +104,18 @@
     A \link{GRanges} or \link{GRangesList} object.
     \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
     also accepted for one of \code{query} or \code{subject}.
-    When \code{query} is a \link{GRanges} or \link{GRangesList} then 
-    \code{subject} can be a \link{GIntervalTree} object.
   }
-  \item{maxgap, minoverlap, type, select}{
-    See \code{\link[IRanges]{findOverlaps}} in the IRanges package for
-    a description of these arguments.
+  \item{maxgap, minoverlap, type, algorithm}{
+    See \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
+    for a description of these arguments.
+  }
+  \item{select}{
+    When \code{select} is \code{"all"} (the default), the results are
+    returned as a \link{Hits} object.
+    Otherwise the returned value is an integer vector parallel to \code{query}
+    (i.e. same length) containing the first, last, or arbitrary overlapping
+    interval in \code{subject}, with \code{NA} indicating intervals that did
+    not overlap any intervals in \code{subject}.
   }
   \item{ignore.strand}{
     When set to \code{TRUE}, the strand information is ignored in the
@@ -137,11 +144,6 @@
   a feature is a list element containing a set of ranges. In the results,
   the features are referred to by number, which run from 1 to
   \code{length(query)}/\code{length(subject)}.
-
-  When the query is a \link{GRanges} or \link{GRangesList} object then
-  the \link{subject} can be a \link{GIntervalTree} object. For repeated queries against the same subject, it is more efficient to create a \code{GIntervalTree} once for the subject using the \link{GIntervalTree} constructor described below and then perform the queries against
-  the \code{GIntervalTree} instance. Note that \link{GIntervalTree}
-  objects are not supported for circular genomes.
 }
 
 \value{
@@ -165,19 +167,29 @@
   has to give).
 }
 
-\author{P. Aboyoun, S. Falcon, M. Lawrence, N. Gopalakrishnan H. Pages and H. Corrada Bravo}
+\author{P. Aboyoun, S. Falcon, M. Lawrence, and H. Pages}
 
 \seealso{
   \itemize{
-    \item \code{\link[IRanges]{findOverlaps}}.
-    \item \link[S4Vectors]{Hits-class}.
-    \item \link{GRanges-class}.
-    \item \link{GRangesList-class}.
-    \item \link{GIntervalTree-class}.
+    \item The \link{Hits} class for representing a set of hits between 2
+          vector-like objects.
+
+    \item The \code{\link[IRanges]{findOverlaps}} generic function defined
+          in the \pkg{IRanges} package.
+
+    \item The \link{GNCList} constructor and class for preprocessing and
+          representing a \link{GenomicRanges} or object as a data structure
+          based on Nested Containment Lists.
+
+    \item The \link{GRanges} and \link{GRangesList} classes.
   }
 }
 
 \examples{
+## ---------------------------------------------------------------------
+## BASIC EXAMPLES
+## ---------------------------------------------------------------------
+
 ## GRanges object:
 gr <- GRanges(
         seqnames=Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
@@ -217,42 +229,39 @@ findOverlaps(gr1, gr, type="start")
 findOverlaps(gr1, gr, type="within")
 findOverlaps(gr1, gr, type="equal")
 
-## using a GIntervalTree
-if (interactive()) {
-  ## GIntervalTree objects are deprecated. Please use GNCList objects
-  ## instead. See ?GNCList for more information.
+## ---------------------------------------------------------------------
+## MORE EXAMPLES
+## ---------------------------------------------------------------------
 
-  gtree <- GIntervalTree(gr1)
-  table(!is.na(findOverlaps(gr, gtree, select="arbitrary")))
-  countOverlaps(gr, gtree)
-  findOverlaps(gr, gtree)
-  subsetByOverlaps(gr, gtree)
+table(!is.na(findOverlaps(gr, gr1, select="arbitrary")))
+countOverlaps(gr, gr1)
+findOverlaps(gr, gr1)
+subsetByOverlaps(gr, gr1)
 
-  ## Overlapping a GRanges and a GRangesList object:
-  table(!is.na(findOverlaps(grl, gr, select="first")))
-  countOverlaps(grl, gr)
-  findOverlaps(grl, gr)
-  subsetByOverlaps(grl, gr)
-  countOverlaps(grl, gr, type="start")
-  findOverlaps(grl, gr, type="start")
-  subsetByOverlaps(grl, gr, type="start")
-  findOverlaps(grl, gr, select="first")
+## Overlaps between a GRanges and a GRangesList object:
 
-  ## using a GIntervalTree
-  table(!is.na(findOverlaps(grl, gtree, select="first")))
-  countOverlaps(grl, gtree)
-  findOverlaps(grl, gtree)
-  subsetByOverlaps(grl, gtree)
-  countOverlaps(grl, gtree, type="start")
-  findOverlaps(grl, gtree, type="start")
-  subsetByOverlaps(grl, gtree, type="start")
-  findOverlaps(grl, gtree, select="first")
+table(!is.na(findOverlaps(grl, gr, select="first")))
+countOverlaps(grl, gr)
+findOverlaps(grl, gr)
+subsetByOverlaps(grl, gr)
+countOverlaps(grl, gr, type="start")
+findOverlaps(grl, gr, type="start")
+subsetByOverlaps(grl, gr, type="start")
+findOverlaps(grl, gr, select="first")
 
-  ## Overlapping two GRangesList objects:
-  countOverlaps(grl, rev(grl))
-  findOverlaps(grl, rev(grl))
-  subsetByOverlaps(grl, rev(grl))
-}
+table(!is.na(findOverlaps(grl, gr1, select="first")))
+countOverlaps(grl, gr1)
+findOverlaps(grl, gr1)
+subsetByOverlaps(grl, gr1)
+countOverlaps(grl, gr1, type="start")
+findOverlaps(grl, gr1, type="start")
+subsetByOverlaps(grl, gr1, type="start")
+findOverlaps(grl, gr1, select="first")
+
+## Overlaps between two GRangesList objects:
+countOverlaps(grl, rev(grl))
+findOverlaps(grl, rev(grl))
+subsetByOverlaps(grl, rev(grl))
 }
 
 \keyword{methods}

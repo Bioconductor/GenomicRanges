@@ -83,10 +83,10 @@ selectMethod(ranges, "DelegatingGenomicRanges")
 @ 
 
 This abstraction enables us to pursue more efficient implementations
-for particular tasks. One example is \Rclass{GIntervalTree}, which is
+for particular tasks. One example is \Rclass{GNCList}, which is
 indexed for fast range queries, we expose here:
-<<gintervaltree-ranges>>=
-getSlots("GIntervalTree")["ranges"]
+<<gnclist-granges>>=
+getSlots("GNCList")["granges"]
 @ 
 
 The \Biocpkg{MutableRanges} package in svn provides other, untested
