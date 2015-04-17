@@ -48,7 +48,7 @@ setMethod("ranges", "GNCList", function(x, use.mcols=FALSE) ranges(granges(x)))
 setMethod("strand", "GNCList", function(x) strand(granges(x)))
 setMethod("seqinfo", "GNCList", function(x) seqinfo(granges(x)))
 
-setAs("GNCList", "GRanges", function(from) granges(from))
+setAs("GNCList", "GRanges", function(from) granges(from, use.mcols=TRUE))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,13 +64,17 @@ GNCList <- function(x)
         stop("'x' must be a GenomicRanges object")
     if (!is(x, "GRanges"))
         x <- as(x, "GRanges")
+    ans_mcols <- mcols(x)
     mcols(x) <- NULL
     x_groups <- .extract_groups_from_GenomicRanges(x)
     x_ranges <- IRanges:::.shift_ranges_in_groups_to_first_circle(ranges(x),
                                    x_groups, .get_circle_length(x))
     ranges(x) <- x_ranges
     x_nclists <- IRanges:::.nclists(x_ranges, x_groups)
-    new2("GNCList", nclists=x_nclists, granges=x, check=FALSE)
+    new2("GNCList", nclists=x_nclists,
+                    granges=x,
+                    elementMetadata=ans_mcols,
+                    check=FALSE)
 }
 
 setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
