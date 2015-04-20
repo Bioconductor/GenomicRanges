@@ -41,7 +41,7 @@
                  arg, "\" columns")
         arg <- x_mcols[ , arg]
     }
-    if (!is.numeric(arg))
+    if (!(is.numeric(arg) || is(arg, "Rle") && is.numeric(runValue(arg))))
         stop("'", arg.label, "' must be a numeric vector, a single string, ", 
              "or a list-like object")
     split(.recycle(arg, length(x), arg.label, "x"), seqnames(x))
