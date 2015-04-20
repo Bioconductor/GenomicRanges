@@ -43,11 +43,5 @@ setReplaceMethod("seqinfo", "RangedData",
 ### seqnames
 ###
 
-setMethod("seqnames", "RangesList", function(x) {
-  if (is.null(names(x)))
-    NULL
-  else seqsplit(Rle(space(x)), rep(names(x), elementLengths(x)))
-})
-
 setMethod("seqnames", "RangedData", function(x) space(x))
 
