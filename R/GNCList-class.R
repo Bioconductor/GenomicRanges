@@ -81,6 +81,15 @@ setAs("GenomicRanges", "GNCList", function(from) GNCList(from))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting
+###
+
+setMethod("extractROWS", "GNCList",
+    function(x, i) as(callGeneric(as(x, "GRanges"), i), class(x))
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### findOverlaps_GNCList()
 ###
 
