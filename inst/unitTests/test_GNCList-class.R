@@ -46,7 +46,30 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
     selectHits(hits, select=select)
 }
 
-test_findOverlaps_NCList <- function()
+test_GNCList <- function()
+{
+    x <- GRanges(Rle(c("chrM", "chr1", "chrM", "chr1"), 4:1),
+                 IRanges(1:10, width=5, names=LETTERS[1:10]),
+                 strand=rep(c("+", "-"), 5),
+                 score=seq(0.7, by=0.045, length.out=10))
+    gnclist <- GNCList(x)
+    checkTrue(validObject(gnclist, complete=TRUE))
+    checkIdentical(granges(x), granges(gnclist))
+    checkIdentical(x, granges(gnclist, use.mcols=TRUE))
+    checkIdentical(length(x), length(gnclist))
+    checkIdentical(names(x), names(gnclist))
+    checkIdentical(seqnames(x), seqnames(gnclist))
+    checkIdentical(start(x), start(gnclist))
+    checkIdentical(end(x), end(gnclist))
+    checkIdentical(width(x), width(gnclist))
+    checkIdentical(ranges(x), ranges(gnclist))
+    checkIdentical(strand(x), strand(gnclist))
+    checkIdentical(seqinfo(x), seqinfo(gnclist))
+    checkIdentical(x, as(gnclist, "GRanges"))
+    checkIdentical(x[-6], as(gnclist[-6], "GRanges"))
+}
+
+test_findOverlaps_GNCList <- function()
 {
     q_ranges <- IRanges(-3:7, width=3)
     s_ranges <- IRanges(rep.int(1:5, 5:1), c(1:5, 2:5, 3:5, 4:5, 5))
@@ -54,11 +77,11 @@ test_findOverlaps_NCList <- function()
     query <- GRanges(
         Rle(c("chr1", "chr2", "chrM"), rep(length(q_ranges), 3)),
         rep(q_ranges, 3),
-        Rle(c("+", "+", "-"), rep(length(q_ranges), 3)))
+        strand=Rle(c("+", "+", "-"), rep(length(q_ranges), 3)))
     subject <- GRanges(
         Rle(c("chr1", "chr2", "chrM"), rep(length(s_ranges), 3)),
         rep(s_ranges, 3),
-        Rle(c("+", "-", "*"), rep(length(s_ranges), 3)))
+        strand=Rle(c("+", "-", "*"), rep(length(s_ranges), 3)))
 
     for (ignore.strand in c(FALSE, TRUE)) {
         target0 <- .findOverlaps_naive(query, subject,
