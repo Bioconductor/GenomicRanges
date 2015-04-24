@@ -53,6 +53,8 @@ test_GNCList <- function()
                  strand=rep(c("+", "-"), 5),
                  score=seq(0.7, by=0.045, length.out=10))
     gnclist <- GNCList(x)
+
+    checkTrue(is(gnclist, "GNCList"))
     checkTrue(validObject(gnclist, complete=TRUE))
     checkIdentical(granges(x), granges(gnclist))
     checkIdentical(x, granges(gnclist, use.mcols=TRUE))
