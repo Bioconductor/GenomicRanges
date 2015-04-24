@@ -60,46 +60,57 @@ test_findOverlaps_NCList <- function()
         rep(s_ranges, 3),
         Rle(c("+", "-", "*"), rep(length(s_ranges), 3)))
 
-    target0 <- .findOverlaps_naive(query, subject)
-    current <- findOverlaps_GNCList(query, GNCList(subject))
-    checkTrue(.compare_hits(target0, current))
-    current <- findOverlaps_GNCList(GNCList(query), subject)
-    checkTrue(.compare_hits(target0, current))
-    current <- findOverlaps_GNCList(query, subject)
-    checkTrue(.compare_hits(target0, current))
+    for (ignore.strand in c(FALSE, TRUE)) {
+        target0 <- .findOverlaps_naive(query, subject,
+                                       ignore.strand=ignore.strand)
+        current <- findOverlaps_GNCList(query, GNCList(subject),
+                                        ignore.strand=ignore.strand)
+        checkTrue(.compare_hits(target0, current))
+        current <- findOverlaps_GNCList(GNCList(query), subject,
+                                        ignore.strand=ignore.strand)
+        checkTrue(.compare_hits(target0, current))
+        current <- findOverlaps_GNCList(query, subject,
+                                        ignore.strand=ignore.strand)
+        checkTrue(.compare_hits(target0, current))
 
-    ## Shuffle query and/or subject elements.
-    permute_input <- function(q_perm, s_perm) {
-        q_revperm <- integer(length(q_perm))
-        q_revperm[q_perm] <- seq_along(q_perm)
-        s_revperm <- integer(length(s_perm))
-        s_revperm[s_perm] <- seq_along(s_perm)
-        target <- remapHits(target0, query.map=q_revperm,
-                                     new.queryLength=length(q_perm),
-                                     subject.map=s_revperm,
-                                     new.subjectLength=length(s_perm))
-        current <- findOverlaps_GNCList(query[q_perm], GNCList(subject[s_perm]))
-        checkTrue(.compare_hits(target, current))
-        current <- findOverlaps_GNCList(GNCList(query[q_perm]), subject[s_perm])
-        checkTrue(.compare_hits(target, current))
-        current <- findOverlaps_GNCList(query[q_perm], subject[s_perm])
-        checkTrue(.compare_hits(target, current))
-    }
+        ## Shuffle query and/or subject elements.
+        permute_input <- function(q_perm, s_perm) {
+            q_revperm <- integer(length(q_perm))
+            q_revperm[q_perm] <- seq_along(q_perm)
+            s_revperm <- integer(length(s_perm))
+            s_revperm[s_perm] <- seq_along(s_perm)
+            target <- remapHits(target0, query.map=q_revperm,
+                                         new.queryLength=length(q_perm),
+                                         subject.map=s_revperm,
+                                         new.subjectLength=length(s_perm))
+            current <- findOverlaps_GNCList(query[q_perm],
+                                            GNCList(subject[s_perm]),
+                                            ignore.strand=ignore.strand)
+            checkTrue(.compare_hits(target, current))
+            current <- findOverlaps_GNCList(GNCList(query[q_perm]),
+                                            subject[s_perm],
+                                            ignore.strand=ignore.strand)
+            checkTrue(.compare_hits(target, current))
+            current <- findOverlaps_GNCList(query[q_perm], subject[s_perm],
+                                            ignore.strand=ignore.strand)
+            checkTrue(.compare_hits(target, current))
+        }
 
-    q_perm <- rev(seq_along(query))
-    s_perm <- rev(seq_along(subject))
-    permute_input(q_perm, seq_along(subject))  # reverse query
-    permute_input(seq_along(query), s_perm)    # reverse subject
-    permute_input(q_perm, s_perm)              # reverse both
+        q_perm <- rev(seq_along(query))
+        s_perm <- rev(seq_along(subject))
+        permute_input(q_perm, seq_along(subject))  # reverse query
+        permute_input(seq_along(query), s_perm)    # reverse subject
+        permute_input(q_perm, s_perm)              # reverse both
 
-    set.seed(97)
-    for (i in 1:17) {
-        ## random permutations
-        q_perm <- sample(length(query))
-        s_perm <- sample(length(subject))
-        permute_input(q_perm, seq_along(subject))
-        permute_input(seq_along(query), s_perm)
-        permute_input(q_perm, s_perm)
+        set.seed(97)
+        for (i in 1:17) {
+            ## random permutations
+            q_perm <- sample(length(query))
+            s_perm <- sample(length(subject))
+            permute_input(q_perm, seq_along(subject))
+            permute_input(seq_along(query), s_perm)
+            permute_input(q_perm, s_perm)
+        }
     }
 }
 
