@@ -89,41 +89,29 @@
 
 ### mapCoords:
 
+.msg <- c("'mapCoords' is defunct. ",
+          "Use 'mapToTranscripts' from the GenomicFeatures package ",
+          "or 'mapToAlignments' from the GenomicAlignments package ",
+          "instead.")
+
 setMethod("mapCoords", c("GenomicRanges", "GRangesList"), 
     function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
-    {
-        msg <- c("'mapCoords' is deprecated. ",
-                 "Use 'mapToTranscripts' from the GenomicFeatures package ",
-                 "or 'mapToAlignments' from the GenomicAlignments package ",
-                 "instead.")
-        .Deprecated(msg=wmsg(msg))
-        .mapCoords(from, to, ..., ignore.strand=ignore.strand,
-                   elt.hits=elt.hits, p=FALSE)
-    }
+        .Defunct(msg=wmsg(.msg))
 )
 
 setMethod("mapCoords", c("GenomicRanges", "GenomicRanges"), 
     function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
-    {
-        callGeneric(from, relist(to, PartitioningByEnd(seq_along(to))),
-                    ..., ignore.strand=ignore.strand, elt.hits=elt.hits)
-    }
+        .Defunct(msg=wmsg(.msg))
 )
 
 ### pmapCoords:
 
 setMethod("pmapCoords", c("GenomicRanges", "GRangesList"), 
-    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE) 
-    {
-        msg <- c("'pmapCoords' is deprecated. ",
+    function(from, to, ..., ignore.strand=TRUE, elt.hits=FALSE)
+{
+        msg <- c("'pmapCoords' is defunct. ",
                  "Use 'pmapToTranscripts' from the GenomicFeatures package ",
                  "or 'pmapToAlignments' from the GenomicAlignments package ",
                  "instead.")
-        .Deprecated(msg=wmsg(msg))
-        if (length(from) != length(to))
-            stop("'from' and 'to' must have the same length")
-        ## FIXME: should be implemented as pfindOverlaps()
-        .mapCoords(from, to, ..., ignore.strand=ignore.strand,
-                   elt.hits=elt.hits, p=TRUE)
-    }
-)
+        .Defunct(msg=wmsg(msg))
+})
