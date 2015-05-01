@@ -116,9 +116,9 @@ setMethod(SummarizedExperiment, "SimpleList",
     if (!is.null(rowData)) {
         if (!missing(rowRanges))
             stop("both 'rowRanges' and 'rowData' are specified")
-        msg <- c("The 'rowData' argument is deprecated. ",
+        msg <- c("The 'rowData' argument is defunct. ",
                  "Please use 'rowRanges' instead.")
-        .Deprecated(msg=msg)
+        .Defunct(msg=msg)
         rowRanges <- rowData
         extra_args$rowData <- NULL
     } else if (missing(rowRanges) && 0L != length(assays)) {
@@ -225,13 +225,13 @@ setGeneric("rowRanges<-",
 
 rowData <- function(...)
 {
-    .Deprecated("rowRanges")
+    .Defunct("rowRanges")
     rowRanges(...)
 }
 
 `rowData<-` <- function(x, ..., value)
 {
-    .Deprecated("rowRanges<-")
+    .Defunct("rowRanges<-")
     rowRanges(x, ...) <- value
 }
 
