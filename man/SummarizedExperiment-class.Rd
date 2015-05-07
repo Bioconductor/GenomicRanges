@@ -5,6 +5,8 @@
 \alias{SummarizedExperiment-class}
 \alias{SummarizedExperiment}
 \alias{Assays-class}
+\alias{ShallowData-class}
+\alias{ShallowSimpleListAssays-class}
 
 % Constructor-like function:
 \alias{SummarizedExperiment}

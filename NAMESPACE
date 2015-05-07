@@ -21,7 +21,7 @@ exportClasses(
     GenomicRanges, GenomicRangesORmissing, GRanges, DelegatingGenomicRanges,
     GNCList, GIntervalTree,
     GenomicRangesORGRangesList, GRangesList,
-    SummarizedExperiment, Assays,
+    SummarizedExperiment, Assays, ShallowData, ShallowSimpleListAssays,
     GenomicRangesList, SimpleGenomicRangesList
 )
 
