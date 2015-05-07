@@ -809,17 +809,6 @@ setReplaceMethod("$", c("SummarizedExperiment", "ANY"),
     x
 })
 
-## compatibility
-
-setMethod(updateObject, "SummarizedExperiment",
-    function(object, ..., verbose=FALSE)
-{
-    s <- slot(object, "assays")
-    if (is(s, "SimpleList"))
-        slot(object, "assays") <- .ShallowSimpleListAssays(data=s)
-    object
-})
-
 ## show
 
 setMethod(show, "SummarizedExperiment",
@@ -853,6 +842,8 @@ setMethod(show, "SummarizedExperiment",
     else cat("colnames: NULL\n")
     scat("colData names(%d): %s\n", names(colData(object)))
 })
+
+## coercion
 
 .from_rowRanges_to_FeatureData <- function(from)
 {
@@ -1098,3 +1089,38 @@ suppressMessages(
         }
     })
 )
+
+suppressMessages(
+  setAs("SummarizedExperiment", "RangedSummarizedExperiment",
+    function(from)
+    {
+        if (!requireNamespace("SummarizedExperiment", quietly=TRUE))
+            stop(wmsg("Couldn't load the SummarizedExperiment package! ",
+                      "Please make sure to install the SummarizedExperiment ",
+                      "package before you attempt to coerce a ",
+                      "SummarizedExperiment object to a ",
+                      "RangedSummarizedExperiment object."))
+        new("RangedSummarizedExperiment", metadata=as.list(from@exptData),
+                                          rowRanges=from@rowData,
+                                          colData=from@colData,
+                                          assays=from@assays)
+    }
+  )
+)
+
+## compatibility
+
+setMethod(updateObject, "SummarizedExperiment",
+    function(object, ..., verbose=FALSE)
+{
+    if (!requireNamespace("SummarizedExperiment", quietly=TRUE))
+        stop(wmsg("Couldn't load the SummarizedExperiment package! ",
+                  "Please make sure to install the SummarizedExperiment ",
+                  "package before you attempt to update a ",
+                  "SummarizedExperiment object."))
+    s <- slot(object, "assays")
+    if (is(s, "SimpleList"))
+        slot(object, "assays") <- .ShallowSimpleListAssays(data=s)
+    as(object, "RangedSummarizedExperiment")
+})
+

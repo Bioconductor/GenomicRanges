@@ -16,9 +16,10 @@
 \alias{SummarizedExperiment,SimpleList-method}
 
 % Coercion methods:
-\alias{updateObject,SummarizedExperiment-method}
 \alias{coerce,ExpressionSet,SummarizedExperiment-method}
 \alias{coerce,SummarizedExperiment,ExpressionSet-method}
+\alias{coerce,SummarizedExperiment,RangedSummarizedExperiment-method}
+\alias{updateObject,SummarizedExperiment-method}
 
 % Accessor methods:
 \alias{assays}
