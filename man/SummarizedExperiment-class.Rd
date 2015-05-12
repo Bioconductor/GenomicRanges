@@ -149,6 +149,11 @@
 
 \description{
 
+  WARNING: The SummarizedExperiment class and constructor described
+  here are deprecated. Please use the
+  \code{\link[SummarizedExperiment]{SummarizedExperiment}()} constructor
+  defined in the new \pkg{SummarizedExperiment} package instead. 
+
   The SummarizedExperiment class is a matrix-like container where rows
   represent ranges of interest (as a \code{\linkS4class{GRanges} or
   \linkS4class{GRangesList}-class}) and columns represent samples (with

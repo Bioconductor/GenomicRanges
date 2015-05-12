@@ -7,7 +7,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	intervals. Specialized containers for representing and manipulating
 	short alignments against a reference genome are defined in the
 	GenomicAlignments package.
-Version: 1.21.9
+Version: 1.21.10
 Author: P. Aboyoun, H. Pages and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,

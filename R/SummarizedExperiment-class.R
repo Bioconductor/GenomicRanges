@@ -32,6 +32,13 @@ setMethod("clone", "ShallowData",  # not exported
 ##
 ## SummarizedExperiment
 
+.SummarizedExperiment_msg <- wmsg(
+    "The SummarizedExperiment class and constructor defined ",
+    "in the GenomicRanges package are deprecated. Please use ",
+    "the SummarizedExperiment() constructor defined in the new ",
+    "SummarizedExperiment package instead."
+)
+
 setClass("SummarizedExperiment",
     representation(
         exptData="SimpleList",                # overall description
@@ -111,6 +118,7 @@ setMethod(SummarizedExperiment, "SimpleList",
              exptData=SimpleList(), ...,
              verbose=FALSE)
 {
+    .Deprecated(msg=.SummarizedExperiment_msg)
     extra_args <- list(...)
     rowData <- extra_args$rowData
     if (!is.null(rowData)) {
@@ -1100,10 +1108,7 @@ suppressMessages(
                       "package before you attempt to coerce a ",
                       "SummarizedExperiment object to a ",
                       "RangedSummarizedExperiment object."))
-        new("RangedSummarizedExperiment", metadata=as.list(from@exptData),
-                                          rowRanges=from@rowData,
-                                          colData=from@colData,
-                                          assays=from@assays)
+        SummarizedExperiment:::.from_SummarizedExperiment_to_RangedSummarizedExperiment(from)
     }
   )
 )
