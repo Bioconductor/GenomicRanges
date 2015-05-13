@@ -32,11 +32,25 @@ setMethod("clone", "ShallowData",  # not exported
 ##
 ## SummarizedExperiment
 
-.SummarizedExperiment_msg <- wmsg(
-    "The SummarizedExperiment class and constructor defined ",
-    "in the GenomicRanges package are deprecated. Please use ",
-    "the SummarizedExperiment() constructor defined in the new ",
-    "SummarizedExperiment package instead."
+## displayed by validity and show methods
+.SummarizedExperiment_deprecation_msg <- wmsg(
+    "The SummarizedExperiment class defined in the GenomicRanges package ",
+    "is deprecated and being replaced with the RangedSummarizedExperiment ",
+    "class defined in the new SummarizedExperiment package. ",
+    "You can use updateObject() on any SummarizedExperiment object ",
+    "to turn it into a RangedSummarizedExperiment."
+)
+
+## displayed by SummarizedExperiment() constructor if SummarizedExperiment
+## package cannot be loaded
+.cannot_load_SummarizedExperiment_msg <- wmsg(
+    "The SummarizedExperiment class defined in the GenomicRanges package ",
+    "is deprecated and being replaced with the RangedSummarizedExperiment ",
+    "class defined in the new SummarizedExperiment package. ",
+    "Please make sure to install the SummarizedExperiment package before ",
+    "you attempt to call the SummarizedExperiment() constructor function. ",
+    "Note that this will return a RangedSummarizedExperiment instance ",
+    "instead of a SummarizedExperiment instance."
 )
 
 setClass("SummarizedExperiment",
@@ -92,6 +106,7 @@ setClass("SummarizedExperiment",
 
 .valid.SummarizedExperiment <- function(x)
 {
+    .Deprecated(msg=.SummarizedExperiment_deprecation_msg)
     c(.valid.SummarizedExperiment.assays_current(x),
       msg <- .valid.SummarizedExperiment.assays_class(x),
       if (is.null(msg)) {
@@ -114,69 +129,35 @@ setGeneric("SummarizedExperiment",
 }
 
 setMethod(SummarizedExperiment, "SimpleList",
-   function(assays, rowRanges=GRangesList(), colData=DataFrame(),
-             exptData=SimpleList(), ...,
-             verbose=FALSE)
+   function(assays, ...)
 {
-    .Deprecated(msg=.SummarizedExperiment_msg)
-    extra_args <- list(...)
-    rowData <- extra_args$rowData
-    if (!is.null(rowData)) {
-        if (!missing(rowRanges))
-            stop("both 'rowRanges' and 'rowData' are specified")
-        msg <- c("The 'rowData' argument is defunct. ",
-                 "Please use 'rowRanges' instead.")
-        .Defunct(msg=msg)
-        rowRanges <- rowData
-        extra_args$rowData <- NULL
-    } else if (missing(rowRanges) && 0L != length(assays)) {
-        rowRanges <- .GRangesList_assays(assays)
-    }
-    if (missing(colData) && 0L != length(assays)) {
-        nms <- colnames(assays[[1]])
-        if (is.null(nms) && 0L != ncol(assays[[1]]))
-            stop("'SummarizedExperiment' assay colnames must not be NULL")
-        colData <- DataFrame(row.names=nms)
-    }
-
-    FUN <- function(x) {
-        exp <- list(names(rowRanges), rownames(colData))
-        ## dimnames as NULL or list(NULL, NULL)
-        all(sapply(dimnames(x), is.null)) ||
-            ## or consistent with row / colData
-            identical(dimnames(x)[1:2], exp)
-    }
-    if (!all(sapply(assays, FUN)))
-        assays <- endoapply(assays, unname)
-    if (!is(assays, "Assays"))
-        assays <- .ShallowSimpleListAssays(data=assays)
-    do.call(new, c(list("SummarizedExperiment",
-                        exptData=exptData,
-                        rowData=rowRanges,
-                        colData=colData,
-                        assays=assays),
-                   extra_args))
+    if (!requireNamespace("SummarizedExperiment", quietly=TRUE))
+        stop(.cannot_load_SummarizedExperiment_msg)
+    SummarizedExperiment::SummarizedExperiment(assays, ...)
 })
 
 setMethod(SummarizedExperiment, "missing",
     function(assays, ...)
 {
-    SummarizedExperiment(SimpleList(), ...)
+    if (!requireNamespace("SummarizedExperiment", quietly=TRUE))
+        stop(.cannot_load_SummarizedExperiment_msg)
+    SummarizedExperiment::SummarizedExperiment(assays, ...)
 })
 
 setMethod(SummarizedExperiment, "list",
     function(assays, ...)
 {
-    SummarizedExperiment(do.call(SimpleList, assays), ...)
+    if (!requireNamespace("SummarizedExperiment", quietly=TRUE))
+        stop(.cannot_load_SummarizedExperiment_msg)
+    SummarizedExperiment::SummarizedExperiment(assays, ...)
 })
 
 setMethod(SummarizedExperiment, "matrix",
     function(assays, ...)
 {
-    if (is.list(assays))
-        ## special case -- matrix of lists
-        assays <- list(assays)
-    SummarizedExperiment(SimpleList(assays), ...)
+    if (!requireNamespace("SummarizedExperiment", quietly=TRUE))
+        stop(.cannot_load_SummarizedExperiment_msg)
+    SummarizedExperiment::SummarizedExperiment(assays, ...)
 })
 
 ## update / clone
@@ -822,6 +803,7 @@ setReplaceMethod("$", c("SummarizedExperiment", "ANY"),
 setMethod(show, "SummarizedExperiment",
     function(object)
 {
+    .Deprecated(msg=.SummarizedExperiment_deprecation_msg)
     selectSome <- BiocGenerics:::selectSome
     scat <- function(fmt, vals=character(), exdent=2, ...)
     {

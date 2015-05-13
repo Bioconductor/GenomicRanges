@@ -149,10 +149,14 @@
 
 \description{
 
-  WARNING: The SummarizedExperiment class and constructor described
-  here are deprecated. Please use the
-  \code{\link[SummarizedExperiment]{SummarizedExperiment}()} constructor
-  defined in the new \pkg{SummarizedExperiment} package instead. 
+  WARNING: The SummarizedExperiment class described here is deprecated and being
+  replaced with the \link[SummarizedExperiment]{RangedSummarizedExperiment}
+  class defined in the new \pkg{SummarizedExperiment} package.
+  Please make sure to install the \pkg{SummarizedExperiment} package before
+  you attempt to call the \code{SummarizedExperiment()} constructor function.
+  Note that this will return a
+  \link[SummarizedExperiment]{RangedSummarizedExperiment} instance instead
+  of a SummarizedExperiment instance. 
 
   The SummarizedExperiment class is a matrix-like container where rows
   represent ranges of interest (as a \code{\linkS4class{GRanges} or
@@ -168,12 +172,6 @@
 ## Constructors
 
 SummarizedExperiment(assays, ...)
-\S4method{SummarizedExperiment}{SimpleList}(assays, rowRanges = GRangesList(),
-    colData = DataFrame(), exptData = SimpleList(), ...,
-    verbose = FALSE)
-\S4method{SummarizedExperiment}{missing}(assays, ...)
-\S4method{SummarizedExperiment}{list}(assays, ...)
-\S4method{SummarizedExperiment}{matrix}(assays, ...)
 
 ## Accessors
 
@@ -225,28 +223,13 @@ exptData(x, ...) <- value
 
 \arguments{
 
-  \item{assays}{A \code{list} or \code{SimpleList} of matrix elements,
-    or a \code{matrix}. All elements of the list must have the same
-    dimensions, and dimension names (if present) must be consistent
-    across elements and with the row names of \code{rowRanges} and
-    \code{colData}.}
+  \item{assays}{
+    See \code{?\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+    in the \pkg{SummarizedExperiment} package.}
 
-  \item{rowRanges}{A \code{GRanges} or \code{GRangesList} instance describing 
-    the ranges of interest. Row names, if present, become the row names of the
-    \code{SummarizedExperiment}. The length of the \code{GRanges} or the
-    \code{GRangesList} must equal the number of rows of the 
-    matrices in \code{assays}.}
-
-  \item{colData}{An optional \code{DataFrame} describing the
-    samples. Row names, if present, become the column names of the
-    \code{SummarizedExperiment}.}
-
-  \item{exptData}{An optional \code{SimpleList} of arbitrary content
-    describing the overall experiment.}
-
-  \item{...}{For \code{SummarizedExperiment}, S4 methods \code{list}
-    and \code{matrix}, arguments identical to those of the
-    \code{SimpleList} method.
+  \item{...}{For \code{SummarizedExperiment}, see
+    \code{?\link[SummarizedExperiment]{RangedSummarizedExperiment}}
+    in the \pkg{SummarizedExperiment} package.
 
     For \code{assay}, \code{...} may contain \code{withDimnames}, which is
     forwarded to \code{assays}.
@@ -640,38 +623,15 @@ exptData(x, ...) <- value
 \author{Martin Morgan, \url{mtmorgan@fhcrc.org}}
 
 \seealso{
-  \link{GRanges},
-  \link[S4Vectors]{DataFrame},
-  \link[S4Vectors]{SimpleList},
+  \link[SummarizedExperiment]{RangedSummarizedExperiment}
+  in the new \pkg{SummarizedExperiment} package for the replacement
+  of the SummarizedExperiment class.
 }
 
 \examples{
-  nrows <- 200; ncols <- 6
-  counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
-  rowRanges <- GRanges(rep(c("chr1", "chr2"), c(50, 150)),
-                     IRanges(floor(runif(200, 1e5, 1e6)), width=100),
-                     strand=sample(c("+", "-"), 200, TRUE))
-  colData <- DataFrame(Treatment=rep(c("ChIP", "Input"), 3),
-                       row.names=LETTERS[1:6])
-  sset <- SummarizedExperiment(assays=SimpleList(counts=counts),
-                 rowRanges=rowRanges, colData=colData)
-  sset
-  assayNames(sset)
-  assays(sset) <- endoapply(assays(sset), asinh)
-  head(assay(sset))
-
-  sset[, sset$Treatment == "ChIP"]
-
-  ## cbind combines objects with the same ranges and different samples.
-  se1 <- sset
-  se2 <- se1[,1:3]
-  colnames(se2) <- letters[1:ncol(se2)] 
-  cmb1 <- cbind(se1, se2)
-
-  ## rbind combines objects with the same samples and different ranges.
-  se1 <- sset
-  se2 <- se1[1:50,]
-  rownames(se2) <- letters[1:nrow(se2)] 
-  cmb2 <- rbind(se1, se2)
-
+## WARNING: The SummarizedExperiment class is deprecated and being
+## replaced with the RangedSummarizedExperiment class defined in the
+## new SummarizedExperiment package. See ?RangedSummarizedExperiment
+## in the SummarizedExperiment package for examples of how to create
+## and manipulate RangedSummarizedExperiment objects.
 }
