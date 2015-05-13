@@ -32,7 +32,8 @@ setMethod("clone", "ShallowData",  # not exported
 ##
 ## SummarizedExperiment
 
-## displayed by validity and show methods
+## displayed by validity, show, and SummarizedExperiment-to-ExpressionSet
+## coercion methods
 .SummarizedExperiment_deprecation_msg <- wmsg(
     "The SummarizedExperiment class defined in the GenomicRanges package ",
     "is deprecated and being replaced with the RangedSummarizedExperiment ",
@@ -1003,7 +1004,7 @@ makeSummarizedExperimentFromExpressionSet <- function(from, mapFun = naiveRangeM
         from <- from[matches, drop = FALSE]
         assays <- as.list(Biobase::assayData(from))
         colData <- .from_AnnotatedDataFrame_to_DataFrame(Biobase::phenoData(from))
-        exptData <- SimpleList(
+        metadata <- SimpleList(
                                experimentData = Biobase::experimentData(from),
                                annotation = Biobase::annotation(from),
                                protocolData = Biobase::protocolData(from)
@@ -1013,20 +1014,20 @@ makeSummarizedExperimentFromExpressionSet <- function(from, mapFun = naiveRangeM
                              assays = assays,
                              rowRanges = rowRanges,
                              colData = colData,
-                             exptData = exptData
+                             metadata = metadata
                              )
     }
 }
 
-suppressMessages(
-    setAs("ExpressionSet", "SummarizedExperiment", function(from)
+suppressWarnings(
+    setAs("ExpressionSet", "RangedSummarizedExperiment", function(from)
     {
         makeSummarizedExperimentFromExpressionSet(from, naiveRangeMapper)
     })
 )
 
-suppressMessages(
-    setAs("SummarizedExperiment", "ExpressionSet", function(from)
+suppressWarnings(
+    setAs("RangedSummarizedExperiment", "ExpressionSet", function(from)
     {
         if (requireNamespace("Biobase", quietly = TRUE)) {
 
@@ -1049,22 +1050,22 @@ suppressMessages(
             featureData <- .from_rowRanges_to_FeatureData(rowRanges(from))
             phenoData <- .from_DataFrame_to_AnnotatedDataFrame(colData(from))
 
-            ed <- exptData(from)
+            metadata <- metadata(from)
 
-            experimentData <- if (!is.null(ed$experimentData)) {
-                ed$experimentData
+            experimentData <- if (!is.null(metadata$experimentData)) {
+                metadata$experimentData
             } else {
                 Biobase::MIAME()
             }
 
-            annotation <- if (!is.null(ed$annotation)) {
-                ed$annotation
+            annotation <- if (!is.null(metadata$annotation)) {
+                metadata$annotation
             } else {
                 character()
             }
 
-            protocolData <- if (!is.null(ed$protocolData)) {
-                ed$protocolData
+            protocolData <- if (!is.null(metadata$protocolData)) {
+                metadata$protocolData
             } else {
                 Biobase::annotatedDataFrameFrom(assayData, byrow=FALSE)
             }
@@ -1079,6 +1080,8 @@ suppressMessages(
         }
     })
 )
+
+## compatibility
 
 suppressMessages(
   setAs("SummarizedExperiment", "RangedSummarizedExperiment",
@@ -1095,8 +1098,6 @@ suppressMessages(
   )
 )
 
-## compatibility
-
 setMethod(updateObject, "SummarizedExperiment",
     function(object, ..., verbose=FALSE)
 {
@@ -1110,4 +1111,27 @@ setMethod(updateObject, "SummarizedExperiment",
         slot(object, "assays") <- .ShallowSimpleListAssays(data=s)
     as(object, "RangedSummarizedExperiment")
 })
+
+suppressMessages(
+  setAs("SummarizedExperiment", "ExpressionSet",
+    function(from)
+    {
+        .Deprecated(msg=.SummarizedExperiment_deprecation_msg)
+        as(as(from, "RangedSummarizedExperiment"), "ExpressionSet")
+    })
+)
+
+suppressMessages(
+    setAs("ExpressionSet", "SummarizedExperiment", function(from)
+    {
+        warning(wmsg(
+        "The SummarizedExperiment class defined in the GenomicRanges package ",
+        "is deprecated and being replaced with the RangedSummarizedExperiment ",
+        "class defined in the new SummarizedExperiment package. ",
+        "The coercion method from ExpressionSet to SummarizedExperiment ",
+        "has been modified to return a RangedSummarizedExperiment object."
+        ))
+        makeSummarizedExperimentFromExpressionSet(from, naiveRangeMapper)
+    })
+)
 
