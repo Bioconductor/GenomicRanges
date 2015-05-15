@@ -15,12 +15,6 @@
 \alias{SummarizedExperiment,list-method}
 \alias{SummarizedExperiment,SimpleList-method}
 
-% Coercion methods:
-\alias{coerce,ExpressionSet,SummarizedExperiment-method}
-\alias{coerce,SummarizedExperiment,ExpressionSet-method}
-\alias{coerce,SummarizedExperiment,RangedSummarizedExperiment-method}
-\alias{updateObject,SummarizedExperiment-method}
-
 % Accessor methods:
 \alias{assays}
 \alias{assays,SummarizedExperiment-method}
@@ -145,6 +139,12 @@
 % show method:
 \alias{show,SummarizedExperiment-method}
 
+% transition to RangedSummarizedExperiment:
+\alias{coerce,SummarizedExperiment,RangedSummarizedExperiment-method}
+\alias{updateObject,SummarizedExperiment-method}
+\alias{coerce,SummarizedExperiment,ExpressionSet-method}
+\alias{coerce,ExpressionSet,SummarizedExperiment-method}
+
 \title{SummarizedExperiment instances}
 
 \description{
@@ -153,7 +153,7 @@
   replaced with the \link[SummarizedExperiment]{RangedSummarizedExperiment}
   class defined in the new \pkg{SummarizedExperiment} package.
   Please make sure to install the \pkg{SummarizedExperiment} package before
-  you attempt to call the \code{SummarizedExperiment()} constructor function.
+  you attempt to use the \code{SummarizedExperiment()} constructor function.
   Note that this will return a
   \link[SummarizedExperiment]{RangedSummarizedExperiment} instance instead
   of a SummarizedExperiment instance. 

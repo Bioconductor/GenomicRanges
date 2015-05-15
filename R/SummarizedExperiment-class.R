@@ -834,7 +834,7 @@ setMethod(show, "SummarizedExperiment",
     scat("colData names(%d): %s\n", names(colData(object)))
 })
 
-## compatibility
+## transition to RangedSummarizedExperiment
 
 suppressMessages(
   setAs("SummarizedExperiment", "RangedSummarizedExperiment",
