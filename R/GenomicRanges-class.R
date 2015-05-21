@@ -50,7 +50,7 @@ setGeneric("extraColumnSlotNames",
 
 setMethod("extraColumnSlotNames", "ANY", function(x) character())
 
-setMethod("fixedColumnNames", "GenomicRanges", function(x) {
+setMethod("parallelVectorNames", "GenomicRanges", function(x) {
   colnames(as.data.frame(new(class(x))))
 })
 
