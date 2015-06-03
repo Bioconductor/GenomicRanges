@@ -27,8 +27,6 @@ NEW FEATURES
     o Add absoluteRanges() and relativeRanges() to transform back and forth
       between absolute and relative genomic ranges.
 
-    o Testing commits
-
 SIGNIFICANT USER-LEVEL CHANGES
 
     o Renamed 'rowData' and 'rowData<-' -> 'rowRanges', 'rowRanges<-'.
