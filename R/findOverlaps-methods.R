@@ -142,10 +142,8 @@ findOverlaps_GenomicRanges <- function(query, subject,
              algorithm=c("nclist", "intervaltree"),
              ignore.strand=FALSE)
 {
-    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
-    if (!identical(maxgap, 0L) && type != "any")
-        warning(IRanges:::maxgap_special_meaning_msg)
+    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap, type)
     select <- match.arg(select)
     algorithm <- match.arg(algorithm)
     if (algorithm != "nclist")
@@ -586,10 +584,8 @@ countOverlaps_GenomicRanges <- function(query, subject,
               algorithm=c("nclist", "intervaltree"),
               ignore.strand=FALSE)
 {
-    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
-    if (!identical(maxgap, 0L) && type != "any")
-        warning(IRanges:::maxgap_special_meaning_msg)
+    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap, type)
     algorithm <- match.arg(algorithm)
     if (algorithm != "nclist")
         warning("'algorithm' is ignored when 'query' or 'subject' ",
