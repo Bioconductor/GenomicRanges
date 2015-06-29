@@ -475,7 +475,7 @@ setMethod("clone", "ANY",  # not exported
 setMethod("update", "GenomicRanges",
           function(object, ...)
           {
-            BiocGenerics:::updateS4(object, ...)
+            BiocGenerics:::replaceSlots(object, ...)
           })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
