@@ -39,12 +39,15 @@
 \title{A quick introduction to GRanges and GRangesList objects}
 
 \author{Herv\'e Pag\`es\\
-        \href{mailto:hpages@fredhutch.org}{hpages@fredhutch.org}}
+        \href{mailto:hpages@fredhutch.org}{hpages@fredhutch.org}\\
+        \---\\
+        Michael Lawrence\\
+        \href{mailto:lawrence.michael@gene.com}{lawrence.michael@gene.com}}
 
-\institute[FHCRC]{Fred Hutchinson Cancer Research Center\\
-                  Seattle, WA}
+%\institute[FHCRC]{Fred Hutchinson Cancer Research Center\\
+%                  Seattle, WA}
 
-\date{February 2015}
+\date{July 2015}
 
 \begin{document}
 
@@ -132,7 +135,9 @@ gr1
 \subsection{\Rclass{GRanges} accessors}
 
 \begin{frame}[fragile]
-  \frametitle{\Rclass{GRanges} accessors}
+  \frametitle{\Rclass{GRanges} accessors: \Rcode{length()},
+              \Rcode{seqnames()}, \Rcode{ranges()}}
+
   \begin{exampleblock}{}
 {\small
 <<GRanges_accessors1>>=
@@ -145,7 +150,9 @@ ranges(gr1)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\Rclass{GRanges} accessors (continued)}
+  \frametitle{\Rclass{GRanges} accessors: \Rcode{start()}, \Rcode{end()},
+              \Rcode{width()}, \Rcode{strand()}}
+
   \begin{exampleblock}{}
 {\small
 <<GRanges_accessors2>>=
@@ -161,24 +168,41 @@ strand(gr1)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\Rclass{GRanges} accessors (continued)}
+  \frametitle{\Rclass{GRanges} accessors: \Rcode{names()}}
+
   \begin{exampleblock}{}
-{\scriptsize
+{\small
 <<GRanges_accessors3>>=
 names(gr1) <- LETTERS[1:6]
-names(gr1)
-mcols(gr1) <- DataFrame(score=11:16, GC=seq(1, 0, length=6))
-mcols(gr1)
 gr1
+names(gr1)
 @
 }
   \end{exampleblock}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\Rclass{GRanges} accessors (continued)}
+  \frametitle{\Rclass{GRanges} accessors: \Rcode{mcols()}}
+
+  Like with most \Bioconductor{} vector-like objects, {\em metadata columns}
+  can be added to a \Rclass{GRanges} object:
   \begin{exampleblock}{}
+{\small
 <<GRanges_accessors4>>=
+mcols(gr1) <- DataFrame(score=11:16, GC=seq(1, 0, length=6))
+gr1
+mcols(gr1)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\Rclass{GRanges} accessors: \Rcode{seqinfo()},
+              \Rcode{seqlevels()}, \Rcode{seqlengths()}}
+
+  \begin{exampleblock}{}
+<<GRanges_accessors5>>=
 seqinfo(gr1)
 seqlevels(gr1)
 seqlengths(gr1)
@@ -217,7 +241,8 @@ seqlengths(gr1)
 \DefaultBackground
 
 \begin{frame}[fragile]
-  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \frametitle{Vector operations on \Rclass{GRanges} objects:
+              Single-bracket subsetting}
   \begin{exampleblock}{}
 {\small
 <<GRanges_Vector_ops1>>=
@@ -229,7 +254,8 @@ gr1[strand(gr1) == "+"]
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \frametitle{Vector operations on \Rclass{GRanges} objects:
+              Single-bracket subsetting}
   \begin{exampleblock}{}
 {\small
 <<GRanges_Vector_ops2>>=
@@ -241,7 +267,7 @@ gr1
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \frametitle{Vector operations on \Rclass{GRanges} objects: Combining}
   \begin{exampleblock}{}
 {\small
 <<GRanges_Vector_ops3>>=
@@ -257,7 +283,7 @@ gr12
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \frametitle{Vector operations on \Rclass{GRanges} objects: Comparing}
   \begin{exampleblock}{}
 {\small
 <<GRanges_Vector_ops4>>=
@@ -270,7 +296,7 @@ unique(gr12)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Vector operations on \Rclass{GRanges} objects (continued)}
+  \frametitle{Vector operations on \Rclass{GRanges} objects: Ordering}
   \begin{exampleblock}{}
 {\small
 <<GRanges_sort>>=
@@ -290,6 +316,21 @@ split(gr12, seqnames(gr12))
 }
   \end{exampleblock}
 \end{frame}
+
+\setbeamertemplate{background canvas}[vertical shading][bottom=orange!40,top=orange!20]
+\begin{frame}[fragile]
+  \frametitle{Exercise 1}
+  \setbeamertemplate{enumerate items}{\alph{enumi}.}
+  \begin{enumerate}
+    \item Load the \Rpackage{GenomicRanges} package.
+    \item Open the man page for the \Rclass{GRanges} class and run the
+          examples in it.
+    \item Extract from \Rclass{GRanges} object \Rcode{gr} the elements (i.e.
+          ranges) with a score between 4 and 8.
+    \item Split \Rcode{gr} by strand.
+  \end{enumerate}
+\end{frame}
+\DefaultBackground
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -566,6 +607,18 @@ head(hits)
   \end{exampleblock}
 \end{frame}
 
+\setbeamertemplate{background canvas}[vertical shading][bottom=orange!40,top=orange!20]
+\begin{frame}[fragile]
+  \frametitle{Exercise 2}
+  \setbeamertemplate{enumerate items}{\alph{enumi}.}
+  Using \Rclass{GRanges} object \Rcode{gr} created at Exercise 1:
+  \begin{enumerate}
+    \item Shift the ranges in \Rcode{gr} by 1000 positions to the right.
+    \item What method is called when doing \Rcode{shift()} on a
+          \Rclass{GRanges} object? Find the man page for this method.
+  \end{enumerate}
+\end{frame}
+\DefaultBackground
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -963,24 +1016,28 @@ psetdiff(grl2, grl3)
 
 \begin{frame}[fragile]
   \frametitle{Other resources}
-  \begin{block}{}
-    Vignettes in the \Rpackage{GenomicRanges} package
-    (\Rcode{browseVignettes("GenomicRanges")}).
-  \end{block}
+    \begin{itemize}
+      \item Great slides from Michael on ranges sequences and alignments:
+            \url{http://bioconductor.org/help/course-materials/2014/CSAMA2014/2_Tuesday/lectures/Ranges_Sequences_and_Alignments-Lawrence.pdf}
 
-  \begin{block}{}
-    \Rclass{GRanges} and \Rclass{GRangesList} man pages in the
-    \Rpackage{GenomicRanges} package.
-  \end{block}
+      \item Vignettes in the \Rpackage{GenomicRanges} package
+            (\Rcode{browseVignettes("GenomicRanges")}).
 
-  \begin{block}{}
-    Vignettes and \Rclass{GAlignments} man page in the
-    \Rpackage{GenomicAlignments} package.
-  \end{block}
+      \item \Rclass{GRanges} and \Rclass{GRangesList} man pages in the
+            \Rpackage{GenomicRanges} package.
 
-  \begin{block}{}
-    \Bioconductor{} support site: \url{http://support.bioconductor.org/}
-  \end{block}
+      \item Vignettes and \Rclass{GAlignments} man page in the
+            \Rpackage{GenomicAlignments} package.
+
+      \item \Bioconductor{} support site:
+            \url{http://support.bioconductor.org/}
+
+      \item The {\em genomic ranges} paper:
+        Michael Lawrence, Wolfgang Huber, Herv\'e Pag\`es, Patrick Aboyoun,
+        Marc Carlson, Robert Gentleman, Martin T. Morgan, Vincent J. Carey.
+        Software for Computing and Annotating Genomic Ranges.
+        {\em PLOS Computational Biology}, 4(3), 2013.
+    \end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
