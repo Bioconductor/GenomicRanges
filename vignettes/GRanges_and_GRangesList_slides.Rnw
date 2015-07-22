@@ -508,6 +508,19 @@ disjoin(gr3)
   \end{exampleblock}
 \end{frame}
 
+\setbeamertemplate{background canvas}[vertical shading][bottom=orange!40,top=orange!20]
+\begin{frame}[fragile]
+  \frametitle{Exercise 2}
+  \setbeamertemplate{enumerate items}{\alph{enumi}.}
+  Using \Rclass{GRanges} object \Rcode{gr} created at Exercise 1:
+  \begin{enumerate}
+    \item Shift the ranges in \Rcode{gr} by 1000 positions to the right.
+    \item What method is called when doing \Rcode{shift()} on a
+          \Rclass{GRanges} object? Find the man page for this method.
+  \end{enumerate}
+\end{frame}
+\DefaultBackground
+
 \begin{frame}[fragile]
   \frametitle{Coverage}
   \begin{exampleblock}{}
@@ -609,13 +622,29 @@ head(hits)
 
 \setbeamertemplate{background canvas}[vertical shading][bottom=orange!40,top=orange!20]
 \begin{frame}[fragile]
-  \frametitle{Exercise 2}
+  \frametitle{Exercise 3}
   \setbeamertemplate{enumerate items}{\alph{enumi}.}
-  Using \Rclass{GRanges} object \Rcode{gr} created at Exercise 1:
   \begin{enumerate}
-    \item Shift the ranges in \Rcode{gr} by 1000 positions to the right.
-    \item What method is called when doing \Rcode{shift()} on a
-          \Rclass{GRanges} object? Find the man page for this method.
+    \item Recreate \Rclass{GRanges} objects \Rcode{reads} and
+          \Rcode{dm3\_genes} from previous slides.
+    \item What method is called when calling \Rcode{findOverlaps()} on
+          them? Open the man page for this method.
+    \item Find the overlaps between the 2 objects but this time the strand
+          should be ignored.
+  \end{enumerate}
+\end{frame}
+\DefaultBackground
+
+\setbeamertemplate{background canvas}[vertical shading][bottom=orange!40,top=orange!20]
+\begin{frame}[fragile]
+  \frametitle{Exercise 4}
+  \setbeamertemplate{enumerate items}{\alph{enumi}.}
+  In this exercise we want to get the exon sequences for the dm3 genome.
+  \begin{enumerate}
+    \item Extract the exon ranges from \Rcode{txdb}.
+    \item Load the \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3} package.
+    \item Use \Rcode{getSeq()} to extract the exon sequences from the
+          \Rcode{BSgenome} object in \Rpackage{BSgenome.Dmelanogaster.UCSC.dm3}.
   \end{enumerate}
 \end{frame}
 \DefaultBackground
