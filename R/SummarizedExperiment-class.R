@@ -448,7 +448,7 @@ setReplaceMethod("dimnames", c("SummarizedExperiment", "NULL"),
     orig <- idx
     idx <- match(idx, txt)
     if (any(bad <- is.na(idx))) {
-        msg <- paste(BiocGenerics:::selectSome(orig[bad]), collapse=" ")
+        msg <- paste(S4Vectors:::selectSome(orig[bad]), collapse=" ")
         stop(sprintf(fmt, msg))
     }
     idx
@@ -805,11 +805,11 @@ setMethod(show, "SummarizedExperiment",
     function(object)
 {
     .Deprecated(msg=.SummarizedExperiment_deprecation_msg)
-    selectSome <- BiocGenerics:::selectSome
+    selectSome <- S4Vectors:::selectSome
     scat <- function(fmt, vals=character(), exdent=2, ...)
     {
         vals <- ifelse(nzchar(vals), vals, "''")
-        lbls <- paste(BiocGenerics:::selectSome(vals), collapse=" ")
+        lbls <- paste(S4Vectors:::selectSome(vals), collapse=" ")
         txt <- sprintf(fmt, length(vals), lbls)
         cat(strwrap(txt, exdent=exdent, ...), sep="\n")
     }
