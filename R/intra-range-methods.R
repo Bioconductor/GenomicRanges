@@ -51,6 +51,14 @@ setMethod("narrow", "GenomicRanges",
     }
 )
 
+setMethod("narrow", "GRangesList",
+    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+    {
+        gr <- narrow(x@unlistData, start=start, end=end, width=width,
+                     use.names=use.names)
+        relist(gr, x@partitioning)
+    }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### resize()

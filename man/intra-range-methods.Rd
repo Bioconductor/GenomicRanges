@@ -8,6 +8,7 @@
 
 \alias{narrow}
 \alias{narrow,GenomicRanges-method}
+\alias{narrow,GRangesList-method}
 
 \alias{resize}
 \alias{resize,GenomicRanges-method}
