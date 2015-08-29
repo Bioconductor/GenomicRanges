@@ -174,12 +174,22 @@ binnedAverage <- function(bins, numvar, mcolname)
     stopifnot(is(bins, "GRanges"))
     stopifnot(is(numvar, "RleList"))
     stopifnot(identical(seqlevels(bins), names(numvar)))
+
+    ## A version of viewMeans() that pads "out of limits" views with zeros.
+    viewMeans2 <- function(v) {
+        means <- viewMeans(v)
+        w0 <- width(v)
+        w1 <- width(trim(v))
+        means <- means * w1 / w0
+        means[w0 != 0L & w1 == 0L] <- 0
+        means
+    }
+
     bins_per_chrom <- split(ranges(bins), seqnames(bins))
     means_list <- lapply(names(numvar),
         function(seqname) {
-            views <- Views(numvar[[seqname]],
-                           bins_per_chrom[[seqname]])
-            viewMeans(views)
+            v <- Views(numvar[[seqname]], bins_per_chrom[[seqname]])
+            viewMeans2(v)
         })
     new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
     mcols(bins)[[mcolname]] <- new_mcol
