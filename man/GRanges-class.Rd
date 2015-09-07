@@ -344,7 +344,7 @@
       logical, numeric, or character vector; or a 'logical' Rle object.
     }
     \item{}{
-      \code{x[i,j] <- value}:
+      \code{x[i, j] <- value}:
       Replaces elements \code{i} and optional metadata columns \code{j}
       with \code{value}.
     }
@@ -525,13 +525,13 @@ x[gr]
 
 ## The number of lines displayed in the 'show' method
 ## are controlled with two global options.
-longGR <- c(gr[,"score"], gr2[,"score"], gr3)
+longGR <- c(gr[ , "score"], gr2[ , "score"], gr3)
 longGR
-options("showHeadLines"=7)
-options("showTailLines"=2)
+options(showHeadLines=7)
+options(showTailLines=2)
 longGR
 
 ## Revert to default values
-options("showHeadLines"=NULL)
-options("showTailLines"=NULL)
+options(showHeadLines=NULL)
+options(showTailLines=NULL)
 }

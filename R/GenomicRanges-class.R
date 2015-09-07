@@ -628,20 +628,31 @@ setReplaceMethod("[", "GenomicRanges",
     }
 )
 
-### Subsetting a named list-like object *by* a GenomicRanges subscript.
-### The returned object has the class of 'x' and is parallel to 'gr'.
+### Subset a named list-like object *by* a GenomicRanges subscript.
+### The returned object is as follow:
+###   (a) It's parallel to 'gr'.
+###   (b) Its elementLengths() is the same as 'width(gr)'.
+###   (c) Its class is 'relistToClass(x[[1]])' e.g. CompressedRleList if 'x' is
+###       an RleList object, or DNAStringSet is 'x' is a DNAStringSet object.
 .subset_by_GenomicRanges <- function(x, gr)
 {
+    if (!(is.list(x) || is(x, "List")))
+        stop(wmsg("'x' must be a list-like object when subsetting ",
+                  "by a GenomicRanges subscript"))
     x_names <- names(x)
-    if (!(is.list(x) || is(x, "List")) || is.null(x_names))
-        stop("subsetting by a GenomicRanges subscript only works ",
-             "on a list-like object with names")
+    if (is.null(x_names))
+        stop(wmsg("'x' must have names when subsetting ",
+                  "by a GenomicRanges subscript"))
+    if (anyDuplicated(x_names))
+        stop(wmsg("'x' must have unique names when subsetting ",
+                  "by a GenomicRanges subscript"))
     irl <- split(ranges(gr), seqnames(gr), drop=TRUE)
     seqlevels_in_use <- names(irl)
     seqlevels2names <- match(seqlevels_in_use, x_names)
     if (any(is.na(seqlevels2names)))
-        stop("subsetting by a GenomicRanges subscript, the names of the ",
-             "object to subset must contain the seqnames of the subscript")
+        stop(wmsg("when subsetting by a GenomicRanges subscript, the names ",
+                  "of the object to subset must contain the seqnames of the ",
+                  "subscript"))
     tmp <- lapply(seq_along(seqlevels_in_use),
                   function(i) {
                       seqlevel <- seqlevels_in_use[i]
@@ -650,7 +661,7 @@ setReplaceMethod("[", "GenomicRanges",
                   })
 
     ## Unsplit 'tmp'.
-    ans <- as(do.call(c, tmp), class(x))
+    ans <- do.call(c, tmp)
     ans_len <- length(gr)
     idx <- unlist(split(seq_len(ans_len), seqnames(gr), drop=TRUE))
     revidx <- integer(ans_len)
