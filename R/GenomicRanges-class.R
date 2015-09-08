@@ -629,11 +629,13 @@ setReplaceMethod("[", "GenomicRanges",
 )
 
 ### Subset a named list-like object *by* a GenomicRanges subscript.
-### The returned object is as follow:
-###   (a) It's parallel to 'gr'.
-###   (b) Its elementLengths() is the same as 'width(gr)'.
-###   (c) Its class is 'relistToClass(x[[1]])' e.g. CompressedRleList if 'x' is
-###       an RleList object, or DNAStringSet is 'x' is a DNAStringSet object.
+### The returned object 'ans' is as follow:
+###   (a) 'ans' is parallel to 'gr'.
+###   (b) 'names(ans)' is identical to 'as.character(seqnames(gr))'.
+###   (c) 'elementLengths(ans)' is the same as 'width(gr)'.
+###   (d) 'class(ans)' is 'relistToClass(x[[1]])' e.g. CompressedRleList if
+###       'x' is an RleList object, or DNAStringSet is 'x' is a DNAStringSet
+###       object.
 .subset_by_GenomicRanges <- function(x, gr)
 {
     if (!(is.list(x) || is(x, "List")))
@@ -653,6 +655,14 @@ setReplaceMethod("[", "GenomicRanges",
         stop(wmsg("when subsetting by a GenomicRanges subscript, the names ",
                   "of the object to subset must contain the seqnames of the ",
                   "subscript"))
+
+    ## Handle empty case.
+    if (length(gr) == 0L) {
+        ans <- new(relistToClass(unlist(x, use.names=FALSE)))
+        names(ans) <- character(0)
+        return(ans)
+    }
+
     tmp <- lapply(seq_along(seqlevels_in_use),
                   function(i) {
                       seqlevel <- seqlevels_in_use[i]
