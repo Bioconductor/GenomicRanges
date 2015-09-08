@@ -658,9 +658,16 @@ setReplaceMethod("[", "GenomicRanges",
 
     ## Handle empty case.
     if (length(gr) == 0L) {
-        ans <- new(relistToClass(unlist(x, use.names=FALSE)))
-        names(ans) <- character(0)
-        return(ans)
+        if (length(x) != 0L) {
+            x1 <- x[[1L]]
+        } else if (is(x, "CompressedList")) {
+            x1 <- unlist(x, use.names=FALSE)
+        } else {
+            x1 <- new(elementType(x))
+        }
+        unlisted_ans <- x1[0]
+        ans_partitioning <- PartitioningByEnd(names=character(0))
+        return(relist(unlisted_ans, ans_partitioning))
     }
 
     tmp <- lapply(seq_along(seqlevels_in_use),
