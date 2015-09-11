@@ -124,16 +124,12 @@ setMethod("range", "GenomicRanges",
                                      ignore.strand=ignore.strand)
 )
 
-### TODO: Support the 'ignore.strand' arg.
 setMethod("range", "GRangesList",
-    function(x, ..., na.rm=FALSE)
+    function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
     {
-        if (length(list(...)) != 0L)
-            stop("\"range\" method for GRangesList objects only ",
-                 "takes a single object")
         gr <- deconstructGRLintoGR(x)
         ## "range" method for GRanges objects is fast.
-        gr <- range(gr)
+        gr <- range(gr, ..., ignore.strand=ignore.strand, na.rm=na.rm)
         reconstructGRLfromGR(gr, x)
     }
 )
