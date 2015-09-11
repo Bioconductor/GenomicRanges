@@ -35,7 +35,8 @@
 
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
-\S4method{pintersect}{GRanges,GRanges}(x, y, resolve.empty=c("none", "max.start", "start.x"), ignore.strand=FALSE, ...)
+\S4method{pintersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE,
+           strict.strand=FALSE)
 \S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 }
 
@@ -47,8 +48,8 @@
     For \code{punion}: one of \code{x} or \code{y} must be a \link{GRanges}
     object, the other one can be a \link{GRanges} or \link{GRangesList} object.
 
-    For \code{pintersect}: one of \code{x} or \code{y} must be a \link{GRanges}
-    object, the other one can be a \link{GRanges} or \link{GRangesList} object.
+    For \code{pintersect}: \code{x} and \code{y} can be any combination of
+    \link{GRanges} and/or \link{GRangesList} objects.
 
     For \code{psetdiff}: \code{x} and \code{y} can be any combination of
     \link{GRanges} and/or \link{GRangesList} objects, with the exception
@@ -62,16 +63,6 @@
     Logical indicating whether or not to force a union by using the rule
     \code{start = min(start(x), start(y)), end = max(end(x), end(y))}.
   }
-  \item{resolve.empty}{
-    One of \code{"none"}, \code{"max.start"}, or \code{"start.x"} denoting
-    how to handle ambiguous empty ranges formed by intersections.
-    \code{"none"} - throw an error if an ambiguous empty range is formed,
-    \code{"max.start"} - associate the maximum start value with any
-    ambiguous empty range, and \code{"start.x"} - associate the start value
-    of \code{x} with any ambiguous empty range. (See
-    \code{\link[IRanges]{pintersect}} for the definition of an ambiguous
-    range.)
-  }
   \item{ignore.strand}{
     For set operations: If set to TRUE, then the strand of \code{x} and
     \code{y} is set to \code{"*"} prior to any computation.
@@ -79,6 +70,12 @@
     For parallel set operations: If set to TRUE, the strand information is
     ignored in the computation and the result has the strand information of
     \code{x}.
+  }
+  \item{strict.strand}{
+    If set to FALSE (the default), features on the \code{"*"} strand are
+    treated as occurring on both the \code{"+"} and \code{"-"} strand.
+    If set to TRUE, the strand of intersecting elements must be strictly
+    the same.
   }
   \item{...}{
     Further arguments to be passed to or from other methods.
@@ -90,7 +87,8 @@
   \link{GRangesList} objects use the triplet (sequence name, range, strand)
   to determine the element by element intersection of features, where a
   strand value of \code{"*"} is treated as occurring on both the \code{"+"}
-  and \code{"-"} strand.
+  and \code{"-"} strand (unless \code{strict.strand} is set to TRUE, in
+  which case the strand of intersecting elements must be strictly the same).
 
   The \code{psetdiff} methods involving \link{GRanges} and/or
   \link{GRangesList} objects use the triplet (sequence name, range,
@@ -142,16 +140,14 @@ setdiff(x, y, ignore.strand=TRUE)
 ## B. PARALLEL SET OPERATIONS
 ## ---------------------------------------------------------------------
 
+punion(x, shift(x, 6))
 \dontrun{
 punion(x, shift(x, 7))  # will fail
 }
 punion(x, shift(x, 7), fill.gap=TRUE)
 
 pintersect(x, shift(x, 6))
-\dontrun{
-pintersect(x, shift(x, 7))  # will fail
-}
-pintersect(x, shift(x, 7), resolve.empty="max.start")
+pintersect(x, shift(x, 7))
 
 psetdiff(x, shift(x, 7))
 
@@ -178,6 +174,12 @@ grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 ## Parallel intersection of a GRanges and a GRangesList object
 pintersect(gr, grlist)
 pintersect(grlist, gr)
+
+## For a fast 'mendoapply(intersect, grlist, as(gr, "GRangesList"))'
+## call pintersect() with 'strict.strand=TRUE' and call reduce() on
+## the result with 'drop.empty.ranges=TRUE':
+reduce(pintersect(grlist, gr, strict.strand=TRUE),
+       drop.empty.ranges=TRUE)
 
 ## Parallel set difference of a GRanges and a GRangesList object
 psetdiff(gr, grlist)

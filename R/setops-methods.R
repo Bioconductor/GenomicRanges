@@ -138,6 +138,11 @@ allCompatibleSeqnamesAndStrand <- function(x, y) {
       compatibleStrand(strand(x), strand(y)))
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### punion()
+###
+
 setMethod("punion", c("GRanges", "GRanges"),
     function(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
     {
@@ -189,98 +194,130 @@ setMethod("punion", c("GRanges", "GRangesList"),
     }
 )
 
-setMethod("pintersect", c("GRanges", "GRanges"),
-    function(x, y, resolve.empty=c("none", "max.start", "start.x"),
-             ignore.strand=FALSE, ...)
-    {
-        if (length(x) != length(y)) 
-            stop("'x' and 'y' must have the same length")
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE or FALSE")
-        if (ignore.strand)
-            strand(y) <- strand(x)
-        resolve.empty <- match.arg(resolve.empty)
-        mcols(x) <- NULL
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        if (!allCompatibleSeqnamesAndStrand(x, y))
-            stop("'x' and 'y' elements must have compatible 'seqnames' ",
-                 "and 'strand' values")
-        ## Update the ranges.
-        ranges(x) <- pintersect(ranges(x), ranges(y),
-                                resolve.empty=resolve.empty)
-        ## Update the strand.
-        ansStrand <- strand(x)
-        resolveStrand <- as(ansStrand == "*", "IRanges")
-        if (length(resolveStrand) > 0L)
-            ansStrand[as.integer(resolveStrand)] <-
-              extractROWS(strand(y), resolveStrand)
-        strand(x) <- ansStrand
-        x
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### pintersect()
+###
+
+### 'x' and 'y' must have the same length. An 'y' of length 1 is accepted and
+### is recycled to the length of 'x'.
+### Return a GRanges object parallel to 'x' where only the original ranges
+### have been modified (seqnames, names, metadata columns and metadata are
+### untouched), so this can be seen as an "intra-range transformation". The
+### i-th range in the returned object is guaranteed to be a subrange of x[i].
+### If 'ignore.strand' or 'strict.strand' is TRUE, then the returned GRanges
+### has the same strand info as 'x'. Otherwise, elements for which the strand
+### is * have their strand set to the strand of the corresponding element in
+### 'y'.
+.pintersect_GRanges_GRanges <- function(x, y, ignore.strand=FALSE,
+                                              strict.strand=FALSE)
+{
+    stopifnot(is(x, "GRanges"), is(y, "GRanges"))
+    if (length(y) != length(x)) {
+        if (length(y) != 1L)
+            stop(wmsg("'y' must have the length of 'x' or length 1"))
+        y <- rep.int(y, length(x))
     }
+    if (!isTRUEorFALSE(ignore.strand))
+        stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
+    if (!isTRUEorFALSE(strict.strand))
+        stop(wmsg("'strict.strand' must be TRUE or FALSE"))
+    if (ignore.strand) {
+        if (strict.strand)
+            warning(wmsg("'strict.strand' is ignored ",
+                         "when 'ignore.strand' is TRUE"))
+        strand(y) <- strand(x)
+    } else if (!strict.strand) {
+        idx <- strand(x) == "*" & strand(y) != "*"
+        strand(x)[idx] <- strand(y)[idx]
+        idx <- strand(y) == "*" & strand(x) != "*"
+        strand(y)[idx] <- strand(x)[idx]
+    }
+
+    x_seqlevels <- seqlevels(x)
+    ## Check compatibility of underlying genomes.
+    seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+    ## Align the seqlevels of 'y' to those of 'x' so that comparing the
+    ## seqnames of the 2 objects thru as.integer(seqnames()) is meaningful).
+    seqlevels(y) <- seqlevels(x)
+    ## Restore original seqlevels on 'x' (this preserves their order).
+    seqlevels(x) <- x_seqlevels
+
+    ans_start <- pmax.int(start(x), start(y))
+    ans_end <- pmin.int(end(x), end(y))
+
+    ## Index of elements in 'x' and 'y' for which we return an artificial
+    ## zero-width intersection.
+    idx0 <- which(ans_end < ans_start - 1L |
+                  as.integer(seqnames(x)) != as.integer(seqnames(y)) |
+                  strand(x) != strand(y))
+    start0 <- start(x)[idx0]
+    ans_start[idx0] <- start0
+    ans_end[idx0] <- start0 - 1L
+
+    ranges(x) <- IRanges(ans_start, ans_end, names=names(x))
+    x
+}
+
+setMethod("pintersect", c("GRanges", "GRanges"),
+    function(x, y, ignore.strand=FALSE, strict.strand=FALSE)
+        .pintersect_GRanges_GRanges(x, y, ignore.strand=ignore.strand,
+                                          strict.strand=strict.strand)
 )
 
-### TODO: Like for "punion", the semantic of the
-### pintersect,GRangesList,GRanges method should simply derive from
-### the semantic of the pintersect,GRanges,GRanges. Then the
-### implementation and documentation will be both much easier to understand.
-### It's hard to guess what's the current semantic of this method is by
-### just looking at the code below, but it doesn't seem to be one of:
-###   (a) for (i in seq_len(length(x)))
-###         x[[i]] <- pintersect(x[[i]], y[rep.int(i, length(x[[i]]))])
-###   (b) for (i in seq_len(length(x)))
-###         x[[i]] <- intersect(x[[i]], y[i])
-### It seems to be close to (b) but with special treatment of the "*"
-### strand value in 'y'.
-### FIXME: 'resolve.empty' is silently ignored.
-setMethod("pintersect", c("GRangesList", "GRanges"),
-    function(x, y, resolve.empty=c("none", "max.start", "start.x"),
-             ignore.strand=FALSE, ...)
-    {
-        ## TODO: Use "seqinfo<-" method for GRangesList objects when it
-        ## becomes available.
-        seqinfo(x@unlistData) <- merge(seqinfo(x), seqinfo(y))
-        if (length(x) != length(y)) 
-            stop("'x' and 'y' must have the same length")
-        ok <- compatibleSeqnames(seqnames(x@unlistData),
-                                 rep(seqnames(y), elementLengths(x)))
-        if (!ignore.strand)
-          ok <- ok & compatibleStrand(strand(x@unlistData),
-                                      rep(strand(y), elementLengths(x)))
-        ok <-
-          new2("CompressedLogicalList", unlistData=as.vector(ok),
-               partitioning=x@partitioning)
-        if (ncol(mcols(x@unlistData)) > 0L)
-            mcols(x@unlistData) <- NULL
-        if (ncol(mcols(y)) > 0L)
-            mcols(y) <- NULL
-        x <- x[ok]
-        y <- rep(y, sum(ok))
-        x@unlistData@ranges <-
-          pintersect(x@unlistData@ranges, y@ranges, resolve.empty="start.x")
-        x[width(x) > 0L]
+### This is equivalent to 'mendoapply(pintersect, x, y)'. Therefore the
+### returned GRangesList object has the same shape as 'x'.
+### To get the 'mendoapply(intersect, x, y)' behavior, the user should use
+### 'strict.strand=TRUE' and call 'reduce( , drop.empty.ranges=TRUE)' on
+### the returned object.
+.pintersect_GRangesList_GRanges <- function(x, y, ignore.strand=FALSE,
+                                                  strict.strand=FALSE)
+{
+    stopifnot(is(x, "GRangesList"), is(y, "GRanges"))
+    if (length(y) != length(x)) {
+        if (length(y) != 1L)
+            stop(wmsg("'y' must have the length of 'x' or length 1"))
+        y <- rep.int(y, length(x))
     }
+    unlisted_x <- unlist(x, use.names=FALSE)
+    y2 <- rep.int(y, elementLengths(x))
+    unlisted_ans <- .pintersect_GRanges_GRanges(unlisted_x, y2,
+                                                ignore.strand=ignore.strand,
+                                                strict.strand=strict.strand)
+    relist(unlisted_ans, x)
+}
+
+setMethod("pintersect", c("GRangesList", "GRanges"),
+    function(x, y, ignore.strand=FALSE, strict.strand=FALSE)
+        .pintersect_GRangesList_GRanges(x, y, ignore.strand=ignore.strand,
+                                              strict.strand=strict.strand)
 )
 
 setMethod("pintersect", c("GRanges", "GRangesList"),
-    function(x, y, resolve.empty=c("none", "max.start", "start.x"), ...)
+    function(x, y, ignore.strand=FALSE, strict.strand=FALSE)
+        .pintersect_GRangesList_GRanges(y, x, ignore.strand=ignore.strand,
+                                              strict.strand=strict.strand)
+)
+
+### Equivalent to 'mendoapply(intersect, x, y)'.
+setMethod("pintersect", c("GRangesList", "GRangesList"),
+    function(x, y, ...)
     {
-        callGeneric(y, x)
+        if (length(x) != length(y))
+            stop("'x' and 'y' must have the same length")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqlevels(y) <- seqlevels(x)
+        xgr <- deconstructGRLintoGR(x)
+        ygr <- deconstructGRLintoGR(y)
+        gr <- intersect(xgr, ygr, ...)
+        reconstructGRLfromGR(gr, x)
     }
 )
 
-setMethod("pintersect", c("GRangesList", "GRangesList"),
-          function(x, y, ...)
-          {
-            if (length(x) != length(y))
-              stop("'x' and 'y' must have the same length")
-            seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-            seqlevels(y) <- seqlevels(x)
-            xgr <- deconstructGRLintoGR(x)
-            ygr <- deconstructGRLintoGR(y)
-            gr <- intersect(xgr, ygr, ...)
-            reconstructGRLfromGR(gr, x)
-          }
-          )
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### psetdiff()
+###
 
 setMethod("psetdiff", c("GRanges", "GRanges"),
     function(x, y, ignore.strand=FALSE, ...)
