@@ -35,8 +35,7 @@
 
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
-\S4method{pintersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE,
-           strict.strand=FALSE)
+\S4method{pintersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE, strict.strand=FALSE)
 \S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 }
 
