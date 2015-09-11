@@ -178,12 +178,14 @@ test_pintersect <- function()
     y <- GRanges("chr1", IRanges(1, 20))
     checkIdentical(x, pintersect(x, y))
 
-    y <- GRanges("chr1", IRanges(7, 11))
+    y <- GRanges("chr1", IRanges(7, 11), strand="+")
     current <- pintersect(x, y)
     target <- x
     ranges(target) <- IRanges(
              c( 7,  7,  7,  7, 13, 2,  9, 12,  9,  7,  8,  7,  7, 20),
              c( 6,  8, 11, 10, 12, 1, 11, 11,  8, 11, 11, 11, 11, 19))
+    nohit_idx <- c(5, 6, 14)
+    strand(target)[-nohit_idx] <- strand(y)[-nohit_idx]
     checkIdentical(target, current)
  
     ## pintersect,GRangesList,GRanges and pintersect,GRanges,GRangesList

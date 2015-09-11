@@ -228,6 +228,7 @@ setMethod("punion", c("GRanges", "GRangesList"),
                          "when 'ignore.strand' is TRUE"))
         strand(y) <- strand(x)
     } else if (!strict.strand) {
+        x_strand <- strand(x)
         idx <- strand(x) == "*" & strand(y) != "*"
         strand(x)[idx] <- strand(y)[idx]
         idx <- strand(y) == "*" & strand(x) != "*"
@@ -246,16 +247,18 @@ setMethod("punion", c("GRanges", "GRangesList"),
     ans_start <- pmax.int(start(x), start(y))
     ans_end <- pmin.int(end(x), end(y))
 
-    ## Index of elements in 'x' and 'y' for which we return an artificial
-    ## zero-width intersection.
-    idx0 <- which(ans_end < ans_start - 1L |
-                  as.integer(seqnames(x)) != as.integer(seqnames(y)) |
-                  strand(x) != strand(y))
-    start0 <- start(x)[idx0]
-    ans_start[idx0] <- start0
-    ans_end[idx0] <- start0 - 1L
+    ## For elements in 'x' and 'y' that don't hit each other, we return an
+    ## artificial zero-width intersection that starts on 'start(x)'.
+    nohit_idx <- which(ans_end < ans_start - 1L |
+                       as.integer(seqnames(x)) != as.integer(seqnames(y)) |
+                       strand(x) != strand(y))
+    start0 <- start(x)[nohit_idx]
+    ans_start[nohit_idx] <- start0
+    ans_end[nohit_idx] <- start0 - 1L
 
     ranges(x) <- IRanges(ans_start, ans_end, names=names(x))
+    if (!(ignore.strand || strict.strand))
+        strand(x)[nohit_idx] <- x_strand[nohit_idx]
     x
 }
 
