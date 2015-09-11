@@ -206,9 +206,9 @@ setMethod("punion", c("GRanges", "GRangesList"),
 ### untouched), so this can be seen as an "intra-range transformation". The
 ### i-th range in the returned object is guaranteed to be a subrange of x[i].
 ### If 'ignore.strand' or 'strict.strand' is TRUE, then the returned GRanges
-### has the same strand info as 'x'. Otherwise, elements for which the strand
-### is * have their strand set to the strand of the corresponding element in
-### 'y'.
+### has the same strand as 'x'. Otherwise, for elements in 'x' that are on
+### the "*" strand and hit the corresponding element in 'y', it has the strand
+### of 'y'.
 .pintersect_GRanges_GRanges <- function(x, y, ignore.strand=FALSE,
                                               strict.strand=FALSE)
 {
