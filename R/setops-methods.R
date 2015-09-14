@@ -312,7 +312,6 @@ setMethod("pintersect", c("GRanges", "GRanges"),
                                         drop.nohit.ranges=FALSE,
                                         ignore.strand=ignore.strand,
                                         strict.strand=strict.strand)
-    ans <- relist(unlisted_ans, x)
     if (drop.nohit.ranges) {
         is_hit <- relist(mcols(unlisted_ans)$hit, ans)
         mcols(unlisted_ans)$hit <- NULL
