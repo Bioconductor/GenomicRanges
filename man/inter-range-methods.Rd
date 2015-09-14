@@ -45,11 +45,10 @@
 \S4method{range}{GenomicRanges}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
 \S4method{range}{GRangesList}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
 
-\S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-       with.revmap=FALSE, with.inframe.attrib=FALSE,
-       ignore.strand=FALSE)
+\S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
+          with.inframe.attrib=FALSE, ignore.strand=FALSE)
 \S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-       with.inframe.attrib=FALSE)
+          with.inframe.attrib=FALSE, ignore.strand=FALSE)
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
@@ -147,9 +146,9 @@ gr
 
 gr1 <- GRanges(seqnames="chr2", ranges=IRanges(3, 6),
                strand="+", score=5L, GC=0.45)
-gr2 <- GRanges(seqnames=c("chr1", "chr1"),
-               ranges=IRanges(c(7,13), width=3),
-               strand=c("+", "-"), score=3:4, GC=c(0.3, 0.5))
+gr2 <- GRanges(seqnames="chr1",
+               ranges=IRanges(c(10, 7, 19), width=5),
+               strand=c("+", "-", "+"), score=3:5, GC=c(0.3, 0.5, 0.66))
 gr3 <- GRanges(seqnames=c("chr1", "chr2"),
                ranges=IRanges(c(1, 4), c(3, 9)),
                strand=c("-", "-"), score=c(6L, 2L), GC=c(0.4, 0.1))
@@ -165,6 +164,7 @@ range(gr)
 
 ## On a GRangesList object:
 range(grl)
+range(grl, ignore.strand=TRUE)
 
 # ---------------------------------------------------------------------
 ## reduce()
@@ -213,10 +213,11 @@ table(alphacodes)
 
 ## On a GRangesList object:
 reduce(grl)  # Doesn't really reduce anything but note the reordering
-             # of the inner elements in the 3rd top-level element: the
-             # ranges are reordered by sequence name first (the order of
-             # the sequence names is dictated by the sequence levels),
+             # of the inner elements in the 2nd and 3rd list elements:
+             # the ranges are reordered by sequence name first (which
+             # should appear in the same order as in 'seqlevels(grl)'),
              # and then by strand.
+reduce(grl, ignore.strand=TRUE)  # 2nd list element got reduced
 
 ## ---------------------------------------------------------------------
 ## gaps()

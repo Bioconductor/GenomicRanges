@@ -201,15 +201,23 @@ setMethod("punion", c("GRanges", "GRangesList"),
 
 ### 'x' and 'y' must have the same length. An 'y' of length 1 is accepted and
 ### is recycled to the length of 'x'.
-### Return a GRanges object parallel to 'x' where only the original ranges
-### have been modified (seqnames, names, metadata columns and metadata are
-### untouched), so this can be seen as an "intra-range transformation". The
-### i-th range in the returned object is guaranteed to be a subrange of x[i].
-### If 'ignore.strand' or 'strict.strand' is TRUE, then the returned GRanges
-### has the same strand as 'x'. Otherwise, for elements in 'x' that are on
-### the "*" strand and hit the corresponding element in 'y', it has the strand
-### of 'y'.
-.pintersect_GRanges_GRanges <- function(x, y, ignore.strand=FALSE,
+### Return a GRanges object. If 'drop.nohit.ranges' is FALSE (the default) the
+### returned object is parallel to 'x' with the original ranges modified
+### (seqnames, names, and metadata are untouched), so this can be seen as an
+### "intra-range transformation". The original metadata columns are propagated
+### and a new "hit" column added to them to indicate elements in 'x' that
+### intersect with the corresponding element in 'y'. For these elements the
+### range in the returned object is guaranteed to be a subrange of the
+### original ranges. If 'ignore.strand' or 'strict.strand' is TRUE, then the
+### returned GRanges has the same strand as 'x'. Otherwise, for elements in 'x'
+### that are on the "*" strand and hit the corresponding element in 'y', it
+### has the strand of 'y'.
+### If 'drop.nohit.ranges' is TRUE everything is the same except that elements
+### in 'x' that don't intersect with the corresponding element in 'y' are
+### removed from the result (so the result is no more parallel to the input)
+### and no "hit" metadata column is added to it.
+.pintersect_GRanges_GRanges <- function(x, y, drop.nohit.ranges=FALSE,
+                                              ignore.strand=FALSE,
                                               strict.strand=FALSE)
 {
     stopifnot(is(x, "GRanges"), is(y, "GRanges"))
@@ -218,6 +226,8 @@ setMethod("punion", c("GRanges", "GRangesList"),
             stop(wmsg("'y' must have the length of 'x' or length 1"))
         y <- rep.int(y, length(x))
     }
+    if (!isTRUEorFALSE(drop.nohit.ranges))
+        stop(wmsg("'drop.nohit.ranges' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(ignore.strand))
         stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(strict.strand))
@@ -244,27 +254,38 @@ setMethod("punion", c("GRanges", "GRangesList"),
     ## Restore original seqlevels on 'x' (this preserves their order).
     seqlevels(x) <- x_seqlevels
 
-    ans_start <- pmax.int(start(x), start(y))
-    ans_end <- pmin.int(end(x), end(y))
+    new_start <- pmax.int(start(x), start(y))
+    new_end <- pmin.int(end(x), end(y))
 
-    ## For elements in 'x' and 'y' that don't hit each other, we return an
-    ## artificial zero-width intersection that starts on 'start(x)'.
-    nohit_idx <- which(ans_end < ans_start - 1L |
-                       as.integer(seqnames(x)) != as.integer(seqnames(y)) |
-                       strand(x) != strand(y))
-    start0 <- start(x)[nohit_idx]
-    ans_start[nohit_idx] <- start0
-    ans_end[nohit_idx] <- start0 - 1L
+    is_hit <- as.integer(seqnames(x)) == as.integer(seqnames(y)) &
+              strand(x) == strand(y) & new_end >= new_start - 1L
 
-    ranges(x) <- IRanges(ans_start, ans_end, names=names(x))
-    if (!(ignore.strand || strict.strand))
-        strand(x)[nohit_idx] <- x_strand[nohit_idx]
+    if (drop.nohit.ranges) {
+        x <- extractROWS(x, is_hit)
+        new_start <- extractROWS(new_start, is_hit)
+        new_end <- extractROWS(new_end, is_hit)
+        new_names <- names(x)
+    } else {
+        ## For elements in 'x' and 'y' that don't hit each other, we return
+        ## an artificial zero-width intersection that starts on 'start(x)'.
+        nohit_idx <- which(!is_hit)
+        nohit_start <- start(x)[nohit_idx]
+        new_start[nohit_idx] <- nohit_start
+        new_end[nohit_idx] <- nohit_start - 1L
+        new_names <- names(x)
+        mcols(x)$hit <- as.logical(is_hit)
+        if (!(ignore.strand || strict.strand))
+            strand(x)[nohit_idx] <- x_strand[nohit_idx]
+    }
+    ranges(x) <- IRanges(new_start, new_end, names=new_names)
     x
 }
 
 setMethod("pintersect", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand=FALSE, strict.strand=FALSE)
-        .pintersect_GRanges_GRanges(x, y, ignore.strand=ignore.strand,
+    function(x, y, drop.nohit.ranges=FALSE,
+                   ignore.strand=FALSE, strict.strand=FALSE)
+        .pintersect_GRanges_GRanges(x, y, drop.nohit.ranges=drop.nohit.ranges,
+                                          ignore.strand=ignore.strand,
                                           strict.strand=strict.strand)
 )
 
@@ -273,7 +294,8 @@ setMethod("pintersect", c("GRanges", "GRanges"),
 ### To get the 'mendoapply(intersect, x, y)' behavior, the user should use
 ### 'strict.strand=TRUE' and call 'reduce( , drop.empty.ranges=TRUE)' on
 ### the returned object.
-.pintersect_GRangesList_GRanges <- function(x, y, ignore.strand=FALSE,
+.pintersect_GRangesList_GRanges <- function(x, y, drop.nohit.ranges=FALSE,
+                                                  ignore.strand=FALSE,
                                                   strict.strand=FALSE)
 {
     stopifnot(is(x, "GRangesList"), is(y, "GRanges"))
@@ -282,24 +304,41 @@ setMethod("pintersect", c("GRanges", "GRanges"),
             stop(wmsg("'y' must have the length of 'x' or length 1"))
         y <- rep.int(y, length(x))
     }
+    if (!isTRUEorFALSE(drop.nohit.ranges))
+        stop(wmsg("'drop.nohit.ranges' must be TRUE or FALSE"))
     unlisted_x <- unlist(x, use.names=FALSE)
     y2 <- rep.int(y, elementLengths(x))
     unlisted_ans <- .pintersect_GRanges_GRanges(unlisted_x, y2,
-                                                ignore.strand=ignore.strand,
-                                                strict.strand=strict.strand)
-    relist(unlisted_ans, x)
+                                        drop.nohit.ranges=FALSE,
+                                        ignore.strand=ignore.strand,
+                                        strict.strand=strict.strand)
+    ans <- relist(unlisted_ans, x)
+    if (drop.nohit.ranges) {
+        is_hit <- relist(mcols(unlisted_ans)$hit, ans)
+        mcols(unlisted_ans)$hit <- NULL
+        ans <- relist(unlisted_ans, x)[is_hit]
+    } else {
+        ans <- relist(unlisted_ans, x)
+    }
+    ans
 }
 
 setMethod("pintersect", c("GRangesList", "GRanges"),
-    function(x, y, ignore.strand=FALSE, strict.strand=FALSE)
-        .pintersect_GRangesList_GRanges(x, y, ignore.strand=ignore.strand,
-                                              strict.strand=strict.strand)
+    function(x, y, drop.nohit.ranges=FALSE,
+                   ignore.strand=FALSE, strict.strand=FALSE)
+        .pintersect_GRangesList_GRanges(x, y,
+                                        drop.nohit.ranges=drop.nohit.ranges,
+                                        ignore.strand=ignore.strand,
+                                        strict.strand=strict.strand)
 )
 
 setMethod("pintersect", c("GRanges", "GRangesList"),
-    function(x, y, ignore.strand=FALSE, strict.strand=FALSE)
-        .pintersect_GRangesList_GRanges(y, x, ignore.strand=ignore.strand,
-                                              strict.strand=strict.strand)
+    function(x, y, drop.nohit.ranges=FALSE,
+                   ignore.strand=FALSE, strict.strand=FALSE)
+        .pintersect_GRangesList_GRanges(y, x,
+                                        drop.nohit.ranges=drop.nohit.ranges,
+                                        ignore.strand=ignore.strand,
+                                        strict.strand=strict.strand)
 )
 
 ### Equivalent to 'mendoapply(intersect, x, y)'.

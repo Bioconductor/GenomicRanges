@@ -124,59 +124,81 @@ test_pintersect <- function()
 {
     ## pintersect,GRanges,GRanges
 
-    checkIdentical(GRanges(), pintersect(GRanges(), GRanges()))
+    gr0 <- GRanges()
+    current <- pintersect(gr0, gr0, drop.nohit.ranges=TRUE)
+    target <- gr0
+    checkIdentical(target, current)
+
+    current <- pintersect(gr0, gr0)
+    mcols(target)$hit <- logical(0)
+    checkIdentical(target, current)
 
     x <- GRanges("chr1", IRanges(c( 4, 13, 2,  9, 16, 9), width=1,
                                  names=letters[1:6]))
-    checkIdentical(x, pintersect(x, x))
-    checkIdentical(x, pintersect(x, unname(x)))
-    checkIdentical(unname(x), pintersect(unname(x), x))
+    current <- pintersect(x, x)
+    target <- x
+    mcols(target)$hit <- TRUE
+    checkIdentical(target, current)
+    checkIdentical(target, pintersect(x, unname(x)))
+    checkIdentical(unname(target), pintersect(unname(x), x))
 
     current <- suppressWarnings(pintersect(x, GRanges("chrX", ranges(x))))
-    checkTrue(all(width(current) == 0L))
-    end(current) <- end(x)
-    checkIdentical(x, current)
+    target <- x
+    mcols(target)$hit <- FALSE
+    width(target) <- 0
+    checkIdentical(target, current)
+
+    current <- suppressWarnings(pintersect(x, GRanges("chrX", ranges(x)),
+                                           drop.nohit.ranges=TRUE))
+    checkIdentical(x[0], current)
 
     y <- x
     strand(y) <- Rle(strand(c("*", "-", "+")), c(2, 2, 2))
-    checkIdentical(y, pintersect(y, y))
-    checkIdentical(y, pintersect(y, x))
-    checkIdentical(y, pintersect(x, y))
+    target <- y
+    mcols(target)$hit <- TRUE
+    checkIdentical(target, pintersect(y, y))
+    checkIdentical(target, pintersect(y, x))
+    checkIdentical(target, pintersect(x, y))
     
     current <- pintersect(x, y, strict.strand=TRUE)
-    same_strand_idx <- strand(x) == strand(y)
-    checkTrue(all(width(current[!same_strand_idx]) == 0L))
-    checkIdentical(x[same_strand_idx], current[same_strand_idx])
-    end(current) <- end(x)
-    checkIdentical(x, current)
+    target <- x
+    mcols(target)$hit <- as.logical(strand(x) == strand(y))
+    width(target)[!mcols(target)$hit] <- 0
+    checkIdentical(target, current)
 
     current <- pintersect(y, x, strict.strand=TRUE)
-    same_strand_idx <- strand(x) == strand(y)
-    checkTrue(all(width(current[!same_strand_idx]) == 0L))
-    checkIdentical(y[same_strand_idx], current[same_strand_idx])
-    end(current) <- end(y)
-    checkIdentical(y, current)
+    strand(target) <- strand(y)
+    checkIdentical(target, current)
 
     strand(x) <- rep(Rle(strand(c("*", "+", "-"))), 2)
     current <- pintersect(x, y)
-    compat_strand_idx <- strand(x) == strand(y) |
-                         strand(x) == "*" | strand(y) == "*"
-    checkTrue(all(width(current[!compat_strand_idx]) == 0L))
-    checkIdentical(ranges(x)[compat_strand_idx],
-                   ranges(current)[compat_strand_idx])
-    end(current) <- end(x)
-    strand(x)[strand(x) == "*"] <- strand(y)[strand(x) == "*"]
-    checkIdentical(x, current)
+    target <- x
+    mcols(target)$hit <- as.logical(strand(x) == strand(y) |
+                                    strand(x) == "*" | strand(y) == "*")
+    width(target)[!mcols(target)$hit] <- 0
+    disambig_strand_idx <- strand(target) == "*" & mcols(target)$hit
+    strand(target)[disambig_strand_idx] <- strand(y)[disambig_strand_idx]
+    checkIdentical(target, current)
 
-    checkIdentical(x, pintersect(x, y, ignore.strand=TRUE))
-    checkIdentical(y, pintersect(y, x, ignore.strand=TRUE))
+    current <- pintersect(x, y, ignore.strand=TRUE)
+    target <- x
+    mcols(target)$hit <- TRUE
+    checkIdentical(target, current)
+
+    current <- pintersect(y, x, ignore.strand=TRUE)
+    target <- y
+    mcols(target)$hit <- TRUE
+    checkIdentical(target, current)
 
     x <- GRanges("chr1", IRanges(
              c( 2,  7,  7,  4, 13, 2,  9, 12,  9,  4,  8,  7,  5, 20),
              c( 6,  8, 12, 10, 12, 2, 12, 18,  8, 12, 11, 11, 11, 20)))
 
     y <- GRanges("chr1", IRanges(1, 20))
-    checkIdentical(x, pintersect(x, y))
+    current <- pintersect(x, y)
+    target <- x
+    mcols(target)$hit <- TRUE
+    checkIdentical(target, current)
 
     y <- GRanges("chr1", IRanges(7, 11), strand="+")
     current <- pintersect(x, y)
@@ -184,22 +206,28 @@ test_pintersect <- function()
     ranges(target) <- IRanges(
              c( 7,  7,  7,  7, 13, 2,  9, 12,  9,  7,  8,  7,  7, 20),
              c( 6,  8, 11, 10, 12, 1, 11, 11,  8, 11, 11, 11, 11, 19))
+    mcols(target)$hit <- TRUE
     nohit_idx <- c(5, 6, 14)
-    strand(target)[-nohit_idx] <- strand(y)[-nohit_idx]
+    mcols(target)$hit <- !(1:14 %in% nohit_idx)
+    strand(target)[mcols(target)$hit] <- strand(y)
+    checkIdentical(target, current)
+
+    current <- pintersect(x, y, drop.nohit.ranges=TRUE)
+    target <- target[mcols(target)$hit]
+    mcols(target)$hit <- NULL
     checkIdentical(target, current)
  
     ## pintersect,GRangesList,GRanges and pintersect,GRanges,GRangesList
-
-    checkIdentical(as(target, "GRangesList"),
-                   pintersect(as(x, "GRangesList"), y))
-    names(x) <- names(target) <- letters[1:14]
-    checkIdentical(as(target, "GRangesList"),
-                   pintersect(as(x, "GRangesList"), y))
 
     x <- GRangesList(x, rev(x))
 
     current <- pintersect(x, y)
     target <- mendoapply(pintersect, x, as(y, "GRangesList"))
+    checkIdentical(target, current)
+
+    current <- pintersect(x, y, drop.nohit.ranges=TRUE)
+    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+                         MoreArgs=list(drop.nohit.ranges=TRUE))
     checkIdentical(target, current)
 
     y <- GRanges("chr1", IRanges(c(1, 7), c(20, 11)))
@@ -210,9 +238,47 @@ test_pintersect <- function()
     checkIdentical(target, current)
     checkIdentical(target, pintersect(y, x))
 
+    current <- pintersect(x, y, drop.nohit.ranges=TRUE)
+    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+                         MoreArgs=list(drop.nohit.ranges=TRUE))
+    checkIdentical(target, current)
+
+    strand(x[[1]]) <- c("+", "-")
+
+    current <- pintersect(x, y)
+    target <- mendoapply(pintersect, x, as(y, "GRangesList"))
+    checkIdentical(target, current)
+    checkIdentical(target, pintersect(y, x))
+
+    current <- pintersect(x, y, drop.nohit.ranges=TRUE)
+    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+                         MoreArgs=list(drop.nohit.ranges=TRUE))
+    checkIdentical(target, current)
+    checkIdentical(target, pintersect(y, x, drop.nohit.ranges=TRUE))
+
+    current <- pintersect(x, y, strict.strand=TRUE)
+    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+                         MoreArgs=list(strict.strand=TRUE))
+    checkIdentical(target, current)
+    checkIdentical(target, pintersect(y, x, strict.strand=TRUE))
+
+    current <- pintersect(x, y, drop.nohit.ranges=TRUE, strict.strand=TRUE)
+    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+                         MoreArgs=list(drop.nohit.ranges=TRUE,
+                                       strict.strand=TRUE))
+    checkIdentical(target, current)
+    checkIdentical(target, pintersect(y, x, drop.nohit.ranges=TRUE,
+                                            strict.strand=TRUE))
+
     current <- reduce(pintersect(x, y, strict.strand=TRUE),
                       drop.empty.ranges=TRUE)
     target <- mendoapply(intersect, x, as(y, "GRangesList"))
+    checkIdentical(target, current)
+
+    current <- reduce(pintersect(x, y, ignore.strand=TRUE),
+                      drop.empty.ranges=TRUE, ignore.strand=TRUE)
+    target <- mendoapply(intersect, x, as(y, "GRangesList"),
+                         MoreArgs=list(ignore.strand=TRUE))
     checkIdentical(target, current)
 
     ## pintersect,GRangesList,GRangesList

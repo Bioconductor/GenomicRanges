@@ -35,7 +35,8 @@
 
 ## Parallel set operations
 \S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
-\S4method{pintersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE, strict.strand=FALSE)
+\S4method{pintersect}{GRanges,GRanges}(x, y, drop.nohit.ranges=FALSE,
+           ignore.strand=FALSE, strict.strand=FALSE)
 \S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
 }
 
@@ -70,6 +71,17 @@
     ignored in the computation and the result has the strand information of
     \code{x}.
   }
+  \item{drop.nohit.ranges}{
+    If TRUE then elements in \code{x} that don't intersect with their
+    corresponding element in \code{y} are removed from the result (so
+    the returned object is no more parallel to the input).
+
+    If FALSE (the default) then nothing is removed and a \code{hit} metadata
+    column is added to the returned object to indicate elements in \code{x}
+    that intersect with the corresponding element in \code{y}. For those
+    that don't, the reported intersection is a zero-width range that has
+    the same start as \code{x}.
+  }
   \item{strict.strand}{
     If set to FALSE (the default), features on the \code{"*"} strand are
     treated as occurring on both the \code{"+"} and \code{"-"} strand.
@@ -98,7 +110,7 @@
 
 \value{
   For \code{union}, \code{intersect}, \code{setdiff}, and \code{pgap}: a
-  \link{GRanges}.
+  \link{GRanges} object.
 
   For \code{punion} and \code{pintersect}: when \code{x} or \code{y} is
   not a \link{GRanges} object, an object of the same class as this

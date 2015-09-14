@@ -158,10 +158,10 @@ setMethod("reduce", "GenomicRanges",
     }
 )
 
-### TODO: Support the 'ignore.strand' arg.
+### TODO: Support the 'with.revmap' argument.
 setMethod("reduce", "GRangesList",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-             with.inframe.attrib=FALSE)
+             with.inframe.attrib=FALSE, ignore.strand=FALSE)
     {
         if (!identical(with.inframe.attrib, FALSE)) 
             stop("'with.inframe.attrib' argument is not supported ", 
@@ -169,7 +169,8 @@ setMethod("reduce", "GRangesList",
         gr <- deconstructGRLintoGR(x)
         ## "reduce" method for GRanges objects is fast.
         gr <- reduce(gr, drop.empty.ranges=drop.empty.ranges,
-                         min.gapwidth=min.gapwidth)
+                         min.gapwidth=min.gapwidth,
+                         ignore.strand=ignore.strand)
         reconstructGRLfromGR(gr, x)
     }
 )
