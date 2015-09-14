@@ -5,19 +5,23 @@
 \alias{intersect,GRanges,GRanges-method}
 \alias{setdiff,GRanges,GRanges-method}
 
+\alias{punion}
 \alias{punion,GRanges,GRanges-method}
 \alias{punion,GRanges,GRangesList-method}
 \alias{punion,GRangesList,GRanges-method}
 
+\alias{pintersect}
 \alias{pintersect,GRanges,GRanges-method}
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
 \alias{pintersect,GRangesList,GRangesList-method}
 
+\alias{psetdiff}
 \alias{psetdiff,GRanges,GRanges-method}
 \alias{psetdiff,GRanges,GRangesList-method}
 \alias{psetdiff,GRangesList,GRangesList-method}
 
+\alias{pgap}
 \alias{pgap,GRanges,GRanges-method}
 
 
@@ -25,6 +29,11 @@
 
 \description{
   Performs set operations on \link{GRanges} and \link{GRangesList} objects.
+
+  NOTE: The \code{\link[IRanges]{punion}}, \code{\link[IRanges]{pintersect}},
+  \code{\link[IRanges]{psetdiff}}, and \code{\link[IRanges]{pgap}} generic
+  functions and methods for \link[IRanges]{Ranges} objects are defined and
+  documented in the \pkg{IRanges} package.
 }
 
 \usage{
