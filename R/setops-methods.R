@@ -308,12 +308,13 @@ setMethod("pintersect", c("GRanges", "GRanges"),
         stop(wmsg("'drop.nohit.ranges' must be TRUE or FALSE"))
     unlisted_x <- unlist(x, use.names=FALSE)
     y2 <- rep.int(y, elementLengths(x))
+    ## 'unlisted_ans' parallel to 'x'.
     unlisted_ans <- .pintersect_GRanges_GRanges(unlisted_x, y2,
                                         drop.nohit.ranges=FALSE,
                                         ignore.strand=ignore.strand,
                                         strict.strand=strict.strand)
     if (drop.nohit.ranges) {
-        is_hit <- relist(mcols(unlisted_ans)$hit, ans)
+        is_hit <- relist(mcols(unlisted_ans)$hit, x)
         mcols(unlisted_ans)$hit <- NULL
         ans <- relist(unlisted_ans, x)[is_hit]
     } else {
