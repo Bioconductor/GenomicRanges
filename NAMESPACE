@@ -54,7 +54,7 @@ exportMethods(
     names, "names<-",
     "dimnames<-",
     "[", "[<-", "[[", "[[<-", "$", "$<-",
-    as.data.frame,
+    as.character, as.factor, as.data.frame,
     coerce,
     c,
     cbind,

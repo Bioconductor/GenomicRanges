@@ -31,17 +31,24 @@
 \alias{score<-,GenomicRanges-method}
 
 % Coercion:
-\alias{coerce,RangedData,GRanges-method}
-\alias{coerce,GenomicRanges,RangedData-method}
-\alias{coerce,RangesList,GRanges-method}
-\alias{coerce,GenomicRanges,RangesList-method}
-\alias{coerce,RleList,GRanges-method}
-\alias{coerce,RleViewsList,GRanges-method}
+\alias{as.character,GenomicRanges-method}
+\alias{as.factor,GenomicRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
-\alias{coerce,Seqinfo,GRanges-method}
+\alias{coerce,GenomicRanges,RangesList-method}
+\alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
 \alias{coerce,Seqinfo,RangesList-method}
 \alias{granges,GenomicRanges-method}
+
+\alias{coerce,character,GRanges-method}
+\alias{coerce,character,GenomicRanges-method}
+\alias{coerce,factor,GRanges-method}
+\alias{coerce,factor,GenomicRanges-method}
+\alias{coerce,RangesList,GRanges-method}
+\alias{coerce,RangedData,GRanges-method}
+\alias{coerce,RleList,GRanges-method}
+\alias{coerce,RleViewsList,GRanges-method}
+\alias{coerce,Seqinfo,GRanges-method}
 
 % Ranges methods:
 \alias{start,GenomicRanges-method}
@@ -131,8 +138,18 @@
 
   \describe{
     \item{}{
-      \code{as(from, "GRanges")}: Creates a GRanges object from a
-      RangedData, RangesList, RleList or RleViewsList object.
+      \code{as(from, "GRanges")}: Creates a GRanges object from a character
+      vector, a factor, or a RangedData, RangesList, RleList, or RleViewsList
+      object.
+
+      When \code{from} is a vector (or factor), each element in it must
+      represent a genomic range in format \code{chr1:2501-2800}
+      (unstranded range) or \code{chr1:2501-2800:+} (stranded range).
+      \code{..} is also supported as a separator between the start and end
+      positions. Strand can be \code{+}, \code{-}, \code{*}, or missing.
+      The names on \code{from} are propagated to the returned GRanges object.
+      See \code{as.character()} and \code{as.factor()} below for the
+      reverse transformations.
 
       Coercing a data.frame or DataFrame into a GRanges object is also
       supported. See \code{\link{makeGRangesFromDataFrame}} for the details.
@@ -152,6 +169,31 @@
       metadata columns (i.e. metadata columns on the ranges).
       The \code{seqlengths(from)}, \code{isCircular(from)}, and
       \code{genome(from)} vectors become the metadata columns.
+    }
+    \item{}{
+      \code{as.character(x, ignore.strand=FALSE)}:
+      Turn GRanges object \code{x} into a character vector where each
+      range in \code{x} is represented by a string in format
+      \code{chr1:2501-2800:+}. If \code{ignore.strand} is TRUE or if
+      \emph{all} the ranges in \code{x} are unstranded (i.e. their strand
+      is set to \code{*}), then all the strings in the output are in
+      format \code{chr1:2501-2800}.
+
+      The names on \code{x} are propagated to the returned character vector.
+      Its metadata (\code{metadata(x)}) and metadata columns (\code{mcols(x)})
+      are ignored.
+
+      See \code{as(from, "GRanges")} above for the reverse transformation.
+    }
+    \item{}{
+      \code{as.factor(x)}:
+      Equivalent to
+\preformatted{  factor(as.character(x), levels=as.character(sort(unique(x))))
+}
+      See \code{as(from, "GRanges")} above for the reverse transformation.
+
+      Note that \code{table(x)} is supported on a GRanges object. It is
+      equivalent to, but much faster than, \code{table(as.factor(x))}.
     }
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE, ...)}:

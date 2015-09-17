@@ -333,59 +333,110 @@ test_GRanges_seqlengths <- function()
 
 test_GRanges_coercion <- function()
 {
-    ## no strand or score
-    gr <-
-      GRanges(seqnames = c(1,1,2),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)))
-    df <-
-      data.frame(seqnames = factor(c(1,1,2)),
-                 start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
-                 strand = strand(rep("*", 3)),
-                 row.names = head(letters,3),
-                 stringsAsFactors = FALSE)
-    checkIdentical(as.data.frame(gr), df)
+  ## -- From GRanges to character/factor/data.frame -- ##
 
-    ## score, no strand
+    ## no strand, no score
     gr <-
-      GRanges(seqnames = c(1,1,2),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)),
-              score = c(10L,2L,NA))
-    df <-
-      data.frame(seqnames = factor(c(1,1,2)),
+      GRanges(seqnames = factor(c("chr2", "chr11", "chr1"),
+                                levels=c("chr1", "chr2", "chr11")),
+              ranges = IRanges(1:3,4:6, names = head(letters,3)))
+    target1 <- c(a="chr2:1-4", b="chr11:2-5", c="chr1:3-6")
+    checkIdentical(target1, as.character(gr))
+    target2 <- factor(target1, levels=target1[c(3, 1, 2)])
+    checkIdentical(target2, as.factor(gr))
+    target3 <-
+      data.frame(seqnames = factor(c("chr2", "chr11", "chr1"),
+                                   levels=c("chr1", "chr2", "chr11")),
                  start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
                  strand = strand(rep("*", 3)),
-                 score = c(10L,2L,NA),
-                 row.names = head(letters,3),
+                 row.names = head(letters, 3),
                  stringsAsFactors = FALSE)
-    checkIdentical(as.data.frame(gr), df)
+    checkIdentical(target3, as.data.frame(gr))
 
     ## strand, no score
-    gr <-
-      GRanges(seqnames = c(1,1,2),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)),
-              strand = strand(c("+", "-", "*")))
-    df <-
-      data.frame(seqnames = factor(c(1,1,2)),
-                 start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
-                 strand = strand(c("+", "-", "*")),
-                 row.names = head(letters,3),
-                 stringsAsFactors = FALSE)
-    checkIdentical(as.data.frame(gr), df)
+    strand(gr) <- strand(c("+", "-", "*"))
+    target1s <- c(a="chr2:1-4:+", b="chr11:2-5:-", c="chr1:3-6:*")
+    checkIdentical(target1s, as.character(gr))
+    checkIdentical(target1, as.character(gr, ignore.strand=TRUE))
+    target2s <- factor(target1s, levels=target1s[c(3, 1, 2)])
+    checkIdentical(target2s, as.factor(gr))
+    target3$strand <- strand(c("+", "-", "*"))
+    checkIdentical(target3, as.data.frame(gr))
 
-    ## strand & score
-    gr <-
-      GRanges(seqnames = c(1,1,2),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)),
-              strand = strand(c("+", "-", "*")),
-              score = c(10L,2L,NA))
-    df <-
-      data.frame(seqnames = factor(c(1,1,2)),
-                 start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
-                 strand = strand(c("+", "-", "*")),
-                 score = c(10L,2L,NA),
-                 row.names = head(letters,3),
-                 stringsAsFactors = FALSE)
-    checkIdentical(as.data.frame(gr), df)
+    ## strand, score
+    mcols(gr)$score <- c(10L, 2L, NA)
+    checkIdentical(target1s, as.character(gr))
+    checkIdentical(target2s, as.factor(gr))
+    target3$score <- c(10L, 2L, NA)
+    checkIdentical(target3, as.data.frame(gr))
+
+    ## no strand, score
+    gr <- unstrand(gr)
+    checkIdentical(target1, as.character(gr))
+    checkIdentical(target2, as.factor(gr))
+    target3$strand <- strand("*")
+    checkIdentical(target3, as.data.frame(gr))
+
+  ## -- From GRanges to character/factor (continued) -- ##
+
+    checkIdentical(as.character(gr), as(gr, "character"))
+    checkIdentical(as.factor(gr), as(gr, "factor"))
+
+    set.seed(555)
+    gr2 <- sample(gr, 100, replace=TRUE)
+    current <- as.factor(gr2)
+    checkTrue(all(as.factor(as.character(gr2)) == current))
+    checkIdentical(unname(as.character(sort(unique(gr2)))), levels(current))
+
+    strand(gr2) <- c("*", "-", "+", "-")
+    current <- as.factor(gr2)
+    checkTrue(all(as.factor(as.character(gr2)) == current))
+    checkIdentical(unname(as.character(sort(unique(gr2)))), levels(current))
+ 
+  ## -- table() -- ##
+
+    current <- table(gr2)  # same as table(as.factor(gr2)) but much faster
+    target <- table(as.factor(gr2))
+    dimnames(current) <- unname(dimnames(current))
+    dimnames(target) <- unname(dimnames(target))
+    checkIdentical(target, current)
+
+  ## -- From character/factor to GRanges -- ##
+
+    x <- c(a="chrX:21-30",
+           b="chr1: +21 \t-+30.5:-",
+           c="1:-15--3:*",
+           d="chr..Y:21..30:",
+           e="chr-X: \t 21 ..  \t+30  \t\t:+")
+    current <- as(x, "GRanges")
+    target <- GRanges(c("chrX", "chr1", "1", "chr..Y", "chr-X"),
+                      IRanges(c(21, 21, -15, 21, 21), c(30, 30, -3, 30, 30),
+                              names=letters[1:5]),
+                      c("*", "-", "*", "*", "+"))
+    checkIdentical(target, current)
+    checkIdentical(target, as(x, "GenomicRanges"))
+    checkIdentical(unname(target), as(unname(x), "GRanges"))
+    f <- as.factor(x)
+    checkIdentical(target, as(f, "GRanges"))
+    checkIdentical(target, as(f, "GenomicRanges"))
+    checkIdentical(unname(target), as(unname(f), "GRanges"))
+
+  ## -- Going back and forth between character/factor and GRanges -- ##
+
+    ## this looses the metadata(), mcols(), and seqinfo()
+    current <- as(as.character(gr2), "GRanges")
+    target <- gr2
+    mcols(target) <- NULL
+    seqlevels(target) <- seqlevels(current)
+    checkIdentical(target, current)
+    checkIdentical(target, as(as.factor(gr2), "GRanges"))
+
+    current <- as(as.character(gr2, ignore.strand=TRUE), "GRanges")
+    checkIdentical(unstrand(target), current)
+
+    ##
+    x <- as.character(gr2)
+    checkIdentical(x, as.character(as(x, "GRanges")))
 }
 
 

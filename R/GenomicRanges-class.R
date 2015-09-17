@@ -224,41 +224,30 @@ setValidity2("GenomicRanges", .valid.GenomicRanges)
 ### Coercion.
 ###
 
-setAs("GenomicRanges", "RangedData",
-    function(from)
+### Propagate the names.
+setMethod("as.character", "GenomicRanges",
+    function(x, ignore.strand=FALSE)
     {
-        mcols <- mcols(from)
-        ecs <- extraColumnSlotsAsDF(from)
-        if (length(ecs))
-          mcols <- cbind(mcols, ecs)
-        rd <- RangedData(ranges(from), strand=strand(from),
-                         mcols, space=seqnames(from))
-        mcols(ranges(rd)) <- DataFrame(seqlengths=seqlengths(from),
-                                       isCircular=isCircular(from),
-                                       genome=genome(from))
-        metadata(ranges(rd)) <- metadata(from)
-        metadata(ranges(rd))$seqinfo <- seqinfo(from)
-        rd
+        if (!isTRUEorFALSE(ignore.strand))
+            stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
+        if (length(x) == 0L)
+            return(setNames(character(0), names(x)))
+        ans <- paste0(seqnames(x), ":", start(x), "-", end(x))
+        names(ans) <- names(x)
+        if (ignore.strand)
+            return(ans)
+        x_strand <- strand(x)
+        if (all(x_strand == "*"))
+            return(ans)
+        setNames(paste0(ans, ":", x_strand), names(x))
     }
 )
 
-setAs("GenomicRanges", "RangesList",
-    function(from)
-    {
-        strand_mcols <- DataFrame(strand=strand(from), mcols(from))
-        ecs <- extraColumnSlotsAsDF(from)
-        if (length(ecs))
-          strand_mcols <- cbind(strand_mcols, ecs)
-        rngs <- ranges(from)
-        mcols(rngs) <- strand_mcols
-        rl <- split(rngs, seqnames(from))
-        mcols(rl) <- DataFrame(seqlengths=seqlengths(from),
-                               isCircular=isCircular(from),
-                               genome=genome(from))
-        metadata(rl) <- metadata(from)
-        metadata(rl)$seqinfo <- seqinfo(from)
-        rl
-    }
+### The as.factor() generic doesn't have the ... argument so this method
+### cannot support the 'ignore.strand' argument.
+setMethod("as.factor", "GenomicRanges",
+    function(x)
+        factor(as.character(x), levels=as.character(sort(unique(x))))
 )
 
 ### TODO: Turn this into an S3/S4 combo for as.data.frame.GenomicRanges
@@ -282,6 +271,43 @@ setMethod("as.data.frame", "GenomicRanges",
                    mcols_df,
                    row.names=row.names,
                    stringsAsFactors=FALSE)
+    }
+)
+
+setAs("GenomicRanges", "RangesList",
+    function(from)
+    {
+        strand_mcols <- DataFrame(strand=strand(from), mcols(from))
+        ecs <- extraColumnSlotsAsDF(from)
+        if (length(ecs))
+          strand_mcols <- cbind(strand_mcols, ecs)
+        rngs <- ranges(from)
+        mcols(rngs) <- strand_mcols
+        rl <- split(rngs, seqnames(from))
+        mcols(rl) <- DataFrame(seqlengths=seqlengths(from),
+                               isCircular=isCircular(from),
+                               genome=genome(from))
+        metadata(rl) <- metadata(from)
+        metadata(rl)$seqinfo <- seqinfo(from)
+        rl
+    }
+)
+
+setAs("GenomicRanges", "RangedData",
+    function(from)
+    {
+        mcols <- mcols(from)
+        ecs <- extraColumnSlotsAsDF(from)
+        if (length(ecs))
+          mcols <- cbind(mcols, ecs)
+        rd <- RangedData(ranges(from), strand=strand(from),
+                         mcols, space=seqnames(from))
+        mcols(ranges(rd)) <- DataFrame(seqlengths=seqlengths(from),
+                                       isCircular=isCircular(from),
+                                       genome=genome(from))
+        metadata(ranges(rd)) <- metadata(from)
+        metadata(ranges(rd))$seqinfo <- seqinfo(from)
+        rd
     }
 )
 

@@ -96,7 +96,7 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
         seqinfo <- Seqinfo(names(seqlengths), seqlengths)
 
     ## in case we have seqlengths for unrepresented sequences
-    runValue(seqnames) <- factor(runValue(seqnames), seqnames(seqinfo))
+    runValue(seqnames) <- factor(runValue(seqnames), levels=seqnames(seqinfo))
 
     if (!is(mcols, "DataFrame"))  # should never happen when calling GRanges()
         stop("'mcols' must be a DataFrame object")
@@ -159,28 +159,51 @@ setMethod("updateObject", "GRanges",
 ### Coercion.
 ###
 
-setAs("RangedData", "GRanges",
-    function(from)
-    {
-        ans_ranges <- unlist(ranges(from), use.names=FALSE)
-        ans_mcols <- unlist(values(from), use.names=FALSE)
-        rownames(ans_mcols) <- NULL
-        whichStrand <- match("strand", colnames(ans_mcols))
-        if (is.na(whichStrand)) {
-            ans_strand <- Rle(strand("*"), length(ans_ranges))
-        } else {
-            ans_strand <- Rle(strand(from))
-            ans_mcols <- ans_mcols[-whichStrand]
-        }
-        ans <- GRanges(seqnames=space(from),
-                       ranges=ans_ranges,
-                       strand=ans_strand,
-                       ans_mcols,
-                       seqinfo=seqinfo(from))
-        metadata(ans) <- metadata(from)
-        ans
-    }
-)
+.from_character_to_GRanges <- function(from)
+{
+    stopifnot(is.character(from))
+    if (anyNA(from))
+        stop(wmsg("converting a character vector to a GRanges object ",
+                  "does not support NAs"))
+    error_msg <- wmsg(
+        "The character vector to convert to a GRanges object must contain ",
+        "strings of the form \"chr1:2501-2800\" or \"chr1:2501-2800:+\" ",
+        "(\"..\" being also supported as a separator between the start and ",
+        "end positions). Strand can be \"+\", \"-\", \"*\", or missing."
+    )
+    split0 <- CharacterList(strsplit(from, ":", fixed=TRUE))
+    split0_eltlens <- elementLengths(split0)
+    if (S4Vectors:::anyMissingOrOutside(split0_eltlens, 2L, 3L))
+        stop(error_msg)
+    ans_strand <- as.character(ptail(split0, n=-2L))
+    ans_strand[is.na(ans_strand)] <- "*"
+    split1 <- phead(split0, n=2L)
+    ans_seqnames <- as.character(phead(split1, n=1L))
+    ranges <- as.character(ptail(split1, n=-1L))
+    ## We want to split on the first occurence of  "-" that is preceeded by
+    ## a digit (ignoring and removing the spaces in between if any).
+    ranges <- sub("([[:digit:]])[[:space:]]*-", "\\1..", ranges)
+    split2 <- CharacterList(strsplit(ranges, "..", fixed=TRUE))
+    split2_eltlens <- elementLengths(split2)
+    if (!all(split2_eltlens == 2L))
+        stop(error_msg)
+    ans_start <- as.integer(phead(split2, n=1L))
+    ans_end <- as.integer(ptail(split2, n=1L))
+    ans_ranges <- IRanges(ans_start, ans_end, names=names(from))
+    GRanges(ans_seqnames, ans_ranges, ans_strand)
+}
+
+setAs("character", "GRanges", .from_character_to_GRanges)
+setAs("character", "GenomicRanges", .from_character_to_GRanges)
+
+.from_factor_to_GRanges <- function(from)
+{
+    from <- setNames(as.character(from), names(from))
+    .from_character_to_GRanges(from)
+}
+
+setAs("factor", "GRanges", .from_factor_to_GRanges)
+setAs("factor", "GenomicRanges", .from_factor_to_GRanges)
 
 ### Does NOT propagate the ranges names and metadata columns i.e. always
 ### returns an unnamed GRanges object with no metadata columns.
@@ -203,6 +226,29 @@ setAs("RangesList", "GRanges",
         metadata(gr) <- metadata(from)
         gr
       })
+
+setAs("RangedData", "GRanges",
+    function(from)
+    {
+        ans_ranges <- unlist(ranges(from), use.names=FALSE)
+        ans_mcols <- unlist(values(from), use.names=FALSE)
+        rownames(ans_mcols) <- NULL
+        whichStrand <- match("strand", colnames(ans_mcols))
+        if (is.na(whichStrand)) {
+            ans_strand <- Rle(strand("*"), length(ans_ranges))
+        } else {
+            ans_strand <- Rle(strand(from))
+            ans_mcols <- ans_mcols[-whichStrand]
+        }
+        ans <- GRanges(seqnames=space(from),
+                       ranges=ans_ranges,
+                       strand=ans_strand,
+                       ans_mcols,
+                       seqinfo=seqinfo(from))
+        metadata(ans) <- metadata(from)
+        ans
+    }
+)
 
 setAs("RleList", "GRanges", function(from) {
   rd <- as(from, "RangedData")
