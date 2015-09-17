@@ -562,7 +562,8 @@ strand(gr0) <- Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2))
 mcols(gr0)$score <- 1:10
 mcols(gr0)$GC <- seq(1, 0, length=10)
 gr0
-## or specified at construction time:
+
+## ... or specified at construction time:
 gr <- GRanges(Rle(c("chr2", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
               IRanges(1:10, width=10:1, names=head(letters, 10)),
               Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
@@ -574,7 +575,7 @@ seqinfo <- Seqinfo(paste0("chr", 1:3), c(1000, 2000, 1500), NA, "mock1")
 seqinfo(gr0) <- merge(seqinfo(gr0), seqinfo)
 seqlevels(gr0) <- seqlevels(seqinfo)
 
-## or specified at construction time:
+## ... or specified at construction time:
 gr <- GRanges(Rle(c("chr2", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
               IRanges(1:10, width=10:1, names=head(letters, 10)),
               Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
