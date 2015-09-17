@@ -50,32 +50,66 @@ setValidity2("GRanges", .valid.GRanges)
 ### Constructor.
 ###
 
-### TODO: Revisit this constructor to make it more user friendly.
-### Also provide a way to supply the sequence circularity flags.
-newGRanges <- ## hidden constructor shared with other GRanges-like objects
-    function(class, seqnames = Rle(), ranges = IRanges(),
-             strand = Rle("*", length(seqnames)),
-             mcols = DataFrame(),
-             seqlengths = NULL, seqinfo = NULL)
+### Hidden constructor shared with other GRanges-like objects.
+newGRanges <- function(class,
+                       seqnames=Rle(), ranges=NULL, strand=NULL,
+                       mcols=DataFrame(),
+                       seqlengths=NULL, seqinfo=NULL)
 {
-    ## occurs first for generation of default seqlengths
+    if (is.null(ranges)) {
+        if (length(seqnames) != 0L) {
+            ans <- as(seqnames, class)
+            ans_seqnames <- seqnames(ans)
+            ans_ranges <- ranges(ans)
+            if (is.null(strand)) {
+                ans_strand <- strand(ans)
+            } else {
+                ans_strand <- strand
+            }
+            if (ncol(mcols) == 0L) {
+                ans_mcols <- mcols(ans)
+            } else {
+                ans_mcols <- mcols
+            }
+            if (is.null(seqlengths)) {
+                ans_seqlengths <- seqlengths(ans)
+            } else {
+                ans_seqlengths <- seqlengths
+            }
+            if (is.null(seqinfo)) {
+                ans_seqinfo <- seqinfo(ans)
+            } else {
+                ans_seqinfo <- seqinfo
+            }
+            ans <- newGRanges(class,
+                              ans_seqnames, ans_ranges, ans_strand,
+                              ans_mcols,
+                              ans_seqlengths, ans_seqinfo)
+            return(ans)
+        }
+        ranges <- IRanges()
+    } else if (class(ranges) != "IRanges") {
+        ranges <- as(ranges, "IRanges")
+    }
+
     if (!is(seqnames, "Rle"))
         seqnames <- Rle(seqnames)
     if (!is.factor(runValue(seqnames))) 
         runValue(seqnames) <- factor(runValue(seqnames),
                                      levels=unique(runValue(seqnames)))
 
-    if (class(ranges) != "IRanges")
-        ranges <- as(ranges, "IRanges")
-
-    if (!is(strand, "Rle"))
-        strand <- Rle(strand)
-    if (!is.factor(runValue(strand)) ||
-        !identical(levels(runValue(strand)), levels(strand())))
-        runValue(strand) <- strand(runValue(strand))
-    if (S4Vectors:::anyMissing(runValue(strand))) {
-        warning("missing values in strand converted to \"*\"")
-        runValue(strand)[is.na(runValue(strand))] <- "*"
+    if (is.null(strand)) {
+        strand <- Rle(strand("*"), length(seqnames))
+    } else {
+        if (!is(strand, "Rle"))
+            strand <- Rle(strand)
+        if (!is.factor(runValue(strand)) ||
+            !identical(levels(runValue(strand)), levels(strand())))
+            runValue(strand) <- strand(runValue(strand))
+        if (S4Vectors:::anyMissing(runValue(strand))) {
+            warning("missing values in strand converted to \"*\"")
+            runValue(strand)[is.na(runValue(strand))] <- "*"
+        }
     }
 
     lx <- max(length(seqnames), length(ranges), length(strand))
@@ -116,17 +150,13 @@ newGRanges <- ## hidden constructor shared with other GRanges-like objects
         seqinfo = seqinfo, elementMetadata = mcols)
 }
 
-GRanges <-
-  function(seqnames = Rle(), ranges = IRanges(),
-           strand = Rle("*", length(seqnames)),
-           ...,
-           seqlengths = NULL, seqinfo = NULL)
+GRanges <- function(seqnames=Rle(), ranges=NULL, strand=NULL,
+                    ...,
+                    seqlengths=NULL, seqinfo=NULL)
 {
-    newGRanges("GRanges", seqnames = seqnames, ranges = ranges,
-                          strand = strand,
-                          mcols = DataFrame(...),
-                          seqlengths = seqlengths,
-                          seqinfo = seqinfo)
+    newGRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
+                          mcols=DataFrame(...),
+                          seqlengths=seqlengths, seqinfo=seqinfo)
 }
 
 setMethod("updateObject", "GRanges",

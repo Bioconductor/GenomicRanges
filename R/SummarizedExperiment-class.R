@@ -61,7 +61,7 @@ setClass("SummarizedExperiment",
         colData="DataFrame",                  # columns and their annotations
         assays="Assays"),                     # Data -- e.g., list of matricies
     prototype(
-        rowData=GRanges(),
+        rowData=new("GRanges"),
         assays=.ShallowSimpleListAssays(data=SimpleList())))
 
 ## validity

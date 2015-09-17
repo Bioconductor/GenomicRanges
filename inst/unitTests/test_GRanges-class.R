@@ -403,14 +403,15 @@ test_GRanges_coercion <- function()
 
   ## -- From character/factor to GRanges -- ##
 
-    x <- c(a="chrX:21-30",
+    x <- c(a="chrX:21-3.5e+03",
            b="chr1: +21 \t-+30.5:-",
            c="1:-15--3:*",
-           d="chr..Y:21..30:",
-           e="chr-X: \t 21 ..  \t+30  \t\t:+")
+           d="chr..Y:-21..-3:",
+           e="chr1-X: \t 21 ..  \t+30  \t\t:+")
     current <- as(x, "GRanges")
-    target <- GRanges(c("chrX", "chr1", "1", "chr..Y", "chr-X"),
-                      IRanges(c(21, 21, -15, 21, 21), c(30, 30, -3, 30, 30),
+    target <- GRanges(c("chrX", "chr1", "1", "chr..Y", "chr1-X"),
+                      IRanges(c(  21, 21, -15, -21, 21),
+                              c(3500, 30,  -3,  -3, 30),
                               names=letters[1:5]),
                       c("*", "-", "*", "*", "+"))
     checkIdentical(target, current)
