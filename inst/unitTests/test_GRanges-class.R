@@ -339,15 +339,15 @@ test_GRanges_coercion <- function()
     gr <-
       GRanges(seqnames = factor(c("chr2", "chr11", "chr1"),
                                 levels=c("chr1", "chr2", "chr11")),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)))
-    target1 <- c(a="chr2:1-4", b="chr11:2-5", c="chr1:3-6")
+              ranges = IRanges(1:-1, c(4:5, -2), names=head(letters, 3)))
+    target1 <- c(a="chr2:1-4", b="chr11:0-5", c="chr1:-1--2")
     checkIdentical(target1, as.character(gr))
     target2 <- factor(target1, levels=target1[c(3, 1, 2)])
     checkIdentical(target2, as.factor(gr))
     target3 <-
       data.frame(seqnames = factor(c("chr2", "chr11", "chr1"),
                                    levels=c("chr1", "chr2", "chr11")),
-                 start = 1:3, end = 4:6, width = c(4L, 4L, 4L),
+                 start = 1:-1, end = c(4:5, -2L), width = c(4L, 6L, 0L),
                  strand = strand(rep("*", 3)),
                  row.names = head(letters, 3),
                  stringsAsFactors = FALSE)
@@ -355,7 +355,7 @@ test_GRanges_coercion <- function()
 
     ## strand, no score
     strand(gr) <- strand(c("+", "-", "*"))
-    target1s <- c(a="chr2:1-4:+", b="chr11:2-5:-", c="chr1:3-6:*")
+    target1s <- c(a="chr2:1-4:+", b="chr11:0-5:-", c="chr1:-1--2:*")
     checkIdentical(target1s, as.character(gr))
     checkIdentical(target1, as.character(gr, ignore.strand=TRUE))
     target2s <- factor(target1s, levels=target1s[c(3, 1, 2)])
