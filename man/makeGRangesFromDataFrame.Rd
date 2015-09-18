@@ -117,9 +117,10 @@ makeGRangesFromDataFrame(df,
 }
 
 \note{
-  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} into a
-  \link{GRanges} object (with \code{as(df, "GRanges")}) is equivalent
-  to calling \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}.
+  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} into
+  a \link{GRanges} object (with \code{as(df, "GRanges")}), or
+  calling \code{GRanges(df)}, are both equivalent to calling
+  \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}.
 }
 
 \author{
@@ -162,6 +163,8 @@ makeGRangesFromDataFrame(df)
 
 gr <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
 gr2 <- as(df, "GRanges")  # equivalent to the above
+stopifnot(identical(gr, gr2))
+gr2 <- GRanges(df)        # equivalent to the above
 stopifnot(identical(gr, gr2))
 
 makeGRangesFromDataFrame(df, ignore.strand=TRUE)

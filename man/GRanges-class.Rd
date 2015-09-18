@@ -161,8 +161,8 @@
       vector, a factor, or a RangedData, RangesList, RleList, or RleViewsList
       object.
 
-      When \code{from} is a vector (or factor), each element in it must
-      represent a genomic range in format \code{chr1:2501-2800}
+      When \code{from} is a character vector (or a factor), each element
+      in it must represent a genomic range in format \code{chr1:2501-2800}
       (unstranded range) or \code{chr1:2501-2800:+} (stranded range).
       \code{..} is also supported as a separator between the start and end
       positions. Strand can be \code{+}, \code{-}, \code{*}, or missing.
