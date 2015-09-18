@@ -151,12 +151,13 @@ makeGRangesFromDataFrame(df,
 ## BASIC EXAMPLES
 ## ---------------------------------------------------------------------
 
-df <- data.frame(chr="chr1", start=11:13, end=12:14,
-                 strand=c("+","-","+"), score=1:3)
-makeGRangesFromDataFrame(df)
+df <- data.frame(chr="chr1", start=11:15, end=12:16,
+                 strand=c("+","-","+","*","."), score=1:5)
+df
+makeGRangesFromDataFrame(df)  # strand value "." is replaced with "*"
 
 ## The strand column is optional:
-df <- data.frame(chr="chr1", start=11:13, end=12:14, score=1:3)
+df <- data.frame(chr="chr1", start=11:15, end=12:16, score=1:5)
 makeGRangesFromDataFrame(df)
 
 gr <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
@@ -177,19 +178,19 @@ makeGRangesFromDataFrame(df, seqinfo=Seqinfo(paste0("chr", 4:1)))
 
 ## Automatic detection of the seqnames/start/end/strand columns is
 ## case insensitive:
-df <- data.frame(ChRoM="chr1", StarT=11:13, stoP=12:14,
-                 STRAND=c("+","-","+"), score=1:3)
+df <- data.frame(ChRoM="chr1", StarT=11:15, stoP=12:16,
+                 STRAND=c("+","-","+","*","."), score=1:5)
 makeGRangesFromDataFrame(df)
 
 ## It also ignores a common prefix between the start and end columns:
-df <- data.frame(seqnames="chr1", tx_start=11:13, tx_end=12:14,
-                 strand=c("+","-","+"), score=1:3)
+df <- data.frame(seqnames="chr1", tx_start=11:15, tx_end=12:16,
+                 strand=c("+","-","+","*","."), score=1:5)
 makeGRangesFromDataFrame(df)
 
 ## The common prefix between the start and end columns is used to
 ## disambiguate between more than one seqnames column:
-df <- data.frame(chrom="chr1", tx_start=11:13, tx_end=12:14,
-                 tx_chr="chr2", score=1:3)
+df <- data.frame(chrom="chr1", tx_start=11:15, tx_end=12:16,
+                 tx_chr="chr2", score=1:5)
 makeGRangesFromDataFrame(df)
 
 ## ---------------------------------------------------------------------

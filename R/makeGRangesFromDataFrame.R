@@ -197,7 +197,8 @@ makeGRangesFromDataFrame <- function(df,
     if (is.na(granges_cols[["strand"]]) || ignore.strand) {
         ans_strand <- "*"
     } else {
-        ans_strand <- df[[granges_cols[["strand"]]]]
+        ans_strand <- as.character(df[[granges_cols[["strand"]]]])
+        ans_strand[ans_strand %in% "."] <- "*"
     }
 
     ## Prepare 'ans_mcols'.
