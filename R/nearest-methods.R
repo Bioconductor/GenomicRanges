@@ -136,21 +136,14 @@
         subjectStart[smid], subjectEnd[smid], sentinel)
     mhit <- .Hits(qid[idx][queryHits(mhit)], smid[subjectHits(mhit)])
 
-    ## '*' query
+    ### '*' query equivalent to ignore.strand = TRUE
     idx <- which(strand(query) == "*")
     bhit <- local({
         qid <- qid[idx]
         phit <- plusfun(queryStart[idx], queryEnd[idx],
-            subjectStart[spid], subjectEnd[spid], sentinel)
-        phit <- .Hits(qid[queryHits(phit)], spid[subjectHits(phit)],
+            subjectStart, subjectEnd, sentinel)
+        .Hits(qid[queryHits(phit)], subjectHits(phit),
             length(query), length(subject))
-        mhit <- minusfun(queryStart[idx], queryEnd[idx],
-            subjectStart[smid], subjectEnd[smid], sentinel)
-        mhit <- .Hits(qid[queryHits(mhit)], smid[subjectHits(mhit)],
-            length(query), length(subject))
-        pdist <- .findNearest_distance(phit, query, subject, leftOf)
-        mdist <- .findNearest_distance(mhit, query, subject, !leftOf)
-        .findPrecedeFollow_pmin(phit, pdist, mhit, mdist)
     })
 
     ## clean up

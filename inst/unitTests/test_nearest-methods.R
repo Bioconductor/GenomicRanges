@@ -69,7 +69,7 @@ test_GenomicRanges_precede_follow <- function()
     hits <- follow(query, subject)
     checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
 
-    ## query on "*"
+    ## query on "*" -> acts like ignore.strand=TRUE
     query <- GRanges("A", IRanges(c(1, 5, 10, 15, 20), width=1), "*")
     subject <- GRanges("A", IRanges(c(5, 15), width=1), "+")
     hits <- precede(query, subject)
@@ -79,15 +79,15 @@ test_GenomicRanges_precede_follow <- function()
 
     subject <- GRanges("A", IRanges(c(5, 15), width=1), "-")
     hits <- precede(query, subject)
-    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
-    hits <- follow(query, subject)
     checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
+    hits <- follow(query, subject)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
 
     subject <- GRanges("A", IRanges(c(5, 15), width=1), "*")
     hits <- precede(query, subject)
-    checkIdentical(c(1L, 2L, 1L, 1L, 2L), hits)
+    checkIdentical(c(1L, 2L, 2L, NA_integer_, NA_integer_), hits)
     hits <- follow(query, subject)
-    checkIdentical(c(1L, 2L, 1L, 1L, 2L), hits)
+    checkIdentical(c(NA_integer_, NA_integer_, 1L, 1L, 2L), hits)
 }
 
 test_GenomicRanges_precede_follow_ties <- function()
@@ -95,7 +95,7 @@ test_GenomicRanges_precede_follow_ties <- function()
     query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
     subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
                        rep(c("+", "-", "*"), 2))
-    checkIdentical(c(4L, 2L, 2L), precede(query, subject))
+    checkIdentical(c(4L, 2L, 4L), precede(query, subject))
     checkIdentical(c(1L, 4L, 1L), precede(query, rev(subject)))
 }
 
@@ -141,9 +141,7 @@ test_GenomicRanges_nearest <- function()
     checkEquals(precede(r,r), follow(g,g))
     checkEquals(nearest(r,r), nearest(g,g))
     g <- GRanges("chr1", r, "*")
-    checkEquals(follow(g), precede(g))
     checkEquals(nearest(r), nearest(g))
-    checkEquals(follow(g,g), precede(g,g))
     checkEquals(nearest(r,r), nearest(g,g))
 
     ## separated by 1
@@ -159,7 +157,6 @@ test_GenomicRanges_nearest <- function()
     checkEquals(nearest(r), nearest(g))
     checkEquals(nearest(r,r), nearest(g,g))
     g <- GRanges("chr1", r, "*")
-    checkEquals(follow(g), precede(g))
     checkEquals(nearest(r), nearest(g))
     checkEquals(nearest(r,r), nearest(g,g))
 
@@ -173,10 +170,6 @@ test_GenomicRanges_nearest <- function()
     checkEquals(follow(r), precede(g))
     checkEquals(precede(r), follow(g))
     checkEquals(nearest(r), nearest(g))
-    g <- GRanges("chr1", r, "*")
-    checkEquals(follow(g), precede(g))
-    checkEquals(nearest(r), follow(g))
-    checkEquals(follow(g), nearest(g))
 
     ## overlapping
     r <- IRanges(c(1,4,8), c(6,10,12))
