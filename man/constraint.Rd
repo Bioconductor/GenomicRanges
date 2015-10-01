@@ -24,7 +24,7 @@
 }
 
 \details{
-  For the developper, using constraints is an alternative to the more
+  For the developer, using constraints is an alternative to the more
   traditional approach that consists in creating subclasses of A and
   implementing specific validity methods for each of them.
   However, using constraints offers the following advantages over the

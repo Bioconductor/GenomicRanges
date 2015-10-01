@@ -115,7 +115,7 @@ suppressWarnings(
                                  sigString, "): ", errors)
                 ## If a constraint is not satisfied, we don't check the
                 ## remaining constraints (so when implementing a constraint
-                ## a developper can assume that the less specific constraints
+                ## a developer can assume that the less specific constraints
                 ## are satisfied).
                 break
             }
