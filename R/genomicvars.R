@@ -50,24 +50,25 @@ bindAsGRanges <- function(...)
                                identical(names(arg), ans_seqlevels))))
         stop(wmsg("the RleList objects to combine must have the same length ",
                   "and the same names in the same order"))
-    df <- cbind(...)
+    DFL <- cbind(...)  # named CompressedSplitDataFrameList
+    unlisted_DFL <- unlist(DFL, use.names=FALSE)  # DataFrame
+    DFL_partitioning <- PartitioningByEnd(DFL)
 
     ## Prepare 'ans_seqnames'.
-    ans_seqnames <- Rle(factor(df[ , "group_name"], levels=ans_seqlevels))
+    ans_seqnames <- Rle(factor(ans_seqlevels, levels=ans_seqlevels),
+                        width(DFL_partitioning))
 
     ## Prepare 'ans_ranges'.
-    ans_width <- df[ , "runLength"]
-    partitioning <- PartitioningByEnd(df[ , "group"], NG=length(ans_seqlevels),
-                                      names=ans_seqlevels)
-    width_list <- relist(ans_width, partitioning)
+    ans_width <- unlisted_DFL[ , "runLength"]
+    width_list <- relist(ans_width, DFL)
     ans_end <- unlist(lapply(width_list, cumsum), use.names=FALSE)
     ans_ranges <- IRanges(end=ans_end, width=ans_width)
 
     ## Prepare 'ans_seqlengths'.
-    ans_seqlengths <- setNames(ans_end[end(partitioning)], names(partitioning))
+    ans_seqlengths <- setNames(ans_end[end(DFL_partitioning)], names(DFL))
 
-    ## First 3 columns are group, group_name, and runLength. Get rid of them.
-    ans_mcols <- as(df[-(1:3)], "DataFrame")
+    ## First column is "runLength". Get rid of it.
+    ans_mcols <- unlisted_DFL[-1L]
     newGRanges("GRanges", ans_seqnames, ans_ranges, mcols=ans_mcols,
                seqlengths=ans_seqlengths)
 }
