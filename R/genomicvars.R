@@ -1,7 +1,17 @@
 ### =========================================================================
 ### Manipulate genomic variables i.e. data/variable defined along a genome
 ### -------------------------------------------------------------------------
-
+###
+### The concept of genomic variables could be formalized via a dedicated
+### container. This container could be a simple extension of GRanges with no
+### additional slots and the following constraints:
+###   - The ranges are unstranded (i.e. strand is set to * for all ranges).
+###   - The ranges are disjoint and ordered.
+### Then the metadata columns are the genomic variables.
+### For now, we just use a GRanges object. We make sure it's disjoint and we
+### ignore its strand. We don't mind if it's not ordered and make sure that
+### the code that operates on it works properly even if it's not ordered.
+###
 
 setAs("RleList", "GRanges", function(from) {
   rd <- as(from, "RangedData")
@@ -78,9 +88,10 @@ mcolAsRleList <- function(x, mcolname)
     ## Otherwise 'x' must be disjoint and we compute the RleList in a loop.
     ## This would also work on a numeric metadata column but would be slower
     ## than using coverage(), especially if 'x' has many seqlevels.
-    if (!isDisjoint(x))
+    if (!isDisjoint(x, ignore.strand=TRUE))
         stop(wmsg("cannot turn non-numeric metadata column into a ",
-                  "named RleList when 'x' is not disjoint"))
+                  "named RleList object when 'x' is not disjoint ",
+                  "(ignoring the strand)"))
     rg_per_chrom <- split(ranges(x), seqnames(x))
     V_per_chrom <- split(V, seqnames(x))
     rle_list <- mapply(
