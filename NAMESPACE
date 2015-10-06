@@ -110,8 +110,10 @@ export(
 
     makeGRangesFromDataFrame,
     makeGRangesListFromFeatureFragments,
+
     isSmallGenome, absoluteRanges, relativeRanges,
     tileGenome,
+    bindAsGRanges, mcolAsRleList, binnedAverage,
 
     rowData, "rowData<-",
 

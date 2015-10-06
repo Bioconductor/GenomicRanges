@@ -280,18 +280,6 @@ setAs("RangedData", "GRanges",
     }
 )
 
-setAs("RleList", "GRanges", function(from) {
-  rd <- as(from, "RangedData")
-  rd$strand <- "*"
-  gr <- as(rd, "GRanges")
-  seqlengths(gr) <- elementLengths(from)
-  gr
-})
-
-setAs("RleViewsList", "GRanges", function(from) {
-  as(as(from, "RangedData"), "GRanges")
-})
-
 setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
 
 

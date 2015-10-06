@@ -31,8 +31,6 @@
 \alias{coerce,factor,GenomicRanges-method}
 \alias{coerce,RangesList,GRanges-method}
 \alias{coerce,RangedData,GRanges-method}
-\alias{coerce,RleList,GRanges-method}
-\alias{coerce,RleViewsList,GRanges-method}
 \alias{coerce,Seqinfo,GRanges-method}
 
 % Accessors:
@@ -158,8 +156,7 @@
   \describe{
     \item{}{
       \code{as(from, "GRanges")}: Creates a GRanges object from a character
-      vector, a factor, or a RangedData, RangesList, RleList, or RleViewsList
-      object.
+      vector, a factor, or a RangedData, or RangesList object.
 
       When \code{from} is a character vector (or a factor), each element
       in it must represent a genomic range in format \code{chr1:2501-2800}
@@ -536,6 +533,7 @@
     \item \link[GenomicRanges]{nearest-methods}
     \item \code{\link{absoluteRanges}}
     \item \code{\link{tileGenome}}
+    \item \code{\link{genomic-data}}
     \item \link{GRangesList-class}
     \item \link[IRanges]{Ranges-class}
     \item \link[S4Vectors]{Vector-class}
