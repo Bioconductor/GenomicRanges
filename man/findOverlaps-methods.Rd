@@ -171,7 +171,7 @@
   has to give).
 }
 
-\author{P. Aboyoun, S. Falcon, M. Lawrence, and H. Pages}
+\author{P. Aboyoun, S. Falcon, M. Lawrence, and H. Pagès}
 
 \seealso{
   \itemize{

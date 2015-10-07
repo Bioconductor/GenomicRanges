@@ -73,7 +73,7 @@ isSmallGenome(seqlengths)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

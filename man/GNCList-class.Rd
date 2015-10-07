@@ -64,7 +64,7 @@ GNCList(x)
   A GNCList object.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \references{
   Alexander V. Alekseyenko and Christopher J. Lee --

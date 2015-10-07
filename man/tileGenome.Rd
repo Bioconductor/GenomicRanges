@@ -53,7 +53,7 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
 }
 
 \author{
-  H. Pages, based on a proposal by Martin Morgan
+  H. Pagès, based on a proposal by M. Morgan
 }
 
 \seealso{

@@ -110,7 +110,7 @@
   on \link{GenomicRanges} objects are using this "natural order".
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \itemize{

@@ -73,7 +73,7 @@ rglist(x, use.mcols=FALSE, ...)
   they're propagated to the returned object.
 }
 
-\author{H. Pages}
+\author{H. Pagès}
 
 \seealso{
   \itemize{

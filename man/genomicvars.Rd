@@ -93,7 +93,7 @@ binnedAverage(bins, numvar, varname)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \seealso{

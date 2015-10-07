@@ -518,7 +518,7 @@
   }
 }
 
-\author{P. Aboyoun and H. Pages}
+\author{P. Aboyoun and H. Pagès}
 
 \seealso{
   \itemize{

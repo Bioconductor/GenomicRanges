@@ -124,7 +124,7 @@ makeGRangesFromDataFrame(df,
 }
 
 \author{
-  H. Pages, based on a proposal by Kasper Daniel Hansen
+  H. Pagès, based on a proposal by Kasper Daniel Hansen
 }
 
 \seealso{

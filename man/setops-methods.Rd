@@ -130,7 +130,7 @@
   when \code{y} is a \link{GRangesList} object.
 }
 
-\author{P. Aboyoun and H. Pages}
+\author{P. Aboyoun and H. Pagès}
 
 \seealso{
   \link[IRanges]{setops-methods},

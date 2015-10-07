@@ -68,7 +68,7 @@
   (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
 }
 
-\author{Michael Lawrence and H. Pages}
+\author{M. Lawrence and H. Pagès}
 
 \seealso{
   \code{\link[BiocGenerics]{strand}}

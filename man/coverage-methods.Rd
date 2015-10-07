@@ -83,7 +83,7 @@
   seqlevel in \code{x}.
 }
 
-\author{H. Pages and P. Aboyoun}
+\author{H. Pagès and P. Aboyoun}
 
 \seealso{
   \itemize{

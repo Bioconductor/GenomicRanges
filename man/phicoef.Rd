@@ -32,7 +32,7 @@ phicoef(x, y=NULL)
 }
 
 \author{
-  H. Pages
+  H. Pagès
 }
 
 \examples{

@@ -345,7 +345,7 @@
   }
 }
 
-\author{P. Aboyoun & H. Pages}
+\author{P. Aboyoun & H. Pagès}
 
 \seealso{
   \link{GRanges-class},
