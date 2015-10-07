@@ -1156,7 +1156,7 @@ bins <- tileGenome(seqinfo(Scerevisiae), tilewidth=100,
                    cut.last.tile.in.chrom=TRUE)
 @
 
-Compute the binned average for \Rcode{my_var}:
+Compute the binned average for \Rcode{my\_var}:
 
 <<bin_3>>=
 binnedAverage(bins, my_var, "binned_var")
