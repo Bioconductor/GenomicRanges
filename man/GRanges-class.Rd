@@ -522,23 +522,45 @@
 
 \seealso{
   \itemize{
-    \item \code{\link{makeGRangesFromDataFrame}}
-    \item \code{\link[GenomeInfoDb]{seqinfo}}
-    \item \link{GenomicRanges-comparison}
-    \item \link[GenomicRanges]{intra-range-methods}
-    \item \link[GenomicRanges]{inter-range-methods}
-    \item \link[GenomicRanges]{coverage-methods}
-    \item \link[GenomicRanges]{setops-methods}
-    \item \link[GenomicRanges]{findOverlaps-methods}
-    \item \link[GenomicRanges]{nearest-methods}
-    \item \code{\link{absoluteRanges}}
-    \item \code{\link{tileGenome}}
-    \item \code{\link{genomic-data}}
-    \item \link{GRangesList-class}
-    \item \link[IRanges]{Ranges-class}
-    \item \link[S4Vectors]{Vector-class}
-    \item \link[S4Vectors]{Rle-class}
-    \item \link[S4Vectors]{DataFrame-class}
+    \item \code{\link{makeGRangesFromDataFrame}} for making a GRanges object
+          from a data.frame or \link[S4Vectors]{DataFrame} object.
+
+    \item \code{\link[GenomeInfoDb]{seqinfo}} for accessing/modifying
+          information about the underlying sequences of a GRanges object.
+
+    \item \link{GenomicRanges-comparison} for comparing and ordering genomic
+          ranges.
+
+    \item \link[GenomicRanges]{intra-range-methods} and
+          \link[GenomicRanges]{inter-range-methods} for intra range and
+          inter range transformations of a GRanges object.
+
+    \item \link[GenomicRanges]{coverage-methods} for computing the coverage
+          of a GRanges object.
+
+    \item \link[GenomicRanges]{setops-methods} for set operations on GRanges
+          objects.
+
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
+          genomic ranges.
+
+    \item \link[GenomicRanges]{nearest-methods} finding the nearest genomic
+          range neighbor.
+
+    \item \code{\link{absoluteRanges}} for transforming genomic ranges into
+          \emph{absolute} ranges (i.e. into ranges on the sequence obtained
+          by virtually concatenating all the sequences in a genome).
+
+    \item \code{\link{tileGenome}} for putting tiles on a genome.
+
+    \item \link{genomicvars} for manipulating genomic variables.
+
+    \item \link{GRangesList} objects.
+
+    \item \link[IRanges]{Ranges} objects in the \pkg{IRanges} package.
+
+    \item \link[S4Vectors]{Vector}, \link[S4Vectors]{Rle}, and
+          \link[S4Vectors]{DataFrame} objects in the \pkg{S4Vectors} package.
   }
 }
 

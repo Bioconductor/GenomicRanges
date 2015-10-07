@@ -1127,87 +1127,44 @@ cs_by_chrom
 
 \subsection{How to compute binned averages along a genome}
 
-In some applications, there is the need to compute the average of a 
-variable along a genome for a set of predefined fixed-width regions 
-(sometimes called "bins"). One such example is coverage.
-Coverage is an \Robject{RleList} with one list element per
-chromosome. Here we simulate a coverage list.
+In some applications (e.g. visualization), there is the need to compute
+the average of a variable defined along a genome (a.k.a. genomic variable)
+for a set of predefined fixed-width regions (sometimes called "bins").
+The genomic variable is typically represented as a named \Robject{RleList}
+object with one list element per chromosome. One such example is coverage.
+Here we create an artificial genomic variable:
 
-<<bim_1>>=
+<<bin_1>>=
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
-set.seed(22)
-cov <- RleList(
+set.seed(55)
+my_var <- RleList(
     lapply(seqlengths(Scerevisiae),
-           function(len) Rle(sample(-10:10, len, replace=TRUE))),
+        function(seqlen) {
+            tmp <- sample(50L, seqlen, replace=TRUE) %/% 50L
+            Rle(cumsum(tmp - rev(tmp)))
+        }
+    ),
     compress=FALSE)
-head(cov, 3)
+my_var
 @
 
 Use the \Rfunction{tileGenome} function to create a set of bins along
 the genome.
 
 <<bin_2>>=
-bins1 <- tileGenome(seqinfo(Scerevisiae), tilewidth=100,
-                    cut.last.tile.in.chrom=TRUE)
+bins <- tileGenome(seqinfo(Scerevisiae), tilewidth=100,
+                   cut.last.tile.in.chrom=TRUE)
 @
 
-We define the following function to compute the binned average of a
-numerical variable defined along a genome.
-
-\begin{verbatim}
-Arguments:
-  'bins': a GRanges object representing the genomic bins.
-       Typically obtained by calling tileGenome() with
-       'cut.last.tile.in.chrom=TRUE'.
-  'numvar': a named RleList object representing a numerical
-       variable defined along the genome covered by 'bins', which
-       is the genome described by 'seqinfo(bins)'.
-  'mcolname': the name to give to the metadata column that will
-       contain the binned average in the returned object.
-\end{verbatim}
-
-The function returns `bins' with an additional metadata column named 
-`mcolname' containing the binned average.
+Compute the binned average for \Rcode{my_var}:
 
 <<bin_3>>=
-binnedAverage <- function(bins, numvar, mcolname)
-{
-    stopifnot(is(bins, "GRanges"))
-    stopifnot(is(numvar, "RleList"))
-    stopifnot(identical(seqlevels(bins), names(numvar)))
-
-    ## A version of viewMeans() that pads "out of limits" views with zeros.
-    viewMeans2 <- function(v) {
-        means <- viewMeans(v)
-        w0 <- width(v)
-        w1 <- width(trim(v))
-        means <- means * w1 / w0
-        means[w0 != 0L & w1 == 0L] <- 0
-        means
-    }
-
-    bins_per_chrom <- split(ranges(bins), seqnames(bins))
-    means_list <- lapply(names(numvar),
-        function(seqname) {
-            v <- Views(numvar[[seqname]], bins_per_chrom[[seqname]])
-            viewMeans2(v)
-        })
-    new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
-    mcols(bins)[[mcolname]] <- new_mcol
-    bins
-}
-@
-
-Compute the binned average for `cov':
-
-<<bin_4>>=
-bins1 <- binnedAverage(bins1, cov, "binned_cov")
-bins1
+binnedAverage(bins, my_var, "binned_var")
 @
 
 The bin size can be modified with the \Rcode{tilewidth} argument
-to \Rfunction{tileGenome}. For additional examples see
-?\Rfunction{tileGenome}.
+to \Rfunction{tileGenome}. See \Rcode{?binnedAverage} for additional
+examples.
 
 
 

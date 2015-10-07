@@ -58,6 +58,9 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
 
 \seealso{
   \itemize{
+    \item \link{genomicvars} for an example of how to compute the binned
+          average of a numerical variable defined along a genome.
+
     \item \link{GRangesList} and \link{GRanges} objects.
 
     \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter.
@@ -65,9 +68,6 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
     \item \link[IRanges]{IntegerList} objects.
 
     \item \link[IRanges]{Views} objects.
-
-    \item \link{coverage,GenomicRanges-method} for computing the coverage
-          of a \link{GRanges} object.
   }
 }
 
@@ -132,135 +132,8 @@ tiles
 ##    DEFINED ALONG A GENOME
 ## ---------------------------------------------------------------------
 
-## 1. When the variable is stored in a named RleList object
-## --------------------------------------------------------
-
-## In Bioconductor, a variable defined along a genome is typically
-## represented as a named RleList object with one list element per
-## chromosome. Let's create such a variable:
-
-library(BSgenome.Scerevisiae.UCSC.sacCer2)
-set.seed(22)
-my_var1 <- RleList(
-    lapply(seqlengths(Scerevisiae),
-           function(len) Rle(sample(-10:10, len, replace=TRUE))),
-    compress=FALSE)
-my_var1
-
-## In some applications, there is sometimes the need to compute the
-## average of 'my_var1' for each genomic region in a set of predefined
-## fixed-width regions (sometimes called "bins"). Let's use
-## tileGenome() to create such a set of bins:
-
-bins1 <- tileGenome(seqinfo(Scerevisiae), tilewidth=100,
-                    cut.last.tile.in.chrom=TRUE)
-
-## We define the following function to compute the binned average of a
-## numerical variable defined along a genome.
-## Arguments:
-##   'bins': a GRanges object representing the genomic bins.
-##        Typically obtained by calling tileGenome() with
-##        'cut.last.tile.in.chrom=TRUE'.
-##   'numvar': a named RleList object representing a numerical
-##        variable defined along the genome covered by 'bins', which
-##        is the genome described by 'seqinfo(bins)'.
-##   'mcolname': the name to give to the metadata column that will
-##        contain the binned average in the returned object.
-## Returns 'bins' with an additional metadata column named 'mcolname'
-## containing the binned average.
-
-binnedAverage <- function(bins, numvar, mcolname)
-{
-    stopifnot(is(bins, "GRanges"))
-    stopifnot(is(numvar, "RleList"))
-    stopifnot(identical(seqlevels(bins), names(numvar)))
-
-    ## A version of viewMeans() that pads "out of limits" views with zeros.
-    viewMeans2 <- function(v) {
-        means <- viewMeans(v)
-        w0 <- width(v)
-        w1 <- width(trim(v))
-        means <- means * w1 / w0
-        means[w0 != 0L & w1 == 0L] <- 0
-        means
-    }
-
-    bins_per_chrom <- split(ranges(bins), seqnames(bins))
-    means_list <- lapply(names(numvar),
-        function(seqname) {
-            v <- Views(numvar[[seqname]], bins_per_chrom[[seqname]])
-            viewMeans2(v)
-        })
-    new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
-    mcols(bins)[[mcolname]] <- new_mcol
-    bins
-}
-
-## Compute the binned average for 'my_var1':
-
-bins1 <- binnedAverage(bins1, my_var1, "binned_var1")
-bins1
-
-## 2. When the variable is stored in a metadata column of a disjoint
-##    GRanges object
-## -----------------------------------------------------------------
-
-## A GRanges object is said to be disjoint if it contains ranges
-## that do not overlap with each other. This can be tested with the
-## isDisjoint() function. For example, the GRanges object returned
-## by tileGenome() is always guaranteed to be disjoint:
-
-stopifnot(isDisjoint(bins1))
-
-## In addition to named RleList objects, the metadata columns of a
-## disjoint GRanges object can also be seen as variables defined
-## along a genome. An obvious example is the "binned_var1" metadata
-## column in 'bins1'. Another example is the "score" metadata column
-## in the following GRanges object:
-
-x2 <- GRanges("chrI",
-              IRanges(c(1, 211, 291), c(150, 285, 377)),
-              score=c(0.4, 8, -10),
-              seqinfo=seqinfo(Scerevisiae))
-x2
-
-## If we consider the score to be zero in the genomic regions not
-## covered by 'x2', then the "score" metadata column represents a
-## variable defined along the genome.
-
-## Turning the score variable into a named RleList representation
-## can be done by computing the weighted coverage of 'x2':
-
-score <- coverage(x2, weight="score")
-score
-
-## Now we can pass 'score' to binnedAverage() to compute the average
-## score per bin:
-
-bins1 <- binnedAverage(bins1, score, "binned_score")
-bins1
-
-## With bigger bins:
-
-bins2 <- tileGenome(seqinfo(x2), tilewidth=50000,
-                    cut.last.tile.in.chrom=TRUE)
-bins2 <- binnedAverage(bins2, score, "binned_score")
-bins2
-
-## Note that the binned variables in 'bins1' and 'bins2' can be
-## turned back into named RleList objects:
-
-binned_var1 <- coverage(bins1, weight="binned_var1")
-stopifnot(all.equal(mean(binned_var1), mean(my_var1)))
-
-binned_score <- coverage(bins2, weight="binned_score")
-stopifnot(all.equal(mean(binned_score), mean(score)))
-
-## Not surprisingly, the "binned" variables are much more compact in
-## memory than the original variables (they contain much less runs):
-
-object.size(binned_var1)
-object.size(my_var1)
+## See '?genomicvars' for an example of how to compute the binned
+## average of a numerical variable defined along a genome.
 }
 
 \keyword{manip}

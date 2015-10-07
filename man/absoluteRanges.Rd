@@ -85,6 +85,8 @@ isSmallGenome(seqlengths)
     \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter in
           the \pkg{GenomeInfoDb} package.
 
+    \item \link{genomicvars} for manipulating genomic variables.
+
     \item The \code{\link{tileGenome}} function for putting tiles on a
           genome.
   }

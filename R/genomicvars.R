@@ -27,8 +27,6 @@ setAs("RleViewsList", "GRanges", function(from) {
 
 ### Represent a collection of named RleList objects as a GRanges with 1
 ### metadata column per RleList object.
-### When used on a single RleList object 'x', 'bindAsGRanges(x)' is equivalent
-### to 'as(x, "GRanges")' (except for the name of the metadata column).
 bindAsGRanges <- function(...)
 {
     args <- list(...)
@@ -69,22 +67,26 @@ bindAsGRanges <- function(...)
 
     ## First column is "runLength". Get rid of it.
     ans_mcols <- unlisted_DFL[-1L]
-    newGRanges("GRanges", ans_seqnames, ans_ranges, mcols=ans_mcols,
-               seqlengths=ans_seqlengths)
+    ans <- newGRanges("GRanges", ans_seqnames, ans_ranges, mcols=ans_mcols,
+                      seqlengths=ans_seqlengths)
+
+    ## Keep only ranges for which at least one variable is not NA.
+    keep_idx <- which(rowSums(!is.na(mcols(ans))) != 0L)
+    ans[keep_idx]
 }
 
-### Return a named RleList with 1 list-element per seqlevel in 'x'.
+### Return a named RleList with 1 list element per seqlevel in 'x'.
 ### Works on any metadata column that can be put in Rle form (i.e. any atomic
 ### vector or factor).
-mcolAsRleList <- function(x, mcolname)
+mcolAsRleList <- function(x, varname)
 {
     if (!is(x, "GenomicRanges"))
         stop("'x' must be a GRanges object")
-    V <- mcols(x)[ , mcolname]
+    var <- mcols(x)[ , varname]
 
-    ## If 'V' is numeric, then we can use coverage().
-    if (is.numeric(V))
-        return(coverage(x, weight=V))
+    ## If 'var' is numeric, then we can use coverage().
+    #if (is.numeric(var))
+    #    return(coverage(x, weight=var))
 
     ## Otherwise 'x' must be disjoint and we compute the RleList in a loop.
     ## This would also work on a numeric metadata column but would be slower
@@ -94,7 +96,7 @@ mcolAsRleList <- function(x, mcolname)
                   "named RleList object when 'x' is not disjoint ",
                   "(ignoring the strand)"))
     rg_per_chrom <- split(ranges(x), seqnames(x))
-    V_per_chrom <- split(V, seqnames(x))
+    var_per_chrom <- split(var, seqnames(x))
     rle_list <- mapply(
         function(seqlen, ir, v) {
             if (is.na(seqlen))
@@ -105,13 +107,13 @@ mcolAsRleList <- function(x, mcolname)
         },
         seqlengths(x),
         rg_per_chrom,
-        V_per_chrom,
+        var_per_chrom,
         SIMPLIFY=FALSE
     )
     as(rle_list, "SimpleRleList")
 }
 
-binnedAverage <- function(bins, numvar, mcolname)
+binnedAverage <- function(bins, numvar, varname)
 {
     if (!is(bins, "GRanges"))
         stop("'x' must be a GRanges object")
@@ -137,7 +139,7 @@ binnedAverage <- function(bins, numvar, mcolname)
             viewMeans2(v)
         })
     new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
-    mcols(bins)[[mcolname]] <- new_mcol
+    mcols(bins)[[varname]] <- new_mcol
     bins
 }
 
