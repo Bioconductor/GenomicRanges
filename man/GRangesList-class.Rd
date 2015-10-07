@@ -36,6 +36,7 @@
 \alias{coerce,GRangesList,CompressedIRangesList-method}
 \alias{coerce,GRangesList,IRangesList-method}
 \alias{coerce,GRangesList,RangesList-method}
+\alias{coerce,GRanges,GRangesList-method}
 \alias{coerce,RangedDataList,GRangesList-method}
 
 % Subsetting:

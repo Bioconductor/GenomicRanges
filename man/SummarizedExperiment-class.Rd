@@ -39,6 +39,8 @@
 \alias{rowRanges<-}
 \alias{rowRanges<-,SummarizedExperiment,GenomicRanges-method}
 \alias{rowRanges<-,SummarizedExperiment,GRangesList-method}
+\alias{rowData}
+\alias{rowData<-}
 \alias{colData}
 \alias{colData,SummarizedExperiment-method}
 \alias{colData<-}

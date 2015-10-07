@@ -404,10 +404,11 @@ setAs("GRangesList", "RangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
 
+setAs("GRanges", "GRangesList", function(from) as(from, "List"))
+
 setAs("RangedDataList", "GRangesList",
       function(from) GRangesList(lapply(from, as, "GRanges")))
 
-setAs("GRanges", "GRangesList", function(from) as(from, "List"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
