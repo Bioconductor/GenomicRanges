@@ -155,7 +155,7 @@ GRanges <- function(seqnames=Rle(), ranges=NULL, strand=NULL,
                     seqlengths=NULL, seqinfo=NULL)
 {
     newGRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
-                          mcols=DataFrame(...),
+                          mcols=DataFrame(..., check.names=FALSE),
                           seqlengths=seqlengths, seqinfo=seqinfo)
 }
 
