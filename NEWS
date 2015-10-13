@@ -1,3 +1,98 @@
+CHANGES IN VERSION 1.22.0
+-------------------------
+
+NEW FEATURES
+
+    o Support coercions back and forth between a GRanges object and a character
+      vector (or factor) with elements in the format 'chr1:2501-2800' or
+      'chr1:2501-2800:+'.
+
+    o Add facilities for manipulating "genomic variables": bindAsGRanges(),
+      mcolAsRleList(), and binnedAverage(). See ?genomicvars for more
+      information.
+
+    o Add "narrow" method for GRangesList objects.
+
+    o Enhancement to the GRanges() constructor. If the 'ranges' argument is not
+      supplied then the constructor proceeds in 2 steps:
+        1. An initial GRanges object is created with 'as(seqnames, "GRanges")'.
+        2. Then this GRanges object is updated according to whatever other
+           arguments were supplied to the call to GRanges().
+      Because of this enhancement, GRanges(x) is now equivalent to
+      'as(x, "GRanges")' e.g. GRanges() can be called directly on a character
+      vector representing ranges, or on a data.frame, or on any object for
+      which coercion to GRanges is supported.
+
+    o Add 'ignore.strand' argument to "range" and "reduce" methods for
+      GRangesList objects.
+
+    o Add coercion from SummarizedExperiment to RangedSummarizedExperiment
+      (also available via updateObject()). See 1st item in DEPRECATED AND
+      DEFUNCT section below for more information about this.
+
+    o GNCList objects are now subsettable.
+
+    o "coverage" methods now accept 'shift' and 'weight' supplied as an Rle.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Modify behavior of "*" strand in precede() / follow() to mimic
+      'ignore.strand=TRUE'.
+
+    o Revisit "pintersect" methods for GRanges#GRanges, GRangesList#GRanges,
+      and GRanges#GRangesList:
+      - Sanitize their semantic.
+      - Add 'drop.nohit.ranges' argument (FALSE by default).
+      - If 'drop.nohit.ranges' is FALSE, the returned object now has a "hit"
+        metadata column added to it to indicate the elements in 'x' that
+        intersect with the corresponding element in 'y'.
+
+    o binnedAverage() now treats 'numvar' as if it was set to zero on genomic
+      positions where it's not set (typically happens when 'numvar' doesn't
+      span the entire chromosomes because it's missing the trailing zeros).
+
+    o GRanges() constructor no more mangles the names of the supplied metadata
+      columns (e.g. if the column is "_tx_id").
+
+    o makeGRangesFromDataFrame() now accepts "." in strand column (treated as
+      "*").
+
+    o GNCList() constructor now propagates the metadata columns.
+
+    o Remove "seqnames" method for RangesList objects.
+
+DEPRECATED AND DEFUNCT
+
+    o The SummarizedExperiment class defined in GenomicRanges is deprecated
+      and replaced by 2 new classes defined in the new SummarizedExperiment
+      package: SummarizedExperiment0 and RangedSummarizedExperiment.
+      In BioC 2.3, the SummarizedExperiment class will be removed from the
+      GenomicRanges package and the SummarizedExperiment0 class will be renamed
+      SummarizedExperiment. To facilitate this transition, a coercion method
+      was added to coerce from old SummarizedExperiment to new
+      RangedSummarizedExperiment (this coercion is performed when calling
+      updateObject() on an old SummarizedExperiment object).
+
+    o makeSummarizedExperimentFromExpressionSet() and related stuff was moved
+      to the new SummarizedExperiment package.
+
+    o After being deprecated in BioC 3.1, the rowData accessor is now defunct
+      (replaced with the rowRanges accessor).
+
+    o After being deprecated in BioC 3.1, GIntervalTree objects and the
+      "intervaltree" algorithm in findOverlaps() are now defunct.
+
+    o After being deprecated in BioC 3.1, mapCoords() and pmapCoords() are
+      now defunct.
+
+BUG FIXES
+
+    o 2 tweaks to subsetting *by* an GenomicRanges:
+      - Improve speed when the object to subset is a SimpleList (e.g.
+        SimpleRleList).
+      - Fix issue when the GenomicRanges subscript is empty.
+
+
 CHANGES IN VERSION 1.20.0
 -------------------------
 
