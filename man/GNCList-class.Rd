@@ -49,8 +49,8 @@ GNCList(x)
   \link[IRanges]{RangesList} object as a data structure based on Nested
   Containment Lists.
 
-  Note that GNCList objects are replacements for \link{GIntervalTree} objects.
-  The latter are defunct starting with BioC 3.2.
+  Note that GNCList objects (introduced in BioC 3.1) are replacements for
+  GIntervalTree objects (BioC < 3.1).
 
   See \code{?\link[IRanges]{NCList}} in the \pkg{IRanges} package for
   some important differences between the new algorithm based on Nested

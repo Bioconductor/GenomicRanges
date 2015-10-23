@@ -42,7 +42,6 @@ Collate: utils.R
 	GRanges-class.R
 	DelegatingGenomicRanges-class.R
 	GNCList-class.R
-	GIntervalTree-class.R
 	GenomicRanges-comparison.R
 	GenomicRangesList-class.R
 	GRangesList-class.R
@@ -55,7 +54,6 @@ Collate: utils.R
 	coverage-methods.R
 	setops-methods.R
 	findOverlaps-methods.R
-	findOverlaps-GIntervalTree-methods.R
 	nearest-methods.R
 	absoluteRanges.R
 	tileGenome.R
