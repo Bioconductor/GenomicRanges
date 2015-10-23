@@ -86,7 +86,6 @@ exportMethods(
     punion, pintersect, psetdiff, pgap,
     findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
-    mapCoords, pmapCoords,
     tile,
     subset,
     subjectHits, queryHits,

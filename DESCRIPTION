@@ -10,7 +10,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	summarization of an experiment, are defined in the GenomicAlignments
 	and SummarizedExperiment packages respectively. Both packages build
 	on top of the GenomicRanges infrastructure.
-Version: 1.23.0
+Version: 1.23.1
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
@@ -57,7 +57,6 @@ Collate: utils.R
 	findOverlaps-methods.R
 	findOverlaps-GIntervalTree-methods.R
 	nearest-methods.R
-	mapCoords-methods.R
 	absoluteRanges.R
 	tileGenome.R
 	tile-methods.R
