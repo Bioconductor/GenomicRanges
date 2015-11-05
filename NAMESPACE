@@ -61,7 +61,7 @@ exportMethods(
     rbind,
     show,
     duplicated, match,
-    order, sort, rank,
+    is.unsorted, order, sort, rank,
     union, intersect, setdiff,
     start, "start<-", end, "end<-", width, "width<-",
     split, unlist,
