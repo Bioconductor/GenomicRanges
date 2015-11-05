@@ -174,6 +174,21 @@ relevelSeqnamesForMatch <- function(x, table) {
 ### method for Vector objects.
 ###
 
+.GenomicRanges_as_IntegerQuads <- function(x, ignore.strand=FALSE)
+{
+    if (!isTRUEorFALSE(ignore.strand))
+        stop("'ignore.strand' must be TRUE of FALSE")
+    a <- S4Vectors:::decodeRle(seqnames(x))
+    if (ignore.strand) {
+        b <- integer(length(x))
+    } else {
+        b <- S4Vectors:::decodeRle(strand(x))
+    }
+    c <- start(x)
+    d <- width(x)
+    list(a, b, c, d)
+}
+
 setMethod("is.unsorted", "GenomicRanges",
     function(x, na.rm=FALSE, strictly=FALSE, ignore.strand=FALSE)
     {
@@ -182,9 +197,7 @@ setMethod("is.unsorted", "GenomicRanges",
                     "ignores the 'na.rm' argument")
         if (!isTRUEorFALSE(strictly))
             stop("'strictly' must be TRUE of FALSE")
-        if (!isTRUEorFALSE(ignore.strand))
-            stop("'ignore.strand' must be TRUE of FALSE")
-        ## It seems that creating 'a', 'b', 'c', and 'd' below is faster when
+        ## It seems that creating the integer quads below is faster when
         ## 'x' is already sorted (TODO: Investigate why). Therefore, and
         ## somewhat counterintuitively, is.unsorted() can be faster when 'x'
         ## is already sorted (which, in theory, is the worst-case scenario
@@ -192,64 +205,55 @@ setMethod("is.unsorted", "GenomicRanges",
         ## full walk on 'x') than when it is unsorted (in which case
         ## S4Vectors:::sortedIntegerQuads() might stop walking on 'x' after
         ## checking its first 2 elements only -- the best-case scenario).
-        a <- S4Vectors:::decodeRle(seqnames(x))
-        if (ignore.strand) {
-            b <- integer(length(x))
-        } else {
-            b <- S4Vectors:::decodeRle(strand(x))
-        }
-        c <- start(x)
-        d <- width(x)
-        !S4Vectors:::sortedIntegerQuads(a, b, c, d, strictly=strictly)
+        quads <- .GenomicRanges_as_IntegerQuads(x, ignore.strand)
+        !S4Vectors:::sortedIntegerQuads(quads[[1L]], quads[[2L]],
+                                        quads[[3L]], quads[[4L]],
+                                        strictly=strictly)
     }
 )
 
+.order_GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
+{
+    if (!isTRUEorFALSE(decreasing))
+        stop("'decreasing' must be TRUE or FALSE")
+    quads <- .GenomicRanges_as_IntegerQuads(x, ignore.strand)
+    S4Vectors:::orderIntegerQuads(quads[[1L]], quads[[2L]],
+                                  quads[[3L]], quads[[4L]],
+                                  decreasing=decreasing)
+}
+
+### TODO: Support the 'ignore.strand' argument (the signature of the order()
+### generic doesn't make this as straightforward as it could be).
 setMethod("order", "GenomicRanges",
     function(..., na.last=TRUE, decreasing=FALSE)
     {
+        if (!identical(na.last, TRUE))
+            warning("\"order\" method for GenomicRanges objects ",
+                    "ignores the 'na.last' argument")
         if (!isTRUEorFALSE(decreasing))
             stop("'decreasing' must be TRUE or FALSE")
         ## All arguments in '...' are guaranteed to be GenomicRanges objects.
         args <- list(...)
-        if (length(args) == 1L) {
-            x <- args[[1L]]
-            return(S4Vectors:::orderIntegerQuads(as.factor(seqnames(x)),
-                                                 as.factor(strand(x)),
-                                                 start(x), width(x),
-                                                 decreasing=decreasing))
-        }
-        order_args <- vector("list", 4L*length(args))
-        idx <- 4L*seq_len(length(args))
-        order_args[idx - 3L] <- lapply(args,
-                                       function(x) as.factor(seqnames(x)))
-        order_args[idx - 2L] <- lapply(args,
-                                       function(x) as.factor(strand(x)))
-        order_args[idx - 1L] <- lapply(args, start)
-        order_args[idx] <- lapply(args, width)
-        do.call(order, c(order_args,
-                         list(na.last=na.last, decreasing=decreasing)))
+        if (length(args) == 1L)
+            return(.order_GenomicRanges(args[[1L]], decreasing))
+        order_args <- c(unlist(lapply(args, .GenomicRanges_as_IntegerQuads),
+                               recursive=FALSE, use.names=FALSE),
+                        list(na.last=na.last, decreasing=decreasing))
+        do.call(order, order_args)
     }
 )
 
 ### S3/S4 combo for sort.GenomicRanges
 .sort.GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE, by)
 {
-    if (!isTRUEorFALSE(ignore.strand))
-        stop("'ignore.strand' must be TRUE or FALSE")
-    if (ignore.strand) {
-        x2 <- unstrand(x)
-        i <- order(x2, decreasing=decreasing)
+    if (missing(by)) {
+        oo <- .order_GenomicRanges(x, decreasing, ignore.strand)
     } else {
-        if (!missing(by)) {
-            if (!missing(ignore.strand)) {
-                warning("'ignore.strand' ignored when 'by' is specified")
-            }
-            i <- S4Vectors:::orderBy(by, x, decreasing=decreasing)
-        } else {
-            i <- order(x, decreasing=decreasing)
-        }
+        if (!identical(ignore.strand, FALSE))
+            warning("'ignore.strand' ignored when 'by' is specified")
+        oo <- S4Vectors:::orderBy(by, x, decreasing=decreasing)
     }
-    extractROWS(x, i)
+    extractROWS(x, oo)
 }
 sort.GenomicRanges <- function(x, decreasing=FALSE, ...)
     .sort.GenomicRanges(x, decreasing=decreasing, ...)
