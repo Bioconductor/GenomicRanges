@@ -121,7 +121,7 @@
   "natural order".
 }
 
-\author{H. Pagès}
+\author{H. Pagès, \code{is.unsorted} contributed by Pete Hickey}
 
 \seealso{
   \itemize{
