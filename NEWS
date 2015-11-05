@@ -1,3 +1,12 @@
+CHANGES IN VERSION 1.24.0
+-------------------------
+
+NEW FEATURES
+
+    o Add "is.unsorted" method for GenomicRanges objects (contributed by Pete
+      Hickey).
+
+
 CHANGES IN VERSION 1.22.0
 -------------------------
 

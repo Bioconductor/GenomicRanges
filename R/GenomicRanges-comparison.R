@@ -168,9 +168,41 @@ relevelSeqnamesForMatch <- function(x, table) {
 ###
 ### The "order" and "rank" methods for GenomicRanges objects are consistent
 ### with the order implied by compare().
+### is.unsorted() is a quick/cheap way of checking whether a GenomicRanges
+### object is already sorted, e.g., called prior to a costly sort.
 ### sort() will work out-of-the-box on a GenomicRanges object thanks to the
 ### method for Vector objects.
 ###
+
+setMethod("is.unsorted", "GenomicRanges",
+    function(x, na.rm=FALSE, strictly=FALSE, ignore.strand=FALSE)
+    {
+        if (!identical(na.rm, FALSE))
+            warning("\"is.unsorted\" method for GenomicRanges objects ",
+                    "ignores the 'na.rm' argument")
+        if (!isTRUEorFALSE(strictly))
+            stop("'strictly' must be TRUE of FALSE")
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE of FALSE")
+        ## It seems that creating 'a', 'b', 'c', and 'd' below is faster when
+        ## 'x' is already sorted (TODO: Investigate why). Therefore, and
+        ## somewhat counterintuitively, is.unsorted() can be faster when 'x'
+        ## is already sorted (which, in theory, is the worst-case scenario
+        ## because S4Vectors:::sortedIntegerQuads() will then need to take a
+        ## full walk on 'x') than when it is unsorted (in which case
+        ## S4Vectors:::sortedIntegerQuads() might stop walking on 'x' after
+        ## checking its first 2 elements only -- the best-case scenario).
+        a <- S4Vectors:::decodeRle(seqnames(x))
+        if (ignore.strand) {
+            b <- integer(length(x))
+        } else {
+            b <- S4Vectors:::decodeRle(strand(x))
+        }
+        c <- start(x)
+        d <- width(x)
+        !S4Vectors:::sortedIntegerQuads(a, b, c, d, strictly=strictly)
+    }
+)
 
 setMethod("order", "GenomicRanges",
     function(..., na.last=TRUE, decreasing=FALSE)

@@ -10,11 +10,11 @@
 
 \alias{match,GenomicRanges,GenomicRanges-method}
 
+\alias{is.unsorted,GenomicRanges-method}
 \alias{order,GenomicRanges-method}
 \alias{sort,GenomicRanges-method}
 \alias{sort.GenomicRanges}
 \alias{rank,GenomicRanges-method}
-
 
 \title{Comparing and ordering genomic ranges}
 
@@ -38,6 +38,8 @@
 
 ## order() and related methods
 ## ----------------------------
+
+\S4method{is.unsorted}{GenomicRanges}(x, na.rm=FALSE, strictly=FALSE, ignore.strand=FALSE)
 
 \S4method{order}{GenomicRanges}(..., na.last=TRUE, decreasing=FALSE)
 
@@ -68,6 +70,13 @@
     Whether or not the strand should be ignored when comparing 2 genomic
     ranges.
   }
+  \item{na.rm}{
+    Ignored.
+  }
+  \item{strictly}{
+    Logical indicating if the check should be for \emph{strictly} increasing
+    values.
+  }
   \item{...}{
     Additional \link{GenomicRanges} objects used for breaking ties.
   }
@@ -82,7 +91,7 @@
     is supported for now.
   }
   \item{by}{
-    An optional formula that is resolved against \code{as.env(x)}; 
+    An optional formula that is resolved against \code{as.env(x)};
     the resulting variables are passed to \code{order} to generate the
     ordering permutation.
   }
@@ -103,11 +112,13 @@
   and (d) for regular ranges (see \code{?`\link[IRanges]{Ranges-comparison}`}),
   genomic ranges that belong to the same underlying sequence and strand are
   ordered like regular ranges.
-  \code{order()}, \code{sort()}, and \code{rank()} on a \link{GenomicRanges}
-  object are using this "natural order".
 
-  Also \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<} and \code{>}
-  on \link{GenomicRanges} objects are using this "natural order".
+  \code{is.unsorted()}, \code{order()}, \code{sort()}, and \code{rank()} on a
+  \link{GenomicRanges} object behave accordingly to this "natural order".
+
+  \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<} and \code{>}
+  on \link{GenomicRanges} objects also behave accordingly to this
+  "natural order".
 }
 
 \author{H. Pagès}
@@ -129,10 +140,11 @@
 
 \examples{
 gr0 <- GRanges(
-        seqnames=Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-        ranges=IRanges(c(1:9,7L), end=10),
-        strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        seqlengths=c(chr1=11, chr2=12, chr3=13))
+    Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+    IRanges(c(1:9,7L), end=10),
+    strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+    seqlengths=c(chr1=11, chr2=12, chr3=13)
+)
 gr <- c(gr0, gr0[7:3])
 names(gr) <- LETTERS[seq_along(gr)]
 
@@ -174,9 +186,15 @@ countMatches(gr_levels, gr)
 ## ---------------------------------------------------------------------
 ## E. order() AND RELATED METHODS
 ## ---------------------------------------------------------------------
+is.unsorted(gr)
 order(gr)
 sort(gr)
-sort(gr, ignore.strand=TRUE)
+is.unsorted(sort(gr))
+
+is.unsorted(gr, ignore.strand=TRUE)
+gr2 <- sort(gr, ignore.strand=TRUE)
+is.unsorted(gr2)  # TRUE
+is.unsorted(gr2, ignore.strand=TRUE)  # FALSE
 
 ## TODO: Broken. Please fix!
 #sort(gr, by = ~ seqnames + start + end) # equivalent to (but slower than) above
@@ -191,12 +209,12 @@ rank(gr)
 ## ---------------------------------------------------------------------
 ## F. GENERALIZED ELEMENT-WISE COMPARISON OF 2 GenomicRanges OBJECTS
 ## ---------------------------------------------------------------------
-gr2 <- GRanges(c(rep("chr1", 12), "chr2"), IRanges(c(1:11, 6:7), width=3))
-strand(gr2)[12] <- "+"
-gr3 <- GRanges("chr1", IRanges(5, 9))
+gr3 <- GRanges(c(rep("chr1", 12), "chr2"), IRanges(c(1:11, 6:7), width=3))
+strand(gr3)[12] <- "+"
+gr4 <- GRanges("chr1", IRanges(5, 9))
 
-compare(gr2, gr3)
-rangeComparisonCodeToLetter(compare(gr2, gr3))
+compare(gr3, gr4)
+rangeComparisonCodeToLetter(compare(gr3, gr4))
 }
 
 \keyword{methods}
