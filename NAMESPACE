@@ -21,7 +21,6 @@ exportClasses(
     GenomicRanges, GenomicRangesORmissing, GRanges, DelegatingGenomicRanges,
     GNCList,
     GenomicRangesORGRangesList, GRangesList,
-    SummarizedExperiment, Assays, ShallowData, ShallowSimpleListAssays,
     GenomicRangesList, SimpleGenomicRangesList
 )
 
@@ -52,13 +51,10 @@ export(
 exportMethods(
     length,
     names, "names<-",
-    "dimnames<-",
     "[", "[<-", "[[", "[[<-", "$", "$<-",
     as.character, as.factor, as.data.frame,
     coerce,
     c,
-    cbind,
-    rbind,
     show,
     duplicated, match,
     is.unsorted, order, sort, rank,
@@ -112,11 +108,7 @@ export(
 
     isSmallGenome, absoluteRanges, relativeRanges,
     tileGenome,
-    bindAsGRanges, mcolAsRleList, binnedAverage,
-
-    rowData, "rowData<-",
-
-    .DollarNames.SummarizedExperiment
+    bindAsGRanges, mcolAsRleList, binnedAverage
 )
 
 
@@ -131,29 +123,13 @@ export(
     checkConstraint,
 
     ## range-squeezers.R:
-    granges, grglist, rglist,
-
-    ## SummarizedExperiment-class.R:
-    SummarizedExperiment,
-    exptData, "exptData<-",
-    rowRanges, "rowRanges<-",
-    colData, "colData<-",
-    assays, "assays<-",
-    assay, "assay<-",
-    assayNames, "assayNames<-"
+    granges, grglist, rglist
 )
 
 ### Exactly the same list as above.
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    granges, grglist, rglist,
-    SummarizedExperiment,
-    exptData, "exptData<-",
-    rowRanges, "rowRanges<-",
-    colData, "colData<-",
-    assays, "assays<-",
-    assay, "assay<-",
-    assayNames, "assayNames<-"
+    granges, grglist, rglist
 )
 

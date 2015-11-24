@@ -25,7 +25,8 @@ rglist(x, use.mcols=FALSE, ...)
 
 \arguments{
   \item{x}{
-    A range-based object e.g. a \link{SummarizedExperiment},
+    A range-based object e.g. a
+    \link[SummarizedExperiment]{RangedSummarizedExperiment},
     \link[GenomicAlignments]{GAlignments},
     \link[GenomicAlignments]{GAlignmentPairs},
     or \link[GenomicAlignments]{GAlignmentsList} object.
@@ -41,9 +42,11 @@ rglist(x, use.mcols=FALSE, ...)
 }
 
 \details{
-  The \pkg{GenomicRanges} and \pkg{GenomicAlignments} packages define and
-  document methods for various types of range-based objects (e.g. for
-  \link{SummarizedExperiment}, \link[GenomicAlignments]{GAlignments},
+  The \pkg{GenomicRanges}, \pkg{SummarizedExperiment}, and
+  \pkg{GenomicAlignments} packages define and document methods
+  for various types of range-based objects (e.g. for
+  \link[SummarizedExperiment]{RangedSummarizedExperiment},
+  \link[GenomicAlignments]{GAlignments},
   \link[GenomicAlignments]{GAlignmentPairs}, and
   \link[GenomicAlignments]{GAlignmentsList} objects).
   Other Bioconductor packages might as well.
@@ -81,7 +84,8 @@ rglist(x, use.mcols=FALSE, ...)
 
     \item \link[IRanges]{RangesList} objects in the \pkg{IRanges} package.
 
-    \item \link{SummarizedExperiment} objects.
+    \item \link[SummarizedExperiment]{RangedSummarizedExperiment} objects
+          in the \pkg{SummarizedExperiment} packages.
 
     \item \link[GenomicAlignments]{GAlignments},
           \link[GenomicAlignments]{GAlignmentPairs},
