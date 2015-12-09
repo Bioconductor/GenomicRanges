@@ -20,7 +20,8 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
     which(ok1 & ok2)
 }
 
-.findOverlaps_naive <- function(query, subject, min.score=1L,
+.findOverlaps_naive <- function(query, subject,
+                                maxgap=0L, minoverlap=1L,
                                 type=c("any", "start", "end",
                                        "within", "extend", "equal"),
                                 select=c("all", "first", "last", "arbitrary",
@@ -29,6 +30,7 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
 {
     if (ignore.strand)
         strand(query) <- "*"
+    min_score <- .min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
     select <- match.arg(select)
     type_codes <- switch(type,
@@ -41,7 +43,7 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
     )
     hits_per_query <- lapply(seq_along(query),
         function(i) .get_query_overlaps(query[i], subject,
-                                        min.score, type_codes))
+                                        min_score, type_codes))
     hits <- .make_Hits_from_q2s(hits_per_query, length(subject))
     selectHits(hits, select=select)
 }

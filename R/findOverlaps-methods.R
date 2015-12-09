@@ -15,12 +15,12 @@ findOverlaps_GenomicRanges <- function(query, subject,
              ignore.strand=FALSE)
 {
     type <- match.arg(type)
-    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap, type)
     select <- match.arg(select)
     algorithm <- match.arg(algorithm)
     if (!identical(algorithm, "nclist"))
         stop("the 'algorithm' argument is defunct")
-    findOverlaps_GNCList(query, subject, min.score=min.score,
+    findOverlaps_GNCList(query, subject,
+                         maxgap=maxgap, minoverlap=minoverlap,
                          type=type, select=select,
                          ignore.strand=ignore.strand)
 }
@@ -388,12 +388,11 @@ countOverlaps_GenomicRanges <- function(query, subject,
               ignore.strand=FALSE)
 {
     type <- match.arg(type)
-    min.score <- IRanges:::min_overlap_score(maxgap, minoverlap, type)
     algorithm <- match.arg(algorithm)
     if (algorithm != "nclist")
-        warning("'algorithm' is ignored when 'query' or 'subject' ",
-                "is a GNCList object")
-    ans <- findOverlaps_GNCList(query, subject, min.score=min.score,
+        stop("the 'algorithm' argument is defunct")
+    ans <- findOverlaps_GNCList(query, subject,
+                                maxgap=maxgap, minoverlap=minoverlap,
                                 type=type, select="count",
                                 ignore.strand=ignore.strand)
     names(ans) <- names(query)

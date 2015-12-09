@@ -95,17 +95,13 @@ setMethod("extractROWS", "GNCList",
 
 ### NOT exported.
 findOverlaps_GNCList <- function(query, subject,
-             min.score=1L,
+             maxgap=0L, minoverlap=1L,
              type=c("any", "start", "end", "within", "extend", "equal"),
              select=c("all", "first", "last", "arbitrary", "count"),
              ignore.strand=FALSE)
 {
     if (!(is(query, "GenomicRanges") && is(subject, "GenomicRanges")))
         stop("'query' and 'subject' must be GenomicRanges objects")
-    if (!isSingleNumber(min.score))
-        stop("'min.score' must be a single integer")
-    if (!is.integer(min.score))
-        min.score <- as.integer(min.score)
     type <- match.arg(type)
     select <- match.arg(select)
     if (!isTRUEorFALSE(ignore.strand))
@@ -152,6 +148,6 @@ findOverlaps_GNCList <- function(query, subject,
                           ranges(query), q_space, q_groups,
                           ranges(subject), s_space, s_groups,
                           nclists, nclist_is_q,
-                          min.score, type, select, circle_length)
+                          maxgap, minoverlap, type, select, circle_length)
 }
 
