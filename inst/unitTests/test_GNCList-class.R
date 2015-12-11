@@ -6,20 +6,19 @@ findOverlaps_GNCList <- GenomicRanges:::findOverlaps_GNCList
 ### in IRanges.
 source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
 
-### Redefine the .get_query_overlaps() and .findOverlaps_naive() functions
-### we got from sourcing test_NCList-class.R above.
-.get_query_overlaps <- function(query, subject, min.score, type_codes)
+.get_query_overlaps2 <- function(query, subject,
+                                 maxgap, min_overlap_score, type,
+                                 ignore.strand)
 {
-    if (S4Vectors:::decodeRle(strand(query) == "*")) {
-        strand(subject) <- "*"
-    } else {
-        strand(subject)[strand(subject) == "*"] <- strand(query)
-    }
-    ok1 <- .overlap_score(query, subject) >= min.score
-    ok2 <- rangeComparisonCodeToLetter(compare(query, subject)) %in% type_codes
-    which(ok1 & ok2)
+    ok <- .get_query_overlaps(query, subject, maxgap, min_overlap_score, type)
+    ok <- ok & seqnames(query) == seqnames(subject)
+    if (ignore.strand || as.logical(strand(query) == "*"))
+        return(ok)
+    ok & (strand(subject) == "*" | strand(query) == strand(subject))
 }
 
+### Redefine the .findOverlaps_naive() function we got from sourcing
+### test_NCList-class.R above.
 .findOverlaps_naive <- function(query, subject,
                                 maxgap=0L, minoverlap=1L,
                                 type=c("any", "start", "end",
@@ -28,22 +27,18 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
                                          "count"),
                                 ignore.strand=FALSE)
 {
-    if (ignore.strand)
-        strand(query) <- "*"
-    min_score <- .min_overlap_score(maxgap, minoverlap)
     type <- match.arg(type)
+    if (type == "any") {
+        min_overlap_score <- .min_overlap_score(maxgap, minoverlap)
+    } else {
+        min_overlap_score <- minoverlap
+    }
     select <- match.arg(select)
-    type_codes <- switch(type,
-        "any"    = letters[1:13],
-        "start"  = c("f", "g", "h"),
-        "end"    = c("d", "g", "j"),
-        "within" = c("f", "g", "i", "j"),
-        "extend" = c("d", "e", "g", "h"),
-        "equal"  = "g"
-    )
     hits_per_query <- lapply(seq_along(query),
-        function(i) .get_query_overlaps(query[i], subject,
-                                        min_score, type_codes))
+        function(i)
+            which(.get_query_overlaps2(query[i], subject,
+                                       maxgap, min_overlap_score, type,
+                                       ignore.strand)))
     hits <- .make_Hits_from_q2s(hits_per_query, length(subject))
     selectHits(hits, select=select)
 }
@@ -76,7 +71,7 @@ test_GNCList <- function()
 test_findOverlaps_GNCList <- function()
 {
     q_ranges <- IRanges(-3:7, width=3)
-    s_ranges <- IRanges(rep.int(1:5, 5:1), c(1:5, 2:5, 3:5, 4:5, 5))
+    s_ranges <- IRanges(rep.int(1:6, 6:1), c(0:5, 1:5, 2:5, 3:5, 4:5, 5))
 
     query <- GRanges(
         Rle(c("chr1", "chr2", "chrM"), rep(length(q_ranges), 3)),
