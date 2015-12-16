@@ -213,15 +213,14 @@ setMethod("follow", c("GenomicRanges", "missing"),
     m
 }
 
-.nearest <- function(x, subject, select, algorithm,
-                     ignore.strand, ignoreSelf=FALSE)
+.nearest <- function(x, subject, select, ignore.strand, ignoreSelf=FALSE)
 {
     ## overlapping ranges
     if (ignoreSelf) {
-        ol <- findOverlaps(x, select=select, algorithm=algorithm,
+        ol <- findOverlaps(x, select=select,
                            ignore.strand=ignore.strand, ignoreSelf=TRUE)
     } else {
-        ol <- findOverlaps(x, subject, select=select, algorithm=algorithm,
+        ol <- findOverlaps(x, subject, select=select,
                            ignore.strand=ignore.strand)
     }
 
@@ -288,22 +287,19 @@ setMethod("follow", c("GenomicRanges", "missing"),
 
 
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select=c("arbitrary", "all"),
-             algorithm=c("nclist", "intervaltree"), ignore.strand=FALSE)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .nearest(x, subject, select=select, algorithm=match.arg(algorithm),
-                 ignore.strand=ignore.strand)
+        .nearest(x, subject, select=select, ignore.strand=ignore.strand)
     }
 )
 
 setMethod("nearest", c("GenomicRanges", "missing"),
-    function(x, subject, select=c("arbitrary", "all"),
-             algorithm=c("nclist", "intervaltree"), ignore.strand=FALSE)
+    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .nearest(x, x, select=select, algorithm=match.arg(algorithm),
-                 ignore.strand=ignore.strand, ignoreSelf=TRUE)
+        .nearest(x, x, select=select, ignore.strand=ignore.strand,
+                 ignoreSelf=TRUE)
     }
 )
 
@@ -335,21 +331,17 @@ setMethod("distance", c("GenomicRanges", "GenomicRanges"),
 ###
 
 setMethod("distanceToNearest", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, algorithm=c("nclist", "intervaltree"),
-             ignore.strand=FALSE, ...)
+    function(x, subject, ignore.strand=FALSE, ...)
     {
-        x_nearest <- nearest(x, subject, algorithm=match.arg(algorithm),
-                             ignore.strand=ignore.strand, ...)
+        x_nearest <- nearest(x, subject, ignore.strand=ignore.strand, ...)
         .distanceToNearest(x_nearest, x, subject, ignore.strand=ignore.strand)
     }
 )
 
 setMethod("distanceToNearest", c("GenomicRanges", "missing"),
-    function(x, subject, algorithm=c("nclist", "intervaltree"),
-             ignore.strand=FALSE, ...)
+    function(x, subject, ignore.strand=FALSE, ...)
     {
-        x_nearest <- nearest(x, algorithm=match.arg(algorithm),
-                             ignore.strand=ignore.strand, ...)
+        x_nearest <- nearest(x, ignore.strand=ignore.strand, ...)
         .distanceToNearest(x_nearest, x, x, ignore.strand=ignore.strand)
     }
 )

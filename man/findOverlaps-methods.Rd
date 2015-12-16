@@ -2,8 +2,6 @@
 \alias{findOverlaps-methods}
 
 \alias{findOverlaps}
-\alias{findOverlaps,GNCList,GenomicRanges-method}
-\alias{findOverlaps,GenomicRanges,GNCList-method}
 \alias{findOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GRangesList-method}
@@ -18,11 +16,9 @@
 \alias{findOverlaps,GRangesList,RangedData-method}
 
 \alias{countOverlaps}
-\alias{countOverlaps,GNCList,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,GNCList-method}
+\alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{countOverlaps,GenomicRanges,Vector-method}
 \alias{countOverlaps,Vector,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{countOverlaps,GRangesList,Vector-method}
 \alias{countOverlaps,Vector,GRangesList-method}
 \alias{countOverlaps,GRangesList,GRangesList-method}
@@ -79,25 +75,21 @@
     maxgap=0L, minoverlap=1L,
     type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"),
-    algorithm=c("nclist", "intervaltree"),
     ignore.strand=FALSE)
 
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap=0L, minoverlap=1L,
     type=c("any", "start", "end", "within", "equal"),
-    algorithm=c("nclist", "intervaltree"),
     ignore.strand=FALSE)
 
 \S4method{overlapsAny}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap=0L, minoverlap=1L,
     type=c("any", "start", "end", "within", "equal"),
-    algorithm=c("nclist", "intervaltree"),
     ignore.strand=FALSE)
 
 \S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap=0L, minoverlap=1L,
     type=c("any", "start", "end", "within", "equal"),
-    algorithm=c("nclist", "intervaltree"),
     ignore.strand=FALSE)
 }
 
@@ -107,7 +99,7 @@
     \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
     also accepted for one of \code{query} or \code{subject}.
   }
-  \item{maxgap, minoverlap, type, algorithm}{
+  \item{maxgap, minoverlap, type}{
     See \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
     for a description of these arguments.
   }

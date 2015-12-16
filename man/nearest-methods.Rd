@@ -32,15 +32,11 @@
 \S4method{follow}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
 \S4method{follow}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
 
-\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"),
-        algorithm=c("nclist", "intervaltree"), ignore.strand=FALSE)
-\S4method{nearest}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"),
-        algorithm=c("nclist", "intervaltree"), ignore.strand=FALSE)
+\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{nearest}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
 
-\S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, algorithm=c("nclist", "intervaltree"),
-                  ignore.strand=FALSE, ...)
-\S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, algorithm=c("nclist", "intervaltree"),
-                  ignore.strand=FALSE, ...)
+\S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, ignore.strand=FALSE, ...)
+\S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, ignore.strand=FALSE, ...)
 
 \S4method{distance}{GenomicRanges,GenomicRanges}(x, y, ignore.strand=FALSE, ...)
 }
@@ -69,13 +65,6 @@
   \item{ignore.strand}{
     A \code{logical} indicating if the strand of the input ranges
     should be ignored. When \code{TRUE}, strand is set to \code{'+'}.
-  }
-  \item{algorithm}{
-    This argument is passed to \code{\link{findOverlaps}}, which
-    \code{nearest} and \code{distanceToNearest} use internally.
-    See \code{?\link{findOverlaps}} for more information.
-    Note that it will be removed in BioC 3.3 so please don't use it unless
-    you have a good reason to do so (e.g. troubleshooting).
   }
   \item{...}{Additional arguments for methods.}
 }
