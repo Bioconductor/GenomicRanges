@@ -418,18 +418,6 @@ setReplaceMethod("strand", "GenomicRanges",
     }
 )
 
-setReplaceMethod("elementMetadata", "GenomicRanges",
-    function(x, ..., value)
-    {
-        value <- normalizeMetadataColumnsReplacementValue(value, x)
-        x <- update(x, elementMetadata=value, check=FALSE)
-        msg <- .valid.GenomicRanges.mcols(x)
-        if (!is.null(msg))
-            stop(msg)
-        x
-    }
-)
-
 setReplaceMethod("seqinfo", "GenomicRanges",
     function(x, new2old=NULL, force=FALSE, value)
     {

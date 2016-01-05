@@ -3,34 +3,6 @@
 ### -------------------------------------------------------------------------
 
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Used by "elementMetadata<-" methods.
-###
-
-### Try to turn 'value' into a DataFrame compatible with 'x'.
-### Used in GenomicAlignments package.
-normalizeMetadataColumnsReplacementValue <- function(value, x)
-{
-    if (is.null(value))
-        return(new("DataFrame", nrows=length(x)))
-    if (!is(value, "DataFrame"))
-        value <- DataFrame(value)
-    if (!is.null(rownames(value)))
-        rownames(value) <- NULL
-    n <- length(x)
-    k <- nrow(value)
-    if (k == n)
-        return(value)
-    if ((k == 0L) || (k > n) || (n %% k != 0L))
-        stop(k, " rows in value to replace ", n, " rows")
-    value[rep(seq_len(k), length.out=n), , drop=FALSE]
-}
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other stuff...
-###
-
 hasHead <- function(x, h) {
   identical(head(x, length(h)), h)
 }

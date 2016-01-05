@@ -40,7 +40,6 @@
 \alias{ranges<-,GenomicRanges-method}
 \alias{strand,GRanges-method}
 \alias{strand<-,GenomicRanges,ANY-method}
-\alias{elementMetadata<-,GenomicRanges-method}
 \alias{names,GenomicRanges-method}
 \alias{names<-,GenomicRanges-method}
 \alias{seqinfo,GRanges-method}
