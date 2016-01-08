@@ -130,12 +130,16 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
     c(pbs1, pbs2)
 }
 
+### Used in GenomicAlignments.
 .valid.GenomicRanges.seqnames <- function(x)
 {
-    if (!is.factor(runValue(seqnames(x))))
-        return("'seqnames' should be a 'factor' Rle")
-    if (S4Vectors:::anyMissing(runValue(seqnames(x))))
-        return("'seqnames' contains missing values")
+    x_seqnames <- seqnames(x)
+    if (!is(x_seqnames, "Rle") || !is.factor(runValue(x_seqnames)))
+        return("'seqnames(x)' must be a 'factor' Rle")
+    if (!is.null(names(x_seqnames)))
+        return("'seqnames(x)' must be a 'factor' Rle with no names")
+    if (S4Vectors:::anyMissing(runValue(x_seqnames)))
+        return("'seqnames(x)' contains missing values")
     NULL
 }
 
@@ -353,24 +357,24 @@ setReplaceMethod("names", "GenomicRanges",
     }
 )
 
+### Used in GenomicAlignments.
+.normalize_seqnames_replacement_value <- function(value, x)
+{
+    if (!is(value, "Rle"))
+        value <- Rle(value)
+    if (!is.factor(runValue(value)))
+        runValue(value) <- factor(runValue(value))
+    if (!identical(levels(value), seqlevels(x)))
+        stop("levels of supplied 'seqnames' must be ",
+             "identical to 'seqlevels(x)'")
+    S4Vectors:::V_recycle(value, x, x_what="value", skeleton_what="x")
+}
+
 setReplaceMethod("seqnames", "GenomicRanges",
     function(x, value)
     {
-        if (!is(value, "Rle"))
-            value <- Rle(value)
-        if (!is.factor(runValue(value)))
-            runValue(value) <- factor(runValue(value))
-        if (!identical(levels(value), seqlevels(x)))
-            stop("levels of supplied 'seqnames' must be ",
-                 "identical to 'seqlevels(x)'")
-        n <- length(x)
-        k <- length(value)
-        if (k != n) {
-            if ((k == 0L) || (k > n) || (n %% k != 0L))
-                stop(k, " elements in value to replace ", n, " elements")
-            value <- rep(value, length.out=n)
-        }
-        update(x, seqnames=value)
+        value <- .normalize_seqnames_replacement_value(value, x)
+        BiocGenerics:::replaceSlots(x, seqnames=value)
     }
 )
 
