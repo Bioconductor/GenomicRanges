@@ -362,31 +362,6 @@ setMethod("countOverlaps", c("GenomicRanges", "GenomicRanges"),
     countOverlaps_GenomicRanges
 )
 
-countOverlaps.definition <- function(query, subject,
-        maxgap=0L, minoverlap=1L,
-        type=c("any", "start", "end", "within", "equal"),
-        ignore.strand=FALSE)
-{
-    counts <- queryHits(findOverlaps(query, subject, maxgap=maxgap,
-                                     minoverlap=minoverlap,
-                                     type=match.arg(type),
-                                     ignore.strand=ignore.strand))
-    structure(tabulate(counts, NROW(query)), names=names(query))
-}
-
-.signatures1 <- list(
-    c("GenomicRanges", "Vector"),
-    c("Vector", "GenomicRanges"),
-
-    c("GRangesList", "Vector"),
-    c("Vector", "GRangesList"),
-    c("GRangesList", "GRangesList"),
-    c("GRanges", "GRangesList"),
-    c("GRangesList", "GRanges")
-)
-
-setMethods("countOverlaps", .signatures1, countOverlaps.definition)
-
 overlapsAny.definition <- function(query, subject,
         maxgap=0L, minoverlap=1L,
         type=c("any", "start", "end", "within", "equal"),

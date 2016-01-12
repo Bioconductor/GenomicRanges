@@ -17,13 +17,6 @@
 
 \alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
-\alias{countOverlaps,GenomicRanges,Vector-method}
-\alias{countOverlaps,Vector,GenomicRanges-method}
-\alias{countOverlaps,GRangesList,Vector-method}
-\alias{countOverlaps,Vector,GRangesList-method}
-\alias{countOverlaps,GRangesList,GRangesList-method}
-\alias{countOverlaps,GRanges,GRangesList-method}
-\alias{countOverlaps,GRangesList,GRanges-method}
 
 \alias{overlapsAny}
 \alias{overlapsAny,GenomicRanges,GenomicRanges-method}
