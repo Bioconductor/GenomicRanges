@@ -362,49 +362,22 @@ setMethod("countOverlaps", c("GenomicRanges", "GenomicRanges"),
     countOverlaps_GenomicRanges
 )
 
-subsetByOverlaps.definition1 <- function(query, subject,
-        maxgap=0L, minoverlap=1L,
-        type=c("any", "start", "end", "within", "equal"),
-        ignore.strand=FALSE)
-{
-    i <- overlapsAny(query, subject,
-                     maxgap=maxgap, minoverlap=minoverlap,
-                     type=match.arg(type),
-                     ignore.strand=ignore.strand)
-    extractROWS(query, i)
-}
-
-.subsetByOverlaps.definition2 <- function(query, subject,
-        maxgap=0L, minoverlap=1L,
-        type=c("any", "start", "end", "within", "equal"),
-        ignore.strand=FALSE)
-{
-    i <- overlapsAny(query, subject,
-                     maxgap=maxgap, minoverlap=minoverlap,
-                     type=match.arg(type),
-                     ignore.strand=ignore.strand)
-    query[splitAsList(i, space(query), drop=FALSE)]
-}
-
-.signatures2 <- list(
-    c("GenomicRanges", "GenomicRanges"),
-    c("GRangesList", "GenomicRanges"),
-    c("GenomicRanges", "GRangesList"),
-    c("GRangesList", "GRangesList"),
+.SIGNATURES <- list(
     c("RangesList", "GenomicRanges"),
-    c("RangesList", "GRangesList"),
-    c("GenomicRanges", "RangesList"),
-    c("GRangesList", "RangesList"),
-    c("RangedData", "GenomicRanges"),
-    c("RangedData", "GRangesList"),
-    c("GenomicRanges", "RangedData"),
-    c("GRangesList", "RangedData")
+    c("RangesList", "GRangesList")
 )
 
-for (sig in .signatures2) {
-    if (sig[1L] == "RangesList")
-        setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition2)
-    else
-        setMethod("subsetByOverlaps", sig, subsetByOverlaps.definition1)
-}
+setMethods("subsetByOverlaps", .SIGNATURES,
+    function(query, subject,
+             maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within", "equal"),
+             ignore.strand=FALSE)
+    {
+        i <- overlapsAny(query, subject,
+                         maxgap=maxgap, minoverlap=minoverlap,
+                         type=match.arg(type),
+                         ignore.strand=ignore.strand)
+        query[splitAsList(i, space(query), drop=FALSE)]
+    }
+)
 

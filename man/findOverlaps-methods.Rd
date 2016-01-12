@@ -19,18 +19,8 @@
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 
 \alias{subsetByOverlaps}
-\alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
-\alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
-\alias{subsetByOverlaps,GenomicRanges,GRangesList-method}
-\alias{subsetByOverlaps,GRangesList,GRangesList-method}
 \alias{subsetByOverlaps,RangesList,GenomicRanges-method}
 \alias{subsetByOverlaps,RangesList,GRangesList-method}
-\alias{subsetByOverlaps,GenomicRanges,RangesList-method}
-\alias{subsetByOverlaps,GRangesList,RangesList-method}
-\alias{subsetByOverlaps,RangedData,GenomicRanges-method}
-\alias{subsetByOverlaps,RangedData,GRangesList-method}
-\alias{subsetByOverlaps,GenomicRanges,RangedData-method}
-\alias{subsetByOverlaps,GRangesList,RangedData-method}
 
 
 \title{Finding overlapping genomic ranges}
@@ -38,7 +28,7 @@
 \description{
   Various methods for finding/counting overlaps between objects containing
   genomic ranges. This man page describes the methods that operate on
-  \link{GenomicRanges} or \link{GRangesList} objects.
+  \link{GenomicRanges} and \link{GRangesList} objects.
 
   NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and
   methods for \link[IRanges]{Ranges} and \link[IRanges]{RangesList}
@@ -47,6 +37,12 @@
   \link[GenomicAlignments]{GAlignmentPairs}, and
   \link[GenomicAlignments]{GAlignmentsList} objects are defined and
   documented in the \pkg{GenomicAlignments} package.
+
+  \link{GenomicRanges} and \link{GRangesList} objects also support
+  \code{countOverlaps}, \code{overlapsAny}, and \code{subsetByOverlaps} 
+  thanks to the default methods defined in the \pkg{IRanges} package and
+  to the \code{findOverlaps} and \code{countOverlaps} methods defined in
+  this package and documented below.
 }
 
 \usage{
@@ -57,11 +53,6 @@
     ignore.strand=FALSE)
 
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap=0L, minoverlap=1L,
-    type=c("any", "start", "end", "within", "equal"),
-    ignore.strand=FALSE)
-
-\S4method{subsetByOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap=0L, minoverlap=1L,
     type=c("any", "start", "end", "within", "equal"),
     ignore.strand=FALSE)
@@ -120,9 +111,6 @@
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
-
-  For \code{subsetByOverlaps} an object of the same class as \code{query}
-  containing the subset that overlapped at least one entity in \code{subject}.
 
   For \code{RangedData} and \code{RangesList}, with the exception of
   \code{subsetByOverlaps}, the results align to the unlisted
