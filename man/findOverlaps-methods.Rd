@@ -6,21 +6,9 @@
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GRangesList-method}
 \alias{findOverlaps,GRangesList,GRangesList-method}
-\alias{findOverlaps,RangesList,GenomicRanges-method}
-\alias{findOverlaps,RangesList,GRangesList-method}
-\alias{findOverlaps,GenomicRanges,RangesList-method}
-\alias{findOverlaps,GRangesList,RangesList-method}
-\alias{findOverlaps,RangedData,GenomicRanges-method}
-\alias{findOverlaps,RangedData,GRangesList-method}
-\alias{findOverlaps,GenomicRanges,RangedData-method}
-\alias{findOverlaps,GRangesList,RangedData-method}
 
 \alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
-
-\alias{subsetByOverlaps}
-\alias{subsetByOverlaps,RangesList,GenomicRanges-method}
-\alias{subsetByOverlaps,RangesList,GRangesList-method}
 
 
 \title{Finding overlapping genomic ranges}
@@ -61,8 +49,6 @@
 \arguments{
   \item{query, subject}{
     A \link{GRanges} or \link{GRangesList} object.
-    \link[IRanges]{RangesList} and \link[IRanges]{RangedData} are 
-    also accepted for one of \code{query} or \code{subject}.
   }
   \item{maxgap, minoverlap, type}{
     See \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
@@ -94,8 +80,7 @@
   in the \code{subject} have the same sequence name, have a compatible
   pairing of strands (e.g. \code{"+"}/\code{"+"}, \code{"-"}/\code{"-"},
   \code{"*"}/\code{"+"}, \code{"*"}/\code{"-"}, etc.), and satisfy the
-  interval overlap requirements. Strand is taken as \code{"*"}
-  for \code{RangedData} and \code{RangesList}.
+  interval overlap requirements.
 
   In the context of \code{findOverlaps}, a feature is a collection of
   ranges that are treated as a single entity. For \link{GRanges} objects,
@@ -111,12 +96,6 @@
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
-
-  For \code{RangedData} and \code{RangesList}, with the exception of
-  \code{subsetByOverlaps}, the results align to the unlisted
-  form of the object. This turns out to be fairly convenient for
-  \code{RangedData} (not so much for \code{RangesList}, but something
-  has to give).
 }
 
 \author{P. Aboyoun, S. Falcon, M. Lawrence, and H. Pagès}
