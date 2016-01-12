@@ -362,17 +362,6 @@ setMethod("countOverlaps", c("GenomicRanges", "GenomicRanges"),
     countOverlaps_GenomicRanges
 )
 
-overlapsAny.definition <- function(query, subject,
-        maxgap=0L, minoverlap=1L,
-        type=c("any", "start", "end", "within", "equal"),
-        ignore.strand=FALSE)
-{
-    !is.na(findOverlaps(query, subject,
-                        maxgap=maxgap, minoverlap=minoverlap,
-                        type=match.arg(type), select="arbitrary",
-                        ignore.strand=ignore.strand))
-}
-
 subsetByOverlaps.definition1 <- function(query, subject,
         maxgap=0L, minoverlap=1L,
         type=c("any", "start", "end", "within", "equal"),
@@ -413,7 +402,6 @@ subsetByOverlaps.definition1 <- function(query, subject,
 )
 
 for (sig in .signatures2) {
-    setMethod("overlapsAny", sig, overlapsAny.definition)
     if (sig[1L] == "RangesList")
         setMethod("subsetByOverlaps", sig, .subsetByOverlaps.definition2)
     else

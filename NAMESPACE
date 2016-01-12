@@ -80,7 +80,7 @@ exportMethods(
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
     punion, pintersect, psetdiff, pgap,
-    findOverlaps, countOverlaps, overlapsAny, subsetByOverlaps,
+    findOverlaps, countOverlaps, subsetByOverlaps,
     precede, follow, nearest, distance, distanceToNearest,
     tile,
     subset,

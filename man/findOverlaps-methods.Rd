@@ -18,20 +18,6 @@
 \alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 
-\alias{overlapsAny}
-\alias{overlapsAny,GenomicRanges,GenomicRanges-method}
-\alias{overlapsAny,GRangesList,GenomicRanges-method}
-\alias{overlapsAny,GenomicRanges,GRangesList-method}
-\alias{overlapsAny,GRangesList,GRangesList-method}
-\alias{overlapsAny,RangesList,GenomicRanges-method}
-\alias{overlapsAny,RangesList,GRangesList-method}
-\alias{overlapsAny,GenomicRanges,RangesList-method}
-\alias{overlapsAny,GRangesList,RangesList-method}
-\alias{overlapsAny,RangedData,GenomicRanges-method}
-\alias{overlapsAny,RangedData,GRangesList-method}
-\alias{overlapsAny,GenomicRanges,RangedData-method}
-\alias{overlapsAny,GRangesList,RangedData-method}
-
 \alias{subsetByOverlaps}
 \alias{subsetByOverlaps,GenomicRanges,GenomicRanges-method}
 \alias{subsetByOverlaps,GRangesList,GenomicRanges-method}
@@ -71,11 +57,6 @@
     ignore.strand=FALSE)
 
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap=0L, minoverlap=1L,
-    type=c("any", "start", "end", "within", "equal"),
-    ignore.strand=FALSE)
-
-\S4method{overlapsAny}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap=0L, minoverlap=1L,
     type=c("any", "start", "end", "within", "equal"),
     ignore.strand=FALSE)
@@ -139,10 +120,6 @@
 
   For \code{countOverlaps} an integer vector containing the tabulated
   query overlap hits.
-
-  For \code{overlapsAny} a logical vector of length equal to the number of
-  ranges in \code{query} indicating those that overlap any of the ranges
-  in \code{subject}.
 
   For \code{subsetByOverlaps} an object of the same class as \code{query}
   containing the subset that overlapped at least one entity in \code{subject}.
