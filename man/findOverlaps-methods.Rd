@@ -6,6 +6,7 @@
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GRangesList-method}
 \alias{findOverlaps,GRangesList,GRangesList-method}
+\alias{findOverlaps,RangedData,GenomicRanges-method}
 
 \alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}

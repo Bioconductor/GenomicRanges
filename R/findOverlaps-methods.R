@@ -198,6 +198,22 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     }
 )
 
+### Needed by chipseq package.
+setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
+    function(query, subject, maxgap=0L, minoverlap=1L,
+             type=c("any", "start", "end", "within"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        ## Calls "findOverlaps" method for c("GenomicRanges", "GenomicRanges")
+        ## defined above.
+        findOverlaps(as(query, "GRanges"), subject,
+                     maxgap=maxgap, minoverlap=minoverlap,
+                     type=match.arg(type), select=match.arg(select),
+                     ignore.strand=ignore.strand)
+    }
+)
+
 
 ### =========================================================================
 ### findOverlaps-based methods
