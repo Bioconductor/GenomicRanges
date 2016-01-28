@@ -17,7 +17,7 @@ setAs("RleList", "GRanges", function(from) {
   rd <- as(from, "RangedData")
   rd$strand <- "*"
   gr <- as(rd, "GRanges")
-  seqlengths(gr) <- elementLengths(from)
+  seqlengths(gr) <- elementNROWS(from)
   gr
 })
 

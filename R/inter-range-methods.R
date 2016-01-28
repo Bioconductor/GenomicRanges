@@ -54,7 +54,7 @@
     } else {
         ansIRangesList <- FUN(xIRangesList, ...)
     }
-    k <- elementLengths(ansIRangesList)
+    k <- elementNROWS(ansIRangesList)
     x_seqlevels <- seqlevels(x)
     strand_levels <- levels(strand())
     ansIRangesList_names <- as.integer(names(ansIRangesList))
@@ -100,7 +100,7 @@
        f <- paste(seqnames(x), strand(x), sep="\r")
     xIRangesList <- split(unname(ranges(x)), f)
     ansIRangesList <- FUN(xIRangesList, ...)
-    k <- elementLengths(ansIRangesList)
+    k <- elementNROWS(ansIRangesList)
     splitListNames <- strsplit(names(ansIRangesList), split="\r", fixed=TRUE)
     listNameMatrix <- matrix(as.character(unlist(splitListNames)), nrow=2L)
     ansSeqnames <- Rle(factor(listNameMatrix[1L, ], levels=seqlevels(x)), k)

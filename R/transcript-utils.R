@@ -13,7 +13,7 @@
 ### For all the functions below:
 ###   o 'exonStarts', 'exonEnds' are assumed to be lists of integer vectors.
 ###     The two lists are assumed to have the "same shape" i.e.
-###     elementLengths() returns identical vectors on them;
+###     elementNROWS() returns identical vectors on them;
 ###   o 'strand' is assumed to be a character vector with allowed values
 ###     "+" and "-" only;
 ###   o 'decreasing.rank.on.minus.strand' is assumed to be TRUE or FALSE.

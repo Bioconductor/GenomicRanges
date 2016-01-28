@@ -8,7 +8,7 @@ setMethod("tile", "GenomicRanges", function(x, n, width) {
   strand <- strand(x)
   x <- ranges(x)
   tiles <- callGeneric()
-  gr <- GRanges(rep(sn, elementLengths(tiles)), unlist(tiles),
-                rep(strand, elementLengths(tiles)))
+  gr <- GRanges(rep(sn, elementNROWS(tiles)), unlist(tiles),
+                rep(strand, elementNROWS(tiles)))
   relist(gr, tiles)
 })

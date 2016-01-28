@@ -65,7 +65,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             unlisted_subject <- unlisted_subject[keep]
             subject_groups <- subject_groups[keep]
         } else if (type == "end") {
-            keep <- end(subject@partitioning)[elementLengths(subject) > 0L]
+            keep <- end(subject@partitioning)[elementNROWS(subject) > 0L]
             unlisted_subject <- unlisted_subject[keep]
             subject_groups <- subject_groups[keep]
         }
@@ -88,7 +88,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                                       new.queryLength=length(query),
                                       with.counts=TRUE)
             keep_idx <- which(mcols(ans11)[ , "counts"] ==
-                              elementLengths(query)[queryHits(ans11)])
+                              elementNROWS(query)[queryHits(ans11)])
             mcols(ans11) <- NULL
             ans <- ans11[keep_idx]
         } else {
@@ -136,7 +136,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
                                       new.queryLength=length(query),
                                       with.counts=TRUE)
             keep_idx <- which(mcols(ans10)[ , "counts"] ==
-                              elementLengths(query)[queryHits(ans10)])
+                              elementNROWS(query)[queryHits(ans10)])
             mcols(ans10) <- NULL
             ans <- ans10[keep_idx]
         } else {
@@ -171,7 +171,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
             unlisted_subject <-  unlisted_subject[keep]
             subject_groups <- subject_groups[keep]
         } else if (type == "end") {
-            keep <- end(subject@partitioning)[elementLengths(subject) > 0L]
+            keep <- end(subject@partitioning)[elementNROWS(subject) > 0L]
             unlisted_subject <-  unlisted_subject[keep]
             subject_groups <- subject_groups[keep]
         }

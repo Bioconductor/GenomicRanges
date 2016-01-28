@@ -385,14 +385,14 @@ names(grl)
 seqlengths(grl)
 @
 
-The \Rmethod{elementLengths} method returns a list of integers
-corresponding to the result of calling \Rmethod{length} on each
+The \Rmethod{elementNROWS} method returns a list of integers
+corresponding to the result of calling \Rmethod{NROW} on each
 individual \Rclass{GRanges} object contained by the
 \Rclass{GRangesList}. This is a faster alternative to calling
 \Rmethod{lapply} on the \Rclass{GRangesList}.
 
-<<elementLengths>>=
-elementLengths(grl)
+<<elementNROWS>>=
+elementNROWS(grl)
 @
 
 You can also use \Rmethod{isEmpty} to test if a \Rclass{GRangesList}

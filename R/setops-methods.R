@@ -17,7 +17,7 @@
     cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
     ## The 4 lines below are equivalent to:
     ##   ans <- min(cil)
-    ##   ans[elementLengths(v) == 0L] <- NA_integer_
+    ##   ans[elementNROWS(v) == 0L] <- NA_integer_
     ## but much faster!
     ## TODO: Replace with the above, but only when the "min" method for
     ## CompressedIntegerList objects (implemented in the IRanges package)
@@ -36,7 +36,7 @@
     cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
     ## The 4 lines below are equivalent to:
     ##   ans <- max(cil)
-    ##   ans[elementLengths(v) == 0L] <- NA_integer_
+    ##   ans[elementNROWS(v) == 0L] <- NA_integer_
     ## but much faster!
     ## TODO: Replace with the above, but only when the "max" method for
     ## CompressedIntegerList objects (implemented in the IRanges package)
@@ -181,7 +181,7 @@ setMethod("punion", c("GRangesList", "GRanges"),
         mcols(y) <- NULL
         ans <-
           split(c(x@unlistData, y), 
-                c(Rle(seq_len(n), elementLengths(x)), Rle(seq_len(n))))
+                c(Rle(seq_len(n), elementNROWS(x)), Rle(seq_len(n))))
         names(ans) <- names(x)
         ans
     }
@@ -307,7 +307,7 @@ setMethod("pintersect", c("GRanges", "GRanges"),
     if (!isTRUEorFALSE(drop.nohit.ranges))
         stop(wmsg("'drop.nohit.ranges' must be TRUE or FALSE"))
     unlisted_x <- unlist(x, use.names=FALSE)
-    y2 <- rep.int(y, elementLengths(x))
+    y2 <- rep.int(y, elementNROWS(x))
     ## 'unlisted_ans' parallel to 'x'.
     unlisted_ans <- .pintersect_GRanges_GRanges(unlisted_x, y2,
                                         drop.nohit.ranges=FALSE,
@@ -399,10 +399,10 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
         ansSeqinfo <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
-        ok <- compatibleSeqnames(rep(seqnames(x), elementLengths(y)),
+        ok <- compatibleSeqnames(rep(seqnames(x), elementNROWS(y)),
                                  seqnames(y@unlistData))
         if (!ignore.strand)
-          ok <- ok & compatibleStrand(rep(strand(x), elementLengths(y)),
+          ok <- ok & compatibleStrand(rep(strand(x), elementNROWS(y)),
                                       strand(y@unlistData))
         if (!all(ok)) {
             ok <-
@@ -411,8 +411,8 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
             y <- y[ok]
         }
         ansRanges <- gaps(ranges(y), start=start(x), end=end(x))
-        ansSeqnames <- rep(seqnames(x), elementLengths(ansRanges))
-        ansStrand <- rep(strand(x), elementLengths(ansRanges))
+        ansSeqnames <- rep(seqnames(x), elementNROWS(ansRanges))
+        ansStrand <- rep(strand(x), elementNROWS(ansRanges))
         ansGRanges <-
           GRanges(ansSeqnames, unlist(ansRanges, use.names=FALSE), ansStrand)
         seqinfo(ansGRanges) <- ansSeqinfo

@@ -202,8 +202,8 @@ setMethod("updateObject", "GRanges",
         "end positions). Strand can be \"+\", \"-\", \"*\", or missing."
     )
     split0 <- CharacterList(strsplit(from, ":", fixed=TRUE))
-    split0_eltlens <- elementLengths(split0)
-    if (S4Vectors:::anyMissingOrOutside(split0_eltlens, 2L, 3L))
+    split0_eltNROWS <- elementNROWS(split0)
+    if (S4Vectors:::anyMissingOrOutside(split0_eltNROWS, 2L, 3L))
         stop(error_msg)
     ans_strand <- as.character(ptail(split0, n=-2L))
     ans_strand[is.na(ans_strand)] <- "*"
@@ -214,8 +214,8 @@ setMethod("updateObject", "GRanges",
     ## a digit (ignoring and removing the spaces in between if any).
     ranges <- sub("([[:digit:]])[[:space:]]*-", "\\1..", ranges)
     split2 <- CharacterList(strsplit(ranges, "..", fixed=TRUE))
-    split2_eltlens <- elementLengths(split2)
-    if (!all(split2_eltlens == 2L))
+    split2_eltNROWS <- elementNROWS(split2)
+    if (!all(split2_eltNROWS == 2L))
         stop(error_msg)
     ans_start <- as.integer(phead(split2, n=1L))
     ans_end <- as.integer(ptail(split2, n=1L))

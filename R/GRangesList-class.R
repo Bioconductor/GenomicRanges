@@ -77,12 +77,12 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
 {
     fragmentStarts <- normargListOfIntegers(fragmentStarts, sep,
                                             "fragmentStarts")
-    nfrag_per_feature <- elementLengths(fragmentStarts)
+    nfrag_per_feature <- elementNROWS(fragmentStarts)
     start <- unlist(fragmentStarts, recursive=FALSE, use.names=FALSE)
 
     fragmentEnds <- normargListOfIntegers(fragmentEnds, sep,
                                           "fragmentEnds")
-    nend_per_elt <- elementLengths(fragmentEnds)
+    nend_per_elt <- elementNROWS(fragmentEnds)
     if (length(nend_per_elt) != 0L) {
         if (length(nfrag_per_feature) == 0L)
             nfrag_per_feature <- nend_per_elt
@@ -94,7 +94,7 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
 
     fragmentWidths <- normargListOfIntegers(fragmentWidths, sep,
                                             "fragmentWidths")
-    nwidth_per_elt <- elementLengths(fragmentWidths)
+    nwidth_per_elt <- elementNROWS(fragmentWidths)
     if (length(nwidth_per_elt) != 0L) {
         if (length(nfrag_per_feature) == 0L)
             nfrag_per_feature <- nwidth_per_elt
@@ -161,9 +161,9 @@ setMethod("seqnames", "GRangesList",
 replaceSeqnamesList <- function(x, value)
 {
     if (!is(value, "AtomicList") ||
-        !identical(elementLengths(x), elementLengths(value)))
+        !identical(elementNROWS(x), elementNROWS(value)))
         stop("replacement 'value' is not an AtomicList with the same ",
-             "elementLengths as 'x'")
+             "elementNROWS as 'x'")
     value <- unlist(value, use.names = FALSE)
     if (!is(value, "Rle"))
         value <- Rle(factor(value))
@@ -194,9 +194,9 @@ setReplaceMethod("ranges", "GRangesList",
     function(x, value) 
     {
         if (!is(value, "RangesList") ||
-            !identical(elementLengths(x), elementLengths(value)))
+            !identical(elementNROWS(x), elementNROWS(value)))
             stop("replacement 'value' is not a RangesList with the same ",
-                 "elementLengths as 'x'")
+                 "elementNROWS as 'x'")
         ranges(x@unlistData) <- as(unlist(value, use.names = FALSE), "IRanges")
         x
     }
@@ -215,9 +215,9 @@ setReplaceMethod("start", "GRangesList",
     function(x, ..., value)
     {
         if (!is(value, "IntegerList") ||
-            !identical(elementLengths(x), elementLengths(value)))
+            !identical(elementNROWS(x), elementNROWS(value)))
             stop("replacement 'value' is not an IntegerList with the same ",
-                 "elementLengths as 'x'")
+                 "elementNROWS as 'x'")
         value <- unlist(value, use.names = FALSE)
         start(x@unlistData, ...) <- value
         x
@@ -237,9 +237,9 @@ setReplaceMethod("end", "GRangesList",
     function(x, ..., value)
     {
         if (!is(value, "IntegerList") ||
-            !identical(elementLengths(x), elementLengths(value)))
+            !identical(elementNROWS(x), elementNROWS(value)))
             stop("replacement 'value' is not an IntegerList with the same ",
-                 "elementLengths as 'x'")
+                 "elementNROWS as 'x'")
         value <- unlist(value, use.names = FALSE)
         end(x@unlistData, ...) <- value
         x
@@ -259,9 +259,9 @@ setReplaceMethod("width", "GRangesList",
     function(x, ..., value)
     {
         if (!is(value, "IntegerList") ||
-            !identical(elementLengths(x), elementLengths(value)))
+            !identical(elementNROWS(x), elementNROWS(value)))
             stop("replacement 'value' is not an IntegerList with the same ",
-                 "elementLengths as 'x'")
+                 "elementNROWS as 'x'")
         value <- unlist(value, use.names = FALSE)
         width(x@unlistData, ...) <- value
         x
@@ -280,9 +280,9 @@ setMethod("strand", "GRangesList",
 replaceStrandList <- function(x, value)
 {
     if (!is(value, "AtomicList") ||
-        !identical(elementLengths(x), elementLengths(value)))
+        !identical(elementNROWS(x), elementNROWS(value)))
         stop("replacement 'value' is not an AtomicList with the same ",
-             "elementLengths as 'x'")
+             "elementNROWS as 'x'")
     value <- unlist(value, use.names = FALSE)
     if (!is(value, "Rle"))
         value <- Rle(strand(value))
@@ -349,9 +349,9 @@ replaceElementMetadataList <-
             value <- new("DataFrame", nrows = length(x@unlistData))
         } else {
             if (!is(value, "SplitDataFrameList") ||
-                !identical(elementLengths(x), elementLengths(value))) {
+                !identical(elementNROWS(x), elementNROWS(value))) {
                 stop("replacement 'value' is not a SplitDataFrameList with ",
-                        "the same elementLengths as 'x'")
+                        "the same elementNROWS as 'x'")
             }
             value <- unlist(value, use.names = FALSE)
         }
@@ -503,7 +503,7 @@ setMethod("relistToClass", "GRanges", function(x) "GRangesList")
 showList <- function(object, showFunction, print.classinfo)
 {
     k <- length(object)
-    cumsumN <- cumsum(elementLengths(object))
+    cumsumN <- cumsum(elementNROWS(object))
     N <- tail(cumsumN, 1)
     cat(class(object), " object of length ", k, ":\n", sep = "")
     if (k == 0L) {
@@ -583,7 +583,7 @@ setMethod("show", "GRangesList",
 deconstructGRLintoGR <- function(x, expand.levels=FALSE)
 {
     ans <- x@unlistData
-    f1 <- rep.int(seq_len(length(x)), elementLengths(x))
+    f1 <- rep.int(seq_len(length(x)), elementNROWS(x))
     f2 <- as.integer(seqnames(ans))
     f12 <- paste(f1, f2, sep="|")
 

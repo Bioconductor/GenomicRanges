@@ -81,7 +81,7 @@ seqlengths <- c(chr1=60, chr2=20, chr3=25)
 ## Create 5 tiles:
 tiles <- tileGenome(seqlengths, ntile=5)
 tiles
-elementLengths(tiles)  # tiles 3 and 4 contain 2 ranges
+elementNROWS(tiles)  # tiles 3 and 4 contain 2 ranges
 
 width(tiles)
 ## Use sum() on this IntegerList object to get the effective tile
@@ -90,7 +90,7 @@ sum(width(tiles))  # each tile covers exactly 21 genomic positions
 
 ## Create 9 tiles:
 tiles <- tileGenome(seqlengths, ntile=9)
-elementLengths(tiles)  # tiles 6 and 7 contain 2 ranges
+elementNROWS(tiles)  # tiles 6 and 7 contain 2 ranges
 
 table(sum(width(tiles)))  # some tiles cover 12 genomic positions,
                           # others 11

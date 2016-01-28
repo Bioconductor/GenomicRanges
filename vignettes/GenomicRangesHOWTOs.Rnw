@@ -221,7 +221,7 @@ of records. Here the non-mate groups range in size from 1 to 9.
 
 <<readGAlignmentsList_3>>=
 non_mates <- galist[unlist(mcols(galist)$mate_status) == "unmated"]
-table(elementLengths(non_mates))
+table(elementNROWS(non_mates))
 @
 
 
@@ -695,14 +695,14 @@ Extract the exon regions:
 
 <<trak_5>>=
 trak2_exbytx <- exonsBy(txdb, "tx", use.names=TRUE)[trak2_tx_names]
-elementLengths(trak2_exbytx)
+elementNROWS(trak2_exbytx)
 @
 
 ... and the intron regions:
 
 <<trak_7>>=
 trak2_inbytx <- intronsByTranscript(txdb, use.names=TRUE)[trak2_tx_names]
-elementLengths(trak2_inbytx)
+elementNROWS(trak2_inbytx)
 @
 
 Next we want the DNA sequences for these exons and introns.
@@ -900,7 +900,7 @@ transcripts. For example, 47 genes have 1 transcript, 48 genes have 2 etc.
 
 <<cancer_14>>=
 length(map)
-table(elementLengths(map))
+table(elementNROWS(map))
 @
 
 The lists of DNA sequences all have the same length as \Rcode{map} but one or
@@ -911,11 +911,11 @@ are 0). However, both the 3' and 5' UTR results have element lengths of 0
 which indicates no UTR data were available for that gene.
 
 <<cancer_15>>=
-table(elementLengths(lstc))
-table(elementLengths(lst3))
-names(lst3)[elementLengths(lst3) == 0L] ## genes with no 3' UTR data
-table(elementLengths(lst5))
-names(lst5)[elementLengths(lst5) == 0L] ## genes with no 5' UTR data
+table(elementNROWS(lstc))
+table(elementNROWS(lst3))
+names(lst3)[elementNROWS(lst3) == 0L] ## genes with no 3' UTR data
+table(elementNROWS(lst5))
+names(lst5)[elementNROWS(lst5) == 0L] ## genes with no 5' UTR data
 @
 
 
@@ -986,7 +986,7 @@ gr_by_chrom <- lapply(seqlevels(gal),
     pos2 <- pos_by_chrom[[seqname]]
     qseq_on_ref_per_pos <- split(qseq_on_ref2, pos2)
     qual_on_ref_per_pos <- split(qual_on_ref2, pos2)
-    nread <- elementLengths(qseq_on_ref_per_pos)
+    nread <- elementNROWS(qseq_on_ref_per_pos)
     gr_mcols <- DataFrame(nread=unname(nread),
                           qseq_on_ref=unname(qseq_on_ref_per_pos),
                           qual_on_ref=unname(qual_on_ref_per_pos))
@@ -1077,7 +1077,7 @@ qseq_on_ref2 <- relist(unlist(qseq_on_ref, use.names=FALSE)[tmp],
 Compute 1 consensus matrix per chromosome:
 
 <<cseq_14>>=
-split_factor <- rep.int(seqnames(gr), elementLengths(qseq_on_ref2))
+split_factor <- rep.int(seqnames(gr), elementNROWS(qseq_on_ref2))
 qseq_on_ref2 <- unlist(qseq_on_ref2, use.names=FALSE)
 qseq_on_ref2_by_chrom <- splitAsList(qseq_on_ref2, split_factor)
 qseq_pos_by_chrom <- splitAsList(start(gr), split_factor)

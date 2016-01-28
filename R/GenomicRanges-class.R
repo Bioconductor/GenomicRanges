@@ -650,7 +650,7 @@ setReplaceMethod("[", "GenomicRanges",
 ### The returned object 'ans' is as follow:
 ###   (a) 'ans' is parallel to 'gr'.
 ###   (b) 'names(ans)' is identical to 'as.character(seqnames(gr))'.
-###   (c) 'elementLengths(ans)' is the same as 'width(gr)'.
+###   (c) 'elementNROWS(ans)' is the same as 'width(gr)'.
 ###   (d) 'class(ans)' is 'relistToClass(x[[1]])' e.g. CompressedRleList if
 ###       'x' is an RleList object, or DNAStringSet is 'x' is a DNAStringSet
 ###       object.

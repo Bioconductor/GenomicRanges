@@ -59,7 +59,7 @@ gr <- GRanges(
 
 # split every range in half
 tiles <- tile(gr, n = 2L)
-stopifnot(all(elementLengths(tiles) == 2L))
+stopifnot(all(elementNROWS(tiles) == 2L))
 
 # split ranges into subranges of width 2
 # odd width ranges must contain one subrange of width 1

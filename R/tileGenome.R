@@ -17,7 +17,7 @@
         })
     chrom_breakpoints <- cumsum(as.numeric(seqlengths))
     chrom_offsets <- c(0, head(chrom_breakpoints, n=-1L))
-    ntile_per_chrom <- elementLengths(tile_relative_breakpoints)
+    ntile_per_chrom <- elementNROWS(tile_relative_breakpoints)
     unlist(tile_relative_breakpoints, use.names=FALSE) +
         rep.int(chrom_offsets, ntile_per_chrom)
 }

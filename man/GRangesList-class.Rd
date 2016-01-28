@@ -88,8 +88,8 @@
       Get or set the names on \code{x}.
     }
     \item{}{
-      \code{elementLengths(x)}:
-      Get the \code{length} of each of the list elements.
+      \code{elementNROWS(x)}:
+      Get a vector of the \code{length} of each of the list element.
     }
     \item{}{
       \code{isEmpty(x)}:
@@ -378,7 +378,7 @@ grl <- GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 grl
 
 ## Summarizing elements:
-elementLengths(grl)
+elementNROWS(grl)
 table(seqnames(grl))
 
 ## Extracting subsets:

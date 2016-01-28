@@ -552,7 +552,7 @@ max(cvg12)
 <<slice_coverage>>=
 sl12 <- slice(cvg12, lower=1)
 sl12
-elementLengths(sl12)
+elementNROWS(sl12)
 sl12$chMT
 mean(sl12$chMT)
 max(sl12$chMT)
@@ -833,7 +833,7 @@ c(grl, GRangesList(gr3))
     ordinary list:
     \begin{itemize}
       \item Double-bracket subsetting: \Rcode{[[}
-      \item \Rcode{elementLengths()}, \Rcode{unlist()}
+      \item \Rcode{elementNROWS()}, \Rcode{unlist()}
       \item \Rcode{lapply()}, \Rcode{sapply()}, \Rcode{endoapply()}
       \item \Rcode{mendoapply()} (not covered in this presentation)
     \end{itemize}
@@ -845,12 +845,12 @@ c(grl, GRangesList(gr3))
 \DefaultBackground
 
 \begin{frame}[fragile]
-  \frametitle{elementLengths() and unlist()}
+  \frametitle{elementNROWS() and unlist()}
   \begin{exampleblock}{}
 {\scriptsize
 <<GRangesList_List_ops1>>=
 grl[[2]]
-elementLengths(grl)
+elementNROWS(grl)
 unlisted <- unlist(grl, use.names=FALSE)  # same as c(grl[[1]], grl[[2]])
 unlisted
 @
