@@ -159,6 +159,8 @@ makeGRangesFromDataFrame <- function(df,
                                      starts.in.df.are.0based=FALSE)
 {
     ## Check args.
+    if (is.character(df))  # for people that provide the path to a file
+        stop("'df' must be a data.frame or DataFrame object")
     if (!(is.data.frame(df) || is(df, "DataFrame")))
         df <- as.data.frame(df)
     if (!isTRUEorFALSE(keep.extra.columns))
