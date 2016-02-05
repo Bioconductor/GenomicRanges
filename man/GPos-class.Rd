@@ -19,6 +19,7 @@
 \alias{seqinfo,GPos-method}
 \alias{extractROWS,GPos-method}
 \alias{show,GPos-method}
+\alias{c,GPos-method}
 
 \title{GPos objects}
 
@@ -71,10 +72,10 @@ gpos2
 
 ## 3rd example
 pos_runs <- GRanges("chrI", IRanges(c(1, 1005), c(1000, 2000)))
-npos <- sum(width(pos_runs))
-gpos3 <- GPos(rep(pos_runs, 2))
-mcols(gpos3)$sample <- Rle(c("s1", "s2"), rep(npos, 2))
-gpos3
+gpos3A <- gpos3B <- GPos(pos_runs)
+mcols(gpos3A)$sample <- Rle("sA")
+mcols(gpos3B)$sample <- Rle("sB")
+gpos3 <- c(gpos3A, gpos3B)
 
 ## 4th example
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
@@ -91,9 +92,10 @@ object.size(gr4)  # 6951 times bigger than the GPos object!
 ## In order to keep memory usage as low as possible, it is highly
 ## recommended to use Rle objects only for the metadata columns:
 npos <- length(gpos4)
-counts <- rep(Rle(sample(150L, replace=TRUE, npos %/% 10)), each=10)
+counts <- rep(Rle(sample(150L, replace=TRUE, npos / 10)), each=10)
 counts <- c(counts, Rle(0L, npos - length(counts)))
 mcols(gpos4)$counts <- counts
+gpos4
 }
 \keyword{methods}
 \keyword{classes}

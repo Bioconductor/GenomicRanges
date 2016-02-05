@@ -163,3 +163,92 @@ setMethod("show", "GPos",
                           coerce.internally.to.GRanges=FALSE)
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining
+###
+
+### 'Class' must be "GPos" or the name of a concrete subclass of GPos.
+### 'objects' must be a list of GPos objects.
+### Returns an instance of class 'Class'.
+combine_GPos_objects <- function(Class, objects,
+                                 use.names=TRUE, ignore.mcols=FALSE)
+{
+    if (!isSingleString(Class))
+        stop("'Class' must be a single character string")
+    if (!extends(Class, "GPos"))
+        stop("'Class' must be the name of a class that extends GPos")
+    if (!is.list(objects))
+        stop("'objects' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    ### TODO: Support 'use.names=TRUE'.
+    if (use.names)
+        stop("'use.names=TRUE' is not supported yet")
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+
+    if (length(objects) != 0L) {
+        ## TODO: Implement (in C) fast 'elementIsNull(objects)' in S4Vectors
+        ## that does 'sapply(objects, is.null, USE.NAMES=FALSE)', and use it
+        ## here.
+        null_idx <- which(sapply(objects, is.null, USE.NAMES=FALSE))
+        if (length(null_idx) != 0L)
+            objects <- objects[-null_idx]
+    }
+    if (length(objects) == 0L)
+        return(new(Class))
+
+    ## TODO: Implement (in C) fast 'elementIs(objects, class)' in S4Vectors
+    ## that does 'sapply(objects, is, class, USE.NAMES=FALSE)', and use it
+    ## here. 'elementIs(objects, "NULL")' should work and be equivalent to
+    ## 'elementIsNull(objects)'.
+    if (!all(sapply(objects, is, Class, USE.NAMES=FALSE)))
+        stop("the objects to combine must be ", Class, " objects (or NULLs)")
+    objects_names <- names(objects)
+    names(objects) <- NULL  # so lapply(objects, ...) below returns an
+                            # unnamed list
+
+    ## Combine "pos_runs" slots.
+    pos_runs_slots <- lapply(objects, function(x) x@pos_runs)
+    ## TODO: Use combine_GRanges_objects() here when it's available.
+    ans_pos_runs <- do.call(c, pos_runs_slots)
+
+    suppressWarnings(ans_len <- sum(width(ans_pos_runs)))
+    if (is.na(ans_len))
+        stop("too many genomic positions to combine")
+
+    ## Combine "mcols" slots. We don't need to use fancy
+    ## S4Vectors:::rbind_mcols() for this because the "mcols" slot of a
+    ## GPos object is guaranteed to be a DataFrame.
+    if (ignore.mcols) {
+        ans_mcols <- new("DataFrame", nrows=ans_len)
+    } else  {
+        mcols_slots <- lapply(objects, function(x) x@elementMetadata)
+        ## Will fail if not all the GPos objects in 'objects' have
+        ## exactly the same metadata cols.
+        ans_mcols <- do.call(rbind, mcols_slots)
+    }
+
+    ## Make 'ans' and return it.
+    new2(Class, pos_runs=ans_pos_runs, elementMetadata=ans_mcols, check=FALSE)
+}
+
+setMethod("c", "GPos",
+    function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop("\"c\" method for GPos objects ",
+                 "does not support the 'recursive' argument")
+        if (missing(x)) {
+            objects <- list(...)
+            x <- objects[[1L]]
+        } else {
+            objects <- list(x, ...)
+        }
+        combine_GPos_objects(class(x), objects,
+                             use.names=FALSE,
+                             ignore.mcols=ignore.mcols)
+    }
+)
+
