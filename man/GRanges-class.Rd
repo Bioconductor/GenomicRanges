@@ -23,8 +23,9 @@
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,Seqinfo,GenomicRanges-method}
 \alias{coerce,Seqinfo,RangesList-method}
-\alias{granges,GenomicRanges-method}
 
+\alias{granges,GenomicRanges-method}
+\alias{coerce,GenomicRanges,GRanges-method}
 \alias{coerce,character,GRanges-method}
 \alias{coerce,character,GenomicRanges-method}
 \alias{coerce,factor,GRanges-method}

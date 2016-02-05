@@ -189,6 +189,22 @@ setMethod("updateObject", "GRanges",
 ### Coercion.
 ###
 
+setMethod("granges", "GenomicRanges",
+    function(x, use.mcols=FALSE)
+    {
+        if (!isTRUEorFALSE(use.mcols))
+            stop("'use.mcols' must be TRUE or FALSE")
+        ans <- GRanges(seqnames(x), ranges(x), strand(x), seqinfo=seqinfo(x))
+        if (use.mcols)
+            mcols(ans) <- cbind(extraColumnSlotsAsDF(x), mcols(x))
+        ans
+    }
+)
+
+setAs("GenomicRanges", "GRanges",
+    function(from) granges(from, use.mcols=TRUE)
+)
+
 .from_character_to_GRanges <- function(from)
 {
     stopifnot(is.character(from))

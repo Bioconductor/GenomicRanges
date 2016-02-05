@@ -18,8 +18,10 @@ import(XVector)  # only for the "Views" method for integer vectors, the
 
 exportClasses(
     Constraint, ConstraintORNULL,
-    GenomicRanges, GenomicRangesORmissing, GRanges, DelegatingGenomicRanges,
+    GenomicRanges, GenomicRangesORmissing,
+    GRanges, DelegatingGenomicRanges,
     GNCList,
+    GPos,
     GenomicRangesORGRangesList, GRangesList,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -101,6 +103,7 @@ export(
 
     GRanges, .DollarNames.GenomicRanges,
     GNCList,
+    GPos,
     GenomicRangesList, GRangesList,
 
     makeGRangesFromDataFrame,
@@ -123,13 +126,17 @@ export(
     checkConstraint,
 
     ## range-squeezers.R:
-    granges, grglist, rglist
+    granges, grglist, rglist,
+
+    ## GPos-class.R:
+    pos
 )
 
 ### Exactly the same list as above.
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    granges, grglist, rglist
+    granges, grglist, rglist,
+    pos
 )
 
