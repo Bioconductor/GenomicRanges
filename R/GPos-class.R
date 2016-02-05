@@ -94,10 +94,10 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 
 ### Note that if 'pos_runs' is a GPos instance with no metadata or metadata
 ### columns, then 'identical(GPos(pos_runs), pos_runs)' is TRUE.
-GPos <- function(pos_runs)
+GPos <- function(pos_runs=GRanges())
 {
     if (!is(pos_runs, "GenomicRanges"))
-        stop("'pos_runs' must be a GenomicRanges object")
+        pos_runs <- as(pos_runs, "GenomicRanges", strict=FALSE)
     suppressWarnings(ans_len <- sum(width(pos_runs)))
     if (is.na(ans_len))
         stop("too many genomic positions in 'pos_runs'")

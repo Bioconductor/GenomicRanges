@@ -35,8 +35,11 @@ GPos(pos_runs)
 
 \arguments{
   \item{pos_runs}{
-    A \link{GRanges} object (or any \link{GenomicRanges} object) where each
-    range is interpreted as a run of adjacent genomic positions.
+    A \link{GRanges} object (or any other \link{GenomicRanges} derivative)
+    where each range is interpreted as a run of adjacent genomic positions.
+    If \code{pos_runs} is not a \link{GenomicRanges} object,
+    \code{GPos()} first tries to coerce it to one with
+    \code{as(pos_runs, "GenomicRanges", strict=FALSE)}.
   }
 }
 
@@ -52,9 +55,45 @@ GPos(pos_runs)
 }
 
 \examples{
+## 1st example
 pos_runs <- GRanges(c("chr1", "chr1", "chr2"),
                     IRanges(c(44, 5, 2), width=c(10, 6, 4)))
-GPos(pos_runs)
+gpos1 <- GPos(pos_runs)
+gpos1
+pos(gpos1)  # same as 'start(gpos1)' and 'end(gpos1)'
+gpos1[9:17]
+
+## 2nd example
+pos_runs <- GRanges("chrI", IRanges(c(1, 6, 12, 17), c(5, 10, 16, 20)),
+                    strand=c("+", "-", "-", "+"))
+gpos2 <- GPos(pos_runs)
+gpos2
+
+## 3rd example
+pos_runs <- GRanges("chrI", IRanges(c(1, 1005), c(1000, 2000)))
+npos <- sum(width(pos_runs))
+gpos3 <- GPos(rep(pos_runs, 2))
+mcols(gpos3)$sample <- Rle(c("s1", "s2"), rep(npos, 2))
+gpos3
+
+## 4th example
+library(BSgenome.Scerevisiae.UCSC.sacCer2)
+gpos4 <- GPos(seqinfo(BSgenome.Scerevisiae.UCSC.sacCer2))
+gpos4  # all the positions along the genome are represented
+
+## Coercion to GRanges works...
+gr4 <- as(gpos4, "GRanges")
+gr4
+## ... but is generally not a good idea:
+object.size(gpos4)
+object.size(gr4)  # 6951 times bigger than the GPos object!
+
+## In order to keep memory usage as low as possible, it is highly
+## recommended to use Rle objects only for the metadata columns:
+npos <- length(gpos4)
+counts <- rep(Rle(sample(150L, replace=TRUE, npos %/% 10)), each=10)
+counts <- c(counts, Rle(0L, npos - length(counts)))
+mcols(gpos4)$counts <- counts
 }
 \keyword{methods}
 \keyword{classes}
