@@ -827,7 +827,7 @@ showGenomicRanges <- function(x, margin="",
     ## coercion is expected to work on any GenomicRanges object but can also
     ## be costly (e.g. GPos objects).
     if (!is(x, "GRanges"))
-        x <- as(x, "GRanges")
+        x <- as(x, "GRanges", strict=FALSE)
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
                .makeNakedMatFromGenomicRanges)
     if (print.classinfo) {
