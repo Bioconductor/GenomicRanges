@@ -823,8 +823,9 @@ showGenomicRanges <- function(x, margin="",
     ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that 'x' is
     ## subsettable but not all GenomicRanges objects are (and if they are,
     ## subsetting them could be costly). However GRanges objects are assumed
-    ## to be subsettable so if 'x' is not one then we turn it into one (this
-    ## coercion is expected to work on any GenomicRanges object).
+    ## to be subsettable so if 'x' is not one then we turn it into one. This
+    ## coercion is expected to work on any GenomicRanges object but can also
+    ## be costly (e.g. GPos objects).
     if (!is(x, "GRanges"))
         x <- as(x, "GRanges")
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,

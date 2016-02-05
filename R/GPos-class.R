@@ -15,6 +15,11 @@ setClass("GPos",
     )
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessors
+###
+
 setMethod("length", "GPos", function(x) sum(width(x@pos_runs)))
 
 setReplaceMethod("names", "GPos",
@@ -37,6 +42,11 @@ setMethod("strand", "GPos",
 )
 
 setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor
+###
 
 ### Merge adjacent ranges.
 ### Returns a GRanges object (NOT an endomorphism).
@@ -80,11 +90,12 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
                     check=FALSE)
 }
 
-### Constructor.
 ### Note that if 'pos_runs' is a GPos instance with no metadata or metadata
 ### columns, then 'identical(GPos(pos_runs), pos_runs)' is TRUE.
 GPos <- function(pos_runs)
 {
+    if (!is(pos_runs, "GenomicRanges"))
+        stop("'pos_runs' must be a GenomicRanges object")
     suppressWarnings(ans_len <- sum(width(pos_runs)))
     if (is.na(ans_len))
         stop("too many genomic positions in 'pos_runs'")
@@ -93,5 +104,24 @@ GPos <- function(pos_runs)
     new2("GPos", pos_runs=pos_runs, elementMetadata=ans_mcols)
 }
 
-### TODO: Subsetting.
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting
+###
+
+# TODO
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Show
+###
+### The "show" method for GenomicRanges objects works on GPos objects (and
+### any GenomicRanges derivative in general) because it coerces the object
+### to GRanges. However, for a GPos object this coercion is typically too
+### costly: it's analog to turning an Rle back into an ordinary vector for
+### the sole purpose of displaying its head and its tail. This defeats the
+### purpose of using an Rle or GPos object in the first place.
+###
+
+# TODO: Implement efficient "show" method.
 
