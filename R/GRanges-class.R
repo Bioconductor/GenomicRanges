@@ -318,3 +318,106 @@ setMethod("ranges", "GRanges",
 setMethod("strand", "GRanges", function(x) x@strand)
 setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting.
+###
+
+setMethod("extractROWS", "GRanges",
+    function(x, i)
+    {
+        if (missing(i) || !is(i, "Ranges"))
+            i <- normalizeSingleBracketSubscript(i, x)
+        ans_seqnames <- extractROWS(seqnames(x), i)
+        ans_ranges <- extractROWS(ranges(x), i)
+        ans_strand <- extractROWS(strand(x), i)
+        ans_mcols <- extractROWS(mcols(x), i)
+        ans_ecs <- lapply(extraColumnSlots(x), extractROWS, i)
+        clone(x, seqnames=ans_seqnames,
+                 ranges=ans_ranges,
+                 strand=ans_strand,
+                 elementMetadata=ans_mcols,
+                 .slotList=ans_ecs,
+                 check=FALSE)
+    }
+)
+
+setMethod("replaceROWS", "GRanges",
+    function(x, i, value)
+    {
+        if (missing(i) || !is(i, "Ranges"))
+            i <- normalizeSingleBracketSubscript(i, x)
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
+        ans_seqnames <- replaceROWS(seqnames(x), i, seqnames(value))
+        ans_ranges <- replaceROWS(ranges(x), i, ranges(value))
+        ans_strand <- replaceROWS(strand(x), i, strand(value))
+        ans_mcols <- replaceROWS(mcols(x), i, mcols(value))
+        ans_ecs_names <- extraColumnSlotNames(x)
+        ans_necs <- length(ans_ecs_names)
+        if (ans_necs == 0L) {
+            ans_ecs <- NULL
+        } else {
+            value_ecs_names <- extraColumnSlotNames(value)
+            if (!identical(value_ecs_names[seq_len(ans_necs)],
+                           ans_ecs_names))
+                stop("'value' can have more extra column slots but not less")
+            ans_ecs <- extraColumnSlotsAsDF(x)
+            value_ecs <- extraColumnSlotsAsDF(value)
+            ans_ecs <- replaceROWS(ans_ecs, i, value_ecs[seq_len(ans_necs)])
+        }
+        update(x, seqnames=ans_seqnames,
+                  ranges=ans_ranges,
+                  strand=ans_strand,
+                  elementMetadata=ans_mcols,
+                  .slotList=as.list(ans_ecs))
+    }
+)
+
+### TODO: Refactor to use replaceROWS(). This will make the code much simpler
+### and avoid a lot of duplication with the above "replaceROWS" method.
+setReplaceMethod("[", "GRanges",
+    function(x, i, j, ..., value)
+    {
+        if (!is(value, "GenomicRanges"))
+            stop("replacement value must be a GenomicRanges object")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
+        seqnames <- seqnames(x)
+        ranges <- ranges(x)
+        strand <- strand(x)
+        ans_mcols <- mcols(x, FALSE)
+        value_ecs <- extraColumnSlotsAsDF(value)
+        x_ecs <- extraColumnSlotsAsDF(x)
+        new_ecs <- value_ecs[!names(value_ecs) %in% names(x_ecs)]
+        ecs_to_replace <- intersect(names(value_ecs), names(x_ecs))
+        if (missing(i)) {
+            seqnames[] <- seqnames(value)
+            ranges[] <- ranges(value)
+            strand[] <- strand(value)
+            if (missing(j))
+                ans_mcols[ , ] <- mcols(value, FALSE)
+            else
+                ans_mcols[ , j] <- mcols(value, FALSE)
+            if (length(new_ecs) > 0L)
+                ans_mcols[names(new_ecs)] <- new_ecs
+            x_ecs[ecs_to_replace] <- value_ecs[ecs_to_replace]
+        } else {
+            i <- extractROWS(setNames(seq_along(x), names(x)), i)
+            seqnames[i] <- seqnames(value)
+            ranges[i] <- ranges(value)
+            strand[i] <- strand(value)
+            if (missing(j))
+                ans_mcols[i, ] <- mcols(value, FALSE)
+            else
+                ans_mcols[i, j] <- mcols(value, FALSE)
+            if (length(new_ecs) > 0L)
+                ans_mcols[i, names(new_ecs)] <- DataFrame(new_ecs)
+            if (length(ecs_to_replace) > 0L) {
+              x_ecs[i, ecs_to_replace] <- value_ecs[ecs_to_replace]
+            }
+        }
+        update(x, seqnames=seqnames, ranges=ranges,
+               strand=strand, elementMetadata=ans_mcols,
+               .slotList=as.list(x_ecs))
+    }
+)
+

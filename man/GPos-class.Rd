@@ -31,6 +31,7 @@
 }
 
 \usage{
+## Constructor
 GPos(pos_runs)
 }
 
@@ -44,7 +45,8 @@ GPos(pos_runs)
   }
 }
 
-\details{
+\value{
+  A GPos object.
 }
 
 \author{Hervé Pagès}
@@ -52,6 +54,9 @@ GPos(pos_runs)
 \seealso{
   \itemize{
     \item \link{GRanges} objects.
+
+    \item \link[SummarizedExperiment]{SummarizedExperiment} objects in the
+          \pkg{SummarizedExperiment} package.
   }
 }
 
@@ -77,11 +82,11 @@ gpos3A <- gpos3B <- GPos(c("chrI:1-1000", "chrI:1005-2000"))
 npos <- length(gpos3A)
 
 mcols(gpos3A)$sample <- Rle("sA")
-sA_counts <- sample(1:10, npos, replace=TRUE)
+sA_counts <- sample(10, npos, replace=TRUE)
 mcols(gpos3A)$counts <- sA_counts
 
 mcols(gpos3B)$sample <- Rle("sB")
-sB_counts <- sample(1:10, npos, replace=TRUE)
+sB_counts <- sample(10, npos, replace=TRUE)
 mcols(gpos3B)$counts <- sB_counts
 
 gpos3 <- c(gpos3A, gpos3B)
@@ -103,10 +108,19 @@ gr4
 object.size(gpos4)
 object.size(gr4)  # 6951 times bigger than the GPos object!
 
+## Shuffling the order of the positions impacts memory usage:
+object.size(rev(gpos4))     # significantly
+object.size(sample(gpos4))  # even worse!
+
+## Best case scenario is when the object is strictly sorted (i.e.
+## positions are in strict ascending order).
+## This can be checked with:
+is.unsorted(gpos4, strict=TRUE)  # 'gpos4' is strictly sorted
+
 ## In order to keep memory usage as low as possible, it is highly
 ## recommended to use Rle objects only for the metadata columns:
 npos <- length(gpos4)
-counts <- rep(Rle(sample(150L, replace=TRUE, npos / 10)), each=10)
+counts <- rep(Rle(sample(150, replace=TRUE, npos / 10)), each=10)
 counts <- c(counts, Rle(0L, npos - length(counts)))
 mcols(gpos4)$counts <- counts
 gpos4
@@ -139,9 +153,9 @@ var1 <- Matrix(0, nrow=length(gpos4), ncol=3)  # 3 samples
 colnames(var1) <- c("s1", "s2", "s3")
 var2 <- var1
 var1[sample(prod(dim(var1)), 5000000)] <-
-                                sample(15L, replace=TRUE, 5000000)
+                                sample(15, replace=TRUE, 5000000)
 var2[sample(prod(dim(var2)), 5000000)] <-
-                                sample(15L, replace=TRUE, 5000000)
+                                sample(15, replace=TRUE, 5000000)
 
 ## Store them in a SummarizedExperiment object:
 rse <- SummarizedExperiment(list(var1=var1, var2=var2), rowRanges=gpos4)
