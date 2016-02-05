@@ -6,6 +6,7 @@
 \alias{GPos}
 
 \alias{length,GPos-method}
+\alias{names,GPos-method}
 \alias{names<-,GPos-method}
 \alias{seqnames,GPos-method}
 \alias{pos}
@@ -17,6 +18,7 @@
 \alias{strand,GPos-method}
 \alias{seqinfo,GPos-method}
 \alias{extractROWS,GPos-method}
+\alias{show,GPos-method}
 
 \title{GPos objects}
 

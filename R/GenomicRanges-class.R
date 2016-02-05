@@ -808,8 +808,13 @@ setMethod("c", "GenomicRanges",
     ans
 }
 
+### If 'x' is a GRanges object, 'coerce.internally.to.GRanges' has no effect.
+### If it's a GenomicRanges object that is not a GRanges object, then use
+### 'coerce.internally.to.GRanges=FALSE' only if 'x' supports head() and
+### tail().
 showGenomicRanges <- function(x, margin="",
-                              print.classinfo=FALSE, print.seqinfo=FALSE)
+                              print.classinfo=FALSE, print.seqinfo=FALSE,
+                              coerce.internally.to.GRanges=TRUE)
 {
     x_class <- class(x)
     x_len <- length(x)
@@ -820,15 +825,14 @@ showGenomicRanges <- function(x, margin="",
         " and ",
         x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
         ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that 'x' is
-    ## subsettable but not all GenomicRanges objects are (and if they are,
-    ## subsetting them could be costly). However GRanges objects are assumed
-    ## to be subsettable so if 'x' is not one then we turn it into one. This
-    ## coercion is expected to work on any GenomicRanges object but can also
-    ## be costly (e.g. GPos objects).
-    if (!is(x, "GRanges"))
-        x <- as(x, "GRanges", strict=FALSE)
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
+    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
+    ## and tail() work on 'xx'.
+    if (coerce.internally.to.GRanges) {
+        xx <- as(x, "GRanges", strict=FALSE)
+    } else {
+        xx <- x
+    }
+    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
                .makeNakedMatFromGenomicRanges)
     if (print.classinfo) {
         .COL2CLASS <- c(
@@ -837,7 +841,7 @@ showGenomicRanges <- function(x, margin="",
             strand="Rle"
         )
         extraColumnNames <- extraColumnSlotNames(x)
-        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extraColumnNames])
+        .COL2CLASS <- c(.COL2CLASS, getSlots(x_class)[extraColumnNames])
         classinfo <-
             S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!

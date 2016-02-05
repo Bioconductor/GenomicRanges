@@ -22,6 +22,8 @@ setClass("GPos",
 
 setMethod("length", "GPos", function(x) sum(width(x@pos_runs)))
 
+setMethod("names", "GPos", function(x) NULL)
+
 setReplaceMethod("names", "GPos",
     function(x, value) stop(class(x), " objects don't accept names")
 )
@@ -101,7 +103,7 @@ GPos <- function(pos_runs)
         stop("too many genomic positions in 'pos_runs'")
     ans_mcols <- new("DataFrame", nrows=ans_len)
     pos_runs <- .merge_adjacent_ranges(pos_runs, drop.empty.ranges=TRUE)
-    new2("GPos", pos_runs=pos_runs, elementMetadata=ans_mcols)
+    new2("GPos", pos_runs=pos_runs, elementMetadata=ans_mcols, check=FALSE)
 }
 
 
@@ -148,13 +150,16 @@ setMethod("extractROWS", "GPos",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Show
 ###
-### The "show" method for GenomicRanges objects works on GPos objects (and
-### any GenomicRanges derivative in general) because it coerces the object
-### to GRanges. However, for a GPos object this coercion is typically too
-### costly: it's analog to turning an Rle back into an ordinary vector for
-### the sole purpose of displaying its head and its tail. This defeats the
-### purpose of using an Rle or GPos object in the first place.
-###
 
-# TODO: Implement efficient "show" method.
+### By default showGenomicRanges() would coerce internally the GPos object to
+### a GRanges object but this coercion is in general too expensive. It's kind
+### of analog to expanding an Rle back into an ordinary vector for the sole
+### purpose of displaying its head and its tail. This would defeat the purpose
+### of using an Rle or GPos object in the first place.
+setMethod("show", "GPos",
+    function(object)
+        showGenomicRanges(object, margin="  ",
+                          print.classinfo=TRUE, print.seqinfo=TRUE,
+                          coerce.internally.to.GRanges=FALSE)
+)
 
