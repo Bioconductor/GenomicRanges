@@ -25,7 +25,12 @@ setMethod("length", "GPos", function(x) sum(width(x@pos_runs)))
 setMethod("names", "GPos", function(x) NULL)
 
 setReplaceMethod("names", "GPos",
-    function(x, value) stop(class(x), " objects don't accept names")
+    function(x, value)
+    {
+        if (!is.null(value))
+            stop(class(x), " objects don't accept names")
+        x
+    }
 )
 
 setMethod("seqnames", "GPos",

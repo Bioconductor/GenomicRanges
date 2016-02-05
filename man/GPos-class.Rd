@@ -56,31 +56,45 @@ GPos(pos_runs)
 }
 
 \examples{
-## 1st example
-pos_runs <- GRanges(c("chr1", "chr1", "chr2"),
-                    IRanges(c(44, 5, 2), width=c(10, 6, 4)))
-gpos1 <- GPos(pos_runs)
+## ---------------------------------------------------------------------
+## BASIC EXAMPLES
+## ---------------------------------------------------------------------
+
+## Example 1
+gpos1 <- GPos(c("chr1:44-53", "chr1:5-10", "chr2:2-5"))
 gpos1
 pos(gpos1)  # same as 'start(gpos1)' and 'end(gpos1)'
 gpos1[9:17]
 
-## 2nd example
+## Example 2
 pos_runs <- GRanges("chrI", IRanges(c(1, 6, 12, 17), c(5, 10, 16, 20)),
                     strand=c("+", "-", "-", "+"))
 gpos2 <- GPos(pos_runs)
 gpos2
 
-## 3rd example
-pos_runs <- GRanges("chrI", IRanges(c(1, 1005), c(1000, 2000)))
-gpos3A <- gpos3B <- GPos(pos_runs)
-mcols(gpos3A)$sample <- Rle("sA")
-mcols(gpos3B)$sample <- Rle("sB")
-gpos3 <- c(gpos3A, gpos3B)
+## Example 3
+gpos3A <- gpos3B <- GPos(c("chrI:1-1000", "chrI:1005-2000"))
+npos <- length(gpos3A)
 
-## 4th example
+mcols(gpos3A)$sample <- Rle("sA")
+sA_counts <- sample(1:10, npos, replace=TRUE)
+mcols(gpos3A)$counts <- sA_counts
+
+mcols(gpos3B)$sample <- Rle("sB")
+sB_counts <- sample(1:10, npos, replace=TRUE)
+mcols(gpos3B)$counts <- sB_counts
+
+gpos3 <- c(gpos3A, gpos3B)
+gpos3
+
+## Example 4
 library(BSgenome.Scerevisiae.UCSC.sacCer2)
 gpos4 <- GPos(seqinfo(BSgenome.Scerevisiae.UCSC.sacCer2))
 gpos4  # all the positions along the genome are represented
+
+## ---------------------------------------------------------------------
+## MEMORY USAGE
+## ---------------------------------------------------------------------
 
 ## Coercion to GRanges works...
 gr4 <- as(gpos4, "GRanges")
@@ -96,6 +110,45 @@ counts <- rep(Rle(sample(150L, replace=TRUE, npos / 10)), each=10)
 counts <- c(counts, Rle(0L, npos - length(counts)))
 mcols(gpos4)$counts <- counts
 gpos4
+
+## ---------------------------------------------------------------------
+## USING A GPos OBJECT IN A SummarizedExperiment OBJECT
+## ---------------------------------------------------------------------
+## A GPos object can be used as the rowRanges component of a
+## SummarizedExperiment object.
+
+## As a 1st example, we show how the counts for samples sA and sB in
+## 'gpos3' can be stored in a SummarizedExperiment object where the rows
+## correspond to unique genomic positions and the columns to samples:
+library(SummarizedExperiment)
+counts <- cbind(sA=sA_counts, sB=sB_counts)
+mcols(gpos3A) <- NULL
+rse <- SummarizedExperiment(list(counts=counts), rowRanges=gpos3A)
+rse
+rowRanges(rse)
+head(assay(rse))
+
+## If the number of genomic positions to store in the SummarizedExperiment
+## object is big (e.g. millions), then it's necessary to use a
+## memory-efficient representation of the assay data like sparse matrices,
+## Rle matrices (not implemented yet), on-disk data, etc...
+## Here we use the Matrix package to create 2 sparse matrices of
+## dimensions "length of sacCer2 genome" x "nb of samples":
+library(Matrix)
+var1 <- Matrix(0, nrow=length(gpos4), ncol=3)  # 3 samples
+colnames(var1) <- c("s1", "s2", "s3")
+var2 <- var1
+var1[sample(prod(dim(var1)), 5000000)] <-
+                                sample(15L, replace=TRUE, 5000000)
+var2[sample(prod(dim(var2)), 5000000)] <-
+                                sample(15L, replace=TRUE, 5000000)
+
+## Store them in a SummarizedExperiment object:
+rse <- SummarizedExperiment(list(var1=var1, var2=var2), rowRanges=gpos4)
+rse
+rowRanges(rse)
+head(assay(rse, 1))
+head(assay(rse, 2))
 }
 \keyword{methods}
 \keyword{classes}
