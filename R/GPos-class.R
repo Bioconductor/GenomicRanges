@@ -109,7 +109,40 @@ GPos <- function(pos_runs)
 ### Subsetting
 ###
 
-# TODO
+setMethod("extractROWS", "GPos",
+    function(x, i)
+    {
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        ## TODO: Maybe make this the coercion method from NSBS to Ranges.
+        if (is(i, "RangesNSBS")) {
+            ir <- i@subscript
+            ir <- ir[width(ir) != 0L]
+        } else {
+            ir <- as(as.integer(i), "IRanges")
+        }
+        map <- S4Vectors:::map_ranges_to_runs(width(x@pos_runs),
+                                              start(ir), width(ir))
+        ## Because 'ir' has no zero-width ranges, 'spanned_nrun' cannot
+        ## contain zeroes and so 'Ltrim' and 'Rtrim' cannot contain garbbage.
+        offset_nrun <- map[[1L]]
+        spanned_nrun <- map[[2L]]
+        Ltrim <- map[[3L]]
+        Rtrim <- map[[4L]]
+        run_idx <- S4Vectors:::fancy_mseq(spanned_nrun, offset_nrun)
+        new_pos_runs <- x@pos_runs[run_idx]
+        if (length(run_idx) != 0L) {
+            Rtrim_idx <- cumsum(spanned_nrun)
+            Ltrim_idx <- c(1L, Rtrim_idx[-length(Rtrim_idx)] + 1L)
+            trimmed_start <- start(new_pos_runs)[Ltrim_idx] + Ltrim
+            trimmed_end <- end(new_pos_runs)[Rtrim_idx] - Rtrim
+            start(new_pos_runs)[Ltrim_idx] <- trimmed_start
+            end(new_pos_runs)[Rtrim_idx] <- trimmed_end
+        }
+        x@pos_runs <- .merge_adjacent_ranges(new_pos_runs)
+        mcols(x) <- extractROWS(mcols(x), i)
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

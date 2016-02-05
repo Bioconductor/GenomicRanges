@@ -16,6 +16,7 @@
 \alias{ranges,GPos-method}
 \alias{strand,GPos-method}
 \alias{seqinfo,GPos-method}
+\alias{extractROWS,GPos-method}
 
 \title{GPos objects}
 
