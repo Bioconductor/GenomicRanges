@@ -107,8 +107,11 @@ GPos <- function(pos_runs=GRanges())
     if (is.na(ans_len))
         stop("too many genomic positions in 'pos_runs'")
     ans_mcols <- new("DataFrame", nrows=ans_len)
-    pos_runs <- .merge_adjacent_ranges(pos_runs, drop.empty.ranges=TRUE)
-    new2("GPos", pos_runs=pos_runs, elementMetadata=ans_mcols, check=FALSE)
+    ans_pos_runs <- .merge_adjacent_ranges(pos_runs, drop.empty.ranges=TRUE)
+    new2("GPos", pos_runs=ans_pos_runs,
+                 elementMetadata=ans_mcols,
+                 metadata=pos_runs@metadata,
+                 check=FALSE)
 }
 
 
