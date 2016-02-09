@@ -564,7 +564,7 @@ showList <- function(object, showFunction, print.classinfo)
 
 setMethod("show", "GRangesList",
     function(object)
-        showList(object, showGenomicRanges, TRUE)
+        showList(object, show_GenomicRanges, TRUE)
 )
 
 

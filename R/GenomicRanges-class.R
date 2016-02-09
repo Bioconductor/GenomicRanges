@@ -689,7 +689,7 @@ setMethod("c", "GenomicRanges",
 ### "show" method.
 ###
 
-.makeNakedMatFromGenomicRanges <- function(x)
+.make_naked_matrix_from_GenomicRanges <- function(x)
 {
     x_len <- length(x)
     x_mcols <- mcols(x)
@@ -711,12 +711,14 @@ setMethod("c", "GenomicRanges",
 }
 
 ### If 'x' is a GRanges object, 'coerce.internally.to.GRanges' has no effect.
-### If it's a GenomicRanges object that is not a GRanges object, then use
-### 'coerce.internally.to.GRanges=FALSE' only if 'x' supports head() and
-### tail().
-showGenomicRanges <- function(x, margin="",
-                              print.classinfo=FALSE, print.seqinfo=FALSE,
-                              coerce.internally.to.GRanges=TRUE)
+### If it's a GenomicRanges object that is not a GRanges object, then
+### show_GenomicRanges() will coerce it to a GRanges object unless
+### 'coerce.internally.to.GRanges' is set to FALSE. Use this if coercing 'x'
+### to GRanges is not supported or is too expensive but only if 'x' supports
+### head() and tail().
+show_GenomicRanges <- function(x, margin="",
+                               print.classinfo=FALSE, print.seqinfo=FALSE,
+                               coerce.internally.to.GRanges=TRUE)
 {
     x_class <- class(x)
     x_len <- length(x)
@@ -735,7 +737,7 @@ showGenomicRanges <- function(x, margin="",
         xx <- x
     }
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
-               .makeNakedMatFromGenomicRanges)
+                .make_naked_matrix_from_GenomicRanges)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
@@ -764,8 +766,8 @@ showGenomicRanges <- function(x, margin="",
 
 setMethod("show", "GenomicRanges",
     function(object)
-        showGenomicRanges(object, margin="  ",
-                          print.classinfo=TRUE, print.seqinfo=TRUE)
+        show_GenomicRanges(object, margin="  ",
+                           print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
 setMethod("showAsCell", "GenomicRanges",

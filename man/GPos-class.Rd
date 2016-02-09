@@ -17,6 +17,7 @@
 \alias{ranges,GPos-method}
 \alias{strand,GPos-method}
 \alias{seqinfo,GPos-method}
+\alias{as.data.frame,GPos-method}
 \alias{extractROWS,GPos-method}
 \alias{show,GPos-method}
 \alias{c,GPos-method}
@@ -48,6 +49,49 @@ GPos(pos_runs)  # constructor function
   A GPos object.
 }
 
+\section{Accessors}{
+  \link{GPos} objects support the same set of getters as \link{GRanges}
+  objects (i.e. \code{seqnames()}, \code{start()}, \code{end()},
+  \code{ranges()}, \code{strand()}, \code{mcols()}, \code{seqinfo()}, etc...),
+  plus the \code{pos()} getter which is equivalent to \code{start()}
+  or \code{end()}. See \code{?GRanges} for the list of getters supported
+  by \link{GRanges} objects.
+
+  Note that a \link{GPos} object cannot hold names i.e. \code{names()} always
+  returns \code{NULL} on it.
+
+  Unlike for \link{GRanges} objects, no setters are currently available for
+  \link{GPos} objects.
+}
+
+\section{Coercion}{
+  Like with a \link{GRanges} object, \code{as.character()}, \code{as.factor()},
+  and \code{as.data.frame()} work with a \link{GPos} object \code{x}.
+  Note that \code{as.data.frame(x)} returns a data frame with a \code{pos}
+  column (containing \code{pos(x)}) instead of the \code{start}, \code{end},
+  and \code{width} columns one gets when \code{x} is a \link{GRanges} object.
+
+  Also \link{GPos} object \code{x} can be coerced to a \link{GRanges} object
+  with \code{as(x, "GRanges")}. However please be aware that the resulting
+  object can use thousands times (or more) memory than \code{x}!
+  See "MEMORY USAGE" in the Examples section below.
+}
+
+\section{Subsetting}{
+  A \link{GPos} object can be subsetted exactly like a \link{GRanges} object.
+}
+
+\section{Combining}{
+  \link{GPos} objects can be combined (a.k.a. appended) with \code{c()} or
+  \code{append()}.
+}
+
+\section{Splitting and Relisting}{
+  Like with a \link{GRanges} object, \code{split()} and \code{relist()} work
+  with a \link{GPos} object \code{x}. Note that they return a
+  \link{GenomicRangesList} object instead of a \link{GRangesList} object.
+}
+
 \note{
   Like for any \link[S4Vectors]{Vector} derivative, the length of a
   GPos object cannot exceed \code{.Machine$integer.max} (i.e. 2^31 on
@@ -74,7 +118,15 @@ GPos(pos_runs)  # constructor function
 ## Example 1:
 gpos1 <- GPos(c("chr1:44-53", "chr1:5-10", "chr2:2-5"))
 gpos1
+
+length(gpos1)
+seqnames(gpos1)
 pos(gpos1)  # same as 'start(gpos1)' and 'end(gpos1)'
+strand(gpos1)
+as.character(gpos1)
+as.data.frame(gpos1)
+as(gpos1, "GRanges")
+as.data.frame(as(gpos1, "GRanges"))
 gpos1[9:17]
 
 ## Example 2:
@@ -82,6 +134,8 @@ pos_runs <- GRanges("chrI", IRanges(c(1, 6, 12, 17), c(5, 10, 16, 20)),
                     strand=c("+", "-", "-", "+"))
 gpos2 <- GPos(pos_runs)
 gpos2
+
+strand(gpos2)
 
 ## Example 3:
 gpos3A <- gpos3B <- GPos(c("chrI:1-1000", "chrI:1005-2000"))

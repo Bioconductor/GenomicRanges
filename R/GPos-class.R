@@ -116,6 +116,29 @@ GPos <- function(pos_runs=GRanges())
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion
+###
+
+### The "as.data.frame" method for GenomicRanges objects works on a GPos
+### object but returns a data.frame with identical "start" and "end" columns,
+### and a "width" column filled with 1. We overwrite it to return a data.frame
+### with a "pos" column instead of the "start" and "end" columns, and no
+### "width" column.
+### TODO: Turn this into an S3/S4 combo for as.data.frame.GPos
+setMethod("as.data.frame", "GPos",
+    function(x, row.names=NULL, optional=FALSE, ...)
+    {
+        mcols_df <- as.data.frame(mcols(x), ...)
+        data.frame(seqnames=as.factor(seqnames(x)),
+                   pos=pos(x),
+                   strand=as.factor(strand(x)),
+                   mcols_df,
+                   stringsAsFactors=FALSE)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 ###
 
@@ -159,16 +182,67 @@ setMethod("extractROWS", "GPos",
 ### Show
 ###
 
-### By default showGenomicRanges() would coerce internally the GPos object to
-### a GRanges object but this coercion is in general too expensive. It's kind
-### of analog to expanding an Rle back into an ordinary vector for the sole
-### purpose of displaying its head and its tail. This would defeat the purpose
-### of using an Rle or GPos object in the first place.
+.make_naked_matrix_from_GPos <- function(x)
+{
+    x_len <- length(x)
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    ans <- cbind(seqnames=as.character(seqnames(x)),
+                 pos=as.character(pos(x)),
+                 strand=as.character(strand(x)))
+    if (x_nmc > 0L) {
+        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
+                                     list(check.names=FALSE)))
+        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
+    }
+    ans
+}
+
+show_GPos <- function(x, margin="",
+                      print.classinfo=FALSE, print.seqinfo=FALSE)
+{
+    x_class <- class(x)
+    x_len <- length(x)
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    cat(x_class, " object with ",
+        x_len, " ", ifelse(x_len == 1L, "position", "positions"),
+        " and ",
+        x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
+        ":\n", sep="")
+    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
+    ## and tail() work on 'xx'.
+    xx <- as(x, "GPos")
+    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
+                .make_naked_matrix_from_GPos)
+    if (print.classinfo) {
+        .COL2CLASS <- c(
+            seqnames="Rle",
+            pos="integer",
+            strand="Rle"
+        )
+        classinfo <-
+            S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        ## A sanity check, but this should never happen!
+        stopifnot(identical(colnames(classinfo), colnames(out)))
+        out <- rbind(classinfo, out)
+    }
+    if (nrow(out) != 0L)
+        rownames(out) <- paste0(margin, rownames(out))
+    ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
+    ## limit that would typically be reached when 'showHeadLines' global
+    ## option is set to Inf.
+    print(out, quote=FALSE, right=TRUE, max=length(out))
+    if (print.seqinfo) {
+        cat(margin, "-------\n", sep="")
+        cat(margin, "seqinfo: ", summary(seqinfo(x)), "\n", sep="")
+    }
+}
+
 setMethod("show", "GPos",
     function(object)
-        showGenomicRanges(object, margin="  ",
-                          print.classinfo=TRUE, print.seqinfo=TRUE,
-                          coerce.internally.to.GRanges=FALSE)
+        show_GPos(object, margin="  ",
+                  print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
 
