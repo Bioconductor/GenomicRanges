@@ -1,6 +1,5 @@
-%\VignetteIndexEntry{An Introduction to GenomicRanges}
-%\VignetteDepends{Rsamtools}
-%\VignetteKeywords{sequence, sequencing, alignments}
+%\VignetteIndexEntry{An Introduction to the GenomicRanges Package}
+%\VignetteKeywords{sequence, sequencing}
 %\VignettePackage{GenomicRanges}
 \documentclass[10pt]{article}
 
@@ -28,7 +27,7 @@
 \newcommand{\GenomicRanges}{\Rpackage{GenomicRanges}}
 
 
-\title{An Introduction to Genomic Ranges Classes}
+\title{An Introduction to the GenomicRanges Package}
 \author{Marc Carlson \and Patrick Aboyoun \and Herv\'{e} Pag\`{e}s}
 \date{\today}
 
@@ -41,6 +40,8 @@ options(width=72)
 @
 \tableofcontents
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
 The \Rpackage{GenomicRanges} package serves as the foundation for
@@ -50,7 +51,7 @@ upon the \Rpackage{IRanges} (infrastructure) package and provides
 support for the \Rpackage{BSgenome} (infrastructure),
 \Rpackage{Rsamtools} (I/O), \Rpackage{ShortRead} (I/O \& QA),
 \Rpackage{rtracklayer} (I/O), and \Rpackage{GenomicFeatures}
-(infrastructure) packages.
+(infrastructure) packages, and many other \software{Bioconductor} packages.
 
 This package lays a foundation for genomic analysis by introducing
 three classes (\Rclass{GRanges}, \Rclass{GPos}, and \Rclass{GRangesList}),
@@ -62,7 +63,7 @@ The \Rpackage{GenomicRanges} package is available at bioconductor.org
 and can be downloaded via \Rfunction{biocLite}:
 
 <<biocLite, eval=FALSE>>=
-source("http://bioconductor.org/biocLite.R")
+source("https://bioconductor.org/biocLite.R")
 biocLite("GenomicRanges")
 @
 <<initialize, results=hide>>=
@@ -70,13 +71,14 @@ library(GenomicRanges)
 @
 
 
-\section{\Rclass{GRanges}: Single Interval Range Features}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\Rclass{GRanges}: Genomic Ranges}
 
-The \Rclass{GRanges} class represents a collection of genomic features
-that each have a single start and end location on the genome. This
-includes features such as contiguous binding sites, transcripts, and
-exons. These objects can be created by using the \Rfunction{GRanges}
-constructor function. For example,
+The \Rclass{GRanges} class represents a collection of genomic ranges
+that each have a single start and end location on the genome. It can be
+used to store the location of genomic features such as contiguous binding
+sites, transcripts, and exons. These objects can be created by using the
+\Rfunction{GRanges} constructor function. For example,
 
 <<example-GRanges>>=
 gr <-
@@ -93,7 +95,7 @@ gr
 @
 
 \noindent
-creates a \Rclass{GRanges} object with 10 single interval features.
+creates a \Rclass{GRanges} object with 10 genomic ranges.
 The output of the \Rclass{GRanges} \Rmethod{show} method separates the
 information into a left and right hand region that are separated by
 \Rcode{|} symbols. The genomic coordinates (seqnames, ranges, and strand)
@@ -324,14 +326,15 @@ consult the manual page.
 @
 
 
-\section{\Rclass{GRangesList}: Multiple Interval Range Features}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\Rclass{GRangesList}: Groups of Genomic Ranges}
 
 Some important genomic features, such as spliced transcripts that are
 are comprised of exons, are inherently compound structures. Such a
 feature makes much more sense when expressed as a compound object
 such as a \Rclass{GRangesList}. Whenever genomic features consist of
 multiple ranges that are grouped by a parent feature, they can be
-represented as \Rclass{GRangesList} object. Consider the simple
+represented as a \Rclass{GRangesList} object. Consider the simple
 example of the two transcript \Rfunction{GRangesList} below created
 using the \Rfunction{GRangesList} constructor.
 
@@ -564,7 +567,10 @@ consult the manual page.
 @
 
 
-\section{Interval overlaps involving \Rclass{GRanges} and \Rclass{GRangesList} objects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Interval overlaps involving \Rclass{GRanges} and \Rclass{GRangesList}
+objects}
+
 Interval overlapping is the process of comparing the ranges in two
 objects to determine if and when they overlap. As such, it is perhaps
 the most common operation performed on \Rclass{GRanges} and
@@ -611,82 +617,16 @@ findOverlaps(grl, gr, select="first")
 @
 
 
-\section{Genomic Alignments} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Session Information}
 
-In addition to \Rclass{GRanges} and \Rclass{GRangesList} classes, the
-\GenomicRanges{} package defines the \Rclass{GAlignments} class,
-which is a more specialized container for storing a set of genomic
-alignments. The class is intended to support alignments in general,
-not only those coming from a 'Binary Alignment Map' or 'BAM' files.
-Also alignments with gaps in the reference sequence (a.k.a.
-\emph{gapped alignments}) are supported which, for example, makes
-the class suited for storing junction reads from an RNA-seq experiment.
+All of the output in this vignette was produced under the following
+conditions:
 
-More precisely, a \Rclass{GAlignments} object is a vector-like
-object where each element describes an \emph{alignment}, that is,
-how a given sequence (called \emph{query} or \emph{read}, typically
-short) aligns to a reference sequence (typically long).
-
-As shown later in this document, a \Rclass{GAlignments} object
-can be created from a 'BAM' file. In that case, each element in the
-resulting object will correspond to a record in the file.
-One important thing to note though is that not all the information
-present in the BAM/SAM records is stored in the object. In particular,
-for now, we discard the query sequences (SEQ field), the query ids
-(QNAME field), the query qualities (QUAL), the mapping qualities (MAPQ)
-and any other information that is not needed in order to support the
-basic set of operations described in this document.
-This also means that multi-reads (i.e. reads with multiple hits in the
-reference) don't receive any special treatment i.e. the various SAM/BAM
-records corresponding to a multi-read will show up in the \Rclass{GAlignments}
-object as if they were coming from different/unrelated queries.
-Also paired-end reads will be treated as single-end reads and the
-pairing information will be lost. This might change in the future.
-
-
-\subsection{Load a `BAM' file into a \Rclass{GAlignments} object}
-
-First we use the \Rfunction{readGAlignments} function from the
-\Rpackage{GenomicAlignments} package to load a toy `BAM' file into
-a \Rclass{GAlignments} object:
-<<readGAlignments>>=
-library(GenomicAlignments)
-aln1_file <- system.file("extdata", "ex1.bam", package="Rsamtools")
-aln1 <- readGAlignments(aln1_file)
-aln1
-length(aln1)
+\begin{small}
+<<SessionInfo>>=
+sessionInfo()
 @
-
-3271 `BAM' records were loaded into the object.
-
-Note that \Rfunction{readGAlignments} would have discarded
-any `BAM' record describing an unaligned query (see description
-of the <flag> field in the SAM Format Specification
-\footnote{\url{http://samtools.sourceforge.net/SAM1.pdf}}
-for more information).
-The reader interested in tracking down these events can always
-use the \Rfunction{scanBam} function but this goes beyond the scope
-of this document.
-
-\subsection{Simple accessor methods}
-
-There is one accessor per field displayed by the \Rmethod{show} method
-and it has the same name as the field. All of them return a vector or
-factor of the same length as the object:
-<<accessors>>=
-head(seqnames(aln1))
-seqlevels(aln1)
-head(strand(aln1))
-head(cigar(aln1))
-head(qwidth(aln1))
-head(start(aln1))
-head(end(aln1))
-head(width(aln1))
-head(njunc(aln1))
-@
-
-\subsection{More accessor methods}
-
-
+\end{small}
 
 \end{document}
