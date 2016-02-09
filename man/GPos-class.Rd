@@ -219,10 +219,13 @@ library(Rsamtools)  # for the BamFile() constructor function
 bamfile1 <- BamFile(untreated1_chr4())
 bamfile2 <- BamFile(untreated3_chr4())
 gpos5 <- GPos(seqinfo(bamfile1))
+library(GenomicAlignments)  # for "coverage" method for BamFile objects
 cov1 <- unlist(coverage(bamfile1), use.names=FALSE)
 cov2 <- unlist(coverage(bamfile2), use.names=FALSE)
 mcols(gpos5) <- DataFrame(cov1, cov2)
 gpos5
+
+object.size(gpos5)  # lightweight
 
 ## Keep only the positions where coverage is at least 10 in one of the
 ## 2 samples:
