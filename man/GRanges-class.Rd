@@ -528,7 +528,7 @@
     \item \code{\link[GenomeInfoDb]{seqinfo}} for accessing/modifying
           information about the underlying sequences of a GRanges object.
 
-    \item The \link{GPos} class, a very memory-efficient container for storing
+    \item The \link{GPos} class, a memory-efficient container for storing
           genomic \emph{positions}, that is, genomic ranges of width 1.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic

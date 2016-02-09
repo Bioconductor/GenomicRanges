@@ -27,8 +27,9 @@
 \description{
   The GPos class is a container for storing a set of genomic \emph{positions},
   that is, genomic ranges of width 1. Even though a \link{GRanges} object
-  could be used for that, using a GPos object is much more memory-efficient,
-  especially when the object contains long runs of adjacent positions.
+  could be used for that, using a GPos object can be much more
+  memory-efficient, especially when the object contains long runs of adjacent
+  positions.
 }
 
 \usage{
