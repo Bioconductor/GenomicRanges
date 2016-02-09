@@ -53,11 +53,10 @@ support for the \Rpackage{BSgenome} (infrastructure),
 (infrastructure) packages.
 
 This package lays a foundation for genomic analysis by introducing
-three classes (\Rclass{GRanges}, \Rclass{GRangesList}, and
-\Rclass{GAlignments}), which are used to represent single
-interval range features, multiple interval range features, and genomic
-alignments respectively.  This vignette focuses on these classes and
-their associated methods.
+three classes (\Rclass{GRanges}, \Rclass{GPos}, and \Rclass{GRangesList}),
+which are used to represent genomic ranges, genomic positions, and groups
+of genomic ranges. This vignette focuses on the \Rclass{GRanges} and
+\Rclass{GRangesList} classes and their associated methods.
 
 The \Rpackage{GenomicRanges} package is available at bioconductor.org
 and can be downloaded via \Rfunction{biocLite}:

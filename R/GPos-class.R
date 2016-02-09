@@ -2,9 +2,10 @@
 ### GPos objects
 ### -------------------------------------------------------------------------
 ###
-### GPos is a container for storing a set of genomic *positions* i.e.
-### genomic ranges of length 1. It's more memory-efficient than GRanges when
-### the object contains long runs of adjacent positions.
+### The GPos class is a container for storing a set of genomic *positions*,
+### that is, genomic ranges of width 1. Even though a GRanges object can
+### be used for that, using a GPos object can be much more memory-efficient,
+### especially when the object contains long runs of adjacent positions.
 ###
 
 setClass("GPos",
