@@ -62,7 +62,7 @@ GPos(pos_runs)  # constructor function
   returns \code{NULL} on it.
 
   Unlike for \link{GRanges} objects, no setters are currently available for
-  \link{GPos} objects.
+  \link{GPos} objects. Some might be added in the near future.
 }
 
 \section{Coercion}{
@@ -105,6 +105,21 @@ GPos(pos_runs)  # constructor function
 \seealso{
   \itemize{
     \item \link{GRanges} objects.
+
+    \item \link{GenomicRanges-comparison} for comparing and ordering genomic
+          positions.
+
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
+          genomic ranges and/or positions.
+
+    \item \link[GenomicRanges]{nearest-methods} for finding the nearest
+          genomic range/position neighbor.
+
+    \item The \code{\link[BSgenome]{snpsBySeqname}},
+          \code{\link[BSgenome]{snpsByOverlaps}}, and
+          \code{\link[BSgenome]{snpsById}} methods for
+          \link[BSgenome]{SNPlocs} objects defined in the \pkg{BSgenome}
+          package for extractors that return a GPos object.
 
     \item \link[SummarizedExperiment]{SummarizedExperiment} objects in the
           \pkg{SummarizedExperiment} package.

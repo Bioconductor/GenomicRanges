@@ -76,11 +76,18 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ### returns a GRanges object (so is NOT an endomorphism).
 ### Note that this transformation preserves 'sum(width(x))'.
 ### Also note that this is an "inter range transformation". However unlike
-### range(), reduce(), gaps(), or disjoin(), its result depends on the order
-### of the elements in the input vector.
+### range(), reduce(), disjoin(), or gaps(), its result depends on the order
+### of the elements in the input vector. It's also idempotent like range(),
+### reduce(), and disjoin() (gaps() is not).
 ### TODO: Define and export stitch() generic and method for Ranges objects
 ### in the IRanges package (in inter-range-methods.R). Then make
-### .stitch_GenomicRanges() the "stitch" method for GenomicRanges objects.
+### .stitch_GenomicRanges() the "stitch" method for GenomicRanges objects and
+### support the 'ignore.strand' argument.
+### Maybe it would also make sense to have an isStitched() generic like we
+### have isDisjoint() to provide a quick and easy way to check the state of
+### the object before applying the transformation to it. In theory each
+### idempotent inter range transformation could have a "state checker" so
+### maybe add isReduced() too (range() probably doesn't need one).
 .stitch_GenomicRanges <- function(x, drop.empty.ranges=FALSE)
 {
     if (length(x) == 0L)

@@ -547,8 +547,8 @@
     \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
           genomic ranges.
 
-    \item \link[GenomicRanges]{nearest-methods} finding the nearest genomic
-          range neighbor.
+    \item \link[GenomicRanges]{nearest-methods} for finding the nearest
+          genomic range neighbor.
 
     \item \code{\link{absoluteRanges}} for transforming genomic ranges into
           \emph{absolute} ranges (i.e. into ranges on the sequence obtained
