@@ -31,8 +31,7 @@
 }
 
 \usage{
-## Constructor
-GPos(pos_runs)
+GPos(pos_runs)  # constructor function
 }
 
 \arguments{
@@ -47,6 +46,13 @@ GPos(pos_runs)
 
 \value{
   A GPos object.
+}
+
+\note{
+  Like for any \link[S4Vectors]{Vector} derivative, the length of a
+  GPos object cannot exceed \code{.Machine$integer.max} (i.e. 2^31 on
+  most platforms). \code{GPos()} will return an error if \code{pos_runs}
+  contains too many genomic positions.
 }
 
 \author{Hervé Pagès}
@@ -126,8 +132,15 @@ object.size(gpos4)
 object.size(gr4)  # 6951 times bigger than the GPos object!
 
 ## Shuffling the order of the positions impacts memory usage:
-object.size(rev(gpos4))     # significantly
-object.size(sample(gpos4))  # even worse!
+gpos4r <- rev(gpos4)
+object.size(gpos4r)  # significantly
+gpos4s <- sample(gpos4)
+object.size(gpos4s)  # even worse!
+
+## AN IMPORTANT NOTE: In the worst situations, GPos still performs as
+## good as a GRanges object.
+object.size(as(gpos4r, "GRanges"))  # same size as 'gpos4r'
+object.size(as(gpos4s, "GRanges"))  # same size as 'gpos4s'
 
 ## Best case scenario is when the object is strictly sorted (i.e.
 ## positions are in strict ascending order).
