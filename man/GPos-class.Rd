@@ -246,8 +246,8 @@ rse3
 rowRanges(rse3)
 head(assay(rse3))
 
-## Finally we show how the coverage data from Example 5 can be
-## efficiently stored in a SummarizedExperiment:
+## Finally we show how the coverage data from Example 5 can be easily
+## stored in a lightweight SummarizedExperiment object:
 cov <- mcols(gpos5)
 mcols(gpos5) <- NULL
 rse5 <- SummarizedExperiment(list(cov=cov), rowRanges=gpos5)
