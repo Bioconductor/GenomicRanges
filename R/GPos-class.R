@@ -52,13 +52,36 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor
+### Collapse runs of "stitchable ranges"
 ###
+### In a Ranges object 'x', 2 ranges x[i] and x[i+1] are "stitchable" if
+### start(x[i+1]) == end(x[i])+1. For example, in the following object:
+###   1: .....xxxx.............
+###   2: ...xx.................
+###   3: .........xxx..........
+###   4: ............xxxxxx....
+###   5: ..................x...
+### x[3] and x[4] are stitchable, and x[4] and x[5] are stitchable. So
+### x[3], x[4], and x[5] forms a run of "stitchable ranges" that collapses
+### into the following single range after stitching:
+###      .........xxxxxxxxxx...
+### Note that x[1] and x[3] are not stitchable because they are not
+### consecutive vector elements (but they would be if x[2] was removed).
+###
+### If 'x' contains genomic ranges (i.e. is a GenomicRanges object), 2 ranges
+### are "stitchable" if, in addition to the above, they are also on the same
+### chromosome and strand.
 
-### Merge adjacent ranges.
-### Returns a GRanges object (NOT an endomorphism).
+### .stitch_GenomicRanges() below takes any GenomicRanges derivative and
+### returns a GRanges object (so is NOT an endomorphism).
 ### Note that this transformation preserves 'sum(width(x))'.
-.merge_adjacent_ranges <- function(x, drop.empty.ranges=FALSE)
+### Also note that this is an "inter range transformation". However unlike
+### range(), reduce(), gaps(), or disjoin(), its result depends on the order
+### of the elements in the input vector.
+### TODO: Define and export stitch() generic and method for Ranges objects
+### in the IRanges package (in inter-range-methods.R). Then make
+### .stitch_GenomicRanges() the "stitch" method for GenomicRanges objects.
+.stitch_GenomicRanges <- function(x, drop.empty.ranges=FALSE)
 {
     if (length(x) == 0L)
         return(granges(x))  # returning GRanges() would loose the seqinfo
@@ -97,6 +120,11 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
                     check=FALSE)
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor
+###
+
 ### Note that if 'pos_runs' is a GPos instance with no metadata or metadata
 ### columns, then 'identical(GPos(pos_runs), pos_runs)' is TRUE.
 GPos <- function(pos_runs=GRanges())
@@ -107,7 +135,7 @@ GPos <- function(pos_runs=GRanges())
     if (is.na(ans_len))
         stop("too many genomic positions in 'pos_runs'")
     ans_mcols <- new("DataFrame", nrows=ans_len)
-    ans_pos_runs <- .merge_adjacent_ranges(pos_runs, drop.empty.ranges=TRUE)
+    ans_pos_runs <- .stitch_GenomicRanges(pos_runs, drop.empty.ranges=TRUE)
     new2("GPos", pos_runs=ans_pos_runs,
                  elementMetadata=ans_mcols,
                  metadata=pos_runs@metadata,
@@ -171,7 +199,7 @@ setMethod("extractROWS", "GPos",
             start(new_pos_runs)[Ltrim_idx] <- trimmed_start
             end(new_pos_runs)[Rtrim_idx] <- trimmed_end
         }
-        x@pos_runs <- .merge_adjacent_ranges(new_pos_runs)
+        x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
         mcols(x) <- extractROWS(mcols(x), i)
         x
     }
