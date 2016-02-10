@@ -138,6 +138,11 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ### Setters
 ###
 
+### Supporting the seqinfo() setter makes the following work out-of-the-box:
+###   - The family of seqinfo-related setters: seqlevels(), seqlevelsStyle(),
+###     seqlengths(), isCircular(), and genome().
+###   - pcompare() and all the binary comparison operators (==, <=, !=,
+###     >=, <, >).
 setReplaceMethod("seqinfo", "GPos",
     function(x, new2old=NULL, force=FALSE, value)
     {
@@ -174,6 +179,15 @@ GPos <- function(pos_runs=GRanges())
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
+
+.from_GenomicRanges_to_GPos <- function(from)
+{
+    if (!all(width(from) == 1L))
+        stop(wmsg("all the ranges in the ", class(from), " object to ",
+                  "coerce to GPos must have a width of 1"))
+    GPos(from)
+}
+setAs("GenomicRanges", "GPos", .from_GenomicRanges_to_GPos)
 
 ### The "as.data.frame" method for GenomicRanges objects works on a GPos
 ### object but returns a data.frame with identical "start" and "end" columns,
@@ -304,6 +318,8 @@ setMethod("show", "GPos",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining
+###
+### Note that supporting "[" and "c" makes "[<-" work out-of-the-box!
 ###
 
 ### 'Class' must be "GPos" or the name of a concrete subclass of GPos.

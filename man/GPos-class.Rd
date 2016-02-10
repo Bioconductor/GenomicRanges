@@ -19,6 +19,7 @@
 \alias{seqinfo,GPos-method}
 \alias{seqinfo<-,GPos-method}
 
+\alias{coerce,GenomicRanges,GPos-method}
 \alias{as.data.frame,GPos-method}
 \alias{extractROWS,GPos-method}
 \alias{show,GPos-method}
@@ -64,28 +65,46 @@ GPos(pos_runs)  # constructor function
     always returns \code{NULL} on it.
   }
   \subsection{Setters}{
-    \link{GPos} objects only support the \code{mcols()}, \code{metadata()},
-    and \code{seqinfo()} setters at the moment, plus the family of setters
-    that operate on the seqinfo component of an object (i.e. the
-    \code{seqlevels()}, \code{seqlengths()}, \code{isCircular()}, and
-    \code{genome()} setters).
+    Like \link{GRanges} objects, \link{GPos} objects support the following
+    setters:
+    \itemize{
+      \item The \code{mcols()} and \code{metadata()} setters.
+      \item The family of setters that operate on the seqinfo component of
+            an object:
+            \code{\link[GenomieInfoDb]{seqlevels}()},
+            \code{\link[GenomieInfoDb]{seqlevelsStyle}()},
+            \code{\link[GenomieInfoDb]{seqlengths}()},
+            \code{\link[GenomieInfoDb]{isCircular}()},
+            \code{\link[GenomieInfoDb]{genome}()},
+            and \code{\link[GenomieInfoDb]{seqinfo}()}.
+            These setters are defined and documented in the \pkg{GenomeInfoDb}
+            package.
+    }
 
-    There is currently no \code{seqnames()}, \code{pos()}, or \code{strand()}
-    setter. They might be added in the future though.
+    However, there is no \code{seqnames()}, \code{pos()}, or \code{strand()}
+    setter for \link{GPos} objects at the moment (although they might be
+    added in the future).
   }
 }
 
 \section{Coercion}{
+  From GenomicRanges to GPos:
+  A \link{GenomicRanges} object \code{x} in which all the ranges have a width
+  of 1 can be coerced to a \link{GPos} object with \code{as(x, "GPos")}.
+
+  From GPos to GRanges:
+  A \link{GPos} object \code{x} can be coerced to a \link{GRanges} object
+  with \code{as(x, "GRanges")}. However be aware that the resulting object
+  can use thousands times (or more) memory than \code{x}!
+  See "MEMORY USAGE" in the Examples section below.
+
+  From GPos to ordinary R objects:
   Like with a \link{GRanges} object, \code{as.character()}, \code{as.factor()},
   and \code{as.data.frame()} work with a \link{GPos} object \code{x}.
   Note that \code{as.data.frame(x)} returns a data frame with a \code{pos}
   column (containing \code{pos(x)}) instead of the \code{start}, \code{end},
-  and \code{width} columns one gets when \code{x} is a \link{GRanges} object.
-
-  Also \link{GPos} object \code{x} can be coerced to a \link{GRanges} object
-  with \code{as(x, "GRanges")}. However please be aware that the resulting
-  object can use thousands times (or more) memory than \code{x}!
-  See "MEMORY USAGE" in the Examples section below.
+  and \code{width} columns that one gets when \code{x} is a \link{GRanges}
+  object.
 }
 
 \section{Subsetting}{
@@ -119,6 +138,9 @@ GPos(pos_runs)  # constructor function
 \seealso{
   \itemize{
     \item \link{GRanges} objects.
+
+    \item \code{\link[GenomeInfoDb]{seqinfo}} for accessing/modifying the
+          seqinfo component of an object.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
           positions.
