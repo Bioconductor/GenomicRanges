@@ -18,7 +18,7 @@ setClass("GPos",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessors
+### Getters
 ###
 
 setMethod("length", "GPos", function(x) sum(width(x@pos_runs)))
@@ -127,6 +127,26 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
                     seqinfo=ans_seqinfo,
                     check=FALSE)
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity
+###
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Setters
+###
+
+setReplaceMethod("seqinfo", "GPos",
+    function(x, new2old=NULL, force=FALSE, value)
+    {
+        new_pos_runs <- callGeneric(x@pos_runs, new2old=new2old, force=force,
+                                    value)
+        x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -330,7 +350,7 @@ combine_GPos_objects <- function(Class, objects,
     ## Combine "pos_runs" slots.
     pos_runs_slots <- lapply(objects, function(x) x@pos_runs)
     ## TODO: Use combine_GRanges_objects() here when it's available.
-    ans_pos_runs <- do.call(c, pos_runs_slots)
+    ans_pos_runs <- .stitch_GenomicRanges(do.call(c, pos_runs_slots))
 
     suppressWarnings(ans_len <- sum(width(ans_pos_runs)))
     if (is.na(ans_len))

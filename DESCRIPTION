@@ -39,11 +39,11 @@ Collate: utils.R
 	strand-utils.R
 	range-squeezers.R
 	GenomicRanges-class.R
+	GenomicRanges-comparison.R
 	GRanges-class.R
+	GPos-class.R
 	DelegatingGenomicRanges-class.R
 	GNCList-class.R
-	GPos-class.R
-	GenomicRanges-comparison.R
 	GenomicRangesList-class.R
 	GRangesList-class.R
 	makeGRangesFromDataFrame.R

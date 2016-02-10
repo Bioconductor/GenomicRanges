@@ -19,6 +19,7 @@
 
 \alias{isDisjoint}
 \alias{isDisjoint,GenomicRanges-method}
+\alias{isDisjoint,GPos-method}
 \alias{isDisjoint,GRangesList-method}
 
 \alias{disjointBins}

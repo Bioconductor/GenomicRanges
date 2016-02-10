@@ -19,9 +19,9 @@ import(XVector)  # only for the "Views" method for integer vectors, the
 exportClasses(
     Constraint, ConstraintORNULL,
     GenomicRanges, GenomicRangesORmissing,
-    GRanges, DelegatingGenomicRanges,
+    GRanges, GPos,
+    DelegatingGenomicRanges,
     GNCList,
-    GPos,
     GenomicRangesORGRangesList, GRangesList,
     GenomicRangesList, SimpleGenomicRangesList
 )
@@ -102,8 +102,8 @@ export(
     phicoef,
 
     GRanges, .DollarNames.GenomicRanges,
-    GNCList,
     GPos,
+    GNCList,
     GenomicRangesList, GRangesList,
 
     makeGRangesFromDataFrame,

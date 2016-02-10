@@ -17,6 +17,8 @@
 \alias{ranges,GPos-method}
 \alias{strand,GPos-method}
 \alias{seqinfo,GPos-method}
+\alias{seqinfo<-,GPos-method}
+
 \alias{as.data.frame,GPos-method}
 \alias{extractROWS,GPos-method}
 \alias{show,GPos-method}
@@ -50,18 +52,27 @@ GPos(pos_runs)  # constructor function
 }
 
 \section{Accessors}{
-  \link{GPos} objects support the same set of getters as \link{GRanges}
-  objects (i.e. \code{seqnames()}, \code{start()}, \code{end()},
-  \code{ranges()}, \code{strand()}, \code{mcols()}, \code{seqinfo()}, etc...),
-  plus the \code{pos()} getter which is equivalent to \code{start()}
-  or \code{end()}. See \code{?GRanges} for the list of getters supported
-  by \link{GRanges} objects.
+  \subsection{Getters}{
+    \link{GPos} objects support the same set of getters as \link{GRanges}
+    objects (i.e. \code{seqnames()}, \code{start()}, \code{end()},
+    \code{ranges()}, \code{strand()}, \code{mcols()}, \code{seqinfo()},
+    etc...), plus the \code{pos()} getter which is equivalent to
+    \code{start()} or \code{end()}. See \code{?GRanges} for the list of
+    getters supported by \link{GRanges} objects.
 
-  Note that a \link{GPos} object cannot hold names i.e. \code{names()} always
-  returns \code{NULL} on it.
+    Note that a \link{GPos} object cannot hold names i.e. \code{names()}
+    always returns \code{NULL} on it.
+  }
+  \subsection{Setters}{
+    \link{GPos} objects only support the \code{mcols()}, \code{metadata()},
+    and \code{seqinfo()} setters at the moment, plus the family of setters
+    that operate on the seqinfo component of an object (i.e. the
+    \code{seqlevels()}, \code{seqlengths()}, \code{isCircular()}, and
+    \code{genome()} setters).
 
-  Unlike for \link{GRanges} objects, no setters are currently available for
-  \link{GPos} objects. Some might be added in the near future.
+    There is currently no \code{seqnames()}, \code{pos()}, or \code{strand()}
+    setter. They might be added in the future though.
+  }
 }
 
 \section{Coercion}{

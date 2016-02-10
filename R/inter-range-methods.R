@@ -239,6 +239,10 @@ setMethod("isDisjoint", "GenomicRanges",
     }
 )
 
+setMethod("isDisjoint", "GPos",
+    function(x, ignore.strand=FALSE) callGeneric(x@pos_runs, ignore.strand)
+)
+
 setMethod("isDisjoint", "GRangesList",
     function(x, ignore.strand = FALSE)
     {
