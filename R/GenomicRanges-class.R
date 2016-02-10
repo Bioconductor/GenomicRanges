@@ -362,7 +362,7 @@ setReplaceMethod("seqnames", "GenomicRanges",
     function(x, value)
     {
         value <- .normalize_seqnames_replacement_value(value, x)
-        BiocGenerics:::replaceSlots(x, seqnames=value)
+        update(x, seqnames=value)
     }
 )
 
@@ -478,11 +478,6 @@ setMethod("clone", "ANY",  # not exported
     }
 )
 
-setMethod("update", "GenomicRanges",
-          function(object, ...)
-          {
-            BiocGenerics:::replaceSlots(object, ...)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Ranges methods.

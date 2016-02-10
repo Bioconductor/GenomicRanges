@@ -20,7 +20,19 @@ setClass("GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
+### "update" method
+###
+
+### Having update() redirect to BiocGenerics:::replaceSlots() on GRanges
+### objects makes all the methods for GenomicRanges objects defined in
+### R/GenomicRanges-class.R work on GRanges objects.
+setMethod("update", "GRanges",
+    function(object, ...) BiocGenerics:::replaceSlots(object, ...)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity
 ###
 
 .valid.GRanges.ranges <- function(x)
@@ -47,7 +59,7 @@ setValidity2("GRanges", .valid.GRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
+### Constructor
 ###
 
 ### Hidden constructor shared with other GRanges-like objects.
@@ -186,7 +198,7 @@ setMethod("updateObject", "GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion
 ###
 
 setMethod("granges", "GenomicRanges",
@@ -300,7 +312,7 @@ setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Slot getters and setters.
+### Slot getters and setters
 ###
 
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
@@ -320,7 +332,7 @@ setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting
 ###
 
 setMethod("extractROWS", "GRanges",
@@ -333,12 +345,12 @@ setMethod("extractROWS", "GRanges",
         ans_strand <- extractROWS(strand(x), i)
         ans_mcols <- extractROWS(mcols(x), i)
         ans_ecs <- lapply(extraColumnSlots(x), extractROWS, i)
-        clone(x, seqnames=ans_seqnames,
-                 ranges=ans_ranges,
-                 strand=ans_strand,
-                 elementMetadata=ans_mcols,
-                 .slotList=ans_ecs,
-                 check=FALSE)
+        BiocGenerics:::replaceSlots(x, seqnames=ans_seqnames,
+                                       ranges=ans_ranges,
+                                       strand=ans_strand,
+                                       elementMetadata=ans_mcols,
+                                       .slotList=ans_ecs,
+                                       check=FALSE)
     }
 )
 
@@ -365,11 +377,11 @@ setMethod("replaceROWS", "GRanges",
             value_ecs <- extraColumnSlotsAsDF(value)
             ans_ecs <- replaceROWS(ans_ecs, i, value_ecs[seq_len(ans_necs)])
         }
-        update(x, seqnames=ans_seqnames,
-                  ranges=ans_ranges,
-                  strand=ans_strand,
-                  elementMetadata=ans_mcols,
-                  .slotList=as.list(ans_ecs))
+        BiocGenerics:::replaceSlots(x, seqnames=ans_seqnames,
+                                       ranges=ans_ranges,
+                                       strand=ans_strand,
+                                       elementMetadata=ans_mcols,
+                                       .slotList=as.list(ans_ecs))
     }
 )
 
@@ -415,9 +427,11 @@ setReplaceMethod("[", "GRanges",
               x_ecs[i, ecs_to_replace] <- value_ecs[ecs_to_replace]
             }
         }
-        update(x, seqnames=seqnames, ranges=ranges,
-               strand=strand, elementMetadata=ans_mcols,
-               .slotList=as.list(x_ecs))
+        BiocGenerics:::replaceSlots(x, seqnames=seqnames,
+                                       ranges=ranges,
+                                       strand=strand,
+                                       elementMetadata=ans_mcols,
+                                       .slotList=as.list(x_ecs))
     }
 )
 

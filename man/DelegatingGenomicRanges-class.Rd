@@ -12,7 +12,6 @@
 \alias{ranges,DelegatingGenomicRanges-method}
 \alias{strand,DelegatingGenomicRanges-method}
 \alias{seqinfo,DelegatingGenomicRanges-method}
-\alias{update,DelegatingGenomicRanges-method}
 
 % Coercion:
 \title{DelegatingGenomicRanges objects}
