@@ -188,7 +188,7 @@ GPos <- function(pos_runs=GRanges())
     if (!is.null(names(from)))
         warning(wmsg("because a GPos object cannot hold them, the names ",
                      "on the ", class(from), " object couldn't be ",
-                     "propagated during the coercion to GPos"))
+                     "propagated during its coercion to GPos"))
     ans <- GPos(from)
     mcols(ans) <- mcols(from)
     ans

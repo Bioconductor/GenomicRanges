@@ -93,7 +93,7 @@ GPos(pos_runs)  # constructor function
   of 1 can be coerced to a \link{GPos} object with \code{as(x, "GPos")}.
   The names on \code{x} are not propagated (a warning is issued if \code{x}
   has names on it).
-  
+
   From GPos to GRanges:
   A \link{GPos} object \code{x} can be coerced to a \link{GRanges} object
   with \code{as(x, "GRanges")}. However be aware that the resulting object
