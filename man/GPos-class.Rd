@@ -110,7 +110,11 @@ GPos(pos_runs)  # constructor function
   contains too many genomic positions.
 }
 
-\author{Hervé Pagès}
+\author{
+  Hervé Pagès; based on ideas borrowed from Juri Stricker
+  \email{stricker@genzentrum.lmu.de} and Julien Gagneur
+  \email{gagneur@genzentrum.lmu.de}
+}
 
 \seealso{
   \itemize{
