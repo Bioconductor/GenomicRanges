@@ -185,7 +185,13 @@ GPos <- function(pos_runs=GRanges())
     if (!all(width(from) == 1L))
         stop(wmsg("all the ranges in the ", class(from), " object to ",
                   "coerce to GPos must have a width of 1"))
-    GPos(from)
+    if (!is.null(names(from)))
+        warning(wmsg("because a GPos object cannot hold them, the names ",
+                     "on the ", class(from), " object couldn't be ",
+                     "propagated during the coercion to GPos"))
+    ans <- GPos(from)
+    mcols(ans) <- mcols(from)
+    ans
 }
 setAs("GenomicRanges", "GPos", .from_GenomicRanges_to_GPos)
 
