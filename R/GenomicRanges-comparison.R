@@ -81,7 +81,7 @@
 
 ### The "pcompare" method.
 setMethod("pcompare", c("GenomicRanges", "GenomicRanges"),
-    function(x, y) .GenomicRanges.pcompare(x, y)
+    function(x, y) .pcompare_GenomicRanges(x, y)
 )
 
 
