@@ -139,8 +139,9 @@ GPos(pos_runs)  # constructor function
   \itemize{
     \item \link{GRanges} objects.
 
-    \item \code{\link[GenomeInfoDb]{seqinfo}} for accessing/modifying the
-          seqinfo component of an object.
+    \item The \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in
+          the \pkg{GenomeInfoDb} package for accessing/modifying the seqinfo
+          component of an object.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
           positions.
