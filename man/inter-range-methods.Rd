@@ -186,10 +186,10 @@ relist(mcols(gr)[unlist(revmap), ], revmap)  # a SplitDataFrameList
 ## ranges with the ranges they originate from:
 expanded_gr2 <- rep(gr2, elementNROWS(revmap))
 reordered_gr <- gr[unlist(revmap)]
-codes <- compare(expanded_gr2, reordered_gr)
+codes <- pcompare(expanded_gr2, reordered_gr)
 ## All the codes should translate to "d", "e", "g", or "h" (the 4 letters
 ## indicating that the range on the left contains the range on the right):
-alphacodes <- rangeComparisonCodeToLetter(compare(expanded_gr2, reordered_gr))
+alphacodes <- rangeComparisonCodeToLetter(pcompare(expanded_gr2, reordered_gr))
 stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
 
 ## On a big GRanges object with a lot of seqlevels:
@@ -205,8 +205,8 @@ biggr2 <- reduce(biggr, with.revmap=TRUE)
 revmap <- mcols(biggr2)$revmap
 expanded_biggr2 <- rep(biggr2, elementNROWS(revmap))
 reordered_biggr <- biggr[unlist(revmap)]
-codes <- compare(expanded_biggr2, reordered_biggr)
-alphacodes <- rangeComparisonCodeToLetter(compare(expanded_biggr2,
+codes <- pcompare(expanded_biggr2, reordered_biggr)
+alphacodes <- rangeComparisonCodeToLetter(pcompare(expanded_biggr2,
                                                   reordered_biggr))
 stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
 table(alphacodes)

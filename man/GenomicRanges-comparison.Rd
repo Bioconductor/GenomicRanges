@@ -2,8 +2,8 @@
 
 \alias{GenomicRanges-comparison}
 
-\alias{compare}
-\alias{compare,GenomicRanges,GenomicRanges-method}
+\alias{pcompare}
+\alias{pcompare,GenomicRanges,GenomicRanges-method}
 
 \alias{duplicated,GenomicRanges-method}
 \alias{duplicated.GenomicRanges}
@@ -52,7 +52,7 @@
 ## objects
 ## ------------------------------------------------------------------------
 
-\S4method{compare}{GenomicRanges,GenomicRanges}(x, y)
+\S4method{pcompare}{GenomicRanges,GenomicRanges}(x, y)
 }
 
 \arguments{
@@ -213,8 +213,8 @@ gr3 <- GRanges(c(rep("chr1", 12), "chr2"), IRanges(c(1:11, 6:7), width=3))
 strand(gr3)[12] <- "+"
 gr4 <- GRanges("chr1", IRanges(5, 9))
 
-compare(gr3, gr4)
-rangeComparisonCodeToLetter(compare(gr3, gr4))
+pcompare(gr3, gr4)
+rangeComparisonCodeToLetter(pcompare(gr3, gr4))
 }
 
 \keyword{methods}

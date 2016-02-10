@@ -46,9 +46,9 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### compare()
+### pcompare()
 ###
-### Doing 'compare(x, y)' on 2 vector-like objects 'x' and 'y' of length 1
+### Doing 'pcompare(x, y)' on 2 vector-like objects 'x' and 'y' of length 1
 ### must return an integer less than, equal to, or greater than zero if the
 ### single element in 'x' is considered to be respectively less than, equal
 ### to, or greater than the single element in 'y'.
@@ -58,8 +58,8 @@
 ### 'y[i]' are on the same space (i.e. on the same underlying sequence and
 ### strand). Otherwise, it returns a code that is < -6 if 'x[i] < y[i]',
 ### and > 6 if 'x[i] > y[i]'.
-### See '?compare' (in IRanges) for the 13 predefined codes.
-.GenomicRanges.compare <- function(x, y)
+### See '?pcompare' (in IRanges) for the 13 predefined codes.
+.pcompare_GenomicRanges <- function(x, y)
 {
     ## Pre-comparison step (see above for details).
     ## merge() will fail if 'x' and 'y' don't have compatible underlying
@@ -71,7 +71,7 @@
     ## This should only insert new seqlevels in the existing ones i.e. it
     ## should NEVER drop or reorder existing levels
     seqlevels(x) <- seqlevels(y) <- seqlevels
-    a <- compare(ranges(x), ranges(y))
+    a <- pcompare(ranges(x), ranges(y))
     b <- as.integer(strand(x)) - as.integer(strand(y))
     c <- as.integer(seqnames(x)) - as.integer(seqnames(y))
     ## Note that sign() always returns a numeric vector, even on an integer
@@ -79,9 +79,9 @@
     a + 13L * as.integer(sign(b) + 3L * sign(c))
 }
 
-### The "compare" method.
-setMethod("compare", c("GenomicRanges", "GenomicRanges"),
-    function(x, y) .GenomicRanges.compare(x, y)
+### The "pcompare" method.
+setMethod("pcompare", c("GenomicRanges", "GenomicRanges"),
+    function(x, y) .GenomicRanges.pcompare(x, y)
 )
 
 
@@ -167,7 +167,7 @@ relevelSeqnamesForMatch <- function(x, table) {
 ### order() and related methods.
 ###
 ### The "order" and "rank" methods for GenomicRanges objects are consistent
-### with the order implied by compare().
+### with the order implied by pcompare().
 ### is.unsorted() is a quick/cheap way of checking whether a GenomicRanges
 ### object is already sorted, e.g., called prior to a costly sort.
 ### sort() will work out-of-the-box on a GenomicRanges object thanks to the

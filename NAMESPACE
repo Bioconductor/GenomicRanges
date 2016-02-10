@@ -74,7 +74,7 @@ exportMethods(
     mcols, "mcols<-",
     values, "values<-",
     relistToClass,
-    compare,
+    pcompare,
     ranges, "ranges<-",
     ngap,
     score, "score<-",
