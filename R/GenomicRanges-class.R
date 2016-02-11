@@ -369,15 +369,11 @@ setReplaceMethod("seqnames", "GenomicRanges",
 setReplaceMethod("ranges", "GenomicRanges",
     function(x, value)
     {
-        if (!is(value, "IRanges"))
+        if (class(value) != "IRanges")
             value <- as(value, "IRanges")
-        n <- length(x)
-        k <- length(value)
-        if (k != n) {
-            if ((k == 0L) || (k > n) || (n %% k != 0L))
-                stop(k, " elements in value to replace ", n, " elements")
-            value <- rep(value, length.out=n)
-        }
+        mcols(value) <- NULL
+        value <- S4Vectors:::V_recycle(value, x,
+                                       x_what="value", skeleton_what="x")
         update(x, ranges=value, check=FALSE)
     }
 )
