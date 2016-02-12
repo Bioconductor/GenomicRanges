@@ -115,11 +115,16 @@ reconstructGRfromRGL <- function(rgl, x)
 ###
 
 ### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
-### is) so is NOT an endomorphism. 
+### is), so is NOT an endomorphism. 
 setMethod("range", "GenomicRanges",
     function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
     {
-        x <- unname(c(x, ...))
+        if (!identical(na.rm, FALSE))
+            warning("'na.rm' argument is ignored")
+        args <- unname(list(x, ...))
+        args <- lapply(args, granges)
+        x <- do.call(c, args)
+
         rgl <- deconstructGRintoRGL(x, ignore.strand=ignore.strand, drop=TRUE)
         rgl2 <- callGeneric(rgl)
         reconstructGRfromRGL(rgl2, x)
@@ -142,7 +147,7 @@ setMethod("range", "GRangesList",
 ###
 
 ### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
-### is) so is NOT an endomorphism. 
+### is), so is NOT an endomorphism. 
 setMethod("reduce", "GenomicRanges",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
                 with.revmap=FALSE,
@@ -184,6 +189,8 @@ setMethod("reduce", "GRangesList",
 ### gaps()
 ###
 
+### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
+### is), so is NOT an endomorphism. 
 setMethod("gaps", "GenomicRanges",
     function(x, start=1L, end=seqlengths(x))
     {
@@ -207,6 +214,8 @@ setMethod("gaps", "GenomicRanges",
 ### disjoin()
 ###
 
+### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
+### is), so is NOT an endomorphism. 
 setMethod("disjoin", "GenomicRanges",
     function(x, ignore.strand=FALSE)
     {

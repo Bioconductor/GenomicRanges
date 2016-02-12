@@ -150,81 +150,81 @@
     \item The \link{GenomicRanges} and \link{GRanges} classes.
     \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
     \item The \link[S4Vectors]{Hits} class in the \pkg{S4Vectors} package.
-    \item The \link[IRanges]{nearest-methods} man page in the IRanges package.
+    \item The \link[IRanges]{nearest-methods} man page in the \pkg{IRanges}
+          package.
     \item \link[GenomicRanges]{findOverlaps-methods} for finding just the
           overlapping ranges.
     \item The \link[GenomicFeatures]{nearest-methods} man page in the 
-          GenomicFeatures package.
+          \pkg{GenomicFeatures} package.
   }
 }
 
 \examples{
-  ## -----------------------------------------------------------
-  ## precede() and follow()
-  ## -----------------------------------------------------------
-  query <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
-  subject <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
-                          strand=c("+", "+", "-", "-"))
-  precede(query, subject)
-  follow(query, subject)
+## -----------------------------------------------------------
+## precede() and follow()
+## -----------------------------------------------------------
+query <- GRanges("A", IRanges(c(5, 20), width=1), strand="+")
+subject <- GRanges("A", IRanges(rep(c(10, 15), 2), width=1),
+                        strand=c("+", "+", "-", "-"))
+precede(query, subject)
+follow(query, subject)
  
-  strand(query) <- "-"
-  precede(query, subject)
-  follow(query, subject)
+strand(query) <- "-"
+precede(query, subject)
+follow(query, subject)
  
-  ## ties choose first in order
-  query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
-  subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
-                          rep(c("+", "-", "*"), 2))
-  precede(query, subject)
-  precede(query, rev(subject))
+## ties choose first in order
+query <- GRanges("A", IRanges(10, width=1), c("+", "-", "*"))
+subject <- GRanges("A", IRanges(c(5, 5, 5, 15, 15, 15), width=1),
+                        rep(c("+", "-", "*"), 2))
+precede(query, subject)
+precede(query, rev(subject))
  
-  ## ignore.strand=TRUE treats all ranges as '+'
-  precede(query[1], subject[4:6], select="all", ignore.strand=FALSE)
-  precede(query[1], subject[4:6], select="all", ignore.strand=TRUE)
+## ignore.strand=TRUE treats all ranges as '+'
+precede(query[1], subject[4:6], select="all", ignore.strand=FALSE)
+precede(query[1], subject[4:6], select="all", ignore.strand=TRUE)
 
-
-  ## -----------------------------------------------------------
-  ## nearest()
-  ## -----------------------------------------------------------
-  ## When multiple ranges overlap an "arbitrary" range is chosen
-  query <- GRanges("A", IRanges(5, 15))
-  subject <- GRanges("A", IRanges(c(1, 15), c(5, 19)))
-  nearest(query, subject)
+## -----------------------------------------------------------
+## nearest()
+## -----------------------------------------------------------
+## When multiple ranges overlap an "arbitrary" range is chosen
+query <- GRanges("A", IRanges(5, 15))
+subject <- GRanges("A", IRanges(c(1, 15), c(5, 19)))
+nearest(query, subject)
  
-  ## select="all" returns all hits
-  nearest(query, subject, select="all")
+## select="all" returns all hits
+nearest(query, subject, select="all")
  
-  ## Ranges in 'x' will self-select when 'subject' is present
-  query <- GRanges("A", IRanges(c(1, 10), width=5))
-  nearest(query, query)
+## Ranges in 'x' will self-select when 'subject' is present
+query <- GRanges("A", IRanges(c(1, 10), width=5))
+nearest(query, query)
  
-  ## Ranges in 'x' will not self-select when 'subject' is missing
-  nearest(query)
+## Ranges in 'x' will not self-select when 'subject' is missing
+nearest(query)
 
-  ## -----------------------------------------------------------
-  ## distance(), distanceToNearest()
-  ## -----------------------------------------------------------
-  ## Adjacent, overlap, separated by 1
-  query <- GRanges("A", IRanges(c(1, 2, 10), c(5, 8, 11)))
-  subject <- GRanges("A", IRanges(c(6, 5, 13), c(10, 10, 15)))
-  distance(query, subject)
+## -----------------------------------------------------------
+## distance(), distanceToNearest()
+## -----------------------------------------------------------
+## Adjacent, overlap, separated by 1
+query <- GRanges("A", IRanges(c(1, 2, 10), c(5, 8, 11)))
+subject <- GRanges("A", IRanges(c(6, 5, 13), c(10, 10, 15)))
+distance(query, subject)
 
-  ## recycling
-  distance(query[1], subject)
+## recycling
+distance(query[1], subject)
 
-  ## zero-width ranges
-  zw <- GRanges("A", IRanges(4,3))
-  stopifnot(distance(zw, GRanges("A", IRanges(3,4))) == 0L)
-  sapply(-3:3, function(i) 
-      distance(shift(zw, i), GRanges("A", IRanges(4,3))))
+## zero-width ranges
+zw <- GRanges("A", IRanges(4,3))
+stopifnot(distance(zw, GRanges("A", IRanges(3,4))) == 0L)
+sapply(-3:3, function(i) 
+    distance(shift(zw, i), GRanges("A", IRanges(4,3))))
 
-  query <- GRanges(c("A", "B"), IRanges(c(1, 5), width=1))
-  distanceToNearest(query, subject)
+query <- GRanges(c("A", "B"), IRanges(c(1, 5), width=1))
+distanceToNearest(query, subject)
 
-  ## distance() with GRanges and TxDb see the 
-  ## ?'distance,GenomicRanges,TxDb-method' man 
-  ## page in the GenomicFeatures package.
+## distance() with GRanges and TxDb see the 
+## ?'distance,GenomicRanges,TxDb-method' man 
+## page in the GenomicFeatures package.
 }
  
 \keyword{utilities}

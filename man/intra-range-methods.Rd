@@ -34,22 +34,22 @@
 \title{Intra range transformations of a GRanges or GRangesList object}
 
 \description{
-  This man page documents intra range transformations of a
+  This man page documents \emph{intra range transformations} of a
   \link{GenomicRanges} object (i.e. of an object that belongs to the
   \link{GenomicRanges} class or one of its subclasses, this includes
   for example \link{GRanges} objects), or a \link{GRangesList} object.
 
   See \code{?`\link[IRanges]{intra-range-methods}`} and
   \code{?`\link[IRanges]{inter-range-methods}`} in the \pkg{IRanges}
-  package for a quick introduction to intra range and inter range
-  transformations.
+  package for a quick introduction to \emph{intra range} and \emph{inter
+  range transformations}.
 
-  Intra range methods for \link[GenomicAlignments]{GAlignments} and
-  \link[GenomicAlignments]{GAlignmentsList} objects are defined and
+  \emph{Intra range} methods for \link[GenomicAlignments]{GAlignments}
+  and \link[GenomicAlignments]{GAlignmentsList} objects are defined and
   documented in the \pkg{GenomicAlignments} package.
 
   See \code{?`\link[GenomicRanges]{inter-range-methods}`} for
-  inter range transformations of a \link{GenomicRanges} or
+  \emph{inter range transformations} of a \link{GenomicRanges} or
   \link{GRangesList} object.
 }
 

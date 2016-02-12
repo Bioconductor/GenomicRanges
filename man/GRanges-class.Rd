@@ -534,6 +534,9 @@
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
           ranges.
 
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
+          genomic ranges.
+
     \item \link[GenomicRanges]{intra-range-methods} and
           \link[GenomicRanges]{inter-range-methods} for intra range and
           inter range transformations of a GRanges object.
@@ -543,9 +546,6 @@
 
     \item \link[GenomicRanges]{setops-methods} for set operations on GRanges
           objects.
-
-    \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
-          genomic ranges.
 
     \item \link[GenomicRanges]{nearest-methods} for finding the nearest
           genomic range neighbor.

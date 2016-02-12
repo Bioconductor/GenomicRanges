@@ -48,11 +48,11 @@ Collate: utils.R
 	GRangesList-class.R
 	makeGRangesFromDataFrame.R
 	RangedData-methods.R
+	findOverlaps-methods.R
 	intra-range-methods.R
 	inter-range-methods.R
 	coverage-methods.R
 	setops-methods.R
-	findOverlaps-methods.R
 	nearest-methods.R
 	absoluteRanges.R
 	tileGenome.R

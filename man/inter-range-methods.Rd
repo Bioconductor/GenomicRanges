@@ -26,20 +26,22 @@
 \alias{disjointBins,GenomicRanges-method}
 
 
-\title{Inter range transformations of a GenomicRanges or GRangesList object}
+\title{Inter range transformations of a GRanges or GRangesList object}
 
 \description{
-  See \code{?`\link[IRanges]{intra-range-methods}`} and
-  \code{?`\link[IRanges]{inter-range-methods}`} in the IRanges package
-  for a quick introduction to intra range and inter range transformations.
-
-  This man page documents inter range transformations of a
+  This man page documents \emph{inter range transformations} of a
   \link{GenomicRanges} object (i.e. of an object that belongs to the
   \link{GenomicRanges} class or one of its subclasses, this includes
-  for example \link{GRanges} objects).
+  for example \link{GRanges} objects), or a \link{GRangesList} object.
+
+  See \code{?`\link[IRanges]{intra-range-methods}`} and
+  \code{?`\link[IRanges]{inter-range-methods}`} in the \pkg{IRanges}
+  package for a quick introduction to \emph{intra range} and \emph{inter
+  range transformations}.
 
   See \code{?`\link[GenomicRanges]{intra-range-methods}`} for
-  intra range transformations of a GenomicRanges object.
+  \emph{intra range transformations} of a \link{GenomicRanges} object or
+  \link{GRangesList} object.
 }
 
 \usage{

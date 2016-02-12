@@ -77,7 +77,7 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ### returns a GRanges object (so is NOT an endomorphism).
 ### Note that this transformation preserves 'sum(width(x))'.
 ### Also note that this is an "inter range transformation". However unlike
-### range(), reduce(), disjoin(), or gaps(), its result depends on the order
+### range(), reduce(), gaps(), or disjoin(), its result depends on the order
 ### of the elements in the input vector. It's also idempotent like range(),
 ### reduce(), and disjoin() (gaps() is not).
 ### TODO: Define and export stitch() generic and method for Ranges objects
