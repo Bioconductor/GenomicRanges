@@ -247,6 +247,9 @@ setMethod("extractROWS", "GPos",
             start(new_pos_runs)[Ltrim_idx] <- trimmed_start
             end(new_pos_runs)[Rtrim_idx] <- trimmed_end
         }
+        suppressWarnings(new_len <- sum(width(new_pos_runs)))
+        if (is.na(new_len))
+            stop("subscript is too big")
         x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
         mcols(x) <- extractROWS(mcols(x), i)
         x
