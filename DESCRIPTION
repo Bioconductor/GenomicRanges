@@ -58,5 +58,4 @@ Collate: utils.R
 	tileGenome.R
 	tile-methods.R
 	genomicvars.R
-	test_GenomicRanges_package.R
 	zzz.R
