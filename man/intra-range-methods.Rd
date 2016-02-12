@@ -4,6 +4,7 @@
 
 \alias{shift}
 \alias{shift,GenomicRanges-method}
+\alias{shift,GPos-method}
 \alias{shift,GRangesList-method}
 
 \alias{narrow}

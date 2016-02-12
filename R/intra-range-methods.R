@@ -19,6 +19,16 @@ setMethod("shift", "GenomicRanges",
     }
 )
 
+### Overwrite above method with optimized method for GPos objects.
+### A GPos object cannot hold names so the 'use.names' arg has no effect.
+setMethod("shift", "GPos",
+    function(x, shift=0L, use.names=TRUE)
+    {
+        x@pos_runs <- callGeneric(x@pos_runs, shift=shift)
+        x
+    }
+)
+
 setMethod("shift", "GRangesList",
     function(x, shift=0L, use.names=TRUE)
     {

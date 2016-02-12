@@ -131,6 +131,14 @@ setMethod("range", "GenomicRanges",
     }
 )
 
+### Overwrite above method with optimized method for GPos objects.
+### Like the above method, return a GRanges instance.
+setMethod("range", "GPos",
+    function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+        callGeneric(x@pos_runs, ...,
+                    ignore.strand=ignore.strand, na.rm=na.rm)
+)
+
 setMethod("range", "GRangesList",
     function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
     {
@@ -247,6 +255,7 @@ setMethod("isDisjoint", "GenomicRanges",
     }
 )
 
+### Overwrite above method with optimized method for GPos objects.
 setMethod("isDisjoint", "GPos",
     function(x, ignore.strand=FALSE) callGeneric(x@pos_runs, ignore.strand)
 )

@@ -4,6 +4,7 @@
 
 \alias{range}
 \alias{range,GenomicRanges-method}
+\alias{range,GPos-method}
 \alias{range,GRangesList-method}
 
 \alias{reduce}
