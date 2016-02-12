@@ -213,12 +213,12 @@ setMethod("follow", c("GenomicRanges", "missing"),
     m
 }
 
-.nearest <- function(x, subject, select, ignore.strand, ignoreSelf=FALSE)
+.nearest <- function(x, subject, select, ignore.strand, drop.self=FALSE)
 {
     ## overlapping ranges
-    if (ignoreSelf) {
+    if (drop.self) {
         ol <- findOverlaps(x, select=select,
-                           ignore.strand=ignore.strand, ignoreSelf=TRUE)
+                           ignore.strand=ignore.strand, drop.self=TRUE)
     } else {
         ol <- findOverlaps(x, subject, select=select,
                            ignore.strand=ignore.strand)
@@ -299,7 +299,7 @@ setMethod("nearest", c("GenomicRanges", "missing"),
     {
         select <- match.arg(select)
         .nearest(x, x, select=select, ignore.strand=ignore.strand,
-                 ignoreSelf=TRUE)
+                 drop.self=TRUE)
     }
 )
 
