@@ -50,11 +50,6 @@ setGeneric("extraColumnSlotNames",
 
 setMethod("extraColumnSlotNames", "ANY", function(x) character())
 
-setMethod("parallelVectorNames", "GenomicRanges", function(x) {
-  colnames(as.data.frame(new(class(x))))
-})
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### 2 low-level helper functions to deal with out-of-bound ranges.
 ###
