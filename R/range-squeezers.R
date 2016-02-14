@@ -21,3 +21,25 @@ setGeneric("rglist", signature="x",
     function(x, use.mcols=FALSE, ...) standardGeneric("rglist")
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Pairs methods
+### 
+
+setMethod("grglist", "Pairs", function(x, use.mcols=FALSE) {
+              stopifnot(isTRUEorFALSE(use.mcols))
+              grl <- zipup(granges(first(x)), granges(last(x)))
+              if (!use.mcols) {
+                  mcols(grl) <- NULL
+              }
+              grl
+          })
+
+setMethod("rglist", "Pairs", function(x, use.mcols=FALSE) {
+              stopifnot(isTRUEorFALSE(use.mcols))
+              rl <- zipup(ranges(first(x)), ranges(last(x)))
+              if (!use.mcols) {
+                  mcols(rl) <- NULL
+              }
+              rl
+          })
+

@@ -6,6 +6,8 @@
 \alias{grglist}
 \alias{rglist}
 
+\alias{grglist,Pairs-method}
+\alias{rglist,Pairs-method}
 
 \title{Squeeze the ranges out of a range-based object}
 
@@ -29,7 +31,8 @@ rglist(x, use.mcols=FALSE, ...)
     \link[SummarizedExperiment]{RangedSummarizedExperiment},
     \link[GenomicAlignments]{GAlignments},
     \link[GenomicAlignments]{GAlignmentPairs},
-    or \link[GenomicAlignments]{GAlignmentsList} object.
+    \link[GenomicAlignments]{GAlignmentsList} or a
+    \link[S4Vectors:Pairs-class]{Pairs} object containing ranges.
   }
   \item{use.mcols}{
     \code{TRUE} or \code{FALSE} (the default).
