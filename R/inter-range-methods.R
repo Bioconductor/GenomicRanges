@@ -83,10 +83,14 @@ reconstructGRfromRGL <- function(rgl, x)
     ## Prepare 'ans_seqnames' and 'ans_strand'.
     rgl_eltNROWS <- elementNROWS(rgl)
     spaceid <- as.integer(names(rgl)) - 1L
-    ans_seqnames <- Rle(structure(spaceid %/% 3L + 1L, levels=seqlevels(x),
-                                  class="factor"), rgl_eltNROWS)
-    ans_strand <- Rle(structure(spaceid %% 3L + 1L, levels=levels(strand()),
-                                class="factor"), rgl_eltNROWS)
+    ans_seqnames <- Rle(structure(spaceid %/% 3L + 1L,
+                                  levels=seqlevels(x),
+                                  class="factor"),
+                        rgl_eltNROWS)
+    ans_strand <- Rle(structure(spaceid %% 3L + 1L,
+                                levels=levels(strand()),
+                                class="factor"),
+                      rgl_eltNROWS)
 
     ## Prepare 'ans_mcols'.
     ans_mcols <- mcols(ans_ranges)
