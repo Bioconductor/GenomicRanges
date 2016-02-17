@@ -114,8 +114,8 @@ reconstructGRfromRGL <- function(rgl, x)
 ### range()
 ###
 
-### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
-### is), so is NOT an endomorphism. 
+### Always return a GRanges *instance* whatever GenomicRanges derivative the
+### input is, so does NOT act like an endomorphism in general. 
 setMethod("range", "GenomicRanges",
     function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
     {
@@ -123,11 +123,11 @@ setMethod("range", "GenomicRanges",
             warning("'na.rm' argument is ignored")
         args <- unname(list(x, ...))
         args <- lapply(args, granges)
-        x <- do.call(c, args)
+        gr <- do.call(c, args)
 
-        rgl <- deconstructGRintoRGL(x, ignore.strand=ignore.strand, drop=TRUE)
+        rgl <- deconstructGRintoRGL(gr, ignore.strand=ignore.strand, drop=TRUE)
         rgl2 <- callGeneric(rgl)
-        reconstructGRfromRGL(rgl2, x)
+        reconstructGRfromRGL(rgl2, gr)
     }
 )
 
@@ -154,8 +154,8 @@ setMethod("range", "GRangesList",
 ### reduce()
 ###
 
-### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
-### is), so is NOT an endomorphism. 
+### Always return a GRanges *instance* whatever GenomicRanges derivative the
+### input is, so does NOT act like an endomorphism in general. 
 setMethod("reduce", "GenomicRanges",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
                 with.revmap=FALSE,
@@ -197,8 +197,8 @@ setMethod("reduce", "GRangesList",
 ### gaps()
 ###
 
-### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
-### is), so is NOT an endomorphism. 
+### Always return a GRanges *instance* whatever GenomicRanges derivative the
+### input is, so does NOT act like an endomorphism in general. 
 setMethod("gaps", "GenomicRanges",
     function(x, start=1L, end=seqlengths(x))
     {
@@ -222,8 +222,8 @@ setMethod("gaps", "GenomicRanges",
 ### disjoin()
 ###
 
-### Always return a GRanges instance (whatever GenomicRanges derivative 'x'
-### is), so is NOT an endomorphism. 
+### Always return a GRanges *instance* whatever GenomicRanges derivative the
+### input is, so does NOT act like an endomorphism in general. 
 setMethod("disjoin", "GenomicRanges",
     function(x, ignore.strand=FALSE)
     {
