@@ -373,7 +373,7 @@ replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE, value)
                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         dropme <- which(seqnames(x@unlistData) %in% dangling_seqlevels)
-        x <- x[-unique(togroup(x, j=dropme))]
+        x <- x[-unique(togroup(PartitioningByWidth(x), j=dropme))]
     }
     seqinfo(x@unlistData, new2old=new2old) <- value
     x

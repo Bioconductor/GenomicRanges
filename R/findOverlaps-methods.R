@@ -56,9 +56,9 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
         select <- match.arg(select)
 
         unlisted_query <- unlist(query, use.names=FALSE)
-        query_groups <- togroup(query)
+        query_groups <- togroup(PartitioningByWidth(query))
         unlisted_subject <- unlist(subject, use.names=FALSE)
-        subject_groups <- togroup(subject)
+        subject_groups <- togroup(PartitioningByWidth(subject))
  
         if (type == "start") {
             keep <- which(S4Vectors:::diffWithInitialZero(subject_groups) != 0L)
@@ -118,7 +118,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
         select <- match.arg(select)
 
         unlisted_query <- unlist(query, use.names=FALSE)
-        query_groups <- togroup(query)
+        query_groups <- togroup(PartitioningByWidth(query))
 
         ans00 <- findOverlaps(unlisted_query, subject,
                               maxgap=maxgap,
@@ -164,7 +164,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
         select <- match.arg(select)
 
         unlisted_subject <- unlist(subject, use.names=FALSE)
-        subject_groups <- togroup(subject)
+        subject_groups <- togroup(PartitioningByWidth(subject))
 
         if (type == "start") {
             keep <- which(S4Vectors:::diffWithInitialZero(subject_groups) != 0L)

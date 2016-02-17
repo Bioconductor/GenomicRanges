@@ -54,7 +54,7 @@ test_GRangesList_coercion <- function() {
               score = 12:13)
     grl <- GRangesList(a = gr1, b = gr2)
     df <-
-      data.frame(group = togroup(grl),
+      data.frame(group = togroup(PartitioningByWidth(grl)),
                  group_name = rep(c("a","b"), c(3, 2)),
                  seqnames = factor(c(1,1,2,"chr1","chr2")),
                  start = c(1:3,1:2), end = c(4:6,1:2),
