@@ -1,8 +1,13 @@
 \name{setops-methods}
 \alias{setops-methods}
 
+\alias{union}
 \alias{union,GRanges,GRanges-method}
+
+\alias{intersect}
 \alias{intersect,GRanges,GRanges-method}
+
+\alias{setdiff}
 \alias{setdiff,GRanges,GRanges-method}
 
 \alias{punion}
@@ -25,7 +30,7 @@
 \alias{pgap,GRanges,GRanges-method}
 
 
-\title{Set operations on GRanges and GRangesList objects}
+\title{Set operations on genomic ranges}
 
 \description{
   Performs set operations on \link{GRanges} and \link{GRangesList} objects.
@@ -37,16 +42,24 @@
 }
 
 \usage{
-## Set operations
-\S4method{union}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
-\S4method{intersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
-\S4method{setdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
+## Vector-wise set operations
+## --------------------------
 
-## Parallel set operations
-\S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
+\S4method{union}{GRanges,GRanges}(x, y, ignore.strand=FALSE)
+
+\S4method{intersect}{GRanges,GRanges}(x, y, ignore.strand=FALSE)
+
+\S4method{setdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE)
+
+## Element-wise (aka "parallel") set operations
+## --------------------------------------------
+
+\S4method{punion}{GRanges,GRanges}(x, y, fill.gap=FALSE, ignore.strand=FALSE)
+
 \S4method{pintersect}{GRanges,GRanges}(x, y, drop.nohit.ranges=FALSE,
            ignore.strand=FALSE, strict.strand=FALSE)
-\S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE, ...)
+
+\S4method{psetdiff}{GRanges,GRanges}(x, y, ignore.strand=FALSE)
 }
 
 \arguments{
@@ -97,9 +110,6 @@
     If set to TRUE, the strand of intersecting elements must be strictly
     the same.
   }
-  \item{...}{
-    Further arguments to be passed to or from other methods.
-  }
 }
 
 \details{
@@ -133,10 +143,22 @@
 \author{P. Aboyoun and H. Pagès}
 
 \seealso{
-  \link[IRanges]{setops-methods},
-  \link{GRanges-class},
-  \link{GRangesList-class},
-  \link{findOverlaps-methods}
+  \itemize{
+    \item \link[IRanges]{setops-methods} in the \pkg{IRanges} package for set
+          operations on \link[IRanges]{Ranges} and \link[IRanges]{RangesList}
+          objects.
+
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding/counting
+          overlapping genomic ranges.
+
+    \item \link[GenomicRanges]{intra-range-methods} and
+          \link[GenomicRanges]{inter-range-methods} for \emph{intra range}
+          and \emph{inter range} transformations of a \link{GRanges} object.
+
+    \item \link{GRanges} and \link{GRangesList} objects.
+
+    \item \code{\link[S4Vectors]{mendoapply}} in the \pkg{S4Vectors} package.
+  }
 }
 
 \examples{

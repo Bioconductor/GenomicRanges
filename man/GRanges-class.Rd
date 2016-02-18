@@ -534,8 +534,8 @@
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
           ranges.
 
-    \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
-          genomic ranges.
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding/counting
+          overlapping genomic ranges.
 
     \item \link[GenomicRanges]{intra-range-methods} and
           \link[GenomicRanges]{inter-range-methods} for intra range and

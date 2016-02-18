@@ -171,9 +171,13 @@
 \seealso{
   \itemize{
     \item \link{GenomicRanges}, \link{GRanges}, and \link{GRangesList} objects.
+
     \item The \link[IRanges]{intra-range-methods} man page in the
           \pkg{IRanges} package.
+
     \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+
+    \item \code{\link[S4Vectors]{endoapply}} in the \pkg{S4Vectors} package.
   }
 }
 

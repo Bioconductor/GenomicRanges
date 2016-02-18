@@ -56,7 +56,7 @@
 ###
 
 setMethod("union", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand=FALSE, ...)
+    function(x, y, ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
@@ -68,7 +68,7 @@ setMethod("union", c("GRanges", "GRanges"),
 )
 
 setMethod("intersect", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand=FALSE, ...)
+    function(x, y, ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
@@ -89,7 +89,7 @@ setMethod("intersect", c("GRanges", "GRanges"),
 )
 
 setMethod("setdiff", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand=FALSE, ...)
+    function(x, y, ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
@@ -144,7 +144,7 @@ allCompatibleSeqnamesAndStrand <- function(x, y) {
 ###
 
 setMethod("punion", c("GRanges", "GRanges"),
-    function(x, y, fill.gap=FALSE, ignore.strand=FALSE, ...)
+    function(x, y, fill.gap=FALSE, ignore.strand=FALSE)
     {
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
@@ -172,7 +172,7 @@ setMethod("punion", c("GRanges", "GRanges"),
 ### Note that behaviour (b) could also be considered a valid candidate for
 ### a union,GRangesList,GRanges method (which we don't have at the moment).
 setMethod("punion", c("GRangesList", "GRanges"),
-    function(x, y, fill.gap=FALSE, ...)
+    function(x, y, fill.gap=FALSE)
     {
         n <- length(x)
         if (n != length(y)) 
@@ -188,10 +188,7 @@ setMethod("punion", c("GRangesList", "GRanges"),
 )
 
 setMethod("punion", c("GRanges", "GRangesList"),
-    function(x, y, fill.gap=FALSE, ...)
-    {
-        callGeneric(y, x)
-    }
+    function(x, y, ...) callGeneric(y, x, ...)
 )
 
 
@@ -351,7 +348,7 @@ setMethod("pintersect", c("GRangesList", "GRangesList"),
         seqlevels(y) <- seqlevels(x)
         xgr <- deconstructGRLintoGR(x)
         ygr <- deconstructGRLintoGR(y)
-        gr <- intersect(xgr, ygr, ...)
+        gr <- callGeneric(xgr, ygr, ...)
         reconstructGRLfromGR(gr, x)
     }
 )
@@ -362,7 +359,7 @@ setMethod("pintersect", c("GRangesList", "GRangesList"),
 ###
 
 setMethod("psetdiff", c("GRanges", "GRanges"),
-    function(x, y, ignore.strand=FALSE, ...)
+    function(x, y, ignore.strand=FALSE)
     {
         if (length(x) != length(y)) 
             stop("'x' and 'y' must have the same length")
@@ -394,7 +391,7 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
 ### TODO: Review the semantic of this method (see previous TODO's for
 ### "punion" and "pintersect" methods for GRanges,GRangesList).
 setMethod("psetdiff", c("GRanges", "GRangesList"),
-    function(x, y, ignore.strand = FALSE, ...)
+    function(x, y, ignore.strand=FALSE)
     {
         ansSeqinfo <- merge(seqinfo(x), seqinfo(y))
         if (length(x) != length(y)) 
@@ -430,7 +427,7 @@ setMethod("psetdiff", c("GRangesList", "GRangesList"),
         seqlevels(y) <- seqlevels(x)
         xgr <- deconstructGRLintoGR(x)
         ygr <- deconstructGRLintoGR(y)
-        gr <- setdiff(xgr, ygr, ...)
+        gr <- callGeneric(xgr, ygr, ...)
         reconstructGRLfromGR(gr, x)
     }
 )
@@ -449,7 +446,7 @@ setMethod("pgap", c("GRanges", "GRanges"),
         if (!allCompatibleSeqnamesAndStrand(x, y))
             stop("'x' and 'y' elements must have compatible 'seqnames' ",
                  "and 'strand' values")
-        ranges(x) <- pgap(ranges(x), ranges(y))
+        ranges(x) <- callGeneric(ranges(x), ranges(y), ...)
         x
     }
 )

@@ -130,11 +130,16 @@
 \seealso{
   \itemize{
     \item The \link{GenomicRanges} and \link{GRanges} classes.
-    \item The \link[IRanges]{Ranges} class in the IRanges package.
+
+    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+
     \item The \link[IRanges]{inter-range-methods} man page in the
-          IRanges package.
+          \pkg{IRanges} package.
+
     \item \link{GenomicRanges-comparison} for comparing and ordering
           genomic ranges.
+
+    \item \code{\link[S4Vectors]{endoapply}} in the \pkg{S4Vectors} package.
   }
 }
 
