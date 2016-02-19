@@ -3,6 +3,7 @@
 
 \alias{union}
 \alias{union,GRanges,GRanges-method}
+\alias{union,GRangesList,GRangesList-method}
 
 \alias{intersect}
 \alias{intersect,GRanges,GRanges-method}
@@ -64,19 +65,16 @@
 
 \arguments{
   \item{x, y}{
-    For \code{union}, \code{intersect}, \code{setdiff}, \code{pgap}:
-    \code{x} and \code{y} must both be \link{GRanges} objects.
+    For \code{union}, \code{intersect}, and \code{setdiff}:
+    2 \link{GRanges} objects or 2 \link{GRangesList} objects.
 
-    For \code{punion}: one of \code{x} or \code{y} must be a \link{GRanges}
-    object, the other one can be a \link{GRanges} or \link{GRangesList} object.
+    For \code{punion} and \code{pintersect}: 2 \link{GRanges} objects, or
+    1 \link{GRanges} object and 1 \link{GRangesList} object.
 
-    For \code{pintersect}: \code{x} and \code{y} can be any combination of
-    \link{GRanges} and/or \link{GRangesList} objects.
+    For \code{psetdiff}: \code{x} must be a \link{GRanges} object and
+    \code{y} can be a \link{GRanges} or \link{GRangesList} object.
 
-    For \code{psetdiff}: \code{x} and \code{y} can be any combination of
-    \link{GRanges} and/or \link{GRangesList} objects, with the exception
-    that if \code{x} is a \link{GRangesList} object then \code{y} must be
-    a \link{GRangesList} too.
+    For \code{pgap}: 2 \link{GRanges} objects.
 
     In addition, for the "parallel" operations, \code{x} and \code{y} must
     be of equal length (i.e. \code{length(x) == length(y)}).
@@ -128,8 +126,9 @@
 }
 
 \value{
-  For \code{union}, \code{intersect}, \code{setdiff}, and \code{pgap}: a
-  \link{GRanges} object.
+  For \code{union}, \code{intersect}, and \code{setdiff}: a \link{GRanges}
+  object if \code{x} and \code{y} are \link{GRanges} objects, and a
+  \link{GRangesList} object if they are \link{GRangesList} objects.
 
   For \code{punion} and \code{pintersect}: when \code{x} or \code{y} is
   not a \link{GRanges} object, an object of the same class as this
@@ -138,6 +137,8 @@
   For \code{psetdiff}: either a \link{GRanges} object when both \code{x}
   and \code{y} are \link{GRanges} objects, or a \link{GRangesList} object
   when \code{y} is a \link{GRangesList} object.
+
+  For \code{pgap}: a \link{GRanges} object.
 }
 
 \author{P. Aboyoun and H. Pagès}
@@ -178,6 +179,36 @@ intersect(x, y, ignore.strand=TRUE)
 setdiff(x, y)
 setdiff(x, y, ignore.strand=TRUE)
 
+## With 2 GRangesList objects:
+gr1 <- GRanges(seqnames="chr2",
+               ranges=IRanges(3, 6))
+gr2 <- GRanges(seqnames=c("chr1", "chr1"),
+               ranges=IRanges(c(7,13), width = 3),
+               strand=c("+", "-"))
+gr3 <- GRanges(seqnames=c("chr1", "chr2"),
+               ranges=IRanges(c(1, 4), c(3, 9)),
+               strand=c("-", "-"))
+grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
+
+union(grlist, shift(grlist, 3))
+intersect(grlist, shift(grlist, 3))
+setdiff(grlist, shift(grlist, 3))
+
+## Sanity checks:
+grlist2 <- shift(grlist, 3)
+stopifnot(identical(
+    union(grlist, grlist2),
+    mendoapply(union, grlist, grlist2)
+))
+stopifnot(identical(
+    intersect(grlist, grlist2),
+    mendoapply(intersect, grlist, grlist2)
+))
+stopifnot(identical(
+    setdiff(grlist, grlist2),
+    mendoapply(setdiff, grlist, grlist2)
+))
+
 ## ---------------------------------------------------------------------
 ## B. PARALLEL SET OPERATIONS
 ## ---------------------------------------------------------------------
@@ -202,17 +233,6 @@ gr <- GRanges(seqnames=c("chr2", "chr1", "chr1"),
               ranges=IRanges(1:3, width = 12),
               strand=Rle(strand(c("-", "*", "-"))))
 
-## GRangesList object
-gr1 <- GRanges(seqnames="chr2",
-               ranges=IRanges(3, 6))
-gr2 <- GRanges(seqnames=c("chr1", "chr1"),
-               ranges=IRanges(c(7,13), width = 3),
-               strand=c("+", "-"))
-gr3 <- GRanges(seqnames=c("chr1", "chr2"),
-               ranges=IRanges(c(1, 4), c(3, 9)),
-               strand=c("-", "-"))
-grlist <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
-
 ## Parallel intersection of a GRanges and a GRangesList object
 pintersect(gr, grlist)
 pintersect(grlist, gr)
@@ -225,9 +245,6 @@ reduce(pintersect(grlist, gr, strict.strand=TRUE),
 
 ## Parallel set difference of a GRanges and a GRangesList object
 psetdiff(gr, grlist)
-
-## Parallel set difference of two GRangesList objects
-psetdiff(grlist, shift(grlist, 3))
 }
 
 \keyword{methods}

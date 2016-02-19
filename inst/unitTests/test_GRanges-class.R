@@ -260,8 +260,6 @@ test_GRanges_mcols <- function()
     checkIdentical(GRanges(), gr0)
     mcols(gr1) <- mcols(gr1)  # no-op
     checkIdentical(.make_TARGET_GRanges(), gr1)
-    checkException(mcols(gr1) <- DataFrame(strand=1:length(gr)),
-                   silent=TRUE)
     checkException(mcols(gr1) <- DataFrame(score=letters),
                    silent=TRUE)
 

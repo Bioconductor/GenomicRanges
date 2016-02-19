@@ -1023,14 +1023,14 @@ grl3
       \begin{exampleblock}{}
 {\scriptsize
 <<GRangesList_Ranges_ops11>>=
-psetdiff(grl2, grl3)
+setdiff(grl2, grl3)
 @
 }
       \end{exampleblock}
     \end{column}
   \end{columns}
   \begin{block}{}
-    \Rcode{psetdiff(grl2, grl)} is equivalent to
+    \Rcode{setdiff(grl2, grl)} is equivalent to
     \Rcode{mendoapply(setdiff, grl2, grl)}
   \end{block}
 \end{frame}

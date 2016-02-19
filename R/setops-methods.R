@@ -67,6 +67,21 @@ setMethod("union", c("GRanges", "GRanges"),
     }
 )
 
+### Equivalent to 'mendoapply(union, x, y)'.
+setMethod("union", c("GRangesList", "GRangesList"),
+    function(x, y, ...)
+    {
+        if (length(x) != length(y))
+            stop("'x' and 'y' must have the same length")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqlevels(y) <- seqlevels(x)
+        xgr <- deconstructGRLintoGR(x)
+        ygr <- deconstructGRLintoGR(y)
+        gr <- callGeneric(xgr, ygr, ...)
+        reconstructGRLfromGR(gr, x)
+    }
+)
+
 setMethod("intersect", c("GRanges", "GRanges"),
     function(x, y, ignore.strand=FALSE)
     {
