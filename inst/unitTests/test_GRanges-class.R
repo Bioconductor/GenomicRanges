@@ -266,7 +266,8 @@ test_GRanges_mcols <- function()
                    silent=TRUE)
 
     mcols(gr1) <- NULL
-    checkIdentical(new("DataFrame", nrows=length(gr1)), mcols(gr1))
+    checkIdentical(S4Vectors:::make_zero_col_DataFrame(length(gr1)),
+                   mcols(gr1))
 
     val <- DataFrame(x=1:length(gr1), y = head(letters, length(gr1)))
     mcols(gr1) <- val

@@ -331,7 +331,7 @@ replaceElementMetadataList <-
         level <- match.arg(level)
     if (level == "between") {
         if (is.null(value))
-            value <- new("DataFrame", nrows = length(x))
+            value <- S4Vectors:::make_zero_col_DataFrame(length(x))
         else if (!is(value, "DataFrame"))
             value <- DataFrame(value)
         if (!is.null(rownames(value)))
@@ -346,7 +346,7 @@ replaceElementMetadataList <-
         x@elementMetadata <- value
     } else {
         if (is.null(value)) {
-            value <- new("DataFrame", nrows = length(x@unlistData))
+            value <- S4Vectors:::make_zero_col_DataFrame(length(x@unlistData))
         } else {
             if (!is(value, "SplitDataFrameList") ||
                 !identical(elementNROWS(x), elementNROWS(value))) {

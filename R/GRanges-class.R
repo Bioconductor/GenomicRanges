@@ -149,7 +149,7 @@ newGRanges <- function(class,
     if (ncol(mcols) == 0L) {
         mcols <- mcols(ranges)
         if (is.null(mcols))
-            mcols <- new("DataFrame", nrows=length(seqnames))
+            mcols <- S4Vectors:::make_zero_col_DataFrame(length(seqnames))
     }
     if (!is.null(mcols(ranges)))
         mcols(ranges) <- NULL

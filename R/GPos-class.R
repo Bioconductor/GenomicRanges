@@ -115,7 +115,7 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 
     ans_seqnames <- x_seqnames[start_idx]
     ans_strand <- x_strand[start_idx]
-    ans_mcols <- new("DataFrame", nrows=length(start_idx))
+    ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(start_idx))
     ans_seqinfo <- seqinfo(x)
 
     ## To be as fast as possible, we don't use internal constructor
@@ -167,7 +167,7 @@ GPos <- function(pos_runs=GRanges())
     suppressWarnings(ans_len <- sum(width(pos_runs)))
     if (is.na(ans_len))
         stop("too many genomic positions in 'pos_runs'")
-    ans_mcols <- new("DataFrame", nrows=ans_len)
+    ans_mcols <- S4Vectors:::make_zero_col_DataFrame(ans_len)
     ans_pos_runs <- .stitch_GenomicRanges(pos_runs, drop.empty.ranges=TRUE)
     new2("GPos", pos_runs=ans_pos_runs,
                  elementMetadata=ans_mcols,
@@ -385,7 +385,7 @@ combine_GPos_objects <- function(Class, objects,
     ## S4Vectors:::rbind_mcols() for this because the "mcols" slot of a
     ## GPos object is guaranteed to be a DataFrame.
     if (ignore.mcols) {
-        ans_mcols <- new("DataFrame", nrows=ans_len)
+        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(ans_len)
     } else  {
         mcols_slots <- lapply(objects, function(x) x@elementMetadata)
         ## Will fail if not all the GPos objects in 'objects' have

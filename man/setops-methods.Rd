@@ -6,9 +6,11 @@
 
 \alias{intersect}
 \alias{intersect,GRanges,GRanges-method}
+\alias{intersect,GRangesList,GRangesList-method}
 
 \alias{setdiff}
 \alias{setdiff,GRanges,GRanges-method}
+\alias{setdiff,GRangesList,GRangesList-method}
 
 \alias{punion}
 \alias{punion,GRanges,GRanges-method}
@@ -19,12 +21,10 @@
 \alias{pintersect,GRanges,GRanges-method}
 \alias{pintersect,GRanges,GRangesList-method}
 \alias{pintersect,GRangesList,GRanges-method}
-\alias{pintersect,GRangesList,GRangesList-method}
 
 \alias{psetdiff}
 \alias{psetdiff,GRanges,GRanges-method}
 \alias{psetdiff,GRanges,GRangesList-method}
-\alias{psetdiff,GRangesList,GRangesList-method}
 
 \alias{pgap}
 \alias{pgap,GRanges,GRanges-method}

@@ -642,7 +642,7 @@ setReplaceMethod("$", "GenomicRanges",
     ans_ranges <- do.call(c, lapply(x, ranges))
     ans_strand <- do.call(c, lapply(x, strand))
     if (ignore.mcols) {
-        ans_mcols <- new("DataFrame", nrows=length(ans_ranges))
+        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(ans_ranges))
     } else {
         ans_mcols <- do.call(rbind, lapply(x, mcols, FALSE))
     }

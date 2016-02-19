@@ -36,7 +36,6 @@ test_union <- function()
 
     checkException(union(gr, grlist), silent = TRUE)
     checkException(union(grlist, gr), silent = TRUE)
-    checkException(union(grlist, grlist), silent = TRUE)
 
     expect <- gr
     mcols(expect) <- NULL
@@ -53,7 +52,6 @@ test_intersect <- function()
 
     checkException(intersect(gr, grlist), silent = TRUE)
     checkException(intersect(grlist, gr), silent = TRUE)
-    checkException(intersect(grlist, grlist), silent = TRUE)
 
     expect <- gr
     mcols(expect) <- NULL
@@ -76,6 +74,14 @@ test_intersect <- function()
               ranges = IRanges(1:2, width = 10), 
               strand = c("-", "+")) 
     checkIdentical(suppressWarnings(intersect(gr1, gr2)), expect)
+
+    ## intersect,GRangesList,GRangesList
+
+    gr <- make_test_GRanges()
+    grlist <- make_test_GRangesList()
+    expect <- reduce(grlist) 
+    mcols(expect) <- NULL
+    checkIdentical(intersect(grlist, grlist), expect)
 }
 
 test_setdiff <- function()
@@ -85,7 +91,6 @@ test_setdiff <- function()
 
     checkException(setdiff(gr, grlist), silent = TRUE)
     checkException(setdiff(grlist, gr), silent = TRUE)
-    checkException(setdiff(grlist, grlist), silent = TRUE)
 
     expect <- GRanges(seqnames(gr)[integer(0)], seqlengths = seqlengths(gr))
     checkIdentical(setdiff(gr, gr), expect)
@@ -112,8 +117,6 @@ test_punion <- function()
 {
     gr <- make_test_GRanges()
     grlist <- make_test_GRangesList()
-
-    checkException(punion(grlist, grlist), silent = TRUE)
 
     expect <- gr
     mcols(expect) <- NULL
@@ -280,14 +283,6 @@ test_pintersect <- function()
     target <- mendoapply(intersect, x, as(y, "GRangesList"),
                          MoreArgs=list(ignore.strand=TRUE))
     checkIdentical(target, current)
-
-    ## pintersect,GRangesList,GRangesList
-
-    gr <- make_test_GRanges()
-    grlist <- make_test_GRangesList()
-    expect <- reduce(grlist) 
-    mcols(expect) <- NULL
-    checkIdentical(pintersect(grlist, grlist), expect)
 }
 
 test_psetdiff <- function()

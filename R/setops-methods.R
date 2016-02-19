@@ -88,6 +88,21 @@ setMethod("intersect", c("GRanges", "GRanges"),
     }
 )
 
+### Equivalent to 'mendoapply(intersect, x, y)'.
+setMethod("intersect", c("GRangesList", "GRangesList"),
+    function(x, y, ...)
+    {
+        if (length(x) != length(y))
+            stop("'x' and 'y' must have the same length")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqlevels(y) <- seqlevels(x)
+        xgr <- deconstructGRLintoGR(x)
+        ygr <- deconstructGRLintoGR(y)
+        gr <- callGeneric(xgr, ygr, ...)
+        reconstructGRLfromGR(gr, x)
+    }
+)
+
 setMethod("setdiff", c("GRanges", "GRanges"),
     function(x, y, ignore.strand=FALSE)
     {
@@ -106,6 +121,21 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         seqlengths[is.na(seqlengths)] <-
             .maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
         gaps(union(gaps(x, end=seqlengths), y), end=seqlengths)
+    }
+)
+
+### Equivalent to 'mendoapply(setdiff, x, y)'.
+setMethod("setdiff", c("GRangesList", "GRangesList"),
+    function(x, y, ...)
+    {
+        if (length(x) != length(y))
+            stop("'x' and 'y' must have the same length")
+        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+        seqlevels(y) <- seqlevels(x)
+        xgr <- deconstructGRLintoGR(x)
+        ygr <- deconstructGRLintoGR(y)
+        gr <- callGeneric(xgr, ygr, ...)
+        reconstructGRLfromGR(gr, x)
     }
 )
 
@@ -338,21 +368,6 @@ setMethod("pintersect", c("GRanges", "GRangesList"),
                                         strict.strand=strict.strand)
 )
 
-### Equivalent to 'mendoapply(intersect, x, y)'.
-setMethod("pintersect", c("GRangesList", "GRangesList"),
-    function(x, y, ...)
-    {
-        if (length(x) != length(y))
-            stop("'x' and 'y' must have the same length")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqlevels(y) <- seqlevels(x)
-        xgr <- deconstructGRLintoGR(x)
-        ygr <- deconstructGRLintoGR(y)
-        gr <- callGeneric(xgr, ygr, ...)
-        reconstructGRLfromGR(gr, x)
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### psetdiff()
@@ -414,21 +429,6 @@ setMethod("psetdiff", c("GRanges", "GRangesList"),
           GRanges(ansSeqnames, unlist(ansRanges, use.names=FALSE), ansStrand)
         seqinfo(ansGRanges) <- ansSeqinfo
         relist(ansGRanges, PartitioningByEnd(ansRanges))
-    }
-)
-
-### Equivalent to 'mendoapply(setdiff, x, y)'.
-setMethod("psetdiff", c("GRangesList", "GRangesList"),
-    function(x, y, ...)
-    {
-        if (length(x) != length(y))
-            stop("'x' and 'y' must have the same length")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqlevels(y) <- seqlevels(x)
-        xgr <- deconstructGRLintoGR(x)
-        ygr <- deconstructGRLintoGR(y)
-        gr <- callGeneric(xgr, ygr, ...)
-        reconstructGRLfromGR(gr, x)
     }
 )
 
