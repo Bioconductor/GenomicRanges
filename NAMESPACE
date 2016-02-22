@@ -86,7 +86,6 @@ exportMethods(
     precede, follow, nearest, distance, distanceToNearest,
     tile,
     subset,
-    subjectHits, queryHits,
 
     ## Generics defined in GenomeInfoDb:
     seqinfo, "seqinfo<-",

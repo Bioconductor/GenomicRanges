@@ -85,7 +85,7 @@
              where=c("precede", "follow"))
 {
     if (!length(query) || !length(subject))
-        return(Hits(queryLength=length(query), subjectLength=length(subject)))
+        return(Hits(nLnode=length(query), nRnode=length(subject)))
 
     leftOf <- "precede" == match.arg(where)
     if (ignore.strand)
@@ -143,7 +143,7 @@
         phit <- plusfun(queryStart[idx], queryEnd[idx],
             subjectStart, subjectEnd, sentinel)
         .Hits(qid[queryHits(phit)], subjectHits(phit),
-            length(query), length(subject))
+              length(query), length(subject))
     })
 
     ## clean up
@@ -239,8 +239,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
         if (!length(p) && !length(f)) {
             if (is(olv, "Hits") && !length(olv) || all(is.na(olv))) {
                 if (select == "all") 
-                    return(Hits(queryLength=length(x),
-                                subjectLength=length(subject)))
+                    return(Hits(nLnode=length(x),
+                                nRnode=length(subject)))
                 else if (select == "arbitrary")
                     return (rep(NA, length(x)))
             }
@@ -266,8 +266,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
             m <- rbind(as.matrix(ol), .filterHits(p0, pnearest, map),
                                       .filterHits(f0, !pnearest, map))
             m <- m[S4Vectors:::orderIntegerPairs(m[, 1L], m[, 2L]),, drop=FALSE]
-            ol@queryHits <- unname(m[, 1L])
-            ol@subjectHits <- unname(m[, 2L])
+            ol@from <- unname(m[, 1L])
+            ol@to <- unname(m[, 2L])
         } else {
             olv[is.na(olv)] <- ifelse(pnearest, p, f) 
             ol <- olv
@@ -359,8 +359,8 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     }
 
     if (!length(subjectHits) || all(is.na(subjectHits))) {
-        Hits(queryLength=length(x), 
-             subjectLength=length(subject),
+        Hits(nLnode=length(x), 
+             nRnode=length(subject),
              distance=integer(0))
     } else {
         distance <- distance(x[queryHits], subject[subjectHits],

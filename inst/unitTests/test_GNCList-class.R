@@ -101,10 +101,10 @@ test_findOverlaps_GNCList <- function()
             q_revperm[q_perm] <- seq_along(q_perm)
             s_revperm <- integer(length(s_perm))
             s_revperm[s_perm] <- seq_along(s_perm)
-            target <- remapHits(target0, query.map=q_revperm,
-                                         new.queryLength=length(q_perm),
-                                         subject.map=s_revperm,
-                                         new.subjectLength=length(s_perm))
+            target <- remapHits(target0, Lnodes.remapping=q_revperm,
+                                         new.nLnode=length(q_perm),
+                                         Rnodes.remapping=s_revperm,
+                                         new.nRnode=length(s_perm))
             current <- findOverlaps_GNCList(query[q_perm],
                                             GNCList(subject[s_perm]),
                                             ignore.strand=ignore.strand)

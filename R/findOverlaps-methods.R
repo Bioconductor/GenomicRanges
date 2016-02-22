@@ -82,20 +82,20 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             mcols(ans00) <- DataFrame(score=score)
         } 
         if (type == "within") {
-            ans01 <- remapHits(ans00, subject.map=subject_groups,
-                                      new.subjectLength=length(subject))
-            ans11 <- remapHits(ans01, query.map=query_groups,
-                                      new.queryLength=length(query),
+            ans01 <- remapHits(ans00, Rnodes.remapping=subject_groups,
+                                      new.nRnode=length(subject))
+            ans11 <- remapHits(ans01, Lnodes.remapping=query_groups,
+                                      new.nLnode=length(query),
                                       with.counts=TRUE)
             keep_idx <- which(mcols(ans11)[ , "counts"] ==
                               elementNROWS(query)[queryHits(ans11)])
             mcols(ans11) <- NULL
             ans <- ans11[keep_idx]
         } else {
-            ans <- remapHits(ans00, query.map=query_groups,
-                                    new.queryLength=length(query),
-                                    subject.map=subject_groups,
-                                    new.subjectLength=length(subject))
+            ans <- remapHits(ans00, Lnodes.remapping=query_groups,
+                                    new.nLnode=length(query),
+                                    Rnodes.remapping=subject_groups,
+                                    new.nRnode=length(subject))
         }
         if (minoverlap > 1L) {
             keep_idx <- which(mcols(ans)[ , "score"] >= minoverlap)
@@ -132,16 +132,16 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
             mcols(ans00) <- DataFrame(score=score)
         }
         if (type == "within") {
-            ans10 <- remapHits(ans00, query.map=query_groups,
-                                      new.queryLength=length(query),
+            ans10 <- remapHits(ans00, Lnodes.remapping=query_groups,
+                                      new.nLnode=length(query),
                                       with.counts=TRUE)
             keep_idx <- which(mcols(ans10)[ , "counts"] ==
                               elementNROWS(query)[queryHits(ans10)])
             mcols(ans10) <- NULL
             ans <- ans10[keep_idx]
         } else {
-            ans <- remapHits(ans00, query.map=query_groups,
-                                    new.queryLength=length(query))
+            ans <- remapHits(ans00, Lnodes.remapping=query_groups,
+                                    new.nLnode=length(query))
         }
         if (minoverlap > 1L) {
             keep_idx <- which(mcols(ans)[ , "score"] >= minoverlap)
@@ -187,8 +187,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
                                             subject_groups[subjectHits(ans00)])
             mcols(ans00) <- DataFrame(score=score)
         }
-        ans <- remapHits(ans00, subject.map=subject_groups,
-                                new.subjectLength=length(subject))
+        ans <- remapHits(ans00, Rnodes.remapping=subject_groups,
+                                new.nRnode=length(subject))
         if (minoverlap > 1L) {
             keep_idx <- which(mcols(ans)[ , "score"] >= minoverlap)
             mcols(ans) <- NULL
