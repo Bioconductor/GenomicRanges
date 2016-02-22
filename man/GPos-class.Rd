@@ -71,12 +71,12 @@ GPos(pos_runs)  # constructor function
       \item The \code{mcols()} and \code{metadata()} setters.
       \item The family of setters that operate on the seqinfo component of
             an object:
-            \code{\link[GenomieInfoDb]{seqlevels}()},
-            \code{\link[GenomieInfoDb]{seqlevelsStyle}()},
-            \code{\link[GenomieInfoDb]{seqlengths}()},
-            \code{\link[GenomieInfoDb]{isCircular}()},
-            \code{\link[GenomieInfoDb]{genome}()},
-            and \code{\link[GenomieInfoDb]{seqinfo}()}.
+            \code{\link[GenomeInfoDb]{seqlevels}()},
+            \code{\link[GenomeInfoDb]{seqlevelsStyle}()},
+            \code{\link[GenomeInfoDb]{seqlengths}()},
+            \code{\link[GenomeInfoDb]{isCircular}()},
+            \code{\link[GenomeInfoDb]{genome}()},
+            and \code{\link[GenomeInfoDb]{seqinfo}()}.
             These setters are defined and documented in the \pkg{GenomeInfoDb}
             package.
     }
