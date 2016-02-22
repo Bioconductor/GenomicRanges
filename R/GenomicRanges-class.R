@@ -369,7 +369,7 @@ setReplaceMethod("ranges", "GenomicRanges",
         mcols(value) <- NULL
         value <- S4Vectors:::V_recycle(value, x,
                                        x_what="value", skeleton_what="x")
-        update(x, ranges=value, check=FALSE)
+        update(x, ranges=value)
     }
 )
 
