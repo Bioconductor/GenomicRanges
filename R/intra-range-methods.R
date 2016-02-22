@@ -15,7 +15,8 @@ setMethod("shift", "GenomicRanges",
     function(x, shift=0L, use.names=TRUE)
     {
         new_ranges <- shift(ranges(x), shift=shift, use.names=use.names)
-        clone(x, ranges=new_ranges) 
+        ranges(x) <- new_ranges
+        x
     }
 )
 
@@ -57,7 +58,8 @@ setMethod("narrow", "GenomicRanges",
     {
         new_ranges <- narrow(ranges(x), start=start, end=end, width=width,
                                         use.names=use.names)
-        clone(x, ranges=new_ranges) 
+        ranges(x) <- new_ranges
+        x
     }
 )
 
@@ -92,7 +94,8 @@ setMethod("resize", "GenomicRanges",
         }
         new_ranges <- resize(ranges(x), width=width, fix=fix,
                                         use.names=use.names)
-        clone(x, ranges=new_ranges)
+        ranges(x) <- new_ranges
+        x
     }
 )
 
@@ -131,7 +134,8 @@ setMethod("flank", "GenomicRanges",
             start <- as.vector(start == (strand(x) != "-"))
         new_ranges <- flank(ranges(x), width=width, start=start, both=both,
                                        use.names=use.names)
-        clone(x, ranges=new_ranges) 
+        ranges(x) <- new_ranges
+        x
     }
 )
 
@@ -289,7 +293,8 @@ setMethod("trim", "GenomicRanges",
         new_end <- unname(seqlengths(x))[seqnames_id]
         new_ranges[idx] <- restrict(new_ranges[idx], start=1L, end=new_end,
                                                      keep.all.ranges=TRUE)
-        clone(x, ranges=new_ranges)
+        ranges(x) <- new_ranges
+        x
     }
 )
 
