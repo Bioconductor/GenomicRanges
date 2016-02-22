@@ -47,7 +47,8 @@
                   subjectLength=as.integer(max(c(0, subjectHits))))
 {
     o <- S4Vectors:::orderIntegerPairs(queryHits, subjectHits)
-    Hits(queryHits[o], subjectHits[o], queryLength, subjectLength)
+    Hits(queryHits[o], subjectHits[o], queryLength, subjectLength,
+         sort.by.query=TRUE)
 }
 
 .findPrecedeFollow_pmin <-
@@ -85,7 +86,8 @@
              where=c("precede", "follow"))
 {
     if (!length(query) || !length(subject))
-        return(Hits(nLnode=length(query), nRnode=length(subject)))
+        return(Hits(nLnode=length(query), nRnode=length(subject),
+                    sort.by.query=TRUE))
 
     leftOf <- "precede" == match.arg(where)
     if (ignore.strand)
@@ -240,7 +242,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
             if (is(olv, "Hits") && !length(olv) || all(is.na(olv))) {
                 if (select == "all") 
                     return(Hits(nLnode=length(x),
-                                nRnode=length(subject)))
+                                nRnode=length(subject),
+                                sort.by.query=TRUE))
                 else if (select == "arbitrary")
                     return (rep(NA, length(x)))
             }
@@ -361,11 +364,13 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     if (!length(subjectHits) || all(is.na(subjectHits))) {
         Hits(nLnode=length(x), 
              nRnode=length(subject),
-             distance=integer(0))
+             distance=integer(0),
+             sort.by.query=TRUE)
     } else {
         distance <- distance(x[queryHits], subject[subjectHits],
                              ignore.strand=ignore.strand)
-        Hits(queryHits, subjectHits, length(x), length(subject), distance)
+        Hits(queryHits, subjectHits, length(x), length(subject), distance,
+             sort.by.query=TRUE)
     }
 }
 

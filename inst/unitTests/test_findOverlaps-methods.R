@@ -21,7 +21,7 @@ make_query <- function() {
 
 .checkHits <- function(q_hits, s_hits, q_len, s_len, current, select)
 {
-    target <- Hits(q_hits, s_hits, q_len, s_len)
+    target <- Hits(q_hits, s_hits, q_len, s_len, sort.by.query=TRUE)
     checkIdentical(t(selectHits(target, select=select)), t(unname(current)))
 }
 

@@ -147,7 +147,7 @@ subject[subjectHits(new_hits)]  # positions 11:13 on chrM are the same
                                 # as positions 1:3
 
 ## Sanity checks:
-stopifnot(identical(new_hits, Hits(9, 6, 10, 6)))
+stopifnot(identical(new_hits, Hits(9, 6, 10, 6, sort.by.query=TRUE)))
 ppquery <- GNCList(query)
 hits4 <- findOverlaps(ppquery, subject)
 stopifnot(identical(sort(hits3), sort(hits4)))
