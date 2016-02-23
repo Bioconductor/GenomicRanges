@@ -54,18 +54,18 @@ GPos(pos_runs)  # constructor function
 
 \section{Accessors}{
   \subsection{Getters}{
-    \link{GPos} objects support the same set of getters as \link{GRanges}
+    GPos objects support the same set of getters as \link{GRanges}
     objects (i.e. \code{seqnames()}, \code{start()}, \code{end()},
     \code{ranges()}, \code{strand()}, \code{mcols()}, \code{seqinfo()},
     etc...), plus the \code{pos()} getter which is equivalent to
     \code{start()} or \code{end()}. See \code{?GRanges} for the list of
     getters supported by \link{GRanges} objects.
 
-    Note that a \link{GPos} object cannot hold names i.e. \code{names()}
+    Note that a GPos object cannot hold names i.e. \code{names()}
     always returns \code{NULL} on it.
   }
   \subsection{Setters}{
-    Like \link{GRanges} objects, \link{GPos} objects support the following
+    Like \link{GRanges} objects, GPos objects support the following
     setters:
     \itemize{
       \item The \code{mcols()} and \code{metadata()} setters.
@@ -82,7 +82,7 @@ GPos(pos_runs)  # constructor function
     }
 
     However, there is no \code{seqnames()}, \code{pos()}, or \code{strand()}
-    setter for \link{GPos} objects at the moment (although they might be
+    setter for GPos objects at the moment (although they might be
     added in the future).
   }
 }
@@ -90,19 +90,19 @@ GPos(pos_runs)  # constructor function
 \section{Coercion}{
   From GenomicRanges to GPos:
   A \link{GenomicRanges} object \code{x} in which all the ranges have a width
-  of 1 can be coerced to a \link{GPos} object with \code{as(x, "GPos")}.
+  of 1 can be coerced to a GPos object with \code{as(x, "GPos")}.
   The names on \code{x} are not propagated (a warning is issued if \code{x}
   has names on it).
 
   From GPos to GRanges:
-  A \link{GPos} object \code{x} can be coerced to a \link{GRanges} object
+  A GPos object \code{x} can be coerced to a \link{GRanges} object
   with \code{as(x, "GRanges")}. However be aware that the resulting object
   can use thousands times (or more) memory than \code{x}!
   See "MEMORY USAGE" in the Examples section below.
 
   From GPos to ordinary R objects:
   Like with a \link{GRanges} object, \code{as.character()}, \code{as.factor()},
-  and \code{as.data.frame()} work with a \link{GPos} object \code{x}.
+  and \code{as.data.frame()} work with a GPos object \code{x}.
   Note that \code{as.data.frame(x)} returns a data frame with a \code{pos}
   column (containing \code{pos(x)}) instead of the \code{start}, \code{end},
   and \code{width} columns that one gets when \code{x} is a \link{GRanges}
@@ -110,17 +110,17 @@ GPos(pos_runs)  # constructor function
 }
 
 \section{Subsetting}{
-  A \link{GPos} object can be subsetted exactly like a \link{GRanges} object.
+  A GPos object can be subsetted exactly like a \link{GRanges} object.
 }
 
 \section{Combining}{
-  \link{GPos} objects can be combined (a.k.a. appended) with \code{c()} or
+  GPos objects can be combined (a.k.a. appended) with \code{c()} or
   \code{append()}.
 }
 
 \section{Splitting and Relisting}{
   Like with a \link{GRanges} object, \code{split()} and \code{relist()} work
-  with a \link{GPos} object \code{x}. Note that they return a
+  with a GPos object \code{x}. Note that they return a
   \link{GenomicRangesList} object instead of a \link{GRangesList} object.
 }
 
@@ -132,9 +132,9 @@ GPos(pos_runs)  # constructor function
 }
 
 \author{
-  Hervé Pagès; based on ideas borrowed from Juri Stricker
-  \email{stricker@genzentrum.lmu.de} and Julien Gagneur
-  \email{gagneur@genzentrum.lmu.de}
+  Hervé Pagès; based on ideas borrowed from Georg Stricker
+  \email{georg.stricker@in.tum.de} and Julien Gagneur
+  \email{gagneur@in.tum.de}
 }
 
 \seealso{
