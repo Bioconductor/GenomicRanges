@@ -756,10 +756,5 @@ setMethod("show", "GenomicRanges",
                            print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
-setMethod("showAsCell", "GenomicRanges",
-          function(object) {
-            if (length(object) > 0L) {
-              paste0(seqnames(object), ":", strand(object), ":",
-                     showAsCell(ranges(object)))
-            } else character(0)
-          })
+setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
+
