@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -538,7 +538,8 @@ described in the introduction.
 
 <<count_1>>=
 library(pasillaBamSubset)
-un1 <- untreated1_chr4()  # single-end reads
+reads <- c(untrt1=untreated1_chr4(),  # single-end reads
+           untrt3=untreated3_chr4())  # paired-end reads
 @
 
 \Rcode{summarizeOverlaps} requires the name of a BAM file(s) and a
@@ -565,7 +566,7 @@ count \Rcode{modes} and additional arguments.
 
 <<count_3>>=
 library(GenomicAlignments)
-se <- summarizeOverlaps(exbygene, un1, mode="IntersectionNotEmpty")
+se <- summarizeOverlaps(exbygene, reads, mode="IntersectionNotEmpty")
 @
 
 The return object is a \Rcode{SummarizedExperiment} with counts
@@ -590,13 +591,17 @@ rowRanges(se)
 @
 
 Two popular packages for RNA-Seq differential gene expression are
-\Biocpkg{DESeq} and \Biocpkg{edgeR}. Tables of counts per gene are required
+\Biocpkg{DESeq2} and \Biocpkg{edgeR}. Tables of counts per gene are required
 for both and can be easily created with a vector of counts. Here we use the
 counts from our \Rclass{SummarizedExperiment} object:
 
 <<count_table>>=
-library(DESeq)
-deseq <- newCountDataSet(assays(se)$counts, rownames(colData(se)))
+colData(se)$trt <- factor(c("untrt", "untrt"), levels=c("trt", "untrt"))
+colData(se)
+
+library(DESeq2)
+deseq <- DESeqDataSet(se, design= ~ 1)
+
 library(edgeR)
 edger <- DGEList(assays(se)$counts, group=rownames(colData(se)))
 @
