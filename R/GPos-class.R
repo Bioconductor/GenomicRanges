@@ -67,7 +67,7 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ### into the following single range after stitching:
 ###      .........xxxxxxxxxx...
 ### Note that x[1] and x[3] are not stitchable because they are not
-### consecutive vector elements (but they would be if x[2] was removed).
+### consecutive vector elements (but they would if we removed x[2]).
 ###
 ### If 'x' contains genomic ranges (i.e. is a GenomicRanges object), 2 ranges
 ### are "stitchable" if, in addition to the above, they are also on the same
@@ -80,6 +80,7 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ### range(), reduce(), gaps(), or disjoin(), its result depends on the order
 ### of the elements in the input vector. It's also idempotent like range(),
 ### reduce(), and disjoin() (gaps() is not).
+
 ### TODO: Define and export stitch() generic and method for Ranges objects
 ### in the IRanges package (in inter-range-methods.R). Then make
 ### .stitch_GenomicRanges() the "stitch" method for GenomicRanges objects and
@@ -246,10 +247,10 @@ setMethod("extractROWS", "GPos",
             trimmed_end <- end(new_pos_runs)[Rtrim_idx] - Rtrim
             start(new_pos_runs)[Ltrim_idx] <- trimmed_start
             end(new_pos_runs)[Rtrim_idx] <- trimmed_end
+            suppressWarnings(new_len <- sum(width(new_pos_runs)))
+            if (is.na(new_len))
+                stop("subscript is too big")
         }
-        suppressWarnings(new_len <- sum(width(new_pos_runs)))
-        if (is.na(new_len))
-            stop("subscript is too big")
         x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
         mcols(x) <- extractROWS(mcols(x), i)
         x
