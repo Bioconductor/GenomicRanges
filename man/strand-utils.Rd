@@ -47,17 +47,29 @@
 }
 
 \arguments{
-  \item{x}{The object from which to obtain a strand factor, can be
-    missing.}
-  \item{value}{Replacement value for the strand.}
+  \item{x}{
+    The object from which to obtain a \emph{strand factor}, \emph{strand
+    factor \link[S4Vectors]{Rle}}, or \emph{strand factor \link{RleList}}
+    object. Can be missing. See Details and Value sections below for more
+    information.
+  }
+  \item{value}{
+    Replacement value for the strand.
+  }
+}
+
+\details{
+  All the \code{strand} and \code{invertStrand} methods documented
+  here return either a \emph{strand factor}, \emph{strand factor
+  \link[S4Vectors]{Rle}}, or \emph{strand factor \link{RleList}} object.
+  These are factor, factor-\link[S4Vectors]{Rle}, or factor-\link{RleList}
+  objects containing the "standard strand levels" (i.e. \code{+}, \code{-},
+  and \code{*}) and no NAs.
 }
 
 \value{
-  All the \code{strand} and \code{invertStrand} methods documented
-  here return either a factor, factor-\link[S4Vectors]{Rle}, or
-  factor-\link[S4Vectors]{RleList} object containing the "standard
-  strand levels" (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
-  Furthermore this object is \emph{parallel} to input object \code{x} when
+  All the \code{strand} and \code{invertStrand} methods documented here
+  return an object that is \emph{parallel} to input object \code{x} when
   \code{x} is a character, factor, integer, logical, \link[S4Vectors]{Rle},
   or \link{RleList} object.
 
