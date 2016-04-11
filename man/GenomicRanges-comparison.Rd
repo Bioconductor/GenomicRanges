@@ -9,7 +9,7 @@
 \alias{duplicated.GenomicRanges}
 
 \alias{match,GenomicRanges,GenomicRanges-method}
-\alias{selfmatch,GenomicRanges,GenomicRanges-method}
+\alias{selfmatch,GenomicRanges-method}
 
 \alias{is.unsorted,GenomicRanges-method}
 \alias{order,GenomicRanges-method}
