@@ -11,6 +11,10 @@
 \alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
 
+\alias{overlapsAny}
+
+\alias{subsetByOverlaps}
+
 
 \title{Finding overlapping genomic ranges}
 
