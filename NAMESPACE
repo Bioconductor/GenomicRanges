@@ -69,6 +69,9 @@ exportMethods(
     updateObject,
     strand, "strand<-", invertStrand,
 
+    ## Generics defined in S4Vectors:
+    selfmatch,
+
     ## Generics defined in IRanges:
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",

@@ -9,6 +9,7 @@
 \alias{duplicated.GenomicRanges}
 
 \alias{match,GenomicRanges,GenomicRanges-method}
+\alias{selfmatch,GenomicRanges,GenomicRanges-method}
 
 \alias{is.unsorted,GenomicRanges-method}
 \alias{order,GenomicRanges-method}
@@ -30,11 +31,13 @@
 \S4method{duplicated}{GenomicRanges}(x, incomparables=FALSE, fromLast=FALSE,
            method=c("auto", "quick", "hash"))
 
-## match()
-## -------
+## match() & selfmatch()
+## ---------------------
 
 \S4method{match}{GenomicRanges,GenomicRanges}(x, table, nomatch=NA_integer_, incomparables=NULL,
       method=c("auto", "quick", "hash"), ignore.strand=FALSE)
+
+\S4method{selfmatch}{GenomicRanges}(x, method=c("auto", "quick", "hash"), ignore.strand=FALSE)
 
 ## order() and related methods
 ## ----------------------------
@@ -48,9 +51,8 @@
 \S4method{rank}{GenomicRanges}(x, na.last=TRUE,
      ties.method=c("average", "first", "random", "max", "min"))
 
-## Generalized element-wise (aka "parallel") comparison of 2 GenomicRanges
-## objects
-## ------------------------------------------------------------------------
+## Generalized parallel comparison of 2 GenomicRanges objects
+## ----------------------------------------------------------
 
 \S4method{pcompare}{GenomicRanges,GenomicRanges}(x, y)
 }
@@ -63,7 +65,7 @@
     Not supported.
   }
   \item{fromLast, method, nomatch}{
-    See \code{?`\link[IRanges]{Ranges-comparison}`} in the IRanges
+    See \code{?`\link[IRanges]{Ranges-comparison}`} in the \pkg{IRanges}
     package for a description of these arguments.
   }
   \item{ignore.strand}{
@@ -78,7 +80,8 @@
     values.
   }
   \item{...}{
-    Additional \link{GenomicRanges} objects used for breaking ties.
+    One or more \link{GenomicRanges} objects. The \link{GenomicRanges} objects
+    after the first one are used to break ties.
   }
   \item{na.last}{
     Ignored.

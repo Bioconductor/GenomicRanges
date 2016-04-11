@@ -163,6 +163,27 @@ relevelSeqnamesForMatch <- function(x, table) {
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### selfmatch()
+###
+
+setMethod("selfmatch", "GenomicRanges",
+    function(x, method=c("auto", "quick", "hash"), ignore.strand=FALSE)
+    {
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE or FALSE")
+        x_seqnames <- as.factor(seqnames(x))
+        if (ignore.strand) {
+            x_strand <- integer(length(x))
+        } else {
+            x_strand <- as.factor(strand(x))
+        }
+        selfmatchIntegerQuads(x_seqnames, x_strand, start(x), width(x),
+                              method=method)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### order() and related methods.
 ###
 ### The "order" and "rank" methods for GenomicRanges objects are consistent
@@ -223,8 +244,11 @@ setMethod("is.unsorted", "GenomicRanges",
 
 ### TODO: Support the 'ignore.strand' argument (the signature of the order()
 ### generic doesn't make this as straightforward as it could be).
+### 'na.last' is pointless (GenomicRanges objects don't contain NAs) so is
+### ignored.
+### 'method' is also ignored at the moment.
 setMethod("order", "GenomicRanges",
-    function(..., na.last=TRUE, decreasing=FALSE)
+    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
     {
         ## Turn off this warning for now since it triggers spurious warnings
         ## when calling sort() on a GRangesList object. The root of the
