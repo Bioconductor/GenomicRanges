@@ -9,13 +9,22 @@
 \alias{strand,integer-method}
 \alias{strand,logical-method}
 \alias{strand,Rle-method}
+\alias{strand,RleList-method}
 \alias{strand,DataTable-method}
 \alias{strand<-,DataTable,ANY-method}
+
+\alias{invertStrand,NULL-method}
+\alias{invertStrand,character-method}
+\alias{invertStrand,factor-method}
+\alias{invertStrand,integer-method}
+\alias{invertStrand,logical-method}
+\alias{invertStrand,Rle-method}
+\alias{invertStrand,RleList-method}
 
 \title{Strand utilities}
 
 \description{
-  Some useful \code{strand} methods.
+  A bunch of useful \code{strand} and \code{invertStrand} methods.
 }
 
 \usage{
@@ -25,8 +34,16 @@
 \S4method{strand}{integer}(x)
 \S4method{strand}{logical}(x)
 \S4method{strand}{Rle}(x)
+\S4method{strand}{RleList}(x)
 \S4method{strand}{DataTable}(x)
 \S4method{strand}{DataTable,ANY}(x) <- value
+
+\S4method{invertStrand}{character}(x)
+\S4method{invertStrand}{factor}(x)
+\S4method{invertStrand}{integer}(x)
+\S4method{invertStrand}{logical}(x)
+\S4method{invertStrand}{Rle}(x)
+\S4method{invertStrand}{RleList}(x)
 }
 
 \arguments{
@@ -35,37 +52,54 @@
   \item{value}{Replacement value for the strand.}
 }
 
-\details{
-  If \code{x} is missing, returns an empty factor with the
-  "standard strand levels" i.e. \code{+}, \code{-}, and \code{*}.
-
-  If \code{x} is a character vector or factor, it is coerced to a
-  factor with the levels listed above. \code{NA} values in \code{x}
-  are not accepted.
-
-  If \code{x} is an integer vector, it is coerced to a factor
-  with the levels listed above. \code{1}, \code{-1}, and \code{NA}
-  values in \code{x} are mapped to the \code{+}, \code{-}, and
-  \code{*} levels respectively.
-
-  If \code{x} is a logical vector, it is coerced to a factor
-  with the levels listed above. \code{FALSE}, \code{TRUE}, and \code{NA}
-  values in \code{x} are mapped to the \code{+}, \code{-}, and
-  \code{*} levels respectively.
-
-  If \code{x} is a character-, factor-, integer-, or
-  logical-\link[S4Vectors]{Rle}, it is transformed with
-  \code{runValue(x) <- strand(runValue(x))} and returned.
-
-  If \code{x} inherits from \code{DataTable}, the \code{"strand"}
-  column is passed thru \code{strand()} and returned.
-  If \code{x} has no \code{"strand"} column, this return value is
-  populated with \code{*}s.
-}
-
 \value{
-  A factor (or factor-\link[S4Vectors]{Rle}) with the "standard strand levels"
-  (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
+  All the \code{strand} and \code{invertStrand} methods documented
+  here return either a factor, factor-\link[S4Vectors]{Rle}, or
+  factor-\link[S4Vectors]{RleList} object containing the "standard
+  strand levels" (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
+  Furthermore this object is \emph{parallel} to input object \code{x} when
+  \code{x} is a character, factor, integer, logical, \link[S4Vectors]{Rle},
+  or \link{RleList} object.
+
+  For the \code{strand} methods:
+  \itemize{
+    \item If \code{x} is missing, returns an empty factor with the
+          "standard strand levels" i.e. \code{+}, \code{-}, and \code{*}.
+
+    \item If \code{x} is a character vector or factor, it is coerced to a
+          factor with the levels listed above. \code{NA} values in \code{x}
+          are not accepted.
+
+    \item If \code{x} is an integer vector, it is coerced to a factor
+          with the levels listed above. \code{1}, \code{-1}, and \code{NA}
+          values in \code{x} are mapped to the \code{+}, \code{-}, and
+          \code{*} levels respectively.
+
+    \item If \code{x} is a logical vector, it is coerced to a factor
+          with the levels listed above. \code{FALSE}, \code{TRUE}, and
+          \code{NA} values in \code{x} are mapped to the \code{+}, \code{-},
+          and \code{*} levels respectively.
+
+    \item If \code{x} is a character-, factor-, integer-, or
+          logical-\link[S4Vectors]{Rle}, it is transformed with
+          \code{runValue(x) <- strand(runValue(x))} and returned.
+
+    \item If \code{x} is an \link{RleList} object, each list element in
+          \code{x} is transformed by calling \code{strand()} on it and
+          the resulting \link{RleList} object is returned. More precisely
+          the returned object is \code{endoapply(x, strand)}.
+          Note that in addition to being \emph{parallel} to \code{x}, this
+          object also has the same \emph{shape} as \code{x} (i.e. its list
+          elements have the same lengths as in \code{x}).
+    
+    \item If \code{x} inherits from \code{DataTable}, the \code{"strand"}
+          column is passed thru \code{strand()} and returned.
+          If \code{x} has no \code{"strand"} column, this return value is
+          populated with \code{*}s.
+  }
+
+  Each \code{invertStrand} method returns the same object as its corresponding
+  \code{strand} method but with \code{"+"} and \code{"-"} switched.
 }
 
 \author{M. Lawrence and H. Pagès}
@@ -83,14 +117,26 @@ x3 <- c(-1L, NA, NA, 1L, -1L, NA)
 x4 <- c(TRUE, NA, NA, FALSE, TRUE, NA)
 
 strand(x1)
+invertStrand(x1)
 strand(x2)
+invertStrand(x2)
 strand(x3)
+invertStrand(x3)
 strand(x4)
+invertStrand(x4)
 
 strand(Rle(x1))
+invertStrand(Rle(x1))
 strand(Rle(x2))
+invertStrand(Rle(x2))
 strand(Rle(x3))
+invertStrand(Rle(x3))
 strand(Rle(x4))
+invertStrand(Rle(x4))
+
+x5 <- RleList(x1, character(0), as.character(x2))
+strand(x5)
+invertStrand(x5)
 
 strand(DataFrame(score=2:-3))
 strand(DataFrame(score=2:-3, strand=x3))

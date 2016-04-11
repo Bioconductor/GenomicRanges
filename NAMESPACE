@@ -67,7 +67,7 @@ exportMethods(
     Ops,
     merge,
     updateObject,
-    strand, "strand<-",
+    strand, "strand<-", invertStrand,
 
     ## Generics defined in IRanges:
     elementMetadata, "elementMetadata<-",

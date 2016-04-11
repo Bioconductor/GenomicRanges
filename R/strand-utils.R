@@ -75,6 +75,10 @@ setMethod("strand", "Rle",
     }
 )
 
+setMethod("strand", "RleList",
+    function(x) relist(strand(unlist(x, use.names=FALSE)), x)
+)
+
 setMethod("strand", "DataTable",
     function(x)
     {
@@ -92,6 +96,43 @@ setReplaceMethod("strand", "DataTable", function(x, value) {
   x$strand <- normargGenomicRangesStrand(value, nrow(x))
   x
 })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some "invertStrand" methods
+###
+
+.invert_strand_factor <- function(x)
+{
+    x_codes <- as.integer(x)
+    switch_idx <- which(x_codes <= 2L)
+    x[switch_idx] <- structure(3L - x_codes[switch_idx],
+                               levels=levels(x), class=class(x))
+    x
+}
+
+### One method for each of the "strand" methods defined above that return a
+### factor (except for the method for "missing").
+setMethods("invertStrand", list("NULL",
+                                "character",
+                                "factor",
+                                "integer",
+                                "logical"),
+    function(x) .invert_strand_factor(strand(x))
+)
+
+setMethod("invertStrand", "Rle",
+    function(x)
+    {
+        ans <- strand(x)
+        runValue(ans) <- invertStrand(runValue(ans))
+        ans
+    }
+)
+
+setMethod("invertStrand", "RleList",
+    function(x) relist(invertStrand(unlist(x, use.names=FALSE)), x)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
