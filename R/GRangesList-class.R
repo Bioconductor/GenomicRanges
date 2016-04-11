@@ -593,12 +593,12 @@ deconstructGRLintoGR <- function(x, expand.levels=FALSE)
         i1 <- rep(seq_len(length(x)), each=x_nlev)
         i2 <- rep.int(seq_len(x_nlev), length(x))
     } else {
-        oo <- S4Vectors:::orderIntegerPairs(f1, f2)
+        oo <- orderIntegerPairs(f1, f2)
         of1 <- f1[oo]
         of2 <- f2[oo]
-        ## TODO: Add "presorted" method to S4Vectors:::duplicatedIntegerPairs()
-        ## for when the 2 input vectors are already sorted.
-        notdups <- !S4Vectors:::duplicatedIntegerPairs(of1, of2)
+        ## TODO: Support 'method="presorted"' in duplicatedIntegerPairs() for
+        ## when the 2 input vectors are already sorted.
+        notdups <- !duplicatedIntegerPairs(of1, of2)
         i1 <- of1[notdups]
         i2 <- of2[notdups]
     }

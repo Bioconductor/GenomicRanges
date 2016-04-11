@@ -40,7 +40,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
 .aggregated_sum <- function(x, f1, f2)
 {
-    sm <- S4Vectors:::selfmatchIntegerPairs(f1, f2)
+    sm <- selfmatchIntegerPairs(f1, f2)
     S4Vectors:::tabulate2(sm, length(sm), weight=x)[sm]
 }
 

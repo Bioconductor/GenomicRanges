@@ -46,7 +46,7 @@
                   queryLength=as.integer(max(c(0, queryHits))),
                   subjectLength=as.integer(max(c(0, subjectHits))))
 {
-    o <- S4Vectors:::orderIntegerPairs(queryHits, subjectHits)
+    o <- orderIntegerPairs(queryHits, subjectHits)
     Hits(queryHits[o], subjectHits[o], queryLength, subjectLength,
          sort.by.query=TRUE)
 }
@@ -268,7 +268,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
             pnearest[pdist == fdist] <- TRUE
             m <- rbind(as.matrix(ol), .filterHits(p0, pnearest, map),
                                       .filterHits(f0, !pnearest, map))
-            m <- m[S4Vectors:::orderIntegerPairs(m[, 1L], m[, 2L]),, drop=FALSE]
+            m <- m[orderIntegerPairs(m[, 1L], m[, 2L]),, drop=FALSE]
             ol@from <- unname(m[, 1L])
             ol@to <- unname(m[, 2L])
         } else {

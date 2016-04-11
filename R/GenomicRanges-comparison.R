@@ -98,10 +98,9 @@ setMethod("pcompare", c("GenomicRanges", "GenomicRanges"),
     if (!identical(incomparables, FALSE))
         stop("\"duplicated\" method for GenomicRanges objects ",
              "only accepts 'incomparables=FALSE'")
-    S4Vectors:::duplicatedIntegerQuads(as.factor(seqnames(x)),
-                                       as.factor(strand(x)),
-                                       start(x), width(x),
-                                       fromLast=fromLast, method=method)
+    duplicatedIntegerQuads(as.factor(seqnames(x)), as.factor(strand(x)),
+                               start(x), width(x),
+                           fromLast=fromLast, method=method)
 }
 ### S3/S4 combo for duplicated.GenomicRanges
 duplicated.GenomicRanges <- function(x, incomparables=FALSE, ...)
@@ -144,11 +143,11 @@ setMethod("match", c("GenomicRanges", "GenomicRanges"),
         ## Equivalent to (but faster than):
         ##     findOverlaps(x, table, type="equal", select="first")
         ## except when 'x' and 'table' both contain empty ranges.
-        S4Vectors:::matchIntegerQuads(x_seqnames, x_strand,
-                                      start(x), width(x),
-                                      as.factor(seqnames(table)), table_strand,
-                                      start(table), width(table),
-                                      nomatch=nomatch, method=method)
+        matchIntegerQuads(x_seqnames, x_strand,
+                              start(x), width(x),
+                          as.factor(seqnames(table)), table_strand,
+                              start(table), width(table),
+                          nomatch=nomatch, method=method)
     }
 )
 
@@ -217,9 +216,9 @@ setMethod("is.unsorted", "GenomicRanges",
     if (!isTRUEorFALSE(decreasing))
         stop("'decreasing' must be TRUE or FALSE")
     quads <- .GenomicRanges_as_IntegerQuads(x, ignore.strand)
-    S4Vectors:::orderIntegerQuads(quads[[1L]], quads[[2L]],
-                                  quads[[3L]], quads[[4L]],
-                                  decreasing=decreasing)
+    orderIntegerQuads(quads[[1L]], quads[[2L]],
+                      quads[[3L]], quads[[4L]],
+                      decreasing=decreasing)
 }
 
 ### TODO: Support the 'ignore.strand' argument (the signature of the order()
