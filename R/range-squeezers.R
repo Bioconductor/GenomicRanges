@@ -27,7 +27,7 @@ setGeneric("rglist", signature="x",
 
 setMethod("grglist", "Pairs", function(x, use.mcols=FALSE) {
               stopifnot(isTRUEorFALSE(use.mcols))
-              grl <- zipup(granges(first(x)), granges(last(x)))
+              grl <- zipup(granges(first(x)), granges(second(x)))
               if (!use.mcols) {
                   mcols(grl) <- NULL
               }
@@ -36,7 +36,7 @@ setMethod("grglist", "Pairs", function(x, use.mcols=FALSE) {
 
 setMethod("rglist", "Pairs", function(x, use.mcols=FALSE) {
               stopifnot(isTRUEorFALSE(use.mcols))
-              rl <- zipup(ranges(first(x)), ranges(last(x)))
+              rl <- zipup(ranges(first(x)), ranges(second(x)))
               if (!use.mcols) {
                   mcols(rl) <- NULL
               }
