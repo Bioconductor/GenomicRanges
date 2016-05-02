@@ -58,6 +58,7 @@
 
 % Vector methods:
 \alias{length,GenomicRanges-method}
+\alias{[<-,GRanges-method}
 \alias{[,GenomicRanges,ANY-method}
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{[,List,GenomicRanges-method}
