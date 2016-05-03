@@ -3,8 +3,61 @@ CHANGES IN VERSION 1.24.0
 
 NEW FEATURES
 
+    o Add the GPos class, a container for storing a set of "genomic positions"
+      (i.e. genomic ranges of width 1). Even though a GRanges object can be
+      used for that, using a GPos object can be much more memory-efficient,
+      especially when the object contains long runs of adjacent positions.
+
+    o Add a bunch of "invertStrand" methods to support strand inversion of any
+      "stranded" object (i.e. any object with a strand() getter and setter).
+      E.g. invertStrand() works on GRanges, GRangesList, GAlignments,
+      GAlignmentPairs, GAlignmentsList, and RangedSummarizedExperiment objects.
+
     o Add "is.unsorted" method for GenomicRanges objects (contributed by Pete
       Hickey).
+
+    o base::rank() gained a new 'ties.method="last"' option and base::order()
+      a new argument ('method') in R 3.3. Thus so do the "rank" and "order"
+      methods for GenomicRanges objects.
+
+    o Add "selfmatch" method for GenomicRanges objects.
+
+    o Add "union" method for GRangesList objects.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Remove old SummarizedExperiment class from the GenomicRanges package
+      (this class is now defined in the SummarizedExperiment package).
+
+    o Move the following generic functions from the GenomicRanges package to
+      the SummarizedExperiment package:
+      - SummarizedExperiment
+      - exptData, "exptData<-"
+      - rowRanges, "rowRanges<-"
+      - colData, "colData<-"
+      - assayNames, "assayNames<-"
+      - assays, "assays<-"
+      - assay, "assay<-"
+
+    o Rename "pintersect" and "psetdiff" methods for GRangesList objects ->
+      "intersect" and "setdiff" without changing their behavior (they still
+      do mendoapply(intersect, x, y) and mendoapply(setdiff, x, y),
+      respectively). The old names were misnomers (see svn commit message for
+      commit 113793 for more information).
+
+    o Remove the ellipsis (...) from all the setops methods, except from:
+      - "punion" method for signature GRanges#GRangesList;
+      - "pintersect" and "psetdiff" methods for signature
+         GRangesList#GRangesList;
+      - "pgap" method for GRanges objects.
+
+    o Use DESeq2 instead of DESeq in the vignettes (better late than never).
+
+DEPRECATED AND DEFUNCT
+
+    o Remove GIntervalTree class and methods (were defunct in BioC 3.2).
+
+    o Remove mapCoords() and pmapCoords() (were defunct in BioC 3.2).
 
 
 CHANGES IN VERSION 1.22.0
