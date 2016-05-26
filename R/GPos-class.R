@@ -332,7 +332,7 @@ setMethod("show", "GPos",
 ### Note that supporting "[" and "c" makes "[<-" work out-of-the-box!
 ###
 
-### 'Class' must be "GPos" or the name of a concrete subclass of GPos.
+### 'Class' must be "GPos" or the name of a concrete GPos subclass.
 ### 'objects' must be a list of GPos objects.
 ### Returns an instance of class 'Class'.
 combine_GPos_objects <- function(Class, objects,
