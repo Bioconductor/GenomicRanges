@@ -675,8 +675,7 @@ setMethod("c", "GenomicRanges",
 ### Displaying
 ###
 
-### S3/S4 combo for summary.GenomicRanges
-summary.GenomicRanges <- function(object)
+.GenomicRanges_summary <- function(object)
 {
     object_class <- class(object)
     object_len <- length(object)
@@ -687,6 +686,10 @@ summary.GenomicRanges <- function(object)
            " and ", object_nmc, " metadata ",
            ifelse(object_nmc == 1L, "column", "columns"))
 }
+
+### S3/S4 combo for summary.GenomicRanges
+summary.GenomicRanges <- function(object, ...)
+    .GenomicRanges_summary(object, ...)
 setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 
 .make_naked_matrix_from_GenomicRanges <- function(x)
