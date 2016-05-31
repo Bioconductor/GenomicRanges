@@ -672,8 +672,22 @@ setMethod("c", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "show" method.
+### Displaying
 ###
+
+### S3/S4 combo for summary.GenomicRanges
+summary.GenomicRanges <- function(object)
+{
+    object_class <- class(object)
+    object_len <- length(object)
+    object_mcols <- mcols(object)
+    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
+    paste0(object_class, " object with ", object_len, " ",
+           ifelse(object_len == 1L, "range", "ranges"),
+           " and ", object_nmc, " metadata ",
+           ifelse(object_nmc == 1L, "column", "columns"))
+}
+setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 
 .make_naked_matrix_from_GenomicRanges <- function(x)
 {
@@ -706,15 +720,7 @@ show_GenomicRanges <- function(x, margin="",
                                print.classinfo=FALSE, print.seqinfo=FALSE,
                                coerce.internally.to.GRanges=TRUE)
 {
-    x_class <- class(x)
-    x_len <- length(x)
-    x_mcols <- mcols(x)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(x_class, " object with ",
-        x_len, " ", ifelse(x_len == 1L, "range", "ranges"),
-        " and ",
-        x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
-        ":\n", sep="")
+    cat(summary(x), ":\n", sep="")
     ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
     ## and tail() work on 'xx'.
     if (coerce.internally.to.GRanges) {
@@ -731,7 +737,7 @@ show_GenomicRanges <- function(x, margin="",
             strand="Rle"
         )
         extraColumnNames <- extraColumnSlotNames(x)
-        .COL2CLASS <- c(.COL2CLASS, getSlots(x_class)[extraColumnNames])
+        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extraColumnNames])
         classinfo <-
             S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!

@@ -70,7 +70,9 @@
 \alias{$,GenomicRanges-method}
 \alias{$<-,GenomicRanges-method}
 
-% "show" method:
+% displaying:
+\alias{summary.GenomicRanges}
+\alias{summary,GenomicRanges-method}
 \alias{show,GenomicRanges-method}
 
 \title{GRanges objects}

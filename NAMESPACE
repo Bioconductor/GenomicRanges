@@ -3,6 +3,7 @@ useDynLib(GenomicRanges)
 import(methods)
 import(utils)  # for as.roman()
 importFrom(stats, setNames)
+importFrom(stats4, summary)
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
@@ -35,13 +36,17 @@ S3method(duplicated, GenomicRanges)
 
 S3method(sort, GenomicRanges)
 
+S3method(summary, GenomicRanges)
+
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
 ### and (c) methods() doesn't asterisk them.
 export(
     duplicated.GenomicRanges,
 
-    sort.GenomicRanges
+    sort.GenomicRanges,
+
+    summary.GenomicRanges
 )
 
 
@@ -58,16 +63,21 @@ exportMethods(
     coerce,
     c,
     show,
-    duplicated, match,
-    is.unsorted, order, sort, rank,
-    union, intersect, setdiff,
-    start, "start<-", end, "end<-", width, "width<-",
     split, unlist,
     range,
     Ops,
     merge,
-    updateObject,
+
+    ## Generics defined in the stats4 package:
+    summary,
+
+    ## Generics defined in the BiocGenerics package:
+    duplicated, match,
+    is.unsorted, order, sort, rank,
+    union, intersect, setdiff,
+    start, "start<-", end, "end<-", width, "width<-",
     strand, "strand<-", invertStrand,
+    updateObject,
 
     ## Generics defined in S4Vectors:
     selfmatch,
