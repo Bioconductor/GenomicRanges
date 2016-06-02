@@ -70,7 +70,7 @@ setValidity2("GRanges", .valid.GRanges)
     } else {
         x_strand <- strand
     }
-    if (is.null(mcols) || length(mcols) == 0L) {
+    if (length(mcols) == 0L) {
         x_mcols <- mcols(x)
     } else {
         x_mcols <- mcols
@@ -153,7 +153,7 @@ new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
         mcols(ranges) <- NULL
 
     ## Normalize 'mcols'.
-    if (is.null(mcols) || length(mcols) == 0L) {
+    if (length(mcols) == 0L) {
         mcols <- ranges_mcols
         if (is.null(mcols))
             mcols <- DataFrame()
