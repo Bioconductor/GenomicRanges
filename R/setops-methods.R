@@ -6,8 +6,25 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### 2 low-level helper functions.
+### 3 low-level helper functions.
 ###
+
+### A fast implementation of 'mendoapply(FUN, x, y)' for GRangesList objects.
+### Assume 'x' and 'y' are 2 GRangesList objects (not checked) of the same
+### length (checked).
+.fast_binary_mendoapply <- function(FUN, x, y, ...)
+{
+    FUN <- match.fun(FUN)
+    if (length(x) != length(y))
+        stop("'x' and 'y' must have the same length")
+    seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
+    seqlevels(y) <- seqlevels(x)
+    xgr <- deconstructGRLintoGR(x, expand.levels=TRUE)
+    ygr <- deconstructGRLintoGR(y, expand.levels=TRUE)
+    gr <- FUN(xgr, ygr, ...)
+    reconstructGRLfromGR(gr, x)
+}
+
 ### Both return a named integer vector where the names are guaranteed to be
 ### 'seqlevels(x)'.
 ###
@@ -78,19 +95,8 @@ setMethod("union", c("GenomicRanges", "GenomicRanges"),
 setMethod("union", c("GenomicRanges", "Vector"), .unsupported_union)
 setMethod("union", c("Vector", "GenomicRanges"), .unsupported_union)
 
-### Equivalent to 'mendoapply(union, x, y)'.
 setMethod("union", c("GRangesList", "GRangesList"),
-    function(x, y, ...)
-    {
-        if (length(x) != length(y))
-            stop("'x' and 'y' must have the same length")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqlevels(y) <- seqlevels(x)
-        xgr <- deconstructGRLintoGR(x)
-        ygr <- deconstructGRLintoGR(y)
-        gr <- callGeneric(xgr, ygr, ...)
-        reconstructGRLfromGR(gr, x)
-    }
+    function(x, y, ...) .fast_binary_mendoapply("union", x, y, ...)
 )
 
 ### Always return a GRanges *instance* whatever GenomicRanges derivatives are
@@ -125,19 +131,8 @@ setMethod("intersect", c("GenomicRanges", "GenomicRanges"),
 setMethod("intersect", c("GenomicRanges", "Vector"), .unsupported_intersect)
 setMethod("intersect", c("Vector", "GenomicRanges"), .unsupported_intersect)
 
-### Equivalent to 'mendoapply(intersect, x, y)'.
 setMethod("intersect", c("GRangesList", "GRangesList"),
-    function(x, y, ...)
-    {
-        if (length(x) != length(y))
-            stop("'x' and 'y' must have the same length")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqlevels(y) <- seqlevels(x)
-        xgr <- deconstructGRLintoGR(x)
-        ygr <- deconstructGRLintoGR(y)
-        gr <- callGeneric(xgr, ygr, ...)
-        reconstructGRLfromGR(gr, x)
-    }
+    function(x, y, ...) .fast_binary_mendoapply("intersect", x, y, ...)
 )
 
 ### Always return a GRanges *instance* whatever GenomicRanges derivatives are
@@ -172,19 +167,8 @@ setMethod("setdiff", c("GenomicRanges", "GenomicRanges"),
 setMethod("setdiff", c("GenomicRanges", "Vector"), .unsupported_setdiff)
 setMethod("setdiff", c("Vector", "GenomicRanges"), .unsupported_setdiff)
 
-### Equivalent to 'mendoapply(setdiff, x, y)'.
 setMethod("setdiff", c("GRangesList", "GRangesList"),
-    function(x, y, ...)
-    {
-        if (length(x) != length(y))
-            stop("'x' and 'y' must have the same length")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
-        seqlevels(y) <- seqlevels(x)
-        xgr <- deconstructGRLintoGR(x)
-        ygr <- deconstructGRLintoGR(y)
-        gr <- callGeneric(xgr, ygr, ...)
-        reconstructGRLfromGR(gr, x)
-    }
+    function(x, y, ...) .fast_binary_mendoapply("setdiff", x, y, ...)
 )
 
 
