@@ -26,21 +26,6 @@ test_GRangesList_construction <- function() {
 }
 
 test_GRangesList_coercion <- function() {
-    ## RangedDataList -> GRangesList
-    rd <-
-      RangedData(space = c(1,1,2),
-                 ranges = IRanges(1:3,4:6, names = head(letters,3)),
-                 strand = strand(c("+", "-", "*")),
-                 score = c(10L,2L,NA))
-    rdl <- RangedDataList(a = rd, b = rd)
-    gr <-
-      GRanges(seqnames = c(1,1,2),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)),
-              strand = strand(c("+", "-", "*")),
-              score = c(10L,2L,NA))
-    grl <- GRangesList(a = gr, b = gr)
-    checkIdentical(as(rdl, "GRangesList"), grl)
-
     ## as.data.frame
     gr1 <-
       GRanges(seqnames = c(1,1,2),

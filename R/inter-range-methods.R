@@ -22,7 +22,7 @@
 
 ### 'rgl2' and 'rgl' must be List objects (typically RangesList or GRangesList)
 ### of the same length, both with a "revmap" inner metadata column.
-.fix_revmap_inner_mcol <- function(rgl2, rgl)
+.fix_inner_revmap_mcol <- function(rgl2, rgl)
 {
     unlisted_rgl2 <- unlist(rgl2, use.names=FALSE)
     unlisted_revmap2 <- mcols(unlisted_rgl2)$revmap
@@ -174,7 +174,7 @@ setMethod("reduce", "GenomicRanges",
                                  min.gapwidth=min.gapwidth,
                                  with.revmap=with.revmap)
         if (with.revmap)
-            rgl2 <- .fix_revmap_inner_mcol(rgl2, rgl)
+            rgl2 <- .fix_inner_revmap_mcol(rgl2, rgl)
         reconstructGRfromRGL(rgl2, x)
     }
 )

@@ -2,16 +2,22 @@
 \alias{setops-methods}
 
 \alias{union}
-\alias{union,GRanges,GRanges-method}
+\alias{union,GenomicRanges,GenomicRanges-method}
 \alias{union,GRangesList,GRangesList-method}
+\alias{union,GenomicRanges,Vector-method}
+\alias{union,Vector,GenomicRanges-method}
 
 \alias{intersect}
-\alias{intersect,GRanges,GRanges-method}
+\alias{intersect,GenomicRanges,GenomicRanges-method}
 \alias{intersect,GRangesList,GRangesList-method}
+\alias{intersect,GenomicRanges,Vector-method}
+\alias{intersect,Vector,GenomicRanges-method}
 
 \alias{setdiff}
-\alias{setdiff,GRanges,GRanges-method}
+\alias{setdiff,GenomicRanges,GenomicRanges-method}
 \alias{setdiff,GRangesList,GRangesList-method}
+\alias{setdiff,GenomicRanges,Vector-method}
+\alias{setdiff,Vector,GenomicRanges-method}
 
 \alias{punion}
 \alias{punion,GRanges,GRanges-method}

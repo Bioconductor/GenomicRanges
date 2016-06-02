@@ -55,17 +55,28 @@
 ### union(), intersect(), setdiff()
 ###
 
-setMethod("union", c("GRanges", "GRanges"),
+### Always return a GRanges *instance* whatever GenomicRanges derivatives are
+### passed to it (e.g. GNCList or GPos), so does NOT act like an endomorphism
+### in general.
+setMethod("union", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
+        x <- granges(x)
+        y <- granges(y)
         if (ignore.strand)
             strand(x) <- strand(y) <- "*"
-        mcols(x) <- mcols(y) <- NULL  # so we can do 'c(x, y)' below
         reduce(c(x, y), drop.empty.ranges=TRUE)
     }
 )
+
+.unsupported_union <- function(x, y)
+    stop("union() between a ", class(x), " and a ", class(y), " object ",
+         "is not supported")
+
+setMethod("union", c("GenomicRanges", "Vector"), .unsupported_union)
+setMethod("union", c("Vector", "GenomicRanges"), .unsupported_union)
 
 ### Equivalent to 'mendoapply(union, x, y)'.
 setMethod("union", c("GRangesList", "GRangesList"),
@@ -82,14 +93,18 @@ setMethod("union", c("GRangesList", "GRangesList"),
     }
 )
 
-setMethod("intersect", c("GRanges", "GRanges"),
+### Always return a GRanges *instance* whatever GenomicRanges derivatives are
+### passed to it (e.g. GNCList or GPos), so does NOT act like an endomorphism
+### in general.
+setMethod("intersect", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
+        x <- granges(x)
+        y <- granges(y)
         if (ignore.strand)
             strand(x) <- strand(y) <- "*"
-        mcols(x) <- mcols(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
         ## it twice.
@@ -102,6 +117,13 @@ setMethod("intersect", c("GRanges", "GRanges"),
         setdiff(x, gaps(y, end=seqlengths))
     }
 )
+
+.unsupported_intersect <- function(x, y)
+    stop("intersect() between a ", class(x), " and a ", class(y), " object ",
+         "is not supported")
+
+setMethod("intersect", c("GenomicRanges", "Vector"), .unsupported_intersect)
+setMethod("intersect", c("Vector", "GenomicRanges"), .unsupported_intersect)
 
 ### Equivalent to 'mendoapply(intersect, x, y)'.
 setMethod("intersect", c("GRangesList", "GRangesList"),
@@ -118,14 +140,18 @@ setMethod("intersect", c("GRangesList", "GRangesList"),
     }
 )
 
-setMethod("setdiff", c("GRanges", "GRanges"),
+### Always return a GRanges *instance* whatever GenomicRanges derivatives are
+### passed to it (e.g. GNCList or GPos), so does NOT act like an endomorphism
+### in general.
+setMethod("setdiff", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
+        x <- granges(x)
+        y <- granges(y)
         if (ignore.strand)
             strand(x) <- strand(y) <- "*"
-        mcols(x) <- mcols(y) <- NULL
         seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
         ## If merge() is going to issue a warning, we don't want to get
         ## it twice.
@@ -138,6 +164,13 @@ setMethod("setdiff", c("GRanges", "GRanges"),
         gaps(union(gaps(x, end=seqlengths), y), end=seqlengths)
     }
 )
+
+.unsupported_setdiff <- function(x, y)
+    stop("setdiff() between a ", class(x), " and a ", class(y), " object ",
+         "is not supported")
+
+setMethod("setdiff", c("GenomicRanges", "Vector"), .unsupported_setdiff)
+setMethod("setdiff", c("Vector", "GenomicRanges"), .unsupported_setdiff)
 
 ### Equivalent to 'mendoapply(setdiff, x, y)'.
 setMethod("setdiff", c("GRangesList", "GRangesList"),
