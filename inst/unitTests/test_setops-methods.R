@@ -92,7 +92,7 @@ test_setdiff <- function()
     checkException(setdiff(gr, grlist), silent = TRUE)
     checkException(setdiff(grlist, gr), silent = TRUE)
 
-    expect <- GRanges(seqnames(gr)[integer(0)], seqlengths = seqlengths(gr))
+    expect <- GRanges(seqlengths=seqlengths(gr))
     checkIdentical(setdiff(gr, gr), expect)
 
     checkIdentical(setdiff(grlist[[1]], grlist[[2]]), reduce(grlist[[1]]))

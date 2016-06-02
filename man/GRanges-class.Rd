@@ -107,21 +107,21 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{GRanges(seqnames=Rle(), ranges=NULL, strand=NULL,
-                    ...,
-                    seqlengths=NULL, seqinfo=NULL)}:
+      \code{GRanges(seqnames=NULL, ranges=NULL, strand=NULL,
+                    ..., seqlengths=NULL, seqinfo=NULL)}:
       Creates a GRanges object.
       \describe{
         \item{\code{seqnames}}{
-          An \link[S4Vectors]{Rle} object, character vector, or factor
-          containing the sequence names.
+          \code{NULL}, or an \link[S4Vectors]{Rle} object, character vector,
+          or factor containing the sequence names.
         }
         \item{\code{ranges}}{
-          An \link[IRanges]{IRanges} object containing the ranges.
+          \code{NULL}, or an \link[IRanges]{IRanges} object containing the
+          ranges.
         }
         \item{\code{strand}}{
-          \link[S4Vectors]{Rle} object, character vector, or factor
-          containing the strand information.
+          \code{NULL}, or an \link[S4Vectors]{Rle} object, character vector,
+          or factor containing the strand information.
         }
         \item{\code{...}}{
           Optional metadata columns. These columns cannot be named
@@ -129,13 +129,14 @@
           \code{"element"}.
         }
         \item{\code{seqlengths}}{
-          An integer vector named with \code{levels(seqnames)} and containing
-          the lengths (or NA) for each level in \code{levels(seqnames)}.
+          \code{NULL}, or an integer vector named with \code{levels(seqnames)}
+          and containing the lengths (or NA) for each level in
+          \code{levels(seqnames)}.
         }
         \item{\code{seqinfo}}{
-          A \link[GenomeInfoDb]{Seqinfo} object containing allowed
-          sequence names, lengths (or NA), and circularity flag, for each
-          level in \code{levels(seqnames)}.
+          \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object containing
+          allowed sequence names, lengths (or NA), and circularity flag,
+          for each level in \code{levels(seqnames)}.
         }
       }
       If \code{ranges} is not supplied and/or NULL then the constructor
@@ -147,7 +148,7 @@
               non-NULL remaining arguments were passed to the call to
               \code{GRanges()}.
       }
-      Because of this behavior, \code{GRanges(x)} is equivalent to
+      As a consequence of this behavior, \code{GRanges(x)} is equivalent to
       \code{as(x, "GRanges")}.
     }
   }

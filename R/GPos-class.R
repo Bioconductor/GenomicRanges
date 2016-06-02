@@ -119,8 +119,8 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
     ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(start_idx))
     ans_seqinfo <- seqinfo(x)
 
-    ## To be as fast as possible, we don't use internal constructor
-    ## newGRanges() and we don't check the new object.
+    ## To be as fast as possible, we don't use internal low-level constructor
+    ## new_GRanges() and we don't check the new object.
     new2("GRanges", seqnames=ans_seqnames,
                     ranges=ans_ranges,
                     strand=ans_strand,

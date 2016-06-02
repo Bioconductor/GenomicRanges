@@ -62,53 +62,57 @@ setValidity2("GRanges", .valid.GRanges)
 ### Constructor
 ###
 
-### Hidden constructor shared with other GRanges-like objects.
-newGRanges <- function(class,
-                       seqnames=Rle(), ranges=NULL, strand=NULL,
-                       mcols=DataFrame(),
-                       seqlengths=NULL, seqinfo=NULL)
+.set_strand_mcols_seqinfo <- function(x, strand=NULL, mcols=NULL,
+                                         seqlengths=NULL, seqinfo=NULL)
+{
+    if (is.null(strand)) {
+        x_strand <- strand(x)
+    } else {
+        x_strand <- strand
+    }
+    if (is.null(mcols) || length(mcols) == 0L) {
+        x_mcols <- mcols(x)
+    } else {
+        x_mcols <- mcols
+    }
+    if (is.null(seqlengths)) {
+        x_seqlengths <- seqlengths(x)
+    } else {
+        x_seqlengths <- seqlengths
+    }
+    if (is.null(seqinfo)) {
+        x_seqinfo <- seqinfo(x)
+    } else {
+        x_seqinfo <- seqinfo
+    }
+    new_GRanges(class(x), seqnames(x), ranges(x), x_strand,
+                          x_mcols, x_seqlengths, x_seqinfo)
+}
+
+### Internal low-level constructor. Shared with other GRanges-like objects.
+new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
+                               mcols=NULL, seqlengths=NULL, seqinfo=NULL)
 {
     if (is.null(ranges)) {
-        if (length(seqnames) != 0L) {
-            ans <- as(seqnames, class)
-            ans_seqnames <- seqnames(ans)
-            ans_ranges <- ranges(ans)
-            if (is.null(strand)) {
-                ans_strand <- strand(ans)
-            } else {
-                ans_strand <- strand
-            }
-            if (ncol(mcols) == 0L) {
-                ans_mcols <- mcols(ans)
-            } else {
-                ans_mcols <- mcols
-            }
-            if (is.null(seqlengths)) {
-                ans_seqlengths <- seqlengths(ans)
-            } else {
-                ans_seqlengths <- seqlengths
-            }
-            if (is.null(seqinfo)) {
-                ans_seqinfo <- seqinfo(ans)
-            } else {
-                ans_seqinfo <- seqinfo
-            }
-            ans <- newGRanges(class,
-                              ans_seqnames, ans_ranges, ans_strand,
-                              ans_mcols,
-                              ans_seqlengths, ans_seqinfo)
-            return(ans)
+        if (!is.null(seqnames)) {
+            x <- as(seqnames, Class)
+            return(.set_strand_mcols_seqinfo(x, strand, mcols,
+                                                seqlengths, seqinfo))
         }
         ranges <- IRanges()
-    } else if (class(ranges) != "IRanges") {
+    } else {
         ranges <- as(ranges, "IRanges")
     }
 
-    if (!is(seqnames, "Rle"))
-        seqnames <- Rle(seqnames)
-    if (!is.factor(runValue(seqnames))) 
-        runValue(seqnames) <- factor(runValue(seqnames),
-                                     levels=unique(runValue(seqnames)))
+    if (is.null(seqnames)) {
+        seqnames <- Rle()
+    } else {
+        if (!is(seqnames, "Rle"))
+            seqnames <- Rle(seqnames)
+        if (!is.factor(runValue(seqnames))) 
+            runValue(seqnames) <- factor(runValue(seqnames),
+                                         levels=unique(runValue(seqnames)))
+    }
 
     if (is.null(strand)) {
         strand <- Rle(strand("*"), length(seqnames))
@@ -144,31 +148,46 @@ newGRanges <- function(class,
     ## in case we have seqlengths for unrepresented sequences
     runValue(seqnames) <- factor(runValue(seqnames), levels=seqnames(seqinfo))
 
-    if (!is(mcols, "DataFrame"))  # should never happen when calling GRanges()
-        stop("'mcols' must be a DataFrame object")
-    if (ncol(mcols) == 0L) {
-        mcols <- mcols(ranges)
-        if (is.null(mcols))
-            mcols <- S4Vectors:::make_zero_col_DataFrame(length(seqnames))
-    }
-    if (!is.null(mcols(ranges)))
+    ranges_mcols <- mcols(ranges)
+    if (!is.null(ranges_mcols))
         mcols(ranges) <- NULL
-    if (!is.null(rownames(mcols))) {
+
+    ## Normalize 'mcols'.
+    if (is.null(mcols) || length(mcols) == 0L) {
+        mcols <- ranges_mcols
+        if (is.null(mcols))
+            mcols <- DataFrame()
+    } else if (!is(mcols, "DataFrame")) {
+        stop("'mcols' must be a DataFrame object")
+    }
+    if (nrow(mcols) == 0L && ncol(mcols) == 0L) {
+        mcols <- S4Vectors:::make_zero_col_DataFrame(length(ranges))
+    } else if (!is.null(rownames(mcols))) {
         if (is.null(names(ranges)))
             names(ranges) <- rownames(mcols)
         rownames(mcols) <- NULL
     }
-    new(class, seqnames = seqnames, ranges = ranges, strand = strand,
-        seqinfo = seqinfo, elementMetadata = mcols)
+
+    new(Class, seqnames=seqnames, ranges=ranges, strand=strand,
+               elementMetadata=mcols, seqinfo=seqinfo)
 }
 
-GRanges <- function(seqnames=Rle(), ranges=NULL, strand=NULL,
-                    ...,
-                    seqlengths=NULL, seqinfo=NULL)
+GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
+                    ..., seqlengths=NULL, seqinfo=NULL)
 {
-    newGRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
-                          mcols=DataFrame(..., check.names=FALSE),
-                          seqlengths=seqlengths, seqinfo=seqinfo)
+    mcols <- DataFrame(..., check.names=FALSE)
+    ## Work around the following bug in DataFrame(..., check.names=FALSE):
+    ##   df0 <- data.frame(aa=11)[0]
+    ##   DF0 <- DataFrame(df0, check.names=FALSE)
+    ##   names(df0)        # character(0)
+    ##   names(DF0)        # NULL
+    ##   validObject(DF0)  # TRUE
+    ## Reported to Michael on June 2, 2016.
+    if (is.null(names(mcols)))
+        names(mcols) <- character(0)
+
+    new_GRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
+                           mcols=mcols, seqlengths=seqlengths, seqinfo=seqinfo)
 }
 
 setMethod("updateObject", "GRanges",
