@@ -291,7 +291,7 @@ coverage(g)
 \subsection{Interval set operations for \Rclass{GRanges} objects}
 
 There are also operations for calculating relationships between
-different \Rclass{GRanges} objects. Here are a some examples for
+different \Rclass{GRanges} objects. Here are some examples for
 how you can calculate the \Rmethod{union}, the \Rmethod{intersect}
 and the asymmetric difference (using \Rmethod{setdiff}).
 
