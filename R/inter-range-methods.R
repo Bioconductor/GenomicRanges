@@ -229,14 +229,18 @@ setMethod("gaps", "GenomicRanges",
 ### Always return a GRanges *instance* whatever GenomicRanges derivative the
 ### input is, so does NOT act like an endomorphism in general. 
 setMethod("disjoin", "GenomicRanges",
-    function(x, ignore.strand=FALSE)
+    function(x, with.revmap=FALSE, ignore.strand=FALSE)
     {
-        rgl <- deconstructGRintoRGL(x, ignore.strand=ignore.strand, drop=TRUE)
-        rgl2 <- callGeneric(rgl)
+        rgl <- deconstructGRintoRGL(x, with.revmap=with.revmap, 
+                                    ignore.strand=ignore.strand, drop=TRUE)
+        rgl2 <- callGeneric(rgl, with.revmap=with.revmap)
+        if (with.revmap)
+            rgl2 <- .fix_inner_revmap_mcol(rgl2, rgl)
         reconstructGRfromRGL(rgl2, x)
     }
 )
 
+## ### TODO: Support the 'with.revmap' argument.
 setMethod("disjoin", "GRangesList",
     function(x, ignore.strand=FALSE)
     {
@@ -258,7 +262,6 @@ setMethod("isDisjoint", "GenomicRanges",
         all(callGeneric(rgl))
     }
 )
-
 ### Overwrite above method with optimized method for GPos objects.
 setMethod("isDisjoint", "GPos",
     function(x, ignore.strand=FALSE) callGeneric(x@pos_runs, ignore.strand)

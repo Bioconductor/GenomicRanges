@@ -50,5 +50,12 @@ test_GenomicRanges_inter_interval_ops <- function()
                                             end=c(10, 10, 10, 2, 10, 10, 7, 10, 9, 10)),
                            strand =
                            strand(c("+", "-", "*", "+", "+", "*", "+", "+", "-", "-"))))
+
+    gr1 <- GRanges(Rle(c("chr1", "chr3"), c(2, 2)), 
+                   IRanges(c(8, 6, 8, 6),c(11, 15, 11, 15), names=c("k", "l", "m", "n")),
+                   Rle(strand(c("-", "-", "+", "*"))), 
+                   score=11:14, GC=c(.2, .3, .3, .1))
+    dgr <- disjoin(gr1, with.revmap=TRUE)
+    checkIdentical(unlist(mcols(dgr)$revmap), c(2L, 1L, 2L, 2L, 3L, 4L))
 }
 

@@ -56,7 +56,7 @@
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
-\S4method{disjoin}{GenomicRanges}(x, ignore.strand=FALSE)
+\S4method{disjoin}{GenomicRanges}(x, with.revmap=FALSE, ignore.strand=FALSE)
 \S4method{disjoin}{GRangesList}(x, ignore.strand=FALSE)
 
 \S4method{isDisjoint}{GenomicRanges}(x, ignore.strand=FALSE)
@@ -237,6 +237,8 @@ gaps(gr, start=1, end=10)
 ## disjoin(), isDisjoint(), disjointBins()
 ## ---------------------------------------------------------------------
 disjoin(gr)
+disjoin(gr, with.revmap=TRUE)
+disjoin(gr, with.revmap=TRUE, ignore.strand=TRUE)
 isDisjoint(gr)
 stopifnot(isDisjoint(disjoin(gr)))
 disjointBins(gr)
