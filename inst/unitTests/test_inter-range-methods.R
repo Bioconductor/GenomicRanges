@@ -59,3 +59,18 @@ test_GenomicRanges_inter_interval_ops <- function()
     checkIdentical(unlist(mcols(dgr)$revmap), c(2L, 1L, 2L, 2L, 3L, 4L))
 }
 
+test_GRangesList_disjoin <- function()
+{
+    gr1 <- GRangesList(GRanges("1", IRanges(1, 10)), GRanges())
+    checkIdentical(disjoin(gr1, with.revmap=TRUE), 
+                   endoapply(gr1, disjoin, with.revmap=TRUE))
+
+    grl = GRangesList(unname(make_test_GRanges())[ , character(0)], 
+                      GRanges(Rle(c("chr1", "chr3"), c(2, 2)), 
+                              IRanges(c(8,6,8,6),c(11,15,11,15), 
+                              names=c("k","l","m","n")),
+                              Rle(strand(c("-", "-","+","*")))))
+
+    checkIdentical(disjoin(grl, with.revmap=TRUE), 
+                   endoapply(grl, disjoin, with.revmap=TRUE))
+}

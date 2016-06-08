@@ -56,8 +56,8 @@
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
-\S4method{disjoin}{GenomicRanges}(x, with.revmap=FALSE, ignore.strand=FALSE)
-\S4method{disjoin}{GRangesList}(x, ignore.strand=FALSE)
+\S4method{disjoin}{GenomicRanges}(x, ignore.strand=FALSE, with.revmap=FALSE)
+\S4method{disjoin}{GRangesList}(x, ignore.strand=FALSE, with.revmap=FALSE)
 
 \S4method{isDisjoint}{GenomicRanges}(x, ignore.strand=FALSE)
 \S4method{isDisjoint}{GRangesList}(x, ignore.strand=FALSE)
@@ -107,7 +107,9 @@
     \code{disjoin} returns an object of the same type as \code{x}
     containing disjoint ranges for each distinct (seqname, strand) pairing.
     The names (\code{names(x)}) and the metadata columns in \code{x} are
-    dropped.
+    dropped. If \code{with.revmap=TRUE}, a metadata column that maps from 
+    reduced to original ranges is included. See \code{?\link[IRanges]{disjoin}} 
+    for more information. 
 
     \code{isDisjoint} returns a logical value indicating whether the ranges
     in \code{x} are disjoint (i.e. non-overlapping).
@@ -243,6 +245,11 @@ isDisjoint(gr)
 stopifnot(isDisjoint(disjoin(gr)))
 disjointBins(gr)
 stopifnot(all(sapply(split(gr, disjointBins(gr)), isDisjoint)))
+
+## On a GRangesList object:
+disjoin(grl) # Doesn't really disjoin anything but note the reordering
+disjoin(grl, with.revmap=TRUE)
+
 }
  
 \keyword{utilities}
