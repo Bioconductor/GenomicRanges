@@ -1,76 +1,129 @@
-make_test_GRanges <- function() {
-    new("GRanges",
-        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
-        ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
-        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-        elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
-}
+make_test_GRanges <- function()
+    GRanges(Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
+            IRanges(1:10, width=10:1, names=head(letters, 10)),
+            Rle(c("-", "+", "*", "+", "-"), c(1, 2, 2, 3, 2)),
+            score=1:10, GC=seq(1, 0, length=10),
+            seqinfo=Seqinfo(paste("chr", 1:3, sep="")))
 
-test_GenomicRanges_inter_interval_ops <- function()
+test_range_GenomicRanges <- function()
 {
-    ## gaps
-    gr <- unname(make_test_GRanges())[ , character(0)]
-    checkIdentical(gaps(gr, start = 1, end = 10),
-                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(2, 3, 3)),
-                           ranges = IRanges(start=1,
-                                            end=c(5, 4, 1, 10, 3, 6, 8, 10)),
-                           strand =
-                           strand(c("+", "*", "+", "-", "*", "+", "-", "*"))))
+    gr <- make_test_GRanges()
+    current <- range(gr)
+    target <- GRanges(Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
+                      IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
+                      c("+", "-", "*", "+", "*", "+", "-"))
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical(target, current)
 
-    ## range
-    gr <- unname(make_test_GRanges())[ , character(0)]
-    checkIdentical(range(gr),
-                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
-                           ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
-                           strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
-    checkTrue(validObject(range(gr)))
-    ans <- range(gr, ignore.strand=TRUE)
-    exp <- GRanges(c("chr1", "chr2", "chr3"),
-                   IRanges(start=c(1, 2, 7), end=10),
-                   strand = strand(c("*", "*", "*")))
-    checkIdentical(ans, exp)
-    checkTrue(validObject(ans))
-    grl <- GRangesList(gr, gr)
-    ans <- range(grl, ignore.strand=TRUE)
-    checkIdentical(ans, GRangesList(exp, exp))
-
-    ## reduce
-    gr <- unname(make_test_GRanges())[ , character(0)]
-    checkIdentical(reduce(gr),
-                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
-                           ranges = IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
-                           strand = strand(c("+", "-", "*", "+", "*", "+", "-"))))
-
-    ## disjoin
-    gr <- unname(make_test_GRanges())[ , character(0)]
-    checkIdentical(disjoin(gr),
-                   GRanges(seqnames = Rle(c("chr1", "chr2", "chr3"), c(3, 3, 4)),
-                           ranges = IRanges(start=c(6, 1, 5, 2, 3, 4, 7, 8, 9, 10),
-                                            end=c(10, 10, 10, 2, 10, 10, 7, 10, 9, 10)),
-                           strand =
-                           strand(c("+", "-", "*", "+", "+", "*", "+", "+", "-", "-"))))
-
-    gr1 <- GRanges(Rle(c("chr1", "chr3"), c(2, 2)), 
-                   IRanges(c(8, 6, 8, 6),c(11, 15, 11, 15), names=c("k", "l", "m", "n")),
-                   Rle(strand(c("-", "-", "+", "*"))), 
-                   score=11:14, GC=c(.2, .3, .3, .1))
-    dgr <- disjoin(gr1, with.revmap=TRUE)
-    checkIdentical(unlist(mcols(dgr)$revmap), c(2L, 1L, 2L, 2L, 3L, 4L))
+    current <- range(gr, ignore.strand=TRUE)
+    target <- GRanges(c("chr1", "chr2", "chr3"),
+                      IRanges(start=c(1, 2, 7), end=10),
+                      c("*", "*", "*"))
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical(target, current)
 }
 
-test_GRangesList_disjoin <- function()
+test_range_GRangesList <- function()
 {
-    gr1 <- GRangesList(GRanges("1", IRanges(1, 10)), GRanges())
-    checkIdentical(disjoin(gr1, with.revmap=TRUE), 
-                   endoapply(gr1, disjoin, with.revmap=TRUE))
-
-    grl = GRangesList(unname(make_test_GRanges())[ , character(0)], 
-                      GRanges(Rle(c("chr1", "chr3"), c(2, 2)), 
-                              IRanges(c(8,6,8,6),c(11,15,11,15), 
-                              names=c("k","l","m","n")),
-                              Rle(strand(c("-", "-","+","*")))))
-
-    checkIdentical(disjoin(grl, with.revmap=TRUE), 
-                   endoapply(grl, disjoin, with.revmap=TRUE))
+    gr <- make_test_GRanges()
+    grl <- GRangesList(gr, shift(rev(gr), 5 * seq_along(gr)))
+    for (ignore.strand in c(FALSE, TRUE)) {
+        current <- range(grl, ignore.strand=TRUE)
+        target <- endoapply(grl, range, ignore.strand=TRUE)
+        checkTrue(validObject(current, complete=TRUE))
+        checkIdentical(target, current)
+    }
 }
+
+test_reduce_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+    current <- reduce(gr)
+    target <- GRanges(Rle(c("chr1", "chr2", "chr3"), c(3, 2, 2)),
+                      IRanges(start=c(6, 1, 5, 2, 4, 7, 9), end=10),
+                      c("+", "-", "*", "+", "*", "+", "-"))
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical(target, current)
+
+    current <- reduce(gr, with.revmap=TRUE)
+    mcols(target)$revmap <- IntegerList(6, 1, 5, 2:3, 4, 7:8, 9:10)
+    checkIdentical(target, current)
+}
+
+test_reduce_GRangesList <- function()
+{
+    gr <- make_test_GRanges()
+    grl <- GRangesList(gr, shift(rev(gr), 5 * seq_along(gr)))
+    for (with.revmap in c(FALSE, TRUE)) {
+        for (ignore.strand in c(FALSE, TRUE)) {
+            current <- reduce(grl, with.revmap=with.revmap,
+                                   ignore.strand=ignore.strand)
+            target <- endoapply(grl, reduce, with.revmap=with.revmap,
+                                             ignore.strand=ignore.strand)
+            checkTrue(validObject(current, complete=TRUE))
+            checkIdentical(target, current)
+        }
+    }
+}
+
+test_gaps_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+    current <- gaps(gr, start=1, end=10)
+    target <- GRanges(Rle(c("chr1", "chr2", "chr3"), c(2, 3, 3)),
+                      IRanges(start=1, end=c(5, 4, 1, 10, 3, 6, 8, 10)),
+                      c("+", "*", "+", "-", "*", "+", "-", "*"))
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical(target, current)
+}
+
+test_disjoin_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+    current <- disjoin(gr)
+    target <- GRanges(Rle(c("chr1", "chr2", "chr3"), c(3, 3, 4)),
+                      IRanges(start=c(6, 1, 5, 2, 3, 4, 7, 8, 9, 10),
+                              end=c(10, 10, 10, 2, 10, 10, 7, 10, 9, 10)),
+                      c("+", "-", "*", "+", "+", "*", "+", "+", "-", "-"))
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical(target, current)
+
+    gr <- GRanges(Rle(c("chr1", "chr3"), c(2, 2)), 
+                  IRanges(c(8, 6, 8, 6), c(11, 15, 11, 15),
+                          names=c("k", "l", "m", "n")),
+                  c("-", "-", "+", "*"), 
+                  score=11:14, GC=c(.2, .3, .3, .1))
+    current <- disjoin(gr)
+    target <- GRanges(Rle(c("chr1", "chr3"), c(3, 2)),
+                      IRanges(c(6, 8, 12, 8, 6), c(7, 11, 15, 11, 15)),
+                      Rle(c("-", "+", "*"), c(3, 1, 1)))
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical(target, current)
+
+    current <- disjoin(gr, with.revmap=TRUE)
+    mcols(target)$revmap <- IntegerList(2, 1:2, 2, 3, 4)
+    checkIdentical(target, current)
+}
+
+test_disjoin_GRangesList <- function()
+{
+    grl <- GRangesList(make_test_GRanges(),
+                       GRanges("1", IRanges(1, 10), score=21, GC=.21),
+                       GRanges(),
+                       GRanges(Rle(c("chr1", "chr3"), c(2, 2)),
+                               IRanges(c(8, 6, 8, 6), c(11, 15, 11, 15),
+                                       names=c("k", "l", "m", "n")),
+                               strand(c("-", "-","+","*")),
+                               score=41:44, GC=c(.41, .42, .43, .44)))
+    for (with.revmap in c(FALSE, TRUE)) {
+        for (ignore.strand in c(FALSE, TRUE)) {
+            current <- disjoin(grl, with.revmap=with.revmap,
+                                    ignore.strand=ignore.strand)
+            target <- endoapply(grl, disjoin, with.revmap=with.revmap,
+                                              ignore.strand=ignore.strand)
+            checkTrue(validObject(current, complete=TRUE))
+            checkIdentical(target, current)
+        }
+    }
+}
+

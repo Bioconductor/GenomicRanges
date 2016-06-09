@@ -179,20 +179,30 @@ setMethod("reduce", "GenomicRanges",
     }
 )
 
-### TODO: Support the 'with.revmap' argument.
 setMethod("reduce", "GRangesList",
     function(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
-             with.inframe.attrib=FALSE, ignore.strand=FALSE)
+                with.revmap=FALSE,
+                with.inframe.attrib=FALSE, ignore.strand=FALSE)
     {
         if (!identical(with.inframe.attrib, FALSE)) 
             stop("'with.inframe.attrib' argument is not supported ", 
                  "when reducing a GRangesList object")
         gr <- deconstructGRLintoGR(x)
-        ## "reduce" method for GRanges objects is fast.
         gr2 <- callGeneric(gr, drop.empty.ranges=drop.empty.ranges,
                                min.gapwidth=min.gapwidth,
+                               with.revmap=with.revmap,
                                ignore.strand=ignore.strand)
-        reconstructGRLfromGR(gr2, x)
+        ans <- reconstructGRLfromGR(gr2, x)
+
+        ## Localize 'revmap'.
+        if (with.revmap) {
+            unlisted_ans <- unlist(ans, use.names=FALSE)
+            mcols(unlisted_ans)$revmap <-
+              IRanges:::global2local_revmap(mcols(unlisted_ans)$revmap, ans, x)
+            ans <- relist(unlisted_ans, ans)
+        }
+
+        ans
     }
 )
 
@@ -229,10 +239,10 @@ setMethod("gaps", "GenomicRanges",
 ### Always return a GRanges *instance* whatever GenomicRanges derivative the
 ### input is, so does NOT act like an endomorphism in general. 
 setMethod("disjoin", "GenomicRanges",
-    function(x, ignore.strand=FALSE, with.revmap=FALSE)
+    function(x, with.revmap=FALSE, ignore.strand=FALSE)
     {
         rgl <- deconstructGRintoRGL(x, with.revmap=with.revmap, 
-                                    ignore.strand=ignore.strand, drop=TRUE)
+                                       ignore.strand=ignore.strand, drop=TRUE)
         rgl2 <- callGeneric(rgl, with.revmap=with.revmap)
         if (with.revmap)
             rgl2 <- .fix_inner_revmap_mcol(rgl2, rgl)
@@ -241,19 +251,22 @@ setMethod("disjoin", "GenomicRanges",
 )
 
 setMethod("disjoin", "GRangesList",
-    function(x, ignore.strand=FALSE, with.revmap=FALSE)
+    function(x, with.revmap=FALSE, ignore.strand=FALSE)
     {
         gr <- deconstructGRLintoGR(x)
-        gr2 <- callGeneric(gr, ignore.strand=ignore.strand, 
-                           with.revmap=with.revmap)
-        gr2 <- reconstructGRLfromGR(gr2, x)
-        if (with.revmap){
-            unlisted_ans <- unlist(gr2, use.names=FALSE)
-            mcols(unlisted_ans)$revmap <- IRanges:::global2local_revmap(mcols(
-                                           unlisted_ans)$revmap, gr2, x)
-            gr2 <- relist(unlisted_ans, gr2)
+        gr2 <- callGeneric(gr, with.revmap=with.revmap,
+                               ignore.strand=ignore.strand)
+        ans <- reconstructGRLfromGR(gr2, x)
+
+        ## Localize 'revmap'.
+        if (with.revmap) {
+            unlisted_ans <- unlist(ans, use.names=FALSE)
+            mcols(unlisted_ans)$revmap <-
+              IRanges:::global2local_revmap(mcols(unlisted_ans)$revmap, ans, x)
+            ans <- relist(unlisted_ans, ans)
         }
-        gr2
+
+        ans
     }
 )
 
