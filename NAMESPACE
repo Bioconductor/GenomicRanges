@@ -97,7 +97,7 @@ exportMethods(
     coverage,
     punion, pintersect, psetdiff, pgap,
     precede, follow, nearest, distance, distanceToNearest,
-    tile,
+    tile, slidingWindows,
     subset,
 
     ## Generics defined in GenomeInfoDb:
