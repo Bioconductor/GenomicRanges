@@ -20,10 +20,12 @@ setAs("RleList", "GRanges", function(from) {
   seqlengths(gr) <- elementNROWS(from)
   gr
 })
+setAs("RleList", "GenomicRanges", function(from) as(from, "GRanges"))
 
 setAs("RleViewsList", "GRanges", function(from) {
   as(as(from, "RangedData"), "GRanges")
 })
+setAs("RleViewsList", "GenomicRanges", function(from) as(from, "GRanges"))
 
 ### Represent a collection of named RleList objects as a GRanges with 1
 ### metadata column per RleList object.

@@ -303,6 +303,7 @@ setAs("RangesList", "GRanges",
         metadata(gr) <- metadata(from)
         gr
       })
+setAs("RangesList", "GenomicRanges", function(from) as(from, "GRanges"))
 
 setAs("RangedData", "GRanges",
     function(from)

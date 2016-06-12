@@ -31,6 +31,7 @@
 \alias{coerce,factor,GRanges-method}
 \alias{coerce,factor,GenomicRanges-method}
 \alias{coerce,RangesList,GRanges-method}
+\alias{coerce,RangesList,GenomicRanges-method}
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,Seqinfo,GRanges-method}
 
