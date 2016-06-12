@@ -21,9 +21,6 @@
 \alias{as.data.frame,GenomicRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
 \alias{coerce,GenomicRanges,RangedData-method}
-\alias{coerce,Seqinfo,GenomicRanges-method}
-\alias{coerce,Seqinfo,RangesList-method}
-
 \alias{granges,GenomicRanges-method}
 \alias{coerce,GenomicRanges,GRanges-method}
 \alias{coerce,character,GRanges-method}
@@ -34,6 +31,9 @@
 \alias{coerce,RangesList,GenomicRanges-method}
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,Seqinfo,GRanges-method}
+\alias{coerce,Seqinfo,GenomicRanges-method}
+\alias{coerce,Seqinfo,RangesList-method}
+\alias{coerce,GenomicRanges,Grouping-method}
 
 % Accessors:
 \alias{seqnames,GRanges-method}
@@ -225,6 +225,13 @@
       \code{stringsAsFactors=TRUE/FALSE} argument via \code{\ldots} to
       override the default conversions for the metadata columns in
       \code{mcols(x)}.
+    }
+    \item{}{
+      \code{as(from, "Grouping")}: Creates a
+      \code{\link[IRanges]{ManyToOneGrouping}} object that groups
+      \code{from} by seqname, strand, start and end (same as the default
+      sort order). This makes it convenient, for example, to aggregate a
+      GenomicRanges object by range.
     }
   }
 

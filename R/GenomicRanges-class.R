@@ -249,7 +249,13 @@ setMethod("as.factor", "GenomicRanges",
         factor(as.character(x), levels=as.character(sort(unique(x))))
 )
 
-### TODO: Turn this into an S3/S4 combo for as.data.frame.GenomicRanges
+setAs("GenomicRanges", "Grouping", function(from) {
+    to <- as(grouping(seqnames(from), strand(from), start(from), end(from)),
+             "ManyToOneGrouping")
+    mcols(to)$granges <- granges(from)[end(PartitioningByEnd(to))]
+    to
+})
+
 setMethod("as.data.frame", "GenomicRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
