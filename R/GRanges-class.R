@@ -221,11 +221,14 @@ setMethod("updateObject", "GRanges",
 ###
 
 setMethod("granges", "GenomicRanges",
-    function(x, use.mcols=FALSE)
+    function(x, use.names=TRUE, use.mcols=FALSE)
     {
         if (!isTRUEorFALSE(use.mcols))
             stop("'use.mcols' must be TRUE or FALSE")
-        ans <- GRanges(seqnames(x), ranges(x), strand(x), seqinfo=seqinfo(x))
+        ans <- GRanges(seqnames(x),
+                       ranges(x, use.names=use.names),
+                       strand(x),
+                       seqinfo=seqinfo(x))
         if (use.mcols)
             mcols(ans) <- cbind(extraColumnSlotsAsDF(x), mcols(x))
         ans
@@ -337,11 +340,15 @@ setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
 
 setMethod("seqnames", "GRanges", function(x) x@seqnames)
 setMethod("ranges", "GRanges",
-    function(x, use.mcols=FALSE)
+    function(x, use.names=TRUE, use.mcols=FALSE)
     {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
         if (!isTRUEorFALSE(use.mcols))
             stop("'use.mcols' must be TRUE or FALSE")
         ans <- x@ranges
+        if (!use.names)
+            names(ans) <- NULL
         if (use.mcols)
             mcols(ans) <- mcols(x)
         ans

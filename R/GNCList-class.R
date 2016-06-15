@@ -27,11 +27,15 @@ setClass("GNCList",
 ###
 
 setMethod("granges", "GNCList",
-    function(x, use.mcols=FALSE)
+    function(x, use.names=TRUE, use.mcols=FALSE)
     {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
         if (!isTRUEorFALSE(use.mcols))
             stop("'use.mcols' must be TRUE or FALSE")
         ans <- x@granges
+        if (!use.names)
+            names(ans) <- NULL
         if (use.mcols)
             mcols(ans) <- mcols(x)
         ans
@@ -44,7 +48,11 @@ setMethod("seqnames", "GNCList", function(x) seqnames(granges(x)))
 setMethod("start", "GNCList", function(x, ...) start(granges(x)))
 setMethod("end", "GNCList", function(x, ...) end(granges(x)))
 setMethod("width", "GNCList", function(x) width(granges(x)))
-setMethod("ranges", "GNCList", function(x, use.mcols=FALSE) ranges(granges(x)))
+setMethod("ranges", "GNCList",
+    function(x, use.names=TRUE, use.mcols=FALSE)
+        ranges(granges(x, use.names=use.names, use.mcols=use.mcols),
+               use.names=TRUE, use.mcols=use.mcols)
+)
 setMethod("strand", "GNCList", function(x) strand(granges(x)))
 setMethod("seqinfo", "GNCList", function(x) seqinfo(granges(x)))
 

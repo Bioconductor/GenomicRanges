@@ -43,7 +43,17 @@ setMethod("pos", "GPos", function(x) as.integer(ranges(x@pos_runs)))
 setMethod("start", "GPos", function(x) pos(x))
 setMethod("end", "GPos", function(x) pos(x))
 setMethod("width", "GPos", function(x) rep.int(1L, length(x)))
-setMethod("ranges", "GPos", function(x) IRanges(pos(x), width=1L))
+setMethod("ranges", "GPos",
+    function(x, use.names=TRUE, use.mcols=FALSE)
+    {
+        if (!isTRUEorFALSE(use.mcols))
+            stop("'use.mcols' must be TRUE or FALSE")
+        ans <- IRanges(pos(x), width=1L)
+        if (use.mcols)
+            mcols(ans) <- mcols(x)
+        ans
+    }
+)
 
 setMethod("strand", "GPos",
     function(x) rep.int(strand(x@pos_runs), width(x@pos_runs))

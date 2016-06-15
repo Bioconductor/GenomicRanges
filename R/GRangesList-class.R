@@ -175,8 +175,10 @@ replaceSeqnamesList <- function(x, value)
 setReplaceMethod("seqnames", "GRangesList", replaceSeqnamesList)
 
 setMethod("ranges", "GRangesList",
-    function(x, use.mcols=FALSE)
+    function(x, use.names=TRUE, use.mcols=FALSE)
     {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
         if (!isTRUEorFALSE(use.mcols))
             stop("'use.mcols' must be TRUE or FALSE")
         unlisted_x <- unlist(x, use.names=FALSE)
@@ -184,6 +186,8 @@ setMethod("ranges", "GRangesList",
         if (use.mcols)
             mcols(unlisted_ans) <- mcols(unlisted_x)
         ans <- relist(unlisted_ans, x)
+        if (!use.names)
+            names(ans) <- NULL
         if (use.mcols)
             mcols(ans) <- mcols(x)
         ans
