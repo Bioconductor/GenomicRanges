@@ -26,7 +26,6 @@
 \alias{disjointBins}
 \alias{disjointBins,GenomicRanges-method}
 
-
 \title{Inter range transformations of a GRanges or GRangesList object}
 
 \description{
