@@ -274,7 +274,6 @@ setAs("GenomicRanges", "GRanges",
 }
 
 setAs("character", "GRanges", .from_character_to_GRanges)
-setAs("character", "GenomicRanges", .from_character_to_GRanges)
 
 .from_factor_to_GRanges <- function(from)
 {
@@ -283,7 +282,6 @@ setAs("character", "GenomicRanges", .from_character_to_GRanges)
 }
 
 setAs("factor", "GRanges", .from_factor_to_GRanges)
-setAs("factor", "GenomicRanges", .from_factor_to_GRanges)
 
 ### Does NOT propagate the ranges names and metadata columns i.e. always
 ### returns an unnamed GRanges object with no metadata columns.
@@ -306,7 +304,6 @@ setAs("RangesList", "GRanges",
         metadata(gr) <- metadata(from)
         gr
       })
-setAs("RangesList", "GenomicRanges", function(from) as(from, "GRanges"))
 
 setAs("RangedData", "GRanges",
     function(from)
@@ -331,7 +328,25 @@ setAs("RangedData", "GRanges",
     }
 )
 
-setAs("Seqinfo", "GRanges", .fromSeqinfoToGRanges)
+.from_Seqinfo_to_GRanges <- function(from)
+{
+    if (anyNA(seqlengths(from)))
+        stop(wmsg("cannot create a GRanges object ",
+                  "from a Seqinfo object with NA seqlengths"))
+    GRanges(seqnames(from),
+            IRanges(rep.int(1L, length(from)),
+                    width=seqlengths(from),
+                    names=seqnames(from)),
+            seqinfo=from)
+}
+
+setAs("Seqinfo", "GRanges", .from_Seqinfo_to_GRanges)
+
+setAs("Seqinfo", "RangesList",
+    function(from) as(as(from, "GRanges"), "RangesList")
+)
+
+setAs("ANY", "GenomicRanges", function(from) as(from, "GRanges"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

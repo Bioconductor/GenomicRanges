@@ -24,16 +24,13 @@
 \alias{granges,GenomicRanges-method}
 \alias{coerce,GenomicRanges,GRanges-method}
 \alias{coerce,character,GRanges-method}
-\alias{coerce,character,GenomicRanges-method}
 \alias{coerce,factor,GRanges-method}
-\alias{coerce,factor,GenomicRanges-method}
 \alias{coerce,RangesList,GRanges-method}
-\alias{coerce,RangesList,GenomicRanges-method}
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,Seqinfo,GRanges-method}
-\alias{coerce,Seqinfo,GenomicRanges-method}
 \alias{coerce,Seqinfo,RangesList-method}
 \alias{coerce,GenomicRanges,Grouping-method}
+\alias{coerce,ANY,GenomicRanges-method}
 
 % Accessors:
 \alias{seqnames,GRanges-method}

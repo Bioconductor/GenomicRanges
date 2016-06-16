@@ -4,9 +4,7 @@
 \alias{genomicvariables}
 
 \alias{coerce,RleList,GRanges-method}
-\alias{coerce,RleList,GenomicRanges-method}
 \alias{coerce,RleViewsList,GRanges-method}
-\alias{coerce,RleViewsList,GenomicRanges-method}
 \alias{bindAsGRanges}
 \alias{mcolAsRleList}
 \alias{binnedAverage}

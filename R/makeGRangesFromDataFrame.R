@@ -254,9 +254,8 @@ makeGRangesFromDataFrame <- function(df,
 setAs("data.frame", "GRanges",
     function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
 )
-setAs("data.frame", "GenomicRanges", function(from) as(from, "GRanges"))
 
 setAs("DataFrame", "GRanges",
     function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
 )
-setAs("DataFrame", "GenomicRanges", function(from) as(from, "GRanges"))
+

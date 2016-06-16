@@ -4,8 +4,6 @@
 
 \alias{coerce,data.frame,GRanges-method}
 \alias{coerce,DataFrame,GRanges-method}
-\alias{coerce,data.frame,GenomicRanges-method}
-\alias{coerce,DataFrame,GenomicRanges-method}
 
 \title{Make a GRanges object from a data.frame or DataFrame}
 

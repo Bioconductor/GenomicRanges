@@ -316,23 +316,6 @@ setAs("GenomicRanges", "RangedData",
     }
 )
 
-.fromSeqinfoToGRanges <- function(from)
-{
-    if (any(is.na(seqlengths(from))))
-        stop("cannot create a GenomicRanges from a Seqinfo ",
-             "with NA seqlengths")
-    GRanges(seqnames(from),
-            IRanges(rep(1L, length(from)),
-                    width=seqlengths(from),
-                    names=seqnames(from)),
-            seqinfo=from)
-}
-
-setAs("Seqinfo", "GenomicRanges", .fromSeqinfoToGRanges)
-setAs("Seqinfo", "RangesList",
-    function(from) as(as(from, "GenomicRanges"), "RangesList")
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
