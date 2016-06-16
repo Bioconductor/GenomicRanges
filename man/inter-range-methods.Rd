@@ -51,7 +51,7 @@
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
           with.inframe.attrib=FALSE, ignore.strand=FALSE)
-\S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L,
+\S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
           with.inframe.attrib=FALSE, ignore.strand=FALSE)
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
