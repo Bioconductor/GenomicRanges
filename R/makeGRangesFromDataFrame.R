@@ -144,6 +144,23 @@
       strand=strand_col)
 }
 
+.get_data_frame_col_as_numeric <- function(df, col)
+{
+    ans <- df[[col]]
+    if (is(ans, "Rle"))
+        ans <- S4Vectors:::decodeRle(ans)
+    if (!is.numeric(ans)) {
+        if (is.factor(ans))
+            ans <- as.character(ans)
+        ans <- suppressWarnings(as.numeric(ans))
+        if (anyNA(ans))
+            stop(wmsg("some values in the ",
+                      "\"", names(df)[[col]], "\" ",
+                      "column cannot be turned into numeric values"))
+    }
+    ans
+}
+
 ### 'df' must be a data.frame or DataFrame object.
 makeGRangesFromDataFrame <- function(df,
                                      keep.extra.columns=FALSE,
@@ -182,12 +199,8 @@ makeGRangesFromDataFrame <- function(df,
     ans_seqnames <- df[[granges_cols[["seqnames"]]]]
 
     ## Prepare 'ans_ranges'.
-    ans_start <- df[[granges_cols[["start"]]]]
-    ans_end <- df[[granges_cols[["end"]]]]
-    if (!is.numeric(ans_start) || !is.numeric(ans_end))
-        stop("\"", names(df)[granges_cols[["start"]]], "\" and ",
-             "\"", names(df)[granges_cols[["end"]]], "\" columns ",
-             "must be numeric")
+    ans_start <- .get_data_frame_col_as_numeric(df, granges_cols[["start"]])
+    ans_end <- .get_data_frame_col_as_numeric(df, granges_cols[["end"]])
     if (starts.in.df.are.0based)
         ans_start <- ans_start + 1L
     ans_names <- rownames(df)

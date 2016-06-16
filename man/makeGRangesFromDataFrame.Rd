@@ -37,7 +37,7 @@ makeGRangesFromDataFrame(df,
 \arguments{
   \item{df}{
     A data.frame or \link[S4Vectors]{DataFrame} object. If not, then
-    the function tries to turn \code{df} into a data frame with
+    the function first tries to turn \code{df} into a data frame with
     \code{as.data.frame(df)}.
   }
   \item{keep.extra.columns}{
