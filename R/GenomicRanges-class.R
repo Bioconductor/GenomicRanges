@@ -712,7 +712,7 @@ show_GenomicRanges <- function(x, margin="",
                                print.classinfo=FALSE, print.seqinfo=FALSE,
                                coerce.internally.to.GRanges=TRUE)
 {
-    cat(summary(x), ":\n", sep="")
+    cat(.GenomicRanges_summary(x), ":\n", sep="")
     ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
     ## and tail() work on 'xx'.
     if (coerce.internally.to.GRanges) {
