@@ -1,0 +1,405 @@
+%\VignetteIndexEntry{10 Things You Didn't Know}
+%\VignetteDepends{GenomicRanges, Biostrings, Rsamtools, BSgenome, hgu95av2probe}
+
+\SweaveOpts{keep.source=TRUE, eps=FALSE, width=9, height=3}
+
+\documentclass[9pt]{beamer}
+
+\usepackage{slides}
+\renewcommand\Rclass[1]{{\texttt{#1}\index{#1 (class)}}}
+
+\title{10 things (maybe) you didn't know about GenomicRanges, Biostrings,
+       and Rsamtools}
+
+\author{Herv\'e Pag\`es\\
+        \href{mailto:hpages@fredhutch.org}{hpages@fredhutch.org}}
+
+\date{June 2016}
+
+\begin{document}
+
+<<setup, echo=FALSE, results=hide>>=
+options(width=80)
+library(GenomicRanges)
+library(Biostrings)
+library(Rsamtools)
+library(BSgenome)
+library(hgu95av2probe)
+
+example(GRangesList)
+
+gr <- GRanges(Rle(c("chr2", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+              IRanges(1:10, width=10:1, names=head(letters, 10)),
+              Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+              score=1:10, GC=seq(1, 0, length=10))
+
+ir <- IRanges(c(11:13, 2, 7:6), width=3)
+mcols(ir) <- DataFrame(id=letters[1:6], score=3:-2)
+
+x <- GRanges(c("chr1:1-1000", "chr2:2000-3000"),
+             score=c(0.45, 0.1), a1=c(5L, 7L), a2=c(6, 8))
+mcols(x)$score[2] <- NA
+y <- GRanges(c("chr2:150-151", "chr1:1-10", "chr2:2000-3000"),
+             score=c(0.7, 0.82, 0.1), b1=c(0L, 5L, 1L), b2=c(1, -2, 1))
+@
+
+\maketitle
+
+%\frame{\tableofcontents}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{1. {\it Inner} vs {\it outer} metadata columns}
+  \begin{exampleblock}{}
+{\small
+<<inner_outer_mcols>>=
+mcols(grl)$id <- paste0("ID", seq_along(grl))
+grl
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{1. {\it Inner} vs {\it outer} metadata columns}
+  \begin{exampleblock}{}
+{\small
+<<inner_outer_mcols>>=
+mcols(grl)  # outer mcols
+mcols(unlist(grl, use.names=FALSE))  # inner mcols
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{2. invertStrand()}
+  Works out-of-the-box on any object that has a strand() getter and setter
+  ==> no need to implement specific methods.
+  \begin{exampleblock}{}
+{\small
+<<>>=
+gr
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{2. invertStrand()}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+invertStrand(gr)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{2. invertStrand()}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+grl
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{2. invertStrand()}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+invertStrand(grl)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{3. extractList()}
+  Extract groups of elements from a vector-like object and return them in
+  a list-like object.
+  \begin{exampleblock}{}
+<<>>=
+cvg <- Rle(c(0L, 2L, 5L, 1L, 0L), c(10, 6, 3, 4, 15))
+cvg
+i <- IRanges(c(16, 19, 9), width=5, names=letters[1:3])
+i
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{3. extractList()}
+  \begin{exampleblock}{}
+<<>>=
+extractList(cvg, i)
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{3. extractList()}
+  \begin{exampleblock}{}
+  \Rcode{i} can be an IntegerList object:
+{\small
+<<>>=
+i <- IntegerList(c(25:20), NULL, seq(from=2, to=length(cvg), by=2))
+i
+extractList(cvg, i)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{4. 'with.revmap' arg for reduce() and (now) disjoin()}
+  \begin{exampleblock}{}
+<<>>=
+ir
+ir2 <- reduce(ir, with.revmap=TRUE)
+ir2
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{4. 'with.revmap' arg for reduce() and disjoin()}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+revmap <- mcols(ir2)$revmap
+extractList(mcols(ir)$id, revmap)
+extractList(mcols(ir)$score, revmap)
+mcols(ir2) <- DataFrame(id=extractList(mcols(ir)$id, revmap),
+                        score=extractList(mcols(ir)$score, revmap))
+ir2
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{5. Zero-width ranges}
+  \Rcode{findOverlaps}/\Rcode{countOverlaps} support zero-width ranges.
+  \begin{exampleblock}{}
+{\small
+<<>>=
+sliding_query <- IRanges(1:6, width=0)
+sliding_query
+countOverlaps(sliding_query, IRanges(3, 4))
+@
+}
+  \end{exampleblock}
+  But you have to specify \Rcode{minoverlap=0} for this to work (default is 1).
+  \begin{exampleblock}{}
+{\small
+<<>>=
+countOverlaps(sliding_query, IRanges(3, 4), minoverlap=0)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{6. Biostrings::replaceAt()}
+  Perform multiple substitutions at arbitrary positions in a set of
+  sequences.
+  \begin{exampleblock}{}
+<<>>=
+library(Biostrings)
+library(hgu95av2probe)
+probes <- DNAStringSet(hgu95av2probe)
+probes
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{6. Biostrings::replaceAt()}
+  Replace 3rd and 4th nucleotides by pattern \Rcode{-++-}.
+  \begin{exampleblock}{}
+<<>>=
+replaceAt(probes, at=IRanges(3, 4), value="-++-")
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{6. Biostrings::replaceAt()}
+  If supplied pattern is empty, then performs deletions.
+  \begin{exampleblock}{}
+<<>>=
+replaceAt(probes, at=IRanges(3, 4), value="")
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{6. Biostrings::replaceAt()}
+  If \Rcode{at} is a zero-with range, then performs insertions.
+  \begin{exampleblock}{}
+<<>>=
+replaceAt(probes, at=IRanges(4, 3), value="-++-")
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{6. Biostrings::replaceAt()}
+  Use it in combination with \Rcode{vmatchPattern} to replace all the
+  occurences of a given pattern with another pattern:
+  \begin{exampleblock}{}
+<<>>=
+midx <- vmatchPattern("VCGTT", probes, fixed=FALSE)
+replaceAt(probes, at=midx, value="-++-")
+@
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{7. GRanges as a subscript}
+  \begin{exampleblock}{}
+{\small
+<<GRanges_as_a_subscript_1>>=
+cvg <- RleList(chr1=101:120, chr2=2:-8, chr3=31:40)
+gr
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{7. GRanges as a subscript}
+  \begin{exampleblock}{}
+{\scriptsize
+<<GRanges_as_a_subscript_2>>=
+cvg[gr]
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{8. BSgenomeViews objects}
+  \begin{exampleblock}{}
+<<>>=
+library(BSgenome.Mmusculus.UCSC.mm10)
+genome <- BSgenome.Mmusculus.UCSC.mm10
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene
+ex <- exons(txdb, columns=c("exon_id", "tx_name", "gene_id"))
+v <- Views(genome, ex)
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{8. BSgenomeViews objects}
+  \begin{exampleblock}{}
+{\scriptsize
+<<>>=
+v
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{8. BSgenomeViews objects}
+  \begin{exampleblock}{}
+<<>>=
+af <- alphabetFrequency(v, baseOnly=TRUE)
+head(af)
+@
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{9. Pile-up statistics on a BAM file with Rsamtools::pileup()}
+  \begin{exampleblock}{}
+<<>>=
+library(Rsamtools)
+library(RNAseqData.HNRNPC.bam.chr14)
+fl <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[1]
+sbp <- ScanBamParam(which=GRanges("chr14", IRanges(1, 53674770)))
+pp <- PileupParam(distinguish_nucleotides=FALSE,
+                  distinguish_strands=FALSE,
+                  min_mapq=13,
+                  min_base_quality=10,
+                  min_nucleotide_depth=4)
+res <- pileup(fl, scanBamParam=sbp, pileupParam=pp)
+@
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{9. Pile-up statistics on a BAM file with Rsamtools::pileup()}
+  \begin{exampleblock}{}
+<<>>=
+dim(res)
+head(res)
+@
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+  \frametitle{10. Merging 2 GRanges objects (added this week)}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+x
+y
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{10. Merging 2 GRanges objects}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+merge(x, y)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{10. Merging 2 GRanges objects}
+  \begin{exampleblock}{}
+{\small
+<<>>=
+merge(x, y, all=TRUE)
+@
+}
+  \end{exampleblock}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+

@@ -66,6 +66,9 @@ isSmallGenome(seqlengths)
 
   A \link{GRanges} object for \code{relativeRanges}.
 
+  \code{absoluteRanges} and \code{relativeRanges} both return an object that
+  is \emph{parallel} to the input object (i.e. same length and names).
+
   \code{isSmallGenome} returns TRUE if the total length of the underlying
   sequences is <= \code{.Machine$integer.max} (e.g. Fly genome),
   FALSE if not (e.g. Human genome), or NA if it cannot be computed (because
