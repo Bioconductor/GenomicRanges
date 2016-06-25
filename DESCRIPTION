@@ -10,7 +10,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	summarization of an experiment, are defined in the GenomicAlignments
 	and SummarizedExperiment packages respectively. Both packages build
 	on top of the GenomicRanges infrastructure.
-Version: 1.25.8
+Version: 1.25.9
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
@@ -30,7 +30,8 @@ Suggests: Biobase, AnnotationDbi (>= 1.21.1), annotate, Biostrings (>= 2.25.3),
 	pasilla, pasillaBamSubset,
 	TxDb.Athaliana.BioMart.plantsmart22,
 	TxDb.Dmelanogaster.UCSC.dm3.ensGene,
-	TxDb.Hsapiens.UCSC.hg19.knownGene
+	TxDb.Hsapiens.UCSC.hg19.knownGene,
+	hgu95av2probe
 License: Artistic-2.0
 Collate: utils.R
 	phicoef.R
