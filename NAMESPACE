@@ -1,7 +1,7 @@
 useDynLib(GenomicRanges)
 
 import(methods)
-import(utils)  # for as.roman()
+importFrom(utils, as.roman, .DollarNames)
 importFrom(stats, setNames)
 importFrom(stats4, summary)
 import(BiocGenerics)
@@ -119,6 +119,7 @@ export(
     GenomicRangesList, GRangesList,
 
     makeGRangesFromDataFrame,
+    makeGRangesListFromDataFrame,
     makeGRangesListFromFeatureFragments,
 
     isSmallGenome, absoluteRanges, relativeRanges,
@@ -152,3 +153,7 @@ exportMethods(
     pos
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Register S3 methods
+###
+S3method(.DollarNames, GenomicRanges)

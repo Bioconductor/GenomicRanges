@@ -10,7 +10,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	summarization of an experiment, are defined in the GenomicAlignments
 	and SummarizedExperiment packages respectively. Both packages build
 	on top of the GenomicRanges infrastructure.
-Version: 1.25.9
+Version: 1.25.93
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
@@ -24,13 +24,12 @@ Suggests: Biobase, AnnotationDbi (>= 1.21.1), annotate, Biostrings (>= 2.25.3),
 	Rsamtools (>= 1.13.53), SummarizedExperiment (>= 0.1.5), Matrix,
 	GenomicAlignments, rtracklayer, BSgenome, GenomicFeatures, Gviz,
 	VariantAnnotation, AnnotationHub, DESeq2, DEXSeq, edgeR, KEGGgraph,
-	BiocStyle, digest, RUnit,
-	BSgenome.Hsapiens.UCSC.hg19, BSgenome.Scerevisiae.UCSC.sacCer2,
-	KEGG.db, hgu95av2.db, org.Hs.eg.db, org.Mm.eg.db, org.Sc.sgd.db,
-	pasilla, pasillaBamSubset,
-	TxDb.Athaliana.BioMart.plantsmart22,
-	TxDb.Dmelanogaster.UCSC.dm3.ensGene,
-	TxDb.Hsapiens.UCSC.hg19.knownGene,
+	BiocStyle, digest, RUnit, BSgenome.Hsapiens.UCSC.hg19,
+	BSgenome.Scerevisiae.UCSC.sacCer2, KEGG.db, hgu95av2.db, org.Hs.eg.db,
+	org.Mm.eg.db, org.Sc.sgd.db, pasilla, pasillaBamSubset,
+	TxDb.Athaliana.BioMart.plantsmart22, TxDb.Dmelanogaster.UCSC.dm3.ensGene,
+	TxDb.Hsapiens.UCSC.hg19.knownGene, BSgenome.Mmusculus.UCSC.mm10,
+	TxDb.Mmusculus.UCSC.mm10.knownGene, RNAseqData.HNRNPC.bam.chr14,
 	hgu95av2probe
 License: Artistic-2.0
 Collate: utils.R
@@ -48,6 +47,7 @@ Collate: utils.R
 	GenomicRangesList-class.R
 	GRangesList-class.R
 	makeGRangesFromDataFrame.R
+	makeGRangesListFromDataFrame.R
 	RangedData-methods.R
 	findOverlaps-methods.R
 	intra-range-methods.R

@@ -34,6 +34,7 @@
 
 % Accessors:
 \alias{seqnames,GRanges-method}
+\alias{seqnames,RangedData-method}
 \alias{seqnames<-,GenomicRanges-method}
 \alias{ranges,GRanges-method}
 \alias{ranges<-,GenomicRanges-method}
@@ -42,7 +43,12 @@
 \alias{names,GenomicRanges-method}
 \alias{names<-,GenomicRanges-method}
 \alias{seqinfo,GRanges-method}
+\alias{seqinfo,List-method}
+\alias{seqinfo,RangedData-method}
+\alias{seqinfo,RangesList-method}
 \alias{seqinfo<-,GenomicRanges-method}
+\alias{seqinfo<-,List-method}
+\alias{seqinfo<-,RangedData-method}
 \alias{score,GenomicRanges-method}
 \alias{score<-,GenomicRanges-method}
 
@@ -693,7 +699,7 @@ gr3 <- GRanges(seqnames=Rle(c('chr1', 'chr2', 'chr3'), c(3, 4, 3)),
                score=21:30,
                seqinfo=seqinfo)
 some.gr <- c(gr, gr2)
- 
+
 ## all.gr <- c(gr, gr2, gr3) ## (This would fail)
 all.gr <- c(gr, gr2, gr3, ignore.mcols=TRUE)
 
