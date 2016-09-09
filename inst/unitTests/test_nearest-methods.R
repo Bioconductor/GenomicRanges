@@ -282,6 +282,7 @@ test_GenomicRanges_distanceToNearest <- function()
     target <- c(1L, 1L, 2L) 
     checkIdentical(target, subjectHits(current))
 
+    ## strand
     strand(x) <- "+"
     strand(subject) <- c("+", "-")
     current <- quiet(distanceToNearest(x, subject))
@@ -298,6 +299,27 @@ test_GenomicRanges_distanceToNearest <- function()
     current <- quiet(distanceToNearest(x, x))
     target <- c(1L, 2L, 3L) 
     checkIdentical(target, subjectHits(current))
+
+    ## ranges start at 0
+    x <- GRanges("chr1", IRanges(0, width=1))
+    subject <- GRanges("chr1", IRanges(1, width=1))
+    current <- distanceToNearest(x, subject)
+    iranges <- distanceToNearest(ranges(x), ranges(subject))
+    checkIdentical(subjectHits(iranges), subjectHits(current))
+    checkIdentical(mcols(iranges)$distance, mcols(current)$distance)
+    current <- distanceToNearest(x, x)
+    checkIdentical(1L, subjectHits(current))
+    checkIdentical(0L, mcols(current)$distance)
+    current <- distanceToNearest(subject, x)
+    iranges <- distanceToNearest(ranges(subject), ranges(x))
+    checkIdentical(subjectHits(iranges), subjectHits(current))
+    checkIdentical(mcols(iranges)$distance, mcols(current)$distance)
+    x <- GRanges("chr1", IRanges(c(0, 10, 99), width=1))
+    subject <- GRanges("chr1", IRanges(15, width=1))
+    current <- distanceToNearest(x, subject)
+    iranges <- distanceToNearest(ranges(x), ranges(subject))
+    checkIdentical(subjectHits(iranges), subjectHits(current))
+    checkIdentical(mcols(iranges)$distance, mcols(current)$distance)
 
     ## NA handling
     x <- GRanges(c("chr1", "chr2"), IRanges(c(1, 5), width=1))

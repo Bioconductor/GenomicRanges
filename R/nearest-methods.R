@@ -17,17 +17,31 @@
     function (query, subject, sentinel, leftOf=TRUE)
     ## query 'leftOf' subject
 {
-    sentinelidx <- length(subject) + seq_along(sentinel)
-    subject <- c(subject, sentinel)
-
+    zeroInSubject <- subject %in% 0L
+    if (any(zeroInSubject))
+        subject <- unique(c(subject, sentinel))
+    else 
+        subject <- c(subject, sentinel)
     ord <- .orderNumeric(subject)
     subject <- subject[ord]
 
     rle <- Rle(subject)
     subject <- runValue(rle)
 
+    ## zero in query
     i <- findInterval(query - !leftOf, subject) + leftOf
-    i[subject[i] %in% sentinel] <- NA_integer_
+    zeroInQuery <- i %in% 0L
+    if (any(zeroInQuery)) {
+        if (leftOf)
+            i[zeroInQuery] <- 2L
+        else
+            i[zeroInQuery] <- 1L
+    }
+    ## zero in subject
+    if (any(zeroInSubject))
+        i[subject[i] %in% sentinel & subject[i] != 0L] <- NA_integer_
+    else
+        i[subject[i] %in% sentinel] <- NA_integer_
  
     IRanges:::vectorToHits(i, rle, ord)
 }
