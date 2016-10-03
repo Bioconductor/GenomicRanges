@@ -14,11 +14,13 @@
 ###
 
 setAs("RleList", "GRanges", function(from) {
-  rd <- as(from, "RangedData")
-  rd$strand <- "*"
-  gr <- as(rd, "GRanges")
-  seqlengths(gr) <- elementNROWS(from)
-  gr
+    score <- unlist(runValue(from), use.names=FALSE)
+    lens <- runLength(from)
+    ir <- successiveIRanges(unlist(lens, use.names=FALSE))
+    nrun <- lengths(lens)
+    gr <- GRanges(rep(names(from), nrun), ir, score=score)
+    seqlengths(gr) <- lengths(from)
+    gr
 })
 
 setAs("RleViewsList", "GRanges", function(from) {
