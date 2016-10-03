@@ -176,16 +176,6 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                     ..., seqlengths=NULL, seqinfo=NULL)
 {
     mcols <- DataFrame(..., check.names=FALSE)
-    ## Work around the following bug in DataFrame(..., check.names=FALSE):
-    ##   df0 <- data.frame(aa=11)[0]
-    ##   DF0 <- DataFrame(df0, check.names=FALSE)
-    ##   names(df0)        # character(0)
-    ##   names(DF0)        # NULL
-    ##   validObject(DF0)  # TRUE
-    ## Reported to Michael on June 2, 2016.
-    if (is.null(names(mcols)))
-        names(mcols) <- character(0)
-
     new_GRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
                            mcols=mcols, seqlengths=seqlengths, seqinfo=seqinfo)
 }
