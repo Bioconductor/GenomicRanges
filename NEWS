@@ -1,3 +1,38 @@
+CHANGES IN VERSION 1.26.0
+-------------------------
+
+NEW FEATURES
+
+    o Add 'with.revmap' argument to "reduce" method for GRangesList objects.
+
+    o Add 'with.revmap' argument to various "disjoin" methods.
+
+    o makeGRangesFromDataFrame() now tries to turn the "start" and "end"
+      columns of the input data frame into numeric vectors if they are not
+      already.
+
+    o Add makeGRangesListFromDataFrame() function.
+
+    o Add "summary" method for GenomicRanges objects.
+
+    o Add 'use.names' argument to the granges(), grglist(), and rglist()
+      generics and methods, as well as to a bunch of "ranges" methods (for
+      GRanges, GPos, GNCList, GRangesList, and DelegatingGenomicRanges).
+      Default is TRUE to preserve existing behavior.
+
+    o Add 'use.mcols' arguments to the "ranges" methods for GPos objects.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+DEPRECATED AND DEFUNCT
+
+BUG FIXES
+
+    o Fix bug in distanceToNearest() related to ranges starting at zero.
+
+    o Fix GRanges(Seqinfo()).
+
+
 CHANGES IN VERSION 1.24.0
 -------------------------
 
