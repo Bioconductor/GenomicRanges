@@ -206,6 +206,10 @@ setMethod("reduce", "GRangesList",
     }
 )
 
+setMethod("reduce", "GenomicRangesList",
+          function(x, drop.empty.ranges = FALSE, ...) {
+    endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges, ...)
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### gaps()

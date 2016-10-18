@@ -10,6 +10,7 @@
 \alias{reduce}
 \alias{reduce,GenomicRanges-method}
 \alias{reduce,GRangesList-method}
+\alias{reduce,GenomicRangesList-method}
 
 \alias{gaps}
 \alias{gaps,GenomicRanges-method}
