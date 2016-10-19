@@ -153,6 +153,11 @@ setMethod("range", "GRangesList",
     }
 )
 
+setMethod("range", "GenomicRangesList",
+          function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+          {
+              endoapply(x, range, ..., ignore.strand=ignore.strand, na.rm=na.rm)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reduce()
@@ -274,6 +279,12 @@ setMethod("disjoin", "GRangesList",
     }
 )
 
+setMethod("disjoin", "GenomicRangesList",
+          function(x, with.revmap=FALSE, ignore.strand=FALSE)
+          {
+              endoapply(x, disjoin, with.revmap=with.revmap,
+                        ignore.strand=ignore.strand)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isDisjoint()
@@ -303,6 +314,10 @@ setMethod("isDisjoint", "GRangesList",
     }
 )
 
+setMethod("isDisjoint", "GenomicRangesList",
+          function(x, ignore.strand=FALSE) {
+              endoapply(x, isDisjoint, ignore.strand=ignore.strand)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### disjointBins()

@@ -6,26 +6,32 @@
 \alias{shift,GenomicRanges-method}
 \alias{shift,GPos-method}
 \alias{shift,GRangesList-method}
+\alias{shift,GenomicRangesList-method}
 
 \alias{narrow}
 \alias{narrow,GenomicRanges-method}
 \alias{narrow,GRangesList-method}
+\alias{narrow,GenomicRangesList-method}
 
 \alias{resize}
 \alias{resize,GenomicRanges-method}
 \alias{resize,GRangesList-method}
+\alias{resize,GenomicRangesList-method}
 
 \alias{flank}
 \alias{flank,GenomicRanges-method}
 \alias{flank,GRangesList-method}
+\alias{flank,GenomicRangesList-method}
 
 \alias{promoters}
 \alias{promoters,GenomicRanges-method}
 \alias{promoters,GRangesList-method}
+\alias{promoters,GenomicRangesList-method}
 
 \alias{restrict}
 \alias{restrict,GenomicRanges-method}
 \alias{restrict,GRangesList-method}
+\alias{restrict,GenomicRangesList-method}
 
 \alias{trim,GenomicRanges-method}
 
@@ -57,26 +63,37 @@
 \usage{
 \S4method{shift}{GenomicRanges}(x, shift=0L, use.names=TRUE)
 \S4method{shift}{GRangesList}(x, shift=0L, use.names=TRUE)
+\S4method{shift}{GenomicRangesList}(x, shift=0L, use.names=TRUE)
 
 \S4method{narrow}{GenomicRanges}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+\S4method{narrow}{GRangesList}(x, start=NA, end=NA, width=NA, use.names=TRUE)
+\S4method{narrow}{GenomicRangesList}(x, start=NA, end=NA, width=NA,
+       use.names=TRUE)
 
 \S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE,
        ignore.strand=FALSE)
 \S4method{resize}{GRangesList}(x, width, fix="start", use.names=TRUE,
+       ignore.strand=FALSE)
+\S4method{resize}{GenomicRangesList}(x, width, fix="start", use.names=TRUE,
        ignore.strand=FALSE)
 
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE,
       use.names=TRUE, ignore.strand=FALSE)
 \S4method{flank}{GRangesList}(x, width, start=TRUE, both=FALSE,
       use.names=TRUE, ignore.strand=FALSE)
+\S4method{flank}{GenomicRangesList}(x, width, start=TRUE, both=FALSE,
+      use.names=TRUE, ignore.strand=FALSE)
 
 \S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, ...)
 \S4method{promoters}{GRangesList}(x, upstream=2000, downstream=200, ...)
+\S4method{promoters}{GenomicRangesList}(x, upstream=2000, downstream=200, ...)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE,
          use.names=TRUE)
 \S4method{restrict}{GRangesList}(x, start=NA, end=NA, keep.all.ranges=FALSE,
          use.names=TRUE)
+\S4method{restrict}{GenomicRangesList}(x, start=NA, end=NA,
+      keep.all.ranges=FALSE, use.names=TRUE)
 
 \S4method{trim}{GenomicRanges}(x, use.names=TRUE)
 }

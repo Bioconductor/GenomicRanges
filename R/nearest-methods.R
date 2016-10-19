@@ -388,3 +388,72 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     }
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Find 'k' nearest neighbors
+###
+### FIXME: Largely untested code; unexported for now
+###
+
+findKNN <- function(query, subject, k=5L, ignore.overlaps = FALSE,
+                    ignore.strand = FALSE)
+{
+    seqlevels(subject) <- seqlevels(query)
+    
+    starts <- with(subject, GRanges(seqnames, IRanges(start, width=1L), strand))
+    ends <- with(subject, GRanges(seqnames, IRanges(end, width=1L), strand))
+
+    if (ignore.strand) {
+        starts <- unstrand(starts)
+        ends <- unstrand(ends)
+    }
+    
+    start_ord <- order(starts)
+    end_ord <- order(ends)
+
+    starts <- starts[start_ord]
+    ends <- ends[end_ord]
+
+    phits <- precede(query, starts, ignore.strand=ignore.strand)
+    fhits <- follow(query, ends, ignore.strand=ignore.strand)
+
+    if (!ignore.strand) {
+        exchange <- decode(strand(query) == "-")
+        tmp <- phits[exchange]
+        phits[exchange] <- fhits[exchange]
+        fhits[exchange] <- tmp
+    }
+
+    findPart <- function(x, w) {
+        S4Vectors:::findIntervalAndStartFromWidth(x, w)[["interval"]]
+    }
+    
+    if (!ignore.strand) {
+        b <- width(disjoin(c(ranges(seqnames(starts)), ranges(strand(starts)))))
+    } else {
+        b <- runLength(seqnames(starts))
+    }
+    
+    seqends <- end(seqnames(starts))[findPart(phits, b)]
+    phits[is.na(phits)] <- 1L
+    seqends[is.na(seqends)] <- 0L
+    pwindows <- restrict(IRanges(phits, width = k), end=seqends)
+
+    seqstarts <- start(seqnames(ends))[findPart(fhits, b)]
+    seqstarts[is.na(seqstarts)] <- 1L
+    fhits[is.na(fhits)] <- 0L
+    fwindows <- restrict(IRanges(end=fhits, width = k), seqstarts)
+    
+    dist <- pc(extractList(start(starts), pwindows) - end(query),
+               end(query) - extractList(end(ends), fwindows))
+
+    ans <- pc(extractList(start_ord, pwindows), extractList(end_ord, fwindows))
+
+    if (!ignore.overlaps) {
+        hits <- findOverlaps(query, subject, ignore.strand=ignore.strand)
+        hitsList <- as(hits, "List")
+        dist <- pc(dist, relist(rep(0L, length(hits)), hitsList))
+        ans <- pc(ans, hitsList)
+    }
+
+    ans[phead(order(dist), k)]
+}

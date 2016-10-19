@@ -48,6 +48,11 @@ setMethod("shift", "GRangesList",
     }
 )
 
+setMethod("shift", "GenomicRangesList",
+          function(x, shift=0L, use.names=TRUE)
+          {
+              endoapply(x, IRanges::shift, shift, use.names)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### narrow()
@@ -71,6 +76,11 @@ setMethod("narrow", "GRangesList",
         relist(gr, x@partitioning)
     }
 )
+
+setMethod("narrow", "GenomicRangesList",
+          function(x, start=NA, end=NA, width=NA, use.names=TRUE) {
+              endoapply(x, narrow, start, end, width, use.names)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### resize()
@@ -117,6 +127,10 @@ setMethod("resize", "GRangesList",
     }
 )
 
+setMethod("resize", "GenomicRangesList",
+          function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE) {
+              endoapply(x, resize, width, fix, use.names, ignore.strand)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### flank()
@@ -159,13 +173,19 @@ setMethod("flank", "GRangesList",
     }
 )
 
+setMethod("flank", "GenomicRangesList",
+          function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
+                   ignore.strand=FALSE)
+          {
+              endoapply(x, flank, width, start, both, use.names, ignore.strand)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### promoters()
 ###
 
 setMethod("promoters", "GenomicRanges",
-    function(x, upstream=2000, downstream=200, ...)
+    function(x, upstream=2000, downstream=200)
     {
         if (!isSingleNumber(upstream))
             stop("'upstream' must be a single integer")
@@ -192,7 +212,7 @@ setMethod("promoters", "GenomicRanges",
 )
 
 setMethod("promoters", "GRangesList",
-    function(x, upstream=2000, downstream=200, ...)
+    function(x, upstream=2000, downstream=200)
     {
         x@unlistData <- promoters(x@unlistData, upstream=upstream,
                                   downstream=downstream)
@@ -200,6 +220,10 @@ setMethod("promoters", "GRangesList",
     }
 )
 
+setMethod("promoters", "GenomicRangesList",
+          function(x, upstream=2000, downstream=200) {
+              endoapply(x, promoters, upstream, downstream)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reflect()
@@ -266,12 +290,11 @@ setMethod("restrict", "GenomicRanges",
     }
 )
 
-setMethod("restrict", "GRangesList",
+setMethod("restrict", "GenomicRangesList",
     function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
     {
-        endoapply(x, restrict, start=start, end=end,keep.all.ranges=keep.all.ranges
-               , use.names=use.names )
-
+        endoapply(x, restrict, start=start, end=end,
+                  keep.all.ranges=keep.all.ranges, use.names=use.names)
     })
 
 
