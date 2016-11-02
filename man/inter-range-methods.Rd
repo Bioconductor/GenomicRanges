@@ -49,9 +49,9 @@
 }
 
 \usage{
-\S4method{range}{GenomicRanges}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
-\S4method{range}{GRangesList}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
-\S4method{range}{GenomicRangesList}(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+\S4method{range}{GenomicRanges}(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
+\S4method{range}{GRangesList}(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
+\S4method{range}{GenomicRangesList}(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
           with.inframe.attrib=FALSE, ignore.strand=FALSE)

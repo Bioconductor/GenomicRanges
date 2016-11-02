@@ -121,7 +121,7 @@ reconstructGRfromRGL <- function(rgl, x)
 ### Always return a GRanges *instance* whatever GenomicRanges derivative the
 ### input is, so does NOT act like an endomorphism in general. 
 setMethod("range", "GenomicRanges",
-    function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+    function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
     {
         if (!identical(na.rm, FALSE))
             warning("'na.rm' argument is ignored")
@@ -129,8 +129,11 @@ setMethod("range", "GenomicRanges",
         args <- lapply(args, granges)
         gr <- do.call(c, args)
 
-        rgl <- deconstructGRintoRGL(gr, ignore.strand=ignore.strand, drop=TRUE)
-        rgl2 <- callGeneric(rgl)
+        rgl <- deconstructGRintoRGL(gr, with.revmap=with.revmap,
+                                    ignore.strand=ignore.strand, drop=TRUE)
+        rgl2 <- callGeneric(rgl, with.revmap=with.revmap)
+        if (with.revmap)
+            rgl2 <- .fix_inner_revmap_mcol(rgl2, rgl)
         reconstructGRfromRGL(rgl2, gr)
     }
 )
@@ -138,25 +141,37 @@ setMethod("range", "GenomicRanges",
 ### Overwrite above method with optimized method for GPos objects.
 ### Like the above method, return a GRanges instance.
 setMethod("range", "GPos",
-    function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+    function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
         callGeneric(x@pos_runs, ...,
-                    ignore.strand=ignore.strand, na.rm=na.rm)
+                    with.revmap=with.revmap, ignore.strand=ignore.strand,
+                    na.rm=na.rm)
 )
 
 setMethod("range", "GRangesList",
-    function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+    function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
     {
         gr <- deconstructGRLintoGR(x)
         ## "range" method for GRanges objects is fast.
-        gr2 <- callGeneric(gr, ..., ignore.strand=ignore.strand, na.rm=na.rm)
-        reconstructGRLfromGR(gr2, x)
+        gr2 <- callGeneric(gr, ..., with.revmap=with.revmap,
+                           ignore.strand=ignore.strand, na.rm=na.rm)
+        ans <- reconstructGRLfromGR(gr2, x)
+
+        if (with.revmap) {
+            unlisted_ans <- unlist(ans, use.names=FALSE)
+            mcols(unlisted_ans)$revmap <-
+              IRanges:::global2local_revmap(mcols(unlisted_ans)$revmap, ans, x)
+            ans <- relist(unlisted_ans, ans)
+        }
+
+        ans        
     }
 )
 
 setMethod("range", "GenomicRangesList",
-          function(x, ..., ignore.strand=FALSE, na.rm=FALSE)
+          function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
           {
-              endoapply(x, range, ..., ignore.strand=ignore.strand, na.rm=na.rm)
+              endoapply(x, range, ..., with.revmap=with.revmap,
+                        ignore.strand=ignore.strand, na.rm=na.rm)
           })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
