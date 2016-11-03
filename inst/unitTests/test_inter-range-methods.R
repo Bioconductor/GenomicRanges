@@ -21,6 +21,11 @@ test_range_GenomicRanges <- function()
                       c("*", "*", "*"))
     checkTrue(validObject(current, complete=TRUE))
     checkIdentical(target, current)
+
+    # test with.revmap
+    revmap <- unname(mcols(range(gr, with.revmap=T, ignore.strand=TRUE))$revmap)
+    ans <- unname(IntegerList(c(1,5,6),  c(2,3,4),  c(7:10)))
+    checkIdentical(revmap, ans)
 }
 
 test_range_GRangesList <- function()
@@ -33,6 +38,15 @@ test_range_GRangesList <- function()
         checkTrue(validObject(current, complete=TRUE))
         checkIdentical(target, current)
     }
+
+    # test with.revmap
+    obj <- range(grl, with.revmap=TRUE, ignore.strand=TRUE)
+    revmap1 <- unname(mcols(obj[[1]])$revmap)
+    revmap2 <- unname(mcols(obj[[2]])$revmap)
+    ans1 <- unname(IntegerList(c(1,5,6),  c(2,3,4),  c(7:10)))
+    ans2 <- unname(IntegerList(c(5,6,10), c(7:9), c(1:4)))
+    checkIdentical(revmap1, ans1)
+    checkIdentical(revmap2, ans2)    
 }
 
 test_reduce_GenomicRanges <- function()

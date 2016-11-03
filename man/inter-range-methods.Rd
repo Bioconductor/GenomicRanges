@@ -181,10 +181,12 @@ grl
 
 ## On a GRanges object:
 range(gr)
+range(gr, with.revmap=TRUE)
 
 ## On a GRangesList object:
 range(grl)
 range(grl, ignore.strand=TRUE)
+range(grl, with.revmap=TRUE, ignore.strand=TRUE)
 
 # ---------------------------------------------------------------------
 ## reduce()
