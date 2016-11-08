@@ -89,7 +89,6 @@ exportMethods(
     relistToClass,
     pcompare,
     ranges, "ranges<-",
-    ngap,
     score, "score<-",
     findOverlaps, countOverlaps,
     shift, narrow, resize, flank, promoters, restrict, trim,
