@@ -10,10 +10,6 @@
 % Constructors:
 \alias{GenomicRangesList}
 
-% Coercion
-\alias{coerce,RangedDataList,GenomicRangesList-method}
-\alias{coerce,GenomicRangesList,RangedDataList-method}
-
 \title{GenomicRangesList objects}
 
 \description{
@@ -31,27 +27,6 @@
       \code{SimpleGenomicRangesList} with elements
       taken from the arguments in \dots. If the only argument is a list,
       the elements are taken from that list.
-    }
-  }
-}
-
-\section{Coercion}{
-  \describe{
-    \item{}{
-      \code{as(from, "GenomicRangesList")}: Supported \code{from} types
-      include:
-      \describe{
-        \item{RangedDataList}{Each element of \code{from} is coerced to
-          a \code{GenomicRanges}.}
-      }
-    }
-    \item{}{
-      \code{as(from, "RangedDataList")}: Supported \code{from} types
-      include:
-      \describe{
-        \item{GenomicRangesList}{Each element of \code{from} is coerced to
-          a \code{RangedData}.}
-      }
     }
   }
 }

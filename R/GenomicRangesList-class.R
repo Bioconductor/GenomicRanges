@@ -25,16 +25,6 @@ GenomicRangesList <- function(...) {
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
-###
-
-setAs("RangedDataList", "GenomicRangesList",
-      function(from) GenomicRangesList(lapply(from, as, "GRanges")))
-
-setAs("GenomicRangesList", "RangedDataList",
-      function(from) RangedDataList(lapply(from, as, "RangedData")))
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Utilities.
 ###
 

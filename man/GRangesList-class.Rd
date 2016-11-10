@@ -37,7 +37,6 @@
 \alias{coerce,GRangesList,IRangesList-method}
 \alias{coerce,GRangesList,RangesList-method}
 \alias{coerce,GRanges,GRangesList-method}
-\alias{coerce,RangedDataList,GRangesList-method}
 
 % Subsetting:
 \alias{[,GRangesList,ANY-method}
@@ -203,10 +202,6 @@
     }
     \item{}{\code{as(x, "IRangesList")}:
       Turns \code{x} into an \link[IRanges]{IRangesList} object.
-    }
-    \item{}{\code{as(from, "GRangesList")}:
-      Creates a GRangesList object from a \link[IRanges]{RangedDataList}
-      object.
     }
   }
 }

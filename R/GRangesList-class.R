@@ -410,9 +410,6 @@ setAs("GRangesList", "RangesList",
 
 setAs("GRanges", "GRangesList", function(from) as(from, "List"))
 
-setAs("RangedDataList", "GRangesList",
-      function(from) GRangesList(lapply(from, as, "GRanges")))
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
