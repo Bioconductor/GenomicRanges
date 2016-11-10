@@ -146,7 +146,8 @@
       \code{value} must be a \link{Seqinfo} object.
     }
     \item{}{
-      \code{seqlevels(x)}, \code{seqlevels(x, force=FALSE) <- value}:
+      \code{seqlevels(x)},
+      \code{seqlevels(x, pruning.mode=c("error", "coarse", "fine", "tidy")) <- value}:
       Get or set the sequence levels.
       \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
       or to \code{levels(seqnames(x))}, those 2 expressions being

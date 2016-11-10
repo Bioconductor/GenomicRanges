@@ -153,7 +153,7 @@ isSmallGenome(ex)
 
 ## However, if we are only interested in some chromosomes, we might
 ## still be able to use absoluteRanges():
-seqlevels(ex, force=TRUE) <- paste0("chr", 1:10)
+seqlevels(ex, pruning.mode="coarse") <- paste0("chr", 1:10)
 isSmallGenome(ex)  # TRUE!
 ar <- absoluteRanges(ex)
 ex2 <- relativeRanges(ar, seqlengths(ex))
