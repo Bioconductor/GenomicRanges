@@ -158,7 +158,7 @@ setMethod("seqnames", "GRangesList",
 )
 
 ### NOT exported but used in GenomicAlignments package.
-replaceSeqnamesList <- function(x, value)
+set_GRangesList_seqnames <- function(x, value)
 {
     if (!is(value, "AtomicList") ||
         !identical(elementNROWS(x), elementNROWS(value)))
@@ -172,7 +172,7 @@ replaceSeqnamesList <- function(x, value)
     seqnames(x@unlistData) <- value
     x
 }
-setReplaceMethod("seqnames", "GRangesList", replaceSeqnamesList)
+setReplaceMethod("seqnames", "GRangesList", set_GRangesList_seqnames)
 
 setMethod("ranges", "GRangesList",
     function(x, use.names=TRUE, use.mcols=FALSE)
@@ -281,7 +281,7 @@ setMethod("strand", "GRangesList",
 )
 
 ### NOT exported but used in GenomicAlignments package.
-replaceStrandList <- function(x, value)
+set_GRangesList_strand <- function(x, value)
 {
     if (!is(value, "AtomicList") ||
         !identical(elementNROWS(x), elementNROWS(value)))
@@ -296,7 +296,7 @@ replaceStrandList <- function(x, value)
     strand(x@unlistData) <- value
     x
 }
-setReplaceMethod("strand", c("GRangesList", "ANY"), replaceStrandList)
+setReplaceMethod("strand", c("GRangesList", "ANY"), set_GRangesList_strand)
 setReplaceMethod("strand", c("GRangesList", "character"), 
     function(x, ..., value)
     {
@@ -308,7 +308,7 @@ setReplaceMethod("strand", c("GRangesList", "character"),
 )
 
 ### NOT exported but used in GenomicAlignments package.
-getElementMetadataList <- 
+get_GRangesList_mcols <- 
     function(x, use.names=FALSE, level = c("between", "within"), ...)
 {
     if (!isTRUEorFALSE(use.names))
@@ -326,10 +326,10 @@ getElementMetadataList <-
         rownames(unlisted_ans) <- names(unlisted_x)
     relist(unlisted_ans, x)
 }
-setMethod("elementMetadata", "GRangesList", getElementMetadataList)
+setMethod("elementMetadata", "GRangesList", get_GRangesList_mcols)
 
 ### NOT exported but used in GenomicAlignments package.
-replaceElementMetadataList <- 
+set_GRangesList_mcols <- 
     function(x, level = c("between", "within"), ..., value)
 {
         level <- match.arg(level)
@@ -363,15 +363,17 @@ replaceElementMetadataList <-
     }
     x
 }
-setReplaceMethod("elementMetadata", "GRangesList", replaceElementMetadataList)
+setReplaceMethod("elementMetadata", "GRangesList", set_GRangesList_mcols)
 
 setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
 
 ### NOT exported but used in GenomicAlignments package.
-replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE,
-                          pruning.mode=c("error", "coarse", "fine", "tidy"),
-                          value)
+set_GRangesList_seqinfo <-
+    function(x, new2old=NULL, force=FALSE,
+             pruning.mode=c("error", "coarse", "fine", "tidy"),
+             value)
 {
+    pruning.mode <- match.arg(pruning.mode)
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
     dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
@@ -379,13 +381,24 @@ replaceSeqinfoList <- function(x, new2old=NULL, force=FALSE,
                               pruning.mode=pruning.mode,
                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
-        dropme <- which(seqnames(x@unlistData) %in% dangling_seqlevels)
-        x <- x[-unique(togroup(PartitioningByWidth(x), j=dropme))]
+        ## Prune 'x'.
+        non_dangling_range <- !(seqnames(x) %in% dangling_seqlevels)
+        if (pruning.mode == "coarse") {
+            x <- x[all(non_dangling_range)]
+        } else {
+            x <- x[non_dangling_range]  # "fine" pruning
+            if (pruning.mode == "tidy") {
+                ## Remove list elements that became empty because of "fine"
+                ## pruning.
+                x <- x[any(non_dangling_range) |
+                       elementNROWS(non_dangling_range) == 0L]
+            }
+        }
     }
     seqinfo(x@unlistData, new2old=new2old) <- value
     x
 }
-setReplaceMethod("seqinfo", "GRangesList", replaceSeqinfoList)
+setReplaceMethod("seqinfo", "GRangesList", set_GRangesList_seqinfo)
 
 setMethod("score", "GRangesList", function(x) {
   mcols(x)$score
@@ -504,6 +517,7 @@ setMethod("relistToClass", "GRanges", function(x) "GRangesList")
 ###
 
 ### NOT exported but used in GenomicAlignments package.
+### FIXME: This seems to repeat most of the code in IRanges:::showRangesList!
 showList <- function(object, showFunction, print.classinfo)
 {
     k <- length(object)
@@ -567,8 +581,7 @@ showList <- function(object, showFunction, print.classinfo)
 }
 
 setMethod("show", "GRangesList",
-    function(object)
-        showList(object, show_GenomicRanges, TRUE)
+    function(object) showList(object, show_GenomicRanges, TRUE)
 )
 
 

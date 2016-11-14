@@ -25,6 +25,47 @@ test_GRangesList_construction <- function() {
     checkTrue(validObject(make_test_GRangesList()))
 }
 
+test_GRangesList_getters <- function() {
+    grl <- make_test_GRangesList()
+    checkIdentical(seqnames(grl), RleList(lapply(grl, seqnames), compress=TRUE))
+    checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges)))
+    checkIdentical(strand(grl), RleList(lapply(grl, strand), compress=TRUE))
+    checkIdentical(seqlengths(grl), seqlengths(grl@unlistData))
+    checkIdentical(mcols(grl, level="within"),
+                   SplitDataFrameList(lapply(grl, mcols)))
+}
+
+test_GRangesList_setters <- function() {
+    grl0 <- GRangesList(A=GRanges("chr2", IRanges(3:2, 5)),
+                        B=GRanges(c("chr2", "chrMT"), IRanges(7:6, 15)),
+                        C=GRanges(c("chrY", "chrMT"), IRanges(17:16, 25)),
+                        D=GRanges())
+
+    current <- grl0
+    seqlevels(current, pruning.mode="coarse") <- c("chr2", "chr5")
+    target <- GRangesList(A=GRanges("chr2", IRanges(3:2, 5),
+                                    seqinfo=Seqinfo(c("chr2", "chr5"))),
+                          D=GRanges())
+    checkIdentical(target, current)
+
+    current <- grl0
+    seqlevels(current, pruning.mode="fine") <- c("chr2", "chr5")
+    target <- GRangesList(A=GRanges("chr2", IRanges(3:2, 5),
+                                    seqinfo=Seqinfo(c("chr2", "chr5"))),
+                          B=GRanges("chr2", IRanges(7, 15)),
+                          C=GRanges(),
+                          D=GRanges())
+    checkIdentical(target, current)
+
+    current <- grl0
+    seqlevels(current, pruning.mode="tidy") <- c("chr2", "chr5")
+    target <- GRangesList(A=GRanges("chr2", IRanges(3:2, 5),
+                                    seqinfo=Seqinfo(c("chr2", "chr5"))),
+                          B=GRanges("chr2", IRanges(7, 15)),
+                          D=GRanges())
+    checkIdentical(target, current)
+}
+
 test_GRangesList_coercion <- function() {
     ## as.data.frame
     gr1 <-
@@ -48,16 +89,6 @@ test_GRangesList_coercion <- function() {
                  score = c(10L,2L,NA,12:13),
                  stringsAsFactors = FALSE)
     checkIdentical(as.data.frame(grl), df)
-}
-
-test_GRangesList_accessors <- function() {
-    grl <- make_test_GRangesList()
-    checkIdentical(seqnames(grl), RleList(lapply(grl, seqnames), compress=TRUE))
-    checkIdentical(ranges(grl), IRangesList(lapply(grl, ranges)))
-    checkIdentical(strand(grl), RleList(lapply(grl, strand), compress=TRUE))
-    checkIdentical(seqlengths(grl), seqlengths(grl@unlistData))
-    checkIdentical(mcols(grl, level="within"),
-                   SplitDataFrameList(lapply(grl, mcols)))
 }
 
 test_GRangesList_RangesList <- function() {
