@@ -29,7 +29,7 @@
 
 \title{An Introduction to the GenomicRanges Package}
 \author{Marc Carlson \and Patrick Aboyoun \and Herv\'{e} Pag\`{e}s}
-\date{\today}
+\date{\today; updated 14 November, 2016}
 
 \begin{document}
 
@@ -426,17 +426,29 @@ mcols(grl)
 ul <- unlist(grl)
 @
 
-You can also append values together useing \Rmethod{append} or
-\Rmethod{c}.
+Append lists using \Rmethod{append} or \Rmethod{c}.
 
-% <<appendGRL>>=
-% grl2 <- shift(grl,10)
-% names(grl2) <- c("shiftTxA","shiftTxB")
+A \href{https://support.bioconductor.org/p/89339/}{support site user}
+had two \Rclass{GRangesList} objects with 'parallel' elements, and
+wanted to combined these element-wise into a single
+\Rclass{GRangesList}. One solution is to use \Rcode{pc()} -- parallel
+(element-wise) \Rcode{c()}. A more general solution is to concatenate
+the lists and then re-group by some factor, in this case the names of
+the elements.
 
-% append(grl, grl2)
-% c(grl, grl2)
-% @
+<<pc-grl>>=
+grl1 <- GRangesList(
+    gr1 = GRanges("chr2", IRanges(3, 6)),
+    gr2 = GRanges("chr1", IRanges(c(7,13), width = 3)))
+grl2 <- GRangesList(
+    gr1 = GRanges("chr2", IRanges(9, 12)),
+    gr2 = GRanges("chr1", IRanges(c(25,38), width = 3)))
 
+pc(grl1, grl2)
+
+grl3 <- c(grl1, grl2)
+regroup(grl3, names(grl3))
+@ 
 
 \subsection{Basic interval operations for \Rclass{GRangesList} objects}
 
