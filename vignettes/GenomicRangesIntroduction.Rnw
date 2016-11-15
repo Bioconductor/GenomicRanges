@@ -1,45 +1,24 @@
 %\VignetteIndexEntry{An Introduction to the GenomicRanges Package}
 %\VignetteKeywords{sequence, sequencing}
 %\VignettePackage{GenomicRanges}
-\documentclass[10pt]{article}
+\documentclass{article}
 
-\usepackage{times}
-\usepackage{hyperref}
+<<style, eval=TRUE, echo=FALSE, results=tex>>=
+BiocStyle::latex()
+@ 
 
-\textwidth=6.5in
-\textheight=8.5in
-%\parskip=.3cm
-\oddsidemargin=-.1in
-\evensidemargin=-.1in
-\headheight=-.3in
-
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
-\newcommand{\Robject}[1]{{\texttt{#1}}}
-\newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\Rmethod}[1]{{\texttt{#1}}}
-\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
-\newcommand{\Rclass}[1]{{\textit{#1}}}
-\newcommand{\Rcode}[1]{{\texttt{#1}}}
-
-\newcommand{\software}[1]{\textsf{#1}}
-\newcommand{\R}{\software{R}}
-\newcommand{\Bioconductor}{\software{Bioconductor}}
 \newcommand{\GenomicRanges}{\Rpackage{GenomicRanges}}
 
-
 \title{An Introduction to the GenomicRanges Package}
-\author{Marc Carlson \and Patrick Aboyoun \and Herv\'{e} Pag\`{e}s}
-\date{\today; updated 14 November, 2016}
+\author{Marc Carlson \and Patrick Aboyoun \and Herv\'{e} Pag\`{e}s \and
+  Martin Morgan}
+\date{\today; updated 15 November, 2016}
 
 \begin{document}
 
 \maketitle
 
-<<options,echo=FALSE>>=
-options(width=72)
-@
 \tableofcontents
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -81,22 +60,18 @@ sites, transcripts, and exons. These objects can be created by using the
 \Rfunction{GRanges} constructor function. For example,
 
 <<example-GRanges>>=
-gr <-
-  GRanges(seqnames =
-          Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-          ranges =
-          IRanges(1:10, end = 7:16, names = head(letters, 10)),
-          strand =
-          Rle(strand(c("-", "+", "*", "+", "-")),
-              c(1, 2, 2, 3, 2)),
-          score = 1:10,
-          GC = seq(1, 0, length=10))
+gr <- GRanges(
+    seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+    ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
+    strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+    score = 1:10,
+    GC = seq(1, 0, length=10))
 gr
+options(warn=2)
 @
-
-\noindent
+%% 
 creates a \Rclass{GRanges} object with 10 genomic ranges.
-The output of the \Rclass{GRanges} \Rmethod{show} method separates the
+The output of the \Rclass{GRanges} \Rcode{show} method separates the
 information into a left and right hand region that are separated by
 \Rcode{|} symbols. The genomic coordinates (seqnames, ranges, and strand)
 are located on the left-hand side and the metadata columns (annotation)
@@ -106,8 +81,8 @@ anything can be stored in the metadata portion of a \Rclass{GRanges}
 object.
 
 The components of the genomic coordinates within a \Rclass{GRanges}
-object can be extracted using the \Rmethod{seqnames}, \Rmethod{ranges},
-and \Rmethod{strand} accessor functions.
+object can be extracted using the \Rcode{seqnames}, \Rcode{ranges},
+and \Rcode{strand} accessor functions.
 
 <<GRanges-location-accessors>>=
 seqnames(gr)
@@ -116,7 +91,7 @@ strand(gr)
 @
 
 Stored annotations for these coordinates can be extracted as a
-\Rclass{DataFrame} object using the \Rmethod{mcols} accessor.
+\Rclass{DataFrame} object using the \Rcode{mcols} accessor.
 
 <<metadataAccess>>=
 mcols(gr)
@@ -136,7 +111,7 @@ And then retrieves as:
 seqlengths(gr)
 @
 
-Methods for accessing the \Rmethod{length} and \Rmethod{names} have
+Methods for accessing the \Rcode{length} and \Rcode{names} have
 also been defined.
 
 <<names>>=
@@ -148,7 +123,7 @@ length(gr)
 \subsection{Splitting and combining \Rclass{GRanges} objects}
 
 \Rclass{GRanges} objects can be devided into groups using the
-\Rmethod{split} method. This produces a \Rclass{GRangesList} object,
+\Rcode{split} method. This produces a \Rclass{GRangesList} object,
 a class that will be discussed in detail in the next section.
 
 <<splitAppendGRanges>>=
@@ -157,7 +132,7 @@ sp
 @
 
 If you then grab the components of this list, they can also be merged
-by using the \Rmethod{c} and \Rmethod{append} methods.
+by using the \Rcode{c} and \Rcode{append} methods.
 
 <<combine>>=
 c(sp[[1]], sp[[2]])
@@ -172,7 +147,7 @@ The expected subsetting operations are also available for
 gr[2:3]
 @
 
-A second argument to the \Rmethod{[} subset operator can be used
+A second argument to the \Rcode{[} subset operator can be used
 to specify which metadata columns to extract from the
 \Rclass{GRanges} object. For example,
 
@@ -215,8 +190,8 @@ gr[IRanges(start=c(2,7), end=c(3,9))]
 \subsection{Basic interval operations for \Rclass{GRanges} objects}
 
 Basic interval characteristics of \Rclass{GRanges} objects can
-be extracted using the \Rmethod{start}, \Rmethod{end}, \Rmethod{width},
-and \Rmethod{range} methods.
+be extracted using the \Rcode{start}, \Rcode{end}, \Rcode{width},
+and \Rcode{range} methods.
 
 <<IRangesStuff>>=
 g <- gr[1:3]
@@ -228,7 +203,7 @@ range(g)
 @
 
 The \Rclass{GRanges} class also has many methods for manipulating the
-intervals. For example, the \Rmethod{flank} method can be used to recover
+intervals. For example, the \Rcode{flank} method can be used to recover
 regions flanking the set of ranges represented by the \Rclass{GRanges}
 object. So to get a \Rclass{GRanges} object containing the ranges that
 include the 10 bases upstream of the ranges:
@@ -243,10 +218,10 @@ And to include the downstream bases:
 flank(g, 10, start=FALSE)
 @
 
-Similar to \Rmethod{flank}, there are also operations to
-\Rmethod{resize} and \Rmethod{shift} our \Rclass{GRanges} object. The
-\Rmethod{shift} method will move the ranges by a specific number of
-base pairs, and the \Rmethod{resize} method will extend the ranges by
+Similar to \Rcode{flank}, there are also operations to
+\Rcode{resize} and \Rcode{shift} our \Rclass{GRanges} object. The
+\Rcode{shift} method will move the ranges by a specific number of
+base pairs, and the \Rcode{resize} method will extend the ranges by
 a specified width.
 
 <<shiftAndResize>>=
@@ -254,7 +229,7 @@ shift(g, 5)
 resize(g, 30)
 @
 
-The \Rmethod{reduce} will align the ranges and merge overlapping
+The \Rcode{reduce} will align the ranges and merge overlapping
 ranges to produce a simplified set.
 
 <<reduce>>=
@@ -263,7 +238,7 @@ reduce(g)
 
 Sometimes you may be interested in the spaces or the qualities of the
 spaces between the ranges represented by your \Rclass{GRanges} object.
-The \Rmethod{gaps} method will help you calculate the spaces between a
+The \Rcode{gaps} method will help you calculate the spaces between a
 reduced version of your ranges:
 
 <<gaps>>=
@@ -272,14 +247,14 @@ gaps(g)
 
 And sometimes you also may want to know how many quantitatively unique
 fragments your ranges could possibly represent. For this task there
-is the \Rmethod{disjoin} method.
+is the \Rcode{disjoin} method.
 
 <<disjoin>>=
 disjoin(g)
 @
 
 One of the most powerful methods for looking at \Rclass{GRanges}
-objects is the \Rmethod{coverage} method. The \Rmethod{coverage}
+objects is the \Rcode{coverage} method. The \Rcode{coverage}
 method quantifies the degree of overlap for all the ranges in a
 \Rclass{GRanges} object.
 
@@ -292,8 +267,8 @@ coverage(g)
 
 There are also operations for calculating relationships between
 different \Rclass{GRanges} objects. Here are some examples for
-how you can calculate the \Rmethod{union}, the \Rmethod{intersect}
-and the asymmetric difference (using \Rmethod{setdiff}).
+how you can calculate the \Rcode{union}, the \Rcode{intersect}
+and the asymmetric difference (using \Rcode{setdiff}).
 
 <<intervals1>>=
 g2 <- head(gr, n=2)
@@ -312,7 +287,7 @@ throughout.
 
 <<intervals2>>=
 g3 <- g[1:2]
-ranges(g3[1]) <- IRanges(start=5, end=12)
+ranges(g3[1]) <- IRanges(start=105, end=112)
 punion(g2, g3)
 pintersect(g2, g3)
 psetdiff(g2, g3)
@@ -340,17 +315,17 @@ using the \Rfunction{GRangesList} constructor.
 
 <<example-GRangesList>>=
 gr1 <-
-  GRanges(seqnames = "chr2", ranges = IRanges(3, 6),
+  GRanges(seqnames = "chr2", ranges = IRanges(103, 106),
           strand = "+", score = 5L, GC = 0.45)
 gr2 <-
   GRanges(seqnames = c("chr1", "chr1"),
-          ranges = IRanges(c(7,13), width = 3),
+          ranges = IRanges(c(107, 113), width = 3),
           strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
 grl <- GRangesList("txA" = gr1, "txB" = gr2)
 grl
 @
 
-The \Rmethod{show} method for a \Rclass{GRangesList} object displays
+The \Rcode{show} method for a \Rclass{GRangesList} object displays
 it as a named list of \Rclass{GRanges} objects, where the names of
 this list are considered to be the names of the grouping feature. In
 the example above, the groups of individual exon ranges are represented
@@ -377,8 +352,8 @@ ranges(grl)
 strand(grl)
 @
 
-The \Rmethod{length} and \Rmethod{names} methods will return the length
-or names of the list and the \Rmethod{seqlengths} method will return the
+The \Rcode{length} and \Rcode{names} methods will return the length
+or names of the list and the \Rcode{seqlengths} method will return the
 set of sequence lengths.
 
 <<exceptions>>=
@@ -387,17 +362,17 @@ names(grl)
 seqlengths(grl)
 @
 
-The \Rmethod{elementNROWS} method returns a list of integers
-corresponding to the result of calling \Rmethod{NROW} on each
+The \Rcode{elementNROWS} method returns a list of integers
+corresponding to the result of calling \Rcode{NROW} on each
 individual \Rclass{GRanges} object contained by the
 \Rclass{GRangesList}. This is a faster alternative to calling
-\Rmethod{lapply} on the \Rclass{GRangesList}.
+\Rcode{lapply} on the \Rclass{GRangesList}.
 
 <<elementNROWS>>=
 elementNROWS(grl)
 @
 
-You can also use \Rmethod{isEmpty} to test if a \Rclass{GRangesList}
+You can also use \Rcode{isEmpty} to test if a \Rclass{GRangesList}
 object contains anything.
 
 <<isEmpty>>=
@@ -405,7 +380,7 @@ isEmpty(grl)
 @
 
 Finally, in the context of a \Rclass{GRangesList} object, the
-\Rmethod{mcols} method performs a similar operation to what it
+\Rcode{mcols} method performs a similar operation to what it
 does on a \Rclass{GRanges} object. However, this metadata now
 refers to information at the list level instead of the level
 of the individual \Rclass{GRanges} objects.
@@ -426,7 +401,7 @@ mcols(grl)
 ul <- unlist(grl)
 @
 
-Append lists using \Rmethod{append} or \Rmethod{c}.
+Append lists using \Rcode{append} or \Rcode{c}.
 
 A \href{https://support.bioconductor.org/p/89339/}{support site user}
 had two \Rclass{GRangesList} objects with 'parallel' elements, and
@@ -495,10 +470,10 @@ grl[1, "score"]
 grl["txB", "GC"]
 @ 
 
-The \Rmethod{head}, \Rmethod{tail}, \Rmethod{rep}, \Rmethod{rev},
-and \Rmethod{window} methods all behave as you would expect them
+The \Rcode{head}, \Rcode{tail}, \Rcode{rep}, \Rcode{rev},
+and \Rcode{window} methods all behave as you would expect them
 to for a list object. For example, the elements
-referred to by \Rmethod{window} are now list
+referred to by \Rcode{window} are now list
 elements instead of \Rclass{GRanges} elements.
 
 <<otherSubsetGRL>>=
@@ -514,14 +489,14 @@ grl[IRanges(start=2, end=2)]
 \subsection{Looping over \Rclass{GRangesList} objects}
 
 For \Rclass{GRangesList} objects there is also a family of
-\Rmethod{apply} methods. These include \Rmethod{lapply},
-\Rmethod{sapply}, \Rmethod{mapply}, \Rmethod{endoapply},
-\Rmethod{mendoapply}, \Rmethod{Map}, and \Rmethod{Reduce}.
+\Rcode{apply} methods. These include \Rcode{lapply},
+\Rcode{sapply}, \Rcode{mapply}, \Rcode{endoapply},
+\Rcode{mendoapply}, \Rcode{Map}, and \Rcode{Reduce}.
 
 The different looping methods defined for \Rclass{GRangesList} objects
 are useful for returning different kinds of results.  The standard
-\Rmethod{lapply} and \Rmethod{sapply} behave according to convention,
-with the \Rmethod{lapply} method returning a list and \Rmethod{sapply}
+\Rcode{lapply} and \Rcode{sapply} behave according to convention,
+with the \Rcode{lapply} method returning a list and \Rcode{sapply}
 returning a more simplified output.
 
 <<lapply>>=
@@ -530,10 +505,10 @@ sapply(grl, length)
 @
 
 As with \Rclass{IRanges} objects, there is also a multivariate version
-of \Rmethod{sapply}, called \Rmethod{mapply}, defined for
+of \Rcode{sapply}, called \Rcode{mapply}, defined for
 \Rclass{GRangesList} objects. And, if you don't want the results
-simplified, you can call the \Rmethod{Map} method, which does the same
-things as \Rmethod{mapply} but without simplifying the output.
+simplified, you can call the \Rcode{Map} method, which does the same
+things as \Rcode{mapply} but without simplifying the output.
 
 <<mapply>>=
 grl2 <- shift(grl, 10)
@@ -547,21 +522,21 @@ Sometimes, you may not want to get back a simplified output or a list.
 Sometimes you will want to get back a modified version of the
 \Rclass{GRangesList} that you originally passed in. This is
 conceptually similar to the mathematical notion of an endomorphism.
-This is achieved using the \Rmethod{endoapply} method, which will return
+This is achieved using the \Rcode{endoapply} method, which will return
 the results as a \Rclass{GRangesList} object.
 
 <<endoapply>>=
 endoapply(grl,rev)
 @
 
-And, there is also a multivariate version of the \Rmethod{endoapply}
-method in the form of the \Rmethod{mendoapply} method.
+And, there is also a multivariate version of the \Rcode{endoapply}
+method in the form of the \Rcode{mendoapply} method.
 
 <<mendoapply>>=
 mendoapply(c,grl,grl2)
 @
 
-Finally, the \Rmethod{Reduce} method will allow the \Rclass{GRanges}
+Finally, the \Rcode{Reduce} method will allow the \Rclass{GRanges}
 objects to be collapsed across the whole of the \Rclass{GRangesList}
 object.
 
