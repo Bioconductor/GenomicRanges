@@ -84,9 +84,9 @@
 \S4method{flank}{GenomicRangesList}(x, width, start=TRUE, both=FALSE,
       use.names=TRUE, ignore.strand=FALSE)
 
-\S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, ...)
-\S4method{promoters}{GRangesList}(x, upstream=2000, downstream=200, ...)
-\S4method{promoters}{GenomicRangesList}(x, upstream=2000, downstream=200, ...)
+\S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200)
+\S4method{promoters}{GRangesList}(x, upstream=2000, downstream=200)
+\S4method{promoters}{GenomicRangesList}(x, upstream=2000, downstream=200)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE,
          use.names=TRUE)
