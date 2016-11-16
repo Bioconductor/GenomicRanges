@@ -400,7 +400,7 @@ set_GenomicRanges_seqinfo <-
     pruning.mode <- match.arg(pruning.mode)
     if (pruning.mode == "fine")
         stop(wmsg("\"fine\" pruning mode not supported on ",
-                  class(x), "objects"))
+                  class(x), " objects"))
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
     dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
