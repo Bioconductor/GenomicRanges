@@ -41,10 +41,10 @@ test_range_GRangesList <- function()
 
     # test with.revmap
     obj <- range(grl, with.revmap=TRUE, ignore.strand=TRUE)
-    revmap1 <- unname(mcols(obj[[1]])$revmap)
-    revmap2 <- unname(mcols(obj[[2]])$revmap)
-    ans1 <- unname(IntegerList(c(1,5,6),  c(2,3,4),  c(7:10)))
-    ans2 <- unname(IntegerList(c(5,6,10), c(7:9), c(1:4)))
+    revmap1 <- mcols(obj[[1]])$revmap
+    revmap2 <- mcols(obj[[2]])$revmap
+    ans1 <- IntegerList(c(1,5,6),  c(2,3,4),  c(7:10))
+    ans2 <- IntegerList(c(5,6,10), c(7:9), c(1:4))
     checkIdentical(revmap1, ans1)
     checkIdentical(revmap2, ans2)    
 }
