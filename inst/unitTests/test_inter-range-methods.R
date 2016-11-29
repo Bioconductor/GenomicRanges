@@ -23,9 +23,9 @@ test_range_GenomicRanges <- function()
     checkIdentical(target, current)
 
     # test with.revmap
-    revmap <- unname(mcols(range(gr, with.revmap=T, ignore.strand=TRUE))$revmap)
-    ans <- unname(IntegerList(c(1,5,6),  c(2,3,4),  c(7:10)))
-    checkIdentical(revmap, ans)
+    current <- range(gr, with.revmap=TRUE, ignore.strand=TRUE)
+    mcols(target)$revmap <- IntegerList(c(1,5,6),  c(2,3,4),  c(7:10))
+    checkIdentical(target, current)
 }
 
 test_range_GRangesList <- function()
