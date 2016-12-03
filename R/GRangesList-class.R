@@ -56,8 +56,6 @@ GRangesList <- function(...)
     listData <- list(...)
     if (length(listData) == 1L && is.list(listData[[1L]]))
         listData <- listData[[1L]]
-    if (length(listData) == 1L && !is(listData[[1L]], "GRanges"))
-            return(as(listData[[1L]], "GRangesList")
     if (length(listData) == 0L) {
         unlistData <- GRanges()
     } else {
@@ -197,7 +195,7 @@ setMethod("ranges", "GRangesList",
 )
 
 setReplaceMethod("ranges", "GRangesList",
-    function(x, value)
+    function(x, value) 
     {
         if (!is(value, "RangesList") ||
             !identical(elementNROWS(x), elementNROWS(value)))
@@ -299,7 +297,7 @@ set_GRangesList_strand <- function(x, value)
     x
 }
 setReplaceMethod("strand", c("GRangesList", "ANY"), set_GRangesList_strand)
-setReplaceMethod("strand", c("GRangesList", "character"),
+setReplaceMethod("strand", c("GRangesList", "character"), 
     function(x, ..., value)
     {
         if (length(value) > 1L)
@@ -310,7 +308,7 @@ setReplaceMethod("strand", c("GRangesList", "character"),
 )
 
 ### NOT exported but used in GenomicAlignments package.
-get_GRangesList_mcols <-
+get_GRangesList_mcols <- 
     function(x, use.names=FALSE, level = c("between", "within"), ...)
 {
     if (!isTRUEorFALSE(use.names))
@@ -331,7 +329,7 @@ get_GRangesList_mcols <-
 setMethod("elementMetadata", "GRangesList", get_GRangesList_mcols)
 
 ### NOT exported but used in GenomicAlignments package.
-set_GRangesList_mcols <-
+set_GRangesList_mcols <- 
     function(x, level = c("between", "within"), ..., value)
 {
         level <- match.arg(level)
@@ -428,8 +426,6 @@ setAs("GRangesList", "RangesList",
 
 setAs("GRanges", "GRangesList", function(from) as(from, "List"))
 
-setAs("list", "GRangesList",
-      function(from) do.call(GRangesList, from))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
