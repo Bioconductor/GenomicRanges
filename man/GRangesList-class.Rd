@@ -37,6 +37,7 @@
 \alias{coerce,GRangesList,IRangesList-method}
 \alias{coerce,GRangesList,RangesList-method}
 \alias{coerce,GRanges,GRangesList-method}
+\alias{coerce,list,GRangesList-method}
 
 % Subsetting:
 \alias{[,GRangesList,ANY-method}
@@ -66,7 +67,7 @@
     \item{}{
       \code{GRangesList(...)}:
       Creates a GRangesList object using GRanges objects
-      supplied in \code{\ldots}.
+      supplied in \code{\ldots}, either consecutively or in a list.
     }
     \item{}{
       \code{makeGRangesListFromFeatureFragments(seqnames=Rle(factor()),
@@ -80,7 +81,7 @@
 
 \section{Accessors}{
   In the following code snippets, \code{x} is a GRanges object.
-  
+
   \describe{
     \item{}{
       \code{length(x)}:
@@ -127,7 +128,7 @@
       an RleList, CharacterList or single character. \code{value} as a
       single character converts all ranges in \code{x} to the same
       \code{value}; for selective strand conversion (i.e., mixed \dQuote{+}
-      and \dQuote{-}) use RleList or CharacterList. 
+      and \dQuote{-}) use RleList or CharacterList.
     }
     \item{}{
       \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
@@ -193,16 +194,26 @@
   \describe{
     \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE,
-         ..., value.name = "value", use.outer.mcols = FALSE, 
-         group_name.as.factor = FALSE)}: 
-      Coerces \code{x} to a \code{data.frame}. See as.data.frame on the 
-      \code{List} man page for details (?\code{List}). 
+         ..., value.name = "value", use.outer.mcols = FALSE,
+         group_name.as.factor = FALSE)}:
+      Coerces \code{x} to a \code{data.frame}. See as.data.frame on the
+      \code{List} man page for details (?\code{List}).
     }
     \item{}{\code{as.list(x, use.names = TRUE)}:
       Creates a list containing the elements of \code{x}.
     }
     \item{}{\code{as(x, "IRangesList")}:
       Turns \code{x} into an \link[IRanges]{IRangesList} object.
+    }
+  }
+
+  When \code{x} is a \code{list} of \code{GRanges}, it can be coerced to a
+  \code{GRangesList}.
+
+  \describe{
+    \item{}{
+      \code{as(x, "GRangesList")}:
+        Turns \code{x} into a \code{GRangesList}.
     }
   }
 }
@@ -402,7 +413,7 @@ disjoin(grl)  # metadata columns and order NOT preserved
 ## Construction with makeGRangesListFromFeatureFragments():
 filepath <- system.file("extdata", "feature_frags.txt",
                         package="GenomicRanges")
-featfrags <- read.table(filepath, header=TRUE, stringsAsFactors=FALSE) 
+featfrags <- read.table(filepath, header=TRUE, stringsAsFactors=FALSE)
 grl2 <- with(featfrags,
              makeGRangesListFromFeatureFragments(seqnames=targetName,
                                                  fragmentStarts=targetStart,

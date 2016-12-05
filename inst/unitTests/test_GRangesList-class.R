@@ -21,6 +21,8 @@ test_GRangesList_construction <- function() {
     checkTrue(validObject(new("GRangesList")))
     checkTrue(validObject(GRangesList()))
     checkTrue(validObject(GRangesList(GRanges())))
+    checkTrue(validObject(GRangesList(GRanges(), GRanges())))
+    checkTrue(validObject(GRangesList(list(GRanges(), GRanges()))))
     checkTrue(validObject(GRangesList(a = GRanges())))
     checkTrue(validObject(make_test_GRangesList()))
 }
@@ -131,10 +133,10 @@ test_GRangesList_Vector <- function() {
     checkIdentical(grl[,"score"],
                    GRangesList(lapply(grl, function(x) x[,"score"])))
     checkIdentical(grl[seqnames(grl) == "chr2",],
-                   GRangesList(lapply(grl, function(x) 
+                   GRangesList(lapply(grl, function(x)
                                       x[seqnames(x) == "chr2",])))
     checkIdentical(grl[seqnames(grl) == "chr2", "score"],
-                   GRangesList(lapply(grl, function(x) 
+                   GRangesList(lapply(grl, function(x)
                                       x[seqnames(x) == "chr2", "score"])))
 
     checkIdentical(GRangesList(), c(GRangesList(), GRangesList()))
