@@ -1,4 +1,4 @@
-% \VignetteIndexEntry{Extending GenomicRanges}
+% \VignetteIndexEntry{5. Extending GenomicRanges}
 % \VignetteDepends{GenomicRanges, VariantAnnotation}
 % \VignetteKeywords{ranges}
 % \VignettePackage{GenomicRanges}

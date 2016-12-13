@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{10 Things You Didn't Know (slides from BioC 2016)}
+%\VignetteIndexEntry{4. Ten Things You Didn't Know (slides from BioC 2016)}
 %\VignetteDepends{GenomicRanges, Biostrings, Rsamtools, BSgenome, hgu95av2probe}
 
 \SweaveOpts{keep.source=TRUE, eps=FALSE, width=9, height=3}

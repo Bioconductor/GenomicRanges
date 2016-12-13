@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{An Introduction to the GenomicRanges Package}
+%\VignetteIndexEntry{1. An Introduction to the GenomicRanges Package}
 %\VignetteKeywords{sequence, sequencing}
 %\VignettePackage{GenomicRanges}
 \documentclass{article}

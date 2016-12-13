@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{A quick introduction to GRanges and GRangesList objects (slides)}
+%\VignetteIndexEntry{3. A quick introduction to GRanges and GRangesList objects (slides)}
 %\VignetteDepends{IRanges, GenomicRanges, pasillaBamSubset, GenomicAlignments, TxDb.Dmelanogaster.UCSC.dm3.ensGene}
 
 \SweaveOpts{keep.source=TRUE, eps=FALSE, width=9, height=3}
