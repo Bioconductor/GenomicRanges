@@ -100,10 +100,9 @@
       and \code{-} strand. Using positions 5 and 6 as an example, 5 precedes 
       6 on the \code{+} strand but follows 6 on the \code{-} strand.
 
-      A range with strand \code{*} can be compared to ranges on either the
-      \code{+} or \code{-} strand. Below we outline the priority when ranges 
-      on multiple strands are compared. When \code{ignore.strand=TRUE} all 
-      ranges are treated as if on the \code{+} strand. 
+      Below we outline the priority when ranges on multiple strands are 
+      compared. Ranges of strand \code{*} treat all ranges as if on the 
+      \code{+} strand; this is the behavior as \code{ignore.strand=TRUE}.
       \itemize{
         \item{}{x on + strand can match to ranges on both + and 
           * strands. In the case of a tie the first range by order 
@@ -113,9 +112,8 @@
           * strands. In the case of a tie the first range by order 
           is chosen.
         } 
-        \item{}{x on * strand can match to ranges on any of +, 
-          - or * strands. In the case of a tie the first range by
-          order is chosen.
+        \item{}{x on * treats all ranges as if on the \code{+} strand.
+          In the case of a tie the first range by order is chosen.
         }
       }
     }
