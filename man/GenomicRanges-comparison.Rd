@@ -49,7 +49,8 @@
 \S4method{sort}{GenomicRanges}(x, decreasing=FALSE, ignore.strand=FALSE, by)
 
 \S4method{rank}{GenomicRanges}(x, na.last=TRUE,
-     ties.method=c("average", "first", "random", "max", "min"))
+     ties.method=c("average", "first", "last", "random", "max", "min"),
+     ignore.strand=FALSE)
 
 ## Generalized parallel comparison of 2 GenomicRanges objects
 ## ----------------------------------------------------------
@@ -211,7 +212,8 @@ score(gr) <- rev(seq_len(length(gr)))
 ## TODO: Broken. Please fix!
 #sort(gr, by = ~ score)
 
-rank(gr)
+rank(gr, ties.method="first")
+rank(gr, ties.method="first", ignore.strand=TRUE)
 
 ## ---------------------------------------------------------------------
 ## F. GENERALIZED ELEMENT-WISE COMPARISON OF 2 GenomicRanges OBJECTS

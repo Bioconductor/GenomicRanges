@@ -55,7 +55,7 @@ GRangesList <- function(...)
 {
     listData <- list(...)
     if (length(listData) == 1L && !is(listData[[1L]], "GRanges"))
-            return(as(listData[[1L]], "GRangesList"))
+        return(as(listData[[1L]], "GRangesList"))
     if (length(listData) == 0L) {
         unlistData <- GRanges()
     } else {

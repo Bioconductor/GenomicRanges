@@ -19,8 +19,8 @@
 ### implicitly. Also, note that, because we already do (c) and (d) for regular
 ### ranges, genomic ranges that belong to the same underlying sequence
 ### and strand are ordered like regular ranges.
-### order(), sort(), and rank() on a GenomicRanges object are using this
-### "natural order".
+### is.unsorted(), order(), sort(), and rank() on a GenomicRanges object
+### adhere to this "natural order".
 ###
 ### III. ELEMENT-WISE (AKA "PARALLEL") COMPARISON OF 2 GenomicRanges OBJECTS
 ### ------------------------------------------------------------------------
@@ -286,4 +286,24 @@ setMethod("order", "GenomicRanges",
 sort.GenomicRanges <- function(x, decreasing=FALSE, ...)
     .sort.GenomicRanges(x, decreasing=decreasing, ...)
 setMethod("sort", "GenomicRanges", .sort.GenomicRanges)
+
+setMethod("rank", "GenomicRanges",
+    function(x, na.last=TRUE,
+             ties.method=c("average", "first", "last", "random", "max", "min"),
+             ignore.strand=FALSE)
+    {
+        ties.method <- match.arg(ties.method)
+        oo <- .order_GenomicRanges(x, ignore.strand=ignore.strand)
+        ## 'ans' is the reverse permutation of 'oo'.
+        ans <- integer(length(oo))
+        ans[oo] <- seq_along(oo)
+        if (ties.method == "first")
+            return(ans)
+        ans <- ans[selfmatch(x)]
+        if (ties.method == "min")
+            return(ans)
+        ## Other ties methods.
+        rank(ans, ties.method=ties.method) 
+    }
+)
 

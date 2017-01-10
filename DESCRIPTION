@@ -10,13 +10,13 @@ Description: The ability to efficiently represent and manipulate genomic
 	summarization of an experiment, are defined in the GenomicAlignments
 	and SummarizedExperiment packages respectively. Both packages build
 	on top of the GenomicRanges infrastructure.
-Version: 1.27.18
+Version: 1.27.19
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
 	GenomeAnnotation
-Depends: R (>= 2.10), methods, stats4, BiocGenerics (>= 0.17.5),
+Depends: R (>= 2.10), methods, stats4, BiocGenerics (>= 0.21.2),
 	S4Vectors (>= 0.9.47), IRanges (>= 2.9.11), GenomeInfoDb (>= 1.11.5)
 Imports: utils, stats, XVector
 LinkingTo: S4Vectors, IRanges
