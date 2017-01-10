@@ -293,18 +293,11 @@ setMethod("rank", "GenomicRanges",
              ties.method=c("average", "first", "last", "random", "max", "min"),
              ignore.strand=FALSE)
     {
-        ties.method <- match.arg(ties.method)
-        oo <- order_GenomicRanges(x, ignore.strand=ignore.strand)
-        ## 'ans' is the reverse permutation of 'oo'.
-        ans <- integer(length(oo))
-        ans[oo] <- seq_along(oo)
-        if (ties.method == "first")
-            return(ans)
-        ans <- ans[selfmatch(x)]
-        if (ties.method == "min")
-            return(ans)
-        ## Other ties methods.
-        rank(ans, ties.method=ties.method) 
+        if (!isTRUEorFALSE(ignore.strand))
+            stop("'ignore.strand' must be TRUE of FALSE")
+        if (ignore.strand)
+            x <- unstrand(x)
+        callNextMethod(x, na.last=na.last, ties.method=ties.method)
     }
 )
 
