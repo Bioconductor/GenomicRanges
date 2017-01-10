@@ -232,7 +232,8 @@ setMethod("is.unsorted", "GenomicRanges",
     }
 )
 
-.order_GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
+### NOT exported but used in GenomicAlignments package.
+order_GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
 {
     if (!isTRUEorFALSE(decreasing))
         stop("'decreasing' must be TRUE or FALSE")
@@ -263,7 +264,7 @@ setMethod("order", "GenomicRanges",
         ## All arguments in '...' are guaranteed to be GenomicRanges objects.
         args <- list(...)
         if (length(args) == 1L)
-            return(.order_GenomicRanges(args[[1L]], decreasing))
+            return(order_GenomicRanges(args[[1L]], decreasing))
         order_args <- c(unlist(lapply(args, .GenomicRanges_as_IntegerQuads),
                                recursive=FALSE, use.names=FALSE),
                         list(na.last=na.last, decreasing=decreasing))
@@ -275,7 +276,7 @@ setMethod("order", "GenomicRanges",
 .sort.GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE, by)
 {
     if (missing(by)) {
-        oo <- .order_GenomicRanges(x, decreasing, ignore.strand)
+        oo <- order_GenomicRanges(x, decreasing, ignore.strand)
     } else {
         if (!identical(ignore.strand, FALSE))
             warning("'ignore.strand' ignored when 'by' is specified")
@@ -293,7 +294,7 @@ setMethod("rank", "GenomicRanges",
              ignore.strand=FALSE)
     {
         ties.method <- match.arg(ties.method)
-        oo <- .order_GenomicRanges(x, ignore.strand=ignore.strand)
+        oo <- order_GenomicRanges(x, ignore.strand=ignore.strand)
         ## 'ans' is the reverse permutation of 'oo'.
         ans <- integer(length(oo))
         ans[oo] <- seq_along(oo)
