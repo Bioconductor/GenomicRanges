@@ -1,20 +1,11 @@
 ###
 
-make_test_GRanges <- function() {
-    ## TODO: Make a GRanges object that is more challenging to check whether
-    ## it is sorted.
-    GRanges(
-        Rle(factor(c("chr1", "chr2", "chr1", "chr3"),
-                   levels=paste0("chr", 1:5)),
-            c(1, 3, 2, 4)),
-        IRanges(1:10, width=10:1, names=head(letters, 10)),
-        strand=Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        score=1:10,
-        GC=seq(1, 0, length=10)
-   )
-}
+make_test_GRanges <- function()
+    GRanges("chr1",
+            IRanges(c(11:13, 13:10, 11:12), width=5, names=LETTERS[1:9]),
+            Rle(strand(c("+", "-", "+", "-")), c(4, 3, 1, 1)))
 
-test_is.unsorted <- function()
+test_is.unsorted_GenomicRanges <- function()
 {
     gr <- make_test_GRanges()
 
@@ -23,40 +14,76 @@ test_is.unsorted <- function()
                    silent=TRUE)
 
     checkTrue(is.unsorted(gr))
-    checkTrue(!is.unsorted(sort(gr)))
+    checkTrue(is.unsorted(gr, strictly=TRUE))
 
-    ## is.unsorted() should return TRUE if 'strictly=TRUE' and 'gr' contains
-    ## duplicate ranges, even if these are sorted.
-    dup_gr <- sort(c(gr[1], gr[1]))
-    checkTrue(!is.unsorted(dup_gr))
-    checkTrue(is.unsorted(dup_gr, strictly=TRUE))
-
-    ## Ranges that differ in only seqnames, strand, start, or width
-    x <- c(gr[1], gr[1])
-    xx <- x
-    seqnames(xx) <- factor(c("chr2", "chr1"), levels=seqlevels(xx))
-    checkTrue(is.unsorted(xx))
-    checkTrue(!is.unsorted(rev(xx)))
-
-    xx <- x
-    strand(xx) <- c("-", "+")
-    checkTrue(is.unsorted(xx))
-    checkTrue(!is.unsorted(rev(xx)))
-
-    xx <- x
-    start(xx) <- c(2, 1)
-    checkTrue(is.unsorted(xx))
-    checkTrue(!is.unsorted(rev(xx)))
-
-    xx <- x
-    width(xx) <- c(10, 7)
-    checkTrue(is.unsorted(xx))
-    checkTrue(!is.unsorted(rev(xx)))
+    sorted_gr <- sort(gr)
+    checkTrue(!is.unsorted(sorted_gr))
+    checkTrue(is.unsorted(sorted_gr, strictly=TRUE))
+    checkTrue(!is.unsorted(unique(sorted_gr), strictly=TRUE))
 
     ## Ignore the strand
     checkTrue(is.unsorted(gr, ignore.strand=TRUE))
-    gr2 <- sort(gr, ignore.strand=TRUE)
-    checkTrue(is.unsorted(gr2))
-    checkTrue(!is.unsorted(gr2, ignore.strand=TRUE))
+    checkTrue(is.unsorted(gr, strictly=TRUE, ignore.strand=TRUE))
+
+    sorted_gr <- sort(gr, ignore.strand=TRUE)
+    checkTrue(is.unsorted(sorted_gr))
+    checkTrue(!is.unsorted(sorted_gr, ignore.strand=TRUE))
+    checkTrue(is.unsorted(sorted_gr, strictly=TRUE, ignore.strand=TRUE))
+
+    gr2 <- sorted_gr[c(1:2, 7:8)]
+    checkTrue(!is.unsorted(gr2, strictly=TRUE, ignore.strand=TRUE))
+    checkTrue(is.unsorted(gr2, strictly=TRUE))
+}
+
+test_order_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+
+    target <- c(1L, 8L, 2L, 3L, 4L, 7L, 6L, 5L, 9L)
+    checkTrue(!is.unsorted(gr[target]))
+    checkIdentical(target, order(gr))
+
+    target <- c(5L, 9L, 6L, 7L, 3L, 4L, 2L, 1L, 8L)
+    checkTrue(!is.unsorted(gr[rev(target)]))
+    checkIdentical(target, order(gr, decreasing=TRUE))
+}
+
+test_sort_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+
+    sorted_names <- c("A", "H", "B", "C", "D", "G", "F", "E", "I")
+    checkIdentical(gr[sorted_names], sort(gr))
+
+    sorted_names <- c("E", "I", "F", "G", "C", "D", "B", "A", "H")
+    checkIdentical(gr[sorted_names], sort(gr, decreasing=TRUE))
+
+    ## Ignore the strand
+    sorted_names <- names(sort(unstrand(gr)))
+    checkIdentical(gr[sorted_names], sort(gr, ignore.strand=TRUE))
+
+    sorted_names <- names(sort(unstrand(gr), decreasing=TRUE))
+    checkIdentical(gr[sorted_names], sort(gr, decreasing=TRUE,
+                                              ignore.strand=TRUE))
+}
+
+test_rank_GenomicRanges <- function()
+{
+    gr <- make_test_GRanges()
+
+    target <- c(1L, 3L, 4L, 4L, 8L, 7L, 6L, 1L, 8L)
+    checkIdentical(target, rank(gr, ties.method="min"))
+
+    checkIdentical(rank(target), rank(gr))
+    checkIdentical(rank(target, ties.method="average"),
+                   rank(gr, ties.method="average"))
+    checkIdentical(rank(target, ties.method="first"),
+                   rank(gr, ties.method="first"))
+    checkIdentical(rank(target, ties.method="last"),
+                   rank(gr, ties.method="last"))
+    checkIdentical(rank(target, ties.method="max"),
+                   rank(gr, ties.method="max"))
+    checkIdentical(rank(target, ties.method="min"),
+                   rank(gr, ties.method="min"))
 }
 
