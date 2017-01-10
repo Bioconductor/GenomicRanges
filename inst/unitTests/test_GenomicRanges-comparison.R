@@ -85,5 +85,19 @@ test_rank_GenomicRanges <- function()
                    rank(gr, ties.method="max"))
     checkIdentical(rank(target, ties.method="min"),
                    rank(gr, ties.method="min"))
+
+    ## Ignore the strand
+    checkIdentical(rank(unstrand(gr)),
+                   rank(gr, ignore.strand=TRUE))
+    checkIdentical(rank(unstrand(gr), ties.method="average"),
+                   rank(gr, ties.method="average", ignore.strand=TRUE))
+    checkIdentical(rank(unstrand(gr), ties.method="first"),
+                   rank(gr, ties.method="first", ignore.strand=TRUE))
+    checkIdentical(rank(unstrand(gr), ties.method="last"),
+                   rank(gr, ties.method="last", ignore.strand=TRUE))
+    checkIdentical(rank(unstrand(gr), ties.method="max"),
+                   rank(gr, ties.method="max", ignore.strand=TRUE))
+    checkIdentical(rank(unstrand(gr), ties.method="min"),
+                   rank(gr, ties.method="min", ignore.strand=TRUE))
 }
 
