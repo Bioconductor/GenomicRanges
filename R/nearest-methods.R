@@ -140,49 +140,53 @@
     spid <- which(strand(subject) != "-")
     smid <- which(strand(subject) != "+")
 
-    ## '+' query
-    idx <- which(strand(query) == "+")
+    ## '+' or '*' query
+    idx <- which(strand(query) != "-")
     phit <- plusfun(queryStart[idx], queryEnd[idx],
-        subjectStart[spid], subjectEnd[spid], sentinel)
+                    subjectStart[spid], subjectEnd[spid], sentinel)
     phit <- .Hits(qid[idx][queryHits(phit)], spid[subjectHits(phit)])
 
-    ## '-' query
-    idx <- which(strand(query) == "-")
+    ## '-' or '*' query
+    idx <- which(strand(query) != "+")
     mhit <- minusfun(queryStart[idx], queryEnd[idx],
-        subjectStart[smid], subjectEnd[smid], sentinel)
+                     subjectStart[smid], subjectEnd[smid], sentinel)
     mhit <- .Hits(qid[idx][queryHits(mhit)], smid[subjectHits(mhit)])
-
-    ### '*' query equivalent to ignore.strand = TRUE
-    idx <- which(strand(query) == "*")
-    bhit <- local({
-        qid <- qid[idx]
-        phit <- plusfun(queryStart[idx], queryEnd[idx],
-            subjectStart, subjectEnd, sentinel)
-        .Hits(qid[queryHits(phit)], subjectHits(phit),
-              length(query), length(subject))
-    })
+    ## When both query and subject are '*', treat as if on '+' strand.
+    ## This combo was tested in 'phit' and should be removed from 'mhit'.
+    sstar <- which(strand(subject) == "*") 
+    qstar <- which(strand(query) == "*")
+    remove <- queryHits(mhit) %in% qstar & subjectHits(mhit) %in% sstar
+    mhit <- mhit[!remove]
 
     ## clean up
-    qryHits <- c(queryHits(phit), queryHits(mhit), queryHits(bhit))
-    subjHits <- c(subjectHits(phit), subjectHits(mhit), subjectHits(bhit))
-    if ("arbitrary" == select) {
-        hits <- integer()
-        hits[length(query)] <- NA_integer_
-        idx <- !duplicated(qryHits) ## ties
-        hits[qryHits[idx]] <- subjHits[idx]
-    } else {
-        hits <- .Hits(qryHits, subjHits, length(query), length(subject))
-    }
-    hits
+    qryHits <- c(queryHits(phit), queryHits(mhit))
+    subjHits <- c(subjectHits(phit), subjectHits(mhit))
+    hits <- .Hits(qryHits, subjHits, length(query), length(subject))
+    if (select == "all") {
+        hits 
+    } else if (select == "first") {
+        first <- rep(NA_integer_, length(query))
+        idx <- which(!duplicated(queryHits(hits)))
+        first[queryHits(hits)[idx]] <- subjectHits(hits)[idx]
+        first 
+    } else if ("last" == select) {
+        last <- rep(NA_integer_, length(query))
+        rev_query <- rev(queryHits(hits)) ## can't call rev() on Hits
+        idx <- which(!duplicated(rev_query))
+        last[rev_query[idx]] <- rev(subjectHits(hits))[idx]
+        last
+    } else
+        stop("'select' must be one of c('first', 'last', 'all')")
 }
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### precede() and follow()
 ###
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+    function(x, subject, 
+             select=c("first", "all"),
+             ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
@@ -191,7 +195,9 @@ setMethod("precede", c("GenomicRanges", "GenomicRanges"),
 )
 
 setMethod("precede", c("GenomicRanges", "missing"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+    function(x, subject,
+             select=c("first", "all"),
+             ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
@@ -200,7 +206,9 @@ setMethod("precede", c("GenomicRanges", "missing"),
 )
 
 setMethod("follow", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+    function(x, subject,
+             select=c("last", "all"),
+             ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
@@ -209,7 +217,9 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
 )
 
 setMethod("follow", c("GenomicRanges", "missing"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+    function(x, subject,
+             select=c("last", "all"),
+             ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
@@ -248,8 +258,14 @@ setMethod("follow", c("GenomicRanges", "missing"),
 
     ## non-overlapping ranges
     if (length(x <- x[is.na(olv)]) != 0) {
-        p <- precede(x, subject, select, ignore.strand)
-        f <- follow(x, subject, select, ignore.strand)
+        ## precede() and follow() do not support select="arbitrary"
+        if (select == "arbitrary") {
+            p <- precede(x, subject, select="first", ignore.strand)
+            f <- follow(x, subject, select="last", ignore.strand)
+        } else {
+            p <- precede(x, subject, select, ignore.strand)
+            f <- follow(x, subject, select, ignore.strand)
+        }
 
         ## terminate if no results
         if (!length(p) && !length(f)) {
@@ -267,7 +283,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
             p0 <- p
             p <- selectHits(p, select="first")
             f0 <- f
-            f <- selectHits(f, select="first")
+            f <- selectHits(f, select="last")
         }
 
         ## choose nearest or not missing
@@ -302,9 +318,10 @@ setMethod("follow", c("GenomicRanges", "missing"),
     } else NA
 }
 
-
 setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+    function(x, subject,
+             select=c("arbitrary", "all"),
+             ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .nearest(x, subject, select=select, ignore.strand=ignore.strand)
@@ -312,7 +329,9 @@ setMethod("nearest", c("GenomicRanges", "GenomicRanges"),
 )
 
 setMethod("nearest", c("GenomicRanges", "missing"),
-    function(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+    function(x, subject,
+             select=c("arbitrary", "all"),
+             ignore.strand=FALSE)
     {
         select <- match.arg(select)
         .nearest(x, x, select=select, ignore.strand=ignore.strand,

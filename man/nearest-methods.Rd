@@ -26,19 +26,28 @@
 }
 
 \usage{
-\S4method{precede}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
-\S4method{precede}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{precede}{GenomicRanges,GenomicRanges}(x, subject, 
+    select=c("first", "all"), ignore.strand=FALSE)
+\S4method{precede}{GenomicRanges,missing}(x, subject, 
+    select=c("first", "all"), ignore.strand=FALSE)
 
-\S4method{follow}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
-\S4method{follow}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{follow}{GenomicRanges,GenomicRanges}(x, subject, 
+    select=c("last", "all"), ignore.strand=FALSE)
+\S4method{follow}{GenomicRanges,missing}(x, subject, 
+    select=c("last", "all"), ignore.strand=FALSE)
 
-\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
-\S4method{nearest}{GenomicRanges,missing}(x, subject, select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, 
+    select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{nearest}{GenomicRanges,missing}(x, subject, 
+    select=c("arbitrary", "all"), ignore.strand=FALSE)
 
-\S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, ignore.strand=FALSE, ...)
-\S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, ignore.strand=FALSE, ...)
+\S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, 
+    ignore.strand=FALSE, ...)
+\S4method{distanceToNearest}{GenomicRanges,missing}(x, subject, 
+    ignore.strand=FALSE, ...)
 
-\S4method{distance}{GenomicRanges,GenomicRanges}(x, y, ignore.strand=FALSE, ...)
+\S4method{distance}{GenomicRanges,GenomicRanges}(x, y, 
+    ignore.strand=FALSE, ...)
 }
 
 \arguments{
@@ -58,9 +67,7 @@
     last for \code{follow}). 
 
     When \code{select="all"} a \link[S4Vectors]{Hits} object is returned with 
-    all matches for \code{x}. If \code{x} does not have a match in 
-    \code{subject} the \code{x} is not included in the \link[S4Vectors]{Hits}
-    object. 
+    all matches for \code{x}.
   }
   \item{ignore.strand}{
     A \code{logical} indicating if the strand of the input ranges
@@ -91,31 +98,32 @@
       range in \code{x}. Overlapping ranges are excluded. \code{NA} is returned 
       when there are no qualifying ranges in \code{subject}.
     }
-    \item{Orientation and Strand: }{
-      The relevant orientation for \code{precede} and \code{follow} 
-      is 5' to 3', consistent with the direction of translation. 
+    \item{Orientation and strand for \code{precede} and \code{follow}: }{
+      Orientation is 5' to 3', consistent with the direction of translation. 
       Because positional numbering along a chromosome is from left to 
       right and transcription takes place from 5' to 3', \code{precede} and 
       \code{follow} can appear to have `opposite' behavior on the \code{+}
       and \code{-} strand. Using positions 5 and 6 as an example, 5 precedes 
       6 on the \code{+} strand but follows 6 on the \code{-} strand.
 
-      Below we outline the priority when ranges on multiple strands are 
-      compared. Ranges of strand \code{*} treat all ranges as if on the 
-      \code{+} strand; this is the behavior as \code{ignore.strand=TRUE}.
-      \itemize{
-        \item{}{x on + strand can match to ranges on both + and 
-          * strands. In the case of a tie the first range by order 
-          is chosen.
-        } 
-        \item{}{x on - strand can match to ranges on both - and 
-          * strands. In the case of a tie the first range by order 
-          is chosen.
-        } 
-        \item{}{x on * treats all ranges as if on the \code{+} strand.
-          In the case of a tie the first range by order is chosen.
-        }
-      }
+      The table below outlines the orientation when ranges on different 
+      strands are compared. In general, a feature on \code{*} is considered
+      to belong to both strands. The single exception is when both \code{x} 
+      and \code{subject} are \code{*} in which case both are treated as \code{+}.
+\preformatted{
+       x  |  subject  |  orientation 
+     -----+-----------+----------------
+a)     +  |  +        |  ---> 
+b)     +  |  -        |  NA
+c)     +  |  *        |  --->
+d)     -  |  +        |  NA
+e)     -  |  -        |  <---
+f)     -  |  *        |  <---
+g)     *  |  +        |  --->
+h)     *  |  -        |  <---
+i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
+}
+
     }
     \item{distanceToNearest: }{Returns the distance for each range in \code{x}
       to its nearest neighbor in the \code{subject}. 
