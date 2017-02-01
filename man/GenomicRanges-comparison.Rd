@@ -29,7 +29,7 @@
 ## ------------
 
 \S4method{duplicated}{GenomicRanges}(x, incomparables=FALSE, fromLast=FALSE,
-           method=c("auto", "quick", "hash"))
+           nmax=NA, method=c("auto", "quick", "hash"))
 
 ## match() & selfmatch()
 ## ---------------------
@@ -65,7 +65,7 @@
   \item{incomparables}{
     Not supported.
   }
-  \item{fromLast, method, nomatch}{
+  \item{fromLast, method, nomatch, nmax}{
     See \code{?`\link[IRanges]{Ranges-comparison}`} in the \pkg{IRanges}
     package for a description of these arguments.
   }
