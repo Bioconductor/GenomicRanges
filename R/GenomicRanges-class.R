@@ -10,7 +10,7 @@ setClass("GenomicRanges",
     representation(
         "VIRTUAL"#,
         #No more constraint slot for now...
-        #constraint="ConstraintORNULL"
+        #constraint="Constraint_OR_NULL"
     )
 )
 
@@ -438,7 +438,7 @@ setReplaceMethod("score", "GenomicRanges", function(x, value) {
 #    {
 #        if (isSingleString(value))
 #            value <- new(value)
-#        if (!is(value, "ConstraintORNULL"))
+#        if (!is(value, "Constraint_OR_NULL"))
 #            stop("the supplied 'constraint' must be a ",
 #                 "Constraint object, a single string, or NULL")
 #        x@constraint <- value

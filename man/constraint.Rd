@@ -4,9 +4,9 @@
 \alias{class:Constraint}
 \alias{Constraint-class}
 \alias{Constraint}
-\alias{class:ConstraintORNULL}
-\alias{ConstraintORNULL-class}
-\alias{ConstraintORNULL}
+\alias{class:Constraint_OR_NULL}
+\alias{Constraint_OR_NULL-class}
+\alias{Constraint_OR_NULL}
 
 \alias{constraint}
 \alias{constraint<-}
@@ -46,7 +46,7 @@
   constraints on objects of class A:
   \enumerate{
     \item Add a slot named \code{constraint} to the definition of class A.
-          The type of this slot must be ConstraintORNULL. Note that
+          The type of this slot must be Constraint_OR_NULL. Note that
           any subclass of A will inherit this slot.
     \item Implements the \code{constraint()} accessors (getter and setter)
           for objects of class A. This is done by implementing the
@@ -128,7 +128,7 @@
 #    {
 #        if (isSingleString(value))
 #            value <- new(value)
-#        if (!is(value, "ConstraintORNULL"))
+#        if (!is(value, "Constraint_OR_NULL"))
 #            stop("the supplied 'constraint' must be a ",
 #                 "Constraint object, a single string, or NULL")
 #        x@constraint <- value

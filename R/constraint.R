@@ -39,7 +39,7 @@ setValidity2("Constraint",
 
 ### Constrained objects can store a Constraint object (or NULL if no
 ### constraints) in their 'constraint' slot.
-setClassUnion("ConstraintORNULL", c("Constraint", "NULL"))
+setClassUnion("Constraint_OR_NULL", c("Constraint", "NULL"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
