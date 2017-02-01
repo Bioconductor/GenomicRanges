@@ -93,6 +93,7 @@ setMethod("pcompare", c("GenomicRanges", "GenomicRanges"),
 ###
 
 .duplicated.GenomicRanges <- function(x, incomparables=FALSE, fromLast=FALSE,
+                                      nmax = NA,
                                       method=c("auto", "quick", "hash"))
 {
     if (!identical(incomparables, FALSE))
