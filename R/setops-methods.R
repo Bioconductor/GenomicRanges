@@ -19,8 +19,10 @@
         stop("'x' and 'y' must have the same length")
     seqinfo(x) <- merge(seqinfo(x), seqinfo(y))
     seqlevels(y) <- seqlevels(x)
-    xgr <- deconstructGRLintoGR(x, expand.levels=TRUE)
-    ygr <- deconstructGRLintoGR(y, expand.levels=TRUE)
+    xgr <- deconstructGRLintoGR(x)
+    ygr <- deconstructGRLintoGR(y)
+    seqinfo(xgr) <- suppressWarnings(merge(seqinfo(xgr), seqinfo(ygr)))
+    seqlevels(ygr) <- seqlevels(xgr)
     gr <- FUN(xgr, ygr, ...)
     reconstructGRLfromGR(gr, x)
 }
