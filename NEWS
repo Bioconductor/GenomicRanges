@@ -1,3 +1,44 @@
+CHANGES IN VERSION 1.28.0
+-------------------------
+
+NEW FEATURES
+
+    o Add coercion from ordinary list to GRangesList. Also the GRangesList()
+      constructor function now accepts a list of GRanges as input (and just
+      calls new coercion from list to GRangesList on it internally).
+
+    o seqlevels() setter now supports "fine" and "tidy" pruning modes on
+      GRangesList objects (in addition to "coarse" mode, which is the default).
+
+    o "range" methods now have a 'with.revmap' argument (like "reduce" and
+      "disjoin" methods).
+
+    o Add a bunch of range-oriented methods for GenomicRangesList objects.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Some changes/improvements to "precede" and "follow" methods for
+      GenomicRanges objects motivated by discussion on support site:
+      https://support.bioconductor.org/p/90664/
+
+    o Some changes/improvements to "rank" method for GenomicRanges objects:
+      - now supports the same ties methods as base::rank() (was only supporting
+        ties methods "first" and "min" until now)
+      - default ties method now is "average", like base::rank()
+      - now supports additional argument 'ignore.strand'.
+
+DEPRECATED AND DEFUNCT
+
+    o Argument 'force' of seqinfo() and seqlevels() setters is deprecated in
+      favor of new 'pruning.mode' argument.
+
+BUG FIXES
+
+    o Fix severe performance regression introduced in Bioconductor 3.3 in
+      "intersect" and "setdiff" methods for GRangesList objects. Thanks to
+      Jens Reeder <reeder.jens@gene.com> for catching and reporting this.
+
+
 CHANGES IN VERSION 1.26.0
 -------------------------
 
