@@ -30,7 +30,7 @@ SIGNIFICANT USER-LEVEL CHANGES
 DEPRECATED AND DEFUNCT
 
     o Argument 'force' of seqinfo() and seqlevels() setters is deprecated in
-      favor of new 'pruning.mode' argument.
+      favor of new and more flexible 'pruning.mode' argument.
 
 BUG FIXES
 
