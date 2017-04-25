@@ -18,13 +18,6 @@ setMethod("seqinfo", "List", function(x) {
   si  
 })
 
-setMethod("seqinfo", "RangesList", function(x) {
-  si <- callNextMethod()
-  if (!is.null(universe(x)))
-    genome(si) <- universe(x)
-  si
-})
-
 ### FIXME: needs sanity checks
 setReplaceMethod("seqinfo", "List",
                  function(x, value) {

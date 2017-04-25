@@ -45,7 +45,6 @@
 \alias{seqinfo,GRanges-method}
 \alias{seqinfo,List-method}
 \alias{seqinfo,RangedData-method}
-\alias{seqinfo,RangesList-method}
 \alias{seqinfo<-,GenomicRanges-method}
 \alias{seqinfo<-,List-method}
 \alias{seqinfo<-,RangedData-method}
