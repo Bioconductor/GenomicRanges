@@ -155,11 +155,11 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ###   - pcompare() and all the binary comparison operators (==, <=, !=,
 ###     >=, <, >).
 setReplaceMethod("seqinfo", "GPos",
-    function(x, new2old=NULL, force=FALSE,
+    function(x, new2old=NULL,
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
     {
-        new_pos_runs <- callGeneric(x@pos_runs, new2old=new2old, force=force,
+        new_pos_runs <- callGeneric(x@pos_runs, new2old=new2old,
                                     pruning.mode=pruning.mode, value)
         x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
         x
