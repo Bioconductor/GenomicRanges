@@ -367,6 +367,8 @@ setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 ### Subsetting
 ###
 
+.DollarNames.GRanges <- .DollarNames.GenomicRanges
+
 setMethod("extractROWS", "GRanges",
     function(x, i)
     {

@@ -616,7 +616,7 @@ setMethod("[", c("list", "GenomicRanges"),
 ### instead of 'x$name'.
 ###
 
-.DollarNames.GenomicRanges <- function(x, pattern)
+.DollarNames.GenomicRanges <- function(x, pattern = "")
     grep(pattern, names(mcols(x)), value=TRUE)
 
 setMethod("$", "GenomicRanges",
