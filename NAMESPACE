@@ -112,7 +112,7 @@ exportMethods(
 export(
     phicoef,
 
-    GRanges, .DollarNames.GenomicRanges,
+    GRanges, .DollarNames.GenomicRanges, .DollarNames.GRanges,
     GPos,
     GNCList,
     GenomicRangesList, GRangesList,
@@ -155,4 +155,6 @@ exportMethods(
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Register S3 methods
 ###
+
 S3method(.DollarNames, GenomicRanges)
+S3method(.DollarNames, GRanges)
