@@ -27,7 +27,7 @@
 \usage{
 bindAsGRanges(...)
 mcolAsRleList(x, varname)
-binnedAverage(bins, numvar, varname)
+binnedAverage(bins, numvar, varname, na.rm=FALSE)
 }
 
 \arguments{
@@ -61,6 +61,10 @@ binnedAverage(bins, numvar, varname)
     defined along the genome covered by \code{bins} (which is the genome
     described by \code{seqinfo(bins)}).
   }
+  \item{na.rm}{
+    A logical value indicating whether \code{NA} values should be
+    stripped before the average is computed.
+  }
 }
 
 \details{
@@ -87,8 +91,8 @@ binnedAverage(bins, numvar, varname)
   For \code{mcolAsRleList}: a named \link[IRanges]{RleList} object with
   1 list element per seqlevel in \code{x}.
 
-  For \code{binnedAverage}: the \link{GRanges} object \code{bins} with an
-  additional metadata column named \code{varname} containing the binned
+  For \code{binnedAverage}: input \link{GRanges} object \code{bins} with
+  an additional metadata column named \code{varname} containing the binned
   average.
 }
 
@@ -243,6 +247,25 @@ mcolAsRleList(bins2, "binned_score")
 object.size(my_var)
 object.size(binned_var1)
 object.size(binned_var2)
+
+## ---------------------------------------------------------------------
+## D. SANITY CHECKS
+## ---------------------------------------------------------------------
+
+bins3 <- tileGenome(c(chr1=10, chr2=8), tilewidth=5,
+                    cut.last.tile.in.chrom=TRUE)
+my_var3 <- RleList(chr1=Rle(c(1:3, NA, 5:7)), chr2=Rle(c(-3, NA, -3, NaN)))
+bins3 <- binnedAverage(bins3, my_var3, "binned_var3", na.rm=TRUE)
+binned_var3 <- mcols(bins3)$binned_var3
+stopifnot(
+  identical(mean(my_var3$chr1[1:5], na.rm=TRUE),
+            binned_var3[1]),
+  identical(mean(c(my_var3$chr1, 0, 0, 0)[6:10], na.rm=TRUE),
+            binned_var3[2]),
+  identical(mean(c(my_var3$chr2, 0), na.rm=TRUE),
+            binned_var3[3]),
+  identical(0, binned_var3[4])
+)
 }
 
 \keyword{manip}

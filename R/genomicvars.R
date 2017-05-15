@@ -116,7 +116,7 @@ mcolAsRleList <- function(x, varname)
     as(rle_list, "SimpleRleList")
 }
 
-binnedAverage <- function(bins, numvar, varname)
+binnedAverage <- function(bins, numvar, varname, na.rm=FALSE)
 {
     if (!is(bins, "GRanges"))
         stop("'x' must be a GRanges object")
@@ -126,10 +126,18 @@ binnedAverage <- function(bins, numvar, varname)
         stop("'seqlevels(bin)' and 'names(numvar)' must be identical")
 
     ## A version of viewMeans() that pads "out of limits" views with zeros.
-    viewMeans2 <- function(v) {
-        means <- viewMeans(v)
+    viewMeans2 <- function(v, na.rm=FALSE) {
+        if (!isTRUEorFALSE(na.rm))
+            stop("'na.rm' must be TRUE or FALSE")
+        means <- viewMeans(v, na.rm=na.rm)
         w0 <- width(v)
-        w1 <- width(trim(v))
+        v1 <- trim(v)
+        w1 <- width(v1)
+        if (na.rm) {
+            na_count <- sum(is.na(v1))
+            w0 <- w0 - na_count
+            w1 <- w1 - na_count
+        }
         means <- means * w1 / w0
         means[w0 != 0L & w1 == 0L] <- 0
         means
@@ -139,7 +147,7 @@ binnedAverage <- function(bins, numvar, varname)
     means_list <- lapply(names(numvar),
         function(seqname) {
             v <- Views(numvar[[seqname]], bins_per_chrom[[seqname]])
-            viewMeans2(v)
+            viewMeans2(v, na.rm=na.rm)
         })
     new_mcol <- unsplit(means_list, as.factor(seqnames(bins)))
     mcols(bins)[[varname]] <- new_mcol
