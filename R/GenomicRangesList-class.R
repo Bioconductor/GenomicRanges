@@ -23,13 +23,3 @@ GenomicRangesList <- function(...) {
     args <- args[[1]]
   S4Vectors:::new_SimpleList_from_list("SimpleGenomicRangesList", args)
 }
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Utilities.
-###
-
-setMethod("stack", "GenomicRangesList", function(x, indName = "sample") {
-  x_flat <- unlist(x, use.names = FALSE)
-  mcols(x_flat) <- cbind(IRanges:::.stack.ind(x, indName), mcols(x_flat))
-  x_flat
-})
