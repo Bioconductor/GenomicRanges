@@ -237,9 +237,11 @@ setAs("GenomicRanges", "GRanges",
                   "does not support NAs"))
     error_msg <- wmsg(
         "The character vector to convert to a GRanges object must contain ",
-        "strings of the form \"chr1:2501-2800\" or \"chr1:2501-2800:+\" ",
-        "(\"..\" being also supported as a separator between the start and ",
-        "end positions). Strand can be \"+\", \"-\", \"*\", or missing."
+        "strings of the form \"chr:start-end\" or \"chr:start-end:strand\", ",
+        "with end >= start - 1, or \"chr:pos\" or \"chr:pos:strand\". ",
+        "For example: \"chr1:2501-2900\", \"chr1:2501-2900:+\", or ",
+        "\"chr1:740\". Note that \"..\" is a valid alternate start/end ",
+        "separator. Strand can be \"+\", \"-\", \"*\", or missing."
     )
     split0 <- CharacterList(strsplit(from, ":", fixed=TRUE))
     split0_eltNROWS <- elementNROWS(split0)
@@ -250,19 +252,11 @@ setAs("GenomicRanges", "GRanges",
     split1 <- phead(split0, n=2L)
     ans_seqnames <- as.character(phead(split1, n=1L))
     ranges <- as.character(ptail(split1, n=-1L))
-    ## We want to split on the first occurence of  "-" that is preceeded by
-    ## a digit (ignoring and removing the spaces in between if any).
-    ranges <- sub("([[:digit:]])[[:space:]]*-", "\\1..", ranges)
-    split2 <- CharacterList(strsplit(ranges, "..", fixed=TRUE))
-    split2_eltNROWS <- elementNROWS(split2)
-    if (!all(split2_eltNROWS == 2L))
+    ans_ranges <- try(as(ranges, "IRanges"), silent=TRUE)
+    if (is(ans_ranges, "try-error"))
         stop(error_msg)
-    ans_start <- as.integer(phead(split2, n=1L))
-    ans_end <- as.integer(ptail(split2, n=1L))
-    ans_ranges <- IRanges(ans_start, ans_end, names=names(from))
     GRanges(ans_seqnames, ans_ranges, ans_strand)
 }
-
 setAs("character", "GRanges", .from_character_to_GRanges)
 
 .from_factor_to_GRanges <- function(from)
@@ -270,7 +264,6 @@ setAs("character", "GRanges", .from_character_to_GRanges)
     from <- setNames(as.character(from), names(from))
     .from_character_to_GRanges(from)
 }
-
 setAs("factor", "GRanges", .from_factor_to_GRanges)
 
 ### Does NOT propagate the ranges names and metadata columns i.e. always

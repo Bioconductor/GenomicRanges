@@ -231,7 +231,7 @@ setMethod("as.character", "GenomicRanges",
             stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
         if (length(x) == 0L)
             return(setNames(character(0), names(x)))
-        ans <- paste0(seqnames(x), ":", start(x), "-", end(x))
+        ans <- paste0(seqnames(x), ":", as.character(ranges(x)))
         names(ans) <- names(x)
         if (ignore.strand)
             return(ans)
