@@ -14,7 +14,8 @@ setClass("GRangesList",
     )
 )
 
-### Should we define GenomicRanges_OR_GenomicRangesList instead of this?
+### Note that rtracklayer also defines GenomicRanges_OR_GenomicRangesList.
+### Do we need the 2 union classes?
 setClassUnion("GenomicRanges_OR_GRangesList", c("GenomicRanges", "GRangesList"))
 
 
