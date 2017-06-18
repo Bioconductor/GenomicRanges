@@ -14,7 +14,7 @@ setClass("GenomicRanges",
     )
 )
 
-setClassUnion("GenomicRangesORmissing", c("GenomicRanges", "missing"))
+setClassUnion("GenomicRanges_OR_missing", c("GenomicRanges", "missing"))
 
 ### The code in this file will work out-of-the-box on 'x' as long as
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),

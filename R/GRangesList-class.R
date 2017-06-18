@@ -14,7 +14,8 @@ setClass("GRangesList",
     )
 )
 
-setClassUnion("GenomicRangesORGRangesList", c("GenomicRanges", "GRangesList"))
+### Should we define GenomicRanges_OR_GenomicRangesList instead of this?
+setClassUnion("GenomicRanges_OR_GRangesList", c("GenomicRanges", "GRangesList"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

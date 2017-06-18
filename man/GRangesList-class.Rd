@@ -6,6 +6,8 @@
 \alias{GRangesList-class}
 \alias{GRangesList}
 
+\alias{GenomicRanges_OR_GRangesList-class}
+
 % Constructors:
 \alias{GRangesList}
 \alias{makeGRangesListFromFeatureFragments}

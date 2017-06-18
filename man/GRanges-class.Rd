@@ -5,11 +5,12 @@
 \alias{class:GenomicRanges}
 \alias{GenomicRanges-class}
 \alias{GenomicRanges}
+
+\alias{GenomicRanges_OR_missing-class}
+
 \alias{class:GRanges}
 \alias{GRanges-class}
 \alias{GRanges}
-\alias{GenomicRangesORGRangesList-class}
-\alias{GenomicRangesORmissing-class}
 
 % Constructors:
 \alias{GRanges}
