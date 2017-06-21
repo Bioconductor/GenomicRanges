@@ -251,7 +251,8 @@ setAs("GenomicRanges", "GRanges",
     ans_strand[is.na(ans_strand)] <- "*"
     split1 <- phead(split0, n=2L)
     ans_seqnames <- as.character(phead(split1, n=1L))
-    ranges <- as.character(ptail(split1, n=-1L))
+    ranges <- ptail(split1, n=-1L)
+    ranges <- setNames(as.character(ranges), names(ranges))
     ans_ranges <- try(as(ranges, "IRanges"), silent=TRUE)
     if (is(ans_ranges, "try-error"))
         stop(error_msg)
