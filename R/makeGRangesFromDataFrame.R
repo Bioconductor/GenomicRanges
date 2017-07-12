@@ -97,7 +97,7 @@
         return(NA_integer_)
     if (length(idx) >= 2L)
         stop("Cannnot determine strand column unambiguously. ",
-             "(You can use\n  'ignore.strand=FALSE' to ignore ",
+             "(You can use\n  'ignore.strand=TRUE' to ignore ",
              "strand information.)")
     idx
 }
