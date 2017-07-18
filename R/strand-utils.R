@@ -4,7 +4,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some "strand" and "strand<-" methods
+### Some "strand" methods
 ###
 
 setMethod("strand", "missing", function(x) factor(levels=c("+","-","*")))
@@ -92,10 +92,28 @@ setMethod("strand", "DataTable",
     }
 )
 
-setReplaceMethod("strand", "DataTable", function(x, value) {
-  x$strand <- normargGenomicRangesStrand(value, nrow(x))
-  x
-})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some "strand<-" methods
+###
+
+normalize_strand_replacement_value <- function(value, x)
+{
+    if (!is(value, "Rle"))
+        value <- Rle(value)
+    if (!is.factor(runValue(value))
+     || !identical(levels(runValue(value)), levels(strand())))
+        runValue(value) <- strand(runValue(value))
+    S4Vectors:::V_recycle(value, x, x_what="value", skeleton_what="x")
+}
+
+setReplaceMethod("strand", "DataTable",
+    function(x, value)
+    {
+        x$strand <- normalize_strand_replacement_value(value, seq_len(nrow(x)))
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

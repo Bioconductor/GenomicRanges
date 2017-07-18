@@ -17,6 +17,8 @@
 \alias{ranges,GPos-method}
 \alias{strand,GPos-method}
 \alias{seqinfo,GPos-method}
+
+\alias{strand<-,GPos-method}
 \alias{seqinfo<-,GPos-method}
 
 \alias{coerce,GenomicRanges,GPos-method}
@@ -41,7 +43,8 @@ GPos(pos_runs)  # constructor function
 \arguments{
   \item{pos_runs}{
     A \link{GRanges} object (or any other \link{GenomicRanges} derivative)
-    where each range is interpreted as a run of adjacent genomic positions.
+    where each range is interpreted as a run of adjacent ascending genomic
+    positions on the same strand.
     If \code{pos_runs} is not a \link{GenomicRanges} object,
     \code{GPos()} first tries to coerce it to one with
     \code{as(pos_runs, "GenomicRanges", strict=FALSE)}.

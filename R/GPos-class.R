@@ -149,22 +149,30 @@ setMethod("seqinfo", "GPos", function(x) seqinfo(x@pos_runs))
 ### Setters
 ###
 
+.set_GPos_strand <- function(x, value)
+{
+    value <- normalize_strand_replacement_value(value, x)
+    stop("no strand setter for ", class(x), " objects at the moment")
+}
+setReplaceMethod("strand", "GPos", .set_GPos_strand)
+
 ### Supporting the seqinfo() setter makes the following work out-of-the-box:
 ###   - The family of seqinfo-related setters: seqlevels(), seqlevelsStyle(),
 ###     seqlengths(), isCircular(), and genome().
 ###   - pcompare() and all the binary comparison operators (==, <=, !=,
 ###     >=, <, >).
-setReplaceMethod("seqinfo", "GPos",
+
+.set_GPos_seqinfo <-
     function(x, new2old=NULL,
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
-    {
-        new_pos_runs <- callGeneric(x@pos_runs, new2old=new2old,
-                                    pruning.mode=pruning.mode, value)
-        x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
-        x
-    }
-)
+{
+    new_pos_runs <- seqinfo(x@pos_runs, new2old=new2old,
+                            pruning.mode=pruning.mode, value)
+    x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
+    x
+}
+setReplaceMethod("seqinfo", "GPos", .set_GPos_seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -362,26 +362,10 @@ setReplaceMethod("ranges", "GenomicRanges",
     }
 )
 
-normargGenomicRangesStrand <- function(strand, n)
-{
-    if (!is(strand, "Rle"))
-        strand <- Rle(strand)
-    if (!is.factor(runValue(strand))
-     || !identical(levels(runValue(strand)), levels(strand())))
-        runValue(strand) <- strand(runValue(strand))
-    k <- length(strand)
-    if (k != n) {
-        if (k != 1L && (k == 0L || k > n || n %% k != 0L))
-            stop("supplied 'strand' has ", k, " elements (", n, " expected)")
-        strand <- rep(strand, length.out=n)
-    }
-    strand
-}
-
 setReplaceMethod("strand", "GenomicRanges",
     function(x, value)
     {
-        value <- normargGenomicRangesStrand(value, length(x))
+        value <- normalize_strand_replacement_value(value, x)
         x <- update(x, strand=value, check=FALSE)
         msg <- .valid.GenomicRanges.strand(x)
         if (!is.null(msg))
