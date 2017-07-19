@@ -16,14 +16,42 @@
 \alias{GRanges}
 \alias{updateObject,GRanges-method}
 
+% Accessors:
+\alias{length,GenomicRanges-method}
+\alias{seqnames,GRanges-method}
+\alias{seqnames,RangedData-method}
+\alias{seqnames<-,GenomicRanges-method}
+\alias{ranges,GRanges-method}
+\alias{ranges<-,GenomicRanges-method}
+\alias{start,GenomicRanges-method}
+\alias{start<-,GenomicRanges-method}
+\alias{end,GenomicRanges-method}
+\alias{end<-,GenomicRanges-method}
+\alias{width,GenomicRanges-method}
+\alias{width<-,GenomicRanges-method}
+\alias{strand,GRanges-method}
+\alias{strand<-,GenomicRanges,ANY-method}
+\alias{names,GenomicRanges-method}
+\alias{names<-,GenomicRanges-method}
+\alias{$,GenomicRanges-method}
+\alias{$<-,GenomicRanges-method}
+\alias{seqinfo,GRanges-method}
+\alias{seqinfo,List-method}
+\alias{seqinfo,RangedData-method}
+\alias{seqinfo<-,GenomicRanges-method}
+\alias{seqinfo<-,List-method}
+\alias{seqinfo<-,RangedData-method}
+\alias{score,GenomicRanges-method}
+\alias{score<-,GenomicRanges-method}
+\alias{granges,GenomicRanges-method}
+
 % Coercion:
+\alias{coerce,GenomicRanges,GRanges-method}
 \alias{as.character,GenomicRanges-method}
 \alias{as.factor,GenomicRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
 \alias{coerce,GenomicRanges,RangesList-method}
 \alias{coerce,GenomicRanges,RangedData-method}
-\alias{granges,GenomicRanges-method}
-\alias{coerce,GenomicRanges,GRanges-method}
 \alias{coerce,character,GRanges-method}
 \alias{coerce,factor,GRanges-method}
 \alias{coerce,RangesList,GRanges-method}
@@ -33,48 +61,18 @@
 \alias{coerce,GenomicRanges,Grouping-method}
 \alias{coerce,ANY,GenomicRanges-method}
 
-% Accessors:
-\alias{seqnames,GRanges-method}
-\alias{seqnames,RangedData-method}
-\alias{seqnames<-,GenomicRanges-method}
-\alias{ranges,GRanges-method}
-\alias{ranges<-,GenomicRanges-method}
-\alias{strand,GRanges-method}
-\alias{strand<-,GenomicRanges,ANY-method}
-\alias{names,GenomicRanges-method}
-\alias{names<-,GenomicRanges-method}
-\alias{seqinfo,GRanges-method}
-\alias{seqinfo,List-method}
-\alias{seqinfo,RangedData-method}
-\alias{seqinfo<-,GenomicRanges-method}
-\alias{seqinfo<-,List-method}
-\alias{seqinfo<-,RangedData-method}
-\alias{score,GenomicRanges-method}
-\alias{score<-,GenomicRanges-method}
-
-% Ranges methods:
-\alias{start,GenomicRanges-method}
-\alias{start<-,GenomicRanges-method}
-\alias{end,GenomicRanges-method}
-\alias{end<-,GenomicRanges-method}
-\alias{width,GenomicRanges-method}
-\alias{width<-,GenomicRanges-method}
-
-% Vector methods:
-\alias{length,GenomicRanges-method}
+% Subsetting:
 \alias{[<-,GRanges-method}
 \alias{[,GenomicRanges,ANY-method}
 \alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{[,List,GenomicRanges-method}
 \alias{[,list,GenomicRanges-method}
-\alias{c,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
 
-% $ and $<- methods:
-\alias{$,GenomicRanges-method}
-\alias{$<-,GenomicRanges-method}
+% Combining:
+\alias{c,GenomicRanges-method}
 
-% displaying:
+% Displaying:
 \alias{summary.GenomicRanges}
 \alias{summary,GenomicRanges-method}
 \alias{show,GenomicRanges-method}
@@ -154,6 +152,114 @@
       }
       As a consequence of this behavior, \code{GRanges(x)} is equivalent to
       \code{as(x, "GRanges")}.
+    }
+  }
+}
+
+\section{Accessors}{
+  In the following code snippets, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{length(x)}:
+      Get the number of elements.
+    }
+    \item{}{
+      \code{seqnames(x)}, \code{seqnames(x) <- value}:
+      Get or set the sequence names.
+      \code{value} can be an \link[S4Vectors]{Rle} object, a character vector,
+      or a factor.
+    }
+    \item{}{
+      \code{ranges(x)}, \code{ranges(x) <- value}:
+      Get or set the ranges. \code{value} can be a Ranges object.
+    }
+    \item{}{
+      \code{start(x)}, \code{start(x) <- value}:
+      Get or set \code{start(ranges(x))}.
+    }
+    \item{}{
+      \code{end(x)}, \code{end(x) <- value}:
+      Get or set \code{end(ranges(x))}.
+    }
+    \item{}{
+      \code{width(x)}, \code{width(x) <- value}:
+      Get or set \code{width(ranges(x))}.
+    }
+    \item{}{
+      \code{strand(x)}, \code{strand(x) <- value}:
+      Get or set the strand. \code{value} can be an Rle object, character
+      vector, or factor.
+    }
+    \item{}{
+      \code{names(x)}, \code{names(x) <- value}:
+      Get or set the names of the elements.
+    }
+    \item{}{
+      \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
+      Get or set the metadata columns.
+      If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
+      then the names of \code{x} are propagated as the row names of the
+      returned \link{DataFrame} object.
+      When setting the metadata columns, the supplied value must be \code{NULL}
+      or a data.frame-like object (i.e. \link{DataTable} or data.frame)
+      object holding element-wise metadata.
+    }
+    \item{}{
+       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
+       \code{values(x)}, \code{values(x) <- value}:
+       Alternatives to \code{mcols} functions. Their use is discouraged.
+    }
+    \item{}{
+      \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
+      Get or set the information about the underlying sequences.
+      \code{value} must be a \link{Seqinfo} object.
+    }
+    \item{}{
+      \code{seqlevels(x)},
+      \code{seqlevels(x, pruning.mode=c("error", "coarse", "fine", "tidy")) <- value}:
+      Get or set the sequence levels.
+      \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
+      or to \code{levels(seqnames(x))}, those 2 expressions being
+      guaranteed to return identical character vectors on a GRanges object.
+      \code{value} must be a character vector with no NAs.
+      See \code{?\link{seqlevels}} for more information.
+    }
+    \item{}{
+      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
+      Get or set the sequence lengths.
+      \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
+      \code{value} can be a named non-negative integer or numeric vector
+      eventually with NAs.
+    }
+    \item{}{
+      \code{isCircular(x)}, \code{isCircular(x) <- value}:
+      Get or set the circularity flags.
+      \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
+      \code{value} must be a named logical vector eventually with NAs.
+    }
+    \item{}{
+      \code{genome(x)}, \code{genome(x) <- value}:
+      Get or set the genome identifier or assembly name for each sequence.
+      \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
+      \code{value} must be a named character vector eventually with NAs.
+    }
+    \item{}{
+      \code{seqlevelsStyle(x)}, \code{seqlevelsStyle(x) <- value}:
+      Get or set the seqname style for \code{x}.
+      See the \link[GenomeInfoDb]{seqlevelsStyle} generic getter and setter
+      in the \pkg{GenomeInfoDb} package for more information.
+    }
+    \item{}{
+      \code{score(x), score(x) <- value}: Get or set the \dQuote{score}
+      column from the element metadata.
+    }
+    \item{}{
+      \code{granges(x, use.name=TRUE, use.mcols=FALSE)}: Get a \code{GRanges}
+      with only the range information from \code{x}, unless \code{use.mcols}
+      is \code{TRUE}, in which case the metadata columns are also
+      returned. Those columns will include any "extra column slots" if
+      \code{x} is a specialized \code{GenomicRanges} derivative.
     }
   }
 }
@@ -246,163 +352,6 @@
       \code{as(x, "GRanges")}, \code{as(x, "GenomicRanges")},
       \code{as(x, "RangesList")}: Turns \link[GenomeInfoDb]{Seqinfo} object
       \code{x} (with no \code{NA} lengths) into a GRanges or RangesList.
-    }
-  }
-}
-
-\section{Accessors}{
-  In the following code snippets, \code{x} is a GRanges object.
-
-  \describe{
-    \item{}{
-      \code{length(x)}:
-      Get the number of elements.
-    }
-    \item{}{
-      \code{seqnames(x)}, \code{seqnames(x) <- value}:
-      Get or set the sequence names.
-      \code{value} can be an \link[S4Vectors]{Rle} object, a character vector,
-      or a factor.
-    }
-    \item{}{
-      \code{ranges(x)}, \code{ranges(x) <- value}:
-      Get or set the ranges. \code{value} can be a Ranges object.
-    }
-    \item{}{
-      \code{names(x)}, \code{names(x) <- value}:
-      Get or set the names of the elements.
-    }
-    \item{}{
-      \code{strand(x)}, \code{strand(x) <- value}:
-      Get or set the strand. \code{value} can be an Rle object, character
-      vector, or factor.
-    }
-    \item{}{
-      \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
-      Get or set the metadata columns.
-      If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
-      then the names of \code{x} are propagated as the row names of the
-      returned \link{DataFrame} object.
-      When setting the metadata columns, the supplied value must be \code{NULL}
-      or a data.frame-like object (i.e. \link{DataTable} or data.frame)
-      object holding element-wise metadata.
-    }
-    \item{}{
-       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
-       \code{values(x)}, \code{values(x) <- value}:
-       Alternatives to \code{mcols} functions. Their use is discouraged.
-    }
-    \item{}{
-      \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
-      Get or set the information about the underlying sequences.
-      \code{value} must be a \link{Seqinfo} object.
-    }
-    \item{}{
-      \code{seqlevels(x)},
-      \code{seqlevels(x, pruning.mode=c("error", "coarse", "fine", "tidy")) <- value}:
-      Get or set the sequence levels.
-      \code{seqlevels(x)} is equivalent to \code{seqlevels(seqinfo(x))}
-      or to \code{levels(seqnames(x))}, those 2 expressions being
-      guaranteed to return identical character vectors on a GRanges object.
-      \code{value} must be a character vector with no NAs.
-      See \code{?\link{seqlevels}} for more information.
-    }
-    \item{}{
-      \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
-      Get or set the sequence lengths.
-      \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
-      \code{value} can be a named non-negative integer or numeric vector
-      eventually with NAs.
-    }
-    \item{}{
-      \code{isCircular(x)}, \code{isCircular(x) <- value}:
-      Get or set the circularity flags.
-      \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
-      \code{value} must be a named logical vector eventually with NAs.
-    }
-    \item{}{
-      \code{genome(x)}, \code{genome(x) <- value}:
-      Get or set the genome identifier or assembly name for each sequence.
-      \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
-      \code{value} must be a named character vector eventually with NAs.
-    }
-    \item{}{
-      \code{seqlevelsStyle(x)}, \code{seqlevelsStyle(x) <- value}:
-      Get or set the seqname style for \code{x}.
-      See the \link[GenomeInfoDb]{seqlevelsStyle} generic getter and setter
-      in the \pkg{GenomeInfoDb} package for more information.
-    }
-    \item{}{
-      \code{score(x), score(x) <- value}: Get or set the \dQuote{score}
-      column from the element metadata.
-    }
-    \item{}{
-      \code{granges(x, use.mcols=FALSE)}: Gets a \code{GRanges} with
-      only the range information from \code{x}, unless \code{use.mcols}
-      is \code{TRUE}, in which case the metadata columns are also
-      returned. Those columns will include any "extra column slots" if
-      \code{x} is a specialized \code{GenomicRanges} derivative.
-    }
-  }
-}
-
-\section{Ranges methods}{
-  In the following code snippets, \code{x} is a GRanges object.
-
-  \describe{
-    \item{}{
-      \code{start(x)}, \code{start(x) <- value}:
-      Get or set \code{start(ranges(x))}.
-    }
-    \item{}{
-      \code{end(x)}, \code{end(x) <- value}:
-      Get or set \code{end(ranges(x))}.
-    }
-    \item{}{
-      \code{width(x)}, \code{width(x) <- value}:
-      Get or set \code{width(ranges(x))}.
-    }
-  }
-}
-
-\section{Splitting and Combining}{
-  In the code snippets below, \code{x} is a GRanges object.
-
-  \describe{
-    \item{}{
-      \code{append(x, values, after = length(x))}:
-      Inserts the \code{values} into \code{x} at the position given by
-      \code{after}, where \code{x} and \code{values} are of the same
-      class.
-    }
-    \item{}{
-      \code{c(x, ...)}:
-      Combines \code{x} and the GRanges objects in \code{...} together.
-      Any object in \code{...} must belong to the same class as \code{x},
-      or to one of its subclasses, or must be \code{NULL}.
-      The result is an object of the same class as \code{x}.
-    }
-    \item{}{
-      \code{c(x, ..., ignore.mcols=FALSE)}
-      If the \code{GRanges} objects have metadata columns (represented as one
-      \link{DataFrame} per object), each such \link{DataFrame} must have the
-      same columns in order to combine successfully. In order to circumvent
-      this restraint, you can pass in an \code{ignore.mcols=TRUE} argument
-      which will combine all the objects into one and drop all of their
-      metadata columns.
-    }
-    \item{}{
-      \code{split(x, f, drop=FALSE)}:
-      Splits \code{x} according to \code{f} to create a
-      \link{GRangesList} object.
-      If \code{f} is a list-like object then \code{drop} is ignored
-      and \code{f} is treated as if it was
-      \code{rep(seq_len(length(f)), sapply(f, length))},
-      so the returned object has the same shape as \code{f} (it also
-      receives the names of \code{f}).
-      Otherwise, if \code{f} is not a list-like object, empty list
-      elements are removed from the returned object if \code{drop} is
-      \code{TRUE}.
     }
   }
 }
@@ -514,7 +463,48 @@
   }
 }
 
-\section{Other methods}{
+\section{Combining and splitting}{
+  In the code snippets below, \code{x} is a GRanges object.
+
+  \describe{
+    \item{}{
+      \code{c(x, ..., ignore.mcols=FALSE)}:
+      Combines \code{x} and the GRanges objects in \code{...} together.
+      Any object in \code{...} must belong to the same class as \code{x},
+      or to one of its subclasses, or must be \code{NULL}.
+      The result is an object of the same class as \code{x}.
+
+      If the \code{GRanges} objects have metadata columns (represented as one
+      \link{DataFrame} per object), each such \link{DataFrame} must have the
+      same columns in order to combine successfully. In order to circumvent
+      this restraint, you can pass in an \code{ignore.mcols=TRUE} argument
+      which will combine all the objects into one and drop all of their
+      metadata columns.
+    }
+    \item{}{
+      \code{append(x, values, after = length(x))}:
+      Inserts the \code{values} into \code{x} at the position given by
+      \code{after}, where \code{x} and \code{values} are of the same
+      class.
+    }
+    \item{}{
+      \code{split(x, f, drop=FALSE)}:
+      Splits \code{x} according to \code{f} to create a
+      \link{GRangesList} object.
+      If \code{f} is a list-like object then \code{drop} is ignored
+      and \code{f} is treated as if it was
+      \code{rep(seq_len(length(f)), sapply(f, length))},
+      so the returned object has the same shape as \code{f} (it also
+      receives the names of \code{f}).
+      Otherwise, if \code{f} is not a list-like object, empty list
+      elements are removed from the returned object if \code{drop} is
+      \code{TRUE}.
+    }
+  }
+}
+
+\section{Displaying}{
+  In the code snippets below, \code{x} is a GRanges object.
 
   \describe{
     \item{}{

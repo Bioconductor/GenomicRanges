@@ -207,9 +207,33 @@ setMethod("updateObject", "GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion
+### Accessors
 ###
 
+setMethod("seqnames", "GRanges", function(x) x@seqnames)
+
+setMethod("strand", "GRanges", function(x) x@strand)
+
+setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
+
+### Range squeezer.
+setMethod("ranges", "GRanges",
+    function(x, use.names=TRUE, use.mcols=FALSE)
+    {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
+        if (!isTRUEorFALSE(use.mcols))
+            stop("'use.mcols' must be TRUE or FALSE")
+        ans <- x@ranges
+        if (!use.names)
+            names(ans) <- NULL
+        if (use.mcols)
+            mcols(ans) <- mcols(x)
+        ans
+    }
+)
+
+### Genomic range squeezer.
 setMethod("granges", "GenomicRanges",
     function(x, use.names=TRUE, use.mcols=FALSE)
     {
@@ -224,6 +248,11 @@ setMethod("granges", "GenomicRanges",
         ans
     }
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion
+###
 
 setAs("GenomicRanges", "GRanges",
     function(from) granges(from, use.mcols=TRUE)
@@ -331,30 +360,6 @@ setAs("Seqinfo", "RangesList",
 )
 
 setAs("ANY", "GenomicRanges", function(from) as(from, "GRanges"))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Slot getters and setters
-###
-
-setMethod("seqnames", "GRanges", function(x) x@seqnames)
-setMethod("ranges", "GRanges",
-    function(x, use.names=TRUE, use.mcols=FALSE)
-    {
-        if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
-        if (!isTRUEorFALSE(use.mcols))
-            stop("'use.mcols' must be TRUE or FALSE")
-        ans <- x@ranges
-        if (!use.names)
-            names(ans) <- NULL
-        if (use.mcols)
-            mcols(ans) <- mcols(x)
-        ans
-    }
-)
-setMethod("strand", "GRanges", function(x) x@strand)
-setMethod("seqinfo", "GRanges", function(x) x@seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

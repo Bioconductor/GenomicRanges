@@ -1,15 +1,16 @@
 ### =========================================================================
-### Generic functions for squeezing the ranges out of a range-based object
+### Generic functions for squeezing the genomic ranges out of a range-based
+### object
 ### -------------------------------------------------------------------------
 
 
-### Extract the ranges as a GRanges object.
+### Extract the genomic ranges as a GRanges object.
 setGeneric("granges", signature="x",
     function(x, use.names=TRUE, use.mcols=FALSE, ...)
         standardGeneric("granges")
 )
 
-### Extract the ranges as a GRangesList object.
+### Extract the genomic ranges as a GRangesList object.
 setGeneric("grglist", signature="x",
     function(x, use.names=TRUE, use.mcols=FALSE, ...)
         standardGeneric("grglist")
