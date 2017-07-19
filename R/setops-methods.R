@@ -75,7 +75,7 @@
 ###
 
 ### Always return a GRanges *instance* whatever GenomicRanges derivatives are
-### passed to it (e.g. GNCList or GPos), so does NOT act like an endomorphism
+### passed to it (e.g. GPos or GNCList), so does NOT act like an endomorphism
 ### in general.
 setMethod("union", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE)
@@ -102,7 +102,7 @@ setMethod("union", c("GRangesList", "GRangesList"),
 )
 
 ### Always return a GRanges *instance* whatever GenomicRanges derivatives are
-### passed to it (e.g. GNCList or GPos), so does NOT act like an endomorphism
+### passed to it (e.g. GPos or GNCList), so does NOT act like an endomorphism
 ### in general.
 setMethod("intersect", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE)
@@ -138,7 +138,7 @@ setMethod("intersect", c("GRangesList", "GRangesList"),
 )
 
 ### Always return a GRanges *instance* whatever GenomicRanges derivatives are
-### passed to it (e.g. GNCList or GPos), so does NOT act like an endomorphism
+### passed to it (e.g. GPos or GNCList), so does NOT act like an endomorphism
 ### in general.
 setMethod("setdiff", c("GenomicRanges", "GenomicRanges"),
     function(x, y, ignore.strand=FALSE)

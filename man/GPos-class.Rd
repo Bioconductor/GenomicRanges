@@ -27,13 +27,16 @@
 \alias{show,GPos-method}
 \alias{c,GPos-method}
 
-\title{GPos objects}
+\title{Memory-efficient representation of genomic positions}
 
 \description{
-  The GPos class is a container for storing a set of genomic \emph{positions},
-  that is, genomic ranges of width 1. Even though a \link{GRanges} object can
-  be used for that, using a GPos object can be much more memory-efficient,
-  especially when the object contains long runs of adjacent positions.
+  The GPos class is a container for storing a set of \emph{genomic positions}
+  where most of the positions are typically (but not necessarily) adjacent.
+  Because genomic positions can be seen as genomic ranges of width 1, the GPos
+  class extends the \link{GenomicRanges} virtual class. Note that even though
+  a \link{GRanges} object can be used for storing genomic positions, using a
+  GPos object will be much more memory-efficient, especially when the object
+  contains long runs of adjacent positions in \emph{ascending order}.
 }
 
 \usage{

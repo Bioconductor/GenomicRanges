@@ -373,6 +373,7 @@ setMethod("isDisjoint", "GenomicRanges",
         all(callGeneric(rgl))
     }
 )
+
 ### Overwrite above method with optimized method for GPos objects.
 setMethod("isDisjoint", "GPos",
     function(x, ignore.strand=FALSE) callGeneric(x@pos_runs, ignore.strand)
