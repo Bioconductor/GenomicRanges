@@ -187,12 +187,10 @@ setMethod("selfmatch", "GenomicRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### order() and related methods.
 ###
-### The "order" and "rank" methods for GenomicRanges objects are consistent
-### with the order implied by pcompare().
+### is.unsorted(), order(), sort(), rank() on GenomicRanges derivatives are
+### consistent with the order implied by pcompare().
 ### is.unsorted() is a quick/cheap way of checking whether a GenomicRanges
-### object is already sorted, e.g., called prior to a costly sort.
-### sort() will work out-of-the-box on a GenomicRanges object thanks to the
-### method for Vector objects.
+### derivative is already sorted, e.g., called prior to a costly sort.
 ###
 
 .GenomicRanges_as_IntegerQuads <- function(x, ignore.strand=FALSE)
