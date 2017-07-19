@@ -255,11 +255,13 @@
       column from the element metadata.
     }
     \item{}{
-      \code{granges(x, use.name=TRUE, use.mcols=FALSE)}: Get a \code{GRanges}
-      with only the range information from \code{x}, unless \code{use.mcols}
-      is \code{TRUE}, in which case the metadata columns are also
-      returned. Those columns will include any "extra column slots" if
-      \code{x} is a specialized \code{GenomicRanges} derivative.
+      \code{granges(x, use.names=FALSE, use.mcols=FALSE)}: Squeeze the genomic
+      ranges out of \link{GenomicRanges} object \code{x} and return them in a
+      GRanges object \emph{parallel} to \code{x} (i.e. same length as \code{x}).
+      If \code{use.mcols} is \code{TRUE}, the metadata columns are propagated.
+      If \code{x} is a \link{GenomicRanges} derivative with \emph{extra column
+      slots}, these will be propagated as metadata columns on the returned
+      GRanges object.
     }
   }
 }
