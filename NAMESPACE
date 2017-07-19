@@ -89,6 +89,7 @@ exportMethods(
     relistToClass,
     pcompare,
     ranges, "ranges<-",
+    rglist,
     score, "score<-",
     findOverlaps, countOverlaps,
     shift, narrow, resize, flank, promoters, restrict, trim,
@@ -137,8 +138,8 @@ export(
     #constraint, "constraint<-",
     checkConstraint,
 
-    ## range-squeezers.R:
-    granges, grglist, rglist,
+    ## genomic-range-squeezers.R:
+    granges, grglist,
 
     ## GPos-class.R:
     pos
@@ -148,7 +149,7 @@ export(
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    granges, grglist, rglist,
+    granges, grglist,
     pos
 )
 
