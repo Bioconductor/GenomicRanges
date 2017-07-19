@@ -32,6 +32,9 @@ exportClasses(
 ### Export S3 methods
 ###
 
+S3method(.DollarNames, GenomicRanges)
+S3method(.DollarNames, GRanges)
+
 S3method(duplicated, GenomicRanges)
 
 S3method(sort, GenomicRanges)
@@ -48,7 +51,6 @@ export(
 
     summary.GenomicRanges
 )
-
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,20 +79,21 @@ exportMethods(
     union, intersect, setdiff,
     start, "start<-", end, "end<-", width, "width<-",
     strand, "strand<-", invertStrand,
+    score, "score<-",
     updateObject,
 
     ## Generics defined in S4Vectors:
-    selfmatch,
-
-    ## Generics defined in IRanges:
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
+    selfmatch,
     relistToClass,
     pcompare,
+
+    ## Generics defined in IRanges:
     ranges, "ranges<-",
     rglist,
-    score, "score<-",
+    pos,
     findOverlaps, countOverlaps,
     shift, narrow, resize, flank, promoters, restrict, trim,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
@@ -98,7 +101,6 @@ exportMethods(
     punion, pintersect, psetdiff, pgap,
     precede, follow, nearest, distance, distanceToNearest,
     tile, slidingWindows,
-    subset,
 
     ## Generics defined in GenomeInfoDb:
     seqinfo, "seqinfo<-",
@@ -139,23 +141,13 @@ export(
     checkConstraint,
 
     ## genomic-range-squeezers.R:
-    granges, grglist,
-
-    ## GPos-class.R:
-    pos
+    granges, grglist
 )
 
 ### Exactly the same list as above.
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    granges, grglist,
-    pos
+    granges, grglist
 )
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Register S3 methods
-###
-
-S3method(.DollarNames, GenomicRanges)
-S3method(.DollarNames, GRanges)

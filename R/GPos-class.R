@@ -38,7 +38,6 @@ setMethod("seqnames", "GPos",
     function(x) rep.int(seqnames(x@pos_runs), width(x@pos_runs))
 )
 
-setGeneric("pos", function(x) standardGeneric("pos"))
 setMethod("pos", "GPos", function(x) as.integer(ranges(x@pos_runs)))
 setMethod("start", "GPos", function(x) pos(x))
 setMethod("end", "GPos", function(x) pos(x))
