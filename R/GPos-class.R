@@ -161,14 +161,14 @@ setReplaceMethod("strand", "GPos", .set_GPos_strand)
 ###     seqlengths(), isCircular(), and genome().
 ###   - pcompare() and all the binary comparison operators (==, <=, !=,
 ###     >=, <, >).
-
 .set_GPos_seqinfo <-
     function(x, new2old=NULL,
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
 {
-    new_pos_runs <- seqinfo(x@pos_runs, new2old=new2old,
-                            pruning.mode=pruning.mode, value)
+    new_pos_runs <- `seqinfo<-`(x@pos_runs, new2old=new2old,
+                                pruning.mode=pruning.mode,
+                                value=value)
     x@pos_runs <- .stitch_GenomicRanges(new_pos_runs)
     x
 }
