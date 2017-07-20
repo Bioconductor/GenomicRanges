@@ -3,11 +3,14 @@
 ### -------------------------------------------------------------------------
 ###
 
+
+setClassUnion("IRanges_OR_IPos", c("IRanges", "IPos"))
+
 setClass("GRanges",
     contains="GenomicRanges",
     representation(
         seqnames="Rle",
-        ranges="IRanges",
+        ranges="IRanges_OR_IPos",  # an IPos only for GPos
         strand="Rle",
         elementMetadata="DataFrame",
         seqinfo="Seqinfo"

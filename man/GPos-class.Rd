@@ -5,27 +5,14 @@
 \alias{GPos-class}
 \alias{GPos}
 
-\alias{length,GPos-method}
 \alias{names,GPos-method}
 \alias{names<-,GPos-method}
-\alias{seqnames,GPos-method}
-\alias{pos}
 \alias{pos,GPos-method}
-\alias{start,GPos-method}
-\alias{end,GPos-method}
-\alias{width,GPos-method}
-\alias{ranges,GPos-method}
-\alias{strand,GPos-method}
-\alias{seqinfo,GPos-method}
-
-\alias{strand<-,GPos-method}
-\alias{seqinfo<-,GPos-method}
 
 \alias{coerce,GenomicRanges,GPos-method}
+\alias{coerce,GPos,GRanges-method}
 \alias{as.data.frame,GPos-method}
-\alias{extractROWS,GPos-method}
 \alias{show,GPos-method}
-\alias{c,GPos-method}
 
 \title{Memory-efficient representation of genomic positions}
 
@@ -34,7 +21,7 @@
   where most of the positions are typically (but not necessarily) adjacent.
   Because genomic positions can be seen as genomic ranges of width 1, the GPos
   class extends the \link{GenomicRanges} virtual class. Note that even though
-  a \link{GRanges} object can be used for storing genomic positions, using a
+  a \link{GRanges} instance can be used for storing genomic positions, using a
   GPos object will be much more memory-efficient, especially when the object
   contains long runs of adjacent positions in \emph{ascending order}.
 }
@@ -48,7 +35,7 @@ GPos(pos_runs)  # constructor function
     A \link{GRanges} object (or any other \link{GenomicRanges} derivative)
     where each range is interpreted as a run of adjacent ascending genomic
     positions on the same strand.
-    If \code{pos_runs} is not a \link{GenomicRanges} object,
+    If \code{pos_runs} is not a \link{GenomicRanges} derivative,
     \code{GPos()} first tries to coerce it to one with
     \code{as(pos_runs, "GenomicRanges", strict=FALSE)}.
   }
@@ -59,21 +46,33 @@ GPos(pos_runs)  # constructor function
 }
 
 \section{Accessors}{
-  \subsection{Getters}{
-    GPos objects support the same set of getters as \link{GRanges}
-    objects (i.e. \code{seqnames()}, \code{start()}, \code{end()},
-    \code{ranges()}, \code{strand()}, \code{mcols()}, \code{seqinfo()},
-    etc...), plus the \code{pos()} getter which is equivalent to
-    \code{start()} or \code{end()}. See \code{?GRanges} for the list of
-    getters supported by \link{GRanges} objects.
 
-    Note that a GPos object cannot hold names i.e. \code{names()}
-    always returns \code{NULL} on it.
+  \subsection{Getters}{
+    GPos objects support the same set of getters as other \link{GenomicRanges}
+    derivatives (i.e. \code{seqnames()}, \code{ranges()}, \code{start()},
+    \code{end()}, \code{strand()}, \code{mcols()}, \code{seqinfo()},
+    etc...), plus the \code{pos()} getter which is equivalent to
+    \code{start()} or \code{end()}. See \code{?GenomicRanges} for the list of
+    getters supported by \link{?GenomicRanges} derivatives.
+
+    IMPORTANT NOTES:
+    \enumerate{
+      \item \code{ranges()} returns an \link[IRanges]{IPos} object instead
+            of the \link[IRanges]{IRanges} object that one gets with other
+            \link{GenomicRanges} derivatives. To get an \link[IRanges]{IRanges}
+            object, you need to call \code{ranges()} again on the
+            \link[IRanges]{IPos} object i.e. do \code{ranges(ranges(x))})
+            on GPos object \code{x}.
+      \item Note that a GPos object cannot hold names i.e. \code{names()}
+            always returns \code{NULL} on it.
+    }
   }
+
   \subsection{Setters}{
     Like \link{GRanges} objects, GPos objects support the following
     setters:
     \itemize{
+      \item The \code{seqnames()} and \code{strand()} setters.
       \item The \code{mcols()} and \code{metadata()} setters.
       \item The family of setters that operate on the seqinfo component of
             an object:
@@ -87,16 +86,15 @@ GPos(pos_runs)  # constructor function
             package.
     }
 
-    However, there is no \code{seqnames()}, \code{pos()}, or \code{strand()}
-    setter for GPos objects at the moment (although they might be
-    added in the future).
+    However, there is no \code{pos()} setter for GPos objects at the moment
+    (although one might be added in the future).
   }
 }
 
 \section{Coercion}{
   From GenomicRanges to GPos:
-  A \link{GenomicRanges} object \code{x} in which all the ranges have a width
-  of 1 can be coerced to a GPos object with \code{as(x, "GPos")}.
+  A \link{GenomicRanges} derivative \code{x} in which all the ranges have a
+  width of 1 can be coerced to a GPos object with \code{as(x, "GPos")}.
   The names on \code{x} are not propagated (a warning is issued if \code{x}
   has names on it).
 
@@ -107,12 +105,12 @@ GPos(pos_runs)  # constructor function
   See "MEMORY USAGE" in the Examples section below.
 
   From GPos to ordinary R objects:
-  Like with a \link{GRanges} object, \code{as.character()}, \code{as.factor()},
-  and \code{as.data.frame()} work with a GPos object \code{x}.
-  Note that \code{as.data.frame(x)} returns a data frame with a \code{pos}
-  column (containing \code{pos(x)}) instead of the \code{start}, \code{end},
-  and \code{width} columns that one gets when \code{x} is a \link{GRanges}
-  object.
+  Like with any other \link{GenomicRanges} derivative, \code{as.character()},
+  \code{as.factor()}, and \code{as.data.frame()} work on a GPos object
+  \code{x}. Note however that \code{as.data.frame(x)} returns a data frame
+  with a \code{pos} column (containing \code{pos(x)}) instead of the
+  \code{start}, \code{end}, and \code{width} columns that one gets with other
+  \link{GenomicRanges} derivatives.
 }
 
 \section{Subsetting}{
@@ -126,8 +124,7 @@ GPos(pos_runs)  # constructor function
 
 \section{Splitting and Relisting}{
   Like with a \link{GRanges} object, \code{split()} and \code{relist()} work
-  with a GPos object \code{x}. Note that they return a
-  \link{GenomicRangesList} object instead of a \link{GRangesList} object.
+  on a GPos object \code{x}.
 }
 
 \note{
@@ -145,7 +142,11 @@ GPos(pos_runs)  # constructor function
 
 \seealso{
   \itemize{
-    \item \link{GRanges} objects.
+    \item The \link[IRanges]{IPos} class in the \pkg{IRanges}
+          package for a memory-efficient representation of \emph{integer
+          positions} (i.e. integer ranges of width 1).
+
+    \item \link{GenomicRanges} and \link{GRanges} objects.
 
     \item The \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in
           the \pkg{GenomeInfoDb} package for accessing/modifying the seqinfo
@@ -244,7 +245,7 @@ gr4 <- as(gpos4, "GRanges")
 gr4
 ## ... but is generally not a good idea:
 object.size(gpos4)
-object.size(gr4)  # 6951 times bigger than the GPos object!
+object.size(gr4)  # 8 times bigger than the GPos object!
 
 ## Shuffling the order of the positions impacts memory usage:
 gpos4r <- rev(gpos4)

@@ -140,8 +140,8 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
 
 .valid.GenomicRanges.ranges <- function(x)
 {
-    if (class(ranges(x)) != "IRanges")
-        return("'ranges(x)' must be an IRanges instance")
+    if (!(class(ranges(x)) %in% c("IRanges", "IPos")))
+        return("'ranges(x)' must be an IRanges or IPos instance")
     NULL
 }
 
