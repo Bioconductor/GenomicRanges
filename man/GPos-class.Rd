@@ -54,8 +54,8 @@ GPos(pos_runs)  # constructor function
     derivatives (i.e. \code{seqnames()}, \code{ranges()}, \code{start()},
     \code{end()}, \code{strand()}, \code{mcols()}, \code{seqinfo()},
     etc...), plus the \code{pos()} getter which is equivalent to
-    \code{start()} or \code{end()}. See \code{?GenomicRanges} for the list of
-    getters supported by \link{?GenomicRanges} derivatives.
+    \code{start()} or \code{end()}. See \code{?\link{GenomicRanges}} for the
+    list of getters supported by \link{GenomicRanges} derivatives.
 
     IMPORTANT NOTES:
     \enumerate{

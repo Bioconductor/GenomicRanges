@@ -1,7 +1,10 @@
 \name{GRanges-class}
 \docType{class}
 
-% Class:
+\alias{class:IRanges_OR_IPos}
+\alias{IRanges_OR_IPos-class}
+\alias{IRanges_OR_IPos}
+
 \alias{class:GenomicRanges}
 \alias{GenomicRanges-class}
 \alias{GenomicRanges}
