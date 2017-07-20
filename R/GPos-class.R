@@ -221,6 +221,40 @@ setMethod("as.data.frame", "GPos",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### Internal representation of GPos objects has changed in GenomicRanges
+### 1.29.10 (Bioc 3.6).
+###
+
+.get_GPos_version <- function(object)
+{
+    if (.hasSlot(object, "pos_runs")) "< 1.29.10" else "current"
+}
+
+setMethod("updateObject", "GPos",
+   function(object, ..., verbose=FALSE)
+   {
+       version <- .get_GPos_version(object)
+       if (version == "current") {
+           if (verbose)
+               message("[updateObject] Internal representation of ",
+                       class(object), " object is current.\n",
+                       "[updateObject] Nothing to update.")
+           return(object)
+       }
+       if (verbose)
+           message("[updateObject] ", class(object), " object uses ",
+                   "internal representation from GenomicRanges\n",
+                   "[updateObject] ", version, ". Updating it ...")
+       object <- GPos(object@pos_runs)
+       metadata(object) <- metadata(object)
+       object
+   }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Show
 ###
 
@@ -243,6 +277,12 @@ setMethod("as.data.frame", "GPos",
 show_GPos <- function(x, margin="",
                       print.classinfo=FALSE, print.seqinfo=FALSE)
 {
+    version <- .get_GPos_version(x)
+    if (version != "current")
+        stop(class(x), " object uses internal representation from ",
+             "GenomicRanges ", version, "\n  and cannot be displayed or ",
+             "used. Please update it with:\n",
+             "    x <- updateObject(x, verbose=TRUE)")
     x_class <- class(x)
     x_len <- length(x)
     x_mcols <- mcols(x)

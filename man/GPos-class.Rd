@@ -12,6 +12,8 @@
 \alias{coerce,GenomicRanges,GPos-method}
 \alias{coerce,GPos,GRanges-method}
 \alias{as.data.frame,GPos-method}
+
+\alias{updateObject,GPos-method}
 \alias{show,GPos-method}
 
 \title{Memory-efficient representation of genomic positions}
@@ -132,6 +134,10 @@ GPos(pos_runs)  # constructor function
   GPos object cannot exceed \code{.Machine$integer.max} (i.e. 2^31 on
   most platforms). \code{GPos()} will return an error if \code{pos_runs}
   contains too many genomic positions.
+
+  Internal representation of GPos objects has changed in \pkg{GenomicRanges}
+  1.29.10 (Bioc 3.6). Update any old object \code{x} with:
+  \code{x <- updateObject(x, verbose=TRUE)}.
 }
 
 \author{
