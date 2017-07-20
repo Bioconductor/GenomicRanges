@@ -123,8 +123,8 @@ GPos(pos_runs)  # constructor function
 }
 
 \section{Splitting and Relisting}{
-  Like with a \link{GRanges} object, \code{split()} and \code{relist()} work
-  on a GPos object \code{x}.
+  Like with any other \link{GRanges} object, \code{split()} and \code{relist()}
+  work on a GPos object \code{x}.
 }
 
 \note{

@@ -34,11 +34,11 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 ### Collapse runs of "stitchable genomic ranges"
 ###
 ### 2 genomic ranges are "stitchable" if, in addition to be stitchable from
-### an integer ranges point-of-view (see .stitch_Ranges() in
+### an integer ranges point-of-view (see stitch_Ranges() in
 ### IRanges/R/IPos-class.R for what that means), they are also on the same
 ### chromosome and strand.
 
-### .stitch_GenomicRanges() below takes any GenomicRanges derivative and
+### stitch_GenomicRanges() below takes any GenomicRanges derivative and
 ### returns a GRanges object (so is NOT an endomorphism).
 ### Note that this transformation preserves 'sum(width(x))'.
 ### Also note that this is an "inter range transformation". However unlike
@@ -48,10 +48,11 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 
 ### TODO: Define and export stitch() generic and method for Ranges objects
 ### in the IRanges package (in inter-range-methods.R). Then make
-### .stitch_GenomicRanges() the "stitch" method for GenomicRanges objects and
-### support the 'ignore.strand' argument.
+### stitch_GenomicRanges() and stitch_GPos() the "stitch" methods for
+### GenomicRanges and GPos objects, respectively, and support the
+### 'ignore.strand' argument.
 
-.stitch_GenomicRanges <- function(x, drop.empty.ranges=FALSE)
+stitch_GenomicRanges <- function(x, drop.empty.ranges=FALSE)
 {
     if (length(x) == 0L)
         return(granges(x))  # returning GRanges() would loose the seqinfo
@@ -75,8 +76,56 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
         start_idx <- start_idx[keep_idx]
     }
 
-    ans_seqnames <- x_seqnames[start_idx]
-    ans_strand <- x_strand[start_idx]
+    ans_seqnames <- x_seqnames[start_idx]  # same as x_seqnames[end_idx]
+    ans_strand <- x_strand[start_idx]      # same as x_strand[end_idx]
+    ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(start_idx))
+    ans_seqinfo <- seqinfo(x)
+
+    ## To be as fast as possible, we don't use internal low-level constructor
+    ## new_GRanges() and we don't check the new object.
+    new2("GRanges", seqnames=ans_seqnames,
+                    ranges=ans_ranges,
+                    strand=ans_strand,
+                    elementMetadata=ans_mcols,
+                    seqinfo=ans_seqinfo,
+                    check=FALSE)
+}
+
+stitch_GPos <- function(x, drop.empty.ranges=FALSE)
+{
+    if (length(x) == 0L)
+        return(granges(x))  # returning GRanges() would loose the seqinfo
+
+    x_seqnames <- seqnames(x)
+    x_strand <- strand(x)
+
+    ## Compute the logical Rle that goes along ranges(x).
+    w1 <- width(x@ranges@pos_runs) - 1L
+    w1_len <- length(w1)
+    vals <- c(rep.int(c(FALSE, TRUE), w1_len - 1L), FALSE)
+    lens <- w1[[w1_len]]
+    if (w1_len >= 2L)
+        lens <- c(as.vector(rbind(w1[-w1_len], 1L)), lens)
+    new_ranges_run <- Rle(vals, lens)
+
+    new_run <- x_seqnames[-1L] != x_seqnames[-length(x)] |
+        x_strand[-1L] != x_strand[-length(x)] |
+        new_ranges_run
+    new_run_idx <- which(new_run)
+    start_idx <- c(1L, new_run_idx + 1L)
+    end_idx <- c(new_run_idx, length(x))
+
+    ir <- IRanges(start_idx, end_idx)
+    ans_ranges <- IRanges:::extract_pos_runs_by_ranges(x@ranges@pos_runs, ir)
+
+    if (drop.empty.ranges) {
+        keep_idx <- which(width(ans_ranges) != 0L)
+        ans_ranges <- ans_ranges[keep_idx]
+        start_idx <- start_idx[keep_idx]
+    }
+
+    ans_seqnames <- x_seqnames[start_idx]  # same as x_seqnames[end_idx]
+    ans_strand <- x_strand[start_idx]      # same as x_strand[end_idx]
     ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(start_idx))
     ans_seqinfo <- seqinfo(x)
 
