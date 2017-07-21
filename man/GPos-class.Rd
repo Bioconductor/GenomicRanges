@@ -9,7 +9,8 @@
 \alias{names<-,GPos-method}
 \alias{pos,GPos-method}
 
-\alias{coerce,GenomicRanges,GPos-method}
+\alias{coerce,GRanges,GPos-method}
+\alias{coerce,ANY,GPos-method}
 \alias{coerce,GPos,GRanges-method}
 \alias{as.data.frame,GPos-method}
 

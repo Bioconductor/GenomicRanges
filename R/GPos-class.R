@@ -154,25 +154,27 @@ GPos <- function(pos_runs=GRanges())
 ### Coercion
 ###
 
-.from_GenomicRanges_to_GPos <- function(from)
+.from_GRanges_to_GPos <- function(from)
 {
     if (!all(width(from) == 1L))
-        stop(wmsg("all the ranges in the ", class(from), " object to ",
-                  "coerce to GPos must have a width of 1"))
+        stop(wmsg("all the ranges in the object to coerce to GPos ",
+                  "must have a width of 1"))
     if (!is.null(names(from))) {
         names(from) <- NULL
         warning(wmsg("because a GPos object cannot hold them, the names ",
-                     "on the ", class(from), " object couldn't be ",
-                     "propagated during its coercion to GPos"))
+                     "on the object to coerce to GPos couldn't be ",
+                     "propagated by the coercion"))
     }
-    from@ranges <- IPos(from@ranges)
+    class(from) <- "GPos"  # temporarily broken GRanges instance!
+    from@ranges <- as(from@ranges, "IPos")  # now fixed :-)
     from
 }
-setAs("GenomicRanges", "GPos", .from_GenomicRanges_to_GPos)
+setAs("GRanges", "GPos", .from_GRanges_to_GPos)
 
-### Automatic coercion method from GPos to GRanges silently returns
-### a broken object (unfortunately these dummy automatic coercion methods
-### don't bother to validate the object they return). So we overwrite it.
+setAs("ANY", "GPos",
+    function(from) .from_GRanges_to_GPos(as(from, "GRanges"))
+)
+
 .from_GPos_to_GRanges <- function(from)
 {
     class(from) <- "GRanges"  # temporarily broken GRanges instance!
