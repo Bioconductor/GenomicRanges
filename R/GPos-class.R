@@ -171,9 +171,7 @@ GPos <- function(pos_runs=GRanges())
 }
 setAs("GRanges", "GPos", .from_GRanges_to_GPos)
 
-setAs("ANY", "GPos",
-    function(from) .from_GRanges_to_GPos(as(from, "GRanges"))
-)
+setAs("ANY", "GPos", function(from) .from_GRanges_to_GPos(as(from, "GRanges")))
 
 .from_GPos_to_GRanges <- function(from)
 {
