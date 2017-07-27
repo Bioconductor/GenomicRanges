@@ -173,13 +173,21 @@ setAs("GRanges", "GPos", .from_GRanges_to_GPos)
 
 setAs("ANY", "GPos", function(from) .from_GRanges_to_GPos(as(from, "GRanges")))
 
-.from_GPos_to_GRanges <- function(from)
+### Because we implemented the 'strict' argument we cannot use setAs().
+### 'to' is ignored but we must have it in the signature otherwise the call
+### to setMethod("coerce") below will complain.
+.from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
 {
+    if (!isTRUEorFALSE(strict))
+        stop("'strict' must be TRUE or FALSE")
+    if (!strict)
+        return(from)
     class(from) <- "GRanges"  # temporarily broken GRanges instance!
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
-setAs("GPos", "GRanges", .from_GPos_to_GRanges)
+#setAs("GPos", "GRanges", .from_GPos_to_GRanges)
+setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
 
 ### The "as.data.frame" method for GenomicRanges objects works on a GPos
 ### object but returns a data.frame with identical "start" and "end" columns,

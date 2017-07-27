@@ -65,7 +65,7 @@ GRangesList <- function(...)
             stop("all elements in '...' must be GRanges objects")
         unlistData <- suppressWarnings(do.call("c", unname(listData)))
     }
-    relist(unlistData, PartitioningByEnd(listData))
+    relist(unlistData, listData)
 }
 
 ### Typically, the field values will come from a file that needs to be loaded
@@ -585,6 +585,13 @@ showList <- function(object, showFunction, print.classinfo)
 }
 
 setMethod("show", "GRangesList",
-    function(object) showList(object, show_GenomicRanges, TRUE)
+    function(object)
+    {
+        if (is(object@unlistData, "GPos"))
+            showFunction <- show_GPos
+        else
+            showFunction <- show_GenomicRanges
+        showList(object, showFunction, print.classinfo=TRUE)
+    }
 )
 
