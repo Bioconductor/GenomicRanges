@@ -237,3 +237,17 @@ setMethod("countOverlaps", c("GenomicRanges", "GenomicRanges"),
     countOverlaps_GenomicRanges
 )
 
+compatibleStrand <- function(a, b) {
+    a == "*" | b == "*" | a == b
+}
+
+setMethod("poverlaps", c("GenomicRanges", "GenomicRanges"),
+          function(query, subject, maxgap=0L, minoverlap=1L,
+                   type=c("any", "start", "end", "within", "equal"),
+                   ignore.strand=FALSE)
+{
+    seqnames(query) == seqnames(subject) &
+        (if (ignore.strand) TRUE
+         else compatibleStrand(strand(query), strand(subject))) &
+        poverlaps(ranges(query), ranges(subject), maxgap, minoverlaps, type)
+})
