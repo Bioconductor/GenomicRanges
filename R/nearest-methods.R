@@ -408,6 +408,36 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### precedes() and follows()
+###
+
+.normBounds <- function(x) {
+    if (is(x, "GRangesList")) {
+        x <- range(x)
+        if (all(lengths(x) == 1L)) {
+            x <- unlist(x)
+        } else {
+            stop("operation undefined when ranges cross seqnames and strands")
+        }
+    }
+    x
+}
+
+precedes <- function(x, y) {
+    x <- .normBounds(x)
+    y <- .normBounds(y)
+    seqnames(x) == seqnames(y) &
+        ifelse(strand(y) == "-", start(x) > end(y), end(x) < start(y))
+}
+
+follows <- function(x, y) {
+    x <- .normBounds(x)
+    y <- .normBounds(y)
+    seqnames(x) == seqnames(y) &
+        ifelse(strand(y) == "-", end(x) < start(y), start(x) > end(y))
+}
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Find 'k' nearest neighbors
 ###
 ### FIXME: Largely untested code; unexported for now
