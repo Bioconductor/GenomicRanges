@@ -10,8 +10,7 @@ BiocStyle::latex()
 \newcommand{\GenomicRanges}{\Biocpkg{GenomicRanges}}
 
 \title{An Introduction to the GenomicRanges Package}
-\author{Marc Carlson \and Patrick Aboyoun \and Herv\'{e} Pag\`{e}s \and
-  Martin Morgan}
+\author{Marc Carlson, Patrick Aboyoun, Herv\'{e} Pag\`{e}s, and Martin Morgan}
 \date{\today; updated 16 November, 2016}
 
 \begin{document}
