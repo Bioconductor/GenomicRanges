@@ -243,10 +243,10 @@ setMethod("follow", c("GenomicRanges", "missing"),
 {
     ## overlapping ranges
     if (drop.self) {
-        ol <- findOverlaps(x, select=select,
+        ol <- findOverlaps(x, minoverlap=0L, select=select,
                            ignore.strand=ignore.strand, drop.self=TRUE)
     } else {
-        ol <- findOverlaps(x, subject, select=select,
+        ol <- findOverlaps(x, subject, minoverlap=0L, select=select,
                            ignore.strand=ignore.strand)
     }
 
