@@ -56,7 +56,7 @@
     A \link{GRanges} or \link{GRangesList} object.
   }
   \item{maxgap, minoverlap, type}{
-    See \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
+    See \code{?\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
     for a description of these arguments.
   }
   \item{select}{
