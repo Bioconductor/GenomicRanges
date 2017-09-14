@@ -7,10 +7,13 @@ findOverlaps_GNCList <- GenomicRanges:::findOverlaps_GNCList
 source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
 
 .get_query_overlaps2 <- function(query, subject,
-                                 maxgap, min_overlap_score, type,
-                                 ignore.strand)
+            maxgap=-1L, minoverlap=0L,
+            type=c("any", "start", "end", "within", "extend", "equal"),
+            ignore.strand=FALSE)
 {
-    ok <- .get_query_overlaps(query, subject, maxgap, min_overlap_score, type)
+    ok <- .get_query_overlaps(query, subject,
+                              maxgap=maxgap, minoverlap=minoverlap,
+                              type=type)
     ok <- ok & seqnames(query) == seqnames(subject)
     if (ignore.strand || as.logical(strand(query) == "*"))
         return(ok)
@@ -20,7 +23,7 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
 ### Redefine the .findOverlaps_naive() function we got from sourcing
 ### test_NCList-class.R above.
 .findOverlaps_naive <- function(query, subject,
-                                maxgap=0L, minoverlap=1L,
+                                maxgap=-1L, minoverlap=0L,
                                 type=c("any", "start", "end",
                                        "within", "extend", "equal"),
                                 select=c("all", "first", "last", "arbitrary",
@@ -28,17 +31,12 @@ source(system.file("unitTests", "test_NCList-class.R", package="IRanges"))
                                 ignore.strand=FALSE)
 {
     type <- match.arg(type)
-    if (type == "any") {
-        min_overlap_score <- .min_overlap_score(maxgap, minoverlap)
-    } else {
-        min_overlap_score <- minoverlap
-    }
     select <- match.arg(select)
     hits_per_query <- lapply(seq_along(query),
         function(i)
             which(.get_query_overlaps2(query[i], subject,
-                                       maxgap, min_overlap_score, type,
-                                       ignore.strand)))
+                                       maxgap=maxgap, minoverlap=minoverlap,
+                                       type=type, ignore.strand=ignore.strand)))
     hits <- .make_Hits_from_q2s(hits_per_query, length(subject))
     selectHits(hits, select=select)
 }

@@ -8,7 +8,7 @@
 ###
 
 findOverlaps_GenomicRanges <- function(query, subject,
-             maxgap=0L, minoverlap=1L,
+             maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
@@ -30,12 +30,15 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 ### "findOverlaps" methods for GRangesList objects
 ###
 
-.overlap_score <- function(hits, query, subject)
+.overlapwidth <- function(hits, query, subject)
 {
     q_ranges <- ranges(query)[queryHits(hits)]
     s_ranges <- ranges(subject)[subjectHits(hits)]
-    1L + pmin.int(end(q_ranges), end(s_ranges)) -
-         pmax.int(start(q_ranges), start(s_ranges))
+    ## TODO: Replace the code below by a call to
+    ## poverlapWidth(q_ranges, s_ranges) when it's available.
+    score <- pmin.int(end(q_ranges), end(s_ranges)) -
+                     pmax.int(start(q_ranges), start(s_ranges)) + 1L
+    pmax.int(score, 0L)
 }
 
 .aggregated_sum <- function(x, f1, f2)
@@ -45,13 +48,13 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 }
 
 setMethod("findOverlaps", c("GRangesList", "GRangesList"),
-    function(query, subject, maxgap=0L, minoverlap=1L,
+    function(query, subject, maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
     {
-        if (!isSingleNumber(maxgap) || maxgap < 0)
-            stop("'maxgap' must be a non-negative integer")
+        if (!isSingleNumber(minoverlap) || minoverlap < 0L)
+            stop("'minoverlap' must be a single non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
 
@@ -75,11 +78,12 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                               type=type, select="all",
                               ignore.strand=ignore.strand)
 
-        if (minoverlap > 1L) {
-            score <- .overlap_score(ans00, unlisted_query, unlisted_subject)
-            score <- .aggregated_sum(score, query_groups[queryHits(ans00)],
-                                            subject_groups[subjectHits(ans00)])
-            mcols(ans00) <- DataFrame(score=score)
+        if (minoverlap > 0L) {
+            owidth <- .overlapwidth(ans00, unlisted_query, unlisted_subject)
+            owidth <- .aggregated_sum(owidth,
+                                      query_groups[queryHits(ans00)],
+                                      subject_groups[subjectHits(ans00)])
+            mcols(ans00) <- DataFrame(owidth=owidth)
         } 
         if (type == "within") {
             ans01 <- remapHits(ans00, Rnodes.remapping=subject_groups,
@@ -97,8 +101,8 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                                     Rnodes.remapping=subject_groups,
                                     new.nRnode=length(subject))
         }
-        if (minoverlap > 1L) {
-            keep_idx <- which(mcols(ans)[ , "score"] >= minoverlap)
+        if (minoverlap > 0L) {
+            keep_idx <- which(mcols(ans)[ , "owidth"] >= minoverlap)
             mcols(ans) <- NULL
             ans <- ans[keep_idx]
         }
@@ -107,13 +111,13 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
 )
 
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
-    function(query, subject, maxgap=0L, minoverlap=1L,
+    function(query, subject, maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
     {
-        if (!isSingleNumber(maxgap) || maxgap < 0)
-            stop("'maxgap' must be a non-negative integer")
+        if (!isSingleNumber(minoverlap) || minoverlap < 0L)
+            stop("'minoverlap' must be a single non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
 
@@ -125,11 +129,12 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
                               type=type, select="all",
                               ignore.strand=ignore.strand)
 
-        if (minoverlap > 1L) {
-            score <- .overlap_score(ans00, unlisted_query, subject)
-            score <- .aggregated_sum(score, query_groups[queryHits(ans00)],
-                                            subjectHits(ans00))
-            mcols(ans00) <- DataFrame(score=score)
+        if (minoverlap > 0L) {
+            owidth <- .overlapwidth(ans00, unlisted_query, subject)
+            owidth <- .aggregated_sum(owidth,
+                                      query_groups[queryHits(ans00)],
+                                      subjectHits(ans00))
+            mcols(ans00) <- DataFrame(owidth=owidth)
         }
         if (type == "within") {
             ans10 <- remapHits(ans00, Lnodes.remapping=query_groups,
@@ -143,8 +148,8 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
             ans <- remapHits(ans00, Lnodes.remapping=query_groups,
                                     new.nLnode=length(query))
         }
-        if (minoverlap > 1L) {
-            keep_idx <- which(mcols(ans)[ , "score"] >= minoverlap)
+        if (minoverlap > 0L) {
+            keep_idx <- which(mcols(ans)[ , "owidth"] >= minoverlap)
             mcols(ans) <- NULL
             ans <- ans[keep_idx]
         }
@@ -153,13 +158,13 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
 )
 
 setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
-    function(query, subject, maxgap=0L, minoverlap=1L,
+    function(query, subject, maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
     {
-        if (!isSingleNumber(maxgap) || maxgap < 0)
-            stop("'maxgap' must be a non-negative integer")
+        if (!isSingleNumber(minoverlap) || minoverlap < 0L)
+            stop("'minoverlap' must be a single non-negative integer")
         type <- match.arg(type)
         select <- match.arg(select)
 
@@ -181,16 +186,17 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
                               type=type, select="all",
                               ignore.strand=ignore.strand)
 
-        if(minoverlap > 1L) {
-            score <- .overlap_score(ans00, query, unlisted_subject)
-            score <- .aggregated_sum(score, queryHits(ans00),
-                                            subject_groups[subjectHits(ans00)])
-            mcols(ans00) <- DataFrame(score=score)
+        if(minoverlap > 0L) {
+            owidth <- .overlapwidth(ans00, query, unlisted_subject)
+            owidth <- .aggregated_sum(owidth,
+                                      queryHits(ans00),
+                                      subject_groups[subjectHits(ans00)])
+            mcols(ans00) <- DataFrame(owidth=owidth)
         }
         ans <- remapHits(ans00, Rnodes.remapping=subject_groups,
                                 new.nRnode=length(subject))
-        if (minoverlap > 1L) {
-            keep_idx <- which(mcols(ans)[ , "score"] >= minoverlap)
+        if (minoverlap > 0L) {
+            keep_idx <- which(mcols(ans)[ , "owidth"] >= minoverlap)
             mcols(ans) <- NULL
             ans <- ans[keep_idx]
         }
@@ -200,7 +206,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 
 ### Needed by chipseq package.
 setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
-    function(query, subject, maxgap=0L, minoverlap=1L,
+    function(query, subject, maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
@@ -220,7 +226,7 @@ setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
 ### -------------------------------------------------------------------------
 
 countOverlaps_GenomicRanges <- function(query, subject,
-              maxgap=0L, minoverlap=1L,
+              maxgap=-1L, minoverlap=0L,
               type=c("any", "start", "end", "within", "equal"),
               ignore.strand=FALSE)
 {

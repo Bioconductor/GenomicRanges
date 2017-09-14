@@ -103,7 +103,7 @@ setMethod("extractROWS", "GNCList",
 
 ### NOT exported.
 findOverlaps_GNCList <- function(query, subject,
-             maxgap=0L, minoverlap=1L,
+             maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within", "extend", "equal"),
              select=c("all", "first", "last", "arbitrary", "count"),
              ignore.strand=FALSE)

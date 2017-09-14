@@ -40,13 +40,13 @@
 
 \usage{
 \S4method{findOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap=0L, minoverlap=1L,
+    maxgap=-1L, minoverlap=0L,
     type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"),
     ignore.strand=FALSE)
 
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
-    maxgap=0L, minoverlap=1L,
+    maxgap=-1L, minoverlap=0L,
     type=c("any", "start", "end", "within", "equal"),
     ignore.strand=FALSE)
 }
