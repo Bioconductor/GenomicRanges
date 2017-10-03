@@ -248,7 +248,8 @@ order_GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
 ### ignored.
 ### 'method' is also ignored at the moment.
 setMethod("order", "GenomicRanges",
-    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
+    function(..., na.last=TRUE, decreasing=FALSE,
+                  method=c("auto", "shell", "radix"))
     {
         ## Turn off this warning for now since it triggers spurious warnings
         ## when calling sort() on a GRangesList object. The root of the
