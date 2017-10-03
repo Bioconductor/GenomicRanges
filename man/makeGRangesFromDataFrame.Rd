@@ -203,19 +203,21 @@ makeGRangesFromDataFrame(df)
 if (require(rtracklayer)) {
   session <- browserSession()
   genome(session) <- "sacCer2"
-  query <- ucscTableQuery(session, "Most Conserved")
+  query <- ucscTableQuery(session, "Assembly")
   df <- getTable(query)
 
   ## A common pitfall is to forget that the UCSC Table Browser uses the
   ## "0-based start" convention:
-  gr0 <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
+  gr0 <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
+                                  start.field="chromStart", end.field="chromEnd")
   head(gr0)
   min(start(gr0))
 
   ## The start positions need to be converted into 1-based positions,
   ## to adhere to the convention used in Bioconductor:
   gr1 <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
-                                  starts.in.df.are.0based=TRUE)
+                                  starts.in.df.are.0based=TRUE,
+                                  start.field="chromStart", end.field="chromEnd")
   head(gr1)
 }
 }
