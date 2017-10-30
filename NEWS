@@ -1,9 +1,66 @@
 CHANGES IN VERSION 1.30.0
 -------------------------
 
+NEW FEATURES
+
+    o Support GPos-based GRangesList objects.
+
+    o Add 'na.rm' argument to binnedAverage().
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o Change 'maxgap' and 'minoverlap' defaults for findOverlaps() and family
+      (i.e. countOverlaps(), overlapsAny(), and subsetByOverlaps()). This
+      change addresses 2 long-standing issues:
+        (1) by default zero-width ranges are not excluded anymore, and
+        (2) control of zero-width ranges and adjacent ranges is finally
+            decoupled (only partially though).
+      New default for 'minoverlap' is 0 instead of 1. New default for 'maxgap'
+      is -1 instead of 0. See ?findOverlaps for more information about 'maxgap'
+      and the meaning of -1. For example, if 'type' is "any", you need to set
+      'maxgap' to 0 if you want adjacent ranges to be considered as overlapping.
+
+    o GPos now extends GRanges but with a ranges slot that must be an IPos
+      object. Update "old" GPos objects with updateObject().
+
+    o Move pos() generic to IRanges package.
+
+    o Move rglist() generic to IRanges package.
+
+    o Rename GenomicRangesORmissing and GenomicRangesORGRangesList classes ->
+      GenomicRanges_OR_missing and GenomicRanges_OR_GRangesList, respectively.
+
+    o Remove "seqinfo" method for RangesList objects.
+
+    o Remove "stack" method for GenomicRangesList objects.
+
 BUG FIXES
 
+    o nearest() and distanceToNearest() now call findOverlaps() internally
+      with maxgap=0 and minoverlap=0. This fixes incorrect results obtained
+      in some situations e.g. in the situation reported here:
+
+          https://support.bioconductor.org/p/99369/ (zero-width ranges)
+
+      but also in this situation:
+
+          nearest(GRanges("chr1", IRanges(5, 10)),
+                  GRanges("chr1", IRanges(1, 4:5)),
+                  select="all")
+
+      where the 2 ranges in the subject are *both* nearest to the 5-10 range.
+
     o '$' completion on GenomicRanges works in RStudio.
+
+    o Minor tweaks to conversion from character to GRanges and reverse
+      conversion.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove 'force' argument from seqinfo() and seqlevels() setters (the
+      argument got deprecated in BioC 3.5 in favor of new and more flexible
+      'pruning.mode' argument).
+
 
 CHANGES IN VERSION 1.28.0
 -------------------------
