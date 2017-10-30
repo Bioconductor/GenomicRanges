@@ -34,6 +34,12 @@ SIGNIFICANT USER-LEVEL CHANGES
 
     o Remove "stack" method for GenomicRangesList objects.
 
+DEPRECATED AND DEFUNCT
+
+    o Remove 'force' argument from seqinfo() and seqlevels() setters (the
+      argument got deprecated in BioC 3.5 in favor of new and more flexible
+      'pruning.mode' argument).
+
 BUG FIXES
 
     o nearest() and distanceToNearest() now call findOverlaps() internally
@@ -54,12 +60,6 @@ BUG FIXES
 
     o Minor tweaks to conversion from character to GRanges and reverse
       conversion.
-
-DEPRECATED AND DEFUNCT
-
-    o Remove 'force' argument from seqinfo() and seqlevels() setters (the
-      argument got deprecated in BioC 3.5 in favor of new and more flexible
-      'pruning.mode' argument).
 
 
 CHANGES IN VERSION 1.28.0
