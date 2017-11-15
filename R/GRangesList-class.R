@@ -489,25 +489,6 @@ setMethod("[", "GRangesList", .sBracketSubsetGRList)
 }
 setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 
-.dBracketReplaceGRList <- function(x, i, j, ..., value)
-{
-    nameValue <- if (is.character(i)) i else ""
-    i <- S4Vectors:::normargSubset2_iOnly(x, i, j, ...,
-             .conditionPrefix=paste0("[[<-,", class(x)[1], "-method: "))
-    len <- length(x)
-    if (i > len) {
-        value <- list(value)
-        if (nzchar(nameValue))
-            names(value) <- nameValue
-        x <- c(x, do.call(getFunction(class(x)), value))
-    } else {
-        x <- callNextMethod(x, i, ..., value=value)
-    }
-    validObject(x)
-    x
-}
-setReplaceMethod("[[", "GRangesList", .dBracketReplaceGRList)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Going from GRanges to GRangesList with extractList() and family.
