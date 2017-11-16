@@ -60,7 +60,7 @@ export(
 exportMethods(
     length,
     names, "names<-",
-    "[", "[<-", "[[", "[[<-", "$", "$<-",
+    "[", "[<-", "$", "$<-",
     as.character, as.factor, as.data.frame,
     coerce,
     c,
