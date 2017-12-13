@@ -121,6 +121,24 @@ reconstructGRfromRGL <- function(rgl, x)
 ### For internal use only (not exported).
 ###
 
+### 'f' is assumed to be an integer vector of non-negative values with no NAs.
+.pad_with_zeros <- function(f)
+{
+    stopifnot(is.integer(f))
+    if (length(f) == 0L)
+        return(character())
+    f_max <- max(f)
+    if (f_max <= 9L)
+        return(as.character(f))
+    nd <- as.integer(log10(f_max)) + 1L
+    sprintf(paste0("%0", nd, "d"), f)
+}
+
+.paste12 <- function(f1, f2)
+{
+    paste(.pad_with_zeros(f1), .pad_with_zeros(f2), sep="|")
+}
+
 ### Unlist GRangesList object 'x' into a GRanges object but the differences
 ### with the "unlist" method for GRangesList objects are:
 ###   - The sequence names of the returned GRanges object are modified by
@@ -129,9 +147,9 @@ reconstructGRfromRGL <- function(rgl, x)
 deconstructGRLintoGR <- function(x, expand.levels=FALSE)
 {
     ans <- x@unlistData
-    f1 <- rep.int(seq_len(length(x)), elementNROWS(x))
+    f1 <- rep.int(seq_along(x), elementNROWS(x))
     f2 <- as.integer(seqnames(ans))
-    f12 <- paste(f1, f2, sep="|")
+    f12 <- .paste12(f1, f2)
 
     ## Compute 'ans_seqinfo'.
     if (expand.levels) {
@@ -149,7 +167,7 @@ deconstructGRLintoGR <- function(x, expand.levels=FALSE)
         i2 <- of2[notdups]
     }
     x_seqinfo <- seqinfo(x)
-    ans_seqlevels <- paste(i1, i2, sep="|")
+    ans_seqlevels <- .paste12(i1, i2)
     ans_seqlengths <- unname(seqlengths(x_seqinfo))[i2]
     ans_isCircular <- unname(isCircular(x_seqinfo))[i2]
     ans_seqinfo <- Seqinfo(ans_seqlevels, ans_seqlengths, ans_isCircular)
@@ -202,6 +220,25 @@ reconstructGRLfromGR <- function(gr, x, with.revmap=FALSE)
     mcols(ans) <- mcols(x)
     ans
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Not an inter-range method but we put it here for now (should probably
+### go in something like GRangesList-comparison.R together with
+### deconstructGRLintoGR() and reconstructGRLfromGR() above)
+###
+
+### S3/S4 combo for sort.GRangesList
+.sort.GRangesList <- function(x, decreasing=FALSE, ...)
+{
+    gr <- deconstructGRLintoGR(x)
+    gr2 <- sort(gr, decreasing=decreasing, ...)
+    reconstructGRLfromGR(gr2, x)
+}
+sort.GRangesList <- function(x, decreasing=FALSE, ...)
+    .sort.GRangesList(x, decreasing=decreasing, ...)
+setMethod("sort", "GRangesList", .sort.GRangesList)
+
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

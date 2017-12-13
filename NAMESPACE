@@ -38,6 +38,7 @@ S3method(.DollarNames, GRanges)
 S3method(duplicated, GenomicRanges)
 
 S3method(sort, GenomicRanges)
+S3method(sort, GRangesList)
 
 S3method(summary, GenomicRanges)
 
@@ -48,6 +49,7 @@ export(
     duplicated.GenomicRanges,
 
     sort.GenomicRanges,
+    sort.GRangesList,
 
     summary.GenomicRanges
 )
