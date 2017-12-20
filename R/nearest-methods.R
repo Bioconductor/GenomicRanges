@@ -140,28 +140,52 @@
     spid <- which(strand(subject) != "-")
     smid <- which(strand(subject) != "+")
 
-    ## '+' or '*' query
-    idx <- which(strand(query) != "-")
+    ## '+' query
+    idx <- which(strand(query) == "+")
     phit <- plusfun(queryStart[idx], queryEnd[idx],
                     subjectStart[spid], subjectEnd[spid], sentinel)
     phit <- .Hits(qid[idx][queryHits(phit)], spid[subjectHits(phit)])
 
-    ## '-' or '*' query
-    idx <- which(strand(query) != "+")
+    ## '-' query
+    idx <- which(strand(query) == "-")
     mhit <- minusfun(queryStart[idx], queryEnd[idx],
                      subjectStart[smid], subjectEnd[smid], sentinel)
     mhit <- .Hits(qid[idx][queryHits(mhit)], smid[subjectHits(mhit)])
-    ## When both query and subject are '*', treat as if on '+' strand.
-    ## This combo was tested in 'phit' and should be removed from 'mhit'.
-    sstar <- which(strand(subject) == "*") 
-    qstar <- which(strand(query) == "*")
-    remove <- queryHits(mhit) %in% qstar & subjectHits(mhit) %in% sstar
-    mhit <- mhit[!remove]
 
-    ## clean up
-    qryHits <- c(queryHits(phit), queryHits(mhit))
-    subjHits <- c(subjectHits(phit), subjectHits(mhit))
+
+    ## '*' query
+    idx <- which(strand(query) == "*")
+    starphit <- plusfun(queryStart[idx], queryEnd[idx],
+                    subjectStart[spid], subjectEnd[spid], sentinel)
+    starphit <- .Hits(qid[idx][queryHits(starphit)], 
+                      spid[subjectHits(starphit)])
+    ## '*' query and '*' subject pairs are treated as if on '+' strand;
+    ## omit '*' subjects from this test
+    smid <- which(strand(subject) == "-")
+    starmhit <- minusfun(queryStart[idx], queryEnd[idx],
+                     subjectStart[smid], subjectEnd[smid], sentinel)
+    starmhit <- .Hits(qid[idx][queryHits(starmhit)], smid[subjectHits(starmhit)])
+    starhit <- .Hits(c(queryHits(starphit), queryHits(starmhit)),
+                     c(subjectHits(starphit), subjectHits(starmhit)),
+                     length(query), length(subject))
+                      
+    ## '*' strand query can return a value for both mhit and phit.
+    ## Choose the closest range regardless of strand.
+    both <- (idx %in% queryHits(starmhit)) & (idx %in% queryHits(starphit))
+    for (i in idx[both]) {
+        x <- query[i]
+        sidx <- which(queryHits(starhit) %in% i)
+        y <- subject[subjectHits(starhit)[sidx]]
+        dist <- distance(x, y)
+        drop <- sidx[!dist %in% min(dist)]
+        if (length(drop))
+            starhit <- starhit[-drop]
+    }
+
+    qryHits <- c(queryHits(phit), queryHits(mhit), queryHits(starhit))
+    subjHits <- c(subjectHits(phit), subjectHits(mhit), subjectHits(starhit))
     hits <- .Hits(qryHits, subjHits, length(query), length(subject))
+    ## Break ties
     if (select == "all") {
         hits 
     } else if (select == "first") {

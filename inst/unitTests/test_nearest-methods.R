@@ -76,6 +76,13 @@ test_GenomicRanges_nearest <- function()
     checkEquals(precede(r), follow(g))
     checkEquals(nearest(r), nearest(g))
 
+    ## '*' strand precedes or follows both ranges
+    x <- GRanges("chr1", IRanges(1100, width=1), strand='*')
+    y <- GRanges("chr1", IRanges(c(1000, 1500), width=1), strand=c("+", "-"))
+    checkTrue(nearest(x, y) == 1L)
+    y <- GRanges("chr1", IRanges(c(1000, 1500), width=1), strand=c("-", "+"))
+    checkTrue(nearest(x, y) == 1L)
+
     ## overlapping
     r <- IRanges(c(1,4,8), c(6,10,12))
     g <- GRanges("chr1", r, "+")
