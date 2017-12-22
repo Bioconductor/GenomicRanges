@@ -221,24 +221,24 @@ setMethod("as.data.frame", "GPos",
 }
 
 setMethod("updateObject", "GPos",
-   function(object, ..., verbose=FALSE)
-   {
-       version <- .get_GPos_version(object)
-       if (version == "current") {
-           if (verbose)
-               message("[updateObject] Internal representation of ",
-                       class(object), " object is current.\n",
-                       "[updateObject] Nothing to update.")
-           return(object)
-       }
-       if (verbose)
-           message("[updateObject] ", class(object), " object uses ",
-                   "internal representation from GenomicRanges\n",
-                   "[updateObject] ", version, ". Updating it ...")
-       object <- GPos(object@pos_runs)
-       metadata(object) <- metadata(object)
-       object
-   }
+    function(object, ..., verbose=FALSE)
+    {
+        version <- .get_GPos_version(object)
+        if (version == "current") {
+            if (verbose)
+                message("[updateObject] Internal representation of ",
+                        class(object), " object is current.\n",
+                        "[updateObject] Nothing to update.")
+            return(object)
+        }
+        if (verbose)
+            message("[updateObject] ", class(object), " object uses ",
+                    "internal representation from GenomicRanges\n",
+                    "[updateObject] ", version, ". Updating it ...")
+        object <- GPos(object@pos_runs)
+        metadata(object) <- metadata(object)
+        object
+    }
 )
 
 
@@ -270,7 +270,7 @@ show_GPos <- function(x, margin="",
         stop(class(x), " object uses internal representation from ",
              "GenomicRanges ", version, "\n  and cannot be displayed or ",
              "used. Please update it with:\n",
-             "    x <- updateObject(x, verbose=TRUE)")
+             "    object <- updateObject(object, verbose=TRUE)")
     x_class <- class(x)
     x_len <- length(x)
     x_mcols <- mcols(x)
