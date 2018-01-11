@@ -6,12 +6,22 @@
 ### "compound" semantics as GRangesList.
 ###
 
+
 setClass("GenomicRangesList",
-         prototype = prototype(elementType = "GenomicRanges"),
-         contains = "List")
+    contains="List",
+    representation(
+        "VIRTUAL",
+        elementMetadata="DataFrame"
+    ),
+    prototype(
+        elementType="GenomicRanges"
+    )
+)
 
 setClass("SimpleGenomicRangesList",
-         contains = c("GenomicRangesList", "SimpleList"))
+    contains=c("GenomicRangesList", "SimpleList")
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.

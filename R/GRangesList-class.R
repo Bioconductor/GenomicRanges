@@ -3,11 +3,11 @@
 ### -------------------------------------------------------------------------
 ###
 
+
 setClass("GRangesList",
-    contains=c("CompressedList", "GenomicRangesList"),
+    contains=c("GenomicRangesList", "CompressedList"),
     representation(
-        unlistData="GRanges",
-        elementMetadata="DataFrame"
+        unlistData="GRanges"
     ),
     prototype(
         elementType="GRanges"

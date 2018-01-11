@@ -15,7 +15,7 @@
 \alias{GRanges-class}
 \alias{GRanges}
 
-\alias{parallelSlotNames,GRanges-class}
+\alias{parallelSlotNames,GRanges-method}
 
 % Constructors:
 \alias{GRanges}

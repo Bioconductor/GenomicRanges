@@ -12,7 +12,6 @@ setClass("GRanges",
         seqnames="Rle",
         ranges="IRanges_OR_IPos",  # an IPos only for GPos
         strand="Rle",
-        elementMetadata="DataFrame",
         seqinfo="Seqinfo"
     ),
     prototype(

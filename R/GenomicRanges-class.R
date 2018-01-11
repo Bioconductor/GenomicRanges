@@ -8,9 +8,10 @@
 setClass("GenomicRanges",
     contains="Vector",
     representation(
-        "VIRTUAL"#,
+        "VIRTUAL",
         #No more constraint slot for now...
-        #constraint="Constraint_OR_NULL"
+        #constraint="Constraint_OR_NULL",
+        elementMetadata="DataFrame"
     )
 )
 
