@@ -389,25 +389,6 @@ setAs("ANY", "GenomicRanges", function(from) as(from, "GRanges"))
 
 .DollarNames.GRanges <- .DollarNames.GenomicRanges
 
-setMethod("extractROWS", "GRanges",
-    function(x, i)
-    {
-        if (missing(i) || !is(i, "Ranges"))
-            i <- normalizeSingleBracketSubscript(i, x)
-        ans_seqnames <- extractROWS(seqnames(x), i)
-        ans_ranges <- extractROWS(ranges(x), i)
-        ans_strand <- extractROWS(strand(x), i)
-        ans_mcols <- extractROWS(mcols(x), i)
-        ans_ecs <- lapply(extraColumnSlots(x), extractROWS, i)
-        BiocGenerics:::replaceSlots(x, seqnames=ans_seqnames,
-                                       ranges=ans_ranges,
-                                       strand=ans_strand,
-                                       elementMetadata=ans_mcols,
-                                       .slotList=ans_ecs,
-                                       check=FALSE)
-    }
-)
-
 setMethod("replaceROWS", "GRanges",
     function(x, i, value)
     {
