@@ -85,6 +85,8 @@ exportMethods(
     updateObject,
 
     ## Generics defined in S4Vectors:
+    concatenateObjects,
+    parallelSlotNames,
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",

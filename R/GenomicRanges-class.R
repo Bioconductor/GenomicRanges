@@ -33,22 +33,40 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Extra column slots (implemented by subclasses)
+### Extra column slots (added by GRanges subclasses)
+###
+### The "extra column slots" are parallel slots added by GRanges subclasses
+### in addition to GRanges parallel slots "seqnames", "ranges", "strand",
+### and "elementMetadata".
+###
+### TODO: Packages defining "extraColumnSlotNames" methods (e.g.
+### VariantAnnotation, GenomicTuples, InteractionSet, SGSeq) should define
+### "parallelSlotNames" methods instead. They'll get more things working
+### out-of-the-box by doing so (e.g. c()). Then the extraColumnSlotNames()
+### generic will become a GenomicRanges private business and could be made
+### a regular function.
 ###
 
-extraColumnSlots <- function(x) {
-  sapply(extraColumnSlotNames(x), slot, object = x, simplify = FALSE)
-}
-
-extraColumnSlotsAsDF <- function(x) {
-  ## low-level fast path; otherwise, would need to wrap some things with I()
-  new("DataFrame", listData = extraColumnSlots(x), nrows = length(x))
-}
-
 setGeneric("extraColumnSlotNames",
-           function(x) standardGeneric("extraColumnSlotNames"))
+    function(x) standardGeneric("extraColumnSlotNames")
+)
 
 setMethod("extraColumnSlotNames", "ANY", function(x) character())
+
+#setMethod("extraColumnSlotNames", "GRanges",
+#    function(x)
+#    {
+#        GRanges_pslotnames <- parallelSlotNames(new("GRanges"))
+#        setdiff(parallelSlotNames(x), GRanges_pslotnames)
+#    }
+#)
+
+extraColumnSlots <- function(x)
+    sapply(extraColumnSlotNames(x), slot, object=x, simplify=FALSE)
+
+extraColumnSlotsAsDF <- function(x)
+    S4Vectors:::new_DataFrame(extraColumnSlots(x), nrows=length(x))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### 2 low-level helper functions to deal with out-of-bound ranges.
@@ -613,50 +631,6 @@ setReplaceMethod("$", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining.
-###
-
-### Not exported. 'x' *must* be an unnamed list of length >= 1 (not checked).
-.unlist_list_of_GenomicRanges <- function(x, ignore.mcols=FALSE)
-{
-    if (!isTRUEorFALSE(ignore.mcols))
-        stop("'ignore.mcols' must be TRUE or FALSE")
-    ans_class <- class(x[[1L]])
-    ans_seqinfo <- do.call(merge, lapply(x, seqinfo))
-    ans_seqnames <- do.call(c, lapply(x, seqnames))
-    ans_ranges <- do.call(c, lapply(x, ranges))
-    ans_strand <- do.call(c, lapply(x, strand))
-    if (ignore.mcols) {
-        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(ans_ranges))
-    } else {
-        ans_mcols <- do.call(rbind, lapply(x, mcols, FALSE))
-    }
-    if (length(extraColumnSlotNames(x[[1L]])) > 0L) {
-        ans_ecs <- do.call(rbind, lapply(x, extraColumnSlotsAsDF))
-        do.call(new, c(list(ans_class, seqnames=ans_seqnames, ranges=ans_ranges,
-                            strand=ans_strand, elementMetadata=ans_mcols,
-                            seqinfo=ans_seqinfo), as.list(ans_ecs)))
-    } else {
-        new(ans_class, seqnames=ans_seqnames, ranges=ans_ranges,
-            strand=ans_strand, elementMetadata=ans_mcols, seqinfo=ans_seqinfo)
-    }
-}
-
-setMethod("c", "GenomicRanges",
-    function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
-    {
-        if (!identical(recursive, FALSE))
-            stop("'recursive' argument not supported")
-        if (missing(x))
-            args <- unname(list(...))
-        else
-            args <- unname(list(x, ...))
-        .unlist_list_of_GenomicRanges(args, ignore.mcols=ignore.mcols)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Displaying
 ###
 
@@ -751,4 +725,33 @@ setMethod("show", "GenomicRanges",
 )
 
 setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Concatenation
+###
+
+.concatenate_GenomicRanges_objects <-
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+{
+    objects <- unname(S4Vectors:::delete_NULLs(objects))
+    S4Vectors:::check_class_of_objects_to_concatenate(.Object, objects)
+
+    if (length(objects) == 0L) {
+        if (length(.Object) != 0L)
+            .Object <- .Object[integer(0)]
+        return(.Object)
+    }
+
+    ## Combine seqinfo.
+    seqinfo(.Object) <- do.call(merge, lapply(objects, seqinfo))
+
+    ## Call method for Vector objects to concatenate all the parallel
+    ## slots and stick them into '.Object'.
+    callNextMethod()
+}
+
+setMethod("concatenateObjects", "GenomicRanges",
+    .concatenate_GenomicRanges_objects
+)
 

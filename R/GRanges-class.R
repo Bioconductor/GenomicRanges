@@ -23,6 +23,24 @@ setClass("GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### parallelSlotNames()
+###
+
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "GRanges",
+    #function(x) c("seqnames", "ranges", "strand", callNextMethod())
+
+    ## TEMPORARY DEFINITION.
+    ## TODO: Remove this temporary definition and add "parallelSlotNames"
+    ## methods to all packages that define "extraColumnSlotNames" methods
+    ## (e.g. VariantAnnotation, GenomicTuples, InteractionSet, SGSeq).
+    function(x) c(extraColumnSlotNames(x), "seqnames", "ranges", "strand",
+                  callNextMethod())
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### "update" method
 ###
 

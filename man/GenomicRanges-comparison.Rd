@@ -43,7 +43,8 @@
 
 \S4method{is.unsorted}{GenomicRanges}(x, na.rm=FALSE, strictly=FALSE, ignore.strand=FALSE)
 
-\S4method{order}{GenomicRanges}(..., na.last=TRUE, decreasing=FALSE, method=c("auto", "shell", "radix"))
+\S4method{order}{GenomicRanges}(..., na.last=TRUE, decreasing=FALSE,
+           method=c("auto", "shell", "radix"))
 
 \S4method{sort}{GenomicRanges}(x, decreasing=FALSE, ignore.strand=FALSE, by)
 

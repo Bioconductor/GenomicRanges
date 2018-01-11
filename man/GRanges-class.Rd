@@ -15,6 +15,8 @@
 \alias{GRanges-class}
 \alias{GRanges}
 
+\alias{parallelSlotNames,GRanges-class}
+
 % Constructors:
 \alias{GRanges}
 \alias{updateObject,GRanges-method}
@@ -72,13 +74,13 @@
 \alias{[,list,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
 
-% Combining:
-\alias{c,GenomicRanges-method}
-
 % Displaying:
 \alias{summary.GenomicRanges}
 \alias{summary,GenomicRanges-method}
 \alias{show,GenomicRanges-method}
+
+% Concatenation:
+\alias{concatenateObjects,GenomicRanges-method}
 
 \title{GRanges objects}
 
@@ -468,33 +470,23 @@
   }
 }
 
-\section{Combining and splitting}{
-  In the code snippets below, \code{x} is a GRanges object.
-
+\section{Concatenation}{
   \describe{
     \item{}{
       \code{c(x, ..., ignore.mcols=FALSE)}:
-      Combines \code{x} and the GRanges objects in \code{...} together.
-      Any object in \code{...} must belong to the same class as \code{x},
-      or to one of its subclasses, or must be \code{NULL}.
-      The result is an object of the same class as \code{x}.
+      Concatenate GRanges object \code{x} and the GRanges objects in
+      \code{...} together.
+      See \code{?\link[S4Vectors]{c}} in the \pkg{S4Vectors} package for
+      more information about concatenating Vector derivatives.
+    }
+  }
+}
 
-      If the \code{GRanges} objects have metadata columns (represented as one
-      \link{DataFrame} per object), each such \link{DataFrame} must have the
-      same columns in order to combine successfully. In order to circumvent
-      this restraint, you can pass in an \code{ignore.mcols=TRUE} argument
-      which will combine all the objects into one and drop all of their
-      metadata columns.
-    }
-    \item{}{
-      \code{append(x, values, after = length(x))}:
-      Inserts the \code{values} into \code{x} at the position given by
-      \code{after}, where \code{x} and \code{values} are of the same
-      class.
-    }
+\section{Splitting}{
+  \describe{
     \item{}{
       \code{split(x, f, drop=FALSE)}:
-      Splits \code{x} according to \code{f} to create a
+      Splits GRanges object \code{x} according to \code{f} to create a
       \link{GRangesList} object.
       If \code{f} is a list-like object then \code{drop} is ignored
       and \code{f} is treated as if it was
@@ -697,8 +689,8 @@ gr3 <- GRanges(seqnames=Rle(c('chr1', 'chr2', 'chr3'), c(3, 4, 3)),
                seqinfo=seqinfo)
 some.gr <- c(gr, gr2)
 
-## all.gr <- c(gr, gr2, gr3) ## (This would fail)
-all.gr <- c(gr, gr2, gr3, ignore.mcols=TRUE)
+c(gr, gr2, gr3)
+c(gr, gr2, gr3, ignore.mcols=TRUE)
 
 ## ---------------------------------------------------------------------
 ## USING A GRANGES OBJECT AS A SUBSCRIPT TO SUBSET ANOTHER OBJECT
