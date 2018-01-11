@@ -731,7 +731,8 @@ setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
 ### Concatenation
 ###
 
-.concatenate_GenomicRanges_objects <-
+### NOT exported but used in the GenomicAlignments package.
+concatenate_GenomicRanges_objects <-
     function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     objects <- unname(S4Vectors:::delete_NULLs(objects))
@@ -752,6 +753,6 @@ setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
 }
 
 setMethod("concatenateObjects", "GenomicRanges",
-    .concatenate_GenomicRanges_objects
+    concatenate_GenomicRanges_objects
 )
 
