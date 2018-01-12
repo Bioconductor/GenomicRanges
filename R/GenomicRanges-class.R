@@ -215,14 +215,6 @@ valid.GenomicRanges.seqinfo <- function(x, suggest.trim=FALSE)
     NULL
 }
 
-## For convenience, validate the extra column slots that are virtual
-## classes. Since they are not directly constructed, any validity
-## checks specific to the virtual class have probably not been called.
-.valid.GenomicRanges.ecs <- function(x) {
-  virtuals <- Filter(isVirtualClass, getSlots(class(x))[extraColumnSlotNames(x)])
-  unlist(lapply(names(virtuals), function(nm) validObject(slot(x, nm))))
-}
-
 .valid.GenomicRanges <- function(x)
 {
     c(.valid.GenomicRanges.length(x),
@@ -230,8 +222,7 @@ valid.GenomicRanges.seqinfo <- function(x, suggest.trim=FALSE)
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.mcols(x),
-      valid.GenomicRanges.seqinfo(x, suggest.trim=TRUE),
-      .valid.GenomicRanges.ecs(x))
+      valid.GenomicRanges.seqinfo(x, suggest.trim=TRUE))
       #checkConstraint(x, constraint(x)))
 }
 
@@ -510,21 +501,6 @@ setReplaceMethod("width", "GenomicRanges",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
-
-### Needed only because we want to support x[i, j] subsetting.
-setMethod("[", "GenomicRanges",
-    function(x, i, j, ..., drop)
-    {
-        if (length(list(...)) > 0L)
-            stop("invalid subsetting")
-        if (!missing(i))
-            x <- extractROWS(x, i)
-        if (missing(j))
-            return(x)
-        new_mcols <- mcols(x)[ , j, drop=FALSE]
-        clone(x, elementMetadata=new_mcols, check=FALSE)
-    }
-)
 
 ### Subset a named list-like object *by* a GenomicRanges subscript.
 ### The returned object 'ans' is as follow:

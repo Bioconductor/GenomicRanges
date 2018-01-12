@@ -11,7 +11,7 @@ BiocStyle::latex()
 
 \title{An Introduction to the GenomicRanges Package}
 \author{Marc Carlson, Patrick Aboyoun, Herv\'{e} Pag\`{e}s, and Martin Morgan}
-\date{\today; updated 16 November, 2016}
+\date{\today; updated 11 January, 2018}
 
 \begin{document}
 
@@ -176,14 +176,6 @@ replaced with the first row of \Robject{gr}.
 singles <- split(gr, names(gr))
 grMod <- gr
 grMod[2] <- singles[[1]]
-head(grMod, n=3)
-@
-%% 
-Here is a second example where the metadata for score from the third
-element is replaced with the score from the second row etc.
-%% 
-<<assign2>>=
-grMod[2,1] <- singles[[3]][,1]
 head(grMod, n=3)
 @
 

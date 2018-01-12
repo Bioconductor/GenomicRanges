@@ -67,9 +67,6 @@
 \alias{coerce,ANY,GenomicRanges-method}
 
 % Subsetting:
-\alias{[<-,GRanges-method}
-\alias{[,GenomicRanges,ANY-method}
-\alias{[<-,GenomicRanges,ANY,ANY,ANY-method}
 \alias{[,List,GenomicRanges-method}
 \alias{[,list,GenomicRanges-method}
 \alias{window,GenomicRanges-method}
@@ -365,76 +362,19 @@
 
 \section{Subsetting}{
   In the code snippets below, \code{x} is a GRanges object.
-
   \describe{
     \item{}{
-      \code{x[i, j]}, \code{x[i, j] <- value}:
-      Get or set elements \code{i} with optional metadata columns
-      \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
-      logical, numeric, or character vector; or a 'logical' Rle object.
+      \code{x[i]}:
+      Return a new GRanges object made of the elements selected by \code{i}.
     }
     \item{}{
-      \code{x[i, j] <- value}:
-      Replaces elements \code{i} and optional metadata columns \code{j}
-      with \code{value}.
+      \code{x[i, j]}:
+      Like the above, but allow the user to conveniently subset the metadata
+      columns thru \code{j}.
     }
     \item{}{
-      \code{head(x, n = 6L)}:
-      If \code{n} is non-negative, returns the first n elements of the
-      GRanges object.
-      If \code{n} is negative, returns all but the last \code{abs(n)} elements
-      of the GRanges object.
-    }
-    \item{}{
-      \code{rep(x, times, length.out, each)}:
-      Repeats the values in \code{x} through one of the following conventions:
-      \describe{
-        \item{\code{times}}{Vector giving the number of times to repeat each
-          element if of length \code{length(x)}, or to repeat the whole vector
-          if of length 1.}
-        \item{\code{length.out}}{Non-negative integer. The desired length of
-          the output vector.}
-        \item{\code{each}}{Non-negative integer.  Each element of \code{x} is
-          repeated \code{each} times.}
-      }
-    }
-    \item{}{
-      \code{subset(x, subset)}:
-      Returns a new object of the same class as \code{x} made of the subset
-      using logical vector \code{subset}, where missing values are taken as
-      \code{FALSE}.
-    }
-    \item{}{
-      \code{tail(x, n = 6L)}:
-      If \code{n} is non-negative, returns the last n elements of the
-      GRanges object.
-      If \code{n} is negative, returns all but the first \code{abs(n)} elements
-      of the GRanges object.
-    }
-    \item{}{
-      \code{window(x, start = NA, end = NA, width = NA, frequency = NULL, delta = NULL, ...)}:
-      Extracts the subsequence window from the GRanges object using:
-      \describe{
-        \item{\code{start}, \code{end}, \code{width}}{The start, end, or width
-          of the window. Two of the three are required.}
-        \item{\code{frequency}, \code{delta}}{Optional arguments that specify
-          the sampling frequency and increment within the window.}
-      }
-      In general, this is more efficient than using \code{"["} operator.
-    }
-    \item{}{
-      \code{window(x, start = NA, end = NA, width = NA, keepLength = TRUE) <- value}:
-      Replaces the subsequence window specified on the left (i.e. the subsequence
-      in \code{x} specified by \code{start}, \code{end} and \code{width})
-      by \code{value}.
-      \code{value} must either be of class \code{class(x)}, belong to a subclass
-      of \code{class(x)}, be coercible to \code{class(x)}, or be \code{NULL}.
-      If \code{keepLength} is \code{TRUE}, the elements of \code{value} are
-      repeated to create a GRanges object with the same number of elements
-      as the width of the subsequence window it is replacing.
-      If \code{keepLength} is \code{FALSE}, this replacement method can modify
-      the length of \code{x}, depending on how the length of the left
-      subsequence window compares to the length of \code{value}.
+      \code{x[i] <- value}:
+      Replacement version of \code{x[i]}.
     }
     \item{}{
       \code{x$name}, \code{x$name <- value}:
@@ -452,7 +392,11 @@
     }
   }
 
-  Note that a GRanges object can be used to as a subscript to subset a
+  See \code{?\link[S4Vectors]{[}} in the \pkg{S4Vectors} package for more
+  information about subsetting Vector derivatives and for an important note
+  about the \code{x[i, j]} form.
+
+  Note that a GRanges object can be used as a subscript to subset a
   list-like object that has names on it. In that case, the names on the
   list-like object are interpreted as sequence names.
   In the code snippets below, \code{x} is a list or \link{List} object with

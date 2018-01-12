@@ -391,8 +391,7 @@ setAs("ANY", "GenomicRanges", function(from) as(from, "GRanges"))
 setMethod("replaceROWS", "GRanges",
     function(x, i, value)
     {
-        if (missing(i) || !is(i, "Ranges"))
-            i <- normalizeSingleBracketSubscript(i, x)
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
         ans_seqnames <- replaceROWS(seqnames(x), i, seqnames(value))
         ans_ranges <- replaceROWS(ranges(x), i, ranges(value))
@@ -404,7 +403,7 @@ setMethod("replaceROWS", "GRanges",
             ans_ecs <- NULL
         } else {
             value_ecs_names <- extraColumnSlotNames(value)
-            if (!identical(value_ecs_names[seq_len(ans_necs)],
+            if (!identical(head(value_ecs_names, n=ans_necs),
                            ans_ecs_names))
                 stop("'value' can have more extra column slots but not less")
             ans_ecs <- extraColumnSlotsAsDF(x)
@@ -416,56 +415,6 @@ setMethod("replaceROWS", "GRanges",
                                        strand=ans_strand,
                                        elementMetadata=ans_mcols,
                                        .slotList=as.list(ans_ecs))
-    }
-)
-
-### TODO: Refactor to use replaceROWS(). This will make the code much simpler
-### and avoid a lot of duplication with the above "replaceROWS" method.
-setReplaceMethod("[", "GRanges",
-    function(x, i, j, ..., value)
-    {
-        if (!is(value, "GenomicRanges"))
-            stop("replacement value must be a GenomicRanges object")
-        seqinfo(x) <- merge(seqinfo(x), seqinfo(value))
-        seqnames <- seqnames(x)
-        ranges <- ranges(x)
-        strand <- strand(x)
-        ans_mcols <- mcols(x, FALSE)
-        value_ecs <- extraColumnSlotsAsDF(value)
-        x_ecs <- extraColumnSlotsAsDF(x)
-        new_ecs <- value_ecs[!names(value_ecs) %in% names(x_ecs)]
-        ecs_to_replace <- intersect(names(value_ecs), names(x_ecs))
-        if (missing(i)) {
-            seqnames[] <- seqnames(value)
-            ranges[] <- ranges(value)
-            strand[] <- strand(value)
-            if (missing(j))
-                ans_mcols[ , ] <- mcols(value, FALSE)
-            else
-                ans_mcols[ , j] <- mcols(value, FALSE)
-            if (length(new_ecs) > 0L)
-                ans_mcols[names(new_ecs)] <- new_ecs
-            x_ecs[ecs_to_replace] <- value_ecs[ecs_to_replace]
-        } else {
-            i <- extractROWS(setNames(seq_along(x), names(x)), i)
-            seqnames[i] <- seqnames(value)
-            ranges[i] <- ranges(value)
-            strand[i] <- strand(value)
-            if (missing(j))
-                ans_mcols[i, ] <- mcols(value, FALSE)
-            else
-                ans_mcols[i, j] <- mcols(value, FALSE)
-            if (length(new_ecs) > 0L)
-                ans_mcols[i, names(new_ecs)] <- DataFrame(new_ecs)
-            if (length(ecs_to_replace) > 0L) {
-              x_ecs[i, ecs_to_replace] <- value_ecs[ecs_to_replace]
-            }
-        }
-        BiocGenerics:::replaceSlots(x, seqnames=seqnames,
-                                       ranges=ranges,
-                                       strand=strand,
-                                       elementMetadata=ans_mcols,
-                                       .slotList=as.list(x_ecs))
     }
 )
 
