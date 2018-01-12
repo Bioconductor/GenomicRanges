@@ -31,5 +31,7 @@ GenomicRangesList <- function(...) {
   args <- list(...)
   if (length(args) == 1 && is.list(args[[1]]))
     args <- args[[1]]
-  S4Vectors:::new_SimpleList_from_list("SimpleGenomicRangesList", args)
+  ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(args))
+  S4Vectors:::new_SimpleList_from_list("SimpleGenomicRangesList",
+                                       args, mcols=ans_mcols)
 }
