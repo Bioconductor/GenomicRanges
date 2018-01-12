@@ -392,7 +392,7 @@
     }
   }
 
-  See \code{?\link[S4Vectors]{[}} in the \pkg{S4Vectors} package for more
+  See \code{?`\link[S4Vectors]{[}`} in the \pkg{S4Vectors} package for more
   information about subsetting Vector derivatives and for an important note
   about the \code{x[i, j]} form.
 
