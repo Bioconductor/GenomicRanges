@@ -120,8 +120,8 @@ GPos(pos_runs)  # constructor function
   A GPos object can be subsetted exactly like a \link{GRanges} object.
 }
 
-\section{Combining}{
-  GPos objects can be combined (a.k.a. appended) with \code{c()} or
+\section{Concatenation}{
+  GPos objects can be concatenated together with \code{c()} or
   \code{append()}.
 }
 

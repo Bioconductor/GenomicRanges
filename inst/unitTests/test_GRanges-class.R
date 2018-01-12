@@ -484,16 +484,16 @@ test_GRanges_subsetting <- function()
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combine and split.
+### Concatenation
 ###
 
-test_GRanges_combine <- function()
+test_GRanges_concatenate <- function()
 {
     gr1 <- .make_TARGET_GRanges()
     gr2 <- .make_TARGET_GRanges()
   
     #########################################################################
-    ## An unremarkable combination
+    ## An unremarkable concatenation
     gc1 <- c(gr1, gr2)
     checkEquals(start(gc1), c(start(gr1), start(gr2)))
     checkEquals(end(gc1), c(end(gr1), end(gr2)))
@@ -507,7 +507,7 @@ test_GRanges_combine <- function()
     checkIdentical(vc1, vc.orig)
 
     #########################################################################
-    ## Combining GRanges objects with differing metadata columns
+    ## Concatenate GRanges objects with differing metadata columns
     colnames(mcols(gr1))[1] <- 'illegal'
     checkException(c(gr1, gr2), silent=TRUE)
   
@@ -522,7 +522,6 @@ test_GRanges_combine <- function()
     gr <- .make_TARGET_GRanges()
     gr2 <- gr
     names(gr2) <- NULL
-    checkException(c(GRanges(), RangedData()), silent = TRUE)
     checkException(c(gr, gr[,-1]), silent = TRUE)
     checkIdentical(as.data.frame(c(gr, gr2), row.names=NULL),
                    rbind(as.data.frame(gr, row.names=NULL),
@@ -531,6 +530,11 @@ test_GRanges_combine <- function()
                    rbind(as.data.frame(gr2, row.names=NULL),
                          as.data.frame(gr, row.names=NULL)))
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Split.
+###
 
 test_GRanges_split <- function()
 {

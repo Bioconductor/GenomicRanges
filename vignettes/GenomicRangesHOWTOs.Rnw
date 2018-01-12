@@ -13,7 +13,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
 \author{Bioconductor Team}
-\date{Edited: July 2014; Compiled: \today}
+\date{Edited: January 2018; Compiled: \today}
 
 \begin{document}
 
@@ -1003,8 +1003,8 @@ gr_by_chrom <- lapply(seqlevels(gal),
   })
 @
 
-Combine all the GRanges objects obtained in (4) in 1 big GRanges
-object:
+Concatenate all the GRanges objects obtained in (4) together in 1 big
+GRanges object:
 
 <<cseq_5>>=
 gr <- do.call(c, gr_by_chrom)

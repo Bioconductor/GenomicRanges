@@ -420,8 +420,8 @@
       \code{c(x, ..., ignore.mcols=FALSE)}:
       Concatenate GRanges object \code{x} and the GRanges objects in
       \code{...} together.
-      See \code{?\link[S4Vectors]{c}} in the \pkg{S4Vectors} package for
-      more information about concatenating Vector derivatives.
+      See \code{?\link[S4Vectors]{c}} in the \pkg{S4Vectors} package
+      for more information about concatenating Vector derivatives.
     }
   }
 }
