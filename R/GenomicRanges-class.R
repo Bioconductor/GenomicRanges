@@ -710,21 +710,15 @@ setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
 
 ### NOT exported but used in the GenomicAlignments package.
 concatenate_GenomicRanges_objects <-
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    objects <- S4Vectors:::prepare_objects_to_concatenate(.Object, objects)
-
-    if (length(objects) == 0L) {
-        if (length(.Object) != 0L)
-            .Object <- .Object[integer(0)]
-        return(.Object)
-    }
+    objects <- S4Vectors:::prepare_objects_to_concatenate(x, objects)
+    all_objects <- c(list(x), objects)
 
     ## Combine seqinfo.
-    seqinfo(.Object) <- do.call(merge, lapply(objects, seqinfo))
+    seqinfo(x) <- do.call(merge, lapply(all_objects, seqinfo))
 
-    ## Call method for Vector objects to concatenate all the parallel
-    ## slots and stick them into '.Object'.
+    ## Call method for Vector objects to concatenate all the parallel slots.
     callNextMethod()
 }
 
