@@ -447,3 +447,40 @@ setMethod("disjointBins", "GenomicRanges",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### equisplit()
+###
+
+setMethod("equisplit", "GenomicRanges",
+    function(x, nchunk, chunksize)
+    {
+        grLength <- length(x)
+        grcum <- PartitioningByWidth(width(x))
+
+        if (!missing(nchunk)) {
+            if (!missing(chunksize))
+                stop("only one of 'chunksize' and 'nchunk' can be specified")
+            if (nchunk == 1) return(GRangesList(x))
+            bounds <- breakInChunks(end(grcum)[grLength],nchunk=nchunk)
+        } else {
+            if (missing(chunksize))
+                stop("one of 'chunksize' and 'nchunk' must be specified")
+            if (chunksize == sum(width(x))) return(GRangesList(x))
+            bounds <- breakInChunks(end(grcum)[grLength],chunksize=chunksize)
+        }
+        splits <- disjoin(c(as(grcum,"IRanges"),as(bounds,"IRanges")), 
+                with.revmap=TRUE)
+        revmap <- as.matrix(elementMetadata(splits)$revmap)
+        revmaprle <- Rle(revmap[,1])
+        starts <- start(splits) - start(splits)[rep(start(revmaprle), 
+                width(revmaprle))] + start(x)[revmap[,1]]
+        splitsgr <- GRanges(seqnames=seqnames(x)[revmap[,1]], 
+                  IRanges(start=starts, end=starts+width(splits)-1))
+        split(splitsgr, revmap[,2]-grLength)
+    }
+)
+
+
+
+
