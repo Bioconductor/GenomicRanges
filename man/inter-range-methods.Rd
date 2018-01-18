@@ -30,6 +30,10 @@
 \alias{disjointBins}
 \alias{disjointBins,GenomicRanges-method}
 
+\alias{equisplit}
+\alias{equisplit,GenomicRanges-method}
+
+
 \title{Inter range transformations of a GRanges or GRangesList object}
 
 \description{
@@ -71,6 +75,8 @@
 \S4method{isDisjoint}{GenomicRangesList}(x, ignore.strand=FALSE)
 
 \S4method{disjointBins}{GenomicRanges}(x, ignore.strand=FALSE)
+
+\S4method{equisplit}{GenomicRanges}(x, nchunk, chunksize)
 }
 
 \arguments{
@@ -88,6 +94,9 @@
     Ignored otherwise.
   }
   \item{na.rm}{Ignored.}
+  \item{nchunk}{A single positive integer. The number of chunks.}
+  \item{chunksize}{A single positive integer. The size of the chunks (last
+                   chunk might be smaller).}
 }
 
 \details{
@@ -126,6 +135,12 @@
     \code{disjointBins} returns bin indexes for the ranges in \code{x}, such
     that ranges in the same bin do not overlap. If \code{ignore.strand=FALSE},
     the two features cannot overlap if they are on different strands.
+    
+    \code{equisplit} splits \code{x} into a specified number of partitions
+    with equal (total) width. This is useful for instance to ensure
+    balanced loading of workers in parallel evaluation. Each partition
+    is a \link{GenomicRanges} and the set of all partitions is returned as
+    \link{GenomicRangesList} object.
   }
   \subsection{On a GRangesList/GenomicRangesList object}{
     When they are supported on GRangesList object \code{x}, the above inter
@@ -260,6 +275,13 @@ stopifnot(all(sapply(split(gr, disjointBins(gr)), isDisjoint)))
 ## On a GRangesList object:
 disjoin(grl)  # doesn't really disjoin anything but note the reordering
 disjoin(grl, with.revmap=TRUE)
+
+
+## ---------------------------------------------------------------------
+## equisplit()
+## ---------------------------------------------------------------------
+gr4<-GRanges(c("chr1","chr2"),IRanges(c(1,1),c(100,1e5)))
+equisplit(gr4,2)
 }
  
 \keyword{utilities}
