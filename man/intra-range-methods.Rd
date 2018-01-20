@@ -115,15 +115,15 @@
 \details{
   \itemize{
     \item{}{\code{shift} behaves like the \code{shift} method for 
-      \link[IRanges]{Ranges} objects. See 
+      \link[IRanges]{IntegerRanges} objects. See 
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
     \item(){\code{narrow} on a \link{GenomicRanges} object behaves
-      like on a \link[IRanges]{Ranges} object. See 
+      like on an \link[IRanges]{IntegerRanges} object. See 
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
 
       A major difference though is that it returns a \link{GenomicRanges}
-      object instead of a \link[IRanges]{Ranges} object.
+      object instead of an \link[IRanges]{IntegerRanges} object.
       The returned object is \emph{parallel} (i.e. same length and names)
       to the original object \code{x}.
     }
@@ -191,7 +191,7 @@
     \item The \link[IRanges]{intra-range-methods} man page in the
           \pkg{IRanges} package.
 
-    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+    \item The \link[IRanges]{IntegerRanges} class in the \pkg{IRanges} package.
 
     \item \code{\link[S4Vectors]{endoapply}} in the \pkg{S4Vectors} package.
   }

@@ -31,7 +31,7 @@ isSmallGenome(seqlengths)
     For \code{absoluteRanges}: a \link{GenomicRanges} object with ranges
     defined on a \emph{small} genome (see Details section below).
 
-    For \code{relativeRanges}: a \link{Ranges} object.
+    For \code{relativeRanges}: an \link{IntegerRanges} object.
   }
   \item{seqlengths}{
     An object holding sequence lengths. This can be a named integer
@@ -83,7 +83,7 @@ isSmallGenome(seqlengths)
   \itemize{
     \item \link{GRanges} objects.
 
-    \item \link[IRanges]{IRanges} objects in the \pkg{IRanges} package.
+    \item \link[IRanges]{IntegerRanges} objects in the \pkg{IRanges} package.
 
     \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter in
           the \pkg{GenomeInfoDb} package.

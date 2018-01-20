@@ -44,8 +44,8 @@
 
   NOTE: The \code{\link[IRanges]{punion}}, \code{\link[IRanges]{pintersect}},
   \code{\link[IRanges]{psetdiff}}, and \code{\link[IRanges]{pgap}} generic
-  functions and methods for \link[IRanges]{Ranges} objects are defined and
-  documented in the \pkg{IRanges} package.
+  functions and methods for \link[IRanges]{IntegerRanges} objects are defined
+  and documented in the \pkg{IRanges} package.
 }
 
 \usage{
@@ -152,8 +152,8 @@
 \seealso{
   \itemize{
     \item \link[IRanges]{setops-methods} in the \pkg{IRanges} package for set
-          operations on \link[IRanges]{Ranges} and \link[IRanges]{RangesList}
-          objects.
+          operations on \link[IRanges]{IntegerRanges} and
+          \link[IRanges]{RangesList} objects.
 
     \item \link[GenomicRanges]{findOverlaps-methods} for finding/counting
           overlapping genomic ranges.

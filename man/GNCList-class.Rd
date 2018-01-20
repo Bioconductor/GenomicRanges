@@ -45,7 +45,7 @@ GNCList(x)
 \details{
   The \pkg{IRanges} package also defines the \code{\link[IRanges]{NCList}}
   and \code{\link[IRanges]{NCLists}} constructors and classes for
-  preprocessing and representing a \link[IRanges]{Ranges} or
+  preprocessing and representing a \link[IRanges]{IntegerRanges} or
   \link[IRanges]{RangesList} object as a data structure based on Nested
   Containment Lists.
 

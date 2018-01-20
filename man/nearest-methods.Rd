@@ -83,7 +83,7 @@
       Returns an integer vector containing the index of the nearest neighbor 
       range in \code{subject} for each range in \code{x}. If there is no 
       nearest neighbor \code{NA} is returned. For details of the algorithm
-      see the man page in IRanges, ?\code{nearest}. 
+      see the man page in the \pkg{IRanges} package (\code{?nearest}). 
     }
     \item{precede: }{
       For each range in \code{x}, \code{precede} returns
@@ -131,7 +131,8 @@ i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
     \item{distance: }{
       Returns the distance for each range in \code{x} to the range in \code{y}.
       The behavior of \code{distance} has changed in Bioconductor 2.12.
-      See the man page \code{?distance} in IRanges for details.  
+      See the man page \code{?distance} in the \pkg{IRanges} package for
+      details.  
     }
   }
 }
@@ -154,7 +155,7 @@ i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
 \seealso{
   \itemize{
     \item The \link{GenomicRanges} and \link{GRanges} classes.
-    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+    \item The \link[IRanges]{IntegerRanges} class in the \pkg{IRanges} package.
     \item The \link[S4Vectors]{Hits} class in the \pkg{S4Vectors} package.
     \item The \link[IRanges]{nearest-methods} man page in the \pkg{IRanges}
           package.

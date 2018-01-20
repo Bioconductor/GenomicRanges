@@ -55,7 +55,7 @@ setMethod("coverage", "GenomicRanges",
         shift <- .normarg_shift_or_weight(shift, "shift", x)
 
         ## Just handle the default 'width' here. Non default will be checked
-        ## in IRanges:::.CompressedIRangesList.coverage().
+        ## in IRanges:::coverage_CompressedIRangesList().
         if (is.null(width))
             width <- seqlengths(x)
 
@@ -65,7 +65,7 @@ setMethod("coverage", "GenomicRanges",
         x_ranges_list <- split(ranges(x), seqnames(x))
         circle.length <- seqlengths(x)
         circle.length[!(isCircular(x) %in% TRUE)] <- NA_integer_
-        IRanges:::.CompressedIRangesList.coverage(x_ranges_list,
+        IRanges:::coverage_CompressedIRangesList(x_ranges_list,
                                         shift=shift,
                                         width=width,
                                         weight=weight,

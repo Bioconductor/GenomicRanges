@@ -86,8 +86,8 @@ absoluteRanges <- function(x)
 ### ONLY WORK ON A SMALL GENOME! (see isSmallGenome() above)
 relativeRanges <- function(x, seqlengths)
 {
-    if (!is(x, "Ranges"))
-        stop(wmsg("'x' must be a Ranges object"))
+    if (!is(x, "IntegerRanges"))
+        stop(wmsg("'x' must be an IntegerRanges object"))
     if (is.numeric(seqlengths)) {
         ans_seqlengths <- normarg_seqlengths(seqlengths)
         ans_seqinfo <- Seqinfo(seqnames=names(ans_seqlengths),

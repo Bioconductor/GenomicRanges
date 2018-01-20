@@ -142,7 +142,7 @@
   \itemize{
     \item The \link{GenomicRanges} and \link{GRanges} classes.
 
-    \item The \link[IRanges]{Ranges} class in the \pkg{IRanges} package.
+    \item The \link[IRanges]{IntegerRanges} class in the \pkg{IRanges} package.
 
     \item The \link[IRanges]{inter-range-methods} man page in the
           \pkg{IRanges} package.

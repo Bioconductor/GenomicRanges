@@ -174,7 +174,8 @@
     }
     \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:
-      Get or set the ranges. \code{value} can be a Ranges object.
+      Get or set the ranges. \code{value} can be an
+      \link[IRanges]{IntegerRanges} object.
     }
     \item{}{
       \code{start(x)}, \code{start(x) <- value}:
@@ -274,7 +275,7 @@
   \describe{
     \item{}{
       \code{as(from, "GRanges")}: Creates a GRanges object from a character
-      vector, a factor, or a RangedData, or RangesList object.
+      vector, a factor, or \link[IRanges]{RangesList} object.
 
       When \code{from} is a character vector (or a factor), each element
       in it must represent a genomic range in format \code{chr1:2501-2800}
@@ -298,7 +299,7 @@
     }
     \item{}{
       \code{as(from, "RangesList")}:
-      Creates a RangesList object from a GRanges
+      Creates a \link[IRanges]{RangesList} object from a GRanges
       object. The \code{strand} and metadata columns become \emph{inner}
       metadata columns (i.e. metadata columns on the ranges).
       The \code{seqlengths(from)}, \code{isCircular(from)}, and
@@ -508,7 +509,7 @@
 
     \item \link{GRangesList} objects.
 
-    \item \link[IRanges]{Ranges} objects in the \pkg{IRanges} package.
+    \item \link[IRanges]{IntegerRanges} objects in the \pkg{IRanges} package.
 
     \item \link[S4Vectors]{Vector}, \link[S4Vectors]{Rle}, and
           \link[S4Vectors]{DataFrame} objects in the \pkg{S4Vectors} package.

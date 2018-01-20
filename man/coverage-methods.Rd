@@ -13,7 +13,7 @@
   \link{GRangesList} objects.
 
   NOTE: The \code{\link[IRanges]{coverage}} generic function and methods
-  for \link[IRanges]{Ranges} and \link[IRanges]{RangesList} objects
+  for \link[IRanges]{IntegerRanges} and \link[IRanges]{RangesList} objects
   are defined and documented in the \pkg{IRanges} package.
   Methods for \link[GenomicAlignments]{GAlignments} and
   \link[GenomicAlignments]{GAlignmentPairs} objects are defined and

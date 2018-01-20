@@ -54,9 +54,9 @@
 ### to, or greater than the single element in 'y'.
 ###
 ### On 2 GenomicRanges objects, it returns one of the 13 predefined codes
-### (>= -6 and <= 6) used by the method for Ranges objects when 'x[i]' and
-### 'y[i]' are on the same space (i.e. on the same underlying sequence and
-### strand). Otherwise, it returns a code that is < -6 if 'x[i] < y[i]',
+### (>= -6 and <= 6) used by the method for IntegerRanges objects when 'x[i]'
+### and 'y[i]' are on the same space (i.e. on the same underlying sequence
+### and strand). Otherwise, it returns a code that is < -6 if 'x[i] < y[i]',
 ### and > 6 if 'x[i] > y[i]'.
 ### See '?pcompare' (in IRanges) for the 13 predefined codes.
 .pcompare_GenomicRanges <- function(x, y)
@@ -193,7 +193,7 @@ setMethod("selfmatch", "GenomicRanges",
 ### derivative is already sorted, e.g., called prior to a costly sort.
 ###
 
-.GenomicRanges_as_IntegerQuads <- function(x, ignore.strand=FALSE)
+.GenomicRanges_as_integer_quads <- function(x, ignore.strand=FALSE)
 {
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE of FALSE")
@@ -224,7 +224,7 @@ setMethod("is.unsorted", "GenomicRanges",
         ## full walk on 'x') than when it is unsorted (in which case
         ## S4Vectors:::sortedIntegerQuads() might stop walking on 'x' after
         ## checking its first 2 elements only -- the best-case scenario).
-        quads <- .GenomicRanges_as_IntegerQuads(x, ignore.strand)
+        quads <- .GenomicRanges_as_integer_quads(x, ignore.strand)
         !S4Vectors:::sortedIntegerQuads(quads[[1L]], quads[[2L]],
                                         quads[[3L]], quads[[4L]],
                                         strictly=strictly)
@@ -236,7 +236,7 @@ order_GenomicRanges <- function(x, decreasing=FALSE, ignore.strand=FALSE)
 {
     if (!isTRUEorFALSE(decreasing))
         stop("'decreasing' must be TRUE or FALSE")
-    quads <- .GenomicRanges_as_IntegerQuads(x, ignore.strand)
+    quads <- .GenomicRanges_as_integer_quads(x, ignore.strand)
     orderIntegerQuads(quads[[1L]], quads[[2L]],
                       quads[[3L]], quads[[4L]],
                       decreasing=decreasing)
@@ -265,7 +265,7 @@ setMethod("order", "GenomicRanges",
         args <- list(...)
         if (length(args) == 1L)
             return(order_GenomicRanges(args[[1L]], decreasing))
-        order_args <- c(unlist(lapply(args, .GenomicRanges_as_IntegerQuads),
+        order_args <- c(unlist(lapply(args, .GenomicRanges_as_integer_quads),
                                recursive=FALSE, use.names=FALSE),
                         list(na.last=na.last, decreasing=decreasing))
         do.call(order, order_args)
