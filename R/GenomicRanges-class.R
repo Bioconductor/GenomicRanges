@@ -466,7 +466,7 @@ setMethod("clone", "ANY",  # not exported
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Ranges methods.
+### Range accessors
 ###
 
 setMethod("start", "GenomicRanges", function(x, ...) start(ranges(x)))

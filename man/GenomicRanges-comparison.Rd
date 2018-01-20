@@ -66,7 +66,7 @@
     Not supported.
   }
   \item{fromLast, method, nomatch, nmax, na.rm, strictly, na.last, decreasing}{
-    See \code{?`\link[IRanges]{Ranges-comparison}`} in the \pkg{IRanges}
+    See \code{?`\link[IRanges]{IntegerRanges-comparison}`} in the \pkg{IRanges}
     package for a description of these arguments.
   }
   \item{ignore.strand}{
@@ -99,8 +99,9 @@
   by start, (d) and finally by width.
   This way, the space of genomic ranges is totally ordered.
   Note that, because we already do (c) and (d) for regular ranges (see
-  \code{?`\link[IRanges]{Ranges-comparison}`}), genomic ranges that belong to
-  the same underlying sequence and strand are ordered like regular ranges.
+  \code{?`\link[IRanges]{IntegerRanges-comparison}`}), genomic ranges that
+  belong to the same underlying sequence and strand are ordered like regular
+  ranges.
 
   \code{pcompare()}, \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<}
   and \code{>} on \link{GenomicRanges} derivatives behave accordingly to this
@@ -122,7 +123,7 @@
   \itemize{
     \item The \link{GenomicRanges} class.
 
-    \item \link[IRanges]{Ranges-comparison} in the \pkg{IRanges}
+    \item \link[IRanges]{IntegerRanges-comparison} in the \pkg{IRanges}
           package for comparing and ordering genomic ranges.
 
     \item \link[GenomicRanges]{findOverlaps-methods} for finding

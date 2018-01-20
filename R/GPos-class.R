@@ -34,7 +34,7 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 ### Collapse runs of "stitchable genomic ranges"
 ###
 ### 2 genomic ranges are "stitchable" if, in addition to be stitchable from
-### an integer ranges point-of-view (see stitch_Ranges() in
+### an integer ranges point-of-view (see stitch_IntegerRanges() in
 ### IRanges/R/IPos-class.R for what that means), they are also on the same
 ### chromosome and strand.
 
@@ -46,8 +46,8 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 ### of the elements in the input vector. It's also idempotent like range(),
 ### reduce(), and disjoin() (gaps() is not).
 
-### TODO: Define and export stitch() generic and method for Ranges objects
-### in the IRanges package (in inter-range-methods.R). Then make
+### TODO: Define and export stitch() generic and method for IntegerRanges
+### objects in the IRanges package (in inter-range-methods.R). Then make
 ### stitch_GenomicRanges() and stitch_GPos() the "stitch" methods for
 ### GenomicRanges and GPos objects, respectively, and support the
 ### 'ignore.strand' argument.
