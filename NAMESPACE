@@ -93,6 +93,7 @@ exportMethods(
     selfmatch,
     relistToClass,
     pcompare,
+    equisplit,
 
     ## Generics defined in IRanges:
     ranges, "ranges<-",
