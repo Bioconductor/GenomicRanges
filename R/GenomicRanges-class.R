@@ -289,7 +289,7 @@ setMethod("as.data.frame", "GenomicRanges",
     }
 )
 
-setAs("GenomicRanges", "RangesList",
+setAs("GenomicRanges", "IntegerRangesList",
     function(from)
     {
         strand_mcols <- DataFrame(strand=strand(from), mcols(from))

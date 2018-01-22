@@ -199,10 +199,10 @@ setMethod("ranges", "GRangesList",
 setReplaceMethod("ranges", "GRangesList",
     function(x, value)
     {
-        if (!is(value, "RangesList") ||
+        if (!is(value, "IntegerRangesList") ||
             !identical(elementNROWS(x), elementNROWS(value)))
-            stop("replacement 'value' is not a RangesList with the same ",
-                 "elementNROWS as 'x'")
+            stop("replacement 'value' is not an IntegerRangesList with the ",
+                 "same elementNROWS as 'x'")
         ranges(x@unlistData) <- as(unlist(value, use.names = FALSE), "IRanges")
         x
     }
@@ -422,7 +422,7 @@ setAs("GRangesList", "CompressedIRangesList",
 setAs("GRangesList", "IRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
-setAs("GRangesList", "RangesList",
+setAs("GRangesList", "IntegerRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
 

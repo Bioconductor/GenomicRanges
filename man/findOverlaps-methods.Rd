@@ -23,9 +23,10 @@
   genomic ranges. This man page describes the methods that operate on
   \link{GenomicRanges} and \link{GRangesList} objects.
 
-  NOTE: The \code{\link[IRanges]{findOverlaps}} generic function and
-  methods for \link[IRanges]{IntegerRanges} and \link[IRanges]{RangesList}
-  objects are defined and documented in the \pkg{IRanges} package.
+  NOTE: The \code{\link[IRanges]{findOverlaps}} generic function
+  and methods for \link[IRanges]{IntegerRanges} and
+  \link[IRanges]{IntegerRangesList} objects are defined and
+  documented in the \pkg{IRanges} package.
   The methods for \link[GenomicAlignments]{GAlignments},
   \link[GenomicAlignments]{GAlignmentPairs}, and
   \link[GenomicAlignments]{GAlignmentsList} objects are defined and

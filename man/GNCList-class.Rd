@@ -46,8 +46,8 @@ GNCList(x)
   The \pkg{IRanges} package also defines the \code{\link[IRanges]{NCList}}
   and \code{\link[IRanges]{NCLists}} constructors and classes for
   preprocessing and representing a \link[IRanges]{IntegerRanges} or
-  \link[IRanges]{RangesList} object as a data structure based on Nested
-  Containment Lists.
+  \link[IRanges]{IntegerRangesList} object as a data structure based on
+  Nested Containment Lists.
 
   Note that GNCList objects (introduced in BioC 3.1) are replacements for
   GIntervalTree objects (BioC < 3.1).

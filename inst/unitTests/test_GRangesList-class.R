@@ -93,7 +93,7 @@ test_GRangesList_coercion <- function() {
     checkIdentical(as.data.frame(grl), df)
 }
 
-test_GRangesList_RangesList <- function() {
+test_GRangesList_IntegerRangesList <- function() {
     grl <- make_test_GRangesList()
     checkIdentical(start(grl), IntegerList(lapply(grl, start)))
     checkIdentical(end(grl), IntegerList(lapply(grl, end)))

@@ -318,7 +318,7 @@ setAs("factor", "GRanges", .from_factor_to_GRanges)
 
 ### Does NOT propagate the ranges names and metadata columns i.e. always
 ### returns an unnamed GRanges object with no metadata columns.
-setAs("RangesList", "GRanges",
+setAs("IntegerRangesList", "GRanges",
       function(from)
       {
         if (!length(from))
@@ -375,8 +375,8 @@ setAs("RangedData", "GRanges",
 
 setAs("Seqinfo", "GRanges", .from_Seqinfo_to_GRanges)
 
-setAs("Seqinfo", "RangesList",
-    function(from) as(as(from, "GRanges"), "RangesList")
+setAs("Seqinfo", "IntegerRangesList",
+    function(from) as(as(from, "GRanges"), "IntegerRangesList")
 )
 
 setAs("ANY", "GenomicRanges", function(from) as(from, "GRanges"))

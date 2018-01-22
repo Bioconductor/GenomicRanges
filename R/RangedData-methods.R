@@ -1,5 +1,5 @@
 ### =========================================================================
-### RangedData/RangesList implementation of the GenomicRanges API
+### RangedData/IntegerRangesList implementation of the GenomicRanges API
 ### -------------------------------------------------------------------------
 ###
 

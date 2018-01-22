@@ -20,8 +20,9 @@
     revmap_unlisted
 }
 
-### 'rgl2' and 'rgl' must be List objects (typically RangesList or GRangesList)
-### of the same length, both with a "revmap" inner metadata column.
+### 'rgl2' and 'rgl' must be List objects (typically IntegerRangesList or
+### GRangesList) of the same length, both with a "revmap" inner metadata
+### column.
 .fix_inner_revmap_mcol <- function(rgl2, rgl)
 {
     unlisted_rgl2 <- unlist(rgl2, use.names=FALSE)

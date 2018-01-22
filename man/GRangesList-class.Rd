@@ -37,7 +37,7 @@
 % Coercion:
 \alias{coerce,GRangesList,CompressedIRangesList-method}
 \alias{coerce,GRangesList,IRangesList-method}
-\alias{coerce,GRangesList,RangesList-method}
+\alias{coerce,GRangesList,IntegerRangesList-method}
 \alias{coerce,GRanges,GRangesList-method}
 \alias{coerce,list,GRangesList-method}
 
@@ -107,7 +107,7 @@
     \item{}{
       \code{ranges(x, use.mcols=FALSE)}, \code{ranges(x) <- value}:
       Get or set the ranges in the form of a CompressedIRangesList.
-      \code{value} can be a RangesList object.
+      \code{value} can be an IntegerRangesList object.
     }
     \item{}{
       \code{start(x)}, \code{start(x) <- value}:
@@ -361,7 +361,7 @@
   \link{GRanges-class},
   \code{\link[GenomeInfoDb]{seqinfo}},
   \link[S4Vectors]{Vector-class},
-  \link[IRanges]{RangesList-class},
+  \link[IRanges]{IntegerRangesList-class},
   \link[IRanges]{RleList-class},
   \link[IRanges]{DataFrameList-class},
   \link[GenomicRanges]{intra-range-methods},

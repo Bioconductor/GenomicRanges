@@ -55,14 +55,14 @@
 \alias{as.character,GenomicRanges-method}
 \alias{as.factor,GenomicRanges-method}
 \alias{as.data.frame,GenomicRanges-method}
-\alias{coerce,GenomicRanges,RangesList-method}
+\alias{coerce,GenomicRanges,IntegerRangesList-method}
 \alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,character,GRanges-method}
 \alias{coerce,factor,GRanges-method}
-\alias{coerce,RangesList,GRanges-method}
+\alias{coerce,IntegerRangesList,GRanges-method}
 \alias{coerce,RangedData,GRanges-method}
 \alias{coerce,Seqinfo,GRanges-method}
-\alias{coerce,Seqinfo,RangesList-method}
+\alias{coerce,Seqinfo,IntegerRangesList-method}
 \alias{coerce,GenomicRanges,Grouping-method}
 \alias{coerce,ANY,GenomicRanges-method}
 
@@ -275,7 +275,7 @@
   \describe{
     \item{}{
       \code{as(from, "GRanges")}: Creates a GRanges object from a character
-      vector, a factor, or \link[IRanges]{RangesList} object.
+      vector, a factor, or \link[IRanges]{IntegerRangesList} object.
 
       When \code{from} is a character vector (or a factor), each element
       in it must represent a genomic range in format \code{chr1:2501-2800}
@@ -298,8 +298,8 @@
       of \code{ranges(rd)}.
     }
     \item{}{
-      \code{as(from, "RangesList")}:
-      Creates a \link[IRanges]{RangesList} object from a GRanges
+      \code{as(from, "IntegerRangesList")}:
+      Creates a \link[IRanges]{IntegerRangesList} object from a GRanges
       object. The \code{strand} and metadata columns become \emph{inner}
       metadata columns (i.e. metadata columns on the ranges).
       The \code{seqlengths(from)}, \code{isCircular(from)}, and
@@ -355,8 +355,9 @@
   \describe{
     \item{}{
       \code{as(x, "GRanges")}, \code{as(x, "GenomicRanges")},
-      \code{as(x, "RangesList")}: Turns \link[GenomeInfoDb]{Seqinfo} object
-      \code{x} (with no \code{NA} lengths) into a GRanges or RangesList.
+      \code{as(x, "IntegerRangesList")}: Turns \link[GenomeInfoDb]{Seqinfo}
+      object \code{x} (with no \code{NA} lengths) into a GRanges or
+      \link[IRanges]{IntegerRangesList}.
     }
   }
 }

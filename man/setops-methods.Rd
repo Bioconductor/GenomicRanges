@@ -153,7 +153,7 @@
   \itemize{
     \item \link[IRanges]{setops-methods} in the \pkg{IRanges} package for set
           operations on \link[IRanges]{IntegerRanges} and
-          \link[IRanges]{RangesList} objects.
+          \link[IRanges]{IntegerRangesList} objects.
 
     \item \link[GenomicRanges]{findOverlaps-methods} for finding/counting
           overlapping genomic ranges.
