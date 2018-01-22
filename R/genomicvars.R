@@ -16,8 +16,7 @@
 setAs("RleList", "GRanges", function(from) {
     score <- unlist(runValue(from), use.names=FALSE)
     lens <- runLength(from)
-    ir <- unlist(RangesList(lapply(lens, successiveIRanges)),
-                 use.names=FALSE)
+    ir <- do.call(c, lapply(lens, successiveIRanges))
     nrun <- lengths(lens)
     gr <- GRanges(rep(names(from), nrun), ir, score=score)
     seqlengths(gr) <- lengths(from)
