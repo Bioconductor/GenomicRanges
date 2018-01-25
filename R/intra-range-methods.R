@@ -48,9 +48,9 @@ setMethod("shift", "GenomicRangesList",
 ### narrow()
 ###
 
-### The "narrow" method for Vector objects calls windows() so we only need to
-### implement a "windows" method for GenomicRanges objects to make narrow()
-### work on these objects.
+### The default "narrow" method calls windows() so we only need to implement
+### a "windows" method for GenomicRanges objects to make narrow() work on
+### these objects.
 setMethod("windows", "GenomicRanges",
     function(x, start=NA, end=NA, width=NA)
     {
