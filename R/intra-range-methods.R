@@ -43,16 +43,18 @@ setMethod("shift", "GenomicRangesList",
               endoapply(x, IRanges::shift, shift, use.names)
           })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### narrow()
 ###
 
-setMethod("narrow", "GenomicRanges",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
+### narrow() is equivalent to windows() on a Ranges derivative (the "narrow"
+### method for Ranges objects just calls windows()) so we only need to make
+### windows() work on GenomicRanges objects.
+setMethod("windows", "GenomicRanges",
+    function(x, start=NA, end=NA, width=NA)
     {
-        new_ranges <- narrow(ranges(x), start=start, end=end, width=width,
-                                        use.names=use.names)
-        ranges(x) <- new_ranges
+        ranges(x) <- windows(ranges(x), start=start, end=end, width=width)
         x
     }
 )

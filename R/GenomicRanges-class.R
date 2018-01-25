@@ -6,7 +6,7 @@
 ### TODO: The 'constraint' slot could be moved to the Vector class (or to the
 ### Annotated class) so any Vector object could be constrained.
 setClass("GenomicRanges",
-    contains="Vector",
+    contains="Ranges",
     representation(
         "VIRTUAL",
         #No more constraint slot for now...
@@ -25,8 +25,6 @@ setClassUnion("GenomicRanges_OR_missing", c("GenomicRanges", "missing"))
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
 ###
-
-setMethod("length", "GenomicRanges", function(x) length(seqnames(x)))
 
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
@@ -470,7 +468,6 @@ setMethod("clone", "ANY",  # not exported
 ###
 
 setMethod("start", "GenomicRanges", function(x, ...) start(ranges(x)))
-setMethod("end", "GenomicRanges", function(x, ...) end(ranges(x)))
 setMethod("width", "GenomicRanges", function(x) width(ranges(x)))
 
 setReplaceMethod("start", "GenomicRanges",
