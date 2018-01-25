@@ -528,5 +528,5 @@ findKNN <- function(query, subject, k=5L, ignore.overlaps = FALSE,
         ans <- pc(ans, hitsList)
     }
 
-    ans[phead(order(dist), k)]
+    ans[heads(order(dist), k)]
 }
