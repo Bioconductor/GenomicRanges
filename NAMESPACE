@@ -99,6 +99,7 @@ exportMethods(
     rglist,
     pos,
     findOverlaps, countOverlaps,
+    windows,
     shift, narrow, resize, flank, promoters, restrict, trim,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
