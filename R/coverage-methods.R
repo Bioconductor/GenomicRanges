@@ -26,7 +26,7 @@
 ### Returns a list-like object.
 .normarg_shift_or_weight <- function(arg, arg.label, x)
 {
-    if (is.list(arg) || is(arg, "List")) {
+    if (is(arg, "list_OR_List")) {
         if (!identical(names(arg), seqlevels(x)))
             stop("when '", arg.label, "' is a list-like object, it must ",
                  "have 1 list element per seqlevel in 'x', and its names ",
@@ -72,6 +72,30 @@ setMethod("coverage", "GenomicRanges",
                                         circle.length=circle.length,
                                         method=method,
                                         x_names.label="'seqlevels(x)'")
+    }
+)
+
+### Overwrite above method with optimized method for GPos objects.
+setMethod("coverage", "GPos",
+    function(x, shift=0L, width=NULL, weight=1L,
+                method=c("auto", "sort", "hash"))
+    {
+        if (!is(shift, "list_OR_List")) {
+            if (!isSingleNumber(shift))
+                stop(wmsg("'shift' can only be a single number or a named ",
+                          "list-like object when calling coverage() on a ",
+                          "GPos object"))
+            shift <- Rle(shift)
+        }
+        if (!is(weight, "list_OR_List")) {
+            if (!isSingleNumber(weight))
+                stop(wmsg("'weight' can only be a single number or a named ",
+                          "list-like object when calling coverage() on a ",
+                          "GPos object"))
+            weight <- Rle(weight)
+        }
+        x <- stitch_GPos(x)
+        callGeneric()
     }
 )
 

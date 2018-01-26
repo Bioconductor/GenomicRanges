@@ -3,6 +3,7 @@
 
 \alias{coverage}
 \alias{coverage,GenomicRanges-method}
+\alias{coverage,GPos-method}
 \alias{coverage,GRangesList-method}
 
 
@@ -30,39 +31,29 @@
 
 \arguments{
   \item{x}{
-    A \link{GRanges} or \link{GRangesList} object.
+    A \link{GenomicRanges} or \link{GRangesList} object.
   }
-  \item{shift}{
+  \item{shift, weight}{
     A numeric vector or a list-like object. If numeric, it must be parallel
     to \code{x} (recycled if necessary). If a list-like object, it must
     have 1 list element per seqlevel in \code{x}, and its names must be
     exactly \code{seqlevels(x)}.
 
-    Alternatively, \code{shift} can also be specified as a single string
-    naming a metadata column in \code{x} (i.e. a column in \code{mcols(x)})
-    to be used as the \code{shift} vector.
+    Alternatively, each of these arguments can also be specified as a
+    single string naming a metadata column in \code{x} (i.e. a column in
+    \code{mcols(x)}) to be used as the \code{shift} (or \code{weight}) vector.
 
     See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
-    for more information about this argument.
+    for more information about these arguments.
+
+    Note that when \code{x} is a \link{GPos} object, each of these arguments
+    can only be a single number or a named list-like object.
   }
   \item{width}{
     Either \code{NULL} (the default), or an integer vector.
     If \code{NULL}, it is replaced with \code{seqlengths(x)}.
     Otherwise, the vector must have the length and names of
     \code{seqlengths(x)} and contain NAs or non-negative integers.
-
-    See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
-    for more information about this argument.
-  }
-  \item{weight}{
-    A numeric vector or a list-like object. If numeric, it must be parallel
-    to \code{x} (recycled if necessary). If a list-like object, it must
-    have 1 list element per seqlevel in \code{x}, and its names must be
-    exactly \code{seqlevels(x)}.
-
-    Alternatively, \code{weight} can also be specified as a single string
-    naming a metadata column in \code{x} (i.e. a column in \code{mcols(x)})
-    to be used as the \code{weight} vector.
 
     See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
     for more information about this argument.
@@ -94,7 +85,7 @@
 
     \item \link[IRanges]{RleList} objects in the \pkg{IRanges} package.
 
-    \item \link{GRanges} and \link{GRangesList} objects.
+    \item \link{GRanges}, \link{GPos}, and \link{GRangesList} objects.
   }
 }
 
@@ -110,6 +101,12 @@ pcvg <- coverage(gr[strand(gr) == "+"])
 mcvg <- coverage(gr[strand(gr) == "-"])
 scvg <- coverage(gr[strand(gr) == "*"])
 stopifnot(identical(pcvg + mcvg + scvg, cvg))
+
+## Coverage of a GPos object:
+pos_runs <- GRanges(c("chr1", "chr1", "chr2"),
+                    IRanges(c(1, 5, 9), c(10, 8, 15)))
+gpos <- GPos(pos_runs)
+coverage(gpos)
 
 ## Coverage of a GRangesList object:
 gr1 <- GRanges(seqnames="chr2",
