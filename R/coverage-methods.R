@@ -80,18 +80,17 @@ setMethod("coverage", "GPos",
     function(x, shift=0L, width=NULL, weight=1L,
                 method=c("auto", "sort", "hash"))
     {
+        CAN_ONLY_ETC <- c(" can only be a single number or a named ",
+                          "list-like object when calling coverage() ",
+                          "on a GPos object")
         if (!is(shift, "list_OR_List")) {
             if (!isSingleNumber(shift))
-                stop(wmsg("'shift' can only be a single number or a named ",
-                          "list-like object when calling coverage() on a ",
-                          "GPos object"))
+                stop(wmsg("'shift'", CAN_ONLY_ETC))
             shift <- Rle(shift)
         }
         if (!is(weight, "list_OR_List")) {
             if (!isSingleNumber(weight))
-                stop(wmsg("'weight' can only be a single number or a named ",
-                          "list-like object when calling coverage() on a ",
-                          "GPos object"))
+                stop(wmsg("'weight'", CAN_ONLY_ETC))
             weight <- Rle(weight)
         }
         x <- stitch_GPos(x)
