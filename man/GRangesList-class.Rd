@@ -6,6 +6,10 @@
 \alias{GRangesList-class}
 \alias{GRangesList}
 
+\alias{class:CompressedGRangesList}
+\alias{CompressedGRangesList-class}
+\alias{CompressedGRangesList}
+
 \alias{GenomicRanges_OR_GRangesList-class}
 
 % Constructors:
@@ -39,7 +43,9 @@
 \alias{coerce,GRangesList,IRangesList-method}
 \alias{coerce,GRangesList,IntegerRangesList-method}
 \alias{coerce,GRanges,GRangesList-method}
+\alias{coerce,GRanges,CompressedGRangesList-method}
 \alias{coerce,list,GRangesList-method}
+\alias{coerce,list,CompressedGRangesList-method}
 
 % Subsetting:
 \alias{[,GRangesList,ANY-method}

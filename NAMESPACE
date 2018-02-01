@@ -23,7 +23,7 @@ exportClasses(
     IRanges_OR_IPos, GRanges, GPos,
     DelegatingGenomicRanges,
     GNCList,
-    GRangesList, GenomicRanges_OR_GRangesList,
+    GRangesList, CompressedGRangesList, GenomicRanges_OR_GRangesList,
     GenomicRangesList, SimpleGenomicRangesList
 )
 

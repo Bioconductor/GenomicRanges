@@ -18,7 +18,7 @@ make_test_GRangesList <- function() {
 test_GRangesList_construction <- function() {
     checkException(GRangesList(IRangesList()), silent = TRUE)
 
-    checkTrue(validObject(new("GRangesList")))
+    checkTrue(validObject(new("CompressedGRangesList")))
     checkTrue(validObject(GRangesList()))
     checkTrue(validObject(GRangesList(GRanges())))
     checkTrue(validObject(GRangesList(GRanges(), GRanges())))

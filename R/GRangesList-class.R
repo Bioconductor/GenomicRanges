@@ -14,6 +14,15 @@ setClass("GRangesList",
     )
 )
 
+### [HP] Added this on Feb 1, 2018 and made the necessary adjustments to make
+### the GRangesList() constructor return a CompressedGRangesList instance
+### instead of a GRangesList instance. The long term goal is that GRangesList
+### becomes a virtual class with CompressedGRangesList a concrete subclass
+### of it. But before we can make GRangesList virtual, we need to make sure
+### that all the existing serialized GRangesList instances are replaced with
+### CompressedGRangesList instances. This might take a while!
+setClass("CompressedGRangesList", contains="GRangesList")
+
 ### Note that rtracklayer also defines GenomicRanges_OR_GenomicRangesList.
 ### Do we need the 2 union classes?
 setClassUnion("GenomicRanges_OR_GRangesList", c("GenomicRanges", "GRangesList"))
@@ -427,9 +436,13 @@ setAs("GRangesList", "IntegerRangesList",
 )
 
 setAs("GRanges", "GRangesList", function(from) as(from, "List"))
+setAs("GRanges", "CompressedGRangesList", function(from) as(from, "List"))
 
 setAs("list", "GRangesList",
       function(from) do.call(GRangesList, from))
+setAs("list", "CompressedGRangesList",
+      function(from) do.call(GRangesList, from))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
@@ -494,7 +507,7 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 ### Going from GRanges to GRangesList with extractList() and family.
 ###
 
-setMethod("relistToClass", "GRanges", function(x) "GRangesList")
+setMethod("relistToClass", "GRanges", function(x) "CompressedGRangesList")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -508,7 +521,7 @@ showList <- function(object, showFunction, print.classinfo)
     k <- length(object)
     cumsumN <- cumsum(elementNROWS(object))
     N <- tail(cumsumN, 1)
-    cat(class(object), " object of length ", k, ":\n", sep = "")
+    cat(classNameForDisplay(object), " object of length ", k, ":\n", sep = "")
     if (k == 0L) {
         cat("<0 elements>\n\n")
     } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
