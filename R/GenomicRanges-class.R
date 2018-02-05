@@ -21,6 +21,11 @@ setClassUnion("GenomicRanges_OR_missing", c("GenomicRanges", "missing"))
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),
 ### and update(x) are defined.
 
+setClass("GenomicPos",
+    contains=c("GenomicRanges", "Pos"),
+    representation("VIRTUAL")
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
@@ -332,8 +337,8 @@ setAs("GenomicRanges", "RangedData",
 setReplaceMethod("names", "GenomicRanges",
     function(x, value)
     {
-        names(ranges(x)) <- value
-        x
+        x_ranges <- setNames(ranges(x), value)
+        update(x, ranges=x_ranges)
     }
 )
 
