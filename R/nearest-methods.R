@@ -172,15 +172,24 @@
     ## '*' strand query can return a value for both mhit and phit.
     ## Choose the closest range regardless of strand.
     both <- (idx %in% queryHits(starmhit)) & (idx %in% queryHits(starphit))
-    for (i in idx[both]) {
-        x <- query[i]
-        sidx <- which(queryHits(starhit) %in% i)
-        y <- subject[subjectHits(starhit)[sidx]]
-        dist <- distance(x, y)
-        drop <- sidx[!dist %in% min(dist)]
-        if (length(drop))
-            starhit <- starhit[-drop]
-    }
+
+    x <- query[idx[both]]
+    sidx <- which(queryHits(starhit) %in% idx[both])
+    y <- subject[subjectHits(starhit)[sidx]]
+    dist <- distance(x, y)
+    drop <- sidx[!dist %in% min(dist)]
+    if (length(drop))
+        starhit <- starhit[-drop]
+
+#    for (i in idx[both]) {
+#        x <- query[i]
+#        sidx <- which(queryHits(starhit) %in% i)
+#        y <- subject[subjectHits(starhit)[sidx]]
+#        dist <- distance(x, y)
+#        drop <- sidx[!dist %in% min(dist)]
+#        if (length(drop))
+#            starhit <- starhit[-drop]
+#    }
 
     qryHits <- c(queryHits(phit), queryHits(mhit), queryHits(starhit))
     subjHits <- c(subjectHits(phit), subjectHits(mhit), subjectHits(starhit))
