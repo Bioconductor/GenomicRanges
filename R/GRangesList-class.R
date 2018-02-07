@@ -435,8 +435,24 @@ setAs("GRangesList", "IntegerRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
 
-setAs("GRanges", "GRangesList", function(from) as(from, "List"))
-setAs("GRanges", "CompressedGRangesList", function(from) as(from, "List"))
+.from_GenomicRanges_to_CompressedGRangesList <- function(from)
+{
+    if (!is(from, "GRanges"))
+        from <- as(from, "GRanges", strict = FALSE)
+    ans_partitioning <- PartitioningByEnd(seq_along(from), names=names(from))
+    names(from) <- NULL
+    ans_mcols <- mcols(from)
+    mcols(from) <- NULL
+    ans <- relist(from, ans_partitioning)
+    mcols(ans) <- ans_mcols
+    ans
+}
+setAs("GenomicRanges", "CompressedGRangesList",
+    .from_GenomicRanges_to_CompressedGRangesList
+)
+setAs("GenomicRanges", "GRangesList",
+    .from_GenomicRanges_to_CompressedGRangesList
+)
 
 setAs("list", "GRangesList",
       function(from) do.call(GRangesList, from))
