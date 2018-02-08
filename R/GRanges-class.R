@@ -49,7 +49,7 @@ setMethod("parallelSlotNames", "GRanges",
 setMethod("update", "GRanges",
     function(object, ...)
     {
-        ### Fix old GRanges instances on-the-fly.
+        ## Fix old GRanges instances on-the-fly.
         object <- updateObject(object)
         BiocGenerics:::replaceSlots(object, ...)
     }
