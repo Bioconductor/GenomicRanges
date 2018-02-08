@@ -47,7 +47,12 @@ setMethod("parallelSlotNames", "GRanges",
 ### objects makes all the methods for GenomicRanges objects defined in
 ### R/GenomicRanges-class.R work on GRanges objects.
 setMethod("update", "GRanges",
-    function(object, ...) BiocGenerics:::replaceSlots(object, ...)
+    function(object, ...)
+    {
+        ### Fix old GRanges instances on-the-fly.
+        object <- updateObject(object)
+        BiocGenerics:::replaceSlots(object, ...)
+    }
 )
 
 

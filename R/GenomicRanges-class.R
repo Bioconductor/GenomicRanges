@@ -338,7 +338,7 @@ setReplaceMethod("names", "GenomicRanges",
     function(x, value)
     {
         x_ranges <- setNames(ranges(x), value)
-        update(x, ranges=x_ranges)
+        update(x, ranges=x_ranges, check=FALSE)
     }
 )
 
@@ -426,6 +426,8 @@ setReplaceMethod("seqinfo", "GenomicRanges", set_GenomicRanges_seqinfo)
 
 setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
 setReplaceMethod("score", "GenomicRanges", function(x, value) {
+  ### Fix old GRanges instances on-the-fly.
+  x <- updateObject(x)
   mcols(x)$score <- value
   x
 })
@@ -605,7 +607,13 @@ setMethod("$", "GenomicRanges",
 )
 
 setReplaceMethod("$", "GenomicRanges",
-    function(x, name, value) {mcols(x)[[name]] <- value; x}
+    function(x, name, value)
+    {
+        ### Fix old GRanges instances on-the-fly.
+        x <- updateObject(x)
+        mcols(x)[[name]] <- value
+        x
+    }
 )
 
 
