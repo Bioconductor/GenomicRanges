@@ -221,19 +221,22 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
 setMethod("updateObject", "GRanges",
     function(object, ..., verbose=FALSE)
     {
+        ## elementType slot.
         version <- .get_GRanges_version(object)
         if (version == "current") {
             if (verbose)
                 message("[updateObject] Internal representation of ",
                         class(object), " object is current.\n",
                         "[updateObject] Nothing to update.")
-            return(object)
+        } else {
+            if (verbose)
+                message("[updateObject] ", class(object), " object uses ",
+                        "internal representation from GenomicRanges\n",
+                        "[updateObject] ", version, ". Updating it ...")
+            object@elementType <- new(class(object))@elementType
         }
-        if (verbose)
-            message("[updateObject] ", class(object), " object uses ",
-                    "internal representation from GenomicRanges\n",
-                    "[updateObject] ", version, ". Updating it ...")
-        object@elementType <- new(class(object))@elementType
+        ## ranges slot.
+        object@ranges <- updateObject(object@ranges, verbose=verbose)
         object
     }
 )
