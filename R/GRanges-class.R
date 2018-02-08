@@ -200,27 +200,35 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                            mcols=mcols, seqlengths=seqlengths, seqinfo=seqinfo)
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### Internal representation of GRanges objects has changed in GenomicRanges
+### 1.31.16 (Bioc 3.7).
+###
+
+.get_GRanges_version <- function(object)
+{
+    if (.hasSlot(object, "elementType")) "current" else "< 1.31.16"
+}
+
 setMethod("updateObject", "GRanges",
     function(object, ..., verbose=FALSE)
     {
+        version <- .get_GRanges_version(object)
+        if (version == "current") {
+            if (verbose)
+                message("[updateObject] Internal representation of ",
+                        class(object), " object is current.\n",
+                        "[updateObject] Nothing to update.")
+            return(object)
+        }
         if (verbose)
-            message("updateObject(object = 'GRanges')")
-        if (is(try(object@seqinfo, silent=TRUE), "try-error")) {
-            object <- new(class(object),
-                          seqnames = object@seqnames,
-                          ranges = object@ranges,
-                          strand = object@strand,
-                          elementMetadata = object@elementMetadata,
-                          metadata = object@metadata,
-                          seqinfo = Seqinfo(seqnames = names(object@seqlengths),
-                                            seqlengths = object@seqlengths))
-            return(object)
-        }
-        if (is(try(validObject(object@seqinfo, complete=TRUE), silent=TRUE),
-               "try-error")) {
-            object@seqinfo <- updateObject(object@seqinfo)
-            return(object)
-        }
+            message("[updateObject] ", class(object), " object uses ",
+                    "internal representation from GenomicRanges\n",
+                    "[updateObject] ", version, ". Updating it ...")
+        object@elementType <- "GPos"
         object
     }
 )
