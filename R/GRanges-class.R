@@ -50,7 +50,7 @@ setMethod("update", "GRanges",
     function(object, ...)
     {
         ## Fix old GRanges instances on-the-fly.
-        object <- updateObject(object)
+        object <- updateObject(object, check=FALSE)
         BiocGenerics:::replaceSlots(object, ...)
     }
 )
