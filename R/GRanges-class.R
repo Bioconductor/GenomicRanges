@@ -233,7 +233,7 @@ setMethod("updateObject", "GRanges",
             message("[updateObject] ", class(object), " object uses ",
                     "internal representation from GenomicRanges\n",
                     "[updateObject] ", version, ". Updating it ...")
-        object@elementType <- "GPos"
+        object@elementType <- new("GRanges")@elementType
         object
     }
 )
