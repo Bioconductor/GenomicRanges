@@ -725,6 +725,9 @@ concatenate_GenomicRanges_objects <-
     objects <- S4Vectors:::prepare_objects_to_concatenate(x, objects)
     all_objects <- c(list(x), objects)
 
+    ## Fix old GRanges and GAlignments instances on-the-fly.
+    all_objects <- lapply(all_objects, updateObject, check=FALSE)
+
     ## Combine seqinfo.
     seqinfo(x) <- do.call(merge, lapply(all_objects, seqinfo))
 

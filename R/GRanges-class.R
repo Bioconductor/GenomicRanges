@@ -231,8 +231,9 @@ setMethod("updateObject", "GRanges",
         } else {
             if (verbose)
                 message("[updateObject] ", class(object), " object uses ",
-                        "internal representation from GenomicRanges\n",
-                        "[updateObject] ", version, ". Updating it ...")
+                        "internal representation from\n",
+                        "[updateObject] GenomicRanges ", version, ". ",
+                        "Updating it ...")
             object@elementType <- new(class(object))@elementType
         }
         ## ranges slot.
