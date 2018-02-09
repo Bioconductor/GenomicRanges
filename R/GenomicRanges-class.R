@@ -722,11 +722,11 @@ setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
 concatenate_GenomicRanges_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
+    ## Fix old GRanges and GAlignments instance on-the-fly.
+    x <- updateObject(x, check=FALSE)
+
     objects <- S4Vectors:::prepare_objects_to_concatenate(x, objects)
     all_objects <- c(list(x), objects)
-
-    ## Fix old GRanges and GAlignments instances on-the-fly.
-    all_objects <- lapply(all_objects, updateObject, check=FALSE)
 
     ## Combine seqinfo.
     seqinfo(x) <- do.call(merge, lapply(all_objects, seqinfo))
