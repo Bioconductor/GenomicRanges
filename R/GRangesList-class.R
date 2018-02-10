@@ -59,6 +59,53 @@ setValidity2("GRangesList", .valid.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### Starting with GenomicRanges 1.31.13, all GRangesList instances need to be
+### replaced with CompressedGRangesList instances. Note that this NOT a change
+### of the internals (GRangesList instances have been using the CompressedList
+### representation since the begining), only a change of the class attribute.
+###
+
+setMethod("updateObject", "GRangesList",
+    function(object, ..., verbose=FALSE)
+    {
+        ## class attribute.
+        if (class(object) != "GRangesList") {
+            if (verbose)
+                message("[updateObject] ", class(object), " object ",
+                        "is current.\n",
+                        "[updateObject] Nothing to update.")
+        } else {
+            if (verbose)
+                message("[updateObject] class attribute of ", class(object),
+                        " object needs to be set to ",
+                        "\"CompressedGRangesList\"\n",
+                        "[updateObject] Updating it ...")
+            class(object) <- class(new("CompressedGRangesList"))
+        }
+        ## unlistData slot.
+        object@unlistData <- updateObject(object@unlistData, verbose=verbose)
+        object
+    }
+)
+
+### Overwrite method for CompressedList objects just so we can fix on-the-fly
+### any old GRanges instance stuck in the 'unlistData' slot.
+setMethod("unlist", "GRangesList",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
+        unlisted_x <- updateObject(x@unlistData)
+        if (use.names)
+            unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
+        unlisted_x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
 ###
 
@@ -140,20 +187,6 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
     partitioning <- PartitioningByEnd(cumsum(nfrag_per_feature), names=NULL)
     relist(unlistData, partitioning)
 }
-
-setMethod("updateObject", "GRangesList",
-    function(object, ..., verbose=FALSE)
-    {
-        if (verbose)
-            message("updateObject(object = 'GRangesList')")
-        if (is(try(validObject(object@unlistData, complete=TRUE), silent=TRUE),
-               "try-error")) {
-            object@unlistData <- updateObject(object@unlistData)
-            return(object)
-        }
-        object
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -531,9 +564,17 @@ setMethod("relistToClass", "GRanges", function(x) "CompressedGRangesList")
 ###
 
 ### NOT exported but used in GenomicAlignments package.
-### FIXME: This seems to repeat most of the code in IRanges:::showRangesList!
+### FIXME: This seems to repeat most of the code in IRanges:::show_IRangesList!
 showList <- function(object, showFunction, print.classinfo)
 {
+    if (class(object) == "GRangesList") {
+        warning(wmsg("Note that starting with BioC 3.7, the class attribute ",
+                     "of all GRangesList **instances** needs to be set to ",
+                     "\"CompressedGRangesList\". Please update this object ",
+                     "with 'updateObject(object, verbose=TRUE)' and ",
+                     "re-serialize it."))
+        object <- updateObject(object)
+    }
     k <- length(object)
     cumsumN <- cumsum(elementNROWS(object))
     N <- tail(cumsumN, 1)

@@ -40,23 +40,6 @@ setMethod("parallelSlotNames", "GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "update" method
-###
-
-### Having update() redirect to BiocGenerics:::replaceSlots() on GRanges
-### objects makes all the methods for GenomicRanges objects defined in
-### R/GenomicRanges-class.R work on GRanges objects.
-setMethod("update", "GRanges",
-    function(object, ...)
-    {
-        ## Fix old GRanges instances on-the-fly.
-        object <- updateObject(object, check=FALSE)
-        BiocGenerics:::replaceSlots(object, ...)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity
 ###
 
@@ -81,6 +64,60 @@ setMethod("update", "GRanges",
 }
 
 setValidity2("GRanges", .valid.GRanges)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### Internal representation of GRanges objects has changed in GenomicRanges
+### 1.31.16 (Bioc 3.7).
+###
+
+.get_GRanges_version <- function(object)
+{
+    if (.hasSlot(object, "elementType")) "current" else "< 1.31.16"
+}
+
+setMethod("updateObject", "GRanges",
+    function(object, ..., verbose=FALSE)
+    {
+        ## elementType slot.
+        version <- .get_GRanges_version(object)
+        if (version == "current") {
+            if (verbose)
+                message("[updateObject] Internal representation of ",
+                        class(object), " object is current.\n",
+                        "[updateObject] Nothing to update.")
+        } else {
+            if (verbose)
+                message("[updateObject] ", class(object), " object uses ",
+                        "internal representation from\n",
+                        "[updateObject] GenomicRanges ", version, ". ",
+                        "Updating it ...")
+            object@elementType <- new(class(object))@elementType
+        }
+        ## ranges slot.
+        object@ranges <- updateObject(object@ranges, verbose=verbose)
+        object
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### "update" method
+###
+
+### Having update() redirect to BiocGenerics:::replaceSlots() on GRanges
+### objects makes all the methods for GenomicRanges objects defined in
+### R/GenomicRanges-class.R work on GRanges objects.
+setMethod("update", "GRanges",
+    function(object, ...)
+    {
+        ## Fix old GRanges instances on-the-fly.
+        object <- updateObject(object, check=FALSE)
+        BiocGenerics:::replaceSlots(object, ...)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,43 +241,6 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
     new_GRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
                            mcols=mcols, seqlengths=seqlengths, seqinfo=seqinfo)
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### updateObject()
-###
-### Internal representation of GRanges objects has changed in GenomicRanges
-### 1.31.16 (Bioc 3.7).
-###
-
-.get_GRanges_version <- function(object)
-{
-    if (.hasSlot(object, "elementType")) "current" else "< 1.31.16"
-}
-
-setMethod("updateObject", "GRanges",
-    function(object, ..., verbose=FALSE)
-    {
-        ## elementType slot.
-        version <- .get_GRanges_version(object)
-        if (version == "current") {
-            if (verbose)
-                message("[updateObject] Internal representation of ",
-                        class(object), " object is current.\n",
-                        "[updateObject] Nothing to update.")
-        } else {
-            if (verbose)
-                message("[updateObject] ", class(object), " object uses ",
-                        "internal representation from\n",
-                        "[updateObject] GenomicRanges ", version, ". ",
-                        "Updating it ...")
-            object@elementType <- new(class(object))@elementType
-        }
-        ## ranges slot.
-        object@ranges <- updateObject(object@ranges, verbose=verbose)
-        object
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
