@@ -97,7 +97,7 @@ setMethod("updateObject", "GRanges",
             object@elementType <- new(class(object))@elementType
         }
         ## ranges slot.
-        object@ranges <- updateObject(object@ranges, verbose=verbose)
+        object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
         object
     }
 )
