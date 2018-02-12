@@ -711,8 +711,6 @@ setMethod("show", "GenomicRanges",
                            print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
-setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Concatenation
