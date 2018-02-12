@@ -21,6 +21,11 @@ setClassUnion("GenomicRanges_OR_missing", c("GenomicRanges", "missing"))
 ### seqnames(x), ranges(x), strand(x), seqlengths(x), seqinfo(),
 ### and update(x) are defined.
 
+setClass("GenomicPos",
+    contains=c("GenomicRanges", "Pos"),
+    representation("VIRTUAL")
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
@@ -332,8 +337,8 @@ setAs("GenomicRanges", "RangedData",
 setReplaceMethod("names", "GenomicRanges",
     function(x, value)
     {
-        names(ranges(x)) <- value
-        x
+        x_ranges <- setNames(ranges(x), value)
+        update(x, ranges=x_ranges, check=FALSE)
     }
 )
 
@@ -421,6 +426,8 @@ setReplaceMethod("seqinfo", "GenomicRanges", set_GenomicRanges_seqinfo)
 
 setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
 setReplaceMethod("score", "GenomicRanges", function(x, value) {
+  ## Fix old GRanges instances on-the-fly.
+  x <- updateObject(x)
   mcols(x)$score <- value
   x
 })
@@ -600,7 +607,13 @@ setMethod("$", "GenomicRanges",
 )
 
 setReplaceMethod("$", "GenomicRanges",
-    function(x, name, value) {mcols(x)[[name]] <- value; x}
+    function(x, name, value)
+    {
+        ## Fix old GRanges instances on-the-fly.
+        x <- updateObject(x)
+        mcols(x)[[name]] <- value
+        x
+    }
 )
 
 
@@ -698,8 +711,6 @@ setMethod("show", "GenomicRanges",
                            print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
-setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Concatenation
@@ -709,6 +720,9 @@ setMethod("showAsCell", "GenomicRanges", function(object) as.character(object))
 concatenate_GenomicRanges_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
+    ## Fix old GRanges and GAlignments instance on-the-fly.
+    x <- updateObject(x, check=FALSE)
+
     objects <- S4Vectors:::prepare_objects_to_concatenate(x, objects)
     all_objects <- c(list(x), objects)
 

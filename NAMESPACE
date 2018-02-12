@@ -19,11 +19,11 @@ import(XVector)  # only for the "Views" method for integer vectors, the
 
 exportClasses(
     Constraint, Constraint_OR_NULL,
-    GenomicRanges, GenomicRanges_OR_missing,
+    GenomicRanges, GenomicRanges_OR_missing, GenomicPos,
     IRanges_OR_IPos, GRanges, GPos,
     DelegatingGenomicRanges,
     GNCList,
-    GRangesList, GenomicRanges_OR_GRangesList,
+    GRangesList, CompressedGRangesList, GenomicRanges_OR_GRangesList,
     GenomicRangesList, SimpleGenomicRangesList
 )
 
@@ -65,7 +65,6 @@ exportMethods(
     "[", "[<-", "$", "$<-",
     as.character, as.factor, as.data.frame,
     coerce,
-    c,
     show,
     split, unlist,
     range,

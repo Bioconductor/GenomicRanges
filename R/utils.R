@@ -17,7 +17,7 @@ normargListOfIntegers <- function(arg, sep, argname)
     if (is(arg, "IntegerList"))
         return(as.list(arg))
     if (is.character(arg))
-        return(strsplitAsListOfIntegerVectors(arg, sep=sep))
+        return(toListOfIntegerVectors(arg, sep=sep))
     stop("'", argname, "' must be a list of integer vectors, ",
         "an IntegerList object,\n  or a character vector where ",
         "each element is a comma-separated list of\n  integers")

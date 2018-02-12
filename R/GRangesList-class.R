@@ -14,6 +14,15 @@ setClass("GRangesList",
     )
 )
 
+### [HP] Added this on Feb 1, 2018 and made the necessary adjustments to make
+### the GRangesList() constructor return a CompressedGRangesList instance
+### instead of a GRangesList instance. The long term goal is that GRangesList
+### becomes a virtual class with CompressedGRangesList a concrete subclass
+### of it. But before we can make GRangesList virtual, we need to make sure
+### that all the existing serialized GRangesList instances are replaced with
+### CompressedGRangesList instances. This might take a while!
+setClass("CompressedGRangesList", contains="GRangesList")
+
 ### Note that rtracklayer also defines GenomicRanges_OR_GenomicRangesList.
 ### Do we need the 2 union classes?
 setClassUnion("GenomicRanges_OR_GRangesList", c("GenomicRanges", "GRangesList"))
@@ -50,6 +59,54 @@ setValidity2("GRangesList", .valid.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### Starting with GenomicRanges 1.31.13, all GRangesList instances need to be
+### replaced with CompressedGRangesList instances. Note that this NOT a change
+### of the internals (GRangesList instances have been using the CompressedList
+### representation since the begining), only a change of the class attribute.
+###
+
+setMethod("updateObject", "GRangesList",
+    function(object, ..., verbose=FALSE)
+    {
+        ## class attribute.
+        if (class(object) != "GRangesList") {
+            if (verbose)
+                message("[updateObject] ", class(object), " object ",
+                        "is current.\n",
+                        "[updateObject] Nothing to update.")
+        } else {
+            if (verbose)
+                message("[updateObject] class attribute of ", class(object),
+                        " object needs to be set to ",
+                        "\"CompressedGRangesList\"\n",
+                        "[updateObject] Updating it ...")
+            class(object) <- class(new("CompressedGRangesList"))
+        }
+        ## unlistData slot.
+        object@unlistData <- updateObject(object@unlistData, verbose=verbose)
+        ## Call method for CompressedList to update partitioning slot.
+        callNextMethod()
+    }
+)
+
+### Overwrite method for CompressedList objects just so we can fix on-the-fly
+### any old GRanges instance stuck in the 'unlistData' slot.
+setMethod("unlist", "GRangesList",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
+        unlisted_x <- updateObject(x@unlistData)
+        if (use.names)
+            unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
+        unlisted_x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors.
 ###
 
@@ -57,7 +114,7 @@ GRangesList <- function(...)
 {
     listData <- list(...)
     if (length(listData) == 1L && !is(listData[[1L]], "GRanges"))
-        return(as(listData[[1L]], "GRangesList"))
+        return(as(listData[[1L]], "CompressedGRangesList", strict=FALSE))
     if (length(listData) == 0L) {
         unlistData <- GRanges()
     } else {
@@ -131,20 +188,6 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
     partitioning <- PartitioningByEnd(cumsum(nfrag_per_feature), names=NULL)
     relist(unlistData, partitioning)
 }
-
-setMethod("updateObject", "GRangesList",
-    function(object, ..., verbose=FALSE)
-    {
-        if (verbose)
-            message("updateObject(object = 'GRangesList')")
-        if (is(try(validObject(object@unlistData, complete=TRUE), silent=TRUE),
-               "try-error")) {
-            object@unlistData <- updateObject(object@unlistData)
-            return(object)
-        }
-        object
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -426,10 +469,30 @@ setAs("GRangesList", "IntegerRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
 
-setAs("GRanges", "GRangesList", function(from) as(from, "List"))
+.from_GenomicRanges_to_CompressedGRangesList <- function(from)
+{
+    if (!is(from, "GRanges"))
+        from <- as(from, "GRanges", strict = FALSE)
+    ans_partitioning <- PartitioningByEnd(seq_along(from), names=names(from))
+    names(from) <- NULL
+    ans_mcols <- mcols(from)
+    mcols(from) <- NULL
+    ans <- relist(from, ans_partitioning)
+    mcols(ans) <- ans_mcols
+    ans
+}
+setAs("GenomicRanges", "CompressedGRangesList",
+    .from_GenomicRanges_to_CompressedGRangesList
+)
+setAs("GenomicRanges", "GRangesList",
+    .from_GenomicRanges_to_CompressedGRangesList
+)
 
 setAs("list", "GRangesList",
       function(from) do.call(GRangesList, from))
+setAs("list", "CompressedGRangesList",
+      function(from) do.call(GRangesList, from))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
@@ -494,7 +557,7 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 ### Going from GRanges to GRangesList with extractList() and family.
 ###
 
-setMethod("relistToClass", "GRanges", function(x) "GRangesList")
+setMethod("relistToClass", "GRanges", function(x) "CompressedGRangesList")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -502,13 +565,21 @@ setMethod("relistToClass", "GRanges", function(x) "GRangesList")
 ###
 
 ### NOT exported but used in GenomicAlignments package.
-### FIXME: This seems to repeat most of the code in IRanges:::showRangesList!
+### FIXME: This seems to repeat most of the code in IRanges:::show_IRangesList!
 showList <- function(object, showFunction, print.classinfo)
 {
+    if (class(object) == "GRangesList") {
+        warning(wmsg("Note that starting with BioC 3.7, the class attribute ",
+                     "of all GRangesList **instances** needs to be set to ",
+                     "\"CompressedGRangesList\". Please update this object ",
+                     "with 'updateObject(object, verbose=TRUE)' and ",
+                     "re-serialize it."))
+        object <- updateObject(object)
+    }
     k <- length(object)
     cumsumN <- cumsum(elementNROWS(object))
     N <- tail(cumsumN, 1)
-    cat(class(object), " object of length ", k, ":\n", sep = "")
+    cat(classNameForDisplay(object), " object of length ", k, ":\n", sep = "")
     if (k == 0L) {
         cat("<0 elements>\n\n")
     } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {

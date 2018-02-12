@@ -225,11 +225,11 @@ test_pintersect <- function()
     x <- GRangesList(x, rev(x))
 
     current <- pintersect(x, y)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"))
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"))
     checkIdentical(target, current)
 
     current <- pintersect(x, y, drop.nohit.ranges=TRUE)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"),
                          MoreArgs=list(drop.nohit.ranges=TRUE))
     checkIdentical(target, current)
 
@@ -237,36 +237,36 @@ test_pintersect <- function()
     strand(y) <- c("+", "-")
 
     current <- pintersect(x, y)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"))
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"))
     checkIdentical(target, current)
     checkIdentical(target, pintersect(y, x))
 
     current <- pintersect(x, y, drop.nohit.ranges=TRUE)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"),
                          MoreArgs=list(drop.nohit.ranges=TRUE))
     checkIdentical(target, current)
 
     strand(x[[1]]) <- c("+", "-")
 
     current <- pintersect(x, y)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"))
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"))
     checkIdentical(target, current)
     checkIdentical(target, pintersect(y, x))
 
     current <- pintersect(x, y, drop.nohit.ranges=TRUE)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"),
                          MoreArgs=list(drop.nohit.ranges=TRUE))
     checkIdentical(target, current)
     checkIdentical(target, pintersect(y, x, drop.nohit.ranges=TRUE))
 
     current <- pintersect(x, y, strict.strand=TRUE)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"),
                          MoreArgs=list(strict.strand=TRUE))
     checkIdentical(target, current)
     checkIdentical(target, pintersect(y, x, strict.strand=TRUE))
 
     current <- pintersect(x, y, drop.nohit.ranges=TRUE, strict.strand=TRUE)
-    target <- mendoapply(pintersect, x, as(y, "GRangesList"),
+    target <- mendoapply(pintersect, x, as(y, "CompressedGRangesList"),
                          MoreArgs=list(drop.nohit.ranges=TRUE,
                                        strict.strand=TRUE))
     checkIdentical(target, current)
@@ -275,12 +275,12 @@ test_pintersect <- function()
 
     current <- reduce(pintersect(x, y, strict.strand=TRUE),
                       drop.empty.ranges=TRUE)
-    target <- mendoapply(intersect, x, as(y, "GRangesList"))
+    target <- mendoapply(intersect, x, as(y, "CompressedGRangesList"))
     checkIdentical(target, current)
 
     current <- reduce(pintersect(x, y, ignore.strand=TRUE),
                       drop.empty.ranges=TRUE, ignore.strand=TRUE)
-    target <- mendoapply(intersect, x, as(y, "GRangesList"),
+    target <- mendoapply(intersect, x, as(y, "CompressedGRangesList"),
                          MoreArgs=list(ignore.strand=TRUE))
     checkIdentical(target, current)
 }

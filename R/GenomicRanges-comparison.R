@@ -45,6 +45,9 @@
 ### be TRUE.
 
 
+setMethod("pcompareRecursively", "GenomicRanges", function(x) FALSE)
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### pcompare()
 ###

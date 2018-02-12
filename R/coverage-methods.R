@@ -3,48 +3,22 @@
 ### -------------------------------------------------------------------------
 ###
 
-### TODO: Merge with Biostrings:::.V_recycle() and put in IRanges.
-.recycle <- function(x, skeleton_len, x.label, skeleton.label)
-{
-    x_len <- length(x)
-    if (x_len == skeleton_len)
-        return(x)
-    if (x_len < skeleton_len) {
-        if (x_len == 0L)
-            stop("cannot recycle zero-length '", x.label, "' ",
-                 "to the length of '", skeleton.label, "'")
-    } else {
-        if (x_len >= 2L)
-            stop("'", x.label, "' is longer than '", skeleton.label, "'")
-    }
-    if (skeleton_len %% x_len != 0L)
-        warning("'", x.label, "' length is not a divisor ",
-                "of '", skeleton.label, "' length")
-    rep(x, length.out=skeleton_len)
-}
-
 ### Returns a list-like object.
-.normarg_shift_or_weight <- function(arg, arg.label, x)
+.normarg_shift_or_weight <- function(arg, argname, x)
 {
     if (is(arg, "list_OR_List")) {
         if (!identical(names(arg), seqlevels(x)))
-            stop("when '", arg.label, "' is a list-like object, it must ",
+            stop("when '", argname, "' is a list-like object, it must ",
                  "have 1 list element per seqlevel in 'x', and its names ",
                  "must be exactly 'seqlevels(x)'")
         return(arg)
     }
-    if (isSingleString(arg)) {
-        x_mcols <- mcols(x)
-        if (!is(x_mcols, "DataTable")
-         || sum(colnames(x_mcols) == arg) != 1L)
-            stop("'mcols(x)' has 0 or more than 1 \"",
-                 arg, "\" columns")
-        arg <- x_mcols[ , arg]
-    }
+    arg <- IRanges:::replace_with_mcol_if_single_string(arg, x)
     if (!(is.numeric(arg) || is(arg, "Rle") && is.numeric(runValue(arg))))
-        stop("'", arg.label, "' must be a numeric vector, a single string, ", 
+        stop("'", argname, "' must be a numeric vector, a single string, ",
              "or a list-like object")
-    split(.recycle(arg, length(x), arg.label, "x"), seqnames(x))
+    arg <- S4Vectors:::V_recycle(arg, x, argname, "x")
+    split(arg, seqnames(x))
 }
 
 setMethod("coverage", "GenomicRanges",

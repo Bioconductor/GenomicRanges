@@ -5,7 +5,7 @@
 
 
 setClass("GPos",
-    contains="GRanges",
+    contains=c("GenomicPos", "GRanges"),
     representation(
         ranges="IPos"
     )
@@ -15,17 +15,6 @@ setClass("GPos",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters
 ###
-
-setMethod("names", "GPos", function(x) NULL)
-
-setReplaceMethod("names", "GPos",
-    function(x, value)
-    {
-        if (!is.null(value))
-            stop(class(x), " objects don't accept names")
-        x
-    }
-)
 
 setMethod("pos", "GPos", function(x) pos(ranges(x)))
 

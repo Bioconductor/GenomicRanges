@@ -55,7 +55,7 @@ test_findOverlaps_no_overlaps_returns_empty_matches <- function()
 
 test_findOverlaps_empty_query <- function()
 {
-    query <- new("GRangesList")
+    query <- new("CompressedGRangesList")
     subject <- make_subject()
 
     ## select = "all"

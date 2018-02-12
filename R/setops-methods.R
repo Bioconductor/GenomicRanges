@@ -430,7 +430,7 @@ setMethod("psetdiff", c("GRanges", "GRanges"),
         ansStrand <- strand(x)
         resolveStrand <- as(ansStrand == "*", "IRanges")
         if (length(resolveStrand) > 0L)
-            ansStrand[as.integer(resolveStrand)] <-
+            ansStrand[IRanges:::unlist_as_integer(resolveStrand)] <-
               extractROWS(strand(y), resolveStrand)
         strand(x) <- ansStrand
         x

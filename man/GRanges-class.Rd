@@ -9,6 +9,10 @@
 \alias{GenomicRanges-class}
 \alias{GenomicRanges}
 
+\alias{class:GenomicPos}
+\alias{GenomicPos-class}
+\alias{GenomicPos}
+
 \alias{GenomicRanges_OR_missing-class}
 
 \alias{class:GRanges}

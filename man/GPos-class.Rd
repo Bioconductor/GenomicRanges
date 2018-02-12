@@ -5,8 +5,6 @@
 \alias{GPos-class}
 \alias{GPos}
 
-\alias{names,GPos-method}
-\alias{names<-,GPos-method}
 \alias{pos,GPos-method}
 
 \alias{coerce,GRanges,GPos-method}
