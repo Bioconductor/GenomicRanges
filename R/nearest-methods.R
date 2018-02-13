@@ -178,8 +178,8 @@
     y <- subject[subjectHits(starhit)[sidx]]
     dist <- abs(start(ranges(y)) - rep(start(ranges(x)), each=2))
     #dist <- distance(x, y)
-    a <- cbind(matrix(dist[c(TRUE, FALSE)]), matrix(sidx[c(TRUE, FALSE)]))
-    b <- cbind(matrix(dist[c(FALSE, TRUE)]), matrix(sidx[c(FALSE, TRUE)]))
+    a <- cbind(dist[c(TRUE, FALSE)], sidx[c(TRUE, FALSE)])
+    b <- cbind(dist[c(FALSE, TRUE)], sidx[c(FALSE, TRUE)])
     mins <- pmin(a[,1], b[,1])
     a2 <- a[a[,1] != mins,2]
     b2 <- b[b[,1] != mins,2]
