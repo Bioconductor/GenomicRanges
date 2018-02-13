@@ -8,7 +8,7 @@
 
 
 setClass("GenomicRangesList",
-    contains="List",
+    contains="RangesList",
     representation(
         "VIRTUAL",
         elementMetadata="DataFrame"
@@ -19,7 +19,7 @@ setClass("GenomicRangesList",
 )
 
 setClass("SimpleGenomicRangesList",
-    contains=c("GenomicRangesList", "SimpleList")
+    contains=c("GenomicRangesList", "SimpleRangesList")
 )
 
 

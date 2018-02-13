@@ -85,7 +85,8 @@ setMethod("updateObject", "GRangesList",
             class(object) <- class(new("CompressedGRangesList"))
         }
         ## unlistData slot.
-        object@unlistData <- updateObject(object@unlistData, verbose=verbose)
+        object@unlistData <- updateObject(object@unlistData,
+                                          ..., verbose=verbose)
         ## Call method for CompressedList to update partitioning slot.
         callNextMethod()
     }
