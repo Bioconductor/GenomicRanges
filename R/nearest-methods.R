@@ -157,7 +157,7 @@
     idx <- which(strand(query) == "*")
     starphit <- plusfun(queryStart[idx], queryEnd[idx],
                     subjectStart[spid], subjectEnd[spid], sentinel)
-    starphit <- .Hits(qid[idx][queryHits(starphit)], 
+    starphit <- .Hits(qid[idx][queryHits(starphit)],
                       spid[subjectHits(starphit)])
     ## '*' query and '*' subject pairs are treated as if on '+' strand;
     ## omit '*' subjects from this test
@@ -168,7 +168,7 @@
     starhit <- .Hits(c(queryHits(starphit), queryHits(starmhit)),
                      c(subjectHits(starphit), subjectHits(starmhit)),
                      length(query), length(subject))
-                      
+
     ## '*' strand query can return a value for both mhit and phit.
     ## Choose the closest range regardless of strand.
     both <- (idx %in% queryHits(starmhit)) & (idx %in% queryHits(starphit))
@@ -176,8 +176,15 @@
     x <- query[idx[both]]
     sidx <- which(queryHits(starhit) %in% idx[both])
     y <- subject[subjectHits(starhit)[sidx]]
-    dist <- distance(x, y)
-    drop <- sidx[!dist %in% min(dist)]
+    dist <- abs(start(ranges(y)) - rep(start(ranges(x)), each=2))
+    #dist <- distance(x, y)
+    a <- cbind(matrix(dist[c(TRUE, FALSE)]), matrix(sidx[c(TRUE, FALSE)]))
+    b <- cbind(matrix(dist[c(FALSE, TRUE)]), matrix(sidx[c(FALSE, TRUE)]))
+    mins <- pmin(a[,1], b[,1])
+    a2 <- a[a[,1] != mins,2]
+    b2 <- b[b[,1] != mins,2]
+    drop <- c(a2, b2)
+    #drop <- sidx[!dist %in% min(dist)]
     if (length(drop))
         starhit <- starhit[-drop]
 
@@ -426,15 +433,6 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
         queryHits <- seq_along(x)[!is.na(x_nearest)]
         subjectHits <- x_nearest[!is.na(x_nearest)]
     }
-
-    if (!length(subjectHits) || all(is.na(subjectHits))) {
-        Hits(nLnode=length(x), 
-             nRnode=length(subject),
-             distance=integer(0),
-             sort.by.query=TRUE)
-    } else {
-        distance <- distance(x[queryHits], subject[subjectHits],
-                             ignore.strand=ignore.strand)
         Hits(queryHits, subjectHits, length(x), length(subject), distance,
              sort.by.query=TRUE)
     }
