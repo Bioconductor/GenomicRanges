@@ -13,16 +13,31 @@
 ### the code that operates on it works properly even if it's not ordered.
 ###
 
-setAs("RleList", "GRanges", function(from) {
-    score <- unlist(runValue(from), use.names=FALSE)
-    lens <- runLength(from)
-    ir <- unlist(RangesList(lapply(lens, successiveIRanges)),
-                 use.names=FALSE)
-    nrun <- lengths(lens)
-    gr <- GRanges(rep(names(from), nrun), ir, score=score)
-    seqlengths(gr) <- lengths(from)
-    gr
-})
+setAs("RleList", "GRanges",
+    function(from)
+    {
+        what <- "RleList object to coerce to GRanges"
+        from_names <- names(from)
+        if (is.null(from_names))
+            stop(what, " must have names")
+        msg <- GenomeInfoDb:::.valid.Seqinfo.seqnames(
+                                   from_names,
+                                   what=paste("names of", what))
+        if (!is.null(msg))
+            stop(wmsg(msg))
+        from_runlens <- runLength(from)
+        nrun <- lengths(from_runlens, use.names=FALSE)
+        ans_seqnames <- Rle(factor(from_names, levels=from_names), nrun)
+        ans_width <- unlist(from_runlens, use.names=FALSE)
+        ans_end <- unlist(cumsum(from_runlens), use.names=FALSE)
+        ans_ranges <- IRanges(end=ans_end, width=ans_width)
+        score <- unlist(runValue(from), use.names=FALSE)
+        GRanges(ans_seqnames,
+                ans_ranges,
+                score=score,
+                seqlengths=lengths(from))
+    }
+)
 
 setAs("RleViewsList", "GRanges", function(from) {
   as(as(from, "RangedData"), "GRanges")
