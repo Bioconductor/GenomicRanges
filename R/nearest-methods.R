@@ -433,6 +433,15 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
         queryHits <- seq_along(x)[!is.na(x_nearest)]
         subjectHits <- x_nearest[!is.na(x_nearest)]
     }
+
+    if (!length(subjectHits) || all(is.na(subjectHits))) {
+        Hits(nLnode=length(x), 
+             nRnode=length(subject),
+             distance=integer(0),
+             sort.by.query=TRUE)
+    } else {
+        distance <- distance(x[queryHits], subject[subjectHits],
+                             ignore.strand=ignore.strand)
         Hits(queryHits, subjectHits, length(x), length(subject), distance,
              sort.by.query=TRUE)
     }
