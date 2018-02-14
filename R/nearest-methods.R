@@ -173,20 +173,23 @@
     ## Choose the closest range regardless of strand.
     both <- (idx %in% queryHits(starmhit)) & (idx %in% queryHits(starphit))
 
-    x <- query[idx[both]]
-    sidx <- which(queryHits(starhit) %in% idx[both])
-    y <- subject[subjectHits(starhit)[sidx]]
-    dist <- abs(start(ranges(y)) - rep(start(ranges(x)), each=2))
-    #dist <- distance(x, y)
-    a <- cbind(dist[c(TRUE, FALSE)], sidx[c(TRUE, FALSE)])
-    b <- cbind(dist[c(FALSE, TRUE)], sidx[c(FALSE, TRUE)])
-    mins <- pmin(a[,1], b[,1])
-    a2 <- a[a[,1] != mins,2]
-    b2 <- b[b[,1] != mins,2]
-    drop <- c(a2, b2)
-    #drop <- sidx[!dist %in% min(dist)]
-    if (length(drop))
-        starhit <- starhit[-drop]
+    if (any(both)) {
+        x <- query[idx[both]]
+        sidx <- which(queryHits(starhit) %in% idx[both])
+        y <- subject[subjectHits(starhit)[sidx]]
+        #dist <- abs(start(ranges(y)) - rep(start(ranges(x)), each=2))
+        dist <- distance(rep(x, each=2), y)
+        a <- cbind(dist[c(TRUE, FALSE)], sidx[c(TRUE, FALSE)])
+        b <- cbind(dist[c(FALSE, TRUE)], sidx[c(FALSE, TRUE)])
+        #ifelse(dist[c(TRUE, FALSE)] < dist[c(FALSE, TRUE)], 0, 1) + seq_along(dist)[c(TRUE, FALSE)]
+        mins <- pmin(a[,1], b[,1])
+        a2 <- a[a[,1] != mins,2]
+        b2 <- b[b[,1] != mins,2]
+        drop <- c(a2, b2)
+        #drop <- sidx[!dist %in% min(dist)]
+        if (length(drop))
+            starhit <- starhit[-drop]
+    }
 
 #    for (i in idx[both]) {
 #        x <- query[i]
