@@ -19,30 +19,6 @@ setMethod("shift", "GenomicRanges",
     }
 )
 
-setMethod("shift", "GRangesList",
-    function(x, shift=0L, use.names=TRUE)
-    {
-        ## Unlist 'x'.
-        unlisted_x <- unlist(x, use.names=FALSE)
-        ## Recycle and unlist 'shift'.
-        if (!is(shift, "List"))
-            shift <- as(shift, "List")
-        shift <- S4Vectors:::VH_recycle(shift, x, "shift", "x")
-        unlisted_shift <- unlist(shift, use.names=FALSE)
-        ## Compute unlisted 'ans'.
-        unlisted_ans <- shift(unlisted_x, shift=unlisted_shift,
-                              use.names=use.names)
-        ## Relist and return.
-        relist(unlisted_ans, x)
-    }
-)
-
-setMethod("shift", "GenomicRangesList",
-          function(x, shift=0L, use.names=TRUE)
-          {
-              endoapply(x, IRanges::shift, shift, use.names)
-          })
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### narrow()
@@ -59,19 +35,6 @@ setMethod("windows", "GenomicRanges",
     }
 )
 
-setMethod("narrow", "GRangesList",
-    function(x, start=NA, end=NA, width=NA, use.names=TRUE)
-    {
-        gr <- narrow(x@unlistData, start=start, end=end, width=width,
-                     use.names=use.names)
-        relist(gr, x@partitioning)
-    }
-)
-
-setMethod("narrow", "GenomicRangesList",
-          function(x, start=NA, end=NA, width=NA, use.names=TRUE) {
-              endoapply(x, narrow, start, end, width, use.names)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### resize()
@@ -100,28 +63,6 @@ setMethod("resize", "GenomicRanges",
     }
 )
 
-setMethod("resize", "GRangesList",
-    function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
-    {
-        ## Unlist 'x'.
-        unlisted_x <- unlist(x, use.names=FALSE)
-        ## Recycle and unlist 'width'.
-        if (!is(width, "List"))
-            width <- as(width, "List")
-        width <- S4Vectors:::VH_recycle(width, x, "width", "x")
-        unlisted_width <- unlist(width, use.names=FALSE)
-        ## Compute unlisted 'ans'.
-        unlisted_ans <- resize(unlisted_x, unlisted_width, fix=fix, 
-                               use.names=use.names, ignore.strand=ignore.strand)
-        ## Relist and return.
-        relist(unlisted_ans, x)
-    }
-)
-
-setMethod("resize", "GenomicRangesList",
-          function(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE) {
-              endoapply(x, resize, width, fix, use.names, ignore.strand)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### flank()
@@ -133,10 +74,11 @@ setMethod("flank", "GenomicRanges",
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
-        if (ignore.strand)
-            start <- rep.int(start, length(x))
-        else 
-            start <- as.vector(start == (strand(x) != "-"))
+        if (!is.logical(start) || S4Vectors:::anyMissing(start))
+            stop("'start' must be logical without NA's")
+        start <- S4Vectors:::recycleVector(unname(start), length(x))
+        if (!ignore.strand)
+            start <- as.vector(start != (strand(x) == "-"))
         new_ranges <- flank(ranges(x), width=width, start=start, both=both,
                                        use.names=use.names)
         ranges(x) <- new_ranges
@@ -144,32 +86,6 @@ setMethod("flank", "GenomicRanges",
     }
 )
 
-setMethod("flank", "GRangesList",
-    function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
-             ignore.strand=FALSE)
-    {
-        ## Unlist 'x'.
-        unlisted_x <- unlist(x, use.names=FALSE)
-        ## Recycle and unlist 'width'.
-        if (!is(width, "List"))
-            width <- as(width, "List")
-        width <- S4Vectors:::VH_recycle(width, x, "width", "x")
-        unlisted_width <- unlist(width, use.names=FALSE)
-        ## Compute unlisted 'ans'.
-        unlisted_ans <- flank(unlisted_x, unlisted_width,
-                              start=start, both=both,
-                              use.names=use.names, ignore.strand=ignore.strand)
-        ## Relist and return.
-        relist(unlisted_ans, x)
-    }
-)
-
-setMethod("flank", "GenomicRangesList",
-          function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
-                   ignore.strand=FALSE)
-          {
-              endoapply(x, flank, width, start, both, use.names, ignore.strand)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### promoters()
@@ -202,19 +118,6 @@ setMethod("promoters", "GenomicRanges",
     }
 )
 
-setMethod("promoters", "GRangesList",
-    function(x, upstream=2000, downstream=200)
-    {
-        x@unlistData <- promoters(x@unlistData, upstream=upstream,
-                                  downstream=downstream)
-        x
-    }
-)
-
-setMethod("promoters", "GenomicRangesList",
-          function(x, upstream=2000, downstream=200) {
-              endoapply(x, promoters, upstream, downstream)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reflect()
@@ -280,13 +183,6 @@ setMethod("restrict", "GenomicRanges",
         ord
     }
 )
-
-setMethod("restrict", "GenomicRangesList",
-    function(x, start = NA, end = NA, keep.all.ranges = FALSE, use.names = TRUE)
-    {
-        endoapply(x, restrict, start=start, end=end,
-                  keep.all.ranges=keep.all.ranges, use.names=use.names)
-    })
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

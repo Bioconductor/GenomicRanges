@@ -4,34 +4,22 @@
 
 \alias{shift}
 \alias{shift,GenomicRanges-method}
-\alias{shift,GRangesList-method}
-\alias{shift,GenomicRangesList-method}
 
 \alias{narrow}
 \alias{windows,GenomicRanges-method}
 \alias{narrow,GenomicRanges-method}
-\alias{narrow,GRangesList-method}
-\alias{narrow,GenomicRangesList-method}
 
 \alias{resize}
 \alias{resize,GenomicRanges-method}
-\alias{resize,GRangesList-method}
-\alias{resize,GenomicRangesList-method}
 
 \alias{flank}
 \alias{flank,GenomicRanges-method}
-\alias{flank,GRangesList-method}
-\alias{flank,GenomicRangesList-method}
 
 \alias{promoters}
 \alias{promoters,GenomicRanges-method}
-\alias{promoters,GRangesList-method}
-\alias{promoters,GenomicRangesList-method}
 
 \alias{restrict}
 \alias{restrict,GenomicRanges-method}
-\alias{restrict,GRangesList-method}
-\alias{restrict,GenomicRangesList-method}
 
 \alias{trim}
 \alias{trim,GenomicRanges-method}
@@ -63,30 +51,23 @@
 
 \usage{
 \S4method{shift}{GenomicRanges}(x, shift=0L, use.names=TRUE)
-\S4method{shift}{GenomicRangesList}(x, shift=0L, use.names=TRUE)
 
 \S4method{narrow}{GenomicRanges}(x, start=NA, end=NA, width=NA, use.names=TRUE)
-\S4method{narrow}{GenomicRangesList}(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 \S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
-\S4method{resize}{GenomicRangesList}(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
 
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE, use.names=TRUE,
       ignore.strand=FALSE)
-\S4method{flank}{GenomicRangesList}(x, width, start=TRUE, both=FALSE, use.names=TRUE,
-      ignore.strand=FALSE)
 
 \S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200)
-\S4method{promoters}{GenomicRangesList}(x, upstream=2000, downstream=200)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
-\S4method{restrict}{GenomicRangesList}(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
 
 \S4method{trim}{GenomicRanges}(x, use.names=TRUE)
 }
 
 \arguments{
-  \item{x}{A \link{GenomicRanges} or \link{GenomicRangesList} object.}
+  \item{x}{A \link{GenomicRanges} object.}
   \item{shift, use.names, start, end, width, both, fix, keep.all.ranges,
         upstream, downstream}{
     See \code{?`\link[IRanges]{intra-range-methods}`}.
@@ -180,8 +161,6 @@
           \pkg{IRanges} package.
 
     \item The \link[IRanges]{IntegerRanges} class in the \pkg{IRanges} package.
-
-    \item \code{\link[S4Vectors]{endoapply}} in the \pkg{S4Vectors} package.
   }
 }
 

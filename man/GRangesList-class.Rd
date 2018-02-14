@@ -22,11 +22,8 @@
 \alias{seqnames<-,GRangesList-method}
 \alias{ranges,GRangesList-method}
 \alias{ranges<-,GRangesList-method}
-\alias{start,GRangesList-method}
 \alias{start<-,GRangesList-method}
-\alias{end,GRangesList-method}
 \alias{end<-,GRangesList-method}
-\alias{width,GRangesList-method}
 \alias{width<-,GRangesList-method}
 \alias{strand,GRangesList-method}
 \alias{strand<-,GRangesList,ANY-method}
