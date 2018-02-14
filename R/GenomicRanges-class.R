@@ -108,11 +108,10 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
     msg <- c(class(x), " object contains ", length(idx), " out-of-bound ",
              "range", if (length(idx) >= 2L) "s" else "", " located on ",
              on_what, ". ",
-             "Note that only ranges located on a non-circular ",
-             "sequence whose length is not NA can be considered ",
-             "out-of-bound (use seqlengths() and isCircular() to ",
-             "get the lengths and circularity flags of the underlying ",
-             "sequences).")
+             "Note that ranges located on a sequence whose length is unknown ",
+             "(NA) or on a circular sequence are not considered out-of-bound ",
+             "(use seqlengths() and isCircular() to get the lengths and ",
+             "circularity flags of the underlying sequences).")
     if (suggest.trim)
         msg <- c(msg, " You can use trim() to trim these ranges. ",
                  "See ?`trim,GenomicRanges-method` for more information.")

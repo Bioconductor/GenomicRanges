@@ -92,28 +92,32 @@ setMethod("flank", "GenomicRanges",
 ###
 
 setMethod("promoters", "GenomicRanges",
-    function(x, upstream=2000, downstream=200)
+    function(x, upstream=2000, downstream=200, use.names=TRUE)
     {
-        if (!isSingleNumber(upstream))
-            stop("'upstream' must be a single integer")
-        if (!is.integer(upstream))
-            upstream <- as.numeric(upstream)
-        if (!isSingleNumber(downstream))
-            stop("'downstream' must be a single integer")
-        if (!is.integer(downstream))
-            downstream <- as.numeric(downstream)
-        if (upstream < 0 | downstream < 0)
-            stop("'upstream' and 'downstream' must be integers >= 0")
-        if (any(strand(x) == "*"))
-            warning("'*' ranges were treated as '+'")
-        on_plus <- which(strand(x) == "+" | strand(x) == "*")
-        on_plus_TSS <- start(x)[on_plus]
-        start(x)[on_plus] <- on_plus_TSS - upstream
-        end(x)[on_plus] <- on_plus_TSS + downstream - 1L
-        on_minus <- which(strand(x) == "-")
-        on_minus_TSS <- end(x)[on_minus]
-        end(x)[on_minus] <- on_minus_TSS + upstream
-        start(x)[on_minus] <- on_minus_TSS - downstream + 1L
+        x_len <- length(x)
+        upstream <- recycleIntegerArg(upstream, "upstream", x_len)
+        downstream <- recycleIntegerArg(downstream, "downstream", x_len)
+        if (x_len > 0L) {
+            if (min(upstream) < 0L || min(downstream) < 0L)
+                stop("'upstream' and 'downstream' must be integers >= 0")
+            x_ranges <- ranges(x)
+            x_start <- start(x_ranges)
+            x_end <- end(x_ranges)
+            strand_is_minus <- strand(x) == "-"
+            on_plus <- which(!strand_is_minus)
+            on_plus_TSS <- x_start[on_plus]
+            x_start[on_plus] <- on_plus_TSS - upstream[on_plus]
+            x_end[on_plus] <- on_plus_TSS + downstream[on_plus] - 1L
+            on_minus <- which(strand_is_minus)
+            on_minus_TSS <- x_end[on_minus]
+            x_end[on_minus] <- on_minus_TSS + upstream[on_minus]
+            x_start[on_minus] <- on_minus_TSS - downstream[on_minus] + 1L
+            new_ranges <- update(x_ranges, start=x_start, end=x_end,
+                                           check=FALSE)
+            x <- update(x, ranges=new_ranges)
+        }
+        if (!S4Vectors:::normargUseNames(use.names))
+            names(x) <- NULL
         x
     }
 )
