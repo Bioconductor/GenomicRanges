@@ -5,7 +5,7 @@
 
 
 setClass("GRangesList",
-    contains=c("GenomicRangesList", "CompressedList"),
+    contains=c("GenomicRangesList", "CompressedRangesList"),
     representation(
         unlistData="GRanges"
     ),
@@ -252,15 +252,6 @@ setReplaceMethod("ranges", "GRangesList",
     }
 )
 
-### Same as for CompressedIRangesList.
-setMethod("start", "GRangesList",
-    function(x, ...)
-    {
-        unlisted_x <- unlist(x, use.names=FALSE)
-        relist(start(unlisted_x), x)
-    }
-)
-
 setReplaceMethod("start", "GRangesList",
     function(x, ..., value)
     {
@@ -274,15 +265,6 @@ setReplaceMethod("start", "GRangesList",
     }
 )
 
-### Same as for CompressedIRangesList.
-setMethod("end", "GRangesList",
-    function(x, ...)
-    {
-        unlisted_x <- unlist(x, use.names=FALSE)
-        relist(end(unlisted_x), x)
-    }
-)
-
 setReplaceMethod("end", "GRangesList",
     function(x, ..., value)
     {
@@ -293,15 +275,6 @@ setReplaceMethod("end", "GRangesList",
         value <- unlist(value, use.names = FALSE)
         end(x@unlistData, ...) <- value
         x
-    }
-)
-
-### Same as for CompressedIRangesList.
-setMethod("width", "GRangesList",
-    function(x)
-    {
-        unlisted_x <- unlist(x, use.names=FALSE)
-        relist(width(unlisted_x), x)
     }
 )
 

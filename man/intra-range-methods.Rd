@@ -4,34 +4,22 @@
 
 \alias{shift}
 \alias{shift,GenomicRanges-method}
-\alias{shift,GRangesList-method}
-\alias{shift,GenomicRangesList-method}
 
 \alias{narrow}
 \alias{windows,GenomicRanges-method}
 \alias{narrow,GenomicRanges-method}
-\alias{narrow,GRangesList-method}
-\alias{narrow,GenomicRangesList-method}
 
 \alias{resize}
 \alias{resize,GenomicRanges-method}
-\alias{resize,GRangesList-method}
-\alias{resize,GenomicRangesList-method}
 
 \alias{flank}
 \alias{flank,GenomicRanges-method}
-\alias{flank,GRangesList-method}
-\alias{flank,GenomicRangesList-method}
 
 \alias{promoters}
 \alias{promoters,GenomicRanges-method}
-\alias{promoters,GRangesList-method}
-\alias{promoters,GenomicRangesList-method}
 
 \alias{restrict}
 \alias{restrict,GenomicRanges-method}
-\alias{restrict,GRangesList-method}
-\alias{restrict,GenomicRangesList-method}
 
 \alias{trim}
 \alias{trim,GenomicRanges-method}
@@ -63,30 +51,23 @@
 
 \usage{
 \S4method{shift}{GenomicRanges}(x, shift=0L, use.names=TRUE)
-\S4method{shift}{GenomicRangesList}(x, shift=0L, use.names=TRUE)
 
 \S4method{narrow}{GenomicRanges}(x, start=NA, end=NA, width=NA, use.names=TRUE)
-\S4method{narrow}{GenomicRangesList}(x, start=NA, end=NA, width=NA, use.names=TRUE)
 
 \S4method{resize}{GenomicRanges}(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
-\S4method{resize}{GenomicRangesList}(x, width, fix="start", use.names=TRUE, ignore.strand=FALSE)
 
 \S4method{flank}{GenomicRanges}(x, width, start=TRUE, both=FALSE, use.names=TRUE,
       ignore.strand=FALSE)
-\S4method{flank}{GenomicRangesList}(x, width, start=TRUE, both=FALSE, use.names=TRUE,
-      ignore.strand=FALSE)
 
-\S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200)
-\S4method{promoters}{GenomicRangesList}(x, upstream=2000, downstream=200)
+\S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, use.names=TRUE)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
-\S4method{restrict}{GenomicRangesList}(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
 
 \S4method{trim}{GenomicRanges}(x, use.names=TRUE)
 }
 
 \arguments{
-  \item{x}{A \link{GenomicRanges} or \link{GenomicRangesList} object.}
+  \item{x}{A \link{GenomicRanges} object.}
   \item{shift, use.names, start, end, width, both, fix, keep.all.ranges,
         upstream, downstream}{
     See \code{?`\link[IRanges]{intra-range-methods}`}.
@@ -102,12 +83,12 @@
 
 \details{
   \itemize{
-    \item{}{\code{shift} behaves like the \code{shift} method for 
-      \link[IRanges]{IntegerRanges} objects. See 
+    \item{}{\code{shift} behaves like the \code{shift} method for
+      \link[IRanges]{IntegerRanges} objects. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
     \item(){\code{narrow} on a \link{GenomicRanges} object behaves
-      like on an \link[IRanges]{IntegerRanges} object. See 
+      like on an \link[IRanges]{IntegerRanges} object. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
 
       A major difference though is that it returns a \link{GenomicRanges}
@@ -115,53 +96,54 @@
       The returned object is \emph{parallel} (i.e. same length and names)
       to the original object \code{x}.
     }
-    \item{}{\code{resize} returns an object of the same type and length as 
-      \code{x} containing intervals that have been resized to width 
-      \code{width} based on the \code{strand(x)} values.  Elements where 
-      \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at 
-      \code{start(x)} and elements where \code{strand(x) == "-"} are anchored 
-      at the \code{end(x)}. The \code{use.names} argument determines whether 
+    \item{}{\code{resize} returns an object of the same type and length as
+      \code{x} containing intervals that have been resized to width
+      \code{width} based on the \code{strand(x)} values.  Elements where
+      \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at
+      \code{start(x)} and elements where \code{strand(x) == "-"} are anchored
+      at the \code{end(x)}. The \code{use.names} argument determines whether
       or not to keep the names on the ranges.
     }
-    \item{}{\code{flank} returns an object of the same type and length 
-      as \code{x} containing intervals of width \code{width} that flank 
-      the intervals in \code{x}. The \code{start} argument takes a 
-      logical indicating whether \code{x} should be flanked at the 
-      "start" (\code{TRUE}) or the "end" (\code{FALSE}), which for 
-      \code{strand(x) != "-"} is \code{start(x)} and \code{end(x)} 
-      respectively and for \code{strand(x) == "-"} is \code{end(x)} and 
-      \code{start(x)} respectively. The \code{both} argument takes a 
-      single logical value indicating whether the flanking region 
-      \code{width} positions extends \emph{into} the range. If 
-      \code{both=TRUE}, the resulting range thus straddles the end 
+    \item{}{\code{flank} returns an object of the same type and length
+      as \code{x} containing intervals of width \code{width} that flank
+      the intervals in \code{x}. The \code{start} argument takes a
+      logical indicating whether \code{x} should be flanked at the
+      "start" (\code{TRUE}) or the "end" (\code{FALSE}), which for
+      \code{strand(x) != "-"} is \code{start(x)} and \code{end(x)}
+      respectively and for \code{strand(x) == "-"} is \code{end(x)} and
+      \code{start(x)} respectively. The \code{both} argument takes a
+      single logical value indicating whether the flanking region
+      \code{width} positions extends \emph{into} the range. If
+      \code{both=TRUE}, the resulting range thus straddles the end
       point, with \code{width} positions on either side.
     }
     \item{}{
       \code{promoters} returns an object of the same type and length
       as \code{x} containing promoter ranges. Promoter ranges extend
       around the transcription start site (TSS) which is defined as
-      \code{start(x)}. The \code{upsteam} and \code{downstream} arguments 
-      define the number of nucleotides in the 5' and 3' direction, 
-      respectively. The full range is defined as,
+      \code{start(x)} for ranges on the \code{+} or \code{*} strand
+      and as \code{end(x)} for ranges on the \code{-} strand.
+      The \code{upsteam} and \code{downstream} arguments define the
+      number of nucleotides in the 5' and 3' direction, respectively.
+      More precisely, the output range is defined as
+      \preformatted{    (start(x) - upstream) to (start(x) + downstream - 1)
+      }
+      for ranges on the \code{+} or \code{*} strand, and as
+      \preformatted{    (end(x) - downstream + 1) to (end(x) + upstream)
+      }
+      for ranges on the \code{-} strand.
 
-      (start(x) - upstream) to (start(x) + downstream - 1).
-
-      Ranges on the \code{*} strand are treated the same as those on the
-      \code{+} strand. When no seqlengths are present in \code{x}, it is 
-      possible to have non-positive start values in the promoter ranges. This 
-      occurs when (TSS - \code{upstream}) < 1. In the equal but opposite case, 
-      the \code{end} values of the ranges may extend beyond the chromosome end 
-      when (TSS + \code{downstream} + 1) > 'chromosome end'. When 
-      \code{seqlengths} are not \code{NA} the promoter ranges are kept within 
-      the bounds of the defined \code{seqlengths}.
+      Note that the returned object might contain \emph{out-of-bound} ranges
+      i.e. ranges that start before the first nucleotide position and/or end
+      after the last nucleotide position of the underlying sequence.
     }
-    \item{}{\code{restrict} returns an object of the same type and length as 
-      \code{x} containing restricted ranges for distinct seqnames. The 
-      \code{start} and \code{end} arguments can be a named numeric vector of 
-      seqnames for the ranges to be resticted or a numeric vector or length 1 
-      if the restriction operation is to be applied to all the sequences in 
-      \code{x}. See \code{?`\link[IRanges]{intra-range-methods}`} for more 
-      information about range restriction and for a description of the optional 
+    \item{}{\code{restrict} returns an object of the same type and length as
+      \code{x} containing restricted ranges for distinct seqnames. The
+      \code{start} and \code{end} arguments can be a named numeric vector of
+      seqnames for the ranges to be resticted or a numeric vector or length 1
+      if the restriction operation is to be applied to all the sequences in
+      \code{x}. See \code{?`\link[IRanges]{intra-range-methods}`} for more
+      information about range restriction and for a description of the optional
       arguments.
     }
     \item{}{\code{trim} trims out-of-bound ranges located on non-circular
@@ -180,8 +162,6 @@
           \pkg{IRanges} package.
 
     \item The \link[IRanges]{IntegerRanges} class in the \pkg{IRanges} package.
-
-    \item \code{\link[S4Vectors]{endoapply}} in the \pkg{S4Vectors} package.
   }
 }
 
