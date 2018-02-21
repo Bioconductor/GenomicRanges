@@ -157,7 +157,7 @@
     idx <- which(strand(query) == "*")
     starphit <- plusfun(queryStart[idx], queryEnd[idx],
                     subjectStart[spid], subjectEnd[spid], sentinel)
-    starphit <- .Hits(qid[idx][queryHits(starphit)], 
+    starphit <- .Hits(qid[idx][queryHits(starphit)],
                       spid[subjectHits(starphit)])
     ## '*' query and '*' subject pairs are treated as if on '+' strand;
     ## omit '*' subjects from this test
@@ -168,16 +168,21 @@
     starhit <- .Hits(c(queryHits(starphit), queryHits(starmhit)),
                      c(subjectHits(starphit), subjectHits(starmhit)),
                      length(query), length(subject))
-                      
+
     ## '*' strand query can return a value for both mhit and phit.
     ## Choose the closest range regardless of strand.
     both <- (idx %in% queryHits(starmhit)) & (idx %in% queryHits(starphit))
-    for (i in idx[both]) {
-        x <- query[i]
-        sidx <- which(queryHits(starhit) %in% i)
+
+    if (any(both)) {
+        x <- query[idx[both]]
+        sidx <- which(queryHits(starhit) %in% idx[both])
         y <- subject[subjectHits(starhit)[sidx]]
-        dist <- distance(x, y)
-        drop <- sidx[!dist %in% min(dist)]
+        repeats <- tabulate(queryHits(starhit))[idx[both]]
+        dist <- distance(rep(x, times=repeats), y)
+        dist_il <- relist(dist, PartitioningByWidth(repeats))
+        sidx_il <- relist(sidx, PartitioningByWidth(repeats))
+        drops_il <- sidx_il[!dist_il == min(dist_il)]
+        drop <- unlist(drops_il)
         if (length(drop))
             starhit <- starhit[-drop]
     }
