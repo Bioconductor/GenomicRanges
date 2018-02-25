@@ -87,7 +87,7 @@
       \link[IRanges]{IntegerRanges} objects. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
-    \item(){\code{narrow} on a \link{GenomicRanges} object behaves
+    \item{}{\code{narrow} on a \link{GenomicRanges} object behaves
       like on an \link[IRanges]{IntegerRanges} object. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
 
