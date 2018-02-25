@@ -123,7 +123,7 @@
       around the transcription start site (TSS) which is defined as
       \code{start(x)} for ranges on the \code{+} or \code{*} strand
       and as \code{end(x)} for ranges on the \code{-} strand.
-      The \code{upsteam} and \code{downstream} arguments define the
+      The \code{upstream} and \code{downstream} arguments define the
       number of nucleotides in the 5' and 3' direction, respectively.
       More precisely, the output range is defined as
       \preformatted{    (start(x) - upstream) to (start(x) + downstream - 1)
