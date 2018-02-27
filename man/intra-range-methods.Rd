@@ -87,7 +87,7 @@
       \link[IRanges]{IntegerRanges} objects. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
-    \item(){\code{narrow} on a \link{GenomicRanges} object behaves
+    \item{}{\code{narrow} on a \link{GenomicRanges} object behaves
       like on an \link[IRanges]{IntegerRanges} object. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
 
@@ -123,7 +123,7 @@
       around the transcription start site (TSS) which is defined as
       \code{start(x)} for ranges on the \code{+} or \code{*} strand
       and as \code{end(x)} for ranges on the \code{-} strand.
-      The \code{upsteam} and \code{downstream} arguments define the
+      The \code{upstream} and \code{downstream} arguments define the
       number of nucleotides in the 5' and 3' direction, respectively.
       More precisely, the output range is defined as
       \preformatted{    (start(x) - upstream) to (start(x) + downstream - 1)
