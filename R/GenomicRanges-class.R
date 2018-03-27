@@ -33,7 +33,7 @@ setClass("GenomicPos",
 
 ### The method for Ranges does 'length(start(x))' which is very inefficient
 ### on GPos objects so we overwrite it with a faster method.
-setMethod("length", "GenomicRanges", function(x) length(ranges(x))
+setMethod("length", "GenomicRanges", function(x) length(ranges(x)))
 
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 
