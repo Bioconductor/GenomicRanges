@@ -286,16 +286,16 @@ bamfile1 <- BamFile(untreated1_chr4())
 bamfile2 <- BamFile(untreated3_chr4())
 gpos5 <- GPos(seqinfo(bamfile1))
 library(GenomicAlignments)  # for "coverage" method for BamFile objects
-cov1 <- unlist(coverage(bamfile1), use.names=FALSE)
-cov2 <- unlist(coverage(bamfile2), use.names=FALSE)
-mcols(gpos5) <- DataFrame(cov1, cov2)
+cvg1 <- unlist(coverage(bamfile1), use.names=FALSE)
+cvg2 <- unlist(coverage(bamfile2), use.names=FALSE)
+mcols(gpos5) <- DataFrame(cvg1, cvg2)
 gpos5
 
 object.size(gpos5)  # lightweight
 
 ## Keep only the positions where coverage is at least 10 in one of the
 ## 2 samples:
-gpos5[mcols(gpos5)$cov1 >= 10 | mcols(gpos5)$cov2 >= 10]
+gpos5[mcols(gpos5)$cvg1 >= 10 | mcols(gpos5)$cvg2 >= 10]
 
 ## ---------------------------------------------------------------------
 ## USING A GPos OBJECT IN A SummarizedExperiment OBJECT
@@ -317,16 +317,16 @@ head(assay(rse3))
 
 ## Finally we show how the coverage data from Example 5 can be easily
 ## stored in a lightweight SummarizedExperiment object:
-cov <- mcols(gpos5)
+cvg <- mcols(gpos5)
 mcols(gpos5) <- NULL
-rse5 <- SummarizedExperiment(list(cov=cov), rowRanges=gpos5)
+rse5 <- SummarizedExperiment(list(cvg=cvg), rowRanges=gpos5)
 rse5
 rowRanges(rse5)
 assay(rse5)
 
 ## Keep only the positions where coverage is at least 10 in one of the
 ## 2 samples:
-rse5[assay(rse5)$cov1 >= 10 | assay(rse5)$cov2 >= 10]
+rse5[assay(rse5)$cvg1 >= 10 | assay(rse5)$cvg2 >= 10]
 }
 \keyword{methods}
 \keyword{classes}
