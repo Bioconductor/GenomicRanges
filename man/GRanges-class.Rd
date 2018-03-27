@@ -26,6 +26,7 @@
 \alias{updateObject,GRanges-method}
 
 % Accessors:
+\alias{length,GenomicRanges-method}
 \alias{seqnames,GRanges-method}
 \alias{seqnames,RangedData-method}
 \alias{seqnames<-,GenomicRanges-method}

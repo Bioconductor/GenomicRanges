@@ -94,15 +94,6 @@
       Get or set the names on \code{x}.
     }
     \item{}{
-      \code{elementNROWS(x)}:
-      Get a vector of the \code{length} of each of the list element.
-    }
-    \item{}{
-      \code{isEmpty(x)}:
-      Returns a logical indicating either if the GRangesList has no
-      elements or if all its elements are empty.
-    }
-    \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Get or set the sequence names in the form of an RleList. \code{value}
       can be an RleList or CharacterList object.
@@ -139,9 +130,13 @@
       \link{DataFrame} or data.frame) holding element-wise metadata.
     }
     \item{}{
-       \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
-       \code{values(x)}, \code{values(x) <- value}:
-       Alternatives to \code{mcols} functions. Their use is discouraged.
+      \code{elementNROWS(x)}:
+      Get a vector of the \code{length} of each of the list element.
+    }
+    \item{}{
+      \code{isEmpty(x)}:
+      Returns a logical indicating either if the GRangesList has no
+      elements or if all its elements are empty.
     }
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
