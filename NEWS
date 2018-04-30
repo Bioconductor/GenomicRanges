@@ -9,7 +9,7 @@ NEW FEATURES
       - The 'use.names' argument now is supported.
       This is for consistency with the other intra range transformations.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o GenomicRanges now is a List subclass. This means that GRanges objects
       and their derivatives are now considered list-like objects (even though
@@ -60,7 +60,7 @@ NEW FEATURES
 
     o Add 'na.rm' argument to binnedAverage().
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Change 'maxgap' and 'minoverlap' defaults for findOverlaps() and family
       (i.e. countOverlaps(), overlapsAny(), and subsetByOverlaps()). This
@@ -132,7 +132,7 @@ NEW FEATURES
 
     o Add a bunch of range-oriented methods for GenomicRangesList objects.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Some changes/improvements to "precede" and "follow" methods for
       GenomicRanges objects motivated by discussion on support site:
@@ -180,7 +180,7 @@ NEW FEATURES
 
     o Add 'use.mcols' arguments to the "ranges" methods for GPos objects.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
 DEPRECATED AND DEFUNCT
 
@@ -217,7 +217,7 @@ NEW FEATURES
 
     o Add "union" method for GRangesList objects.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Remove old SummarizedExperiment class from the GenomicRanges package
       (this class is now defined in the SummarizedExperiment package).
@@ -289,7 +289,7 @@ NEW FEATURES
 
     o "coverage" methods now accept 'shift' and 'weight' supplied as an Rle.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Modify behavior of "*" strand in precede() / follow() to mimic
       'ignore.strand=TRUE'.
@@ -377,7 +377,7 @@ NEW FEATURES
     o Add absoluteRanges() and relativeRanges() to transform back and forth
       between absolute and relative genomic ranges.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Renamed 'rowData' and 'rowData<-' -> 'rowRanges', 'rowRanges<-'.
       Old names still work but are deprecated.
@@ -445,7 +445,7 @@ NEW FEATURES
 
     o Document subsetting a named list-like object by a GRanges subscript.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Modify "show" methods for GRanges and GRangesList objects so
       they print a 1-line summary of the seqinfo component.
@@ -536,7 +536,7 @@ NEW FEATURES
     o Support sort(granges, by = ~ score), i.e., a formula-based interface for
       sorting by the mcols.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Move many functionalities to the new GenomicAlignments package:
       - The GAlignments, GAlignmentPairs, and GAlignmentsList classes.
@@ -616,7 +616,7 @@ NEW FEATURES
     o Add makeGRangesFromDataFrame() and coercion from data.frame or DataFrame
       to GRanges. 
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o Renaming (with aliases from old to new names):
       - classes
@@ -751,7 +751,7 @@ NEW FEATURES
  
     o Add readGAlignmentsList generic and methods. 
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o resize,GenomicRanges method no longer checks that 'fix' is 
       length-compatible with 'x' when 'x' is length zero. This
@@ -871,7 +871,7 @@ NEW FEATURES
 
     o Add makeSeqnameIds() low-level utility.
 
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o SummarizedExperiment rowData and assays operations have
       significant performance improvements.
@@ -988,7 +988,7 @@ NEW FEATURES
 
     o Add 'reduce.ranges' arg to cigarToIRangesListByAlignment().
  
-SIGNIFICANT USER-LEVEL CHANGES
+SIGNIFICANT USER-VISIBLE CHANGES
 
     o grglist,GappedAlignments now carries over metadata columns.
 
