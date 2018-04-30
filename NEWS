@@ -1,3 +1,56 @@
+CHANGES IN VERSION 1.32.0
+-------------------------
+
+NEW FEATURES
+
+    o 2 improvements to the "promoters" method for GenomicRanges objects:
+      - The 'upstream' and 'downstream' arguments now can be integer vectors
+        parallel to 'x',
+      - The 'use.names' argument now is supported.
+      This is for consistency with the other intra range transformations.
+
+SIGNIFICANT USER-LEVEL CHANGES
+
+    o GenomicRanges now is a List subclass. This means that GRanges objects
+      and their derivatives are now considered list-like objects (even though
+      [[ don't work on them yet, this will be implemented in Bioconductor 3.8).
+
+    o Add the CompressedGRangesList class as a replacement for the GRangesList
+      class. The long term goal is that GRangesList becomes a virtual class
+      with CompressedGRangesList as a concrete subclass. Note that the
+      GRangesList() constructor now returns a CompressedGRangesList instance
+      instead of a GRangesList instance.
+
+    o GenomicRangesList is now a virtual class (like IntegerRangesList is).
+
+    o GRanges derivatives no longer support the 'x[i, j] <- value' form of
+      subassignment. This feature was of very limited usefulness and no
+      Bioconductor package was using it.
+
+    o Improve performance of nearest(), precede(), and follow() on a GRanges
+      object.
+
+    o Improve performance of coverage() on a GPos object.
+
+    o Improve performance of sort() on a GRangesList object. Also now it
+      supports 'ignore.strand'. See
+      https://github.com/Bioconductor/GenomicRanges/issues/1 (and note
+      how unnicely these changes were requested).
+
+    o Improve performance and error handling of coercion from RleList to
+      GRanges. This is a 50x speedup or more when the RleList object to coerce
+      has thousands of list elements or more.
+
+BUG FIXES
+
+    o Fix coercion from RleList to GRanges when some list elements in the object
+      to coerce have length 0 (see https://support.bioconductor.org/p/105926/
+      for original report by Xiaotong Yao).
+
+    o Fix bug in nearest() when an unstranded range in 'query' precedes or
+      follows more than one range in 'subject'.
+
+
 CHANGES IN VERSION 1.30.0
 -------------------------
 
