@@ -39,9 +39,37 @@ setAs("RleList", "GRanges",
     }
 )
 
-setAs("RleViewsList", "GRanges", function(from) {
-  as(as(from, "RangedData"), "GRanges")
-})
+### Works only on a RleViews object with no out-of-limits views.
+.from_RleViews_to_IRanges_with_score_and_view_mcols <- function(from)
+{
+    unlisted_from <- unlist(from, use.names=FALSE)  # will fail if 'from' has
+                                                    # out-of-limits views
+    from_ranges <- ranges(from)
+    q <- PartitioningByWidth(runLength(unlisted_from))
+    s <- PartitioningByWidth(from_ranges)
+    hits <- findOverlaps(q, s, minoverlap=1L)
+    ans <- from_ranges[subjectHits(hits)]
+    Ltrim <- pmax(start(q)[queryHits(hits)] - start(s)[subjectHits(hits)], 0L)
+    Rtrim <- pmax(end(s)[subjectHits(hits)] - end(q)[queryHits(hits)], 0L)
+    ans <- windows(ans, start=1L+Ltrim, end=-1L-Rtrim)
+    score <- runValue(unlisted_from)[queryHits(hits)]
+    view <- subjectHits(hits)
+    mcols(ans) <- DataFrame(score=score, view=view)
+    ans
+}
+
+### Return a GRanges object with "score" and "views" metadata columns on it.
+setAs("RleViewsList", "GRanges",
+    function(from)
+    {
+        irl <- IRangesList(
+            lapply(from, .from_RleViews_to_IRanges_with_score_and_view_mcols)
+        )
+        ans <- as(irl, "GRanges")
+        mcols(ans) <- mcols(unlist(irl, use.names=FALSE))
+        ans
+    }
+)
 
 ### Represent a collection of named RleList objects as a GRanges with 1
 ### metadata column per RleList object.
