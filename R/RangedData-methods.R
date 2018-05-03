@@ -25,9 +25,19 @@ setReplaceMethod("seqinfo", "List",
                    x
                  })
 
-setMethod("seqinfo", "RangedData", function(x) seqinfo(ranges(x)))
+setMethod("seqinfo", "RangedData",
+  function(x)
+  {
+    what <- "seqinfo() getter for RangedData objects"
+    .Deprecated(msg=wmsg(IRanges:::RangedData_method_is_deprecated_msg(what)))
+    seqinfo(ranges(x))
+  }
+)
+
 setReplaceMethod("seqinfo", "RangedData",
                  function(x, value) {
+                   what <- "seqinfo() setter for RangedData objects"
+                   .Deprecated(msg=wmsg(IRanges:::RangedData_method_is_deprecated_msg(what)))
                    seqinfo(ranges(x)) <- value
                    x
                  })
@@ -36,5 +46,12 @@ setReplaceMethod("seqinfo", "RangedData",
 ### seqnames
 ###
 
-setMethod("seqnames", "RangedData", function(x) space(x))
+setMethod("seqnames", "RangedData",
+  function(x)
+  {
+    what <- "seqnames() getter for RangedData objects"
+    .Deprecated(msg=wmsg(IRanges:::RangedData_method_is_deprecated_msg(what)))
+    space(x)
+  }
+)
 
