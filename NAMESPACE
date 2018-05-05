@@ -3,7 +3,8 @@ useDynLib(GenomicRanges)
 import(methods)
 importFrom(utils, as.roman, .DollarNames)
 importFrom(stats, setNames)
-importFrom(stats4, summary)
+importFrom(stats4, summary, update)
+
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
@@ -99,7 +100,7 @@ exportMethods(
     pos,
     findOverlaps, countOverlaps,
     windows,
-    shift, narrow, resize, flank, promoters, restrict, trim,
+    update_ranges, shift, narrow, resize, flank, promoters, restrict, trim,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
     punion, pintersect, psetdiff, pgap,

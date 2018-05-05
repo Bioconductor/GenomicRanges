@@ -2,11 +2,10 @@
 
 \alias{intra-range-methods}
 
-\alias{shift}
+\alias{update_ranges,GenomicRanges-method}
+
 \alias{shift,GenomicRanges-method}
 
-\alias{narrow}
-\alias{windows,GenomicRanges-method}
 \alias{narrow,GenomicRanges-method}
 
 \alias{resize}
@@ -23,9 +22,6 @@
 
 \alias{trim}
 \alias{trim,GenomicRanges-method}
-
-\alias{Ops,GenomicRanges,numeric-method}
-
 
 \title{Intra range transformations of a GRanges or GRangesList object}
 

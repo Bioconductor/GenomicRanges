@@ -66,7 +66,7 @@
     Not supported.
   }
   \item{fromLast, method, nomatch, nmax, na.rm, strictly, na.last, decreasing}{
-    See \code{?`\link[IRanges]{IntegerRanges-comparison}`} in the \pkg{IRanges}
+    See \code{?`\link[IRanges]{IPosRanges-comparison}`} in the \pkg{IRanges}
     package for a description of these arguments.
   }
   \item{ignore.strand}{
@@ -99,7 +99,7 @@
   by start, (d) and finally by width.
   This way, the space of genomic ranges is totally ordered.
   Note that, because we already do (c) and (d) for regular ranges (see
-  \code{?`\link[IRanges]{IntegerRanges-comparison}`}), genomic ranges that
+  \code{?`\link[IRanges]{IPosRanges-comparison}`}), genomic ranges that
   belong to the same underlying sequence and strand are ordered like regular
   ranges.
 
@@ -123,7 +123,7 @@
   \itemize{
     \item The \link{GenomicRanges} class.
 
-    \item \link[IRanges]{IntegerRanges-comparison} in the \pkg{IRanges}
+    \item \link[IRanges]{IPosRanges-comparison} in the \pkg{IRanges}
           package for comparing and ordering genomic ranges.
 
     \item \link[GenomicRanges]{findOverlaps-methods} for finding
