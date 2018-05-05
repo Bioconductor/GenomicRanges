@@ -8,30 +8,17 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### shift()
+### update_ranges()
 ###
 
-setMethod("shift", "GenomicRanges",
-    function(x, shift=0L, use.names=TRUE)
+setMethod("update_ranges", "GenomicRanges",
+    function(x, start=NULL, end=NULL, width=NULL, use.names=TRUE)
     {
-        new_ranges <- shift(ranges(x), shift=shift, use.names=use.names)
+        new_ranges <- update_ranges(ranges(x), start=start,
+                                               end=end,
+                                               width=width,
+                                               use.names=use.names)
         update(x, ranges=new_ranges)
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### narrow()
-###
-
-### The default "narrow" method calls windows() so we only need to implement
-### a "windows" method for GenomicRanges objects to make narrow() work on
-### these objects.
-setMethod("windows", "GenomicRanges",
-    function(x, start=NA, end=NA, width=NA)
-    {
-        ranges(x) <- windows(ranges(x), start=start, end=end, width=width)
-        x
     }
 )
 
@@ -49,17 +36,18 @@ setMethod("resize", "GenomicRanges",
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
         if (ignore.strand) {
-            fix <- Rle(rep.int(fix, length(x)))
+            fix <- Rle(fix, length(x))
         } else {
             revFix <- c(start="end", end="start", center="center")
             if (length(x) == 0L)
               fix <- character()
             else fix <- ifelse(strand(x) == "-", revFix[fix], fix)
         }
-        new_ranges <- resize(ranges(x), width=width, fix=fix,
-                                        use.names=use.names)
-        ranges(x) <- new_ranges
-        x
+        ## For some unclear reason (likely a bug in callNextMethod) we need
+        ## to explicitly pass the arguments to the call below, otherwise
+        ## it seems that the original unmodified 'start' gets passed.
+        #callNextMethod()
+        callNextMethod(x, width, fix=fix, use.names=use.names)
     }
 )
 
@@ -70,7 +58,7 @@ setMethod("resize", "GenomicRanges",
 
 setMethod("flank", "GenomicRanges", 
     function(x, width, start=TRUE, both=FALSE, use.names=TRUE,
-             ignore.strand=FALSE)
+                ignore.strand=FALSE)
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
@@ -79,10 +67,11 @@ setMethod("flank", "GenomicRanges",
         start <- S4Vectors:::recycleVector(unname(start), length(x))
         if (!ignore.strand)
             start <- as.vector(start != (strand(x) == "-"))
-        new_ranges <- flank(ranges(x), width=width, start=start, both=both,
-                                       use.names=use.names)
-        ranges(x) <- new_ranges
-        x
+        ## For some unclear reason (likely a bug in callNextMethod) we need
+        ## to explicitly pass the arguments to the call below, otherwise
+        ## it seems that the original unmodified 'start' gets passed.
+        #callNextMethod()
+        callNextMethod(x, width, start=start, both=both, use.names=use.names)
     }
 )
 
@@ -97,28 +86,29 @@ setMethod("promoters", "GenomicRanges",
         x_len <- length(x)
         upstream <- recycleIntegerArg(upstream, "upstream", x_len)
         downstream <- recycleIntegerArg(downstream, "downstream", x_len)
-        if (x_len > 0L) {
-            if (min(upstream) < 0L || min(downstream) < 0L)
-                stop("'upstream' and 'downstream' must be integers >= 0")
-            x_ranges <- ranges(x)
-            x_start <- start(x_ranges)
-            x_end <- end(x_ranges)
-            strand_is_minus <- strand(x) == "-"
-            on_plus <- which(!strand_is_minus)
-            on_plus_TSS <- x_start[on_plus]
-            x_start[on_plus] <- on_plus_TSS - upstream[on_plus]
-            x_end[on_plus] <- on_plus_TSS + downstream[on_plus] - 1L
-            on_minus <- which(strand_is_minus)
-            on_minus_TSS <- x_end[on_minus]
-            x_end[on_minus] <- on_minus_TSS + upstream[on_minus]
-            x_start[on_minus] <- on_minus_TSS - downstream[on_minus] + 1L
-            new_ranges <- update(x_ranges, start=x_start, end=x_end,
-                                           check=FALSE)
-            x <- update(x, ranges=new_ranges)
+        if (x_len == 0) {
+            if (!S4Vectors:::normargUseNames(use.names))
+                names(x) <- NULL
+            return(x)
         }
-        if (!S4Vectors:::normargUseNames(use.names))
-            names(x) <- NULL
-        x
+        if (min(upstream) < 0L || min(downstream) < 0L)
+            stop("'upstream' and 'downstream' must be integers >= 0")
+        x_ranges <- ranges(x)
+        x_start <- start(x_ranges)
+        x_end <- end(x_ranges)
+        strand_is_minus <- strand(x) == "-"
+        on_plus <- which(!strand_is_minus)
+        on_plus_TSS <- x_start[on_plus]
+        x_start[on_plus] <- on_plus_TSS - upstream[on_plus]
+        x_end[on_plus] <- on_plus_TSS + downstream[on_plus] - 1L
+        on_minus <- which(strand_is_minus)
+        on_minus_TSS <- x_end[on_minus]
+        x_end[on_minus] <- on_minus_TSS + upstream[on_minus]
+        x_start[on_minus] <- on_minus_TSS - downstream[on_minus] + 1L
+        new_ranges <- update_ranges(x_ranges, start=x_start,
+                                              end=x_end,
+                                              use.names=use.names)
+        update(x, ranges=new_ranges)
     }
 )
 
@@ -207,37 +197,7 @@ setMethod("trim", "GenomicRanges",
         new_end <- unname(seqlengths(x))[seqnames_id]
         new_ranges[idx] <- restrict(new_ranges[idx], start=1L, end=new_end,
                                                      keep.all.ranges=TRUE)
-        ranges(x) <- new_ranges
-        x
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Zooming (symmetrically scales the width).
-###
-
-setMethod("Ops", c("GenomicRanges", "numeric"),
-    function(e1, e2)
-    {
-        if (S4Vectors:::anyMissing(e2))
-            stop("NA not allowed as zoom factor")
-        e2 <- recycleNumericArg(e2, "e2", length(e1))
-        if (.Generic == "*") {
-            e2 <- ifelse(e2 < 0, abs(1/e2), e2)
-            resize(e1, width(e1) / e2, fix="center")
-        } else {
-            if (.Generic == "-") {
-                e2 <- -e2
-                .Generic <- "+"
-            }
-            if (.Generic == "+") {
-                if (any(-e2*2 > width(e1)))
-                    stop("adjustment would result in ranges ",
-                         "with negative widths")
-                resize(e1, width(e1) + e2*2, fix="center")
-            }
-        }
+        update(x, ranges=new_ranges)
     }
 )
 
