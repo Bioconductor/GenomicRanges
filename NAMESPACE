@@ -73,7 +73,7 @@ exportMethods(
     merge,
 
     ## Generics defined in the stats4 package:
-    summary,
+    summary, update,
 
     ## Generics defined in the BiocGenerics package:
     duplicated, match,

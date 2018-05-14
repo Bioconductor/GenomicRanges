@@ -21,9 +21,12 @@
 
 \alias{parallelSlotNames,GRanges-method}
 
+\alias{updateObject,GRanges-method}
+
+\alias{update,GRanges-method}
+
 % Constructors:
 \alias{GRanges}
-\alias{updateObject,GRanges-method}
 
 % Accessors:
 \alias{length,GenomicRanges-method}
