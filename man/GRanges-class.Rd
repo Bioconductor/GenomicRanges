@@ -83,7 +83,7 @@
 \alias{show,GenomicRanges-method}
 
 % Concatenation:
-\alias{concatenateObjects,GenomicRanges-method}
+\alias{bindROWS,GenomicRanges-method}
 
 \title{GRanges objects}
 
