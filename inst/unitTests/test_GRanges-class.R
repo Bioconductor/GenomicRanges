@@ -489,51 +489,42 @@ test_GRanges_subsetting <- function()
 
 test_GRanges_concatenate <- function()
 {
-    gr1 <- .make_TARGET_GRanges()
-    gr2 <- .make_TARGET_GRanges()
+    gr1 <- gr2 <- .make_TARGET_GRanges()
   
     #########################################################################
     ## An unremarkable concatenation
-    gc1 <- c(gr1, gr2)
-    checkEquals(start(gc1), c(start(gr1), start(gr2)))
-    checkEquals(end(gc1), c(end(gr1), end(gr2)))
-  
-    ## Check the combined data frames -- the rownaming is different when
-    ## combining using these two strategies, so ignore them for now.
-    vc1 <- as.data.frame(mcols(gc1))
-    rownames(vc1) <- NULL
-    vc.orig <- as.data.frame(rbind(mcols(gr1), mcols(gr2)))
-    rownames(vc.orig) <- NULL
-    checkIdentical(vc1, vc.orig)
+    gr12 <- c(gr1, gr2)
+    checkIdentical(seqnames(gr12), c(seqnames(gr1), seqnames(gr2)))
+    checkIdentical(start(gr12), c(start(gr1), start(gr2)))
+    checkIdentical(end(gr12), c(end(gr1), end(gr2)))
+    checkIdentical(strand(gr12), c(strand(gr1), strand(gr2)))
+    checkIdentical(mcols(gr12), rbind(mcols(gr1), mcols(gr2)))
 
     #########################################################################
     ## Concatenate GRanges objects with differing metadata columns
-    colnames(mcols(gr1))[1] <- 'illegal'
-    checkException(c(gr1, gr2), silent=TRUE)
+    colnames(mcols(gr2))[1] <- "score2"
+    target <- c(gr1, gr2, ignore.mcols=TRUE)
+    checkIdentical(dim(mcols(target)), c(length(target), 0L))
+    mcols(target) <- rbind(cbind(mcols(gr1), score2=NA),
+                           cbind(score=NA, mcols(gr2)))
+    checkIdentical(target, c(gr1, gr2))
   
-    ## Ignore mcols
-    gc2 <- c(gr1, gr2, ignore.mcols=TRUE)
-    em2 <- mcols(gc2)
-    checkIdentical(nrow(em2), length(gc2))
-    checkIdentical(ncol(em2), 0L)
-
     #########################################################################
     ## More testing
-    gr <- .make_TARGET_GRanges()
-    gr2 <- gr
+    gr1 <- .make_TARGET_GRanges()
+    gr2 <- gr1[, -1]
+    target <- c(gr1, gr2, ignore.mcols=TRUE)
+    mcols(target) <- rbind(mcols(gr1), cbind(score=NA, mcols(gr2)))
+    checkIdentical(target, c(gr1, gr2))
+
+    gr2 <- gr1
     names(gr2) <- NULL
-    target <- c(gr, gr[, -1], ignore.mcols=TRUE)
-    mcols(target) <- rbind(
-        mcols(gr),
-        cbind(DataFrame(score=NA), mcols(gr)[ , -1, drop=FALSE])
-    )
-    checkIdentical(target, c(gr, gr[,-1]))
-    checkIdentical(as.data.frame(c(gr, gr2), row.names=NULL),
-                   rbind(as.data.frame(gr, row.names=NULL),
+    checkIdentical(as.data.frame(c(gr1, gr2), row.names=NULL),
+                   rbind(as.data.frame(gr1, row.names=NULL),
                          as.data.frame(gr2, row.names=NULL)))
-    checkIdentical(as.data.frame(c(gr2, gr), row.names=NULL),
+    checkIdentical(as.data.frame(c(gr2, gr1), row.names=NULL),
                    rbind(as.data.frame(gr2, row.names=NULL),
-                         as.data.frame(gr, row.names=NULL)))
+                         as.data.frame(gr1, row.names=NULL)))
 }
 
 
