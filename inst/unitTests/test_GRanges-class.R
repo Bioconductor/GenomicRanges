@@ -522,7 +522,12 @@ test_GRanges_concatenate <- function()
     gr <- .make_TARGET_GRanges()
     gr2 <- gr
     names(gr2) <- NULL
-    checkException(c(gr, gr[,-1]), silent = TRUE)
+    target <- c(gr, gr[, -1], ignore.mcols=TRUE)
+    mcols(target) <- rbind(
+        mcols(gr),
+        cbind(DataFrame(score=NA), mcols(gr)[ , -1, drop=FALSE])
+    )
+    checkIdentical(target, c(gr, gr[,-1]))
     checkIdentical(as.data.frame(c(gr, gr2), row.names=NULL),
                    rbind(as.data.frame(gr, row.names=NULL),
                          as.data.frame(gr2, row.names=NULL)))
