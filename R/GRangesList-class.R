@@ -230,12 +230,12 @@ setMethod("ranges", "GRangesList",
         unlisted_x <- unlist(x, use.names=FALSE)
         unlisted_ans <- unlisted_x@ranges
         if (use.mcols)
-            mcols(unlisted_ans) <- mcols(unlisted_x)
+            mcols(unlisted_ans) <- mcols(unlisted_x, use.names=FALSE)
         ans <- relist(unlisted_ans, x)
         if (!use.names)
             names(ans) <- NULL
         if (use.mcols)
-            mcols(ans) <- mcols(x)
+            mcols(ans) <- mcols(x, use.names=FALSE)
         ans
     }
 )
@@ -378,7 +378,7 @@ set_GRangesList_mcols <-
             }
             value <- unlist(value, use.names = FALSE)
         }
-        elementMetadata(x@unlistData) <- value
+        mcols(x@unlistData) <- value
     }
     x
 }
@@ -449,7 +449,7 @@ setAs("GRangesList", "IntegerRangesList",
         from <- as(from, "GRanges", strict = FALSE)
     ans_partitioning <- PartitioningByEnd(seq_along(from), names=names(from))
     names(from) <- NULL
-    ans_mcols <- mcols(from)
+    ans_mcols <- mcols(from, use.names=FALSE)
     mcols(from) <- NULL
     ans <- relist(from, ans_partitioning)
     mcols(ans) <- ans_mcols
@@ -485,9 +485,9 @@ setAs("list", "CompressedGRangesList",
             stop("'j' cannot mix between and within metadata column names")
         if (any(withinLevel)) {
             mcols(x, level="within") <-
-              mcols(x, level="within")[, j, drop=FALSE]
+              mcols(x, use.names=FALSE, level="within")[, j, drop=FALSE]
         } else {
-            mcols(x) <- mcols(x)[, j, drop=FALSE]
+            mcols(x) <- mcols(x, use.names=FALSE)[, j, drop=FALSE]
         }
     }
     x
@@ -509,16 +509,16 @@ setMethod("[", "GRangesList", .sBracketSubsetGRList)
         if (missing(i)) {
             if (any(withinLevel)) {
                 mcols(x, level="within")[, j] <-
-                  mcols(x, level="within")
+                  mcols(x, use.names=FALSE, level="within")
             } else {
-                mcols(x)[, j] <- mcols(x)
+                mcols(x)[, j] <- mcols(x, use.names=FALSE)
             }
         } else {
             if (any(withinLevel)) {
                 mcols(x, level="within")[i, j] <-
-                        mcols(x, level="within")
+                        mcols(x, use.names=FALSE, level="within")
             } else {
-                mcols(x)[i, j] <- mcols(x)
+                mcols(x)[i, j] <- mcols(x, use.names=FALSE)
             }
         }
     }

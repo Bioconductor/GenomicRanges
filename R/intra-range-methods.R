@@ -157,8 +157,9 @@ setMethod("restrict", "GenomicRanges",
     {
         if (is.null(names(start)) && is.null(names(end)))
             return(.restrictRngs(x, start, end,keep.all.ranges, use.names))
-        nms <- names(mcols(x))
-        mcols(x) <- cbind(mcols(x), DataFrame(posIndx=seq_len(length(x))))
+        x_mcols <- mcols(x, use.names=FALSE)
+        nms <- names(x_mcols)
+        mcols(x) <- cbind(x_mcols, DataFrame(posIndx=seq_len(length(x))))
         splt <- split(x, seqnames(x))
         start <- .checkParms(x, start)
         end <- .checkParms(x, end) 
@@ -173,7 +174,7 @@ setMethod("restrict", "GenomicRanges",
                          final=seq_len(length(ord)))
         indx <- order(df[["orig"]], df[["final"]])
         ord <- ord[indx, ]
-        mcols(ord) <- subset(mcols(ord), select=nms)
+        mcols(ord) <- subset(mcols(ord, use.names=FALSE), select=nms)
         ord
     }
 )

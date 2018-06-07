@@ -196,7 +196,7 @@ INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
 
 .valid.GenomicRanges.mcols <- function(x)
 {
-    if (any(INVALID.GR.COLNAMES %in% colnames(mcols(x)))) {
+    if (any(INVALID.GR.COLNAMES %in% colnames(mcols(x, use.names=FALSE)))) {
         msg <- c("names of metadata columns cannot be one of ",
                  paste0("\"", INVALID.GR.COLNAMES, "\"", collapse=", "))
         return(paste(msg, collapse=" "))
@@ -280,7 +280,7 @@ setMethod("as.data.frame", "GenomicRanges",
             row.names <- names(x)
         if (!is.null(names(x)))
             names(x) <- NULL
-        mcols_df <- as.data.frame(mcols(x), ...)
+        mcols_df <- as.data.frame(mcols(x, use.names=FALSE), ...)
         if (length(extraColumnSlotNames(x)) > 0L)
             mcols_df <- cbind(as.data.frame(extraColumnSlotsAsDF(x), ...),
                               mcols_df)
@@ -298,7 +298,8 @@ setMethod("as.data.frame", "GenomicRanges",
 setAs("GenomicRanges", "IntegerRangesList",
     function(from)
     {
-        strand_mcols <- DataFrame(strand=strand(from), mcols(from))
+        strand_mcols <- DataFrame(strand=strand(from),
+                                  mcols(from, use.names=FALSE))
         ecs <- extraColumnSlotsAsDF(from)
         if (length(ecs))
           strand_mcols <- cbind(strand_mcols, ecs)
@@ -317,7 +318,7 @@ setAs("GenomicRanges", "IntegerRangesList",
 setAs("GenomicRanges", "RangedData",
     function(from)
     {
-        mcols <- mcols(from)
+        mcols <- mcols(from, use.names=FALSE)
         ecs <- extraColumnSlotsAsDF(from)
         if (length(ecs))
           mcols <- cbind(mcols, ecs)
@@ -427,7 +428,7 @@ set_GenomicRanges_seqinfo <-
 }
 setReplaceMethod("seqinfo", "GenomicRanges", set_GenomicRanges_seqinfo)
 
-setMethod("score", "GenomicRanges", function(x) mcols(x)$score)
+setMethod("score", "GenomicRanges", function(x) mcols(x, use.names=FALSE)$score)
 setReplaceMethod("score", "GenomicRanges", function(x, value) {
   ## Fix old GRanges instances on-the-fly.
   x <- updateObject(x)
@@ -603,10 +604,10 @@ setMethod("[", c("list", "GenomicRanges"),
 ###
 
 .DollarNames.GenomicRanges <- function(x, pattern = "")
-    grep(pattern, names(mcols(x)), value=TRUE)
+    grep(pattern, names(mcols(x, use.names=FALSE)), value=TRUE)
 
 setMethod("$", "GenomicRanges",
-    function(x, name) mcols(x)[[name]]
+    function(x, name) mcols(x, use.names=FALSE)[[name]]
 )
 
 setReplaceMethod("$", "GenomicRanges",
@@ -628,7 +629,7 @@ setReplaceMethod("$", "GenomicRanges",
 {
     object_class <- class(object)
     object_len <- length(object)
-    object_mcols <- mcols(object)
+    object_mcols <- mcols(object, use.names=FALSE)
     object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
     paste0(object_class, " object with ", object_len, " ",
            ifelse(object_len == 1L, "range", "ranges"),
@@ -644,7 +645,7 @@ setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 .make_naked_matrix_from_GenomicRanges <- function(x)
 {
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     ans <- cbind(seqnames=as.character(seqnames(x)),
                  ranges=showAsCell(ranges(x)),

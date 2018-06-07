@@ -66,7 +66,7 @@ setAs("RleViewsList", "GRanges",
             lapply(from, .from_RleViews_to_IRanges_with_score_and_view_mcols)
         )
         ans <- as(irl, "GRanges")
-        mcols(ans) <- mcols(unlist(irl, use.names=FALSE))
+        mcols(ans) <- mcols(unlist(irl, use.names=FALSE), use.names=FALSE)
         ans
     }
 )
@@ -117,7 +117,7 @@ bindAsGRanges <- function(...)
                                   mcols=ans_mcols, seqlengths=ans_seqlengths)
 
     ## Keep only ranges for which at least one variable is not NA.
-    keep_idx <- which(rowSums(!is.na(mcols(ans))) != 0L)
+    keep_idx <- which(rowSums(!is.na(mcols(ans, use.names=FALSE))) != 0L)
     ans[keep_idx]
 }
 
@@ -128,7 +128,7 @@ mcolAsRleList <- function(x, varname)
 {
     if (!is(x, "GenomicRanges"))
         stop("'x' must be a GRanges object")
-    var <- mcols(x)[ , varname]
+    var <- mcols(x, use.names=FALSE)[ , varname]
 
     ## If 'var' is numeric, then we can use coverage().
     #if (is.numeric(var))

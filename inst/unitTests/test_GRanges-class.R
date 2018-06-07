@@ -84,7 +84,7 @@ test_GRanges_construction <- function()
                        ranges=.TARGET_ranges,
                        strand=.TARGET_strand,
                        c=LETTERS[1:10])
-    checkIdentical(DataFrame(c=LETTERS[1:10]), mcols(current))
+    checkIdentical(DataFrame(c=LETTERS[1:10]), mcols(current, use.names=FALSE))
 
     seqinfo <- Seqinfo(letters, rep(1000L, length(letters)))
     checkIdentical(seqinfo(GRanges(seqinfo=seqinfo)), seqinfo)
@@ -253,7 +253,8 @@ test_GRanges_mcols <- function()
     gr0 <- GRanges()
     gr1 <- .make_TARGET_GRanges()
     checkIdentical(DataFrame(), mcols(gr0))
-    checkIdentical(.TARGET_mcols, mcols(gr1))
+    checkIdentical(.TARGET_mcols, mcols(gr1, use.names=FALSE))
+    checkIdentical(`rownames<-`(.TARGET_mcols, .TARGET_names), mcols(gr1))
 
     ## mcols() setter
     mcols(gr0) <- mcols(gr0)  # no-op
@@ -264,13 +265,14 @@ test_GRanges_mcols <- function()
                    silent=TRUE)
 
     mcols(gr1) <- NULL
-    checkIdentical(S4Vectors:::make_zero_col_DataFrame(length(gr1)),
-                   mcols(gr1))
+    target <- S4Vectors:::make_zero_col_DataFrame(length(gr1))
+    checkIdentical(target, mcols(gr1, use.names=FALSE))
+    checkIdentical(`rownames<-`(target, .TARGET_names), mcols(gr1))
 
     val <- DataFrame(x=1:length(gr1), y = head(letters, length(gr1)))
     mcols(gr1) <- val
     checkTrue(validObject(gr1))
-    checkIdentical(val, mcols(gr1))
+    checkIdentical(val, mcols(gr1, use.names=FALSE))
 
     rownames(val) <- names(gr1)
     checkIdentical(val, mcols(gr1, use.names=TRUE))
@@ -279,7 +281,7 @@ test_GRanges_mcols <- function()
     checkTrue(validObject(gr1))
     checkIdentical(val, mcols(gr1, use.names=TRUE))
     rownames(val) <- NULL
-    checkIdentical(val, mcols(gr1))
+    checkIdentical(val, mcols(gr1, use.names=FALSE))
 }
 
 test_GRanges_seqlevels <- function()

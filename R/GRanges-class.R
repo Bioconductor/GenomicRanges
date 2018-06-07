@@ -133,7 +133,7 @@ setMethod("update", "GRanges",
         x_strand <- strand
     }
     if (length(mcols) == 0L) {
-        x_mcols <- mcols(x)
+        x_mcols <- mcols(x, use.names=FALSE)
     } else {
         x_mcols <- mcols
     }
@@ -210,7 +210,7 @@ new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
     ## in case we have seqlengths for unrepresented sequences
     runValue(seqnames) <- factor(runValue(seqnames), levels=seqnames(seqinfo))
 
-    ranges_mcols <- mcols(ranges)
+    ranges_mcols <- mcols(ranges, use.names=FALSE)
     if (!is.null(ranges_mcols))
         mcols(ranges) <- NULL
 
@@ -265,7 +265,7 @@ setMethod("ranges", "GRanges",
         if (!use.names)
             names(ans) <- NULL
         if (use.mcols)
-            mcols(ans) <- mcols(x)
+            mcols(ans) <- mcols(x, use.names=FALSE)
         ans
     }
 )
@@ -281,7 +281,8 @@ setMethod("granges", "GenomicRanges",
                        strand(x),
                        seqinfo=seqinfo(x))
         if (use.mcols)
-            mcols(ans) <- cbind(extraColumnSlotsAsDF(x), mcols(x))
+            mcols(ans) <- cbind(extraColumnSlotsAsDF(x),
+                                mcols(x, use.names=FALSE))
         ans
     }
 )
@@ -413,7 +414,8 @@ setMethod("replaceROWS", "GRanges",
         ans_seqnames <- replaceROWS(seqnames(x), i, seqnames(value))
         ans_ranges <- replaceROWS(ranges(x), i, ranges(value))
         ans_strand <- replaceROWS(strand(x), i, strand(value))
-        ans_mcols <- replaceROWS(mcols(x), i, mcols(value))
+        ans_mcols <- replaceROWS(mcols(x, use.names=FALSE), i,
+                                 mcols(value, use.names=FALSE))
         ans_ecs_names <- extraColumnSlotNames(x)
         ans_necs <- length(ans_ecs_names)
         if (ans_necs == 0L) {

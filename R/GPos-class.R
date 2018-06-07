@@ -187,7 +187,7 @@ setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
 setMethod("as.data.frame", "GPos",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
-        mcols_df <- as.data.frame(mcols(x), ...)
+        mcols_df <- as.data.frame(mcols(x, use.names=FALSE), ...)
         data.frame(seqnames=as.factor(seqnames(x)),
                    pos=pos(x),
                    strand=as.factor(strand(x)),
@@ -238,7 +238,7 @@ setMethod("updateObject", "GPos",
 .make_naked_matrix_from_GPos <- function(x)
 {
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     ans <- cbind(seqnames=as.character(seqnames(x)),
                  pos=as.character(pos(x)),
@@ -262,7 +262,7 @@ show_GPos <- function(x, margin="",
              "    object <- updateObject(object, verbose=TRUE)")
     x_class <- class(x)
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     cat(x_class, " object with ",
         x_len, " ", ifelse(x_len == 1L, "position", "positions"),

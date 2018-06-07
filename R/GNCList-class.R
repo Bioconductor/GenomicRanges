@@ -37,7 +37,7 @@ setMethod("granges", "GNCList",
         if (!use.names)
             names(ans) <- NULL
         if (use.mcols)
-            mcols(ans) <- mcols(x)
+            mcols(ans) <- mcols(x, use.names=FALSE)
         ans
     }
 )
@@ -72,7 +72,7 @@ GNCList <- function(x)
         stop("'x' must be a GenomicRanges object")
     if (!is(x, "GRanges"))
         x <- as(x, "GRanges")
-    ans_mcols <- mcols(x)
+    ans_mcols <- mcols(x, use.names=FALSE)
     mcols(x) <- NULL
     x_groups <- .extract_groups_from_GenomicRanges(x)
     x_ranges <- IRanges:::.shift_ranges_in_groups_to_first_circle(ranges(x),

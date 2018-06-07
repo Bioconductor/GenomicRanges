@@ -26,8 +26,8 @@
 .fix_inner_revmap_mcol <- function(rgl2, rgl)
 {
     unlisted_rgl2 <- unlist(rgl2, use.names=FALSE)
-    unlisted_revmap2 <- mcols(unlisted_rgl2)$revmap
-    revmap <- relist(mcols(unlist(rgl, use.names=FALSE))$revmap, rgl)
+    unlisted_revmap2 <- mcols(unlisted_rgl2, use.names=FALSE)$revmap
+    revmap <- relist(mcols(unlist(rgl, use.names=FALSE), use.names=FALSE)$revmap, rgl)
     mcols(unlisted_rgl2)$revmap <- .translate_revmap(unlisted_revmap2, rgl2,
                                                      revmap)
     rgl2 <- relist(unlisted_rgl2, rgl2)
@@ -94,7 +94,7 @@ reconstructGRfromRGL <- function(rgl, x)
                       rgl_eltNROWS)
 
     ## Prepare 'ans_mcols'.
-    ans_mcols <- mcols(ans_ranges)
+    ans_mcols <- mcols(ans_ranges, use.names=FALSE)
     if (is.null(ans_mcols)) {
         ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(ans_ranges))
     } else {
@@ -215,10 +215,10 @@ reconstructGRLfromGR <- function(gr, x, with.revmap=FALSE)
     if (with.revmap) {
         unlisted_ans <- unlist(ans, use.names=FALSE)
         mcols(unlisted_ans)$revmap <-
-            IRanges:::global2local_revmap(mcols(unlisted_ans)$revmap, ans, x)
+            IRanges:::global2local_revmap(mcols(unlisted_ans, use.names=FALSE)$revmap, ans, x)
         ans <- relist(unlisted_ans, ans)
     }
-    mcols(ans) <- mcols(x)
+    mcols(ans) <- mcols(x, use.names=FALSE)
     ans
 }
 

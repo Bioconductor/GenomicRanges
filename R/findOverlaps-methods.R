@@ -91,7 +91,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
             ans11 <- remapHits(ans01, Lnodes.remapping=query_groups,
                                       new.nLnode=length(query),
                                       with.counts=TRUE)
-            keep_idx <- which(mcols(ans11)[ , "counts"] ==
+            keep_idx <- which(mcols(ans11, use.names=FALSE)[ , "counts"] ==
                               elementNROWS(query)[queryHits(ans11)])
             mcols(ans11) <- NULL
             ans <- ans11[keep_idx]
@@ -102,7 +102,8 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                                     new.nRnode=length(subject))
         }
         if (minoverlap > 0L) {
-            keep_idx <- which(mcols(ans)[ , "owidth"] >= minoverlap)
+            keep_idx <- which(mcols(ans, use.names=FALSE)[ , "owidth"] >=
+                              minoverlap)
             mcols(ans) <- NULL
             ans <- ans[keep_idx]
         }
@@ -140,7 +141,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
             ans10 <- remapHits(ans00, Lnodes.remapping=query_groups,
                                       new.nLnode=length(query),
                                       with.counts=TRUE)
-            keep_idx <- which(mcols(ans10)[ , "counts"] ==
+            keep_idx <- which(mcols(ans10, use.names=FALSE)[ , "counts"] ==
                               elementNROWS(query)[queryHits(ans10)])
             mcols(ans10) <- NULL
             ans <- ans10[keep_idx]
@@ -149,7 +150,8 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
                                     new.nLnode=length(query))
         }
         if (minoverlap > 0L) {
-            keep_idx <- which(mcols(ans)[ , "owidth"] >= minoverlap)
+            keep_idx <- which(mcols(ans, use.names=FALSE)[ , "owidth"] >=
+                              minoverlap)
             mcols(ans) <- NULL
             ans <- ans[keep_idx]
         }
@@ -196,7 +198,8 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
         ans <- remapHits(ans00, Rnodes.remapping=subject_groups,
                                 new.nRnode=length(subject))
         if (minoverlap > 0L) {
-            keep_idx <- which(mcols(ans)[ , "owidth"] >= minoverlap)
+            keep_idx <- which(mcols(ans, use.names=FALSE)[ , "owidth"] >=
+                              minoverlap)
             mcols(ans) <- NULL
             ans <- ans[keep_idx]
         }
