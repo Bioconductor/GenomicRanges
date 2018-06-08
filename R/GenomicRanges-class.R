@@ -133,23 +133,6 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
 ### something like 'GRanges("chr1", Views(subject, start=1:2, end=5))'.
 ### Sounds cool but there are also some potential complications with this...
 
-.valid.GenomicRanges.length <- function(x)
-{
-    x_len <- length(x)
-    checkCoreGetterReturnedLength <- function(getter) {
-        if (NROW(get(getter)(x)) != x_len)
-            paste0("NROW(", getter, "(x)) != length(x)")
-    }
-    pbs1 <- unlist(lapply(c("seqnames", "ranges", "strand", "mcols"),
-                          checkCoreGetterReturnedLength))
-    checkExtraColumnLength <- function(slotname) {
-        if (NROW(slot(x, slotname)) != x_len)
-            paste0("NROW(x@", slotname, ") != length(x)")
-    }
-    pbs2 <- unlist(lapply(extraColumnSlotNames(x), checkExtraColumnLength))
-    c(pbs1, pbs2)
-}
-
 ### Used in GenomicAlignments.
 .valid.GenomicRanges.seqnames <- function(x)
 {
@@ -223,8 +206,7 @@ valid.GenomicRanges.seqinfo <- function(x, suggest.trim=FALSE)
 
 .valid.GenomicRanges <- function(x)
 {
-    c(.valid.GenomicRanges.length(x),
-      .valid.GenomicRanges.seqnames(x),
+    c(.valid.GenomicRanges.seqnames(x),
       .valid.GenomicRanges.ranges(x),
       .valid.GenomicRanges.strand(x),
       .valid.GenomicRanges.mcols(x),
