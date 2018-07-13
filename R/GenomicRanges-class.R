@@ -277,24 +277,32 @@ setMethod("as.data.frame", "GenomicRanges",
     }
 )
 
+.from_GenomicRanges_to_CompressedIRangesList <- function(from)
+{
+    strand_mcols <- DataFrame(strand=strand(from),
+                              mcols(from, use.names=FALSE))
+    ecs <- extraColumnSlotsAsDF(from)
+    if (length(ecs))
+      strand_mcols <- cbind(strand_mcols, ecs)
+    rngs <- ranges(from)
+    mcols(rngs) <- strand_mcols
+    ans <- split(rngs, seqnames(from))
+    mcols(ans) <- DataFrame(seqlengths=seqlengths(from),
+                           isCircular=isCircular(from),
+                           genome=genome(from))
+    metadata(ans) <- metadata(from)
+    metadata(ans)$seqinfo <- seqinfo(from)
+    ans
+}
+
+setAs("GenomicRanges", "CompressedIRangesList",
+    .from_GenomicRanges_to_CompressedIRangesList
+)
+setAs("GenomicRanges", "IRangesList",
+    .from_GenomicRanges_to_CompressedIRangesList
+)
 setAs("GenomicRanges", "IntegerRangesList",
-    function(from)
-    {
-        strand_mcols <- DataFrame(strand=strand(from),
-                                  mcols(from, use.names=FALSE))
-        ecs <- extraColumnSlotsAsDF(from)
-        if (length(ecs))
-          strand_mcols <- cbind(strand_mcols, ecs)
-        rngs <- ranges(from)
-        mcols(rngs) <- strand_mcols
-        rl <- split(rngs, seqnames(from))
-        mcols(rl) <- DataFrame(seqlengths=seqlengths(from),
-                               isCircular=isCircular(from),
-                               genome=genome(from))
-        metadata(rl) <- metadata(from)
-        metadata(rl)$seqinfo <- seqinfo(from)
-        rl
-    }
+    .from_GenomicRanges_to_CompressedIRangesList
 )
 
 setAs("GenomicRanges", "RangedData",
