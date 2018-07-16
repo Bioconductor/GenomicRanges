@@ -41,11 +41,12 @@ of genomic ranges. This vignette focuses on the \Rclass{GRanges} and
 
 The \Biocpkg{GenomicRanges} package is available at
 \href{https://bioconductor.org}{https://bioconductor.org} and can be
-installed via \Rfunction{biocLite}:
+installed via \Rfunction{BiocManager::install}:
 %% 
-<<biocLite, eval=FALSE>>=
-source("https://bioconductor.org/biocLite.R")
-biocLite("GenomicRanges")
+<<install, eval=FALSE>>=
+if (!require("BiocManager")
+    install.pacakges("BiocManager")
+BiocManager::install("GenomicRanges")
 @
 %% 
 A package only needs to be installed once. Load the package into an
