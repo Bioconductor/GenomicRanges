@@ -44,7 +44,7 @@ The \Biocpkg{GenomicRanges} package is available at
 installed via \Rfunction{BiocManager::install}:
 %% 
 <<install, eval=FALSE>>=
-if (!require("BiocManager")
+if (!require("BiocManager"))
     install.packages("BiocManager")
 BiocManager::install("GenomicRanges")
 @
