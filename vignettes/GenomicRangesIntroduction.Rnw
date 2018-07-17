@@ -45,7 +45,7 @@ installed via \Rfunction{BiocManager::install}:
 %% 
 <<install, eval=FALSE>>=
 if (!require("BiocManager")
-    install.pacakges("BiocManager")
+    install.packages("BiocManager")
 BiocManager::install("GenomicRanges")
 @
 %% 
