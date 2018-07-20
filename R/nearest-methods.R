@@ -94,6 +94,13 @@
           c(subjectHits(hit0)[i0], subjectHits(hit1)[i1]),
           queryLength(hit0), subjectLength(hit0))
 }
+.translateCircularRanges <- function(x) {
+    groups <- .extract_groups_from_GenomicRanges(x)
+    x_ranges <- IRanges:::.shift_ranges_in_groups_to_first_circle(ranges(x),
+                groups, .get_circle_length(x))
+    ranges(x) <- x_ranges
+    x
+}
 
 .GenomicRanges_findPrecedeFollow <-
     function(query, subject, select, ignore.strand, 
@@ -102,6 +109,12 @@
     if (!length(query) || !length(subject))
         return(Hits(nLnode=length(query), nRnode=length(subject),
                     sort.by.query=TRUE))
+
+    ## translate ranges on circular chromosomes
+    if (any(na.omit(isCircular(query)) == TRUE))
+        query <- .translateCircularRanges(query)
+    if (any(na.omit(isCircular(subject)) == TRUE))
+        subject <- .translateCircularRanges(subject)
 
     leftOf <- "precede" == match.arg(where)
     if (ignore.strand)
@@ -270,6 +283,12 @@ setMethod("follow", c("GenomicRanges", "missing"),
 
 .nearest <- function(x, subject, select, ignore.strand, drop.self=FALSE)
 {
+    ## translate ranges on circular chromosomes
+    if (any(na.omit(isCircular(x)) == TRUE))
+        x <- .translateCircularRanges(x)
+    if (any(na.omit(isCircular(subject)) == TRUE))
+        subject <- .translateCircularRanges(subject)
+
     ## overlapping ranges
     if (drop.self) {
         ol <- findOverlaps(x, maxgap=0L, select=select,
@@ -378,6 +397,13 @@ setMethod("distance", c("GenomicRanges", "GenomicRanges"),
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
+
+        ## translate ranges on circular chromosomes
+        if (any(na.omit(isCircular(x)) == TRUE))
+            x <- .translateCircularRanges(x)
+        if (any(na.omit(isCircular(y)) == TRUE))
+            y <- .translateCircularRanges(y)
+
         d <- distance(ranges(x), ranges(y))
         mismtch <- as.character(seqnames(x)) != as.character(seqnames(y))
         if (any(mismtch))

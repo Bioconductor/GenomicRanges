@@ -150,7 +150,7 @@ i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
   in \code{x} and \code{y}.
 }
 
-\author{P. Aboyoun and V. Obenchain <vobencha@fhcrc.org>}
+\author{P. Aboyoun and V. Obenchain}
 
 \seealso{
   \itemize{
