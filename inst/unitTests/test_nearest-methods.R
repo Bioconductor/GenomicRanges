@@ -180,14 +180,6 @@ test_GenomicRanges_distance <- function()
     subject <-  GRanges("A", IRanges(3,4))
     current <- quiet(distance(query, subject))
     checkIdentical(current, 0L)
-
-    # circular chromosomes
-    x <- GRanges("chr1", IRanges(c(-1, 1, 4, 9, 11), width = 5))
-    seqinfo(x) <- Seqinfo(seqnames="chr1", isCircular=TRUE, seqlengths=10)
-    current <- quiet(distance(x[1],x))
-    checkIdentical(current, c(0L, 3L, 0L, 0L, 3L))
-    current <- quiet(distance(x[2],x))
-    checkIdentical(current, c(3L, 0L, 0L, 3L, 0L))
 }
 
 test_GenomicRanges_distanceToNearest <- function()

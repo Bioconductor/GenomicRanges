@@ -284,15 +284,3 @@ test_precede_follow_zero_width_range <- function()
     checkIdentical(10L, subjectHits(current))
     checkIdentical(selectHits(current, "last"), follow(x, rev(subject)))
 }
-
-test_precede_follow_circular <- function()
-{
-    x <- GRanges("chr1", IRanges(c(-1, 1, 4, 9, 11), width = 5))
-    seqinfo(x) <- Seqinfo(seqnames="chr1", isCircular=TRUE, seqlengths=10)
-    current <- precede(x)
-    checkIdentical(current[1], current[4])
-    checkIdentical(current[2], current[5])
-    current <- follow(x)
-    checkIdentical(current[1], current[4])
-    checkIdentical(current[2], current[5])
-}
