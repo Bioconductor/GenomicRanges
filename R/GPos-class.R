@@ -244,8 +244,7 @@ setMethod("updateObject", "GPos",
                  pos=as.character(pos(x)),
                  strand=as.character(strand(x)))
     if (x_nmc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
-                                     list(check.names=FALSE)))
+        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
         ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
     }
     ans
