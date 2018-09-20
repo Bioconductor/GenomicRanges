@@ -560,7 +560,7 @@ setReplaceMethod("width", "GenomicRanges",
     ans
 }
 
-setMethod("[", c("List", "GenomicRanges"),
+setMethod("[", c("list_OR_List", "GenomicRanges"),
     function(x, i, j, ..., drop=TRUE)
     {
         if (!missing(j) || length(list(...)) > 0L)
@@ -569,12 +569,15 @@ setMethod("[", c("List", "GenomicRanges"),
     }
 )
 
-setMethod("[", c("list", "GenomicRanges"),
-    function(x, i, j, ..., drop=TRUE)
+### Avoid infinite recursion that we would otherwise get:
+###   GRanges("chr1:1-10")[[1]]
+###   # Error: C stack usage  7969428 is too close to the limit
+setMethod("getListElement", "GenomicRanges",
+    function(x, i, exact=TRUE)
     {
-        if (!missing(j) || length(list(...)) > 0L)
-            stop("invalid subsetting")
-        .subset_by_GenomicRanges(x, i)
+        ## A temporary situation
+        stop(wmsg(class(x), " objects don't support [[, as.list(), ",
+                  "lapply(), or unlist() at the moment"))
     }
 )
 

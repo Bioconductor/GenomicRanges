@@ -75,9 +75,8 @@
 \alias{coerce,ANY,GenomicRanges-method}
 
 % Subsetting:
-\alias{[,List,GenomicRanges-method}
-\alias{[,list,GenomicRanges-method}
-\alias{window,GenomicRanges-method}
+\alias{[,list_OR_List,GenomicRanges-method}
+\alias{getListElement,GenomicRanges-method}
 
 % Displaying:
 \alias{summary.GenomicRanges}
