@@ -1,3 +1,39 @@
+CHANGES IN VERSION 1.34.0
+-------------------------
+
+NEW FEATURES
+
+    o Add coercions from GenomicRanges to IRangesList and from GenomicRanges
+      to CompressedIRangesList. These 2 new coercions are equivalent to
+      coercion from GenomicRanges to IntegerRangesList, that is, if 'gr' is
+      a GenomicRanges object, the 3 following coercions are equivalent and
+      return the same CompressedIRangesList object:
+          as(gr, "IntegerRangesList")
+          as(gr, "IRangesList")
+          as(gr, "CompressedIRangesList")
+
+DEPRECATED AND DEFUNCT
+
+    o Deprecate several RangedData methods: seqinfo, seqinfo<-, seqnames, and
+      findOverlaps#RangedData#GenomicRanges
+
+      RangedData objects will be deprecated in BioC 3.9 (their use has been
+      discouraged since BioC 2.12, that is, since 2014). Package developers
+      that are still using RangedData objects need to migrate their code to
+      use GRanges or GRangesList objects instead.
+
+BUG FIXES
+
+    o Make [[, as.list(), lapply(), and unlist() fail more graciously on
+      a GenomicRanges object.
+
+    o Make "show" methods for GenomicRanges and GPos objects robust to
+      special metadata column names like "stringsAsFactors".
+
+    o Export the "update" method for GRanges objects. This addresses
+      https://github.com/Bioconductor/GenomicRanges/issues/7
+
+
 CHANGES IN VERSION 1.32.0
 -------------------------
 
@@ -427,16 +463,16 @@ CHANGES IN VERSION 1.18.0
 
 NEW FEATURES
 
-    o Add 'use.mcols' arg to "ranges" method for GRangesList objects. 
+    o Add 'use.mcols' arg to "ranges" method for GRangesList objects.
 
     o "assays<-" methods may be invoked with 'withDimnames' arg.
 
     o Add mapCoords() generic and methods (replacing map()).
 
-    o Add granges,GenomicRanges method. 
+    o Add granges,GenomicRanges method.
 
     o Add strand<-,GRangesList,character method for global replacement
-      (i.e., all strands become 'value'). 
+      (i.e., all strands become 'value').
 
     o Add resize,GRangesList-method.
 
@@ -449,7 +485,7 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
     o Modify "show" methods for GRanges and GRangesList objects so
       they print a 1-line summary of the seqinfo component.
-      
+
     o Remove as.data.frame,GRangesList-method; use as.data.frame,List.
 
     o "trim" method for GenomicRanges only trims out-of-bound
@@ -463,20 +499,20 @@ SIGNIFICANT USER-VISIBLE CHANGES
         length is not NA
       Note this behavior is now consistent with that of shift().
 
-    o Speed up validation of GenomicRanges objects by 1.2x. 
+    o Speed up validation of GenomicRanges objects by 1.2x.
 
-    o Speed up trim() on GenomicRanges objects by 1.2x. 
+    o Speed up trim() on GenomicRanges objects by 1.2x.
 
-    o Improve warning when GenomicRanges object contains out-of-bound ranges. 
+    o Improve warning when GenomicRanges object contains out-of-bound ranges.
 
     o Work on vignette HOWTOs:
       - split 'How to read BAM files into R' into 3 HOWTOs
       - split 'How to prepare a table of read counts for RNA-Seq
         differential gene expression' into 3 HOWTOs
-      - split 'How to extract DNA sequences of gene regions' into 2 HOWTOs 
+      - split 'How to extract DNA sequences of gene regions' into 2 HOWTOs
       - make individual HOWTOs subsections of single HOWTO section
 
-    o Follow renaming of TranscriptDb class to TxDb. 
+    o Follow renaming of TranscriptDb class to TxDb.
 
     o Replace references to plantsmart21 with plantsmart22.
 
@@ -500,14 +536,14 @@ BUG FIXES
     o GRanges() constructor now preserves the seqlevels in the order
       supplied by the user.
 
-    o Ensure tileGenome() breakpoints do not extend past end of genome. 
+    o Ensure tileGenome() breakpoints do not extend past end of genome.
 
     o Fix "show" method for GenomicRanges objects when 'showHeadLines'
       global option is set to Inf.
 
     o [rc]bind,SummarizeExperiment-methods now compare all elements.
-    
-    o Remove "==" and "<=" methods for GenomicRanges objects (not needed). 
+
+    o Remove "==" and "<=" methods for GenomicRanges objects (not needed).
 
 
 CHANGES IN VERSION 1.16.0
@@ -583,14 +619,14 @@ NEW FEATURES
 
     o Add coercion from GenomicRangesList to RangedDataList.
 
-    o Add "c" method for GAlignmentPairs objects. 
+    o Add "c" method for GAlignmentPairs objects.
 
-    o Add coercion from GAlignmentPairs to GAlignmentsList. 
+    o Add coercion from GAlignmentPairs to GAlignmentsList.
 
     o Add 'inter.feature' and 'fragment' arguments to summarizeOverlaps().
 
     o Add seqselect,GAlignments-method.
- 
+
     o Add CIGAR utilities:
       explodeCigarOps(), explodeCigarOpLengths()
       cigarRangesAlongReferenceSpace(), cigarRangesAlongQuerySpace()
@@ -598,23 +634,23 @@ NEW FEATURES
       cigarWidthAlongReferenceSpace(), cigarWidthAlongQuerySpace()
       cigarWidthAlongPairwiseSpace().
 
-    o Add seqlevels0() and restoreSeqlevels(). 
+    o Add seqlevels0() and restoreSeqlevels().
 
     o Add seqlevelsInUse() getter for GRanges, GRangesList, GAlignments
-      GAlignmentPairs, GAlignmentsList and SummarizedExperiment objects. 
+      GAlignmentPairs, GAlignmentsList and SummarizedExperiment objects.
 
     o Add update,GAlignments method.
- 
+
     o Add GIntervalTree class.
- 
+
     o Add coercion from GAlignmentPairs to GAlignments.
- 
+
     o Add sortSeqlevels().
- 
-    o Add tileGenome(). 
+
+    o Add tileGenome().
 
     o Add makeGRangesFromDataFrame() and coercion from data.frame or DataFrame
-      to GRanges. 
+      to GRanges.
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
@@ -628,45 +664,45 @@ SIGNIFICANT USER-VISIBLE CHANGES
         readGappedAlignments() -> readGAlignments()
         readGappedAlignmentPairs() -> readGAlignmentPairs()
 
-    o Remove 'asProperPairs' argument to readGAlignmentsList(). 
+    o Remove 'asProperPairs' argument to readGAlignmentsList().
 
     o Modify "show" method for Seqinfo object to honor showHeadLines
-      and showTailLines global options. 
+      and showTailLines global options.
 
     o 50x speedup or more when merging 2 Seqinfo objects, 1 very small
-      and 1 very big. 
+      and 1 very big.
 
-    o Add dependency on new XVector package. 
+    o Add dependency on new XVector package.
 
-    o Enhanced examples for renaming seqlevels in seqlevels-utils.Rd. 
+    o Enhanced examples for renaming seqlevels in seqlevels-utils.Rd.
 
     o More efficient reference class constructor for 'assays'
-      slot of SummarizedExperiment objects. 
+      slot of SummarizedExperiment objects.
 
     o 'colData' slot of SummarizedExperiment produced from call to
       summarizedOverlaps() now holds the class type and length of 'reads'.
 
-    o 4x speedup to cigarToRleList(). 
+    o 4x speedup to cigarToRleList().
 
-    o Relax SummarizedExperiment class validity. 
- 
+    o Relax SummarizedExperiment class validity.
+
     o Renaming (with aliases from old to new names):
-      cigarToWidth() -> cigarWidthOnReferenceSpace(), and 
-      cigarToQWidth() -> cigarWidthOnQuerySpace(). 
+      cigarToWidth() -> cigarWidthOnReferenceSpace(), and
+      cigarToQWidth() -> cigarWidthOnQuerySpace().
 
     o Improvements to summarizeOverlaps():
       - mode 'Union': 1.5x to 2x speedup
-      - mode 'IntersectionNotEmpty': 2x to 8x speedup + memory footprint 
+      - mode 'IntersectionNotEmpty': 2x to 8x speedup + memory footprint
         reduced by ~ half
 
     o Change default 'use.names' to FALSE for readGAlignmentsList().
 
-    o Implement 'type="equal"' for findOverlaps,SummarizedExperiment methods. 
+    o Implement 'type="equal"' for findOverlaps,SummarizedExperiment methods.
 
     o Modify summarizeOverlaps() examples to use 'asMates=TRUE' instead
-      of 'obeyQname=TRUE'. 
+      of 'obeyQname=TRUE'.
 
-    o Remove unneeded "window" method for GenomicRanges objects. 
+    o Remove unneeded "window" method for GenomicRanges objects.
 
     o Speed up seqinfo() getter and setter on SummarizedExperiment objects
       and derivatives (e.g. VCF) by using direct access to 'rowData' slot.
@@ -675,21 +711,21 @@ SIGNIFICANT USER-VISIBLE CHANGES
       using the defaults for 'shift' and 'width'.
 
     o Remove restriction that metadata column names must be different on
-      a GRangesList and the unlisted GRanges. 
+      a GRangesList and the unlisted GRanges.
 
     o GenomicRangesUseCases vignette has been redone and renamed
-      to GenomicRangesHOWTOs 
+      to GenomicRangesHOWTOs.
 
 DEPRECATED AND DEFUNCT
- 
-    o Defunct all "match" and "%in%" methods in the 
+
+    o Defunct all "match" and "%in%" methods in the
       package except for those with the GenomicRanges,GenomicRanges signature.
 
     o Deprecate GappedAlignment*:
       - GappedAlignments and GappedAlignmentPairs classes
       - GappedAlignments() and GappedAlignmentPairs() constructors
       - readGappedAlignments() and readGappedAlignmentPairs() functions
- 
+
     o Deprecate cigar util functions:
       cigarToWidth(), cigarToQWidth(), cigarToIRanges()
       splitCigar(), cigarToIRanges(), cigarToIRangesListByAlignment()
@@ -700,23 +736,23 @@ DEPRECATED AND DEFUNCT
 
 BUG FIXES
 
-    o Fix bug in c,GAlignments for case when objects were unnamed. 
+    o Fix bug in c,GAlignments for case when objects were unnamed.
 
     o Fix bug in flank,GenomicRanges (when 'ignore.strand=TRUE'
-      'start' was being set to TRUE). 
+      'start' was being set to TRUE).
 
-    o Fix bug in behavior of summarizeOverlaps() count mode 
-      'IntersectionNotEmpty' when 'inter.features=FALSE'. Shared 
-      regions are now removed before counting. 
+    o Fix bug in behavior of summarizeOverlaps() count mode
+      'IntersectionNotEmpty' when 'inter.features=FALSE'. Shared
+      regions are now removed before counting.
 
     o Fix bug in cigarToIRangesListByAlignment() when 'flag' is
-      supplied and indicates some reads are unmapped. 
+      supplied and indicates some reads are unmapped.
 
     o Fix bug in summarizeOverlaps(..., mode='IntersectionNotEmpty')
-      when 'features' has '-' and '+' elements and 'ignore.strand=TRUE'. 
+      when 'features' has '-' and '+' elements and 'ignore.strand=TRUE'.
 
     o match,GenomicRanges,GenomicRanges method now handles properly objects
-      with seqlevels not in the same order. 
+      with seqlevels not in the same order.
 
 
 CHANGES IN VERSION 1.12.0
@@ -728,34 +764,34 @@ NEW FEATURES
       'seqnameStyle(x) <- style' works on any object with a "seqinfo"
       replacement method.
 
-    o Add trim,GenomicRanges-method to trim out of bound ranges. 
+    o Add trim,GenomicRanges-method to trim out of bound ranges.
 
-    o Add promoters,GenomicRanges and promoters,GRangesList methods. 
- 
+    o Add promoters,GenomicRanges and promoters,GRangesList methods.
+
     o Add "overlapsAny" methods as a replacement for the deprecated
-      "%in%" methods. 
+      "%in%" methods.
 
-    o Add 'ignore.strand' argument to match,GenomicRanges-method. 
+    o Add 'ignore.strand' argument to match,GenomicRanges-method.
 
     o Add 'with.mapping' argument to "reduce" method for GenomicRanges
       objects.
 
-    o Add "unname" method to remove dimnames from SummarizedExperiment. 
+    o Add "unname" method to remove dimnames from SummarizedExperiment.
 
-    o Add "cbind" and "rbind" methods for SummarizedExperiment. 
+    o Add "cbind" and "rbind" methods for SummarizedExperiment.
 
-    o Add "seqselect", "seqselect<-" and "split" methods for 
-      SummarizedExperiment. 
+    o Add "seqselect", "seqselect<-" and "split" methods for
+      SummarizedExperiment.
 
     o Add GAlignmentsList class.
- 
-    o Add readGAlignmentsList generic and methods. 
+
+    o Add readGAlignmentsList generic and methods.
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
-    o resize,GenomicRanges method no longer checks that 'fix' is 
+    o resize,GenomicRanges method no longer checks that 'fix' is
       length-compatible with 'x' when 'x' is length zero. This
-      allows for resize(x, w, fix = "end") without worrying about 
+      allows for resize(x, w, fix = "end") without worrying about
       'x' being zero-length.
 
     o Change the behavior of "distance". Previously adjacent ranges
@@ -765,37 +801,37 @@ SIGNIFICANT USER-VISIBLE CHANGES
     o shift,GenomicRanges-method no longer trims out of bound ranges.
 
     o "distanceToNearest" no longer drops ranges that have no hit
-      but returns 'NA' for 'subjectHits' and 'distance'. 
+      but returns 'NA' for 'subjectHits' and 'distance'.
 
     o "genome" is no longer an invalid metadata colname for GenomicRanges
       objects.
 
-    o 4x-8x speedup for doing coverage() on a GRanges or GRangesList with 
+    o 4x-8x speedup for doing coverage() on a GRanges or GRangesList with
       many seqlevels.
 
     o Remove ">=", "<", and ">" methods for GenomicRanges objects.
 
     o Speedup "seqinfo" setters for GenomicRanges and GappedAlignments
-      by avoiding validation when not necessary. 
+      by avoiding validation when not necessary.
 
-    o readGappedAlignments can now pass a BamFile to readBamGappedAlignments. 
+    o readGappedAlignments can now pass a BamFile to readBamGappedAlignments.
 
-    o Remove unneeded "unique" and "sort" methods for GenomicRanges objects. 
- 
+    o Remove unneeded "unique" and "sort" methods for GenomicRanges objects.
+
     o Change behavior of "match" and "%in%" on GenomicRanges objects to use
       equality instead of overlap for comparing elements between GenomicRanges
       objects 'x' and 'table'.
 
-    o match,GenomicRanges-method gets the same 'method' argumnet as the 
-      "duplicated" method for these objects. 
- 
-    o Remove unneeded "countOverlaps" methods. 
- 
+    o match,GenomicRanges-method gets the same 'method' argumnet as the
+      "duplicated" method for these objects.
+
+    o Remove unneeded "countOverlaps" methods.
+
     o "classNameForDisplay" shortens the name of data type when displayed.
- 
+
     o Add global options 'showHeadLines' and 'showTailLines' to
       control the number of head/tails lines displayed in
-      show,GRanges and show,GappedAlignments methods. 
+      show,GRanges and show,GappedAlignments methods.
 
     o "distanceToNearest" now returns a Hits object instead of DataFrame.
 
@@ -805,17 +841,17 @@ DEPRECATED AND DEFUNCT
 
     o Defunct previously deprecated '.ignoreElementMetadata' argmuent
       of c,GenomicRanges-method.
- 
+
     o Deprecate all "match" and "%in%" methods in the package except for
       those with the GenomicRanges,GenomicRanges signature.
 
     o Deprecate "resolveHits" methods.
- 
+
 BUG FIXES
 
-    o Several bug fixes to "nearest". 
+    o Several bug fixes to "nearest".
 
-    o Output of "findSpliceOverlaps" now displays 'NA' for ranges with 
+    o Output of "findSpliceOverlaps" now displays 'NA' for ranges with
       no hits.
 
 
@@ -855,7 +891,7 @@ NEW FEATURES
       GappedAlignmentPairs objects.
 
     o No more arbitrary max of 3 gaps per read in isCompatibleWithSplicing()
-      and isCompatibleWithSkippedExons(). 
+      and isCompatibleWithSkippedExons().
 
     o Add findCompatibleOverlaps() and countCompatibleOverlaps().
 
@@ -957,7 +993,7 @@ NEW FEATURES
       map,GenomicRanges,GappedAlignments methods. These allow mapping
       from genome space to transcript space, and genome space to read
       space, respectively.
-    
+
     o Add seqinfo methods (and friends) for RangedData, RangesList,
       and other IRanges data structures. These use metadata(x)$seqinfo.
 
@@ -965,7 +1001,7 @@ NEW FEATURES
 
     o Add score,GRangesList and score,GenomicRanges (gets the score column
       like for RangedData).
-    
+
     o Add RangedDataList -> GenomicRangesList coercion.
 
     o Add RleViewsList -> GRanges coercion.
@@ -973,7 +1009,7 @@ NEW FEATURES
     o Add pintersect,GRangesList,GRangesList
 
     o Add stack,GenomicRangesList
-    
+
     o ignore.strand argument now more uniformly supported on set operations.
 
     o Add Ops,GenomicRanges (from rtracklayer).
@@ -987,7 +1023,7 @@ NEW FEATURES
       cigarToIRangesListByRName().
 
     o Add 'reduce.ranges' arg to cigarToIRangesListByAlignment().
- 
+
 SIGNIFICANT USER-VISIBLE CHANGES
 
     o grglist,GappedAlignments now carries over metadata columns.
