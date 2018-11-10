@@ -839,7 +839,7 @@ DEPRECATED AND DEFUNCT
 
     o Remove defunct countGenomicOverlaps(), grg(), and globalToQuery()
 
-    o Defunct previously deprecated '.ignoreElementMetadata' argmuent
+    o Defunct previously deprecated '.ignoreElementMetadata' argument
       of c,GenomicRanges-method.
 
     o Deprecate all "match" and "%in%" methods in the package except for
