@@ -49,7 +49,7 @@ setMethod("findOverlaps", c("GenomicRanges", "GenomicRanges"),
 
 setMethod("findOverlaps", c("GRangesList", "GRangesList"),
     function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within"),
+             type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
     {
@@ -85,16 +85,25 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
                                       subject_groups[subjectHits(ans00)])
             mcols(ans00) <- DataFrame(owidth=owidth)
         } 
-        if (type == "within") {
+        if (type == "within" || type == "equal") {
             ans01 <- remapHits(ans00, Rnodes.remapping=subject_groups,
                                       new.nRnode=length(subject))
             ans11 <- remapHits(ans01, Lnodes.remapping=query_groups,
                                       new.nLnode=length(query),
                                       with.counts=TRUE)
-            keep_idx <- which(mcols(ans11, use.names=FALSE)[ , "counts"] ==
-                              elementNROWS(query)[queryHits(ans11)])
+            keep <- mcols(ans11)[ , "counts"] ==
+                elementNROWS(query)[queryHits(ans11)]
+            if (type == "equal") {
+                ans10 <- remapHits(ans00, Lnodes.remapping=query_groups,
+                                   new.nLnode=length(query))
+                ans11 <- remapHits(ans10, Rnodes.remapping=subject_groups,
+                                   new.nRnode=length(subject),
+                                   with.counts=TRUE)
+                keep <- keep & mcols(ans11)[ , "counts"] ==
+                    elementNROWS(subject)[subjectHits(ans11)]
+            }
             mcols(ans11) <- NULL
-            ans <- ans11[keep_idx]
+            ans <- ans11[keep]
         } else {
             ans <- remapHits(ans00, Lnodes.remapping=query_groups,
                                     new.nLnode=length(query),
@@ -113,7 +122,7 @@ setMethod("findOverlaps", c("GRangesList", "GRangesList"),
 
 setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
     function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within"),
+             type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
     {
@@ -137,7 +146,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
                                       subjectHits(ans00))
             mcols(ans00) <- DataFrame(owidth=owidth)
         }
-        if (type == "within") {
+        if (type == "within" || type == "equal") {
             ans10 <- remapHits(ans00, Lnodes.remapping=query_groups,
                                       new.nLnode=length(query),
                                       with.counts=TRUE)
@@ -161,7 +170,7 @@ setMethod("findOverlaps", c("GRangesList", "GenomicRanges"),
 
 setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within"),
+             type=c("any", "start", "end", "within", "equal"),
              select=c("all", "first", "last", "arbitrary"),
              ignore.strand=FALSE)
     {
@@ -196,7 +205,14 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
             mcols(ans00) <- DataFrame(owidth=owidth)
         }
         ans <- remapHits(ans00, Rnodes.remapping=subject_groups,
-                                new.nRnode=length(subject))
+                                new.nRnode=length(subject),
+                                with.counts=(type == "equal"))
+        if (type == "equal") {
+            keep <- mcols(ans)[ , "counts"] ==
+                elementNROWS(subject)[subjectHits(ans)]
+            mcols(ans) <- NULL
+            ans <- ans[keep]
+        }
         if (minoverlap > 0L) {
             keep_idx <- which(mcols(ans, use.names=FALSE)[ , "owidth"] >=
                               minoverlap)

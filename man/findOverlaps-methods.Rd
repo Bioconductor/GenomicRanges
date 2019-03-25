@@ -94,6 +94,10 @@
   a feature is a list element containing a set of ranges. In the results,
   the features are referred to by number, which run from 1 to
   \code{length(query)}/\code{length(subject)}.
+
+  For \code{type="equal"} with GRangesList objects, \code{query[[i]]}
+  matches \code{subject[[j]]} iff for each range in \code{query[[i]]}
+  there is an identical range in \code{subject[[j]]}, and vice versa.
 }
 
 \value{
