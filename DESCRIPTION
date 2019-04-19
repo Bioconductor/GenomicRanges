@@ -1,5 +1,5 @@
 Package: GenomicRanges
-Title: Representation and manipulation of genomic intervals and variables defined along a genome
+Title: Representation and manipulation of genomic intervals
 Description: The ability to efficiently represent and manipulate genomic
 	annotations and alignments is playing a central role when it comes
 	to analyzing high-throughput sequencing data (a.k.a. NGS data).
