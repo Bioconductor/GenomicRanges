@@ -441,7 +441,7 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
 ### precedes() and follows()
 ###
 
-.normBounds <- function(x) {
+.normBounds <- function(x, si) {
     if (is(x, "GRangesList")) {
         x <- range(x)
         if (all(lengths(x) == 1L)) {
@@ -450,19 +450,22 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
             stop("operation undefined when ranges cross seqnames and strands")
         }
     }
+    seqlevels(x) <- seqlevels(si)
     x
 }
 
 precedes <- function(x, y) {
-    x <- .normBounds(x)
-    y <- .normBounds(y)
+    si <- merge(seqinfo(x), seqinfo(y))
+    x <- .normBounds(x, si)
+    y <- .normBounds(y, si)
     seqnames(x) == seqnames(y) &
         ifelse(strand(y) == "-", start(x) > end(y), end(x) < start(y))
 }
 
 follows <- function(x, y) {
-    x <- .normBounds(x)
-    y <- .normBounds(y)
+    si <- merge(seqinfo(x), seqinfo(y))
+    x <- .normBounds(x, si)
+    y <- .normBounds(y, si)
     seqnames(x) == seqnames(y) &
         ifelse(strand(y) == "-", end(x) < start(y), start(x) > end(y))
 }
