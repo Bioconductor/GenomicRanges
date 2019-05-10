@@ -223,28 +223,6 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     }
 )
 
-.findOverlaps_RangedData_is_defunct_msg <-
-  c("RangedData objects are deprecated and calling findOverlaps() on a ",
-    "RangedData query and GenomicRanges subject is not supported anymore. ",
-    "See IMPORTANT NOTE in ?RangedData")
-
-### Needed by chipseq package.
-setMethod("findOverlaps", c("RangedData", "GenomicRanges"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within"),
-             select=c("all", "first", "last", "arbitrary"),
-             ignore.strand=FALSE)
-    {
-        .Defunct(msg=wmsg(.findOverlaps_RangedData_is_defunct_msg))
-        ## Calls "findOverlaps" method for c("GenomicRanges", "GenomicRanges")
-        ## defined above.
-        findOverlaps(as(query, "GRanges"), subject,
-                     maxgap=maxgap, minoverlap=minoverlap,
-                     type=match.arg(type), select=match.arg(select),
-                     ignore.strand=ignore.strand)
-    }
-)
-
 
 ### =========================================================================
 ### findOverlaps-based methods

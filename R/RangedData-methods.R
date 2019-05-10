@@ -33,24 +33,3 @@ setMethod("seqinfo", "RangedData",
   }
 )
 
-setReplaceMethod("seqinfo", "RangedData",
-                 function(x, value) {
-                   what <- "seqinfo() setter for RangedData objects"
-                   .Defunct(msg=wmsg(IRanges:::RangedData_method_is_defunct_msg(what)))
-                   seqinfo(ranges(x)) <- value
-                   x
-                 })
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### seqnames
-###
-
-setMethod("seqnames", "RangedData",
-  function(x)
-  {
-    what <- "seqnames() getter for RangedData objects"
-    .Defunct(msg=wmsg(IRanges:::RangedData_method_is_defunct_msg(what)))
-    space(x)
-  }
-)
-

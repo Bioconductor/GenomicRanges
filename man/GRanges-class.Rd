@@ -31,7 +31,6 @@
 % Accessors:
 \alias{length,GenomicRanges-method}
 \alias{seqnames,GRanges-method}
-\alias{seqnames,RangedData-method}
 \alias{seqnames<-,GenomicRanges-method}
 \alias{ranges,GRanges-method}
 \alias{ranges<-,GenomicRanges-method}
@@ -51,7 +50,6 @@
 \alias{seqinfo,RangedData-method}
 \alias{seqinfo<-,GenomicRanges-method}
 \alias{seqinfo<-,List-method}
-\alias{seqinfo<-,RangedData-method}
 \alias{score,GenomicRanges-method}
 \alias{score<-,GenomicRanges-method}
 \alias{granges,GenomicRanges-method}
