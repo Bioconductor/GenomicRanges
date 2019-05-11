@@ -5,125 +5,63 @@
 
 
 setClass("GRangesList",
-    contains=c("GenomicRangesList", "CompressedRangesList"),
-    representation(
-        unlistData="GRanges"
-    ),
-    prototype(
-        elementType="GRanges"
-    )
+    contains="GenomicRangesList",
+    representation("VIRTUAL"),
+    prototype(elementType="GRanges")
 )
 
-### [HP] Added this on Feb 1, 2018 and made the necessary adjustments to make
-### the GRangesList() constructor return a CompressedGRangesList instance
-### instead of a GRangesList instance. The long term goal is that GRangesList
-### becomes a virtual class with CompressedGRangesList a concrete subclass
-### of it. But before we can make GRangesList virtual, we need to make sure
-### that all the existing serialized GRangesList instances are replaced with
-### CompressedGRangesList instances. This might take a while!
-setClass("CompressedGRangesList", contains="GRangesList")
+setClass("SimpleGRangesList",
+    contains=c("GRangesList", "SimpleGenomicRangesList")
+)
 
-### Note that rtracklayer also defines GenomicRanges_OR_GenomicRangesList.
-### Do we need the 2 union classes?
+setClass("CompressedGRangesList",
+    contains=c("GRangesList", "CompressedGenomicRangesList"),
+    representation(unlistData="GRanges")
+)
+
+### TODO: Get rid of this! Used in RangedSummarizedExperiment class definition
+### to specify the class of the 'rowRanges' slot and was originally introduced
+### to support this use case. However, more packages use it these days e.g.
+### DEFormats, GenomicFiles, ggbio, gmapR, HelloRanges, profileplyr, and maybe
+### more... Everybody now should use GenomicRanges_OR_GenomicRangesList instead
+### of GenomicRanges_OR_GRangesList.
 setClassUnion("GenomicRanges_OR_GRangesList", c("GenomicRanges", "GRangesList"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
+### Constructors
 ###
 
-.valid.GRangesList.mcols <- function(x)
+GRangesList <- function(..., compress=TRUE)
 {
-    msg <- NULL
-    x_mcols <- x@elementMetadata
-    if (nrow(x_mcols) != length(x))
-        msg <- "'mcols(x)' has an incorrect number of rows"
-    if (any(c("seqnames", "ranges", "strand", "start", "end", "width",
-              "element") %in% colnames(x_mcols)))
-        msg <-
-          c(msg,
-            paste("'mcols(x)' cannot have columns named \"seqnames\", ",
-                  "\"ranges\", \"strand\", \"start\", \"end\", \"width\", ",
-                  "or \"element\""))
-    if (!is.null(rownames(x_mcols)))
-        msg <- c(msg, "'mcols(x)' cannot have row names")
-    msg
-}
-
-.valid.GRangesList <- function(x)
-{
-    c(.valid.GRangesList.mcols(x))
-}
-
-setValidity2("GRangesList", .valid.GRangesList)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### updateObject()
-###
-### Starting with GenomicRanges 1.31.13, all GRangesList instances need to be
-### replaced with CompressedGRangesList instances. Note that this NOT a change
-### of the internals (GRangesList instances have been using the CompressedList
-### representation since the begining), only a change of the class attribute.
-###
-
-setMethod("updateObject", "GRangesList",
-    function(object, ..., verbose=FALSE)
-    {
-        ## class attribute.
-        if (class(object) != "GRangesList") {
-            if (verbose)
-                message("[updateObject] ", class(object), " object ",
-                        "is current.\n",
-                        "[updateObject] Nothing to update.")
+    if (!isTRUEorFALSE(compress))
+        stop("'compress' must be TRUE or FALSE")
+    objects <- list(...)
+    if (length(objects) == 1L && is.list(objects[[1L]]))
+        objects <- objects[[1L]]
+    if (compress) {
+        if (length(objects) == 1L && !is(objects[[1L]], "GRanges"))
+            return(as(objects[[1L]], "CompressedGRangesList", strict=FALSE))
+        if (length(objects) == 0L) {
+            unlistData <- GRanges()
         } else {
-            if (verbose)
-                message("[updateObject] class attribute of ", class(object),
-                        " object needs to be set to ",
-                        "\"CompressedGRangesList\"\n",
-                        "[updateObject] Updating it ...")
-            class(object) <- class(new("CompressedGRangesList"))
+            if (!all(sapply(objects, is, "GRanges")))
+                stop("all elements in '...' must be GRanges objects")
+            unlistData <- suppressWarnings(do.call("c", unname(objects)))
         }
-        ## unlistData slot.
-        object@unlistData <- updateObject(object@unlistData,
-                                          ..., verbose=verbose)
-        ## Call method for CompressedList to update partitioning slot.
-        callNextMethod()
-    }
-)
-
-### Overwrite method for CompressedList objects just so we can fix on-the-fly
-### any old GRanges instance stuck in the 'unlistData' slot.
-setMethod("unlist", "GRangesList",
-    function(x, recursive=TRUE, use.names=TRUE)
-    {
-        if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
-        unlisted_x <- updateObject(x@unlistData)
-        if (use.names)
-            unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
-        unlisted_x
-    }
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructors.
-###
-
-GRangesList <- function(...)
-{
-    listData <- list(...)
-    if (length(listData) == 1L && !is(listData[[1L]], "GRanges"))
-        return(as(listData[[1L]], "CompressedGRangesList", strict=FALSE))
-    if (length(listData) == 0L) {
-        unlistData <- GRanges()
+        ans <- relist(unlistData, objects)
     } else {
-        if (!all(sapply(listData, is, "GRanges")))
-            stop("all elements in '...' must be GRanges objects")
-        unlistData <- suppressWarnings(do.call("c", unname(listData)))
+        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(objects))
+        ans <- S4Vectors:::new_SimpleList_from_list("SimpleGRangesList",
+                                                    objects, mcols=ans_mcols)
     }
-    relist(unlistData, listData)
+    ans
+}
+
+GenomicRangesList <- function(...)
+{
+    .Deprecated("GRangesList(..., compress=FALSE)")
+    GRangesList(..., compress=FALSE)
 }
 
 ### Typically, the field values will come from a file that needs to be loaded
@@ -195,32 +133,7 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
 ### Accessors.
 ###
 
-setMethod("seqnames", "GRangesList",
-    function(x)
-    {
-        unlisted_x <- unlist(x, use.names=FALSE)
-        relist(seqnames(unlisted_x), x)
-    }
-)
-
-### NOT exported but used in GenomicAlignments package.
-set_GRangesList_seqnames <- function(x, value)
-{
-    if (!is(value, "AtomicList") ||
-        !identical(elementNROWS(x), elementNROWS(value)))
-        stop("replacement 'value' is not an AtomicList with the same ",
-             "elementNROWS as 'x'")
-    value <- unlist(value, use.names = FALSE)
-    if (!is(value, "Rle"))
-        value <- Rle(factor(value))
-    else if (!is.factor(runValue(value)))
-        runValue(value) <- factor(runValue(value))
-    seqnames(x@unlistData) <- value
-    x
-}
-setReplaceMethod("seqnames", "GRangesList", set_GRangesList_seqnames)
-
-setMethod("ranges", "GRangesList",
+setMethod("ranges", "CompressedGRangesList",
     function(x, use.names=TRUE, use.mcols=FALSE)
     {
         if (!isTRUEorFALSE(use.names))
@@ -240,7 +153,7 @@ setMethod("ranges", "GRangesList",
     }
 )
 
-setReplaceMethod("ranges", "GRangesList",
+setReplaceMethod("ranges", "CompressedGRangesList",
     function(x, value)
     {
         if (!is(value, "IntegerRangesList") ||
@@ -252,194 +165,18 @@ setReplaceMethod("ranges", "GRangesList",
     }
 )
 
-setReplaceMethod("start", "GRangesList",
-    function(x, ..., value)
-    {
-        if (!is(value, "IntegerList") ||
-            !identical(elementNROWS(x), elementNROWS(value)))
-            stop("replacement 'value' is not an IntegerList with the same ",
-                 "elementNROWS as 'x'")
-        value <- unlist(value, use.names = FALSE)
-        start(x@unlistData, ...) <- value
-        x
-    }
-)
-
-setReplaceMethod("end", "GRangesList",
-    function(x, ..., value)
-    {
-        if (!is(value, "IntegerList") ||
-            !identical(elementNROWS(x), elementNROWS(value)))
-            stop("replacement 'value' is not an IntegerList with the same ",
-                 "elementNROWS as 'x'")
-        value <- unlist(value, use.names = FALSE)
-        end(x@unlistData, ...) <- value
-        x
-    }
-)
-
-setReplaceMethod("width", "GRangesList",
-    function(x, ..., value)
-    {
-        if (!is(value, "IntegerList") ||
-            !identical(elementNROWS(x), elementNROWS(value)))
-            stop("replacement 'value' is not an IntegerList with the same ",
-                 "elementNROWS as 'x'")
-        value <- unlist(value, use.names = FALSE)
-        width(x@unlistData, ...) <- value
-        x
-    }
-)
-
-setMethod("strand", "GRangesList",
-    function(x)
-    {
-        unlisted_x <- unlist(x, use.names=FALSE)
-        relist(strand(unlisted_x), x)
-    }
-)
-
-### NOT exported but used in GenomicAlignments package.
-set_GRangesList_strand <- function(x, value)
-{
-    if (!is(value, "AtomicList") ||
-        !identical(elementNROWS(x), elementNROWS(value)))
-        stop("replacement 'value' is not an AtomicList with the same ",
-             "elementNROWS as 'x'")
-    value <- unlist(value, use.names = FALSE)
-    if (!is(value, "Rle"))
-        value <- Rle(strand(value))
-    else if (!is.factor(runValue(value)) ||
-             !identical(levels(runValue(value)), levels(strand())))
-        runValue(value) <- strand(runValue(value))
-    strand(x@unlistData) <- value
-    x
-}
-setReplaceMethod("strand", c("GRangesList", "ANY"), set_GRangesList_strand)
-setReplaceMethod("strand", c("GRangesList", "character"),
-    function(x, ..., value)
-    {
-        if (length(value) > 1L)
-            stop("length(value) must be 1")
-        strand(x@unlistData) <- value
-        x
-    }
-)
-
-### NOT exported but used in GenomicAlignments package.
-get_GRangesList_mcols <-
-    function(x, use.names=FALSE, level = c("between", "within"), ...)
-{
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
-    level <- match.arg(level)
-    if (level == "between") {
-        ans <- x@elementMetadata
-        if (use.names)
-            rownames(ans) <- names(x)
-        return(ans)
-    }
-    unlisted_x <- unlist(x, use.names=FALSE)
-    unlisted_ans <- unlisted_x@elementMetadata
-    if (use.names)
-        rownames(unlisted_ans) <- names(unlisted_x)
-    relist(unlisted_ans, x)
-}
-setMethod("elementMetadata", "GRangesList", get_GRangesList_mcols)
-
-### NOT exported but used in GenomicAlignments package.
-set_GRangesList_mcols <-
-    function(x, level = c("between", "within"), ..., value)
-{
-        level <- match.arg(level)
-    if (level == "between") {
-        if (is.null(value))
-            value <- S4Vectors:::make_zero_col_DataFrame(length(x))
-        else if (!is(value, "DataFrame"))
-            value <- DataFrame(value)
-        if (!is.null(rownames(value)))
-            rownames(value) <- NULL
-        n <- length(x)
-        k <- nrow(value)
-        if (k != n) {
-            if ((k == 0) || (k > n) || (n %% k != 0))
-                stop(k, " rows in value to replace ", n, "rows")
-            value <- value[rep(seq_len(k), length.out = n), , drop=FALSE]
-        }
-        x@elementMetadata <- value
-    } else {
-        if (is.null(value)) {
-            value <- S4Vectors:::make_zero_col_DataFrame(length(x@unlistData))
-        } else {
-            if (!is(value, "SplitDataFrameList") ||
-                !identical(elementNROWS(x), elementNROWS(value))) {
-                stop("replacement 'value' is not a SplitDataFrameList with ",
-                        "the same elementNROWS as 'x'")
-            }
-            value <- unlist(value, use.names = FALSE)
-        }
-        mcols(x@unlistData) <- value
-    }
-    x
-}
-setReplaceMethod("elementMetadata", "GRangesList", set_GRangesList_mcols)
-
-setMethod("seqinfo", "GRangesList", function(x) seqinfo(x@unlistData))
-
-### NOT exported but used in GenomicAlignments package.
-set_GRangesList_seqinfo <-
-    function(x, new2old=NULL,
-             pruning.mode=c("error", "coarse", "fine", "tidy"),
-             value)
-{
-    pruning.mode <- match.arg(pruning.mode)
-    if (!is(value, "Seqinfo"))
-        stop("the supplied 'seqinfo' must be a Seqinfo object")
-    dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
-                              new2old=new2old,
-                              pruning.mode=pruning.mode,
-                              seqlevels(value))
-    if (length(dangling_seqlevels) != 0L) {
-        ## Prune 'x'.
-        non_dangling_range <- !(seqnames(x) %in% dangling_seqlevels)
-        if (pruning.mode == "coarse") {
-            x <- x[all(non_dangling_range)]
-        } else {
-            x <- x[non_dangling_range]  # "fine" pruning
-            if (pruning.mode == "tidy") {
-                ## Remove list elements that became empty because of "fine"
-                ## pruning.
-                x <- x[any(non_dangling_range) |
-                       elementNROWS(non_dangling_range) == 0L]
-            }
-        }
-    }
-    seqinfo(x@unlistData, new2old=new2old) <- value
-    x
-}
-setReplaceMethod("seqinfo", "GRangesList", set_GRangesList_seqinfo)
-
-setMethod("score", "GRangesList", function(x) {
-  mcols(x)$score
-})
-
-setReplaceMethod("score", "GRangesList", function(x, value) {
-  mcols(x)$score <- value
-  x
-})
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###
 
-setAs("GRangesList", "CompressedIRangesList",
+setAs("CompressedGRangesList", "CompressedIRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
-setAs("GRangesList", "IRangesList",
+setAs("CompressedGRangesList", "IRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
-setAs("GRangesList", "IntegerRangesList",
+setAs("CompressedGRangesList", "IntegerRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
 
@@ -462,14 +199,19 @@ setAs("GenomicRanges", "GRangesList",
     .from_GenomicRanges_to_CompressedGRangesList
 )
 
-setAs("list", "GRangesList",
-      function(from) do.call(GRangesList, from))
+setAs("list", "SimpleGRangesList",
+      function(from) do.call(GRangesList, list(from, compress=FALSE)))
 setAs("list", "CompressedGRangesList",
-      function(from) do.call(GRangesList, from))
+      function(from) do.call(GRangesList, list(from, compress=TRUE)))
+setAs("list", "GRangesList",
+      function(from) as(from, "SimpleGRangesList"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
+###
+### TODO: We should have more general methods defined at the GenomicRangesList
+### level instead of the methods below.
 ###
 
 .sBracketSubsetGRList <- function(x, i, j, ..., drop)
@@ -492,7 +234,7 @@ setAs("list", "CompressedGRangesList",
     }
     x
 }
-setMethod("[", "GRangesList", .sBracketSubsetGRList)
+setMethod("[", "CompressedGRangesList", .sBracketSubsetGRList)
 
 .sBracketReplaceGRList <- function(x, i, j, ..., value)
 {
@@ -524,7 +266,7 @@ setMethod("[", "GRangesList", .sBracketSubsetGRList)
     }
     callNextMethod(x = x, i = i, value = value)
 }
-setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
+setReplaceMethod("[", "CompressedGRangesList", .sBracketReplaceGRList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -532,92 +274,4 @@ setReplaceMethod("[", "GRangesList", .sBracketReplaceGRList)
 ###
 
 setMethod("relistToClass", "GRanges", function(x) "CompressedGRangesList")
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### show method.
-###
-
-### NOT exported but used in GenomicAlignments package.
-### FIXME: This seems to repeat most of the code in IRanges:::show_IRangesList!
-showList <- function(object, showFunction, print.classinfo)
-{
-    if (class(object) == "GRangesList") {
-        warning(wmsg("Note that starting with BioC 3.7, the class attribute ",
-                     "of all GRangesList **instances** needs to be set to ",
-                     "\"CompressedGRangesList\". Please update this object ",
-                     "with 'updateObject(object, verbose=TRUE)' and ",
-                     "re-serialize it."))
-        object <- updateObject(object)
-    }
-    k <- length(object)
-    cumsumN <- cumsum(elementNROWS(object))
-    N <- tail(cumsumN, 1)
-    cat(classNameForDisplay(object), " object of length ", k, ":\n", sep = "")
-    if (k == 0L) {
-        cat("<0 elements>\n\n")
-    } else if ((k == 1L) || ((k <= 3L) && (N <= 20L))) {
-        nms <- names(object)
-        defnms <- paste0("[[", seq_len(k), "]]")
-        if (is.null(nms)) {
-            nms <- defnms
-        } else {
-            empty <- nchar(nms) == 0L
-            nms[empty] <- defnms[empty]
-            nms[!empty] <- paste0("$", nms[!empty])
-        }
-        for (i in seq_len(k)) {
-            cat(nms[i], "\n")
-            showFunction(object[[i]], margin="  ",
-                         print.classinfo=print.classinfo)
-            if (print.classinfo)
-                print.classinfo <- FALSE
-            cat("\n")
-        }
-    } else {
-        sketch <- function(x) c(head(x, 3), "...", tail(x, 3))
-        if (k >= 3 && cumsumN[3L] <= 20)
-            showK <- 3
-        else if (k >= 2 && cumsumN[2L] <= 20)
-            showK <- 2
-        else
-            showK <- 1
-        diffK <- k - showK
-        nms <- names(object)[seq_len(showK)]
-        defnms <- paste0("[[", seq_len(showK), "]]")
-        if (is.null(nms)) {
-            nms <- defnms
-        } else {
-            empty <- nchar(nms) == 0L
-            nms[empty] <- defnms[empty]
-            nms[!empty] <- paste0("$", nms[!empty])
-        }
-        for (i in seq_len(showK)) {
-            cat(nms[i], "\n")
-            showFunction(object[[i]], margin="  ",
-                         print.classinfo=print.classinfo)
-            if (print.classinfo)
-                print.classinfo <- FALSE
-            cat("\n")
-        }
-        if (diffK > 0) {
-            cat("...\n<", k - showK,
-                ifelse(diffK == 1, " more element>\n", " more elements>\n"),
-                sep="")
-        }
-    }
-    cat("-------\n")
-    cat("seqinfo: ", summary(seqinfo(object)), "\n", sep="")
-}
-
-setMethod("show", "GRangesList",
-    function(object)
-    {
-        if (is(object@unlistData, "GPos"))
-            showFunction <- show_GPos
-        else
-            showFunction <- show_GenomicRanges
-        showList(object, showFunction, print.classinfo=TRUE)
-    }
-)
 

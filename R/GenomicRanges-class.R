@@ -418,13 +418,28 @@ set_GenomicRanges_seqinfo <-
 }
 setReplaceMethod("seqinfo", "GenomicRanges", set_GenomicRanges_seqinfo)
 
-setMethod("score", "GenomicRanges", function(x) mcols(x, use.names=FALSE)$score)
-setReplaceMethod("score", "GenomicRanges", function(x, value) {
-  ## Fix old GRanges instances on-the-fly.
-  x <- updateObject(x)
-  mcols(x)$score <- value
-  x
-})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The score() accessor
+###
+### Kind of a silly accessor. And why is it defined at the GenomicRanges
+### level and not at the Vector level? Or at least at the Ranges and
+### RangesList levels so it works on IRanges and IRangesList objects too.
+###
+
+setMethod("score", "GenomicRanges",
+    function(x) mcols(x, use.names=FALSE)$score
+)
+
+setReplaceMethod("score", "GenomicRanges",
+    function(x, value)
+    {
+        ## Fix old GRanges instances on-the-fly.
+        x <- updateObject(x)
+        mcols(x)$score <- value
+        x
+    }
+)
 
 #setReplaceMethod("constraint", "GenomicRanges",
 #    function(x, value)

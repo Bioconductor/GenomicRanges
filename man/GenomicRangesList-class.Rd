@@ -1,42 +1,101 @@
 \name{GenomicRangesList-class}
 \docType{class}
 
-% Class:
-\alias{class:GenomicRangesList}
-\alias{class:SimpleGenomicRangesList}
-\alias{GenomicRangesList-class}
-\alias{SimpleGenomicRangesList-class}
+% Classes
 
-% Constructors:
+\alias{class:GenomicRangesList}
+\alias{GenomicRangesList-class}
 \alias{GenomicRangesList}
+
+\alias{class:GenomicRanges_OR_GenomicRangesList}
+\alias{GenomicRanges_OR_GenomicRangesList-class}
+\alias{GenomicRanges_OR_GenomicRangesList}
+
+\alias{class:SimpleGenomicRangesList}
+\alias{SimpleGenomicRangesList-class}
+\alias{SimpleGenomicRangesList}
+
+\alias{class:CompressedGenomicRangesList}
+\alias{CompressedGenomicRangesList-class}
+\alias{CompressedGenomicRangesList}
+
+% Methods
+
+\alias{show,GenomicRangesList-method}
+\alias{seqnames,GenomicRangesList-method}
+\alias{strand,GenomicRangesList-method}
+\alias{elementMetadata,GenomicRangesList-method}
+\alias{seqinfo,CompressedGenomicRangesList-method}
+
+\alias{seqnames<-,CompressedGenomicRangesList-method}
+\alias{strand<-,CompressedGenomicRangesList,ANY-method}
+\alias{strand<-,CompressedGenomicRangesList,character-method}
+\alias{elementMetadata<-,CompressedGenomicRangesList-method}
+\alias{seqinfo<-,CompressedGenomicRangesList-method}
+\alias{start<-,CompressedGenomicRangesList-method}
+\alias{end<-,CompressedGenomicRangesList-method}
+\alias{width<-,CompressedGenomicRangesList-method}
+
+\alias{score,GenomicRangesList-method}
+\alias{score<-,GenomicRangesList-method}
+
+\alias{updateObject,CompressedGenomicRangesList-method}
+\alias{unlist,CompressedGenomicRangesList-method}
 
 \title{GenomicRangesList objects}
 
 \description{
-  A \code{GenomicRangesList} is a \code{\link[S4Vectors]{List}}
-  of \code{\linkS4class{GenomicRanges}}. It is a virtual class;
-  \code{SimpleGenomicRangesList} is the basic implementation.  The
-  subclass \code{\linkS4class{GRangesList}} provides special behavior
-  and is particularly efficient for storing a large number of elements.
+  The GenomicRangesList \emph{virtual} class is a general container for
+  storing a list of \link{GenomicRanges} objects.
+
+  Most users are probably more interested in the \link{GRangesList}
+  container, a GenomicRangesList derivative for storing a list of
+  \link{GRanges} objects.
 }
 
-\section{Constructor}{
-  \describe{
-    \item{}{
-      \code{GenomicRangesList(\dots)}: Constructs a
-      \code{SimpleGenomicRangesList} with elements
-      taken from the arguments in \dots. If the only argument is a list,
-      the elements are taken from that list.
-    }
+\details{
+  The place of GenomicRangesList in the \emph{Vector class hierarchy}:
+  \preformatted{
+                               Vector
+                                 ^
+                                 |
+                                List
+                                 ^
+                                 |
+                             RangesList
+                              ^     ^
+                             /       \
+                            /         \
+                           /           \
+                          /             \
+                         /               \
+                        /                 \
+         IntegerRangesList               GenomicRangesList
+                ^                                 ^
+                |                                 |
+           IRangesList                       GRangesList
+             ^     ^                           ^     ^
+            /       \                         /       \
+           /         \                       /         \
+          /           \                     /           \
+   SimpleIRangesList   \             SimpleGRangesList   \
+            CompressedIRangesList             CompressedGRangesList
+  }
+  Note that the \emph{Vector class hierarchy} has many more classes.
+  In particular \link[S4Vectors]{Vector}, \link[S4Vectors]{List},
+  \link[IRanges]{RangesList}, and \link[IRanges]{IntegerRangesList}
+  have other subclasses not shown here.
+}
+
+\author{H. Pagès and M. Lawrence}
+
+\seealso{
+  \itemize{
+    \item \link{GRangesList} objects.
+
+    \item \link{GenomicRanges} and \link{GRanges} objects.
   }
 }
 
-\author{Michael Lawrence}
-
-\seealso{
-  \code{\linkS4class{GRangesList}}, which differs from
-  \code{SimpleGenomicRangesList} in that the \code{GRangesList} treats
-  its elements as single, compound ranges, particularly in overlap
-  operations. \code{SimpleGenomicRangesList} is just a barebones list
-  for now, without that compound semantic.
-}
+\keyword{classes}
+\keyword{methods}
