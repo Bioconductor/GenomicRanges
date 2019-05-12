@@ -370,12 +370,35 @@ setReplaceMethod("score", "GenomicRangesList",
 
 ### Do we still need the 2 methods below?
 
-setMethod("updateObject", "CompressedGenomicRangesList",
+setMethod("updateObject", "GenomicRangesList",
     function(object, ..., verbose=FALSE)
     {
-        ## unlistData slot.
-        object@unlistData <- updateObject(object@unlistData,
-                                          ..., verbose=verbose)
+        ## class attribute.
+        if (class(object) == "GRangesList") {
+            ## Starting with GenomicRanges 1.31.13, all GRangesList instances
+            ## need to be replaced with CompressedGRangesList instances. Note
+            ## that this NOT a change of the internals (GRangesList instances
+            ## have been using the CompressedList representation since the
+            ## beginning), only a change of the class attribute.
+            if (verbose)
+                message("[updateObject] class attribute of ", class(object),
+                        " object needs to be set to ",
+                        "\"CompressedGRangesList\"\n",
+                        "[updateObject] Updating it ...")
+            class(object) <- class(new("CompressedGRangesList"))
+        } else {
+            if (verbose)
+                message("[updateObject] ", class(object), " object ",
+                        "is current.\n",
+                        "[updateObject] Nothing to update.")
+        }
+
+        if (is(object, "CompressedList")) {
+            ## unlistData slot.
+            object@unlistData <- updateObject(object@unlistData,
+                                              ..., verbose=verbose)
+        }
+
         ## Call method for CompressedList to update partitioning slot.
         callNextMethod()
     }

@@ -39,7 +39,7 @@
 \alias{score,GenomicRangesList-method}
 \alias{score<-,GenomicRangesList-method}
 
-\alias{updateObject,CompressedGenomicRangesList-method}
+\alias{updateObject,GenomicRangesList-method}
 \alias{unlist,CompressedGenomicRangesList-method}
 
 \title{GenomicRangesList objects}
