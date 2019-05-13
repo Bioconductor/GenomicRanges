@@ -341,7 +341,10 @@ setMethod("reduce", "GRangesList",
             ans <- reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
             return(ans)
         }
-        endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges, ...)
+        endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges,
+                             min.gapwidth=min.gapwidth,
+                             with.revmap=with.revmap,
+                             ignore.strand=ignore.strand)
     }
 )
 
