@@ -33,8 +33,18 @@ setClass("GenomicRangesList",
     msg
 }
 
+OLD_GRANGESLIST_INSTANCE_MSG <- c(
+    "Note that starting with BioC 3.7, the class attribute ",
+    "of all GRangesList **instances** needs to be set to ",
+    "\"CompressedGRangesList\". Please update this object ",
+    "with 'updateObject(object, verbose=TRUE)' and ",
+    "re-serialize it."
+)
+
 .valid.GenomicRangesList <- function(x)
 {
+    if (class(x) == "GRangesList")
+        return(paste(OLD_GRANGESLIST_INSTANCE_MSG, collapse=""))
     .valid.GenomicRangesList.mcols(x)
 }
 
@@ -77,14 +87,6 @@ setMethod("updateObject", "GenomicRangesList",
         ## Call method for CompressedList to update partitioning slot.
         callNextMethod()
     }
-)
-
-OLD_GRANGESLIST_INSTANCE_MSG <- c(
-    "Note that starting with BioC 3.7, the class attribute ",
-    "of all GRangesList **instances** needs to be set to ",
-    "\"CompressedGRangesList\". Please update this object ",
-    "with 'updateObject(object, verbose=TRUE)' and ",
-    "re-serialize it."
 )
 
 ### Temporary hack to make 'length(x)' find the method for
