@@ -6,12 +6,10 @@
 \alias{range,GenomicRanges-method}
 \alias{range,GPos-method}
 \alias{range,GRangesList-method}
-\alias{range,GenomicRangesList-method}
 
 \alias{reduce}
 \alias{reduce,GenomicRanges-method}
 \alias{reduce,GRangesList-method}
-\alias{reduce,GenomicRangesList-method}
 
 \alias{gaps}
 \alias{gaps,GenomicRanges-method}
@@ -19,13 +17,11 @@
 \alias{disjoin}
 \alias{disjoin,GenomicRanges-method}
 \alias{disjoin,GRangesList-method}
-\alias{disjoin,GenomicRangesList-method}
 
 \alias{isDisjoint}
 \alias{isDisjoint,GenomicRanges-method}
 \alias{isDisjoint,GPos-method}
 \alias{isDisjoint,GRangesList-method}
-\alias{isDisjoint,GenomicRangesList-method}
 
 \alias{disjointBins}
 \alias{disjointBins,GenomicRanges-method}
@@ -51,24 +47,19 @@
 \usage{
 \S4method{range}{GenomicRanges}(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
 \S4method{range}{GRangesList}(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
-\S4method{range}{GenomicRangesList}(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
 
 \S4method{reduce}{GenomicRanges}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
           with.inframe.attrib=FALSE, ignore.strand=FALSE)
 \S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
           with.inframe.attrib=FALSE, ignore.strand=FALSE)
-\S4method{reduce}{GenomicRangesList}(x, drop.empty.ranges=FALSE,
-          min.gapwidth=1L, with.inframe.attrib=FALSE, ignore.strand=FALSE)
 
 \S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
 
 \S4method{disjoin}{GenomicRanges}(x, with.revmap=FALSE, ignore.strand=FALSE)
 \S4method{disjoin}{GRangesList}(x, with.revmap=FALSE, ignore.strand=FALSE)
-\S4method{disjoin}{GenomicRangesList}(x, with.revmap=FALSE, ignore.strand=FALSE)
 
 \S4method{isDisjoint}{GenomicRanges}(x, ignore.strand=FALSE)
 \S4method{isDisjoint}{GRangesList}(x, ignore.strand=FALSE)
-\S4method{isDisjoint}{GenomicRangesList}(x, ignore.strand=FALSE)
 
 \S4method{disjointBins}{GenomicRanges}(x, ignore.strand=FALSE)
 }

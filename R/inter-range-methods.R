@@ -238,8 +238,7 @@ reconstructGRLfromGR <- function(gr, x, with.revmap=FALSE)
 }
 sort.GRangesList <- function(x, decreasing=FALSE, ...)
     .sort.GRangesList(x, decreasing=decreasing, ...)
-setMethod("sort", "GRangesList", .sort.GRangesList)
-
+setMethod("sort", "CompressedGRangesList", .sort.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -278,20 +277,23 @@ setMethod("range", "GPos",
 setMethod("range", "GRangesList",
     function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
     {
-        gr <- deconstructGRLintoGR(x)
-        ## "range" method for GRanges objects is fast.
-        gr2 <- callGeneric(gr, ..., with.revmap=with.revmap,
-                           ignore.strand=ignore.strand, na.rm=na.rm)
-        reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (is(x, "CompressedList")) {
+            gr <- deconstructGRLintoGR(x)
+            ## "range" method for GRanges objects is fast.
+            gr2 <- callGeneric(gr, ..., with.revmap=with.revmap,
+                               ignore.strand=ignore.strand, na.rm=na.rm)
+            ans <- reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
+            return(ans)
+        }
+        endoapply(x, range, ..., with.revmap=with.revmap,
+                     ignore.strand=ignore.strand, na.rm=na.rm)
     }
 )
 
-setMethod("range", "GenomicRangesList",
-          function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
-          {
-              endoapply(x, range, ..., with.revmap=with.revmap,
-                        ignore.strand=ignore.strand, na.rm=na.rm)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### reduce()
@@ -323,22 +325,26 @@ setMethod("reduce", "GRangesList",
                 with.revmap=FALSE,
                 with.inframe.attrib=FALSE, ignore.strand=FALSE)
     {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
         if (!identical(with.inframe.attrib, FALSE)) 
             stop("'with.inframe.attrib' argument is not supported ", 
                  "when reducing a GRangesList object")
-        gr <- deconstructGRLintoGR(x)
-        gr2 <- callGeneric(gr, drop.empty.ranges=drop.empty.ranges,
-                               min.gapwidth=min.gapwidth,
-                               with.revmap=with.revmap,
-                               ignore.strand=ignore.strand)
-        reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
+        if (is(x, "CompressedList")) {
+            gr <- deconstructGRLintoGR(x)
+            gr2 <- callGeneric(gr, drop.empty.ranges=drop.empty.ranges,
+                                   min.gapwidth=min.gapwidth,
+                                   with.revmap=with.revmap,
+                                   ignore.strand=ignore.strand)
+            ans <- reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
+            return(ans)
+        }
+        endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges, ...)
     }
 )
 
-setMethod("reduce", "GenomicRangesList",
-          function(x, drop.empty.ranges = FALSE, ...) {
-    endoapply(x, reduce, drop.empty.ranges=drop.empty.ranges, ...)
-})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### gaps()
@@ -386,19 +392,22 @@ setMethod("disjoin", "GenomicRanges",
 setMethod("disjoin", "GRangesList",
     function(x, with.revmap=FALSE, ignore.strand=FALSE)
     {
-        gr <- deconstructGRLintoGR(x)
-        gr2 <- callGeneric(gr, with.revmap=with.revmap,
-                               ignore.strand=ignore.strand)
-        reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (is(x, "CompressedList")) {
+            gr <- deconstructGRLintoGR(x)
+            gr2 <- callGeneric(gr, with.revmap=with.revmap,
+                                   ignore.strand=ignore.strand)
+            ans <- reconstructGRLfromGR(gr2, x, with.revmap=with.revmap)
+            return(ans)
+        }
+        endoapply(x, disjoin, with.revmap=with.revmap,
+                     ignore.strand=ignore.strand)
     }
 )
 
-setMethod("disjoin", "GenomicRangesList",
-          function(x, with.revmap=FALSE, ignore.strand=FALSE)
-          {
-              endoapply(x, disjoin, with.revmap=with.revmap,
-                        ignore.strand=ignore.strand)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### isDisjoint()
@@ -420,19 +429,22 @@ setMethod("isDisjoint", "GPos",
 setMethod("isDisjoint", "GRangesList",
     function(x, ignore.strand=FALSE)
     {
-        gr <- deconstructGRLintoGR(x, expand.levels=TRUE)
-        rgl <- deconstructGRintoRGL(gr, ignore.strand=ignore.strand)
-        ans <- callGeneric(rgl)
-        ans <- colSums(matrix(!ans, ncol=length(x))) == 0L
-        names(ans) <- names(x)
-        ans
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (is(x, "CompressedList")) {
+            gr <- deconstructGRLintoGR(x, expand.levels=TRUE)
+            rgl <- deconstructGRintoRGL(gr, ignore.strand=ignore.strand)
+            ans <- callGeneric(rgl)
+            ans <- colSums(matrix(!ans, ncol=length(x))) == 0L
+            names(ans) <- names(x)
+            return(ans)
+        }
+        endoapply(x, isDisjoint, ignore.strand=ignore.strand)
     }
 )
 
-setMethod("isDisjoint", "GenomicRangesList",
-          function(x, ignore.strand=FALSE) {
-              endoapply(x, isDisjoint, ignore.strand=ignore.strand)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### disjointBins()

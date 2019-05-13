@@ -22,6 +22,7 @@
 % Methods
 
 \alias{updateObject,GenomicRangesList-method}
+\alias{length,GenomicRangesList-method}
 \alias{names,GenomicRangesList-method}
 \alias{extractROWS,GenomicRangesList,ANY-method}
 \alias{getListElement,GenomicRangesList-method}

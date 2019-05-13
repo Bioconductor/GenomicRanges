@@ -79,12 +79,29 @@ setMethod("updateObject", "GenomicRangesList",
     }
 )
 
-.OLD_GRANGESLIST_INSTANCE_MSG <- c(
+OLD_GRANGESLIST_INSTANCE_MSG <- c(
     "Note that starting with BioC 3.7, the class attribute ",
     "of all GRangesList **instances** needs to be set to ",
     "\"CompressedGRangesList\". Please update this object ",
     "with 'updateObject(object, verbose=TRUE)' and ",
     "re-serialize it."
+)
+
+### Temporary hack to make 'length(x)' find the method for
+### CompressedList objects when 'x' is an old GRangesList instance.
+setMethod("length", "GenomicRangesList",
+    function(x)
+    {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (!is(x, "CompressedList"))
+            return(callNextMethod())
+
+        METHOD <- selectMethod("length", "CompressedList")
+        METHOD(x)
+    }
 )
 
 ### Temporary hack to make 'names(x)' find the method for
@@ -93,7 +110,7 @@ setMethod("names", "GenomicRangesList",
     function(x)
     {
         if (class(x) == "GRangesList") {
-            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
         if (!is(x, "CompressedList"))
@@ -110,7 +127,7 @@ setMethod("extractROWS", c("GenomicRangesList", "ANY"),
     function(x, i)
     {
         if (class(x) == "GRangesList") {
-            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
         if (!is(x, "CompressedList"))
@@ -127,7 +144,7 @@ setMethod("getListElement", "GenomicRangesList",
     function(x, i, exact=TRUE)
     {
         if (class(x) == "GRangesList") {
-            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
         if (!is(x, "CompressedList"))
@@ -144,7 +161,7 @@ setMethod("unlist", "GenomicRangesList",
     function(x, recursive=TRUE, use.names=TRUE)
     {
         if (class(x) == "GRangesList") {
-            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
         if (!is(x, "CompressedList"))
@@ -171,7 +188,7 @@ setMethod("unlist", "GenomicRangesList",
 show_GenomicRangesList <- function(x, with.header=TRUE)
 {
     if (class(x) == "GRangesList") {
-        warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+        warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
         x <- updateObject(x, check=FALSE)
     }
     x_len <- length(x)
