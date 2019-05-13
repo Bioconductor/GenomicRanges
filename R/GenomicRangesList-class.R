@@ -40,10 +40,140 @@ setClass("GenomicRangesList",
 
 setValidity2("GenomicRangesList", .valid.GenomicRangesList)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+setMethod("updateObject", "GenomicRangesList",
+    function(object, ..., verbose=FALSE)
+    {
+        ## class attribute.
+        if (class(object) == "GRangesList") {
+            ## Starting with GenomicRanges 1.31.13, all GRangesList instances
+            ## need to be replaced with CompressedGRangesList instances. Note
+            ## that this NOT a change of the internals (GRangesList instances
+            ## have been using the CompressedList representation since the
+            ## beginning), only a change of the class attribute.
+            if (verbose)
+                message("[updateObject] class attribute of ", class(object),
+                        " object needs to be set to ",
+                        "\"CompressedGRangesList\"\n",
+                        "[updateObject] Updating it ...")
+            class(object) <- class(new("CompressedGRangesList"))
+        } else {
+            if (verbose)
+                message("[updateObject] ", class(object), " object ",
+                        "is current.\n",
+                        "[updateObject] Nothing to update.")
+        }
+
+        if (is(object, "CompressedList")) {
+            ## unlistData slot.
+            object@unlistData <- updateObject(object@unlistData,
+                                              ..., verbose=verbose)
+        }
+
+        ## Call method for CompressedList to update partitioning slot.
+        callNextMethod()
+    }
+)
+
+.OLD_GRANGESLIST_INSTANCE_MSG <- c(
+    "Note that starting with BioC 3.7, the class attribute ",
+    "of all GRangesList **instances** needs to be set to ",
+    "\"CompressedGRangesList\". Please update this object ",
+    "with 'updateObject(object, verbose=TRUE)' and ",
+    "re-serialize it."
+)
+
+### Temporary hack to make 'names(x)' find the method for
+### CompressedList objects when 'x' is an old GRangesList instance.
+setMethod("names", "GenomicRangesList",
+    function(x)
+    {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (!is(x, "CompressedList"))
+            return(callNextMethod())
+
+        METHOD <- selectMethod("names", "CompressedList")
+        METHOD(x)
+    }
+)
+
+### Temporary hack to make 'extractROWS(x, i)' find the method for
+### CompressedList objects when 'x' is an old GRangesList instance.
+setMethod("extractROWS", c("GenomicRangesList", "ANY"),
+    function(x, i)
+    {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (!is(x, "CompressedList"))
+            return(callNextMethod())
+
+        METHOD <- selectMethod("extractROWS", "CompressedList")
+        METHOD(x, i)
+    }
+)
+
+### Temporary hack to make 'getListElement(x, i)' find the method for
+### CompressedList objects when 'x' is an old GRangesList instance.
+setMethod("getListElement", "GenomicRangesList",
+    function(x, i, exact=TRUE)
+    {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (!is(x, "CompressedList"))
+            return(callNextMethod())
+
+        METHOD <- selectMethod("getListElement", "CompressedList")
+        METHOD(x, i, exact=exact)
+    }
+)
+
+### Temporary hack to make 'unlist(x)' find the method for
+### CompressedList objects when 'x' is an old GRangesList instance.
+setMethod("unlist", "GenomicRangesList",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        if (!is(x, "CompressedList"))
+            return(callNextMethod())
+
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
+        ## Update any old GRanges instance (or other GenomicRanges derivative)
+        ## stuck in the 'unlistData' slot.
+        unlisted_x <- updateObject(x@unlistData, check=FALSE)
+        if (use.names)
+            unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
+        unlisted_x
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### show()
+###
+
 ### NOT exported but used in the GenomicAlignments package.
 ### FIXME: Seems to repeat a lot of code from IRanges:::show_IntegerRangesList!
 show_GenomicRangesList <- function(x, with.header=TRUE)
 {
+    if (class(x) == "GRangesList") {
+        warning(wmsg(.OLD_GRANGESLIST_INSTANCE_MSG))
+        x <- updateObject(x, check=FALSE)
+    }
     x_len <- length(x)
     if (with.header)
         cat(classNameForDisplay(x), " object of length ", x_len,
@@ -363,59 +493,4 @@ setReplaceMethod("score", "GenomicRangesList",
     }
 )
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Other methods
-###
-
-### Do we still need the 2 methods below?
-
-setMethod("updateObject", "GenomicRangesList",
-    function(object, ..., verbose=FALSE)
-    {
-        ## class attribute.
-        if (class(object) == "GRangesList") {
-            ## Starting with GenomicRanges 1.31.13, all GRangesList instances
-            ## need to be replaced with CompressedGRangesList instances. Note
-            ## that this NOT a change of the internals (GRangesList instances
-            ## have been using the CompressedList representation since the
-            ## beginning), only a change of the class attribute.
-            if (verbose)
-                message("[updateObject] class attribute of ", class(object),
-                        " object needs to be set to ",
-                        "\"CompressedGRangesList\"\n",
-                        "[updateObject] Updating it ...")
-            class(object) <- class(new("CompressedGRangesList"))
-        } else {
-            if (verbose)
-                message("[updateObject] ", class(object), " object ",
-                        "is current.\n",
-                        "[updateObject] Nothing to update.")
-        }
-
-        if (is(object, "CompressedList")) {
-            ## unlistData slot.
-            object@unlistData <- updateObject(object@unlistData,
-                                              ..., verbose=verbose)
-        }
-
-        ## Call method for CompressedList to update partitioning slot.
-        callNextMethod()
-    }
-)
-
-### Overwrite method for CompressedList objects just so we can fix on-the-fly
-### any old GRanges instance (or other GenomicRanges derivative) stuck in
-### the 'unlistData' slot.
-setMethod("unlist", "CompressedGenomicRangesList",
-    function(x, recursive=TRUE, use.names=TRUE)
-    {
-        if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
-        unlisted_x <- updateObject(x@unlistData)
-        if (use.names)
-            unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
-        unlisted_x
-    }
-)
 

@@ -21,6 +21,12 @@
 
 % Methods
 
+\alias{updateObject,GenomicRangesList-method}
+\alias{names,GenomicRangesList-method}
+\alias{extractROWS,GenomicRangesList,ANY-method}
+\alias{getListElement,GenomicRangesList-method}
+\alias{unlist,GenomicRangesList-method}
+
 \alias{show,GenomicRangesList-method}
 \alias{seqnames,GenomicRangesList-method}
 \alias{strand,GenomicRangesList-method}
@@ -38,9 +44,6 @@
 
 \alias{score,GenomicRangesList-method}
 \alias{score<-,GenomicRangesList-method}
-
-\alias{updateObject,GenomicRangesList-method}
-\alias{unlist,CompressedGenomicRangesList-method}
 
 \title{GenomicRangesList objects}
 
