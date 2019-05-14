@@ -51,9 +51,44 @@ OLD_GRANGESLIST_INSTANCE_MSG <- c(
 setValidity2("GenomicRangesList", .valid.GenomicRangesList)
 
 
+### TODO: Use this instead of GenomicRanges_OR_GRangesList in the
+### RangedSummarizedExperiment class definition to specify the class
+### of the 'rowRanges' slot.
+setClassUnion("GenomicRanges_OR_GenomicRangesList",
+    c("GenomicRanges", "GenomicRangesList")
+)
+
+
+setClass("SimpleGenomicRangesList",
+    contains=c("GenomicRangesList", "SimpleRangesList"),
+    representation("VIRTUAL")
+)
+
+setClass("CompressedGenomicRangesList",
+    contains=c("GenomicRangesList", "CompressedRangesList"),
+    representation("VIRTUAL")
+)
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### updateObject()
 ###
+
+### callNextMethod() searches for the "closest parent method" starting from
+### the class used in the signature of the method from which it is called,
+### NOT from 'class(x)'. This means that in the context of methods defined
+### for GenomicRangesList objects, like the methods below, callNextMethod()
+### would fail to find methods defined for CompressedList or SimpleList.
+### So we will use .selectClosestMethod1(), which, unlike callNextMethod(),
+### will find the "closest parent method" with respect to 'x'.
+.selectClosestMethod1 <- function(f, x)
+{
+    if (is(x, "CompressedGenomicRangesList"))
+        return(selectMethod(f, "CompressedRangesList"))
+    if (is(x, "SimpleGenomicRangesList"))
+        return(selectMethod(f, "SimpleRangesList"))
+    stop(wmsg("'class(x)' (\"", class(x), "\") is not supported"))
+}
 
 setMethod("updateObject", "GenomicRangesList",
     function(object, ..., verbose=FALSE)
@@ -78,19 +113,21 @@ setMethod("updateObject", "GenomicRangesList",
                         "[updateObject] Nothing to update.")
         }
 
-        if (is(object, "CompressedList")) {
+        if (is(object, "CompressedGenomicRangesList")) {
             ## unlistData slot.
             object@unlistData <- updateObject(object@unlistData,
                                               ..., verbose=verbose)
         }
 
-        ## Call method for CompressedList to update partitioning slot.
-        callNextMethod()
+        ## 'METHOD' will be the method for CompressedList objects or the
+        ## method for Vector objects. The former will update the 'partitioning'
+        ## slot. The latter is a no-op.
+        METHOD <- .selectClosestMethod1("updateObject", object)
+        METHOD(object, ..., verbose=verbose)
     }
 )
 
-### Temporary hack to make 'length(x)' find the method for
-### CompressedList objects when 'x' is an old GRangesList instance.
+### Temporary hack to make 'length(x)' work on an old GRangesList instance.
 setMethod("length", "GenomicRangesList",
     function(x)
     {
@@ -98,16 +135,12 @@ setMethod("length", "GenomicRangesList",
             #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
-        if (!is(x, "CompressedList"))
-            return(callNextMethod())
-
-        METHOD <- selectMethod("length", "CompressedList")
+        METHOD <- .selectClosestMethod1("length", x)
         METHOD(x)
     }
 )
 
-### Temporary hack to make 'names(x)' find the method for
-### CompressedList objects when 'x' is an old GRangesList instance.
+### Temporary hack to make 'names(x)' work on an old GRangesList instance.
 setMethod("names", "GenomicRangesList",
     function(x)
     {
@@ -115,16 +148,27 @@ setMethod("names", "GenomicRangesList",
             #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
-        if (!is(x, "CompressedList"))
-            return(callNextMethod())
-
-        METHOD <- selectMethod("names", "CompressedList")
+        METHOD <- .selectClosestMethod1("names", x)
         METHOD(x)
     }
 )
 
-### Temporary hack to make 'extractROWS(x, i)' find the method for
-### CompressedList objects when 'x' is an old GRangesList instance.
+### Temporary hack to make 'names(x) <- value' work on an old GRangesList
+### instance.
+setReplaceMethod("names", "GenomicRangesList",
+    function(x, value)
+    {
+        if (class(x) == "GRangesList") {
+            #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
+            x <- updateObject(x, check=FALSE)
+        }
+        METHOD <- .selectClosestMethod1("names<-", x)
+        METHOD(x, value)
+    }
+)
+
+### Temporary hack to make 'extractROWS(x, i)' work on an old GRangesList
+### instance.
 setMethod("extractROWS", c("GenomicRangesList", "ANY"),
     function(x, i)
     {
@@ -132,16 +176,13 @@ setMethod("extractROWS", c("GenomicRangesList", "ANY"),
             #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
-        if (!is(x, "CompressedList"))
-            return(callNextMethod())
-
-        METHOD <- selectMethod("extractROWS", "CompressedList")
+        METHOD <- .selectClosestMethod1("extractROWS", x)
         METHOD(x, i)
     }
 )
 
-### Temporary hack to make 'getListElement(x, i)' find the method for
-### CompressedList objects when 'x' is an old GRangesList instance.
+### Temporary hack to make 'getListElement(x, i)' work on an old GRangesList
+### instance.
 setMethod("getListElement", "GenomicRangesList",
     function(x, i, exact=TRUE)
     {
@@ -149,16 +190,12 @@ setMethod("getListElement", "GenomicRangesList",
             #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
-        if (!is(x, "CompressedList"))
-            return(callNextMethod())
-
-        METHOD <- selectMethod("getListElement", "CompressedList")
+        METHOD <- .selectClosestMethod1("getListElement", x)
         METHOD(x, i, exact=exact)
     }
 )
 
-### Temporary hack to make 'unlist(x)' find the method for
-### CompressedList objects when 'x' is an old GRangesList instance.
+### Temporary hack to make 'unlist(x)' work on an old GRangesList instance.
 setMethod("unlist", "GenomicRangesList",
     function(x, recursive=TRUE, use.names=TRUE)
     {
@@ -166,17 +203,18 @@ setMethod("unlist", "GenomicRangesList",
             #warning(wmsg(OLD_GRANGESLIST_INSTANCE_MSG))
             x <- updateObject(x, check=FALSE)
         }
-        if (!is(x, "CompressedList"))
-            return(callNextMethod())
-
-        if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
-        ## Update any old GRanges instance (or other GenomicRanges derivative)
-        ## stuck in the 'unlistData' slot.
-        unlisted_x <- updateObject(x@unlistData, check=FALSE)
-        if (use.names)
-            unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
-        unlisted_x
+        if (is(x, "CompressedGenomicRangesList")) {
+            if (!isTRUEorFALSE(use.names))
+                stop("'use.names' must be TRUE or FALSE")
+            ## Update any old GRanges instance (or other GenomicRanges
+            ## derivative) stuck in the 'unlistData' slot.
+            unlisted_x <- updateObject(x@unlistData, check=FALSE)
+            if (use.names)
+                unlisted_x <- S4Vectors:::set_unlisted_names(unlisted_x, x)
+            return(unlisted_x)
+        }
+        METHOD <- .selectClosestMethod1("unlist", x)
+        METHOD(x, recursive=recursive, use.names=use.names)
     }
 )
 
@@ -226,35 +264,6 @@ show_GenomicRangesList <- function(x, with.header=TRUE)
 
 setMethod("show", "GenomicRangesList",
     function(object) show_GenomicRangesList(object)
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### GenomicRanges_OR_GenomicRangesList
-###
-
-### TODO: Use this instead of GenomicRanges_OR_GRangesList in
-### RangedSummarizedExperiment class definition to specify the class
-### of its 'rowRanges' slot.
-### FIXME: rtracklayer also defines GenomicRanges_OR_GenomicRangesList!
-### Should use the class defined here instead.
-setClassUnion("GenomicRanges_OR_GenomicRangesList",
-    c("GenomicRanges", "GenomicRangesList")
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### SimpleGenomicRangesList and CompressedGenomicRangesList objects
-###
-
-setClass("SimpleGenomicRangesList",
-    contains=c("GenomicRangesList", "SimpleRangesList"),
-    representation("VIRTUAL")
-)
-
-setClass("CompressedGenomicRangesList",
-    contains=c("GenomicRangesList", "CompressedRangesList"),
-    representation("VIRTUAL")
 )
 
 
