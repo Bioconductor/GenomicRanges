@@ -51,11 +51,13 @@ makeGRangesFromDataFrame(df,
     is set to \code{"*"}.
   }
   \item{seqinfo}{
-    Either \code{NULL}, or a \link{Seqinfo} object, or a character vector
-    of seqlevels, or a named numeric vector of sequence lengths.
-    When not \code{NULL}, it must be compatible with the genomic ranges
-    in \code{df} i.e. it must include at least the sequence levels
-    represented in \code{df}.
+    Either \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object,
+    or a character vector of unique sequence names (a.k.a. \emph{seqlevels}),
+    or a named numeric vector of sequence lengths.
+    When not \code{NULL}, \code{seqinfo} must be compatible with the genomic
+    ranges in \code{df}, that is, it must have one entry for each unique
+    sequence name represented in \code{df}. Note that it can have additional
+    entries i.e. entries for seqlevels not represented in \code{df}.
   }
   \item{seqnames.field}{
     A character vector of recognized names for the column in \code{df}

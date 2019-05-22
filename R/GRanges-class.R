@@ -142,8 +142,8 @@ setMethod("update", "GRanges",
     seqnames
 }
 
-### 'seqnames' is assumed to be a factor-Rle with no NAs (which should be
-### the case if it went thru .normarg_seqnames1()).
+### 'seqnames' is assumed to be a factor-Rle with no NAs (which should
+### be the case if it went thru .normarg_seqnames1()).
 ### 'seqinfo' is assumned to be a Seqinfo object.
 .normarg_seqnames2 <- function(seqnames, seqinfo)
 {
@@ -154,10 +154,10 @@ setMethod("update", "GRanges",
     seqnames_levels_in_use <- seqnames_levels[is_used]
     if (!all(seqnames_levels_in_use %in% ans_seqlevels))
         stop(wmsg("'seqnames' contains sequence names ",
-                  "not represented in 'seqinfo'"))
+                  "with no entries in 'seqinfo'"))
     if (!all(seqnames_levels %in% ans_seqlevels))
-        warning(wmsg("levels in 'seqnames' that are not ",
-                     "represented in 'seqinfo' were dropped"))
+        warning(wmsg("levels in 'seqnames' with no entries ",
+                     "in 'seqinfo' were dropped"))
     runValue(seqnames) <- factor(run_vals, levels=ans_seqlevels)
     seqnames
 }
@@ -188,7 +188,7 @@ setMethod("update", "GRanges",
         if (is.null(mcols))
             mcols <- DataFrame()
     } else if (!is(mcols, "DataFrame")) {
-        stop("'mcols' must be a DataFrame object")
+        stop(msg("'mcols' must be a DataFrame object"))
     }
     if (nrow(mcols) == 0L && ncol(mcols) == 0L) {
         mcols <- S4Vectors:::make_zero_col_DataFrame(length(ranges))
@@ -199,18 +199,19 @@ setMethod("update", "GRanges",
     mcols
 }
 
-### 'ranges' is trusted (should have been checked by the caller).
-new_GRanges0 <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
-                                mcols=NULL, seqinfo=NULL)
+### Internal low-level constructor. Used by high-level GRanges/GPos
+### constructors. Not meant to be used directly by the end user.
+### NOTE: 'ranges' is trusted! (should have been checked by the caller).
+new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
+                               mcols=NULL, seqinfo=NULL)
 {
     seqnames <- .normarg_seqnames1(seqnames)
 
     if (is.null(seqinfo)) {
         seqinfo <- Seqinfo(levels(seqnames))
-    } else if (is(seqinfo, "Seqinfo")) {
-        seqnames <- .normarg_seqnames2(seqnames, seqinfo)
     } else {
-        stop(wmsg("'seqinfo' must be NULL or a Seqinfo object"))
+        seqinfo <- normarg_seqinfo1(seqinfo)
+        seqnames <- .normarg_seqnames2(seqnames, seqinfo)
     }
 
     strand <- .normarg_strand(strand, seqnames)
@@ -263,41 +264,32 @@ new_GRanges0 <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
                elementMetadata=mcols, seqinfo=seqinfo)
 }
 
-### Internal low-level constructor. Shared with other GRanges-like objects.
-new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
-                               mcols=NULL, seqinfo=NULL, seqlengths=NULL)
-{
-    if (is.null(ranges) && !is.null(seqnames)) {
-        x <- as(seqnames, Class)
-        seqnames <- seqnames(x)
-        ranges <- ranges(x)
-        if (is.null(strand))
-            strand <- strand(x)
-        if (length(mcols) == 0L)
-            mcols <- mcols(x, use.names=FALSE)
-        if (is.null(seqinfo))
-            seqinfo <- seqinfo(x)
-        if (is.null(seqlengths))
-            seqlengths <- seqlengths(x)
-    }
-
-    seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
-
-    new_GRanges0(Class, seqnames=seqnames, ranges=ranges, strand=strand,
-                        mcols=mcols, seqinfo=seqinfo)
-}
-
+### High-level GRanges constructor.
 GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
                     ..., seqinfo=NULL, seqlengths=NULL)
 {
+    mcols <- DataFrame(..., check.names=FALSE)
+
     if (!is.null(ranges)) {
         ranges <- as(ranges, "IRanges")
     } else if (is.null(seqnames)) {
         ranges <- IRanges()
+    } else {
+        x <- as(seqnames, "GRanges")
+        seqnames <- x@seqnames
+        ranges <- x@ranges
+        if (is.null(strand))
+            strand <- x@strand
+        if (length(mcols) == 0L)
+            mcols <- mcols(x, use.names=FALSE)
+        if (is.null(seqinfo))
+            seqinfo <- seqinfo(x)
     }
-    mcols <- DataFrame(..., check.names=FALSE)
+
+    seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
+
     new_GRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
-                           mcols=mcols, seqinfo=seqinfo, seqlengths=seqlengths)
+                           mcols=mcols, seqinfo=seqinfo)
 }
 
 
@@ -316,9 +308,9 @@ setMethod("ranges", "GRanges",
     function(x, use.names=TRUE, use.mcols=FALSE)
     {
         if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
+            stop(wmsg("'use.names' must be TRUE or FALSE"))
         if (!isTRUEorFALSE(use.mcols))
-            stop("'use.mcols' must be TRUE or FALSE")
+            stop(wmsg("'use.mcols' must be TRUE or FALSE"))
         ans <- x@ranges
         if (!use.names)
             names(ans) <- NULL
@@ -333,7 +325,7 @@ setMethod("granges", "GenomicRanges",
     function(x, use.names=TRUE, use.mcols=FALSE)
     {
         if (!isTRUEorFALSE(use.mcols))
-            stop("'use.mcols' must be TRUE or FALSE")
+            stop(wmsg("'use.mcols' must be TRUE or FALSE"))
         ans <- GRanges(seqnames(x),
                        ranges(x, use.names=use.names),
                        strand(x),
@@ -360,7 +352,7 @@ setAs("GenomicRanges", "GRanges",
     if (anyNA(from))
         stop(wmsg("converting a character vector to a GRanges object ",
                   "does not support NAs"))
-    error_msg <- wmsg(
+    error_msg <- c(
         "The character vector to convert to a GRanges object must contain ",
         "strings of the form \"chr:start-end\" or \"chr:start-end:strand\", ",
         "with end >= start - 1, or \"chr:pos\" or \"chr:pos:strand\". ",
@@ -371,7 +363,7 @@ setAs("GenomicRanges", "GRanges",
     split0 <- CharacterList(strsplit(from, ":", fixed=TRUE))
     split0_eltNROWS <- elementNROWS(split0)
     if (S4Vectors:::anyMissingOrOutside(split0_eltNROWS, 2L, 3L))
-        stop(error_msg)
+        stop(wmsg(error_msg))
     ans_strand <- as.character(tails(split0, n=-2L))
     ans_strand[is.na(ans_strand)] <- "*"
     split1 <- heads(split0, n=2L)
@@ -380,7 +372,7 @@ setAs("GenomicRanges", "GRanges",
     ranges <- setNames(as.character(ranges), names(ranges))
     ans_ranges <- try(as(ranges, "IRanges"), silent=TRUE)
     if (is(ans_ranges, "try-error"))
-        stop(error_msg)
+        stop(wmsg(error_msg))
     GRanges(ans_seqnames, ans_ranges, ans_strand)
 }
 setAs("character", "GRanges", .from_character_to_GRanges)
@@ -404,7 +396,7 @@ setAs("IntegerRangesList", "GRanges",
         ranges <- IRanges(start=start(ranges), width=width(ranges))
         ## From now, ranges is guaranteed to be an IRanges *instance*.
         if (is.null(space(from))) {
-          stop("Cannot create GRanges when 'space(from)' is NULL")
+          stop(wmsg("cannot create GRanges when 'space(from)' is NULL"))
         }
         gr <- GRanges(seqnames = space(from),
                       ranges = ranges,
@@ -482,7 +474,8 @@ setMethod("replaceROWS", "GRanges",
             value_ecs_names <- extraColumnSlotNames(value)
             if (!identical(head(value_ecs_names, n=ans_necs),
                            ans_ecs_names))
-                stop("'value' can have more extra column slots but not less")
+                stop(wmsg("'value' can have more extra column slots ",
+                          "but not less"))
             ans_ecs <- extraColumnSlotsAsDF(x)
             value_ecs <- extraColumnSlotsAsDF(value)
             ans_ecs <- replaceROWS(ans_ecs, i, value_ecs[seq_len(ans_necs)])

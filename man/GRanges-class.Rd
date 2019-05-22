@@ -138,9 +138,14 @@
           \code{"element"}.
         }
         \item{\code{seqinfo}}{
-          \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object containing
-          allowed sequence names, lengths (or NA), and circularity flag,
-          for each level in \code{levels(seqnames)}.
+          Either \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object,
+          or a character vector of unique sequence names (a.k.a.
+          \emph{seqlevels}), or a named numeric vector of sequence lengths.
+          When not \code{NULL}, \code{seqinfo} must be compatible with the
+          sequence names in \code{seqnames}, that is, it must have one entry
+          for each unique sequence name in \code{seqnames}. Note that it can
+          have additional entries i.e. entries for seqlevels not present
+          in \code{seqnames}.
         }
         \item{\code{seqlengths}}{
           \code{NULL}, or an integer vector named with \code{levels(seqnames)}
@@ -221,7 +226,7 @@
     \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
       Get or set the information about the underlying sequences.
-      \code{value} must be a \link{Seqinfo} object.
+      \code{value} must be a \link[GenomeInfoDb]{Seqinfo} object.
     }
     \item{}{
       \code{seqlevels(x)},
@@ -479,8 +484,10 @@
     \item \code{\link{makeGRangesFromDataFrame}} for making a GRanges object
           from a data.frame or \link[S4Vectors]{DataFrame} object.
 
-    \item \code{\link[GenomeInfoDb]{seqinfo}} for accessing/modifying
-          information about the underlying sequences of a GRanges object.
+    \item \link[GenomeInfoDb]{Seqinfo} objects and the
+          \code{\link[GenomeInfoDb]{seqinfo}} getter and setter in the
+          \pkg{GenomeInfoDb} package for accessing/modifying information
+          about the underlying sequences of a GRanges object.
 
     \item The \link{GPos} class, a memory-efficient \link{GenomicRanges}
           derivative for representing \emph{genomic positions} (i.e.

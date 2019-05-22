@@ -114,7 +114,7 @@ bindAsGRanges <- function(...)
     ## First column is "runLength". Get rid of it.
     ans_mcols <- unlisted_DFL[-1L]
     ans <- new_GRanges("GRanges", ans_seqnames, ans_ranges,
-                                  mcols=ans_mcols, seqlengths=ans_seqlengths)
+                                  mcols=ans_mcols, seqinfo=ans_seqlengths)
 
     ## Keep only ranges for which at least one variable is not NA.
     keep_idx <- which(rowSums(!is.na(mcols(ans, use.names=FALSE))) != 0L)
