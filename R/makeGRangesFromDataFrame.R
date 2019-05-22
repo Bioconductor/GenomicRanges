@@ -3,23 +3,6 @@
 ### -------------------------------------------------------------------------
 
 
-### Must return NULL or a Seqinfo object.
-.normarg_seqinfo <- function(seqinfo)
-{
-    if (is.null(seqinfo) || is(seqinfo, "Seqinfo"))
-        return(seqinfo)
-    if (is.character(seqinfo))
-        return(Seqinfo(seqinfo))
-    if (is.numeric(seqinfo)) {
-        seqlevels <- names(seqinfo)
-        if (is.null(seqlevels))
-            stop("when a numeric vector, 'seqinfo' must have names")
-        return(Seqinfo(seqlevels, seqlengths=seqinfo))
-    }
-    stop("'seqinfo' must be NULL, or a Seqinfo object, or a character vector ",
-         "of seqlevels, or a named numeric vector of sequence lengths")
-}
-
 .normarg_field <- function(field, what)
 {
     if (!is.character(field) || any(is.na(field)))
@@ -184,7 +167,7 @@ makeGRangesFromDataFrame <- function(df,
         stop("'keep.extra.columns' must be TRUE or FALSE")
     if (!isTRUEorFALSE(ignore.strand))
         stop("'ignore.strand' must be TRUE or FALSE")
-    ans_seqinfo <- .normarg_seqinfo(seqinfo)
+    ans_seqinfo <- normarg_seqinfo1(seqinfo)
     if (!isTRUEorFALSE(starts.in.df.are.0based))
         stop("'starts.in.df.are.0based' must be TRUE or FALSE")
 

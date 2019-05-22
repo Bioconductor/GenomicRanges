@@ -124,99 +124,67 @@ setMethod("update", "GRanges",
 ### Constructor
 ###
 
-.set_strand_mcols_seqinfo <- function(x, strand=NULL, mcols=NULL,
-                                         seqlengths=NULL, seqinfo=NULL)
+### Return a factor-Rle with no NAs.
+.normarg_seqnames1 <- function(seqnames)
 {
-    if (is.null(strand)) {
-        x_strand <- strand(x)
-    } else {
-        x_strand <- strand
+    if (is.null(seqnames))
+        return(Rle(factor()))
+    if (!is(seqnames, "Rle"))
+        seqnames <- Rle(seqnames)
+    run_vals <- runValue(seqnames)
+    if (anyNA(run_vals))
+        stop(wmsg("'seqnames' cannot contain NAs"))
+    if (!is.factor(run_vals)) {
+        if (!is.character(run_vals))
+            run_vals <- as.character(run_vals)
+        runValue(seqnames) <- factor(run_vals, levels=unique(run_vals))
     }
-    if (length(mcols) == 0L) {
-        x_mcols <- mcols(x, use.names=FALSE)
-    } else {
-        x_mcols <- mcols
-    }
-    if (is.null(seqlengths)) {
-        x_seqlengths <- seqlengths(x)
-    } else {
-        x_seqlengths <- seqlengths
-    }
-    if (is.null(seqinfo)) {
-        x_seqinfo <- seqinfo(x)
-    } else {
-        x_seqinfo <- seqinfo
-    }
-    new_GRanges(class(x), seqnames(x), ranges(x), x_strand,
-                          x_mcols, x_seqlengths, x_seqinfo)
+    seqnames
 }
 
-### Internal low-level constructor. Shared with other GRanges-like objects.
-new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
-                               mcols=NULL, seqlengths=NULL, seqinfo=NULL)
+### 'seqnames' is assumed to be a factor-Rle with no NAs (which should be
+### the case if it went thru .normarg_seqnames1()).
+### 'seqinfo' is assumned to be a Seqinfo object.
+.normarg_seqnames2 <- function(seqnames, seqinfo)
 {
-    if (is.null(ranges)) {
-        if (!is.null(seqnames)) {
-            x <- as(seqnames, Class)
-            return(.set_strand_mcols_seqinfo(x, strand, mcols,
-                                                seqlengths, seqinfo))
-        }
-        ranges <- IRanges()
-    } else {
-        ranges <- as(ranges, "IRanges")
+    ans_seqlevels <- seqlevels(seqinfo)
+    run_vals <- runValue(seqnames)
+    seqnames_levels <- levels(run_vals)
+    is_used <- tabulate(run_vals, nbins=length(seqnames_levels)) != 0L
+    seqnames_levels_in_use <- seqnames_levels[is_used]
+    if (!all(seqnames_levels_in_use %in% ans_seqlevels))
+        stop(wmsg("'seqnames' contains sequence names ",
+                  "not represented in 'seqinfo'"))
+    if (!all(seqnames_levels %in% ans_seqlevels))
+        warning(wmsg("levels in 'seqnames' that are not ",
+                     "represented in 'seqinfo' were dropped"))
+    runValue(seqnames) <- factor(run_vals, levels=ans_seqlevels)
+    seqnames
+}
+
+### Return a factor-Rle with levels +|-|* and no NAs.
+.normarg_strand <- function(strand, seqnames)
+{
+    if (is.null(strand))
+        return(Rle(strand("*"), length(seqnames)))
+    if (!is(strand, "Rle"))
+        strand <- Rle(strand)
+    run_vals <- runValue(strand)
+    if (anyNA(run_vals)) {
+        warning(wmsg("missing values in 'strand' converted to \"*\""))
+        run_vals[is.na(run_vals)] <- "*"
     }
+    if (!is.factor(run_vals) || !identical(levels(run_vals), levels(strand())))
+        run_vals <- strand(run_vals)
+    runValue(strand) <- run_vals
+    strand
+}
 
-    if (is.null(seqnames)) {
-        seqnames <- Rle()
-    } else {
-        if (!is(seqnames, "Rle"))
-            seqnames <- Rle(seqnames)
-        if (!is.factor(runValue(seqnames))) 
-            runValue(seqnames) <- factor(runValue(seqnames),
-                                         levels=unique(runValue(seqnames)))
-    }
-
-    if (is.null(strand)) {
-        strand <- Rle(strand("*"), length(seqnames))
-    } else {
-        if (!is(strand, "Rle"))
-            strand <- Rle(strand)
-        if (!is.factor(runValue(strand)) ||
-            !identical(levels(runValue(strand)), levels(strand())))
-            runValue(strand) <- strand(runValue(strand))
-        if (S4Vectors:::anyMissing(runValue(strand))) {
-            warning("missing values in strand converted to \"*\"")
-            runValue(strand)[is.na(runValue(strand))] <- "*"
-        }
-    }
-
-    lx <- max(length(seqnames), length(ranges), length(strand))
-    if (lx > 1) {
-        if (length(seqnames) == 1)
-            seqnames <- rep(seqnames, lx)
-        if (length(ranges) == 1)
-            ranges <- rep(ranges, lx)
-        if (length(strand) == 1)
-            strand <- rep(strand, lx)
-    }
-
-    if (is.null(seqlengths))
-        seqlengths <- setNames(rep(NA_integer_, length(levels(seqnames))),
-                               levels(seqnames))
-
-    if (is.null(seqinfo))
-        seqinfo <- Seqinfo(names(seqlengths), seqlengths)
-
-    ## in case we have seqlengths for unrepresented sequences
-    runValue(seqnames) <- factor(runValue(seqnames), levels=seqnames(seqinfo))
-
-    ranges_mcols <- mcols(ranges, use.names=FALSE)
-    if (!is.null(ranges_mcols))
-        mcols(ranges) <- NULL
-
-    ## Normalize 'mcols'.
+### Return a DataFrame parallel to 'ranges'.
+.normarg_mcols <- function(mcols, ranges)
+{
     if (length(mcols) == 0L) {
-        mcols <- ranges_mcols
+        mcols <- mcols(ranges, use.names=FALSE)
         if (is.null(mcols))
             mcols <- DataFrame()
     } else if (!is(mcols, "DataFrame")) {
@@ -224,7 +192,68 @@ new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
     }
     if (nrow(mcols) == 0L && ncol(mcols) == 0L) {
         mcols <- S4Vectors:::make_zero_col_DataFrame(length(ranges))
-    } else if (!is.null(rownames(mcols))) {
+    } else if (nrow(mcols) != length(ranges)) {
+        stop(wmsg("'mcols' must be parallel to object to construct ",
+                  "(i.e. it must have 1 row per range)"))
+    }
+    mcols
+}
+
+### 'ranges' is trusted (should have been checked by the caller).
+new_GRanges0 <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
+                                mcols=NULL, seqinfo=NULL)
+{
+    seqnames <- .normarg_seqnames1(seqnames)
+
+    if (is.null(seqinfo)) {
+        seqinfo <- Seqinfo(levels(seqnames))
+    } else if (is(seqinfo, "Seqinfo")) {
+        seqnames <- .normarg_seqnames2(seqnames, seqinfo)
+    } else {
+        stop(wmsg("'seqinfo' must be NULL or a Seqinfo object"))
+    }
+
+    strand <- .normarg_strand(strand, seqnames)
+
+    seqnames_len <- length(seqnames)
+    ranges_len <- length(ranges)
+    strand_len <- length(strand)
+    ans_len <- max(seqnames_len, ranges_len, strand_len)
+    if (ans_len != 0L) {
+        stop_if_wrong_length <- function(what, ans_len)
+            stop(wmsg(what, " must have the length of the object ",
+                      "to construct (", ans_len, ") or length 1"))
+        if (seqnames_len == 0L)
+            stop_if_wrong_length("'seqnames'", ans_len)
+        if (ranges_len == 0L) {
+            what <- if (is(ranges, "IPos")) "'pos'" else "'ranges'"
+            stop_if_wrong_length(what, ans_len)
+        }
+        if (strand_len == 0L)
+            stop_if_wrong_length("'strand'", ans_len)
+        if (ans_len > 1L) {
+            if (seqnames_len == 1L)
+                seqnames <- rep(seqnames, ans_len)
+            else if (seqnames_len != ans_len)
+                stop_if_wrong_length("'seqnames'", ans_len)
+            if (ranges_len == 1L)
+                ranges <- rep(ranges, ans_len)
+            else if (ranges_len != ans_len) {
+                what <- if (is(ranges, "IPos")) "'pos'" else "'ranges'"
+                stop_if_wrong_length(what, ans_len)
+            }
+            if (strand_len == 1L)
+                strand <- rep(strand, ans_len)
+            else if (strand_len != ans_len)
+                stop_if_wrong_length("'strand'", ans_len)
+        }
+    }
+
+    mcols <- .normarg_mcols(mcols, ranges)
+
+    if (!is.null(mcols(ranges, use.names=FALSE)))
+        mcols(ranges) <- NULL
+    if (!is.null(rownames(mcols))) {
         if (is.null(names(ranges)))
             names(ranges) <- rownames(mcols)
         rownames(mcols) <- NULL
@@ -234,12 +263,41 @@ new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
                elementMetadata=mcols, seqinfo=seqinfo)
 }
 
-GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
-                    ..., seqlengths=NULL, seqinfo=NULL)
+### Internal low-level constructor. Shared with other GRanges-like objects.
+new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
+                               mcols=NULL, seqinfo=NULL, seqlengths=NULL)
 {
+    if (is.null(ranges) && !is.null(seqnames)) {
+        x <- as(seqnames, Class)
+        seqnames <- seqnames(x)
+        ranges <- ranges(x)
+        if (is.null(strand))
+            strand <- strand(x)
+        if (length(mcols) == 0L)
+            mcols <- mcols(x, use.names=FALSE)
+        if (is.null(seqinfo))
+            seqinfo <- seqinfo(x)
+        if (is.null(seqlengths))
+            seqlengths <- seqlengths(x)
+    }
+
+    seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
+
+    new_GRanges0(Class, seqnames=seqnames, ranges=ranges, strand=strand,
+                        mcols=mcols, seqinfo=seqinfo)
+}
+
+GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
+                    ..., seqinfo=NULL, seqlengths=NULL)
+{
+    if (!is.null(ranges)) {
+        ranges <- as(ranges, "IRanges")
+    } else if (is.null(seqnames)) {
+        ranges <- IRanges()
+    }
     mcols <- DataFrame(..., check.names=FALSE)
     new_GRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
-                           mcols=mcols, seqlengths=seqlengths, seqinfo=seqinfo)
+                           mcols=mcols, seqinfo=seqinfo, seqlengths=seqlengths)
 }
 
 

@@ -218,7 +218,7 @@ setValidity2("GenomicRanges", .valid.GenomicRanges)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion
 ###
 
 ### Propagate the names.

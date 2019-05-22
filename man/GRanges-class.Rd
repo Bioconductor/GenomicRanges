@@ -117,7 +117,7 @@
   \describe{
     \item{}{
       \code{GRanges(seqnames=NULL, ranges=NULL, strand=NULL,
-                    ..., seqlengths=NULL, seqinfo=NULL)}:
+                    ..., seqinfo=NULL, seqlengths=NULL)}:
       Creates a GRanges object.
       \describe{
         \item{\code{seqnames}}{
@@ -137,15 +137,15 @@
           \code{"start"}, \code{"end"}, \code{"width"}, or
           \code{"element"}.
         }
-        \item{\code{seqlengths}}{
-          \code{NULL}, or an integer vector named with \code{levels(seqnames)}
-          and containing the lengths (or NA) for each level in
-          \code{levels(seqnames)}.
-        }
         \item{\code{seqinfo}}{
           \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object containing
           allowed sequence names, lengths (or NA), and circularity flag,
           for each level in \code{levels(seqnames)}.
+        }
+        \item{\code{seqlengths}}{
+          \code{NULL}, or an integer vector named with \code{levels(seqnames)}
+          and containing the lengths (or NA) for each level in
+          \code{levels(seqnames)}.
         }
       }
       If \code{ranges} is not supplied and/or NULL then the constructor

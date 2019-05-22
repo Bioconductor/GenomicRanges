@@ -73,13 +73,13 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
                                                 strand=character(0),
                                                 sep=",")
 {
-    fragmentStarts <- normargListOfIntegers(fragmentStarts, sep,
-                                            "fragmentStarts")
+    fragmentStarts <- normarg_list_of_integers(fragmentStarts, sep,
+                                               "fragmentStarts")
     nfrag_per_feature <- elementNROWS(fragmentStarts)
     start <- unlist(fragmentStarts, recursive=FALSE, use.names=FALSE)
 
-    fragmentEnds <- normargListOfIntegers(fragmentEnds, sep,
-                                          "fragmentEnds")
+    fragmentEnds <- normarg_list_of_integers(fragmentEnds, sep,
+                                             "fragmentEnds")
     nend_per_elt <- elementNROWS(fragmentEnds)
     if (length(nend_per_elt) != 0L) {
         if (length(nfrag_per_feature) == 0L)
@@ -90,8 +90,8 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
     }
     end <- unlist(fragmentEnds, recursive=FALSE, use.names=FALSE)
 
-    fragmentWidths <- normargListOfIntegers(fragmentWidths, sep,
-                                            "fragmentWidths")
+    fragmentWidths <- normarg_list_of_integers(fragmentWidths, sep,
+                                               "fragmentWidths")
     nwidth_per_elt <- elementNROWS(fragmentWidths)
     if (length(nwidth_per_elt) != 0L) {
         if (length(nfrag_per_feature) == 0L)
