@@ -265,11 +265,11 @@ setMethod("range", "GenomicRanges",
     }
 )
 
-### Overwrite above method with optimized method for GPos objects.
+### Overwrite above method with optimized method for StitchedGPos objects.
 ### Like the above method, return a GRanges instance.
-setMethod("range", "GPos",
+setMethod("range", "StitchedGPos",
     function(x, ..., with.revmap=FALSE, ignore.strand=FALSE, na.rm=FALSE)
-        callGeneric(stitch_GPos(x), ...,
+        callGeneric(stitch_StitchedGPos(x), ...,
                     with.revmap=with.revmap, ignore.strand=ignore.strand,
                     na.rm=na.rm)
 )
@@ -424,9 +424,10 @@ setMethod("isDisjoint", "GenomicRanges",
     }
 )
 
-### Overwrite above method with optimized method for GPos objects.
-setMethod("isDisjoint", "GPos",
-    function(x, ignore.strand=FALSE) callGeneric(stitch_GPos(x), ignore.strand)
+### Overwrite above method with optimized method for StitchedGPos objects.
+setMethod("isDisjoint", "StitchedGPos",
+    function(x, ignore.strand=FALSE)
+        callGeneric(stitch_StitchedGPos(x), ignore.strand)
 )
 
 setMethod("isDisjoint", "GRangesList",

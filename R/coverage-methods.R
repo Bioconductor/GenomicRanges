@@ -49,14 +49,14 @@ setMethod("coverage", "GenomicRanges",
     }
 )
 
-### Overwrite above method with optimized method for GPos objects.
-setMethod("coverage", "GPos",
+### Overwrite above method with optimized method for StitchedGPos objects.
+setMethod("coverage", "StitchedGPos",
     function(x, shift=0L, width=NULL, weight=1L,
                 method=c("auto", "sort", "hash"))
     {
         CAN_ONLY_ETC <- c(" can only be a single number or a named ",
                           "list-like object when calling coverage() ",
-                          "on a GPos object")
+                          "on a StitchedGPos object")
         if (!is(shift, "list_OR_List")) {
             if (!isSingleNumber(shift))
                 stop(wmsg("'shift'", CAN_ONLY_ETC))
@@ -67,7 +67,7 @@ setMethod("coverage", "GPos",
                 stop(wmsg("'weight'", CAN_ONLY_ETC))
             weight <- Rle(weight)
         }
-        x <- stitch_GPos(x)
+        x <- stitch_StitchedGPos(x)
         callGeneric()
     }
 )

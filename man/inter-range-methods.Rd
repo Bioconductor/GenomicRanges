@@ -4,7 +4,7 @@
 
 \alias{range}
 \alias{range,GenomicRanges-method}
-\alias{range,GPos-method}
+\alias{range,StitchedGPos-method}
 \alias{range,GRangesList-method}
 
 \alias{reduce}
@@ -20,7 +20,7 @@
 
 \alias{isDisjoint}
 \alias{isDisjoint,GenomicRanges-method}
-\alias{isDisjoint,GPos-method}
+\alias{isDisjoint,StitchedGPos-method}
 \alias{isDisjoint,GRangesList-method}
 
 \alias{disjointBins}

@@ -3,7 +3,7 @@
 
 \alias{coverage}
 \alias{coverage,GenomicRanges-method}
-\alias{coverage,GPos-method}
+\alias{coverage,StitchedGPos-method}
 \alias{coverage,GRangesList-method}
 
 
@@ -46,8 +46,8 @@
     See \code{?\link[IRanges]{coverage}} in the \pkg{IRanges} package
     for more information about these arguments.
 
-    Note that when \code{x} is a \link{GPos} object, each of these arguments
-    can only be a single number or a named list-like object.
+    Note that when \code{x} is a \link{StitchedGPos} object, each of these
+    arguments can only be a single number or a named list-like object.
   }
   \item{width}{
     Either \code{NULL} (the default), or an integer vector.

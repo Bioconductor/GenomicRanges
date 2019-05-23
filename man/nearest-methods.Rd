@@ -17,7 +17,7 @@
 \alias{distanceToNearest,GenomicRanges,GenomicRanges-method}
 \alias{distanceToNearest,GenomicRanges,missing-method}
 
-\title{Finding the nearest genomic range neighbor}
+\title{Finding the nearest genomic range/position neighbor}
 
 \description{
   The \code{nearest}, \code{precede}, \code{follow}, \code{distance}

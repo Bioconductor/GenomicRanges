@@ -481,36 +481,40 @@
 
 \seealso{
   \itemize{
+    \item The \link[IRanges]{IRanges} class in the \pkg{IRanges}
+          package for storing a set of \emph{integer ranges}.
+
+    \item The \link{GPos} class for representing a set of \emph{genomic
+          positions} (i.e. \emph{genomic ranges} of width 1, a.k.a.
+          \emph{genomic loci}).
+
     \item \code{\link{makeGRangesFromDataFrame}} for making a GRanges object
           from a data.frame or \link[S4Vectors]{DataFrame} object.
 
     \item \link[GenomeInfoDb]{Seqinfo} objects and the
-          \code{\link[GenomeInfoDb]{seqinfo}} getter and setter in the
+          \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in the
           \pkg{GenomeInfoDb} package for accessing/modifying information
-          about the underlying sequences of a GRanges object.
-
-    \item The \link{GPos} class, a memory-efficient \link{GenomicRanges}
-          derivative for representing \emph{genomic positions} (i.e.
-          genomic ranges of width 1).
+          about the underlying sequences of a \link{GenomicRanges} derivative.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
-          ranges.
+          ranges and/or positions.
 
-    \item \link[GenomicRanges]{findOverlaps-methods} for finding/counting
-          overlapping genomic ranges.
+    \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
+          genomic ranges and/or positions.
 
     \item \link[GenomicRanges]{intra-range-methods} and
-          \link[GenomicRanges]{inter-range-methods} for intra range and
-          inter range transformations of a GRanges object.
+          \link[GenomicRanges]{inter-range-methods}
+          for \emph{intra range} and \emph{inter range} transformations
+          of \link{GenomicRanges} derivatives.
 
     \item \link[GenomicRanges]{coverage-methods} for computing the coverage
-          of a GRanges object.
+          of a set of genomic ranges and/or positions.
 
     \item \link[GenomicRanges]{setops-methods} for set operations on GRanges
           objects.
 
     \item \link[GenomicRanges]{nearest-methods} for finding the nearest
-          genomic range neighbor.
+          genomic range/position neighbor.
 
     \item \code{\link{absoluteRanges}} for transforming genomic ranges into
           \emph{absolute} ranges (i.e. into ranges on the sequence obtained
@@ -522,14 +526,14 @@
 
     \item \link{GRangesList} objects.
 
-    \item \link[IRanges]{IntegerRanges} objects in the \pkg{IRanges} package.
-
     \item \link[S4Vectors]{Vector}, \link[S4Vectors]{Rle}, and
           \link[S4Vectors]{DataFrame} objects in the \pkg{S4Vectors} package.
   }
 }
 
 \examples{
+showClass("GRanges")  # shows the known subclasses
+
 ## ---------------------------------------------------------------------
 ## CONSTRUCTION
 ## ---------------------------------------------------------------------
@@ -658,3 +662,5 @@ c(gr, gr2, gr3, ignore.mcols=TRUE)
 x <- RleList(chr1=101:120, chr2=2:-8, chr3=31:40)
 x[gr]
 }
+\keyword{methods}
+\keyword{classes}

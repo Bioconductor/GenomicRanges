@@ -32,7 +32,8 @@ setClass("GenomicPos",
 ###
 
 ### The method for Ranges does 'length(start(x))' which is very inefficient
-### on GPos objects so we overwrite it with a faster method.
+### on a StitchedGPos object so we overwrite it with a method that should be
+### fast on all GenomicRanges derivatives (including StitchedGPos objects).
 setMethod("length", "GenomicRanges", function(x) length(ranges(x)))
 
 setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
@@ -650,7 +651,7 @@ summary.GenomicRanges <- function(object, ...)
     .GenomicRanges_summary(object, ...)
 setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 
-.make_naked_matrix_from_GenomicRanges <- function(x)
+.from_GenomicRanges_to_naked_character_matrix_for_display <- function(x)
 {
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
@@ -689,7 +690,7 @@ show_GenomicRanges <- function(x, margin="",
         xx <- x
     }
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
-                .make_naked_matrix_from_GenomicRanges)
+                .from_GenomicRanges_to_naked_character_matrix_for_display)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",

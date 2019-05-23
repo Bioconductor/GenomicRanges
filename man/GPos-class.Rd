@@ -1,15 +1,34 @@
 \name{GPos-class}
 \docType{class}
 
+% Classes
+
 \alias{class:GPos}
 \alias{GPos-class}
 \alias{GPos}
 
+\alias{class:UnstitchedGPos}
+\alias{UnstitchedGPos-class}
+\alias{UnstitchedGPos}
+
+\alias{class:StitchedGPos}
+\alias{StitchedGPos-class}
+\alias{StitchedGPos}
+
+% Accessors
+
 \alias{pos,GPos-method}
 
-\alias{coerce,GRanges,GPos-method}
+% Coercion
+
+\alias{coerce,ANY,UnstitchedGPos-method}
+\alias{coerce,ANY,StitchedGPos-method}
 \alias{coerce,ANY,GPos-method}
+\alias{coerce,GRanges,UnstitchedGPos-method}
+\alias{coerce,GRanges,StitchedGPos-method}
+\alias{coerce,GRanges,GPos-method}
 \alias{coerce,GPos,GRanges-method}
+\alias{as.data.frame.GPos}
 \alias{as.data.frame,GPos-method}
 
 \alias{updateObject,GPos-method}
@@ -19,31 +38,83 @@
 
 \description{
   The GPos class is a container for storing a set of \emph{genomic positions}
-  where most of the positions are typically (but not necessarily) adjacent.
-  Because genomic positions can be seen as genomic ranges of width 1, the GPos
-  class extends the \link{GenomicRanges} virtual class. Note that even though
-  a \link{GRanges} instance can be used for storing genomic positions, using a
-  GPos object will be much more memory-efficient, especially when the object
-  contains long runs of adjacent positions in \emph{ascending order}.
+  (a.k.a. \emph{genomic loci}).
+  It exists in 2 flavors: UnstitchedGPos and StitchedGPos. Each flavor uses
+  a particular internal representation:
+  \itemize{
+    \item In an UnstitchedGPos instance the positions are stored as an
+          integer vector.
+    \item In a StitchedGPos instance the positions are stored as an
+          \link{IRanges} object where each range represents a run of
+          \emph{consecutive positions} (i.e. a run of positions that
+          are adjacent and in \emph{ascending order}). This storage is
+          particularly memory-efficient when the vector of positions
+          contains long runs of consecutive positions.
+  }
+  Because genomic positions can be seen as genomic ranges of width 1, the
+  GPos class extends the \link{GenomicRanges} virtual class (via the
+  \link{GRanges} class).
 }
 
 \usage{
-GPos(pos_runs)  # constructor function
+## Constructor function
+GPos(seqnames=NULL, pos=NULL, strand=NULL,
+     ..., seqinfo=NULL, seqlengths=NULL, stitch=NA)
 }
 
 \arguments{
-  \item{pos_runs}{
-    A \link{GRanges} object (or any other \link{GenomicRanges} derivative)
-    where each range is interpreted as a run of adjacent ascending genomic
-    positions on the same strand.
-    If \code{pos_runs} is not a \link{GenomicRanges} derivative,
-    \code{GPos()} first tries to coerce it to one with
-    \code{as(pos_runs, "GenomicRanges", strict=FALSE)}.
+  \item{seqnames, strand, ..., seqinfo, seqlengths}{
+    See documentation of the \code{\link{GRanges}()} constructor function
+    for a description of these arguments.
+  }
+  \item{pos}{
+    \code{NULL}, or an integer or numeric vector, or an \link[IRanges]{IRanges}
+    or \link[IRanges]{IPos} object (or other \link[IRanges]{IntegerRanges}
+    derivative).
+    If not \code{NULL}, \code{GPos()} will try to turn it into an
+    \link[IRanges]{IPos} derivative with \code{IPos(pos, stitch=stitch)}.
+
+    When \code{pos} is an \link{IRanges} object (or other \link{IntegerRanges}
+    derivative), each range in it is interpreted as a run of
+    consecutive positions.
+  }
+  \item{stitch}{
+    \code{TRUE}, \code{FALSE}, or \code{NA} (the default).
+
+    Controls which internal representation should be used: StitchedGPos
+    (when \code{stitch} is \code{TRUE}) or UnstitchedGPos (when \code{stitch}
+    is \code{FALSE}).
+
+    When \code{stitch} is \code{NA} (the default), which internal
+    representation will be used depends on the flavour of the
+    \link[IRanges]{IPos} derivative returned by \code{IPos(pos)}:
+    UnstitchedGPos if \code{IPos(pos)} returns an
+    \link[IRanges]{UnstitchedIPos} instance, and StitchedGPos if it
+    returns a \link[IRanges]{StitchedIPos} instance.
   }
 }
 
+\details{
+  Even though a \link{GRanges} object can be used for storing genomic
+  positions, using a GPos object is more efficient. In particular the
+  memory footprint of an UnstitchedGPos object is typically about half
+  that of a \link{GRanges} object.
+
+  OTOH the memory footprint of a StitchedGPos object can vary a lot but
+  will never be worse than that of a \link{GRanges} object. However it
+  will reduce dramatically if the vector of positions contains long runs
+  of consecutive positions. In the worst case scenario (i.e. when the
+  object contains no consecutive positions) its memory footprint will
+  be the same as that of a \link{GRanges} object.
+
+  Like for any \link[S4Vectors]{Vector} derivative, the length of a
+  GPos object cannot exceed \code{.Machine$integer.max} (i.e. 2^31 on
+  most platforms). \code{GPos()} will return an error if \code{pos}
+  contains too many positions.
+}
+
 \value{
-  A GPos object.
+  An UnstitchedGPos or StitchedGPos object.
 }
 
 \section{Accessors}{
@@ -58,25 +129,25 @@ GPos(pos_runs)  # constructor function
 
     IMPORTANT NOTES:
     \enumerate{
-      \item \code{ranges()} returns an \link[IRanges]{IPos} object instead
+      \item \code{ranges()} returns an \link[IRanges]{IPos} derivative instead
             of the \link[IRanges]{IRanges} object that one gets with other
             \link{GenomicRanges} derivatives. To get an \link[IRanges]{IRanges}
             object, you need to call \code{ranges()} again on the
-            \link[IRanges]{IPos} object i.e. do \code{ranges(ranges(x))})
+            \link[IRanges]{IPos} derivative i.e. do \code{ranges(ranges(x))})
             on GPos object \code{x}.
-      \item Note that a GPos object cannot hold names i.e. \code{names()}
+      \item A GPos object cannot hold names at the moment i.e. \code{names()}
             always returns \code{NULL} on it.
     }
   }
 
   \subsection{Setters}{
-    Like \link{GRanges} objects, GPos objects support the following
+    Like \link{GRanges} objects, GPos derivatives support the following
     setters:
     \itemize{
       \item The \code{seqnames()} and \code{strand()} setters.
       \item The \code{mcols()} and \code{metadata()} setters.
-      \item The family of setters that operate on the seqinfo component of
-            an object:
+      \item The family of setters that operate on the \code{seqinfo}
+            component of an object:
             \code{\link[GenomeInfoDb]{seqlevels}()},
             \code{\link[GenomeInfoDb]{seqlevelsStyle}()},
             \code{\link[GenomeInfoDb]{seqlengths}()},
@@ -87,27 +158,39 @@ GPos(pos_runs)  # constructor function
             package.
     }
 
-    However, there is no \code{pos()} setter for GPos objects at the moment
-    (although one might be added in the future).
+    However, there is no \code{pos()} setter for GPos derivatives at the
+    moment (although one might be added in the future).
   }
 }
 
 \section{Coercion}{
-  From GenomicRanges to GPos:
-  A \link{GenomicRanges} derivative \code{x} in which all the ranges have a
-  width of 1 can be coerced to a GPos object with \code{as(x, "GPos")}.
-  The names on \code{x} are not propagated (a warning is issued if \code{x}
-  has names on it).
+  From UnstitchedGPos to StitchedGPos and vice-versa: coercion back and
+  forth between UnstitchedGPos and StitchedGPos is supported via
+  \code{as(x, "StitchedGPos")} and \code{as(x, "UnstitchedGPos")}.
+  This is the most efficient and recommended way to switch between the
+  2 internal representations. Note that this switch can have dramatic
+  consequences on memory usage so is for advanced users only.
+  End users should almost never need to do this switch when following
+  a typical workflow.
 
-  From GPos to GRanges:
-  A GPos object \code{x} can be coerced to a \link{GRanges} object
+  From \link{GenomicRanges} to UnstitchedGPos, StitchedGPos, or GPos:
+  A \link{GenomicRanges} derivative \code{x} in which all the ranges have
+  a width of 1 can be coerced to an UnstitchedGPos or StitchedGPos object
+  with \code{as(x, "UnstitchedGPos")} or \code{as(x, "StitchedGPos")},
+  respectively.
+  The names on \code{x} are not propagated (a warning is issued if \code{x}
+  has names on it). For convenience \code{as(x, "GPos")} is supported and
+  is equivalent to \code{as(x, "UnstitchedGPos")}.
+
+  From GPos to \link{GRanges}:
+  A GPos derivative \code{x} can be coerced to a \link{GRanges} object
   with \code{as(x, "GRanges")}. However be aware that the resulting object
   can use thousands times (or more) memory than \code{x}!
   See "MEMORY USAGE" in the Examples section below.
 
   From GPos to ordinary R objects:
   Like with any other \link{GenomicRanges} derivative, \code{as.character()},
-  \code{as.factor()}, and \code{as.data.frame()} work on a GPos object
+  \code{as.factor()}, and \code{as.data.frame()} work on a GPos derivative
   \code{x}. Note however that \code{as.data.frame(x)} returns a data frame
   with a \code{pos} column (containing \code{pos(x)}) instead of the
   \code{start}, \code{end}, and \code{width} columns that one gets with other
@@ -115,25 +198,21 @@ GPos(pos_runs)  # constructor function
 }
 
 \section{Subsetting}{
-  A GPos object can be subsetted exactly like a \link{GRanges} object.
+  A GPos derivative can be subsetted exactly like a \link{GRanges} object.
 }
 
 \section{Concatenation}{
-  GPos objects can be concatenated together with \code{c()} or
-  \code{append()}.
+  GPos derivatives can be concatenated with \code{c()} or \code{append()}.
+  See \code{?\link[S4Vectors]{c}} in the \pkg{S4Vectors} package for
+  more information about concatenating Vector derivatives.
 }
 
 \section{Splitting and Relisting}{
   Like with any other \link{GRanges} object, \code{split()} and \code{relist()}
-  work on a GPos object.
+  work on a GPos derivative.
 }
 
 \note{
-  Like for any \link[S4Vectors]{Vector} derivative, the length of a
-  GPos object cannot exceed \code{.Machine$integer.max} (i.e. 2^31 on
-  most platforms). \code{GPos()} will return an error if \code{pos_runs}
-  contains too many genomic positions.
-
   Internal representation of GPos objects has changed in \pkg{GenomicRanges}
   1.29.10 (Bioc 3.6). Update any old object \code{x} with:
   \code{x <- updateObject(x, verbose=TRUE)}.
@@ -148,20 +227,30 @@ GPos(pos_runs)  # constructor function
 \seealso{
   \itemize{
     \item The \link[IRanges]{IPos} class in the \pkg{IRanges}
-          package for a memory-efficient representation of \emph{integer
-          positions} (i.e. integer ranges of width 1).
+          package for storing a set of \emph{integer positions} (i.e.
+          integer ranges of width 1).
 
-    \item \link{GenomicRanges} and \link{GRanges} objects.
+    \item The \link{GRanges} class for storing a set of \emph{genomic ranges}
+          of arbitrary width.
 
-    \item The \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in
-          the \pkg{GenomeInfoDb} package for accessing/modifying the seqinfo
-          component of an object.
+    \item \link[GenomeInfoDb]{Seqinfo} objects and the
+          \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in the
+          \pkg{GenomeInfoDb} package for accessing/modifying information
+          about the underlying sequences of a \link{GenomicRanges} derivative.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
-          positions.
+          ranges and/or positions.
 
     \item \link[GenomicRanges]{findOverlaps-methods} for finding overlapping
           genomic ranges and/or positions.
+
+    \item \link[GenomicRanges]{intra-range-methods} and
+          \link[GenomicRanges]{inter-range-methods}
+          for \emph{intra range} and \emph{inter range} transformations
+          of \link{GenomicRanges} derivatives.
+
+    \item \link[GenomicRanges]{coverage-methods} for computing the coverage
+          of a set of genomic ranges and/or positions.
 
     \item \link[GenomicRanges]{nearest-methods} for finding the nearest
           genomic range/position neighbor.
@@ -170,7 +259,7 @@ GPos(pos_runs)  # constructor function
           \code{\link[BSgenome]{snpsByOverlaps}}, and
           \code{\link[BSgenome]{snpsById}} methods for
           \link[BSgenome]{SNPlocs} objects defined in the \pkg{BSgenome}
-          package for extractors that return a GPos object.
+          package for extractors that return a GPos derivative.
 
     \item \link[SummarizedExperiment]{SummarizedExperiment} objects in the
           \pkg{SummarizedExperiment} package.
@@ -178,6 +267,8 @@ GPos(pos_runs)  # constructor function
 }
 
 \examples{
+showClass("GPos")  # shows the known subclasses
+
 ## ---------------------------------------------------------------------
 ## BASIC EXAMPLES
 ## ---------------------------------------------------------------------
@@ -228,8 +319,8 @@ mcols(gpos4)$dna <- do.call("c", unname(as.list(genome)))
 gpos4
 
 ## Note however that, like for any Vector derivative, the length of a
-## GPos object cannot exceed '.Machine$integer.max' (i.e. 2^31 on most
-## platforms) so the above only works with a "small" genome.
+## GPos derivative cannot exceed '.Machine$integer.max' (i.e. 2^31 on
+## most platforms) so the above only works with a "small" genome.
 ## For example it doesn't work with the Human genome:
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 \dontrun{
@@ -250,7 +341,7 @@ gr4 <- as(gpos4, "GRanges")
 gr4
 ## ... but is generally not a good idea:
 object.size(gpos4)
-object.size(gr4)  # 8 times bigger than the GPos object!
+object.size(gr4)  # 8 times bigger than the GPos derivative!
 
 ## Shuffling the order of the positions impacts memory usage:
 gpos4r <- rev(gpos4)
@@ -301,8 +392,8 @@ gpos5[mcols(gpos5)$cvg1 >= 10 | mcols(gpos5)$cvg2 >= 10]
 ## USING A GPos OBJECT IN A SummarizedExperiment OBJECT
 ## ---------------------------------------------------------------------
 ## Because the GPos class extends the GenomicRanges virtual class, a GPos
-## object can be used as the rowRanges component of a SummarizedExperiment
-## object.
+## derivative can be used as the rowRanges component of a
+## SummarizedExperiment object.
 
 ## As a 1st example, we show how the counts for samples sA and sB in
 ## 'gpos3' can be stored in a SummarizedExperiment object where the rows

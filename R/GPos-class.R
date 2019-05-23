@@ -7,7 +7,22 @@
 setClass("GPos",
     contains=c("GenomicPos", "GRanges"),
     representation(
+        "VIRTUAL",
         ranges="IPos"
+    )
+)
+
+setClass("UnstitchedGPos",
+    contains="GPos",
+    representation(
+        ranges="UnstitchedIPos"
+    )
+)
+
+setClass("StitchedGPos",
+    contains="GPos",
+    representation(
+        ranges="StitchedIPos"
     )
 )
 
@@ -28,8 +43,8 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 ### chromosome and strand.
 
 ### stitch_GenomicRanges() below takes any GenomicRanges derivative and
-### returns a GRanges object (so is NOT an endomorphism).
-### Note that this transformation preserves 'sum(width(x))'.
+### returns a GRanges object (so is NOT an endomorphism). Note that this
+### transformation preserves 'sum(width(x))'.
 ### Also note that this is an "inter range transformation". However unlike
 ### range(), reduce(), gaps(), or disjoin(), its result depends on the order
 ### of the elements in the input vector. It's also idempotent like range(),
@@ -37,9 +52,9 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 
 ### TODO: Define and export stitch() generic and method for IntegerRanges
 ### objects in the IRanges package (in inter-range-methods.R). Then make
-### stitch_GenomicRanges() and stitch_GPos() the "stitch" methods for
-### GenomicRanges and GPos objects, respectively, and support the
-### 'ignore.strand' argument.
+### stitch_GenomicRanges() and stitch_StitchedGPos() the "stitch" methods
+### for GenomicRanges and StitchedGPos objects, respectively, and support
+### the 'ignore.strand' argument.
 
 ### To be as fast as possible, we don't use internal low-level constructor
 ### new_GRanges() and we don't check the new object.
@@ -82,7 +97,7 @@ stitch_GenomicRanges <- function(x)
     .new_stitched_GRanges(ans_seqnames, ans_ranges, ans_strand, seqinfo(x))
 }
 
-stitch_GPos <- function(x)
+stitch_StitchedGPos <- function(x)
 {
     if (length(x) == 0L)
         return(granges(x, use.names=FALSE))  # returning GRanges() would loose
@@ -103,7 +118,7 @@ stitch_GPos <- function(x)
 
     ans_ranges <- IRanges:::extract_pos_runs_by_ranges(x@ranges@pos_runs, runs)
     breakpoints <- cumsum(width(ans_ranges))
-    ans_seqnames <- x_seqnames[breakpoints] 
+    ans_seqnames <- x_seqnames[breakpoints]
     ans_strand <- x_strand[breakpoints]
     .new_stitched_GRanges(ans_seqnames, ans_ranges, ans_strand, seqinfo(x))
 }
@@ -120,22 +135,44 @@ stitch_GPos <- function(x)
 ### Constructor
 ###
 
-### Note that if 'pos_runs' is a GPos instance with no metadata or metadata
-### columns, then 'identical(GPos(pos_runs), pos_runs)' is TRUE.
-GPos <- function(pos_runs=GRanges())
+### High-level GPos constructor.
+GPos <- function(seqnames=NULL, pos=NULL, strand=NULL,
+                 ..., seqinfo=NULL, seqlengths=NULL, stitch=NA)
 {
-    if (!is(pos_runs, "GenomicRanges"))
-        pos_runs <- as(pos_runs, "GenomicRanges", strict=FALSE)
-    suppressWarnings(ans_len <- sum(width(pos_runs)))
-    if (is.na(ans_len))
-        stop("too many genomic positions in 'pos_runs'")
-    ans_seqnames <- rep.int(seqnames(pos_runs), width(pos_runs))
-    ans_ranges <- IPos(ranges(pos_runs))
-    ans_strand <- rep.int(strand(pos_runs), width(pos_runs))
-    ans_mcols <- S4Vectors:::make_zero_col_DataFrame(ans_len)
-    new2("GPos", seqnames=ans_seqnames, ranges=ans_ranges, strand=ans_strand,
-                 elementMetadata=ans_mcols, seqinfo=seqinfo(pos_runs),
-                 check=FALSE)
+    mcols <- DataFrame(..., check.names=FALSE)
+
+    if (!is.null(pos)) {
+        pos <- IPos(pos, stitch=stitch)
+    } else if (is.null(seqnames)) {
+        pos <- IPos(stitch=stitch)
+    } else {
+        if (is(seqnames, "GPos")) {
+            x <- seqnames
+        } else {
+            x <- as(seqnames, "GRanges")
+        }
+        x_ranges <- x@ranges  # either IPos or IRanges
+        pos <- IPos(x_ranges, stitch=stitch)
+        seqnames <- x@seqnames
+        if (is(x_ranges, "IRanges"))  # i.e. 'x' is not a GPos
+            seqnames <- rep.int(seqnames, width(x_ranges))
+        if (is.null(strand)) {
+            strand <- x@strand
+            if (is(x_ranges, "IRanges"))  # i.e. 'x' is not a GPos
+                strand <- rep.int(strand, width(x_ranges))
+        }
+        if (length(mcols) == 0L && is(x, "GPos"))
+            mcols <- mcols(x, use.names=FALSE)
+        if (is.null(seqinfo))
+            seqinfo <- seqinfo(x)
+    }
+
+    seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
+
+    Class <- sub("IPos$", "GPos", class(pos))
+
+    new_GRanges(Class, seqnames=seqnames, ranges=pos, strand=strand,
+                       mcols=mcols, seqinfo=seqinfo)
 }
 
 
@@ -143,58 +180,98 @@ GPos <- function(pos_runs=GRanges())
 ### Coercion
 ###
 
-.from_GRanges_to_GPos <- function(from)
+.try_to_coerce_to_GRanges_first <- function(from, to)
 {
-    if (!all(width(from) == 1L))
-        stop(wmsg("all the ranges in the object to coerce to GPos ",
-                  "must have a width of 1"))
-    if (!is.null(names(from))) {
-        names(from) <- NULL
-        warning(wmsg("because a GPos object cannot hold them, the names ",
-                     "on the object to coerce to GPos couldn't be ",
-                     "propagated by the coercion"))
-    }
-    class(from) <- "GPos"  # temporarily broken GRanges instance!
-    from@ranges <- as(from@ranges, "IPos")  # now fixed :-)
+    if (is(from, "GRanges"))
+        return(from)
+    from <- try(as(from, "GRanges"), silent=TRUE)
+    if (inherits(from, "try-error"))
+        stop(wmsg("object to coerce to ", to, " ",
+                  "couldn't be coerced to GRanges first"))
     from
 }
-setAs("GRanges", "GPos", .from_GRanges_to_GPos)
+.check_GenomicRanges_for_coercion_to_GPos <- function(from, to)
+{
+    if (!all(width(from) == 1L))
+        stop(wmsg("all the ranges in the object to ",
+                  "coerce to ", to, " must have a width of 1"))
+    if (!is.null(names(from)))
+        warning(wmsg("because a GPos derivative cannot hold them, ",
+                     "the names on the object to coerce couldn't be ",
+                     "propagated during its coercion to ", to))
+}
+.from_ANY_to_UnstitchedGPos <- function(from)
+{
+    from <- .try_to_coerce_to_GRanges_first(from, "UnstitchedGPos")
+    .check_GenomicRanges_for_coercion_to_GPos(from, "UnstitchedGPos")
+    class(from) <- "UnstitchedGPos"  # temporarily broken instance!
+    from@ranges <- as(from@ranges, "UnstitchedIPos")  # now fixed :-)
+    from
+}
+.from_ANY_to_StitchedGPos <- function(from)
+{
+    from <- .try_to_coerce_to_GRanges_first(from, "StitchedGPos")
+    .check_GenomicRanges_for_coercion_to_GPos(from, "StitchedGPos")
+    class(from) <- "StitchedGPos"  # temporarily broken instance!
+    from@ranges <- as(from@ranges, "StitchedIPos")  # now fixed :-)
+    from
+}
+setAs("ANY", "UnstitchedGPos", .from_ANY_to_UnstitchedGPos)
+setAs("ANY", "StitchedGPos", .from_ANY_to_StitchedGPos)
+setAs("ANY", "GPos", .from_ANY_to_UnstitchedGPos)
 
-setAs("ANY", "GPos", function(from) .from_GRanges_to_GPos(as(from, "GRanges")))
+### Yes, we also need to define the 3 coercion methods below, even though
+### they seem redundant with the 3 coercion methods above. This is because
+### the oh-so-smart methods package wants to automatically define these
+### coercion methods in case they are not explicitly defined by the user.
+### Unfortunately, and not too surprisingly, these automatic coercion
+### methods get it wrong! How could they possibly know what they are doing?
+setAs("GRanges", "UnstitchedGPos", .from_ANY_to_UnstitchedGPos)
+setAs("GRanges", "StitchedGPos", .from_ANY_to_StitchedGPos)
+setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
 
-### Because we implemented the 'strict' argument we cannot use setAs().
-### 'to' is ignored but we must have it in the signature otherwise the call
-### to setMethod("coerce") below will complain.
+### Of course we want 'as(GPos, "GRanges", strict=FALSE)' to do the right
+### thing (i.e. to be a no-op), but, unfortunately, as() won't do that
+### if a coerce,GPos,GRanges method is defined, because, in this case,
+### as() will **always** call the method, EVEN WHEN strict=FALSE AND
+### THE OBJECT TO COERCE ALREADY DERIVES FROM THE TARGET CLASS! (This is
+### a serious flaw in as() current design/implementation.) A workaround is
+### to support the 'strict=FALSE' case at the level of the coerce() method
+### itself. However setAs() doesn't let us do that so this is why we use
+### setMethod("coerce", ...) to define the method.
 .from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
 {
     if (!isTRUEorFALSE(strict))
         stop("'strict' must be TRUE or FALSE")
     if (!strict)
         return(from)
-    class(from) <- "GRanges"  # temporarily broken GRanges instance!
+    class(from) <- "GRanges"  # temporarily broken instance!
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
-#setAs("GPos", "GRanges", .from_GPos_to_GRanges)
 setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
 
+### S3/S4 combo for as.data.frame.GPos
 ### The "as.data.frame" method for GenomicRanges objects works on a GPos
 ### object but returns a data.frame with identical "start" and "end" columns,
 ### and a "width" column filled with 1. We overwrite it to return a data.frame
 ### with a "pos" column instead of the "start" and "end" columns, and no
 ### "width" column.
-### TODO: Turn this into an S3/S4 combo for as.data.frame.GPos
-setMethod("as.data.frame", "GPos",
-    function(x, row.names=NULL, optional=FALSE, ...)
-    {
-        mcols_df <- as.data.frame(mcols(x, use.names=FALSE), ...)
-        data.frame(seqnames=as.factor(seqnames(x)),
-                   pos=pos(x),
-                   strand=as.factor(strand(x)),
-                   mcols_df,
-                   stringsAsFactors=FALSE)
-    }
-)
+.as.data.frame.GPos <- function(x, row.names=NULL, optional=FALSE)
+{
+    if (!identical(optional, FALSE))
+        warning(wmsg("'optional' argument is ignored"))
+    x_mcols <- mcols(x, use.names=FALSE)  # always a DataFrame parallel to 'x'
+    data.frame(seqnames=as.factor(seqnames(x)),
+               pos=pos(x),
+               strand=as.factor(strand(x)),
+               as.data.frame(x_mcols),
+               row.names=row.names,
+               stringsAsFactors=FALSE)
+}
+as.data.frame.GPos <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.GPos(x, row.names=NULL, optional=FALSE, ...)
+setMethod("as.data.frame", "GPos", .as.data.frame.GPos)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -235,7 +312,7 @@ setMethod("updateObject", "GPos",
 ### Show
 ###
 
-.make_naked_matrix_from_GPos <- function(x)
+.from_GPos_to_naked_character_matrix_for_display <- function(x)
 {
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
@@ -259,11 +336,10 @@ show_GPos <- function(x, margin="",
              "GenomicRanges ", version, "\n  and cannot be displayed or ",
              "used. Please update it with:\n",
              "    object <- updateObject(object, verbose=TRUE)")
-    x_class <- class(x)
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(x_class, " object with ",
+    cat(classNameForDisplay(x), " object with ",
         x_len, " ", ifelse(x_len == 1L, "position", "positions"),
         " and ",
         x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
@@ -272,7 +348,7 @@ show_GPos <- function(x, margin="",
     ## and tail() work on 'xx'.
     xx <- as(x, "GPos")
     out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
-                .make_naked_matrix_from_GPos)
+                .from_GPos_to_naked_character_matrix_for_display)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
