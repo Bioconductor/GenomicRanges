@@ -42,10 +42,8 @@ isSmallGenome <- function(seqlengths)
     }
     if (any(is.na(seqlengths)))
         return(NA)
-    ## sum() will emit a "integer overflow" warning and return NA if the sum
-    ## is > .Machine$integer.max
-    total_length <- suppressWarnings(sum(seqlengths))
-    !is.na(total_length)
+    total_length <- sum(seqlengths)  # no more integer overflow in R >= 3.5
+    total_length <= .Machine$integer.max
 }
 
 

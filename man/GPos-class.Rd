@@ -27,7 +27,8 @@
 \alias{coerce,GRanges,UnstitchedGPos-method}
 \alias{coerce,GRanges,StitchedGPos-method}
 \alias{coerce,GRanges,GPos-method}
-\alias{coerce,GPos,GRanges-method}
+\alias{coerce,UnstitchedGPos,GRanges-method}
+\alias{coerce,StitchedGPos,GRanges-method}
 \alias{as.data.frame.GPos}
 \alias{as.data.frame,GPos-method}
 
@@ -261,8 +262,8 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
           \link[BSgenome]{SNPlocs} objects defined in the \pkg{BSgenome}
           package for extractors that return a GPos derivative.
 
-    \item \link[SummarizedExperiment]{SummarizedExperiment} objects in the
-          \pkg{SummarizedExperiment} package.
+    \item \link[SummarizedExperiment]{SummarizedExperiment} objects and
+          derivatives in the \pkg{SummarizedExperiment} package.
   }
 }
 
@@ -274,25 +275,38 @@ showClass("GPos")  # shows the known subclasses
 ## ---------------------------------------------------------------------
 
 ## Example 1:
-gpos1 <- GPos(c("chr1:44-53", "chr1:5-10", "chr2:2-5"))
-gpos1
+gpos1a <- GPos(seqnames=Rle(c("chr1", "chr2", "chr1"), c(10, 6, 4)),
+               pos=c(44:53, 5:10, 2:5))
+gpos1a  # unstitched
 
-length(gpos1)
-seqnames(gpos1)
-pos(gpos1)  # same as 'start(gpos1)' and 'end(gpos1)'
-strand(gpos1)
-as.character(gpos1)
-as.data.frame(gpos1)
-as(gpos1, "GRanges")
-as.data.frame(as(gpos1, "GRanges"))
-gpos1[9:17]
+length(gpos1a)
+seqnames(gpos1a)
+pos(gpos1a)  # same as 'start(gpos1a)' and 'end(gpos1a)'
+strand(gpos1a)
+as.character(gpos1a)
+as.data.frame(gpos1a)
+as(gpos1a, "GRanges")
+as.data.frame(as(gpos1a, "GRanges"))
+gpos1a[9:17]
+
+gpos1b <- GPos(seqnames=Rle(c("chr1", "chr2", "chr1"), c(10, 6, 4)),
+               pos=c(44:53, 5:10, 2:5), stitch=TRUE)
+gpos1b  # stitched
+
+## 'gpos1a' and 'gpos1b' are semantically equivalent, only their
+## internal representations differ:
+all(gpos1a == gpos1b)
+
+gpos1c <- GPos(c("chr1:44-53", "chr2:5-10", "chr1:2-5"))
+gpos1c  # stitched
+
+identical(gpos1b, gpos1c)
 
 ## Example 2:
 pos_runs <- GRanges("chrI", IRanges(c(1, 6, 12, 17), c(5, 10, 16, 20)),
-                    strand=c("+", "-", "-", "+"))
+                    strand=c("*", "-", "-", "+"))
 gpos2 <- GPos(pos_runs)
-gpos2
-
+gpos2  # stitched
 strand(gpos2)
 
 ## Example 3:
@@ -329,8 +343,8 @@ library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 
 ## You can use isSmallGenome() to check upfront whether the genome is
 ## "small" or not.
-isSmallGenome(genome)
-isSmallGenome(TxDb.Hsapiens.UCSC.hg19.knownGene)
+isSmallGenome(genome)  # TRUE
+isSmallGenome(TxDb.Hsapiens.UCSC.hg19.knownGene)  # FALSE
 
 ## ---------------------------------------------------------------------
 ## MEMORY USAGE
@@ -341,13 +355,21 @@ gr4 <- as(gpos4, "GRanges")
 gr4
 ## ... but is generally not a good idea:
 object.size(gpos4)
-object.size(gr4)  # 8 times bigger than the GPos derivative!
+object.size(gr4)     # 8 times bigger than the StitchedGPos object!
 
 ## Shuffling the order of the positions impacts memory usage:
 gpos4r <- rev(gpos4)
 object.size(gpos4r)  # significantly
 gpos4s <- sample(gpos4)
 object.size(gpos4s)  # even worse!
+
+## If one anticipates a lot of shuffling of the genomic positions,
+## then an UnstitchedGPos object should be used instead:
+gpos4b <- as(gpos4, "UnstitchedGPos")
+object.size(gpos4b)  # initial size is bigger than stitched version
+object.size(rev(gpos4b))  # size didn't change
+object.size(sample(gpos4b))  # size increased, but is still < stitched
+                             # version
 
 ## AN IMPORTANT NOTE: In the worst situations, GPos still performs as
 ## good as a GRanges object.
@@ -389,11 +411,11 @@ object.size(gpos5)  # lightweight
 gpos5[mcols(gpos5)$cvg1 >= 10 | mcols(gpos5)$cvg2 >= 10]
 
 ## ---------------------------------------------------------------------
-## USING A GPos OBJECT IN A SummarizedExperiment OBJECT
+## USING A GPos OBJECT IN A RangedSummarizedExperiment OBJECT
 ## ---------------------------------------------------------------------
-## Because the GPos class extends the GenomicRanges virtual class, a GPos
-## derivative can be used as the rowRanges component of a
-## SummarizedExperiment object.
+## Because the GPos class extends the GenomicRanges virtual class, a
+## GPos derivative can be used as the rowRanges component of a
+## RangedSummarizedExperiment object.
 
 ## As a 1st example, we show how the counts for samples sA and sB in
 ## 'gpos3' can be stored in a SummarizedExperiment object where the rows
@@ -407,7 +429,7 @@ rowRanges(rse3)
 head(assay(rse3))
 
 ## Finally we show how the coverage data from Example 5 can be easily
-## stored in a lightweight SummarizedExperiment object:
+## stored in a lightweight SummarizedExperiment derivative:
 cvg <- mcols(gpos5)
 mcols(gpos5) <- NULL
 rse5 <- SummarizedExperiment(list(cvg=cvg), rowRanges=gpos5)

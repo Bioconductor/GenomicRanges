@@ -230,15 +230,18 @@ setAs("GRanges", "UnstitchedGPos", .from_ANY_to_UnstitchedGPos)
 setAs("GRanges", "StitchedGPos", .from_ANY_to_StitchedGPos)
 setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
 
-### Of course we want 'as(GPos, "GRanges", strict=FALSE)' to do the right
-### thing (i.e. to be a no-op), but, unfortunately, as() won't do that
-### if a coerce,GPos,GRanges method is defined, because, in this case,
-### as() will **always** call the method, EVEN WHEN strict=FALSE AND
-### THE OBJECT TO COERCE ALREADY DERIVES FROM THE TARGET CLASS! (This is
-### a serious flaw in as() current design/implementation.) A workaround is
-### to support the 'strict=FALSE' case at the level of the coerce() method
-### itself. However setAs() doesn't let us do that so this is why we use
-### setMethod("coerce", ...) to define the method.
+### Of course we want 'as(UnstitchedGPos, "GRanges", strict=FALSE)' and
+### 'as(StitchedGPos, "GRanges", strict=FALSE)' to do the right thing
+### (i.e. to be no-ops), but, unfortunately, as() won't do that if
+### coerce,UnstitchedGPos,GRanges and coerce,StitchedGPos,GRanges methods
+### are defined, because, in this case, as() will **always** call the
+### method, EVEN WHEN strict=FALSE AND THE OBJECT TO COERCE ALREADY DERIVES
+### FROM THE TARGET CLASS! (This is a serious flaw in as() current
+### design/implementation but I wouldn't be surprised if someone argued
+### that this is a feature and working as intended.)
+### Anyway, a workaround is to support the 'strict=FALSE' case at the level
+### of the coerce() method itself. However setAs() doesn't let us do that
+### so this is why we use setMethod("coerce", ...) to define these methods.
 .from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
 {
     if (!isTRUEorFALSE(strict))
@@ -249,7 +252,15 @@ setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
-setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
+setMethod("coerce", c("UnstitchedGPos", "GRanges"), .from_GPos_to_GRanges)
+setMethod("coerce", c("StitchedGPos", "GRanges"), .from_GPos_to_GRanges)
+### One might think that defining the coerce,GPos,GRanges method below would
+### cover the UnstitchedGPos->GRanges and StitchedGPos->GRanges cases, but no
+### such luck! Again, this is because the oh-so-smart methods package wants
+### to automatically define the 2 coercion methods above in case they are not
+### explicitly defined by the user. And once again, these automatic coercion
+### methods get it wrong!
+#setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
 
 ### S3/S4 combo for as.data.frame.GPos
 ### The "as.data.frame" method for GenomicRanges objects works on a GPos
@@ -260,7 +271,7 @@ setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
 .as.data.frame.GPos <- function(x, row.names=NULL, optional=FALSE)
 {
     if (!identical(optional, FALSE))
-        warning(wmsg("'optional' argument is ignored"))
+        warning(wmsg("'optional' argument was ignored"))
     x_mcols <- mcols(x, use.names=FALSE)  # always a DataFrame parallel to 'x'
     data.frame(seqnames=as.factor(seqnames(x)),
                pos=pos(x),
