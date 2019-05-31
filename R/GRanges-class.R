@@ -260,8 +260,8 @@ new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
         rownames(mcols) <- NULL
     }
 
-    new(Class, seqnames=seqnames, ranges=ranges, strand=strand,
-               elementMetadata=mcols, seqinfo=seqinfo)
+    new2(Class, seqnames=seqnames, ranges=ranges, strand=strand,
+                elementMetadata=mcols, seqinfo=seqinfo, check=FALSE)
 }
 
 ### High-level GRanges constructor.
@@ -288,8 +288,15 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
 
     seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
 
-    new_GRanges("GRanges", seqnames=seqnames, ranges=ranges, strand=strand,
-                           mcols=mcols, seqinfo=seqinfo)
+    ans <- new_GRanges("GRanges", seqnames=seqnames,
+                                  ranges=ranges, strand=strand,
+                                  mcols=mcols, seqinfo=seqinfo)
+    ## new_GRanges() doesn't check validity so we do it here. Note that 'ans'
+    ## should be valid except for the silly INVALID.GR.COLNAMES restriction.
+    ## If it wasn't for this restriction, we actually wouldn't need to
+    ## validate 'ans'.
+    validObject(ans)
+    ans
 }
 
 

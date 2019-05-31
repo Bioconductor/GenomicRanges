@@ -356,9 +356,8 @@ show_GPos <- function(x, margin="",
         x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
         ":\n", sep="")
     ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
-    ## and tail() work on 'xx'.
-    xx <- as(x, "GPos")
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
+    ## and tail() work on 'x'.
+    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
                 .from_GPos_to_naked_character_matrix_for_display)
     if (print.classinfo) {
         .COL2CLASS <- c(
