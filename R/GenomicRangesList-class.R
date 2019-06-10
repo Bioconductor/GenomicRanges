@@ -316,7 +316,9 @@ get_GenomicRangesList_mcols <-
 }
 setMethod("elementMetadata", "GenomicRangesList", get_GenomicRangesList_mcols)
 
-### seqinfo() is NOT supported on SimpleGenomicRangesList derivatives!
+setMethod("seqinfo", "GenomicRangesList",
+    combine_seqinfo_from_GenomicRanges_objects
+)
 setMethod("seqinfo", "CompressedGenomicRangesList",
     function(x) seqinfo(x@unlistData)
 )

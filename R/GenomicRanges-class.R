@@ -731,6 +731,20 @@ setMethod("show", "GenomicRanges",
 ### Concatenation
 ###
 
+### 'x' can be any list-like object and its list elements can be anything
+### that supports seqinfo().
+### Used in the seqinfo() method for GenomicRangesList objects.
+combine_seqinfo_from_GenomicRanges_objects <- function(x)
+{
+    x_len <- length(x)
+    ## This will typically happen in the context of the seqinfo() method
+    ## for GenomicRangesList objects.
+    if (x_len == 0L)
+        stop(wmsg("seqinfo() is not supported on a zero length ",
+                  class(x), " object"))
+    do.call(merge, lapply(seq_len(x_len), function(i) seqinfo(x[[i]])))
+}
+
 ### NOT exported but used in the GenomicAlignments package.
 concatenate_GenomicRanges_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
@@ -742,7 +756,7 @@ concatenate_GenomicRanges_objects <-
     all_objects <- c(list(x), objects)
 
     ## Combine seqinfo.
-    seqinfo(x) <- do.call(merge, lapply(all_objects, seqinfo))
+    seqinfo(x) <- combine_seqinfo_from_GenomicRanges_objects(all_objects)
 
     ## Call method for Vector objects to concatenate all the parallel slots.
     callNextMethod()

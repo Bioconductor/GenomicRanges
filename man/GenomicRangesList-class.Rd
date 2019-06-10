@@ -33,6 +33,7 @@
 \alias{seqnames,GenomicRangesList-method}
 \alias{strand,GenomicRangesList-method}
 \alias{elementMetadata,GenomicRangesList-method}
+\alias{seqinfo,GenomicRangesList-method}
 \alias{seqinfo,CompressedGenomicRangesList-method}
 
 \alias{seqnames<-,CompressedGenomicRangesList-method}
