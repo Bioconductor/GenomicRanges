@@ -180,25 +180,6 @@ setMethod("update", "GRanges",
     strand
 }
 
-### Return a DataFrame parallel to 'ranges'.
-.normarg_mcols <- function(mcols, ranges)
-{
-    if (length(mcols) == 0L) {
-        mcols <- mcols(ranges, use.names=FALSE)
-        if (is.null(mcols))
-            mcols <- DataFrame()
-    } else if (!is(mcols, "DataFrame")) {
-        stop(msg("'mcols' must be a DataFrame object"))
-    }
-    if (nrow(mcols) == 0L && ncol(mcols) == 0L) {
-        mcols <- S4Vectors:::make_zero_col_DataFrame(length(ranges))
-    } else if (nrow(mcols) != length(ranges)) {
-        stop(wmsg("'mcols' must be parallel to object to construct ",
-                  "(i.e. it must have 1 row per range)"))
-    }
-    mcols
-}
-
 ### Internal low-level constructor. Used by high-level GRanges/GPos
 ### constructors. Not meant to be used directly by the end user.
 ### NOTE: 'ranges' is trusted! (should have been checked by the caller).
@@ -250,7 +231,12 @@ new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
         }
     }
 
-    mcols <- .normarg_mcols(mcols, ranges)
+    ## From now on, 'seqnames', 'ranges', and 'strand' are guaranteed
+    ## to be of length 'ans_len'.
+
+    if (length(mcols) == 0L)
+        mcols <- mcols(ranges, use.names=FALSE)
+    mcols <- S4Vectors:::normarg_mcols(mcols, Class, ans_len)
 
     if (!is.null(mcols(ranges, use.names=FALSE)))
         mcols(ranges) <- NULL
@@ -318,7 +304,9 @@ setMethod("ranges", "GRanges",
             stop(wmsg("'use.names' must be TRUE or FALSE"))
         if (!isTRUEorFALSE(use.mcols))
             stop(wmsg("'use.mcols' must be TRUE or FALSE"))
-        ans <- x@ranges
+        ## We call updateObject() in case 'x@ranges' is an old IPos object
+        ## (see updateObject() method for IPos objects).
+        ans <- updateObject(x@ranges, check=FALSE)
         if (!use.names)
             names(ans) <- NULL
         if (use.mcols)

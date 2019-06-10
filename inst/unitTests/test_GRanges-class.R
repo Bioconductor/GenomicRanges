@@ -31,8 +31,6 @@ test_GRanges_construction <- function()
     checkException(GRanges(letters, IRanges(1:10, 1:10)), silent = TRUE)
     checkException(GRanges(letters, IRanges(1:26, 1:26), strand = letters),
                    silent = TRUE)
-    checkException(GRanges(letters, IRanges(1:26, 1:26), score = 1:10),
-                   silent = TRUE)
     checkException(GRanges(letters, IRanges(1:26, 1:26), start = 1:26),
                    silent = TRUE)
     checkException(GRanges(letters, IRanges(1:26, 1:26), end = 1:26),

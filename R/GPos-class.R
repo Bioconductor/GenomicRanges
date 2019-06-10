@@ -28,6 +28,28 @@ setClass("StitchedGPos",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity
+###
+
+.OLD_GPOS_INSTANCE_MSG <- c(
+    "Starting with BioC 3.10, the class attribute of all ",
+    "GPos **instances** needs to be set to \"StitchedGPos\". ",
+    "Please update this object with 'updateObject(object, verbose=TRUE)' ",
+    "and re-serialize it."
+)
+
+.validate_GPos <- function(x)
+{
+    if (class(x) == "GPos")
+        return(paste(.OLD_GPOS_INSTANCE_MSG, collapse=""))
+
+    NULL
+}
+
+setValidity2("GPos", .validate_GPos)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters
 ###
 
@@ -122,13 +144,6 @@ stitch_StitchedGPos <- function(x)
     ans_strand <- x_strand[breakpoints]
     .new_stitched_GRanges(ans_seqnames, ans_ranges, ans_strand, seqinfo(x))
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity
-###
-
-### TODO
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -294,27 +309,49 @@ setMethod("as.data.frame", "GPos", .as.data.frame.GPos)
 
 .get_GPos_version <- function(object)
 {
-    if (.hasSlot(object, "pos_runs")) "< 1.29.10" else "current"
+    if (class(object) != "GPos")
+        return("current")
+
+    if (!.hasSlot(object, "pos_runs"))
+        return(">= 1.29.10 and < 1.37.7")
+
+    return("< 1.29.10")
 }
 
 setMethod("updateObject", "GPos",
     function(object, ..., verbose=FALSE)
     {
         version <- .get_GPos_version(object)
-        if (version == "current") {
+        if (.hasSlot(object, "pos_runs")) {
+            if (verbose)
+                message("[updateObject] ", class(object), " object uses ",
+                        "internal representation\n",
+                        "[updateObject] from GenomicRanges ", version, ". ",
+                        "Updating it ... ", appendLF=FALSE)
+            ans <- GPos(object@pos_runs)
+            mcols(ans) <- mcols(object)
+            metadata(ans) <- metadata(object)
+            if (verbose)
+                message("OK")
+            return(ans)
+        }
+        if (class(object) == "GPos") {
+            if (verbose)
+                message("[updateObject] Settting class attribute of GPos ",
+                        "object to \"StitchedGPos\" ... ", appendLF=FALSE)
+            class(object) <- class(new("StitchedGPos"))
+            if (verbose)
+                message("OK")
+        }
+        if (IRanges:::get_IPos_version(object@ranges) == "current") {
             if (verbose)
                 message("[updateObject] Internal representation of ",
                         class(object), " object is current.\n",
                         "[updateObject] Nothing to update.")
             return(object)
         }
-        if (verbose)
-            message("[updateObject] ", class(object), " object uses ",
-                    "internal representation from GenomicRanges\n",
-                    "[updateObject] ", version, ". Updating it ...")
-        object <- GPos(object@pos_runs)
-        metadata(object) <- metadata(object)
-        object
+        object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
+        return(object)
     }
 )
 
@@ -343,10 +380,12 @@ show_GPos <- function(x, margin="",
 {
     version <- .get_GPos_version(x)
     if (version != "current")
-        stop(class(x), " object uses internal representation from ",
-             "GenomicRanges ", version, "\n  and cannot be displayed or ",
-             "used. Please update it with:\n",
-             "    object <- updateObject(object, verbose=TRUE)")
+        stop(c(wmsg("This ", class(x), " object uses internal representation ",
+                    "from GenomicRanges ", version, ", and so needs to be ",
+                    "updated before it can be displayed or used. ",
+                    "Please update it with:"),
+               "\n\n    object <- updateObject(object, verbose=TRUE)",
+               "\n\n  and re-serialize it."))
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
