@@ -133,9 +133,10 @@
           or factor containing the strand information.
         }
         \item{\code{...}}{
-          Optional metadata columns. These columns cannot be named
-          \code{"start"}, \code{"end"}, \code{"width"}, or
-          \code{"element"}.
+          Metadata columns to set on the GRanges object. All the metadata
+          columns must be vector-like objects of the same length as the object
+          to construct. They cannot be named \code{"start"}, \code{"end"},
+          \code{"width"}, or \code{"element"}.
         }
         \item{\code{seqinfo}}{
           Either \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object,

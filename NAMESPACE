@@ -1,7 +1,7 @@
 useDynLib(GenomicRanges)
 
 import(methods)
-importFrom(utils, as.roman, .DollarNames)
+importFrom(utils, .DollarNames, capture.output)
 importFrom(stats, setNames)
 importFrom(stats4, summary, update)
 
@@ -22,6 +22,7 @@ exportClasses(
     Constraint, Constraint_OR_NULL,
     GenomicRanges, GenomicRanges_OR_missing, GenomicPos,
     IRanges_OR_IPos, GRanges, GPos, UnstitchedGPos, StitchedGPos,
+    GRangesFactor,
     DelegatingGenomicRanges,
     GNCList,
     GenomicRangesList, GenomicRanges_OR_GenomicRangesList,
@@ -96,9 +97,10 @@ exportMethods(
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
-    selfmatch,
-    relistToClass,
     pcompare,
+    selfmatch,
+    FactorToClass,
+    relistToClass,
 
     ## Generics defined in IRanges:
     ranges, "ranges<-",
@@ -128,6 +130,7 @@ export(
 
     GRanges, .DollarNames.GenomicRanges, .DollarNames.GRanges,
     GPos,
+    GRangesFactor,
     GNCList,
     GenomicRangesList, GRangesList,
 

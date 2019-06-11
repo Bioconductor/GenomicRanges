@@ -684,7 +684,7 @@ show_GenomicRanges <- function(x, margin="",
                                print.classinfo=FALSE, print.seqinfo=FALSE,
                                coerce.internally.to.GRanges=TRUE)
 {
-    cat(.GenomicRanges_summary(x), ":\n", sep="")
+    cat(margin, summary(x), ":\n", sep="")
     ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
     ## and tail() work on 'xx'.
     if (coerce.internally.to.GRanges) {
@@ -709,21 +709,20 @@ show_GenomicRanges <- function(x, margin="",
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste0(margin, rownames(out))
+        rownames(out) <- paste0(margin, "  ", rownames(out))
     ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.seqinfo) {
-        cat(margin, "-------\n", sep="")
-        cat(margin, "seqinfo: ", summary(seqinfo(x)), "\n", sep="")
+        cat(margin, "  -------\n", sep="")
+        cat(margin, "  seqinfo: ", summary(seqinfo(x)), "\n", sep="")
     }
 }
 
 setMethod("show", "GenomicRanges",
     function(object)
-        show_GenomicRanges(object, margin="  ",
-                           print.classinfo=TRUE, print.seqinfo=TRUE)
+        show_GenomicRanges(object, print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
 
