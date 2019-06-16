@@ -33,7 +33,7 @@
 }
 
 \usage{
-GRangesFactor(x, levels=GRanges(), index=NULL, ...)  # constructor function
+GRangesFactor(x, levels, index=NULL, ...)  # constructor function
 }
 
 \arguments{
@@ -42,8 +42,9 @@ GRangesFactor(x, levels=GRanges(), index=NULL, ...)  # constructor function
     at least one of \code{x} and \code{levels} must be specified.
     If \code{index} is \code{NULL}, both can be specified.
 
-    When \code{levels} is specified, it must be a \link{GRanges} object (or
-    derivative) with no duplicate ranges (i.e. \code{anyDuplicated(levels)}
+    When \code{x} and/or \code{levels} are specified, they must be
+    \link{GRanges} objects or derivatives. In addition, \code{levels}
+    cannot contain duplicate ranges (i.e. \code{anyDuplicated(levels)}
     must return 0).
 
     When \code{x} and \code{levels} are both specified, they should
@@ -143,78 +144,68 @@ gr0 <- GRanges("chrA", ir0, ID=paste0("ID", 1:8))
 
 ## Use explicit levels:
 gr1 <- GRanges("chrA", IRanges(1:6, width=10))
-F1 <- Factor(gr0, levels=gr1)
-F1
-length(F1)
-names(F1)
-levels(F1)  # gr1
-nlevels(F1)
-as.integer(F1)  # encoding
+grf1 <- GRangesFactor(gr0, levels=gr1)
+grf1
+length(grf1)
+names(grf1)
+levels(grf1)  # gr1
+nlevels(grf1)
+as.integer(grf1)  # encoding
 
 ## If we don't specify the levels, they'll be set to unique(gr0):
-F2 <- Factor(gr0)
-F2
-length(F2)
-names(F2)
-levels(F2)  # unique(gr0)
-nlevels(F2)
-as.integer(F2)
+grf2 <- GRangesFactor(gr0)
+grf2
+length(grf2)
+names(grf2)
+levels(grf2)  # unique(gr0)
+nlevels(grf2)
+as.integer(grf2)
 
 ## ---------------------------------------------------------------------
 ## DECODING
 ## ---------------------------------------------------------------------
-unfactor(F1)
+unfactor(grf1)
 
-stopifnot(identical(gr0, unfactor(F1)))
-stopifnot(identical(gr0, unfactor(F2)))
+stopifnot(identical(gr0, unfactor(grf1)))
+stopifnot(identical(gr0, unfactor(grf2)))
 
-unfactor(F1, use.names=FALSE)
-unfactor(F1, ignore.mcols=TRUE)
+unfactor(grf1, use.names=FALSE)
+unfactor(grf1, ignore.mcols=TRUE)
 
 ## ---------------------------------------------------------------------
 ## COERCION
 ## ---------------------------------------------------------------------
-F2b <- as(gr0, "Factor")  # same as Factor(gr0)
-stopifnot(identical(F2, F2b))
+grf2b <- as(gr0, "GRangesFactor")  # same as GRangesFactor(gr0)
+stopifnot(identical(grf2, grf2b))
 
-as.factor(F2)
-as.factor(F1)
+as.factor(grf2)
+as.factor(grf1)
 
-as.character(F1)  # same as unfactor(as.factor(F1)),
-                  # and also same as as.character(unfactor(F1))
-
-## On an ordinary factor 'f', 'as(f, "Factor")' and 'Factor(f)' are
-## NOT the same:
-f <- factor(sample(letters, 500, replace=TRUE), levels=letters)
-as(f, "Factor")  # same levels as 'f'
-Factor(f)        # levels **are** 'f'!
-
-stopifnot(identical(f, as.factor(as(f, "Factor"))))
+as.character(grf1)  # same as unfactor(as.factor(grf1)),
+                    # and also same as as.character(unfactor(grf1))
 
 ## ---------------------------------------------------------------------
 ## CONCATENATION
 ## ---------------------------------------------------------------------
 gr3 <- GRanges("chrA", IRanges(c(5, 2, 8:6), width=10))
-F3 <- Factor(levels=gr3, index=2:4)
-F13 <- c(F1, F3)
-F13
-levels(F13)
+grf3 <- GRangesFactor(levels=gr3, index=2:4)
+grf13 <- c(grf1, grf3)
+grf13
+levels(grf13)
 
-stopifnot(identical(c(unfactor(F1), unfactor(F3)), unfactor(F13)))
+stopifnot(identical(c(unfactor(grf1), unfactor(grf3)), unfactor(grf13)))
 
 ## ---------------------------------------------------------------------
 ## COMPARING & ORDERING
 ## ---------------------------------------------------------------------
-\dontrun{
-  F1 == F2  # Error! (F1 and F2 don't have the same levels)
-}
+grf1 == grf2  # same as unfactor(grf1) == unfactor(grf2)
 
-order(F1)  # same as order(as.integer(F1))
-order(F2)  # same as order(as.integer(F2))
+order(grf1)   # same as order(unfactor(grf1))
+order(grf2)   # same as order(unfactor(grf2))
 
-## The levels of the Factor influence the order of the table:
-table(F1)
-table(F2)
+## The levels of the GRangesFactor influence the order of the table:
+table(grf1)
+table(grf2)
 }
 \keyword{methods}
 \keyword{classes}

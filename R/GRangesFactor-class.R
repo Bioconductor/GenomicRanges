@@ -23,8 +23,10 @@ setMethod("FactorToClass", "GRanges", function(x) "GRangesFactor")
 ### minor convenience and extra checks.
 ###
 
-GRangesFactor <- function(x, levels=GRanges(), index=NULL, ...)
+GRangesFactor <- function(x, levels, index=NULL, ...)
 {
+    if (missing(x) && missing(levels) && missing(levels))
+        return(Factor(levels=GRanges(), index=integer(0), ...))
     if (!(missing(x) || is(x, "GRanges")))
         stop(wmsg("'x' must be a GRanges object"))
     if (!(missing(levels) || is(levels, "GRanges")))
