@@ -231,43 +231,61 @@ setMethod("findOverlaps", c("GRangesFactor", "GenomicRanges"), function(query, s
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
-    idx <- as.integer(query)
-    query <- levels(query)
-    lev.hits <- callGeneric()
-    idx.hits <- findMatches(idx, queryHits(lev.hits))
-    Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
-        nLnode=length(idx), nRnode=length(subject), sort.by.query=TRUE)
+    if (length(query) < length(levels(query))) {
+        query <- unfactor(query)
+        callGeneric()
+    } else {
+        idx <- as.integer(query)
+        query <- levels(query)
+        lev.hits <- callGeneric()
+        idx.hits <- findMatches(idx, queryHits(lev.hits))
+        Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
+            nLnode=length(idx), nRnode=length(subject), sort.by.query=TRUE)
+    }
 })
 
 setMethod("findOverlaps", c("GenomicRanges", "GRangesFactor"), function(query, subject,
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
-    idx <- as.integer(subject)
-    subject <- levels(subject)
-    lev.hits <- callGeneric()
-    idx.hits <- findMatches(subjectHits(lev.hits), idx)
-    Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
-        nLnode=length(query), nRnode=length(idx), sort.by.query=TRUE)
+    if (length(subject) < length(levels(subject))) {
+        subject <- unfactor(subject)
+        callGeneric()
+    } else {
+        idx <- as.integer(subject)
+        subject <- levels(subject)
+        lev.hits <- callGeneric()
+        idx.hits <- findMatches(subjectHits(lev.hits), idx)
+        Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
+            nLnode=length(query), nRnode=length(idx), sort.by.query=TRUE)
+    }
 })
 
 setMethod("findOverlaps", c("GRangesFactor", "GRangesFactor"), function(query, subject,
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
-    q.idx <- as.integer(query)
-    query <- levels(query)
-    s.idx <- as.integer(subject)
-    subject <- levels(subject)
+    if (length(query) < length(levels(query))) {
+        query <- unfactor(query)
+        callGeneric()
+    } else if (length(subject) < length(levels(subject))) {
+        subject <- unfactor(subject)
+        callGeneric()
+    } else {
+        q.idx <- as.integer(query)
+        query <- levels(query)
+        s.idx <- as.integer(subject)
+        subject <- levels(subject)
 
-    lev.hits <- callGeneric()
-    q.idx.hits <- findMatches(q.idx, queryHits(lev.hits))
-    s.idx.hits <- findMatches(subjectHits(lev.hits), s.idx)
-    reconciler <- findMatches(subjectHits(q.idx.hits), queryHits(s.idx.hits))
+        lev.hits <- callGeneric()
+        q.idx.hits <- findMatches(q.idx, queryHits(lev.hits))
+        s.idx.hits <- findMatches(subjectHits(lev.hits), s.idx)
+        reconciler <- findMatches(subjectHits(q.idx.hits), queryHits(s.idx.hits))
 
-    Hits(from=queryHits(q.idx.hits)[queryHits(reconciler)], 
-        to=subjectHits(s.idx.hits)[subjectHits(reconciler)],
-        nLnode=length(q.idx), nRnode=length(s.idx), sort.by.query=TRUE)
+        Hits(from=queryHits(q.idx.hits)[queryHits(reconciler)], 
+            to=subjectHits(s.idx.hits)[subjectHits(reconciler)],
+            nLnode=length(q.idx), nRnode=length(s.idx), sort.by.query=TRUE)
+    }
 })
 
 ### =========================================================================
