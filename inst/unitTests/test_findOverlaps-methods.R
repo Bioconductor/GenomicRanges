@@ -325,3 +325,39 @@ test_findOverlaps_with_circular_sequences <- function()
     .checkHits(1:4, 1:4, 4, 4, current5, select="all")
 }
 
+test_findOverlaps_with_GRangesFactors <- function() {
+    ir0 <- IRanges(c(5, 25, 20, 30, 45, 35, 10, 15), width=10)
+    gr0 <- GRanges("chrA", ir0)
+    F0 <- Factor(gr0[rep(seq_along(gr0), seq_along(gr0))])
+
+    ir1 <- IRanges(c(18, 8, 28, 38), width=5)
+    gr1 <- GRanges("chrA", ir1)
+    F1 <- Factor(gr1[rep(seq_along(gr1), rev(seq_along(gr1)))])
+
+    # findOverlaps works with a Factor as the query.
+    out <- findOverlaps(F0, gr1)
+    ref <- findOverlaps(unfactor(F0), gr1)
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(F0, gr1, minoverlap=4)
+    ref <- findOverlaps(unfactor(F0), gr1, minoverlap=4)
+    checkIdentical(out, ref)
+
+    # findOverlaps works with a Factor as the subject.
+    out <- findOverlaps(gr0, F1)
+    ref <- findOverlaps(gr0, unfactor(F1))
+    checkIdentical(sort(out), sort(ref)) # hack to overcome lack of subject sorting guarantees.
+
+    out <- findOverlaps(gr0, F1, maxgap=4)
+    ref <- findOverlaps(gr0, unfactor(F1), maxgap=4)
+    checkIdentical(sort(out), sort(ref)) # hack to overcome lack of subject sorting guarantees.
+
+    # findOverlaps works with two Factors.
+    out <- findOverlaps(F0, F1)
+    ref <- findOverlaps(unfactor(F0), unfactor(F1))
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(F0, F1, maxgap=2)
+    ref <- findOverlaps(unfactor(F0), unfactor(F1), maxgap=2)
+    checkIdentical(out, ref)
+}
