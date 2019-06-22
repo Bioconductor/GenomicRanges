@@ -237,10 +237,15 @@ setMethod("findOverlaps", c("GRangesFactor", "GenomicRanges"), function(query, s
     } else {
         idx <- as.integer(query)
         query <- levels(query)
+
+        select0 <- match.arg(select)
+        select <- "all"
         lev.hits <- callGeneric()
         idx.hits <- findMatches(idx, queryHits(lev.hits))
-        Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
+
+        hits <- Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
             nLnode=length(idx), nRnode=length(subject), sort.by.query=TRUE)
+        selectHits(hits, select0)
     }
 })
 
@@ -254,10 +259,15 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesFactor"), function(query, s
     } else {
         idx <- as.integer(subject)
         subject <- levels(subject)
+
+        select0 <- match.arg(select)
+        select <- "all"
         lev.hits <- callGeneric()
         idx.hits <- findMatches(subjectHits(lev.hits), idx)
-        Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
+
+        hits <- Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
             nLnode=length(query), nRnode=length(idx), sort.by.query=TRUE)
+        selectHits(hits, select0)
     }
 })
 
@@ -277,14 +287,17 @@ setMethod("findOverlaps", c("GRangesFactor", "GRangesFactor"), function(query, s
         s.idx <- as.integer(subject)
         subject <- levels(subject)
 
+        select0 <- match.arg(select)
+        select <- "all"
         lev.hits <- callGeneric()
         q.idx.hits <- findMatches(q.idx, queryHits(lev.hits))
         s.idx.hits <- findMatches(subjectHits(lev.hits), s.idx)
         reconciler <- findMatches(subjectHits(q.idx.hits), queryHits(s.idx.hits))
 
-        Hits(from=queryHits(q.idx.hits)[queryHits(reconciler)], 
+        hits <- Hits(from=queryHits(q.idx.hits)[queryHits(reconciler)], 
             to=subjectHits(s.idx.hits)[subjectHits(reconciler)],
             nLnode=length(q.idx), nRnode=length(s.idx), sort.by.query=TRUE)
+        selectHits(hits, select0)
     }
 })
 

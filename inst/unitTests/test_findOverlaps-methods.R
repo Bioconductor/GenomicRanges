@@ -334,6 +334,7 @@ test_findOverlaps_with_GRangesFactors <- function() {
     gr1 <- GRanges("chrA", ir1)
     F1 <- Factor(gr1[rep(seq_along(gr1), rev(seq_along(gr1)))])
 
+    ######################
     # findOverlaps works with a Factor as the query.
     out <- findOverlaps(F0, gr1)
     ref <- findOverlaps(unfactor(F0), gr1)
@@ -361,6 +362,35 @@ test_findOverlaps_with_GRangesFactors <- function() {
     ref <- findOverlaps(unfactor(F0), unfactor(F1), maxgap=2)
     checkIdentical(out, ref)
 
+    ######################
+    # All methods work with different settings for 'select'.
+
+    out <- findOverlaps(F0, gr1, select="first")
+    ref <- findOverlaps(unfactor(F0), gr1, select="first")
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(F0, gr1, select="last")
+    ref <- findOverlaps(unfactor(F0), gr1, select="last")
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(gr0, F1, select="last")
+    ref <- findOverlaps(gr0, unfactor(F1), select="last")
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(gr0, F1, select="last")
+    ref <- findOverlaps(gr0, unfactor(F1), select="last")
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(F0, F1, select="first")
+    ref <- findOverlaps(unfactor(F0), unfactor(F1), select="first")
+    checkIdentical(out, ref)
+
+    out <- findOverlaps(F0, F1, select="last")
+    ref <- findOverlaps(unfactor(F0), unfactor(F1), select="last")
+    checkIdentical(out, ref)
+
+
+    ######################
     # All methods work correctly with small Factors that cause unfactor()ing.
     out <- findOverlaps(F0[1:2], gr1)
     ref <- findOverlaps(unfactor(F0[1:2]), gr1)
