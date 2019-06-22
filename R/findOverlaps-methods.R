@@ -227,49 +227,49 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
 ### "findOverlaps" methods for GRangesFactor objects
 ###
 
-setMethod("findOverlaps", c("GRangesFactor", "GenomicRanges"), function(query, subject,
+.findOverlaps_Factor_other <- function(query, subject, 
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
     if (length(query) < length(levels(query))) {
-        query <- unfactor(query)
-        callGeneric()
+        findOverlaps(unfactor(query), subject, maxgap=maxgap, minoverlap=minoverlap,
+            type=match.arg(type), select=match.arg(select), ignore.strand=ignore.strand)
     } else {
-        idx <- as.integer(query)
-        query <- levels(query)
-
-        select0 <- match.arg(select)
-        select <- "all"
-        lev.hits <- callGeneric()
-        idx.hits <- findMatches(idx, queryHits(lev.hits))
+        lev.hits <- findOverlaps(levels(query), subject, maxgap=maxgap, minoverlap=minoverlap,
+            type=match.arg(type), select="all", ignore.strand=ignore.strand)
+        idx.hits <- findMatches(as.integer(query), queryHits(lev.hits))
 
         hits <- Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
-            nLnode=length(idx), nRnode=length(subject), sort.by.query=TRUE)
-        selectHits(hits, select0)
+            nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
+        selectHits(hits, match.arg(select))
     }
-})
+}   
 
-setMethod("findOverlaps", c("GenomicRanges", "GRangesFactor"), function(query, subject,
+setMethod("findOverlaps", c("GRangesFactor", "GenomicRanges"), .findOverlaps_Factor_other)
+
+setMethod("findOverlaps", c("GRangesFactor", "GRangesList"), .findOverlaps_Factor_other)
+
+.findOverlaps_other_Factor <- function(query, subject,
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
     if (length(subject) < length(levels(subject))) {
-        subject <- unfactor(subject)
-        callGeneric()
+        findOverlaps(query, unfactor(subject), maxgap=maxgap, minoverlap=minoverlap,
+            type=match.arg(type), select=match.arg(select), ignore.strand=ignore.strand)
     } else {
-        idx <- as.integer(subject)
-        subject <- levels(subject)
-
-        select0 <- match.arg(select)
-        select <- "all"
-        lev.hits <- callGeneric()
-        idx.hits <- findMatches(subjectHits(lev.hits), idx)
+        lev.hits <- findOverlaps(query, levels(subject), maxgap=maxgap, minoverlap=minoverlap,
+            type=match.arg(type), select="all", ignore.strand=ignore.strand)
+        idx.hits <- findMatches(subjectHits(lev.hits), as.integer(subject))
 
         hits <- Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
-            nLnode=length(query), nRnode=length(idx), sort.by.query=TRUE)
-        selectHits(hits, select0)
+            nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
+        selectHits(hits, match.arg(select))
     }
-})
+}
+
+setMethod("findOverlaps", c("GenomicRanges", "GRangesFactor"), .findOverlaps_other_Factor)
+
+setMethod("findOverlaps", c("GRangesList", "GRangesFactor"), .findOverlaps_other_Factor)
 
 setMethod("findOverlaps", c("GRangesFactor", "GRangesFactor"), function(query, subject,
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
