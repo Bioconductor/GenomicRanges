@@ -231,17 +231,25 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
-    if (length(query) < length(levels(query))) {
-        findOverlaps(unfactor(query), subject, maxgap=maxgap, minoverlap=minoverlap,
-            type=match.arg(type), select=match.arg(select), ignore.strand=ignore.strand)
-    } else {
-        lev.hits <- findOverlaps(levels(query), subject, maxgap=maxgap, minoverlap=minoverlap,
-            type=match.arg(type), select="all", ignore.strand=ignore.strand)
-        idx.hits <- findMatches(as.integer(query), queryHits(lev.hits))
+    select <- match.arg(select)
+    type <- match.arg(type)
+    FUN <- function(Query, Select) {
+        findOverlaps(Query, subject, maxgap=maxgap, minoverlap=minoverlap,
+            type=type, select=Select, ignore.strand=ignore.strand)
+    }
 
-        hits <- Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
-            nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
-        selectHits(hits, match.arg(select))
+    if (length(query) < length(levels(query))) {
+        FUN(unfactor(query), Select=select)
+    } else {
+        if (select=="all") {
+            lev.hits <- FUN(levels(query), "all")
+            idx.hits <- findMatches(as.integer(query), queryHits(lev.hits))
+            Hits(from=queryHits(idx.hits), to=subjectHits(lev.hits)[subjectHits(idx.hits)],
+                nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
+        } else {
+            lev.hits <- FUN(levels(query), select)
+            lev.hits[as.integer(query)]
+        }
     }
 }   
 
@@ -253,17 +261,33 @@ setMethod("findOverlaps", c("GRangesFactor", "GRangesList"), .findOverlaps_Facto
     maxgap=-1L, minoverlap=0L, type=c("any", "start", "end", "within", "equal"),
     select=c("all", "first", "last", "arbitrary"), ignore.strand=FALSE)
 {
-    if (length(subject) < length(levels(subject))) {
-        findOverlaps(query, unfactor(subject), maxgap=maxgap, minoverlap=minoverlap,
-            type=match.arg(type), select=match.arg(select), ignore.strand=ignore.strand)
-    } else {
-        lev.hits <- findOverlaps(query, levels(subject), maxgap=maxgap, minoverlap=minoverlap,
-            type=match.arg(type), select="all", ignore.strand=ignore.strand)
-        idx.hits <- findMatches(subjectHits(lev.hits), as.integer(subject))
+    select <- match.arg(select)
+    type <- match.arg(type)
+    FUN <- function(Subject, Select) {
+        findOverlaps(query, Subject, maxgap=maxgap, minoverlap=minoverlap,
+            type=type, select=Select, ignore.strand=ignore.strand)
+    }
 
-        hits <- Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
-            nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
-        selectHits(hits, match.arg(select))
+    if (length(subject) < length(levels(subject))) {
+        FUN(unfactor(subject), select)
+    } else {
+        if (select=="all") {
+            lev.hits <- FUN(levels(subject), "all")
+            idx.hits <- findMatches(subjectHits(lev.hits), as.integer(subject))
+            Hits(from=queryHits(lev.hits)[queryHits(idx.hits)], to=subjectHits(idx.hits),
+                nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
+        } else {
+            s.idx <- as.integer(subject)
+            if (select=="first") {
+                # Get the index of the first range for each level.
+                u <- which(!duplicated(s.idx))
+            } else {
+                # Get the index of the last range for each level.
+                u <- which(!duplicated(s.idx, fromLast=TRUE))
+            }
+            lev.hits <- FUN(levels(subject)[s.idx[u]], select)
+            u[lev.hits]
+        }
     }
 }
 
@@ -282,22 +306,33 @@ setMethod("findOverlaps", c("GRangesFactor", "GRangesFactor"), function(query, s
         subject <- unfactor(subject)
         callGeneric()
     } else {
-        q.idx <- as.integer(query)
-        query <- levels(query)
-        s.idx <- as.integer(subject)
-        subject <- levels(subject)
+        FUN <- function(Query, Subject, Select) {
+            findOverlaps(Query, Subject, maxgap=maxgap, minoverlap=minoverlap, 
+                type=type, select=Select, ignore.strand=ignore.strand)
+        }
 
-        select0 <- match.arg(select)
-        select <- "all"
-        lev.hits <- callGeneric()
-        q.idx.hits <- findMatches(q.idx, queryHits(lev.hits))
-        s.idx.hits <- findMatches(subjectHits(lev.hits), s.idx)
-        reconciler <- findMatches(subjectHits(q.idx.hits), queryHits(s.idx.hits))
+        select <- match.arg(select)
+        if (select=="all") {
+            lev.hits <- FUN(levels(query), levels(subject), "all")
+            q.idx.hits <- findMatches(as.integer(query), queryHits(lev.hits))
+            s.idx.hits <- findMatches(subjectHits(lev.hits), as.integer(subject))
+            reconciler <- findMatches(subjectHits(q.idx.hits), queryHits(s.idx.hits))
 
-        hits <- Hits(from=queryHits(q.idx.hits)[queryHits(reconciler)], 
-            to=subjectHits(s.idx.hits)[subjectHits(reconciler)],
-            nLnode=length(q.idx), nRnode=length(s.idx), sort.by.query=TRUE)
-        selectHits(hits, select0)
+            Hits(from=queryHits(q.idx.hits)[queryHits(reconciler)], 
+                to=subjectHits(s.idx.hits)[subjectHits(reconciler)],
+                nLnode=length(query), nRnode=length(subject), sort.by.query=TRUE)
+        } else {
+            s.idx <- as.integer(subject)
+            if (select=="first") {
+                # Get the index of the first range for each level.
+                u <- which(!duplicated(s.idx))
+            } else {
+                # Get the index of the last range for each level.
+                u <- which(!duplicated(s.idx, fromLast=TRUE))
+            }
+            lev.hits <- FUN(levels(query), levels(subject)[s.idx[u]], select)
+            u[lev.hits][as.integer(query)]
+        }
     }
 })
 
