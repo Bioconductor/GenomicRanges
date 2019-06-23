@@ -184,7 +184,9 @@ GPos <- function(seqnames=NULL, pos=NULL, strand=NULL,
 
     seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
 
-    Class <- sub("IPos$", "GPos", class(pos))
+    ## We use as.character() to get rid of the "package" attribute on the
+    ## class name returned by class(pos).
+    Class <- sub("IPos$", "GPos", as.character(class(pos)))
 
     new_GRanges(Class, seqnames=seqnames, ranges=pos, strand=strand,
                        mcols=mcols, seqinfo=seqinfo)

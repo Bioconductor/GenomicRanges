@@ -75,7 +75,7 @@ setClass("CompressedGenomicRangesList",
 ###
 
 ### callNextMethod() searches for the "closest parent method" starting from
-### the class used in the signature of the method from which it is called,
+### the class used in the **signature** of the method from which it is called,
 ### NOT from 'class(x)'. This means that in the context of methods defined
 ### for GenomicRangesList objects, like the methods below, callNextMethod()
 ### would fail to find methods defined for CompressedList or SimpleList.
