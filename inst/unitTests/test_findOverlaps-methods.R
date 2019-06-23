@@ -373,8 +373,8 @@ test_findOverlaps_with_GRangesFactors <- function() {
     ref <- findOverlaps(unfactor(F0), gr1, select="last")
     checkIdentical(out, ref)
 
-    out <- findOverlaps(gr0, F1, select="last")
-    ref <- findOverlaps(gr0, unfactor(F1), select="last")
+    out <- findOverlaps(gr0, F1, select="first")
+    ref <- findOverlaps(gr0, unfactor(F1), select="first")
     checkIdentical(out, ref)
 
     out <- findOverlaps(gr0, F1, select="last")
@@ -388,7 +388,6 @@ test_findOverlaps_with_GRangesFactors <- function() {
     out <- findOverlaps(F0, F1, select="last")
     ref <- findOverlaps(unfactor(F0), unfactor(F1), select="last")
     checkIdentical(out, ref)
-
 
     ######################
     # All methods work correctly with small Factors that cause unfactor()ing.
