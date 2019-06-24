@@ -128,17 +128,12 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
     \code{start()} or \code{end()}. See \code{?\link{GenomicRanges}} for the
     list of getters supported by \link{GenomicRanges} derivatives.
 
-    IMPORTANT NOTES:
-    \enumerate{
-      \item \code{ranges()} returns an \link[IRanges]{IPos} derivative instead
-            of the \link[IRanges]{IRanges} object that one gets with other
-            \link{GenomicRanges} derivatives. To get an \link[IRanges]{IRanges}
-            object, you need to call \code{ranges()} again on the
-            \link[IRanges]{IPos} derivative i.e. do \code{ranges(ranges(x))})
-            on GPos object \code{x}.
-      \item A GPos object cannot hold names at the moment i.e. \code{names()}
-            always returns \code{NULL} on it.
-    }
+    Note that \code{ranges()} returns an \link[IRanges]{IPos} derivative
+    instead of the \link[IRanges]{IRanges} object that one gets with other
+    \link{GenomicRanges} derivatives. To get an \link[IRanges]{IRanges}
+    object, you need to call \code{ranges()} again on this
+    \link[IRanges]{IPos} derivative i.e. do \code{ranges(ranges(x))}
+    on GPos object \code{x}.
   }
 
   \subsection{Setters}{
@@ -146,7 +141,7 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
     setters:
     \itemize{
       \item The \code{seqnames()} and \code{strand()} setters.
-      \item The \code{mcols()} and \code{metadata()} setters.
+      \item The \code{names()}, \code{mcols()} and \code{metadata()} setters.
       \item The family of setters that operate on the \code{seqinfo}
             component of an object:
             \code{\link[GenomeInfoDb]{seqlevels}()},
@@ -179,9 +174,8 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
   a width of 1 can be coerced to an UnstitchedGPos or StitchedGPos object
   with \code{as(x, "UnstitchedGPos")} or \code{as(x, "StitchedGPos")},
   respectively.
-  The names on \code{x} are not propagated (a warning is issued if \code{x}
-  has names on it). For convenience \code{as(x, "GPos")} is supported and
-  is equivalent to \code{as(x, "UnstitchedGPos")}.
+  For convenience \code{as(x, "GPos")} is supported and is equivalent to
+  \code{as(x, "UnstitchedGPos")}.
 
   From GPos to \link{GRanges}:
   A GPos derivative \code{x} can be coerced to a \link{GRanges} object

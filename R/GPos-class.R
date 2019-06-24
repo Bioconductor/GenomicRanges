@@ -212,10 +212,6 @@ GPos <- function(seqnames=NULL, pos=NULL, strand=NULL,
     if (!all(width(from) == 1L))
         stop(wmsg("all the ranges in the object to ",
                   "coerce to ", to, " must have a width of 1"))
-    if (!is.null(names(from)))
-        warning(wmsg("because a GPos derivative cannot hold them, ",
-                     "the names on the object to coerce couldn't be ",
-                     "propagated during its coercion to ", to))
 }
 .from_ANY_to_UnstitchedGPos <- function(from)
 {
