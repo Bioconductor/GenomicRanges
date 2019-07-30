@@ -392,20 +392,20 @@ set_GenomicRanges_seqinfo <-
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
 {
-    pruning.mode <- match.arg(pruning.mode)
-    if (pruning.mode == "fine")
-        stop(wmsg("\"fine\" pruning mode not supported on ",
-                  class(x), " objects"))
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
+    pruning.mode <- match.arg(pruning.mode)
+    if (pruning.mode == "fine")
+        stop(wmsg("\"fine\" pruning mode is not supported on ",
+                  class(x), " objects"))
     dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
                               new2old=new2old,
                               pruning.mode=pruning.mode,
                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         ## Prune 'x'.
-        non_dangling_range <- !(seqnames(x) %in% dangling_seqlevels)
-        x <- x[non_dangling_range]
+        idx <- !(seqnames(x) %in% dangling_seqlevels)
+        x <- x[idx]
     }
     old_seqinfo <- seqinfo(x)
     new_seqnames <- GenomeInfoDb:::makeNewSeqnames(x,

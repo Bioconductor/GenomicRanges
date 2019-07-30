@@ -429,25 +429,24 @@ set_CompressedGenomicRangesList_seqinfo <-
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
 {
-    pruning.mode <- match.arg(pruning.mode)
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
+    pruning.mode <- match.arg(pruning.mode)
     dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
                               new2old=new2old,
                               pruning.mode=pruning.mode,
                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         ## Prune 'x'.
-        non_dangling_range <- !(seqnames(x) %in% dangling_seqlevels)
+        idx <- !(seqnames(x) %in% dangling_seqlevels)
         if (pruning.mode == "coarse") {
-            x <- x[all(non_dangling_range)]
+            x <- x[all(idx)]  # "coarse" pruning
         } else {
-            x <- x[non_dangling_range]  # "fine" pruning
+            x <- x[idx]  # "fine" pruning
             if (pruning.mode == "tidy") {
                 ## Remove list elements that became empty because of "fine"
                 ## pruning.
-                x <- x[any(non_dangling_range) |
-                       elementNROWS(non_dangling_range) == 0L]
+                x <- x[any(idx) | elementNROWS(idx) == 0L]  # "tidy" pruning
             }
         }
     }
