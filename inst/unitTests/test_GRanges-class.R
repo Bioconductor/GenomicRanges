@@ -77,7 +77,7 @@ test_GRanges_construction <- function()
                        score, GC)
     checkIdentical(.make_TARGET_GRanges(), current)
 
-    ## Call with 'c' metadata col. 
+    ## Call with 'c' metadata col.
     current <- GRanges(seqnames=.TARGET_seqnames,
                        ranges=.TARGET_ranges,
                        strand=.TARGET_strand,
@@ -391,7 +391,7 @@ test_GRanges_coercion <- function()
     current <- as.factor(gr2)
     checkTrue(all(as.factor(as.character(gr2)) == current))
     checkIdentical(unname(as.character(sort(unique(gr2)))), levels(current))
- 
+
   ## -- table() -- ##
 
     current <- table(gr2)  # same as table(as.factor(gr2)) but much faster
@@ -490,7 +490,7 @@ test_GRanges_subsetting <- function()
 test_GRanges_concatenate <- function()
 {
     gr1 <- gr2 <- .make_TARGET_GRanges()
-  
+
     #########################################################################
     ## An unremarkable concatenation
     gr12 <- c(gr1, gr2)
@@ -508,7 +508,7 @@ test_GRanges_concatenate <- function()
     mcols(target) <- rbind(cbind(mcols(gr1), score2=NA),
                            cbind(score=NA, mcols(gr2)))
     checkIdentical(target, c(gr1, gr2))
-  
+
     #########################################################################
     ## More testing
     gr1 <- .make_TARGET_GRanges()
