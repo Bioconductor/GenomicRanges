@@ -97,15 +97,17 @@ setMethod("updateObject", "GenomicRangesList",
         if (class(object) == "GRangesList") {
             ## Starting with GenomicRanges 1.31.13, all GRangesList instances
             ## need to be replaced with CompressedGRangesList instances. Note
-            ## that this NOT a change of the internals (GRangesList instances
-            ## have been using the CompressedList representation since the
-            ## beginning), only a change of the class attribute.
+            ## that this is NOT a change of the internals (GRangesList
+            ## instances have been using the CompressedList representation
+            ## since the beginning), only a change of the class attribute.
             if (verbose)
-                message("[updateObject] class attribute of ", class(object),
-                        " object needs to be set to ",
-                        "\"CompressedGRangesList\"\n",
-                        "[updateObject] Updating it ...")
+                message("[updateObject] Settting class attribute of ",
+                        "GRangesList instance\n",
+                        "[updateObject] to \"CompressedGRangesList\" ... ",
+                        appendLF=FALSE)
             class(object) <- class(new("CompressedGRangesList"))
+            if (verbose)
+                message("OK")
         } else {
             if (verbose)
                 message("[updateObject] ", class(object), " object ",
@@ -119,9 +121,10 @@ setMethod("updateObject", "GenomicRangesList",
                                               ..., verbose=verbose)
         }
 
-        ## 'METHOD' will be the method for CompressedList objects or the
-        ## method for Vector objects. The former will update the 'partitioning'
-        ## slot. The latter is a no-op.
+        ## 'METHOD' will be the method for CompressedList objects or
+        ## the method for Vector objects. (The former will update the
+        ## 'partitioning' and 'elementMetadata' slots, while the latter
+        ## will update the 'elementMetadata' slot only.)
         METHOD <- .selectClosestMethod1("updateObject", object)
         METHOD(object, ..., verbose=verbose)
     }

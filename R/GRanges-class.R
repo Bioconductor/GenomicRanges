@@ -90,15 +90,19 @@ setMethod("updateObject", "GRanges",
                         "[updateObject] Nothing to update.")
         } else {
             if (verbose)
-                message("[updateObject] ", class(object), " object uses ",
-                        "internal representation from\n",
+                message("[updateObject] ", class(object), " object ",
+                        "uses internal representation from\n",
                         "[updateObject] GenomicRanges ", version, ". ",
-                        "Updating it ...")
+                        "Updating it ... ", appendLF=FALSE)
             object@elementType <- new(class(object))@elementType
+            if (verbose)
+                message("OK")
         }
+
         ## ranges slot.
         object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
-        object
+
+        callNextMethod()
     }
 )
 

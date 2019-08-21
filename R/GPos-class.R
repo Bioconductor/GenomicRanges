@@ -322,9 +322,9 @@ setMethod("updateObject", "GPos",
         version <- .get_GPos_version(object)
         if (.hasSlot(object, "pos_runs")) {
             if (verbose)
-                message("[updateObject] ", class(object), " object uses ",
-                        "internal representation\n",
-                        "[updateObject] from GenomicRanges ", version, ". ",
+                message("[updateObject] ", class(object), " object ",
+                        "uses internal representation from\n",
+                        "[updateObject] GenomicRanges ", version, ". ",
                         "Updating it ... ", appendLF=FALSE)
             ans <- GPos(object@pos_runs)
             mcols(ans) <- mcols(object)
@@ -336,20 +336,18 @@ setMethod("updateObject", "GPos",
         if (class(object) == "GPos") {
             if (verbose)
                 message("[updateObject] Settting class attribute of GPos ",
-                        "object to \"StitchedGPos\" ... ", appendLF=FALSE)
+                        "instance to \"StitchedGPos\" ... ", appendLF=FALSE)
             class(object) <- class(new("StitchedGPos"))
             if (verbose)
                 message("OK")
         }
-        if (IRanges:::get_IPos_version(object@ranges) == "current") {
-            if (verbose)
-                message("[updateObject] Internal representation of ",
-                        class(object), " object is current.\n",
-                        "[updateObject] Nothing to update.")
-            return(object)
+        if (IRanges:::get_IPos_version(object@ranges) == "current" && verbose) {
+            message("[updateObject] Internal representation of ",
+                    class(object), " object is current.\n",
+                    "[updateObject] Nothing to update.")
         }
-        object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
-        return(object)
+
+        callNextMethod()
     }
 )
 
