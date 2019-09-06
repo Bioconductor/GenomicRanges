@@ -350,8 +350,8 @@ setAs("IntegerRangesList", "GRanges",
         }
         gr <- GRanges(seqnames = space(from),
                       ranges = ranges,
-                      strand = Rle("*", length(ranges)))
-        seqinfo(gr) <- seqinfo(from)
+                      strand = Rle("*", length(ranges)),
+                      seqinfo = seqinfo(from))
         metadata(gr) <- metadata(from)
         gr
       })
