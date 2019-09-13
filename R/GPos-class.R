@@ -255,7 +255,7 @@ setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
 ### Anyway, a workaround is to support the 'strict=FALSE' case at the level
 ### of the coerce() method itself. However setAs() doesn't let us do that
 ### so this is why we use setMethod("coerce", ...) to define these methods.
-.from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
+from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
 {
     if (!isTRUEorFALSE(strict))
         stop("'strict' must be TRUE or FALSE")
@@ -265,15 +265,20 @@ setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
-setMethod("coerce", c("UnstitchedGPos", "GRanges"), .from_GPos_to_GRanges)
-setMethod("coerce", c("StitchedGPos", "GRanges"), .from_GPos_to_GRanges)
+setMethod("coerce", c("UnstitchedGPos", "GRanges"), from_GPos_to_GRanges)
+setMethod("coerce", c("StitchedGPos", "GRanges"), from_GPos_to_GRanges)
 ### One might think that defining the coerce,GPos,GRanges method below would
 ### cover the UnstitchedGPos->GRanges and StitchedGPos->GRanges cases, but no
 ### such luck! Again, this is because the oh-so-smart methods package wants
 ### to automatically define the 2 coercion methods above in case they are not
 ### explicitly defined by the user. And once again, these automatic coercion
 ### methods get it wrong!
-#setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
+### For the same reason, UnstitchedGPos or StitchedGPos extensions (like the
+### CTSS class in the CAGEr package) need to define a coercion method to
+### GRanges otherwise they'll also get a broken automatic coercion method.
+### They can do this with (from_GPos_to_GRanges is exported):
+###   setMethod("coerce", c("CTSS", "GRanges"), from_GPos_to_GRanges)
+#setMethod("coerce", c("GPos", "GRanges"), from_GPos_to_GRanges)
 
 ### S3/S4 combo for as.data.frame.GPos
 ### The "as.data.frame" method for GenomicRanges objects works on a GPos

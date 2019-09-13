@@ -129,7 +129,7 @@ export(
     phicoef,
 
     GRanges, .DollarNames.GenomicRanges, .DollarNames.GRanges,
-    GPos,
+    GPos, from_GPos_to_GRanges,
     GRangesFactor,
     GNCList,
     GenomicRangesList, GRangesList,

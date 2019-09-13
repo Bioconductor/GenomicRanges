@@ -27,6 +27,7 @@
 \alias{coerce,GRanges,UnstitchedGPos-method}
 \alias{coerce,GRanges,StitchedGPos-method}
 \alias{coerce,GRanges,GPos-method}
+\alias{from_GPos_to_GRanges}
 \alias{coerce,UnstitchedGPos,GRanges-method}
 \alias{coerce,StitchedGPos,GRanges-method}
 \alias{as.data.frame.GPos}
