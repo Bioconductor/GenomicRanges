@@ -215,7 +215,7 @@ setAs("SimpleGenomicRangesList", "SimpleGRangesList",
 ### Coercion from list-like object to CompressedGRangesList
 ###
 
-### From list to CompressedGRangesList
+### From ordinary list to CompressedGRangesList
 
 .from_list_to_CompressedGRangesList <- function(from)
 {
