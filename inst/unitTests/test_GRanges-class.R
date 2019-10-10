@@ -537,6 +537,6 @@ test_GRanges_split <- function()
     gr <- .make_TARGET_GRanges()
     checkException(split(gr, NULL), silent = TRUE)
     checkIdentical(split(gr, rep(c("a", "b"), each=5)),
-                   GRangesList(a = head(gr, 5), b = tail(gr, 5)))
+                   GRangesList(a=head(gr, 5), b=tail(gr, 5)))
 }
 

@@ -1,18 +1,15 @@
 make_test_GRangesList <- function() {
-    GRangesList(
-        a = GRanges(
-            seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
-            ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
-            strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-            seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-            score = 1:10, GC = seq(1, 0, length=10)),
-        b = GRanges(
-            seqnames = Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
-            ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
-            strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
-            seqinfo = Seqinfo(seqnames = paste("chr", c(2L, 4:5), sep="")),
-            score = 1:13, GC = seq(0, 1, length=13))
-    )
+    a <- GRanges(Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+                 IRanges(1:10, end=10, names=head(letters, 10)),
+                 strand=Rle(c("-", "+", "*", "+", "-"), c(1, 2, 2, 3, 2)),
+                 seqinfo=Seqinfo(paste0("chr", 1:3)),
+                 score=1:10, GC=seq(1, 0, length=10))
+    b <- GRanges(Rle(c("chr2", "chr4", "chr5"), c(3, 6, 4)),
+                 IRanges(1:13, end=13, names=tail(letters, 13)),
+                 strand=Rle(c("-", "+", "-"), c(4, 5, 4)),
+                 seqinfo=Seqinfo(paste0("chr", c(2, 4:5))),
+                 score=1:13, GC=seq(0, 1, length=13))
+    GRangesList(a=a, b=b)
 }
 
 test_GRangesList_construction <- function() {
@@ -70,17 +67,15 @@ test_GRangesList_setters <- function() {
 
 test_GRangesList_coercion <- function() {
     ## as.data.frame
-    gr1 <-
-      GRanges(seqnames = c(1,1,2),
-              ranges = IRanges(1:3,4:6, names = head(letters,3)),
-              strand = strand(c("+", "-", "*")),
-              score = c(10L,2L,NA))
-    gr2 <-
-      GRanges(seqnames = c("chr1", "chr2"),
-              ranges = IRanges(1:2,1:2, names = tail(letters,2)),
-              strand = strand(c("*", "*")),
-              score = 12:13)
-    grl <- GRangesList(a = gr1, b = gr2)
+    gr1 <- GRanges(seqnames = c(1,1,2),
+                   ranges = IRanges(1:3,4:6, names = head(letters,3)),
+                   strand = strand(c("+", "-", "*")),
+                   score = c(10L,2L,NA))
+    gr2 <- GRanges(seqnames = c("chr1", "chr2"),
+                   ranges = IRanges(1:2,1:2, names = tail(letters,2)),
+                   strand = strand(c("*", "*")),
+                   score = 12:13)
+    grl <- GRangesList(a=gr1, b=gr2)
     df <-
       data.frame(group = togroup(PartitioningByWidth(grl)),
                  group_name = rep(c("a","b"), c(3, 2)),
@@ -189,3 +184,4 @@ test_GRangesList_Vector <- function() {
         x
     }), "[[<-, extend-by-1 char")
 }
+

@@ -12,6 +12,9 @@ setClass("GenomicRanges",
         #No more constraint slot for now...
         #constraint="Constraint_OR_NULL",
         elementMetadata="DataFrame"
+    ),
+    prototype(
+        elementMetadata=new("DFrame")
     )
 )
 
