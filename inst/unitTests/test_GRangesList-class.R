@@ -95,8 +95,8 @@ test_GRangesList_IntegerRangesList <- function() {
     checkIdentical(width(grl), IntegerList(lapply(grl, width)))
 
     ## start
-    checkException(start(GRangesList()) <- NULL, silent = TRUE)
-    checkException(start(make_test_GRangesList()) <- 1:26, silent = TRUE)
+    checkException(start(grl) <- NULL, silent = TRUE)
+    checkException(start(grl) <- 1:26, silent = TRUE)
 
     grl <- make_test_GRangesList()
     orig <- start(grl)
@@ -104,8 +104,8 @@ test_GRangesList_IntegerRangesList <- function() {
     checkIdentical(start(grl), orig + 1L)
 
     ## end
-    checkException(end(GRangesList()) <- NULL, silent = TRUE)
-    checkException(end(make_test_GRangesList()) <- 1:26, silent = TRUE)
+    checkException(end(grl) <- NULL, silent = TRUE)
+    checkException(end(grl) <- 1:26, silent = TRUE)
 
     grl <- make_test_GRangesList()
     orig <- end(grl)
@@ -113,8 +113,8 @@ test_GRangesList_IntegerRangesList <- function() {
     checkIdentical(end(grl), orig + 1L)
 
     ## width
-    checkException(width(GRangesList()) <- NULL, silent = TRUE)
-    checkException(width(make_test_GRangesList()) <- 1:26, silent = TRUE)
+    checkException(width(grl) <- NULL, silent = TRUE)
+    checkException(width(grl) <- 1:26, silent = TRUE)
 
     grl <- make_test_GRangesList()
     orig <- width(grl)
