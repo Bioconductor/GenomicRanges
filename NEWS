@@ -1,3 +1,51 @@
+CHANGES IN VERSION 1.38.0
+-------------------------
+
+NEW FEATURES
+
+    o GPos objects now exist in 2 flavors: UnstitchedGPos and StitchedGPos
+    
+      GPos is now a virtual class with 2 concrete subclasses: UnstitchedGPos
+      and StitchedGPos. In an UnstitchedGPos instance the positions are stored
+      as an integer vector. In a StitchedGPos instance, like with old GPos
+      instances, the positions are stored as an IRanges object where each range
+      represents a run of consecutive positions. This is analog to the
+      IPos/UnstitchedIPos/StitchedIPos situation. See ?GPos for more
+      information.
+    
+      Old serialized GPos instances can be converted to StitchedGPos
+      instances with updateObject().
+
+    o GPos objects now can hold names
+
+    o Coercion to GPos now propagates the names
+
+    o Add GRangesFactor class (Factor derivative). See ?GRangesFactor
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Export from_GPos_to_GRanges()
+
+    o Some reorgnization of the GenomicRangesList hierarchy (see commit
+      f988a5a9).
+
+    o Swap order of arguments 'seqlengths' and 'seqinfo' of the GRanges()
+      constructor so now the latter comes before the former.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove findOverlaps, seqnames, and seqinfo<- methods for RangedData
+      objects. These methods were deprecated in BioC 3.8 and defunct in
+      BioC 3.9.
+
+BUG FIXES
+
+    o Coercion from RangesList to GRanges is more robust to seqlevel
+      differences
+
+    o Fix bug in isSmallGenome() (introduced by change in sum() in R >= 3.5)
+
+
 CHANGES IN VERSION 1.36.0
 -------------------------
 
