@@ -264,7 +264,6 @@ setAs("GenomicRanges", "Grouping", function(from) {
 setMethod("as.data.frame", "GenomicRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
-        ranges <- ranges(x)
         if (missing(row.names))
             row.names <- names(x)
         if (!is.null(names(x)))
