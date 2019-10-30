@@ -28,7 +28,8 @@ setReplaceMethod("seqinfo", "List",
 setMethod("seqinfo", "RangedData",
   function(x)
   {
-    .Deprecated(msg=wmsg(IRanges:::RangedData_is_deprecated_msg))
+    what <- "seqinfo() method for these objects"
+    .Defunct(msg=wmsg(IRanges:::RangedData_method_is_defunct_msg(what)))
     seqinfo(ranges(x))
   }
 )
