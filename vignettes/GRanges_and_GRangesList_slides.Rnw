@@ -3,6 +3,15 @@
 
 \SweaveOpts{keep.source=TRUE, eps=FALSE, width=9, height=3}
 
+% 2019-12-22: A temporary fix to avoid the following pdflatex error caused by
+% an issue in LaTeX package filehook-scrlfile (used by beamer):
+%   ! Package filehook Error: Detected unknown definition of \InputIfFileExists.
+%   Use the 'force' option of 'filehook' to overwrite it..
+% The error appeared on tokay2 in Dec 2019 after reinstalling MiKTeX 2.9.
+% See comment by Phelype Oleinik here for the fix:
+%   https://tex.stackexchange.com/questions/512189/problem-with-chemmacros-beamer-and-filehook-scrlfile-sty
+\PassOptionsToPackage{force}{filehook}
+
 \documentclass[8pt]{beamer}
 
 \usepackage{slides}
