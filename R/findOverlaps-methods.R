@@ -258,5 +258,5 @@ setMethod("poverlaps", c("GenomicRanges", "GenomicRanges"),
     seqnames(query) == seqnames(subject) &
         (if (ignore.strand) TRUE
          else compatibleStrand(strand(query), strand(subject))) &
-        poverlaps(ranges(query), ranges(subject), maxgap, minoverlaps, type)
+        poverlaps(ranges(query), ranges(subject), maxgap, minoverlap, type)
 })
