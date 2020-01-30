@@ -325,3 +325,17 @@ test_findOverlaps_with_circular_sequences <- function()
     .checkHits(1:4, 1:4, 4, 4, current5, select="all")
 }
 
+test_poverlaps <- function() {
+    ans <- poverlaps(GRanges(), GRanges())
+    checkIdentical(ans, Rle())
+
+    ans <- poverlaps(GRanges("chr1:11-15"), GRanges("chr1:16-20"))
+    checkIdentical(ans, Rle(FALSE))
+
+    ans <- poverlaps(GRanges("chr1:11-16"), GRanges("chr1:16-20"))
+    checkIdentical(ans, Rle(TRUE))
+
+    ans <- poverlaps(GRanges(c("chr1:11-15", "chr1:11-16")),
+                     GRanges("chr1:16-20"))
+    checkIdentical(ans, Rle(c(FALSE, TRUE)))
+}
