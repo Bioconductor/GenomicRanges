@@ -22,6 +22,7 @@
 
 \alias{trim}
 \alias{trim,GenomicRanges-method}
+\alias{trim,GRangesList-method}
 
 \title{Intra range transformations of a GRanges or GRangesList object}
 

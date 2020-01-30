@@ -210,6 +210,18 @@ setAs("GenomicRangesList", "SimpleGRangesList",
 setAs("SimpleGenomicRangesList", "SimpleGRangesList",
       .from_List_to_SimpleGRangesList)
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Intra-range methods
+###
+
+setMethod("trim", "GRangesList",
+          function(x, use.names=TRUE)
+          {
+              ## Like seqinfo,GRangesList, assumes that there is a
+              ## single Seqinfo for the entire object. Only guaranteed
+              ## to be true in the compressed case.
+              relist(trim(unlist(x, use.names=FALSE), use.names=use.names), x)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion from list-like object to CompressedGRangesList
