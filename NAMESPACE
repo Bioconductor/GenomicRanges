@@ -134,6 +134,7 @@ export(
     GNCList,
     GenomicRangesList, GRangesList,
 
+    makeGPosFromDataFrame,
     makeGRangesFromDataFrame,
     makeGRangesListFromDataFrame,
     makeGRangesListFromFeatureFragments,

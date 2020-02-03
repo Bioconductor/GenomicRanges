@@ -74,7 +74,7 @@
 .find_strand_col <- function(df_colnames, strand.field, prefix)
 {
     idx <- which(df_colnames %in% paste0(prefix, strand.field))
-    if (length(idx) == 0L) 
+    if (length(idx) == 0L)
         idx <- which(df_colnames %in% strand.field)
     if (length(idx) == 0L)
         return(NA_integer_)
@@ -144,7 +144,6 @@
     ans
 }
 
-### 'df' must be a data.frame or DataFrame object.
 makeGRangesFromDataFrame <- function(df,
                                      keep.extra.columns=FALSE,
                                      ignore.strand=FALSE,
@@ -158,7 +157,32 @@ makeGRangesFromDataFrame <- function(df,
                                      strand.field="strand",
                                      starts.in.df.are.0based=FALSE)
 {
-    ## Check args.
+    .makeXFromDataFrame(df = df, x = "GRanges",
+        keep.extra.columns=keep.extra.columns,
+        ignore.strand=ignore.strand,
+        seqinfo=seqinfo,
+        seqnames.field=seqnames.field,
+        start.field=start.field,
+        end.field=end.field,
+        strand.field=strand.field,
+        starts.in.df.are.0based=starts.in.df.are.0based)
+}
+
+.makeXFromDataFrame <- function(df, x = c("GRanges", "GPos"),
+                                     keep.extra.columns=FALSE,
+                                     ignore.strand=FALSE,
+                                     seqinfo=NULL,
+                                     seqnames.field=c("seqnames", "seqname",
+                                                      "chromosome", "chrom",
+                                                      "chr", "chromosome_name",
+                                                      "seqid"),
+                                     start.field="start",
+                                     end.field=c("end", "stop"),
+                                     strand.field="strand",
+                                     starts.in.df.are.0based=FALSE)
+{
+### 'df' must be a data.frame or DataFrame object.
+   ## Check args.
     if (is.character(df))  # for people that provide the path to a file
         stop("'df' must be a data.frame or DataFrame object")
     if (!(is.data.frame(df) || is(df, "DataFrame")))
@@ -177,7 +201,7 @@ makeGRangesFromDataFrame <- function(df,
                                        end.field=end.field,
                                        strand.field=strand.field,
                                        ignore.strand=ignore.strand)
-
+    FUN <- switch(x, GRanges = GRanges, GPos = GPos)
     ## Prepare 'ans_seqnames'.
     ans_seqnames <- df[[granges_cols[["seqnames"]]]]
 
@@ -230,7 +254,7 @@ makeGRangesFromDataFrame <- function(df,
     }
 
     ## Make and return the GRanges object.
-    GRanges(ans_seqnames, ans_ranges, strand=ans_strand,
+    FUN(ans_seqnames, ans_ranges, strand=ans_strand,
             ans_mcols, seqinfo=ans_seqinfo)
 }
 
