@@ -53,7 +53,6 @@ Collate: normarg-utils.R
 	GenomicRangesList-class.R
 	GRangesList-class.R
 	makeGRangesFromDataFrame.R
-    makeGPosFromDataFrame.R
 	makeGRangesListFromDataFrame.R
 	RangedData-methods.R
 	findOverlaps-methods.R

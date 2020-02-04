@@ -152,3 +152,18 @@ test_find_GRanges_cols <- function()
     checkIdentical(target, current)
 }
 
+
+test_makeGRangesFromDataFrame <- function()
+{
+    post <- data.frame(chr = rep(1, 3), pos = 11:13)
+    star <- data.frame(chr = rep(1, 3), start = 11:13)
+    endo <- data.frame(chr = rep(1, 3), end = 11:13)
+    checkTrue(validObject(makeGRangesFromDataFrame(post)))
+    checkTrue(validObject(makeGRangesFromDataFrame(star)))
+    checkTrue(validObject(makeGRangesFromDataFrame(endo)))
+
+    target <- makeGRangesFromDataFrame(data.frame(seqnames=1:6, start=11:16))
+    checkTrue(validObject(target))
+    target <- makeGRangesFromDataFrame(data.frame(seqnames=1:6, end=11:16))
+    checkTrue(validObject(target))
+}

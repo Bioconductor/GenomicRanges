@@ -3,7 +3,9 @@
 \alias{makeGRangesFromDataFrame}
 
 \alias{coerce,data.frame,GRanges-method}
+\alias{coerce,data.frame,GPos-method}
 \alias{coerce,DataFrame,GRanges-method}
+\alias{coerce,DataFrame,GPos-method}
 
 \title{Make a GRanges object from a data.frame or DataFrame}
 
@@ -26,10 +28,11 @@ makeGRangesFromDataFrame(df,
                                           "chromosome", "chrom",
                                           "chr", "chromosome_name",
                                           "seqid"),
-                         start.field="start",
+                         start.field=c("start", "pos"),
                          end.field=c("end", "stop"),
                          strand.field="strand",
-                         starts.in.df.are.0based=FALSE)
+                         starts.in.df.are.0based=FALSE,
+                         as=c("auto", "GRanges", "GPos"))
 }
 
 \arguments{
@@ -100,6 +103,12 @@ makeGRangesFromDataFrame(df,
     start" convention. A notorious example of such resource is the UCSC
     Table Browser (\url{http://genome.ucsc.edu/cgi-bin/hgTables}).
   }
+  \item{as}{
+    A scalar character vector indicating the derivative of
+    \link{GenomicRanges} object to return, either \link{GRanges} or
+    \link{GPos}. By default, the derivative will be chosen based on
+    the data provided (\code{"auto"}).
+  }
 }
 
 \value{
@@ -167,6 +176,34 @@ gr <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
 gr2 <- as(df, "GRanges")  # equivalent to the above
 stopifnot(identical(gr, gr2))
 gr2 <- GRanges(df)        # equivalent to the above
+stopifnot(identical(gr, gr2))
+
+makeGRangesFromDataFrame(df, ignore.strand=TRUE)
+makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
+                             ignore.strand=TRUE)
+
+makeGRangesFromDataFrame(df, seqinfo=paste0("chr", 4:1))
+makeGRangesFromDataFrame(df, seqinfo=c(chrM=NA, chr1=500, chrX=100))
+makeGRangesFromDataFrame(df, seqinfo=Seqinfo(paste0("chr", 4:1)))
+
+## GPos objects are returned where appropriate
+df <- data.frame(chr="chr1", pos = 11:15, score=1:5)
+makeGRangesFromDataFrame(df)
+
+df <- data.frame(chr="chr1", start=11:15, end=11:15,
+    strand=c("+","-","+","*","."), score=1:5)
+makeGRangesFromDataFrame(df)
+
+df <- data.frame(chr="chr1", start=11:15, score=1:5)
+makeGRangesFromDataFrame(df)
+
+df <- data.frame(chr="chr1", end=11:15, score=1:5)
+makeGRangesFromDataFrame(df)
+
+gr <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)
+gr2 <- as(df, "GPos")  # equivalent to the above
+stopifnot(identical(gr, gr2))
+gr2 <- GPos(df)        # equivalent to the above
 stopifnot(identical(gr, gr2))
 
 makeGRangesFromDataFrame(df, ignore.strand=TRUE)
