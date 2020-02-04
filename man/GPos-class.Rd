@@ -34,6 +34,11 @@
 \alias{as.data.frame,GPos-method}
 
 \alias{updateObject,GPos-method}
+
+% Display
+
+\alias{summary.GPos}
+\alias{summary,GPos-method}
 \alias{show,GPos-method}
 
 \title{Memory-efficient representation of genomic positions}

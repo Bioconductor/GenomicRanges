@@ -76,7 +76,7 @@
 \alias{[,list_OR_List,GenomicRanges-method}
 \alias{getListElement,GenomicRanges-method}
 
-% Displaying:
+% Display:
 \alias{summary.GenomicRanges}
 \alias{summary,GenomicRanges-method}
 \alias{show,GenomicRanges-method}

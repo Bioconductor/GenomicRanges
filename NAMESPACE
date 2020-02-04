@@ -47,6 +47,7 @@ S3method(sort, GenomicRanges)
 S3method(sort, GRangesList)
 
 S3method(summary, GenomicRanges)
+S3method(summary, GPos)
 
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
@@ -59,7 +60,8 @@ export(
     sort.GenomicRanges,
     sort.GRangesList,
 
-    summary.GenomicRanges
+    summary.GenomicRanges,
+    summary.GPos
 )
 
 

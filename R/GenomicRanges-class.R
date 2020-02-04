@@ -636,12 +636,12 @@ setReplaceMethod("$", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Displaying
+### Display
 ###
 
 .GenomicRanges_summary <- function(object)
 {
-    object_class <- class(object)
+    object_class <- classNameForDisplay(object)
     object_len <- length(object)
     object_mcols <- mcols(object, use.names=FALSE)
     object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
@@ -658,23 +658,19 @@ setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 
 .from_GenomicRanges_to_naked_character_matrix_for_display <- function(x)
 {
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(seqnames=as.character(seqnames(x)),
-                 ranges=showAsCell(ranges(x)),
-                 strand=as.character(strand(x)))
-    extraColumnNames <- extraColumnSlotNames(x)
-    if (length(extraColumnNames) > 0L) {
-        ans <- do.call(cbind,
-                       c(list(ans), lapply(extraColumnSlots(x), showAsCell)))
+    m <- cbind(seqnames=as.character(seqnames(x)),
+               ranges=showAsCell(ranges(x)),
+               strand=as.character(strand(x)))
+    extra_col_names <- extraColumnSlotNames(x)
+    if (length(extra_col_names) != 0L) {
+        extra_cols <- lapply(extraColumnSlots(x), showAsCell)
+        m <- do.call(cbind, c(list(m), extra_cols))
     }
-    if (x_nmc > 0L) {
-        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
-        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
-    }
-    ans
+    cbind_mcols_for_display(m, x)
 }
+setMethod("makeNakedCharacterMatrixForDisplay", "GenomicRanges",
+    .from_GenomicRanges_to_naked_character_matrix_for_display
+)
 
 ### If 'x' is a GRanges object, 'coerce.internally.to.GRanges' has no effect.
 ### If it's a GenomicRanges object that is not a GRanges object, then
@@ -687,23 +683,22 @@ show_GenomicRanges <- function(x, margin="",
                                coerce.internally.to.GRanges=TRUE)
 {
     cat(margin, summary(x), ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
-    ## and tail() work on 'xx'.
+    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that
+    ## head() and tail() work on 'xx'.
     if (coerce.internally.to.GRanges) {
         xx <- as(x, "GRanges", strict=FALSE)
     } else {
         xx <- x
     }
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
-                .from_GenomicRanges_to_naked_character_matrix_for_display)
+    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
             ranges="IRanges",
             strand="Rle"
         )
-        extraColumnNames <- extraColumnSlotNames(x)
-        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extraColumnNames])
+        extra_col_names <- extraColumnSlotNames(x)
+        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extra_col_names])
         classinfo <-
             S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!

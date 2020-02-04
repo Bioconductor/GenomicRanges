@@ -358,23 +358,35 @@ setMethod("updateObject", "GPos",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Show
+### Display
 ###
+
+.GPos_summary <- function(object)
+{
+    object_class <- classNameForDisplay(object)
+    object_len <- length(object)
+    object_mcols <- mcols(object, use.names=FALSE)
+    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
+    paste0(object_class, " object with ", object_len, " ",
+           ifelse(object_len == 1L, "position", "positions"),
+           " and ", object_nmc, " metadata ",
+           ifelse(object_nmc == 1L, "column", "columns"))
+}
+
+### S3/S4 combo for summary.GPos
+summary.GPos <- function(object, ...) .GPos_summary(object, ...)
+setMethod("summary", "GPos", summary.GPos)
 
 .from_GPos_to_naked_character_matrix_for_display <- function(x)
 {
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(seqnames=as.character(seqnames(x)),
-                 pos=as.character(pos(x)),
-                 strand=as.character(strand(x)))
-    if (x_nmc > 0L) {
-        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
-        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
-    }
-    ans
+    m <- cbind(seqnames=as.character(seqnames(x)),
+               pos=as.character(pos(x)),
+               strand=as.character(strand(x)))
+    cbind_mcols_for_display(m, x)
 }
+setMethod("makeNakedCharacterMatrixForDisplay", "GPos",
+    .from_GPos_to_naked_character_matrix_for_display
+)
 
 show_GPos <- function(x, margin="",
                       print.classinfo=FALSE, print.seqinfo=FALSE)
@@ -387,18 +399,10 @@ show_GPos <- function(x, margin="",
                     "Please update it with:"),
                "\n\n    object <- updateObject(object, verbose=TRUE)",
                "\n\n  and re-serialize it."))
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(classNameForDisplay(x), " object with ",
-        x_len, " ", ifelse(x_len == 1L, "position", "positions"),
-        " and ",
-        x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
-        ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
-    ## and tail() work on 'x'.
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
-                .from_GPos_to_naked_character_matrix_for_display)
+    cat(margin, summary(x), ":\n", sep="")
+    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that
+    ## head() and tail() work on 'x'.
+    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
@@ -412,20 +416,19 @@ show_GPos <- function(x, margin="",
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste0(margin, rownames(out))
+        rownames(out) <- paste0(margin, "  ", rownames(out))
     ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.seqinfo) {
-        cat(margin, "-------\n", sep="")
-        cat(margin, "seqinfo: ", summary(seqinfo(x)), "\n", sep="")
+        cat(margin, "  -------\n", sep="")
+        cat(margin, "  seqinfo: ", summary(seqinfo(x)), "\n", sep="")
     }
 }
 
 setMethod("show", "GPos",
     function(object)
-        show_GPos(object, margin="  ",
-                  print.classinfo=TRUE, print.seqinfo=TRUE)
+        show_GPos(object, print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 
