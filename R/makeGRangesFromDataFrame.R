@@ -192,8 +192,11 @@ makeGRangesFromDataFrame <- function(df,
     ans_ranges <- IRanges(ans_start, ans_end, names=ans_names)
 
     ## Prepare 'ans_strand'.
+    ans_strand <- NULL
     if (is.na(granges_cols[["strand"]]) || ignore.strand) {
-        ans_strand <- "*"
+        if(length(ans_ranges) > 0L){
+            ans_strand <- "*"  
+        }
     } else {
         ans_strand <- as.character(df[[granges_cols[["strand"]]]])
         ans_strand[ans_strand %in% "."] <- "*"
