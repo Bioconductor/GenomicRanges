@@ -250,3 +250,26 @@ test_GenomicRanges_distanceToNearest <- function()
     checkIdentical(length(current), 0L)
     checkIdentical(queryLength(current), 1L)
 }
+
+test_GenomicRanges_findKNN <- function()
+{
+    ## no nearest neighbors
+    g1 <- GRanges(c("chr1:1-5:+", "chr1:6-10:+"))
+    g2 <- GRanges(c("chr2:1-5:+", "chr2:6-10:+"))
+    near <- findKNN(g1, g2)
+    checkTrue(all(is.na(near)))
+
+    ## same strand
+    g1 <- GRanges(c("chr1:1-5:+", "chr1:7-11:+"))
+    g2 <- GRanges(c("chr1:1-2:+", "chr1:5-7:+", "chr1:10-12:+"))
+    near <- findKNN(g1, g2)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near)[[1]], 3L)
+    checkIdentical(length(near)[[2]], 3L)
+    checkIdentical(near[[1]], c(1L, 2L, 3L))
+    checkIdentical(near[[2]], c(2L, 3L, 1L))
+
+    ## alternate strands
+
+    ## different k's
+}
