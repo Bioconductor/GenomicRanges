@@ -259,17 +259,66 @@ test_GenomicRanges_findKNN <- function()
     near <- findKNN(g1, g2)
     checkTrue(all(is.na(near)))
 
-    ## same strand
+    ## same strand, with overlaps in ranges
     g1 <- GRanges(c("chr1:1-5:+", "chr1:7-11:+"))
     g2 <- GRanges(c("chr1:1-2:+", "chr1:5-7:+", "chr1:10-12:+"))
     near <- findKNN(g1, g2)
     checkIdentical(length(near), 2L)
-    checkIdentical(length(near)[[1]], 3L)
-    checkIdentical(length(near)[[2]], 3L)
+    checkIdentical(length(near[[1]]), 1L)
+    checkIdentical(length(near[[2]]), 1L)
+    checkIdentical(near[[1]], 1L)
+    checkIdentical(near[[2]], 2L)
+
+    near <- findKNN(g1, g2, k=3)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near[[1]]), 3L)
+    checkIdentical(length(near[[2]]), 3L)
     checkIdentical(near[[1]], c(1L, 2L, 3L))
     checkIdentical(near[[2]], c(2L, 3L, 1L))
 
-    ## alternate strands
+    ## alternate strands, with overlaps in ranges
+    g3 <- GRanges(c("chr1:1-5:-", "chr1:7-11:+"))
+    #g4 <- GRanges(c("chr1:1-2:+", "chr1:5-7:-", "chr1:10-12:+"))
+    g4 <- GRanges(c("chr1:1-2:-", "chr1:5-7:+", "chr1:10-12:+"))
+    near <- findKNN(g3, g4)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near[[1]]), 1L)
+    checkIdentical(length(near[[2]]), 1L)
+    checkIdentical(near[[1]], 1L)
+    checkIdentical(near[[2]], 2L)
 
-    ## different k's
+    near <- findKNN(g3, g4, k=2)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near[[1]]), 1L)
+    checkIdentical(length(near[[2]]), 2L)
+    checkIdentical(near[[1]], 1L)
+    checkIdentical(near[[2]], c(2L, 3L))
+
+    ## ignore.overlap, with overlaps in ranges
+    near <- findKNN(g1, g2, ignore.overlap = TRUE)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near[[1]]), 1L)
+    checkIdentical(length(near[[2]]), 1L)
+    checkIdentical(near[[1]], 3L)
+    checkIdentical(near[[2]], 1L)
+
+    near <- findKNN(g3, g4, ignore.overlap = TRUE)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near[[1]]), 0L)
+    checkIdentical(length(near[[2]]), 0L)
+
+    ## ignore.strand, with overlaps in ranges
+    near <- findKNN(g1, g2, ignore.strand = TRUE)
+    checkIdentical(length(near), 2L)
+    checkIdentical(length(near[[1]]), 1L)
+    checkIdentical(length(near[[2]]), 1L)
+    checkIdentical(near[[1]], 1L)
+    checkIdentical(near[[2]], 2L)
+
+    near2 <- findKNN(g3, g4, ignore.strand = TRUE)
+    checkIdentical(length(near), length(near2))
+    checkIdentical(length(near)[[1]], length(near2)[[1]])
+    checkIdentical(length(near)[[2]], length(near2)[[2]])
+    checkIdentical(near[[1]], near2[[1]])
+    checkIdentical(near[[2]], near2[[2]]) 
 }
