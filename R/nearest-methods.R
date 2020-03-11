@@ -476,7 +476,7 @@ follows <- function(x, y) {
 ### FIXME: Largely untested code; unexported for now
 ###
 
-findKNN <- function(query, subject, k=5L, ignore.overlaps = FALSE,
+findKNN <- function(query, subject, k=1L, ignore.overlaps = FALSE,
                     ignore.strand = FALSE)
 {
     seqlevels(subject) <- seqlevels(query)
