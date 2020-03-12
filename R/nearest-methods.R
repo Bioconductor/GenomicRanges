@@ -476,10 +476,27 @@ follows <- function(x, y) {
 ### FIXME: Largely untested code; unexported for now
 ###
 
-findKNN <- function(query, subject, k=1L, ignore.overlaps = FALSE,
-                    ignore.strand = FALSE)
+setGeneric("findKNN", function(x, subject, ...) standardGeneric("findKNN"))
+
+setMethod("findKNN", c("GenomicRanges", "missing"),
+    function(x, subject, k = 1L, select = c("arbitrary", "all"),
+             ignore.strand = FALSE)
 {
-    seqlevels(subject) <- seqlevels(query)
+    select <- match.arg(select)
+    .findKNN(x, x, k = k, select = select, ignore.strand = ignore.strand)
+})
+
+setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, k = 1L, select = c("arbitrary", "all"),
+             ignore.strand = FALSE)
+{
+    select <- match.arg(select)
+    .findKNN(x, subject, k = k, select = select, ignore.strand = ignore.strand)
+})
+    
+.findKNN <- function(x, subject, k, select, ignore.strand)
+{
+    seqlevels(subject) <- seqlevels(x)
     
     starts <- with(subject, GRanges(seqnames, IRanges(start, width=1L), strand))
     ends <- with(subject, GRanges(seqnames, IRanges(end, width=1L), strand))
@@ -495,11 +512,15 @@ findKNN <- function(query, subject, k=1L, ignore.overlaps = FALSE,
     starts <- starts[start_ord]
     ends <- ends[end_ord]
 
-    phits <- precede(query, starts, ignore.strand=ignore.strand)
-    fhits <- follow(query, ends, ignore.strand=ignore.strand)
+    if (length(x)) {
+        phits <- precede(x, starts, ignore.strand=ignore.strand)
+        fhits <- follow(x, ends, ignore.strand=ignore.strand)
+    } else {
+        phits <- fhits <- integer()
+    }
 
     if (!ignore.strand) {
-        exchange <- decode(strand(query) == "-")
+        exchange <- decode(strand(x) == "-")
         tmp <- phits[exchange]
         phits[exchange] <- fhits[exchange]
         fhits[exchange] <- tmp
@@ -525,17 +546,10 @@ findKNN <- function(query, subject, k=1L, ignore.overlaps = FALSE,
     fhits[is.na(fhits)] <- 0L
     fwindows <- restrict(IRanges(end=fhits, width = k), seqstarts)
     
-    dist <- pc(extractList(start(starts), pwindows) - end(query),
-               end(query) - extractList(end(ends), fwindows))
+    dist <- pc(extractList(start(starts), pwindows) - end(x),
+               end(x) - extractList(end(ends), fwindows))
 
     ans <- pc(extractList(start_ord, pwindows), extractList(end_ord, fwindows))
-
-    if (!ignore.overlaps) {
-        hits <- findOverlaps(query, subject, ignore.strand=ignore.strand)
-        hitsList <- as(hits, "List")
-        dist <- pc(dist, relist(rep(0L, length(hits)), hitsList))
-        ans <- pc(ans, hitsList)
-    }
 
     ans[heads(order(dist), k)]
 }

@@ -253,11 +253,34 @@ test_GenomicRanges_distanceToNearest <- function()
 
 test_GenomicRanges_findKNN <- function()
 {
+    ## single argument
+    g1 <- GRanges()
+    checkIdentical(IntegerList(), findKNN(g1))
+
+    g1 <- GRanges(c("chr1:11-15:+", "chr1:21-25:+"))
+    checkIdentical(nearest(g1), unlist(findKNN(g1)))
+
+    ## empty ranges
+    g1 <- GRanges()
+    g2 <- GRanges()
+    checkIdentical(IntegerList(), findKNN(g1, g2))
+
     ## no nearest neighbors
-    g1 <- GRanges(c("chr1:1-5:+", "chr1:6-10:+"))
-    g2 <- GRanges(c("chr2:1-5:+", "chr2:6-10:+"))
-    near <- findKNN(g1, g2)
-    checkTrue(all(is.na(near)))
+    seqinfo <- Seqinfo(paste0("chr", 1:2))
+    g1 <- GRanges(c("chr1:1-5:+", "chr1:6-10:+"), seqinfo = seqinfo)
+    g2 <- GRanges(c("chr2:1-5:+", "chr2:6-10:+"), seqinfo = seqinfo)
+    target <- nearest(g1, g2)
+    current <- findKNN(g1, g2)
+    checkIdentical(length(target), length(current))
+    checkIdentical(lengths(current), c(0L, 0L))
+
+    g1 <- GRanges(c("chr1:1-5:+", "chr1:7-11:+"))
+    g2 <- GRanges(c("chr1:2-3:+", "chr1:10-12:+"))
+    checkIdentical(nearest(g1, g2), unlist(findKNN(g1, g2)))
+
+    g1 <- GRanges(c("chr1:1-5:+", "chr1:11-15:+", "chr2:11-15:+"))
+    g2 <- GRanges("chr1:8-9:+")
+    checkIdentical(IntegerList(1, 1, integer(0)), findKNN(g1, g2))
 
     ## same strand, with overlaps in ranges
     g1 <- GRanges(c("chr1:1-5:+", "chr1:7-11:+"))
