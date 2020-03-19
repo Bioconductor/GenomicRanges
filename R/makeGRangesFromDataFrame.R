@@ -74,7 +74,7 @@
 .find_strand_col <- function(df_colnames, strand.field, prefix)
 {
     idx <- which(df_colnames %in% paste0(prefix, strand.field))
-    if (length(idx) == 0L) 
+    if (length(idx) == 0L)
         idx <- which(df_colnames %in% strand.field)
     if (length(idx) == 0L)
         return(NA_integer_)
@@ -193,10 +193,9 @@ makeGRangesFromDataFrame <- function(df,
 
     ## Prepare 'ans_strand'.
     ans_strand <- NULL
-    if (is.na(granges_cols[["strand"]]) || ignore.strand) {
-        if(length(ans_ranges) > 0L){
-            ans_strand <- "*"  
-        }
+    if (length(ans_ranges) &&
+        (is.na(granges_cols[["strand"]]) || ignore.strand)) {
+        ans_strand <- "*"
     } else {
         ans_strand <- as.character(df[[granges_cols[["strand"]]]])
         ans_strand[ans_strand %in% "."] <- "*"
