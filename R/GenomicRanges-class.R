@@ -53,7 +53,7 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 ###
 ### TODO: Packages defining "extraColumnSlotNames" methods (e.g.
 ### VariantAnnotation, GenomicTuples, InteractionSet, SGSeq) should define
-### "parallelSlotNames" methods instead. They'll get more things working
+### vertical_slot_names() methods instead. They'll get more things working
 ### out-of-the-box by doing so (e.g. c()). Then the extraColumnSlotNames()
 ### generic will become a GenomicRanges private business and could be made
 ### a regular function.
@@ -68,8 +68,8 @@ setMethod("extraColumnSlotNames", "ANY", function(x) character())
 #setMethod("extraColumnSlotNames", "GRanges",
 #    function(x)
 #    {
-#        GRanges_pslotnames <- parallelSlotNames(new("GRanges"))
-#        setdiff(parallelSlotNames(x), GRanges_pslotnames)
+#        GRanges_vslotnames <- vertical_slot_names(new("GRanges"))
+#        setdiff(vertical_slot_names(x), GRanges_vslotnames)
 #    }
 #)
 

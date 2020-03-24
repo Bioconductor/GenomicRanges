@@ -22,17 +22,19 @@ setClass("GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotNames()
+### vertical_slot_names()
 ###
 
-### Combine the new parallel slots with those of the parent class. Make sure
-### to put the new parallel slots *first*.
-setMethod("parallelSlotNames", "GRanges",
+### Combine the new "vertical slots" with those of the parent class. Make
+### sure to put the new vertical slots **first**. See R/bindROWS.R file in
+### the S4Vectors package for what slots should or should not be considered
+### "vertical".
+setMethod("vertical_slot_names", "GRanges",
     #function(x) c("seqnames", "ranges", "strand", callNextMethod())
 
     ## TEMPORARY DEFINITION.
-    ## TODO: Remove this temporary definition and add "parallelSlotNames"
-    ## methods to all packages that define "extraColumnSlotNames" methods
+    ## TODO: Remove this temporary definition and add vertical_slot_names()
+    ## methods to all packages that define extraColumnSlotNames() methods
     ## (e.g. VariantAnnotation, GenomicTuples, InteractionSet, SGSeq).
     function(x) c(extraColumnSlotNames(x), "seqnames", "ranges", "strand",
                   callNextMethod())
