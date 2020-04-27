@@ -1,3 +1,11 @@
+CHANGES IN VERSION 1.40.0
+-------------------------
+
+NEW FEATURES
+
+    o Add trim() method for GRangesList objects.
+
+
 CHANGES IN VERSION 1.38.0
 -------------------------
 
