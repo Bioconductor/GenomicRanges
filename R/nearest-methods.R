@@ -497,7 +497,7 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
 .findKNN <- function(x, subject, k, select, ignore.strand)
 {
     seqlevels(subject) <- seqlevels(x)
-    
+
     starts <- with(subject, GRanges(seqnames, IRanges(start, width=1L), strand))
     ends <- with(subject, GRanges(seqnames, IRanges(end, width=1L), strand))
 
@@ -511,6 +511,11 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
 
     starts <- starts[start_ord]
     ends <- ends[end_ord]
+
+    ## FIXME: Doesn't work in cases without overlaps or where x != subject
+    ol <- findOverlaps(x, maxgap=0L, drop.self=TRUE)
+    ol_hits <- countLnodeHits(ol)
+    overlaps <- IntegerList(lapply(ol_hits, rep, x=0L))
 
     if (length(x)) {
         phits <- precede(x, starts, ignore.strand=ignore.strand)
@@ -545,11 +550,18 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     seqstarts[is.na(seqstarts)] <- 1L
     fhits[is.na(fhits)] <- 0L
     fwindows <- restrict(IRanges(end=fhits, width = k), seqstarts)
-    
+
     dist <- pc(extractList(start(starts), pwindows) - end(x),
-               end(x) - extractList(end(ends), fwindows))
+               start(x) - extractList(end(ends), fwindows),
+               overlaps)
 
-    ans <- pc(extractList(start_ord, pwindows), extractList(end_ord, fwindows))
+    factors <- factor(queryHits(ol), levels = seq_len(nLnode(ol)))
 
+    ans <- pc(extractList(start_ord, pwindows),
+              extractList(end_ord, fwindows),
+              splitAsList(subjectHits(ol), factors))
+              
+
+    ## return IntegerList of k nearest neighbors
     ans[heads(order(dist), k)]
 }
