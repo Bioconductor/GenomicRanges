@@ -476,16 +476,26 @@ follows <- function(x, y) {
 ### FIXME: Largely untested code; unexported for now
 ###
 
+## FIXME: Fix "all"
+## All should look like
+## [1] 3 1
+## [2] 4 2
+## [3] c(1, 2, 4)
+## [4] 1 2
+
 setGeneric("findKNN", function(x, subject, ...) standardGeneric("findKNN"))
 
+## FIXME: "arbitrary" option probably isn't possible
 setMethod("findKNN", c("GenomicRanges", "missing"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
 {
     select <- match.arg(select)
-    .findKNN(x, x, k = k, select = select, ignore.strand = ignore.strand)
+    .findKNN(x, x, k = k, select = select, ignore.strand = ignore.strand,
+             drop.self = TRUE)
 })
 
+## FIXME: "arbitrary" option probably isn't possible
 setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
@@ -494,7 +504,7 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     .findKNN(x, subject, k = k, select = select, ignore.strand = ignore.strand)
 })
     
-.findKNN <- function(x, subject, k, select, ignore.strand)
+.findKNN <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
     seqlevels(subject) <- seqlevels(x)
 
@@ -512,9 +522,19 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     starts <- starts[start_ord]
     ends <- ends[end_ord]
 
-    ## FIXME: Doesn't work in cases without overlaps or where x != subject
-    ol <- findOverlaps(x, maxgap=0L, drop.self=TRUE)
+    ## NOTE: select="all" is needed in general for findKNN here
+    if (drop.self) {
+        ol <- findOverlaps(x, maxgap=0L, select="all",
+                           ignore.strand=ignore.strand, drop.self=TRUE)
+    } else {
+        ol <- findOverlaps(x, subject, maxgap=0L, select="all",
+                           ignore.strand=ignore.strand)
+        #identity <- findOverlaps(x, subject, maxgap=0L, select="all",
+        #                         type = "equal", ignore.strand=ignore.strand)
+        #ol <- setdiff(ol, identity)
+    }
     ol_hits <- countLnodeHits(ol)
+    ol <- as(ol, "List")
     overlaps <- IntegerList(lapply(ol_hits, rep, x=0L))
 
     if (length(x)) {
@@ -555,13 +575,15 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
                start(x) - extractList(end(ends), fwindows),
                overlaps)
 
-    factors <- factor(queryHits(ol), levels = seq_len(nLnode(ol)))
+    #factors <- factor(queryHits(ol), levels = seq_len(nLnode(ol)))
 
     ans <- pc(extractList(start_ord, pwindows),
               extractList(end_ord, fwindows),
-              splitAsList(subjectHits(ol), factors))
-              
+              #splitAsList(subjectHits(ol), factors))
+              ol)
 
     ## return IntegerList of k nearest neighbors
-    ans[heads(order(dist), k)]
+    ans <- ans[heads(order(dist), k)]
+    ans[lengths(ans) < 1] <- NA
+    ans
 }
