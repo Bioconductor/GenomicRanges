@@ -407,29 +407,6 @@ setAs("IntegerRangesList", "GRanges",
         gr
       })
 
-setAs("RangedData", "GRanges",
-    function(from)
-    {
-        ans_ranges <- unlist(ranges(from), use.names=FALSE)
-        ans_mcols <- unlist(values(from), use.names=FALSE)
-        rownames(ans_mcols) <- NULL
-        whichStrand <- match("strand", colnames(ans_mcols))
-        if (is.na(whichStrand)) {
-            ans_strand <- Rle(strand("*"), length(ans_ranges))
-        } else {
-            ans_strand <- Rle(strand(from))
-            ans_mcols <- ans_mcols[-whichStrand]
-        }
-        ans <- GRanges(seqnames=space(from),
-                       ranges=ans_ranges,
-                       strand=ans_strand,
-                       ans_mcols,
-                       seqinfo=seqinfo(from))
-        metadata(ans) <- metadata(from)
-        ans
-    }
-)
-
 .from_Seqinfo_to_GRanges <- function(from)
 {
     if (anyNA(seqlengths(from)))

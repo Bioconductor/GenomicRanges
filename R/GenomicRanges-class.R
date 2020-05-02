@@ -311,24 +311,6 @@ setAs("GenomicRanges", "IntegerRangesList",
     .from_GenomicRanges_to_CompressedIRangesList
 )
 
-setAs("GenomicRanges", "RangedData",
-    function(from)
-    {
-        mcols <- mcols(from, use.names=FALSE)
-        ecs <- extraColumnSlotsAsDF(from)
-        if (length(ecs))
-          mcols <- cbind(mcols, ecs)
-        rd <- RangedData(ranges(from), strand=strand(from),
-                         mcols, space=seqnames(from))
-        mcols(ranges(rd)) <- DataFrame(seqlengths=seqlengths(from),
-                                       isCircular=isCircular(from),
-                                       genome=genome(from))
-        metadata(ranges(rd)) <- metadata(from)
-        metadata(ranges(rd))$seqinfo <- seqinfo(from)
-        rd
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
@@ -639,28 +621,15 @@ setReplaceMethod("$", "GenomicRanges",
 ### Display
 ###
 
-.GenomicRanges_summary <- function(object)
-{
-    object_class <- classNameForDisplay(object)
-    object_len <- length(object)
-    object_mcols <- mcols(object, use.names=FALSE)
-    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
-    paste0(object_class, " object with ", object_len, " ",
-           ifelse(object_len == 1L, "range", "ranges"),
-           " and ", object_nmc, " metadata ",
-           ifelse(object_nmc == 1L, "column", "columns"))
-}
-
 ### S3/S4 combo for summary.GenomicRanges
-summary.GenomicRanges <- function(object, ...)
-    .GenomicRanges_summary(object, ...)
+summary.GenomicRanges <- summary.IPosRanges
 setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 
 .from_GenomicRanges_to_naked_character_matrix_for_display <- function(x)
 {
-    m <- cbind(seqnames=as.character(seqnames(x)),
+    m <- cbind(seqnames=showAsCell(seqnames(x)),
                ranges=showAsCell(ranges(x)),
-               strand=as.character(strand(x)))
+               strand=showAsCell(strand(x)))
     extra_col_names <- extraColumnSlotNames(x)
     if (length(extra_col_names) != 0L) {
         extra_cols <- lapply(extraColumnSlots(x), showAsCell)
@@ -683,14 +652,14 @@ show_GenomicRanges <- function(x, margin="",
                                coerce.internally.to.GRanges=TRUE)
 {
     cat(margin, summary(x), ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that
-    ## head() and tail() work on 'xx'.
+    ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
+    ## work on 'xx'.
     if (coerce.internally.to.GRanges) {
         xx <- as(x, "GRanges", strict=FALSE)
     } else {
         xx <- x
     }
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx)
+    out <- makePrettyMatrixForCompactPrinting(xx)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
@@ -699,8 +668,7 @@ show_GenomicRanges <- function(x, margin="",
         )
         extra_col_names <- extraColumnSlotNames(x)
         .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extra_col_names])
-        classinfo <-
-            S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
