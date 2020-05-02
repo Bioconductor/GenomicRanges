@@ -10,8 +10,8 @@
 \alias{strand,logical-method}
 \alias{strand,Rle-method}
 \alias{strand,RleList-method}
-\alias{strand,DataTable-method}
-\alias{strand<-,DataTable,ANY-method}
+\alias{strand,DataFrame-method}
+\alias{strand<-,DataFrame,ANY-method}
 
 \alias{invertStrand,NULL-method}
 \alias{invertStrand,character-method}
@@ -35,8 +35,8 @@
 \S4method{strand}{logical}(x)
 \S4method{strand}{Rle}(x)
 \S4method{strand}{RleList}(x)
-\S4method{strand}{DataTable}(x)
-\S4method{strand}{DataTable,ANY}(x) <- value
+\S4method{strand}{DataFrame}(x)
+\S4method{strand}{DataFrame,ANY}(x) <- value
 
 \S4method{invertStrand}{character}(x)
 \S4method{invertStrand}{factor}(x)
@@ -104,7 +104,7 @@
           object also has the same \emph{shape} as \code{x} (i.e. its list
           elements have the same lengths as in \code{x}).
     
-    \item If \code{x} inherits from \code{DataTable}, the \code{"strand"}
+    \item If \code{x} is a \code{DataFrame} object, the \code{"strand"}
           column is passed thru \code{strand()} and returned.
           If \code{x} has no \code{"strand"} column, this return value is
           populated with \code{*}s.

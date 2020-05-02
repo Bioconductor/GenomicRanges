@@ -213,8 +213,8 @@
       then the names of \code{x} are propagated as the row names of the
       returned \link{DataFrame} object.
       When setting the metadata columns, the supplied value must be \code{NULL}
-      or a data.frame-like object (i.e. \link{DataTable} or data.frame)
-      object holding element-wise metadata.
+      or a data-frame-like object (i.e. \link{DataFrame} or data.frame)
+      holding element-wise metadata.
     }
     \item{}{
        \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
