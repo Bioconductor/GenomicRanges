@@ -263,7 +263,7 @@ test_GRanges_mcols <- function()
                    silent=TRUE)
 
     mcols(gr1) <- NULL
-    target <- S4Vectors:::make_zero_col_DataFrame(length(gr1))
+    target <- make_zero_col_DFrame(length(gr1))
     checkIdentical(target, mcols(gr1, use.names=FALSE))
     checkIdentical(`rownames<-`(target, .TARGET_names), mcols(gr1))
 

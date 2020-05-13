@@ -96,7 +96,7 @@ reconstructGRfromRGL <- function(rgl, x)
     ## Prepare 'ans_mcols'.
     ans_mcols <- mcols(ans_ranges, use.names=FALSE)
     if (is.null(ans_mcols)) {
-        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(ans_ranges))
+        ans_mcols <- make_zero_col_DFrame(length(ans_ranges))
     } else {
         mcols(ans_ranges) <- NULL
     }

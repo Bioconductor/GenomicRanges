@@ -19,7 +19,7 @@
 \alias{GRanges-class}
 \alias{GRanges}
 
-\alias{parallelSlotNames,GRanges-method}
+\alias{vertical_slot_names,GRanges-method}
 
 \alias{updateObject,GRanges-method}
 
@@ -47,7 +47,6 @@
 \alias{$<-,GenomicRanges-method}
 \alias{seqinfo,GRanges-method}
 \alias{seqinfo,List-method}
-\alias{seqinfo,RangedData-method}
 \alias{seqinfo<-,GenomicRanges-method}
 \alias{seqinfo<-,List-method}
 \alias{score,GenomicRanges-method}
@@ -62,11 +61,9 @@
 \alias{coerce,GenomicRanges,CompressedIRangesList-method}
 \alias{coerce,GenomicRanges,IRangesList-method}
 \alias{coerce,GenomicRanges,IntegerRangesList-method}
-\alias{coerce,GenomicRanges,RangedData-method}
 \alias{coerce,character,GRanges-method}
 \alias{coerce,factor,GRanges-method}
 \alias{coerce,IntegerRangesList,GRanges-method}
-\alias{coerce,RangedData,GRanges-method}
 \alias{coerce,Seqinfo,GRanges-method}
 \alias{coerce,Seqinfo,IntegerRangesList-method}
 \alias{coerce,GenomicRanges,Grouping-method}
@@ -216,8 +213,8 @@
       then the names of \code{x} are propagated as the row names of the
       returned \link{DataFrame} object.
       When setting the metadata columns, the supplied value must be \code{NULL}
-      or a data.frame-like object (i.e. \link{DataTable} or data.frame)
-      object holding element-wise metadata.
+      or a data-frame-like object (i.e. \link{DataFrame} or data.frame)
+      holding element-wise metadata.
     }
     \item{}{
        \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
@@ -299,14 +296,6 @@
 
       Coercing a data.frame or DataFrame into a GRanges object is also
       supported. See \code{\link{makeGRangesFromDataFrame}} for the details.
-    }
-    \item{}{
-      \code{as(from, "RangedData")}:
-      Creates a RangedData object from a GRanges
-      object. The \code{strand} and metadata columns become columns
-      in the result. The \code{seqlengths(from)}, \code{isCircular(from)},
-      and \code{genome(from)} vectors are stored in the metadata columns
-      of \code{ranges(rd)}.
     }
     \item{}{
       \code{as(from, "IntegerRangesList")}:

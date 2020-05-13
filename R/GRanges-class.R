@@ -22,17 +22,19 @@ setClass("GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotNames()
+### vertical_slot_names()
 ###
 
-### Combine the new parallel slots with those of the parent class. Make sure
-### to put the new parallel slots *first*.
-setMethod("parallelSlotNames", "GRanges",
+### Combine the new "vertical slots" with those of the parent class. Make
+### sure to put the new vertical slots **first**. See R/bindROWS.R file in
+### the S4Vectors package for what slots should or should not be considered
+### "vertical".
+setMethod("vertical_slot_names", "GRanges",
     #function(x) c("seqnames", "ranges", "strand", callNextMethod())
 
     ## TEMPORARY DEFINITION.
-    ## TODO: Remove this temporary definition and add "parallelSlotNames"
-    ## methods to all packages that define "extraColumnSlotNames" methods
+    ## TODO: Remove this temporary definition and add vertical_slot_names()
+    ## methods to all packages that define extraColumnSlotNames() methods
     ## (e.g. VariantAnnotation, GenomicTuples, InteractionSet, SGSeq).
     function(x) c(extraColumnSlotNames(x), "seqnames", "ranges", "strand",
                   callNextMethod())
@@ -404,29 +406,6 @@ setAs("IntegerRangesList", "GRanges",
         metadata(gr) <- metadata(from)
         gr
       })
-
-setAs("RangedData", "GRanges",
-    function(from)
-    {
-        ans_ranges <- unlist(ranges(from), use.names=FALSE)
-        ans_mcols <- unlist(values(from), use.names=FALSE)
-        rownames(ans_mcols) <- NULL
-        whichStrand <- match("strand", colnames(ans_mcols))
-        if (is.na(whichStrand)) {
-            ans_strand <- Rle(strand("*"), length(ans_ranges))
-        } else {
-            ans_strand <- Rle(strand(from))
-            ans_mcols <- ans_mcols[-whichStrand]
-        }
-        ans <- GRanges(seqnames=space(from),
-                       ranges=ans_ranges,
-                       strand=ans_strand,
-                       ans_mcols,
-                       seqinfo=seqinfo(from))
-        metadata(ans) <- metadata(from)
-        ans
-    }
-)
 
 .from_Seqinfo_to_GRanges <- function(from)
 {

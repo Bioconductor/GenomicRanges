@@ -394,7 +394,7 @@ set_CompressedGenomicRangesList_mcols <-
     level <- match.arg(level)
     if (level == "between") {
         if (is.null(value))
-            value <- S4Vectors:::make_zero_col_DataFrame(length(x))
+            value <- make_zero_col_DFrame(length(x))
         else if (!is(value, "DataFrame"))
             value <- DataFrame(value)
         if (!is.null(rownames(value)))
@@ -409,7 +409,7 @@ set_CompressedGenomicRangesList_mcols <-
         x@elementMetadata <- value
     } else {
         if (is.null(value)) {
-            value <- S4Vectors:::make_zero_col_DataFrame(length(x@unlistData))
+            value <- make_zero_col_DFrame(length(x@unlistData))
         } else {
             if (!is(value, "SplitDataFrameList") ||
                 !identical(elementNROWS(x), elementNROWS(value))) {

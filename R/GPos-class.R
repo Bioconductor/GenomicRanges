@@ -82,7 +82,7 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 ### new_GRanges() and we don't check the new object.
 .new_stitched_GRanges <- function(seqnames, ranges, strand, seqinfo)
 {
-    mcols <- S4Vectors:::make_zero_col_DataFrame(length(ranges))
+    mcols <- make_zero_col_DFrame(length(ranges))
     new2("GRanges", seqnames=seqnames,
                     ranges=ranges,
                     strand=strand,
@@ -361,27 +361,15 @@ setMethod("updateObject", "GPos",
 ### Display
 ###
 
-.GPos_summary <- function(object)
-{
-    object_class <- classNameForDisplay(object)
-    object_len <- length(object)
-    object_mcols <- mcols(object, use.names=FALSE)
-    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
-    paste0(object_class, " object with ", object_len, " ",
-           ifelse(object_len == 1L, "position", "positions"),
-           " and ", object_nmc, " metadata ",
-           ifelse(object_nmc == 1L, "column", "columns"))
-}
-
 ### S3/S4 combo for summary.GPos
-summary.GPos <- function(object, ...) .GPos_summary(object, ...)
+summary.GPos <- summary.IPos
 setMethod("summary", "GPos", summary.GPos)
 
 .from_GPos_to_naked_character_matrix_for_display <- function(x)
 {
-    m <- cbind(seqnames=as.character(seqnames(x)),
-               pos=as.character(pos(x)),
-               strand=as.character(strand(x)))
+    m <- cbind(seqnames=showAsCell(seqnames(x)),
+               pos=showAsCell(pos(x)),
+               strand=showAsCell(strand(x)))
     cbind_mcols_for_display(m, x)
 }
 setMethod("makeNakedCharacterMatrixForDisplay", "GPos",
@@ -400,17 +388,16 @@ show_GPos <- function(x, margin="",
                "\n\n    object <- updateObject(object, verbose=TRUE)",
                "\n\n  and re-serialize it."))
     cat(margin, summary(x), ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that
-    ## head() and tail() work on 'x'.
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x)
+    ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
+    ## work on 'x'.
+    out <- makePrettyMatrixForCompactPrinting(x)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
             pos="integer",
             strand="Rle"
         )
-        classinfo <-
-            S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
