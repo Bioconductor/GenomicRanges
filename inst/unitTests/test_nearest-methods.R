@@ -1,3 +1,5 @@
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+
 quiet <- suppressWarnings
 test_GenomicRanges_findNearest0 <- function()
 {
@@ -319,6 +321,15 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(near[[1]], c(1L, 2L, 3L))
     checkIdentical(near[[2]], c(2L, 3L, 1L))
 
+    near_all <- findKNN(g1, g2, select="all")
+    checkIdentical(length(near_all), 2L)
+    checkIdentical(length(near_all[[1]]), 1L)
+    checkIdentical(length(near_all[[2]]), 1L)
+    checkIdentical(near_all[[1]], c(1L, 2L))
+    checkIdentical(near_all[[2]], c(2L, 3L))
+    near <- findKNN(g1, g2, k=2)
+    checkIdentical(near, near_all)
+
     ## alternate strands, with overlaps in ranges
     g3 <- GRanges(c("chr1:1-5:-", "chr1:7-11:+"))
     #g4 <- GRanges(c("chr1:1-2:+", "chr1:5-7:-", "chr1:10-12:+"))
@@ -336,6 +347,14 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(length(near[[2]]), 2L)
     checkIdentical(near[[1]], 1L)
     checkIdentical(near[[2]], c(2L, 3L))
+
+    nearest_all <- findKNN(g3, g4, select="all")
+    checkIdentical(length(near_all), 2L)
+    checkIdentical(length(near_all[[1]]), 1L)
+    checkIdentical(length(near_all[[2]]), 2L)
+    checkIdentical(near_all[[1]], 1L)
+    checkIdentical(near_all[[2]], c(2L, 3L))
+    checkIdentical(near, near_all)
 
     ## FIXME: Neither nearest() or findKNN() have ignore overlap
     ## ignore.overlap, with overlaps in ranges
@@ -367,6 +386,22 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(near[[1]], near2[[1]])
     checkIdentical(near[[2]], near2[[2]])
 
-    ## 2 Methods x; x + subject
-    ## 
+    ## select == "all"
+    
+    ## No ties
+    checkIdentical(nearest(g1, g2), nearest(g1, g2, select = "all"))
+    
+    ## With ties
+    r <- IRanges(c(14, 1, 6, 10, 10, 14), c(16, 4, 8, 12, 12, 16))
+    g <- GRanges("chr1", r, "+")
+
+    broads <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
+    broads <- resize(broads, width(broads)+3000, fix="end")
+    gr <- GRanges(
+        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
+        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        score = 1:10,
+        GC = seq(1, 0, length=10))
+    GenomicRanges:::findKNN(gr,broads[ seqnames(broads) %in% seqlevels(gr),])
 }

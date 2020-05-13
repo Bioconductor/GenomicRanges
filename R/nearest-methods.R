@@ -473,19 +473,9 @@ follows <- function(x, y) {
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Find 'k' nearest neighbors
 ###
-### FIXME: Largely untested code; unexported for now
-###
-
-## FIXME: Fix "all"
-## All should look like
-## [1] 3 1
-## [2] 4 2
-## [3] c(1, 2, 4)
-## [4] 1 2
 
 setGeneric("findKNN", function(x, subject, ...) standardGeneric("findKNN"))
 
-## FIXME: "arbitrary" option probably isn't possible
 setMethod("findKNN", c("GenomicRanges", "missing"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
@@ -495,7 +485,6 @@ setMethod("findKNN", c("GenomicRanges", "missing"),
              drop.self = TRUE)
 })
 
-## FIXME: "arbitrary" option probably isn't possible
 setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
@@ -506,6 +495,11 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     
 .findKNN <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
+#    x_ordering <- order(x)
+#    x <- x[order(x)]
+#    subject_ordering <- order(subject)
+#    subject <- subject[order(subject)]
+
     seqlevels(subject) <- seqlevels(x)
 
     starts <- with(subject, GRanges(seqnames, IRanges(start, width=1L), strand))
@@ -560,30 +554,44 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     } else {
         b <- runLength(seqnames(starts))
     }
+
+    width <- k
+    if (select == "all")
+        width <- max(length(x) - 1, 1)
     
     seqends <- end(seqnames(starts))[findPart(phits, b)]
     phits[is.na(phits)] <- 1L
     seqends[is.na(seqends)] <- 0L
-    pwindows <- restrict(IRanges(phits, width = k), end=seqends)
+    pwindows <- restrict(IRanges(phits, width = width), end=seqends)
 
     seqstarts <- start(seqnames(ends))[findPart(fhits, b)]
     seqstarts[is.na(seqstarts)] <- 1L
     fhits[is.na(fhits)] <- 0L
-    fwindows <- restrict(IRanges(end=fhits, width = k), seqstarts)
+    fwindows <- restrict(IRanges(end=fhits, width = width), seqstarts)
 
     dist <- pc(extractList(start(starts), pwindows) - end(x),
                start(x) - extractList(end(ends), fwindows),
                overlaps)
-
-    #factors <- factor(queryHits(ol), levels = seq_len(nLnode(ol)))
 
     ans <- pc(extractList(start_ord, pwindows),
               extractList(end_ord, fwindows),
               #splitAsList(subjectHits(ol), factors))
               ol)
 
-    ## return IntegerList of k nearest neighbors
-    ans <- ans[heads(order(dist), k)]
+    browser()
+
+    o <- order(dist)
+    if (select == "all") {
+        
+        k <- vapply(dist[o], function(y) {
+            m <- match(y, unique(y))  
+            t <- cumsum(tabulate(m))
+            t[which.min(t < k)]
+        }, numeric(1))
+    }
+    ans <- ans[heads(o, k)]
+#    ans <- relist(as.integer(x_ordering)[unlist(ans)], ans)
+#    ans <- match(ans, x_ordering)
     ans[lengths(ans) < 1] <- NA
     ans
 }
