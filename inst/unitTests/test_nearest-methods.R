@@ -387,14 +387,16 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(near[[2]], near2[[2]])
 
     ## select == "all"
-    
     ## No ties
-    checkIdentical(nearest(g1, g2), nearest(g1, g2, select = "all"))
-    
+    checkIdentical(findKNN(g1, g2), findKNN(g1, g2, select = "all"))
     ## With ties
     r <- IRanges(c(14, 1, 6, 10, 10, 14), c(16, 4, 8, 12, 12, 16))
     g <- GRanges("chr1", r, "+")
+    target <- findKNN(g, select="all")
+    checkIdentical(lengths(target), c(1, 1, 3, 1, 1, 1))
+    checkIdentical(target[[3]], c(4, 5, 2))
 
+    ## Case from issue #76
     broads <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
     broads <- resize(broads, width(broads)+3000, fix="end")
     gr <- GRanges(
@@ -403,5 +405,10 @@ test_GenomicRanges_findKNN <- function()
         strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
         score = 1:10,
         GC = seq(1, 0, length=10))
-    GenomicRanges:::findKNN(gr,broads[ seqnames(broads) %in% seqlevels(gr),])
+    near <- nearest(gr,broads[ seqnames(broads) %in% seqlevels(gr),])
+    target <- findKNN(gr,broads[ seqnames(broads) %in% seqlevels(gr),])
+    target10 <- findKNN(gr,broads[ seqnames(broads) %in% seqlevels(gr),], k=10)
+    checkIdentical(near, unlist(target))
+    checkTrue(all(lengths(target) == 1))
+    checkTrue(all(lengths(target10) == 10))
 }

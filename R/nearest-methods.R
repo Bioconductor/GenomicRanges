@@ -495,11 +495,6 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     
 .findKNN <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
-#    x_ordering <- order(x)
-#    x <- x[order(x)]
-#    subject_ordering <- order(subject)
-#    subject <- subject[order(subject)]
-
     seqlevels(subject) <- seqlevels(x)
 
     starts <- with(subject, GRanges(seqnames, IRanges(start, width=1L), strand))
@@ -550,39 +545,61 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     }
     
     if (!ignore.strand) {
-        b <- width(disjoin(c(ranges(seqnames(starts)), ranges(strand(starts)))))
+        dj <- disjoin(c(ranges(seqnames(starts)), ranges(strand(starts))))
+        b <- width(dj)
+        #b_start <- start(dj)
+        #b_end <- end(dj)
     } else {
         b <- runLength(seqnames(starts))
+        ## FIXME: b_start is not properly defined
+        #b_start <- c(1, diff(b))
+        #b_end <- b
     }
 
     width <- k
     if (select == "all")
         width <- max(length(x) - 1, 1)
     
-    seqends <- end(seqnames(starts))[findPart(phits, b)]
+    seqends <- end(strand(starts))[findPart(phits, b)]
+    #seqends <- end(strand(starts))[findPart(phits, b)]
     phits[is.na(phits)] <- 1L
     seqends[is.na(seqends)] <- 0L
+    #pwindows_i <- IRanges(phits, width = width)
     pwindows <- restrict(IRanges(phits, width = width), end=seqends)
+    pwindows_kept <- seqends >= phits
 
-    seqstarts <- start(seqnames(ends))[findPart(fhits, b)]
+    seqstarts <- start(strand(ends))[findPart(fhits, b)]
+    #seqstarts <- start(strand(ends))[findPart(fhits, b)]
     seqstarts[is.na(seqstarts)] <- 1L
     fhits[is.na(fhits)] <- 0L
+    #fwindows_i <- IRanges(end=fhits, width = width)
     fwindows <- restrict(IRanges(end=fhits, width = width), seqstarts)
+    fwindows_kept <- seqstarts <= fhits + width
+    
+    pdist <- extractList(start(starts), pwindows) - end(x)
+    pdist[!pwindows_kept] <- IntegerList(integer(0))
+    fdist <- start(x) - extractList(end(ends), fwindows)
+    fdist[!fwindows_kept] <- IntegerList(integer(0))
 
-    dist <- pc(extractList(start(starts), pwindows) - end(x),
-               start(x) - extractList(end(ends), fwindows),
-               overlaps)
+    dist <- pc(pdist, fdist, overlaps)
+    dist <- abs(dist)
 
-    ans <- pc(extractList(start_ord, pwindows),
-              extractList(end_ord, fwindows),
-              #splitAsList(subjectHits(ol), factors))
-              ol)
+    pans <- extractList(start_ord, pwindows)
+    pans[!pwindows_kept] <- IntegerList(integer(0))
+    fans <- extractList(end_ord, fwindows)
+    fans[!fwindows_kept] <- IntegerList(integer(0))
 
-    browser()
+    ans <- pc(pans, fans, ol)
 
+    seqends <- end(strand(starts))[findPart(phits, b)]
+    seqends <- end(strand(starts))[findPart(phits, b)]
     o <- order(dist)
     if (select == "all") {
-        
+        ## NOTE: proposed solution not working
+        #y <- dist[order(dist)]
+        #m <- match(y, unique(y))
+        #t <- cumsum(endoapply(m, tabulate))
+        #k <- pmin(sum(t < k) + 1L, lengths(m)) 
         k <- vapply(dist[o], function(y) {
             m <- match(y, unique(y))  
             t <- cumsum(tabulate(m))
