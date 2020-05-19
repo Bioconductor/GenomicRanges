@@ -296,6 +296,21 @@ setAs("CompressedGRangesList", "IntegerRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Sorting.
+###
+### S3/S4 combo for sort.GRangesList
+.sort.GRangesList <- function(x, decreasing=FALSE, ...)
+{
+    gr <- deconstructGRLintoGR(x)
+    gr2 <- sort(gr, decreasing=decreasing, ...)
+    reconstructGRLfromGR(gr2, x)
+}
+sort.GRangesList <- function(x, decreasing=FALSE, ...)
+    .sort.GRangesList(x, decreasing=decreasing, ...)
+setMethod("sort", "CompressedGRangesList", .sort.GRangesList)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
 ### TODO: We should have more general methods defined at the GenomicRangesList
