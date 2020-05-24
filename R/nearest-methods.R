@@ -543,10 +543,7 @@ follows <- function(x, y) {
     }
 
     b <- width(disjoin(c(ranges(seqnames(starts)), ranges(strand(starts)))))
-
-    width <- k
-    if (select == "all")
-        width <- max(length(x) - 1, 1)
+    width <- ifelse(select == "all", max(length(subject) - 1L, 1L), k)
 
     seqends <- end(strand(starts))[findPart(phits, b)]
     phits[is.na(phits)] <- 1L
@@ -558,7 +555,7 @@ follows <- function(x, y) {
     seqstarts[is.na(seqstarts)] <- 1L
     fhits[is.na(fhits)] <- 0L
     fwindows <- restrict(IRanges(end=fhits, width = width), seqstarts)
-    fwindows_kept <- seqstarts <= fhits + width
+    fwindows_kept <- seqstarts <= fhits
 
     pdist <- extractList(start(starts), pwindows) - end(x)
     pdist[!pwindows_kept] <- IntegerList(integer(0))

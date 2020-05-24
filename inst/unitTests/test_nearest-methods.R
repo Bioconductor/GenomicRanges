@@ -342,6 +342,32 @@ test_GenomicRanges_findKNN <- function()
     g2 <- GRanges("chr1:8-9:+")
     checkIdentical(IntegerList(1, 1, NA), findKNN(g1, g2))
 
+    ## Same strand, ties
+    x <- GRanges("chr1:15")
+    subject<- GRanges(c("chr1:10", "chr1:20", "chr1:30"))
+
+    current <- findKNN(x, subject)
+    checkIdentical(IntegerList(2), current) # arbitrary choice
+    current <- findKNN(x, subject, k = 2)
+    checkIdentical(IntegerList(c(2, 1)), current)
+    current <- findKNN(x, subject, k = 3)
+    checkIdentical(IntegerList(c(2, 1, 3)), current)
+
+    current <- findKNN(x, subject, k = 1, select = "all")
+    checkIdentical(IntegerList(c(2, 1)), current)
+    current <- findKNN(x, subject, k = 2, select = "all")
+    checkIdentical(IntegerList(c(2, 1)), current)
+    current <- findKNN(x, subject, k = 3, select = "all")
+    checkIdentical(IntegerList(c(2, 1, 3)), current)
+
+    subject<- GRanges(c("chr1:10", "chr1:20", "chr1:17", "chr1:30"))
+    current <- findKNN(x, subject, k = 2, select = "all")
+    checkIdentical(IntegerList(c(3, 2, 1)), current)
+    curent <- findKNN(x, subject, k = 3, select = "all")
+    checkIdentical(IntegerList(c(3, 2, 1)), current)
+    current<- findKNN(x, subject, k = 4, select = "all")
+    checkIdentical(IntegerList(c(3, 2, 1, 4)), current)
+
     ## Same strand, self, overlapping
     r <- IRanges(c(1,4,8), c(6,10,12))
     g <- GRanges("chr1", r, "+")
