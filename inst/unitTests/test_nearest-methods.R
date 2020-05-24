@@ -1,6 +1,3 @@
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-library(GenomicFeatures)
-
 quiet <- suppressWarnings
 test_GenomicRanges_findNearest0 <- function()
 {
@@ -271,8 +268,6 @@ test_GenomicRanges_findKNN <- function()
     current <- findKNN(g1, g2)
     checkIdentical(length(target), length(current))
     checkIdentical(target, unlist(current))
-    ## NOTE: absolete with now that integer(0) is not NA
-    #checkIdentical(lengths(current), c(0L, 0L))
 
     ## Same strand non-overlapping, x only
     g <- GRanges(c("chr1:11-15:+", "chr1:21-25:+"))
@@ -293,21 +288,12 @@ test_GenomicRanges_findKNN <- function()
     g <- GRanges("chr1", r, "+")
     target <- nearest(g)
     near <- findKNN(g)
-    ## NOTE: Incorrect due to arbitrarly choosing an overlap
-    #checkIdentical(nearest(g), unlist(findKNN(g)))
-    #checkIdentical(length(near), 2L)
-    #checkIdentical(length(near[[1]]), 1L)
-    #checkIdentical(length(near[[2]]), 1L)
-    #checkIdentical(near[[1]], 1L)
-    #checkIdentical(near[[2]], 2L)
  
     ## Same strand, with overlaps in ranges
     g1 <- GRanges(c("chr1:1-5:+", "chr1:7-11:+"))
     g2 <- GRanges(c("chr1:1-2:+", "chr1:5-7:+", "chr1:10-12:+"))
     target <- nearest(g1, g2)
     near <- findKNN(g1, g2)
-    ## NOTE: Incorrect due to arbitrarly choosing an overlap
-    #checkIdentical(nearest(g), unlist(findKNN(g)))
     checkIdentical(length(near), 2L)
     checkIdentical(length(near[[1]]), 1L)
     checkIdentical(length(near[[2]]), 1L)
@@ -322,18 +308,17 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(near[[1]], c(1L, 2L, 3L))
     checkIdentical(near[[2]], c(2L, 3L, 1L))
 
-    near_all <- findKNN(g1, g2, select="all")
-    checkIdentical(length(near_all), 2L)
-    checkIdentical(length(near_all[[1]]), 2L)
-    checkIdentical(length(near_all[[2]]), 2L)
-    checkIdentical(near_all[[1]], c(1L, 2L))
-    checkIdentical(near_all[[2]], c(2L, 3L))
+    ## select = "all"
+    near <- findKNN(g1, g2, select="all")
+    target <- as(nearest(g1, g2, select = "all"), "IntegerList")
+    checkIdentical(near, target, "select = 'all'")
+
     near <- findKNN(g1, g2, k=2)
+    near_all <- as(nearest(g1, g2, select="all"), "IntegerList")
     checkIdentical(near, near_all)
 
     ## alternate strands, with overlaps in ranges
     g3 <- GRanges(c("chr1:1-5:-", "chr1:7-11:+"))
-    #g4 <- GRanges(c("chr1:1-2:+", "chr1:5-7:-", "chr1:10-12:+"))
     g4 <- GRanges(c("chr1:1-2:-", "chr1:5-7:+", "chr1:10-12:+"))
     near <- findKNN(g3, g4)
     checkIdentical(length(near), 2L)
@@ -356,20 +341,6 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(nearest_all[[1]], 1L)
     checkIdentical(nearest_all[[2]], c(2L, 3L))
     checkIdentical(near, nearest_all)
-
-    ## FIXME: Neither nearest() or findKNN() have ignore overlap
-    ## ignore.overlap, with overlaps in ranges
-#    near <- findKNN(g1, g2, ignore.overlap = TRUE)
-#    checkIdentical(length(near), 2L)
-#    checkIdentical(length(near[[1]]), 1L)
-#    checkIdentical(length(near[[2]]), 1L)
-#    checkIdentical(near[[1]], 3L)
-#    checkIdentical(near[[2]], 1L)
-
-#    near <- findKNN(g3, g4, ignore.overlap = TRUE)
-#    checkIdentical(length(near), 2L)
-#    checkIdentical(length(near[[1]]), 0L)
-#    checkIdentical(length(near[[2]]), 0L)
 
     ## ignore.strand, with overlaps in ranges
     near <- findKNN(g1, g2, ignore.strand = TRUE)
@@ -396,8 +367,14 @@ test_GenomicRanges_findKNN <- function()
     target <- findKNN(g, select="all")
     checkIdentical(lengths(target), c(1L, 1L, 3L, 1L, 1L, 1L))
     checkIdentical(target[[3]], c(4L, 5L, 2L))
+}
 
+test_GenomicRanges_findKNN_issue76 <- function() {
     ## Case from issue #76
+    TxDb.Hsapiens.UCSC.hg19.knownGene <-
+        TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+    genes <- GenomicFeatures::genes
+
     broads <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
     broads <- resize(broads, width(broads)+3000, fix="end")
     gr <- GRanges(
@@ -406,10 +383,12 @@ test_GenomicRanges_findKNN <- function()
         strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
         score = 1:10,
         GC = seq(1, 0, length=10))
-    near <- nearest(gr,broads[ seqnames(broads) %in% seqlevels(gr),])
-    target <- findKNN(gr,broads[ seqnames(broads) %in% seqlevels(gr),])
-    target10 <- findKNN(gr,broads[ seqnames(broads) %in% seqlevels(gr),], k=10)
-    checkIdentical(near, unlist(target))
-    checkTrue(all(lengths(target) == 1))
+    broads <- broads[ seqnames(broads) %in% seqlevels(gr) ]
+
+    near <- nearest(gr, broads)
+    target <- findKNN(gr, broads)
+    checkIdentical(target, as(near, "IntegerList"))
+
+    target10 <- findKNN(gr, broads, k = 10L)
     checkTrue(all(lengths(target10) == 10))
 }

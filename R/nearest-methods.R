@@ -7,7 +7,7 @@
 ###        distanceToNearest
 ###          |          |
 ###       nearest    distance
-###       |     | 
+###       |     |
 ###  precede   follow
 
 .orderNumeric <- function(x)            # unstable order
@@ -20,7 +20,7 @@
     zeroInSubject <- subject %in% 0L
     if (any(zeroInSubject))
         subject <- unique(c(subject, sentinel))
-    else 
+    else
         subject <- c(subject, sentinel)
     ord <- .orderNumeric(subject)
     subject <- subject[ord]
@@ -42,7 +42,7 @@
         i[subject[i] %in% sentinel & subject[i] != 0L] <- NA_integer_
     else
         i[subject[i] %in% sentinel] <- NA_integer_
- 
+
     IRanges:::vectorToHits(i, rle, ord)
 }
 
@@ -96,7 +96,7 @@
 }
 
 .GenomicRanges_findPrecedeFollow <-
-    function(query, subject, select, ignore.strand, 
+    function(query, subject, select, ignore.strand,
              where=c("precede", "follow"))
 {
     if (!length(query) || !length(subject))
@@ -192,12 +192,12 @@
     hits <- .Hits(qryHits, subjHits, length(query), length(subject))
     ## Break ties
     if (select == "all") {
-        hits 
+        hits
     } else if (select == "first") {
         first <- rep(NA_integer_, length(query))
         idx <- which(!duplicated(queryHits(hits)))
         first[queryHits(hits)[idx]] <- subjectHits(hits)[idx]
-        first 
+        first
     } else if ("last" == select) {
         last <- rep(NA_integer_, length(query))
         rev_query <- rev(queryHits(hits)) ## can't call rev() on Hits
@@ -213,13 +213,13 @@
 ###
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, 
+    function(x, subject,
              select=c("first", "all"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "precede") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "precede")
     }
 )
 
@@ -229,8 +229,8 @@ setMethod("precede", c("GenomicRanges", "missing"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "precede") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "precede")
     }
 )
 
@@ -240,8 +240,8 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "follow") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "follow")
     }
 )
 
@@ -251,8 +251,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "follow") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "follow")
     }
 )
 
@@ -261,7 +261,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
 ### nearest()
 ###
 
-.filterHits <- function(hits, i, map) 
+.filterHits <- function(hits, i, map)
 {
     m <- as.matrix(hits[as(hits, "IRanges")[i]])
     m[, 1L] <- map[m[, 1L]]
@@ -299,7 +299,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
         ## terminate if no results
         if (!length(p) && !length(f)) {
             if (is(olv, "Hits") && !length(olv) || all(is.na(olv))) {
-                if (select == "all") 
+                if (select == "all")
                     return(Hits(nLnode=length(x),
                                 nRnode=length(subject),
                                 sort.by.query=TRUE))
@@ -331,7 +331,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
             ol@from <- unname(m[, 1L])
             ol@to <- unname(m[, 2L])
         } else {
-            olv[is.na(olv)] <- ifelse(pnearest, p, f) 
+            olv[is.na(olv)] <- ifelse(pnearest, p, f)
             ol <- olv
         }
     }
@@ -425,7 +425,7 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     }
 
     if (!length(subjectHits) || all(is.na(subjectHits))) {
-        Hits(nLnode=length(x), 
+        Hits(nLnode=length(x),
              nRnode=length(subject),
              distance=integer(0),
              sort.by.query=TRUE)
@@ -474,25 +474,6 @@ follows <- function(x, y) {
 ### Find 'k' nearest neighbors
 ###
 
-setGeneric("findKNN", function(x, subject, ...) standardGeneric("findKNN"))
-
-setMethod("findKNN", c("GenomicRanges", "missing"),
-    function(x, subject, k = 1L, select = c("arbitrary", "all"),
-             ignore.strand = FALSE)
-{
-    select <- match.arg(select)
-    .findKNN(x, x, k = k, select = select, ignore.strand = ignore.strand,
-             drop.self = TRUE)
-})
-
-setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, k = 1L, select = c("arbitrary", "all"),
-             ignore.strand = FALSE)
-{
-    select <- match.arg(select)
-    .findKNN(x, subject, k = k, select = select, ignore.strand = ignore.strand)
-})
-    
 .findKNN <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
     seqlevels(subject) <- seqlevels(x)
@@ -504,7 +485,7 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
         starts <- unstrand(starts)
         ends <- unstrand(ends)
     }
-    
+
     start_ord <- order(starts)
     end_ord <- order(ends)
 
@@ -518,9 +499,6 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     } else {
         ol <- findOverlaps(x, subject, maxgap=0L, select="all",
                            ignore.strand=ignore.strand)
-        #identity <- findOverlaps(x, subject, maxgap=0L, select="all",
-        #                         type = "equal", ignore.strand=ignore.strand)
-        #ol <- setdiff(ol, identity)
     }
     ol_hits <- countLnodeHits(ol)
     ol <- as(ol, "List")
@@ -543,39 +521,30 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
     findPart <- function(x, w) {
         S4Vectors:::findIntervalAndStartFromWidth(x, w)[["interval"]]
     }
-    
+
     if (!ignore.strand) {
         dj <- disjoin(c(ranges(seqnames(starts)), ranges(strand(starts))))
         b <- width(dj)
-        #b_start <- start(dj)
-        #b_end <- end(dj)
     } else {
         b <- runLength(seqnames(starts))
-        ## FIXME: b_start is not properly defined
-        #b_start <- c(1, diff(b))
-        #b_end <- b
     }
 
     width <- k
     if (select == "all")
         width <- max(length(x) - 1, 1)
-    
+
     seqends <- end(strand(starts))[findPart(phits, b)]
-    #seqends <- end(strand(starts))[findPart(phits, b)]
     phits[is.na(phits)] <- 1L
     seqends[is.na(seqends)] <- 0L
-    #pwindows_i <- IRanges(phits, width = width)
     pwindows <- restrict(IRanges(phits, width = width), end=seqends)
     pwindows_kept <- seqends >= phits
 
     seqstarts <- start(strand(ends))[findPart(fhits, b)]
-    #seqstarts <- start(strand(ends))[findPart(fhits, b)]
     seqstarts[is.na(seqstarts)] <- 1L
     fhits[is.na(fhits)] <- 0L
-    #fwindows_i <- IRanges(end=fhits, width = width)
     fwindows <- restrict(IRanges(end=fhits, width = width), seqstarts)
     fwindows_kept <- seqstarts <= fhits + width
-    
+
     pdist <- extractList(start(starts), pwindows) - end(x)
     pdist[!pwindows_kept] <- IntegerList(integer(0))
     fdist <- start(x) - extractList(end(ends), fwindows)
@@ -591,24 +560,34 @@ setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
 
     ans <- pc(pans, fans, ol)
 
-    seqends <- end(strand(starts))[findPart(phits, b)]
-    seqends <- end(strand(starts))[findPart(phits, b)]
     o <- order(dist)
     if (select == "all") {
-        ## NOTE: proposed solution not working
-        #y <- dist[order(dist)]
-        #m <- match(y, unique(y))
-        #t <- cumsum(endoapply(m, tabulate))
-        #k <- pmin(sum(t < k) + 1L, lengths(m)) 
         k <- vapply(dist[o], function(y) {
-            m <- match(y, unique(y))  
+            m <- match(y, unique(y))
             t <- cumsum(tabulate(m))
             t[which.min(t < k)]
         }, numeric(1))
     }
     ans <- ans[heads(o, k)]
-#    ans <- relist(as.integer(x_ordering)[unlist(ans)], ans)
-#    ans <- match(ans, x_ordering)
     ans[lengths(ans) < 1] <- NA
     ans
 }
+
+setGeneric("findKNN", function(x, subject, ...) standardGeneric("findKNN"))
+
+setMethod("findKNN", c("GenomicRanges", "missing"),
+    function(x, subject, k = 1L, select = c("arbitrary", "all"),
+             ignore.strand = FALSE)
+{
+    select <- match.arg(select)
+    .findKNN(x, x, k = k, select = select, ignore.strand = ignore.strand,
+             drop.self = TRUE)
+})
+
+setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, k = 1L, select = c("arbitrary", "all"),
+             ignore.strand = FALSE)
+{
+    select <- match.arg(select)
+    .findKNN(x, subject, k = k, select = select, ignore.strand = ignore.strand)
+})
