@@ -542,12 +542,7 @@ follows <- function(x, y) {
         S4Vectors:::findIntervalAndStartFromWidth(x, w)[["interval"]]
     }
 
-    if (!ignore.strand) {
-        dj <- disjoin(c(ranges(seqnames(starts)), ranges(strand(starts))))
-        b <- width(dj)
-    } else {
-        b <- runLength(seqnames(starts))
-    }
+    b <- width(disjoin(c(ranges(seqnames(starts)), ranges(strand(starts)))))
 
     width <- k
     if (select == "all")
@@ -584,7 +579,7 @@ follows <- function(x, y) {
     if (select == "all")
         k <- .findKNN_all_k(dist[o], k)
     ans <- ans[heads(o, k)]
-    ans[lengths(ans) < 1] <- NA
+    ans[lengths(ans) == 0L] <- NA
     ans
 }
 
