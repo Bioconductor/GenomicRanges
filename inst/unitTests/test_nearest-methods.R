@@ -249,6 +249,65 @@ test_GenomicRanges_distanceToNearest <- function()
     checkIdentical(queryLength(current), 1L)
 }
 
+test_GenomicRanges_findKNN_all_k <- function()
+{
+    ## zero-length edge cases
+    x <- IntegerList()
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 2), integer(length(x)))
+
+    x <- IntegerList(integer())
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 2), integer(length(x)))
+
+    x <- IntegerList(integer(), integer())
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 2), integer(length(x)))
+
+    x <- IntegerList(integer(), 1L)
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), c(0L, 1L))
+    checkIdentical(.findKNN_all_k(x, 2), c(0L, 1L))
+
+    ## essential functionality
+    x <- IntegerList(1L)
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), 1L)
+    checkIdentical(.findKNN_all_k(x, 2), 1L)
+
+    x <- IntegerList(1L, 1:2)
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), c(1L, 1L))
+    checkIdentical(.findKNN_all_k(x, 2), 1:2)
+    checkIdentical(.findKNN_all_k(x, 3), 1:2)
+
+    ## ties
+    x <- IntegerList(1:2, c(1L, 1:2)) # ties at start
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), 1:2)
+    checkIdentical(.findKNN_all_k(x, 2), c(2L, 2L))
+    checkIdentical(.findKNN_all_k(x, 3), c(2L, 3L))
+    checkIdentical(.findKNN_all_k(x, 4), c(2L, 3L))
+
+    x <- IntegerList(1:2, c(1:2, 2L)) # ties at end
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), c(1L, 1L))
+    checkIdentical(.findKNN_all_k(x, 2), c(2L, 3L))
+    checkIdentical(.findKNN_all_k(x, 3), c(2L, 3L))
+    checkIdentical(.findKNN_all_k(x, 4), c(2L, 3L))
+
+    x <- IntegerList(1:2, c(1L, 1L, 2L, 2L)) # multiple ties
+    checkIdentical(.findKNN_all_k(x, 0), integer(length(x)))
+    checkIdentical(.findKNN_all_k(x, 1), 1:2)
+    checkIdentical(.findKNN_all_k(x, 2), c(2L, 2L))
+    checkIdentical(.findKNN_all_k(x, 3), c(2L, 4L))
+    checkIdentical(.findKNN_all_k(x, 4), c(2L, 4L))
+    checkIdentical(.findKNN_all_k(x, 5), c(2L, 4L))
+}
+
 test_GenomicRanges_findKNN <- function()
 {
     ## single argument
@@ -316,6 +375,20 @@ test_GenomicRanges_findKNN <- function()
     near <- findKNN(g1, g2, k=2)
     near_all <- as(nearest(g1, g2, select="all"), "IntegerList")
     checkIdentical(near, near_all)
+
+    g <- GRanges(c("chr1:10-12", "chr1:20-22", "chr1:10-12"))
+    near <- findKNN(g, select = "all")
+    target <- as(nearest(g, select="all"), "IntegerList")
+    checkIdentical(near, target)
+
+    near <- findKNN(g, k = 2, select = "all")
+    target <- IntegerList(3:2, c(1, 3), 1:2)
+    checkIdentical(near, target)
+
+    ## k >= length(g), select "all" should return all non-self hits
+    near <- findKNN(g, k = 3, select = "all")
+    target <- IntegerList(3:2, c(1, 3), 1:2)
+    checkIdentical(near, target, msg = "k >= length(g), select = 'all'")
 
     ## alternate strands, with overlaps in ranges
     g3 <- GRanges(c("chr1:1-5:-", "chr1:7-11:+"))

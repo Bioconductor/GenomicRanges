@@ -474,6 +474,26 @@ follows <- function(x, y) {
 ### Find 'k' nearest neighbors
 ###
 
+.findKNN_all_k <- function(x, k) {
+    ## the 'k' nearest neighbors in 'x', when all equally-distant
+    ## neighbors increment k by 1. Each element of 'x' is ordered. E.g.,
+    ##
+    ##   x = IntegerList(c(1, 1, 2), 1:2)
+    ##   k = 1
+    ##   return: c(2L, 1L)
+    ##
+    ans <- integer(length(x))
+    non_zero_lengths <- lengths(x) > 0
+    if (k == 0L || !any(non_zero_lengths))
+        return(ans)
+
+    x <- x[non_zero_lengths]
+    idx <- pmin(k, lengths(x))
+    value <- x[as.list(idx)]
+    ans[non_zero_lengths] <- sum(x <= value)
+    ans
+}
+
 .findKNN <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
     seqlevels(subject) <- seqlevels(x)
@@ -561,13 +581,8 @@ follows <- function(x, y) {
     ans <- pc(pans, fans, ol)
 
     o <- order(dist)
-    if (select == "all") {
-        k <- vapply(dist[o], function(y) {
-            m <- match(y, unique(y))
-            t <- cumsum(tabulate(m))
-            t[which.min(t < k)]
-        }, numeric(1))
-    }
+    if (select == "all")
+        k <- .findKNN_all_k(dist[o], k)
     ans <- ans[heads(o, k)]
     ans[lengths(ans) < 1] <- NA
     ans
