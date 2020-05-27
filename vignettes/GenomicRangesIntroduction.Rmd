@@ -694,7 +694,7 @@ followed by the range in `x`.
 follow(x, subject)
 ```
 
-The `findKNN` method peroforms convnetional k-nearest neighbor finding. For each
+The `findKNN` method performs convnetional k-nearest neighbor finding. For each
 range in `x`, it will find the index of the k-nearest neighbors in `subject`.
 The argument `k` can be specified to identify more than one nearest neighbor.
 Overlaps are included. If `subject` is not given as an argument, `x` will also

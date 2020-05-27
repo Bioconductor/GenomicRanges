@@ -467,28 +467,3 @@ test_GenomicRanges_findKNN <- function()
     checkIdentical(lengths(target), c(1L, 1L, 3L, 1L, 1L, 1L))
     checkIdentical(target[[3]], c(4L, 5L, 2L))
 }
-
-## NOTE: This test has been moved to the vignette as an example.
-#test_GenomicRanges_findKNN_issue76 <- function() {
-#    ## Case from issue #76
-#    TxDb.Hsapiens.UCSC.hg19.knownGene <-
-#        TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
-#    genes <- GenomicFeatures::genes
-#
-#    broads <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
-#    broads <- resize(broads, width(broads)+3000, fix="end")
-#    gr <- GRanges(
-#        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
-#        ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
-#        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-#        score = 1:10,
-#        GC = seq(1, 0, length=10))
-#    broads <- broads[ seqnames(broads) %in% seqlevels(gr) ]
-#
-#    near <- nearest(gr, broads)
-#    target <- findKNN(gr, broads)
-#    checkIdentical(target, as(near, "IntegerList"))
-#
-#    target10 <- findKNN(gr, broads, k = 10L)
-#    checkTrue(all(lengths(target10) == 10))
-#}
