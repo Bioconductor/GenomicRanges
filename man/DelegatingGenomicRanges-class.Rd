@@ -13,6 +13,9 @@
 \alias{strand,DelegatingGenomicRanges-method}
 \alias{seqinfo,DelegatingGenomicRanges-method}
 
+% Updating:
+\alias{update,DelegatingGenomicRanges-method}
+
 % Coercion:
 \title{DelegatingGenomicRanges objects}
 

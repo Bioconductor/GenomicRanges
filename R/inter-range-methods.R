@@ -224,24 +224,6 @@ reconstructGRLfromGR <- function(gr, x, with.revmap=FALSE)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Not an inter-range method but we put it here for now (should probably
-### go in something like GRangesList-comparison.R together with
-### deconstructGRLintoGR() and reconstructGRLfromGR() above)
-###
-
-### S3/S4 combo for sort.GRangesList
-.sort.GRangesList <- function(x, decreasing=FALSE, ...)
-{
-    gr <- deconstructGRLintoGR(x)
-    gr2 <- sort(gr, decreasing=decreasing, ...)
-    reconstructGRLfromGR(gr2, x)
-}
-sort.GRangesList <- function(x, decreasing=FALSE, ...)
-    .sort.GRangesList(x, decreasing=decreasing, ...)
-setMethod("sort", "CompressedGRangesList", .sort.GRangesList)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### range()
 ###
 

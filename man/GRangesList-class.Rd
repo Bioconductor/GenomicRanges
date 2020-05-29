@@ -46,6 +46,12 @@
 \alias{coerce,CompressedGRangesList,IRangesList-method}
 \alias{coerce,CompressedGRangesList,IntegerRangesList-method}
 
+% Sorting
+
+\alias{sort,GRangesList-method}
+\alias{sort.GRangesList}
+\alias{sort,CompressedGRangesList-method}
+
 % Subsetting
 
 \alias{[,CompressedGRangesList,ANY-method}

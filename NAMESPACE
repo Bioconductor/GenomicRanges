@@ -114,7 +114,7 @@ exportMethods(
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
     punion, pintersect, psetdiff, pgap,
-    precede, follow, nearest, distance, distanceToNearest,
+    precede, follow, nearest, distance, distanceToNearest, findKNN,
     tile, slidingWindows,
 
     ## Generics defined in GenomeInfoDb:
