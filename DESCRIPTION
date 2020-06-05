@@ -17,7 +17,7 @@ Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
 	Annotation, GenomeAnnotation, Coverage
 Depends: R (>= 2.10), methods, stats4, BiocGenerics (>= 0.25.3),
-	S4Vectors (>= 0.27.3), IRanges (>= 2.23.7), GenomeInfoDb (>= 1.15.2)
+	S4Vectors (>= 0.27.3), IRanges (>= 2.23.8), GenomeInfoDb (>= 1.15.2)
 Imports: utils, stats, XVector (>= 0.27.2)
 LinkingTo: S4Vectors, IRanges
 Suggests: Matrix, Biobase, AnnotationDbi, annotate, Biostrings (>= 2.25.3),
