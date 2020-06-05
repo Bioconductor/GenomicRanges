@@ -23,10 +23,10 @@
 
 \usage{
 \S4method{coverage}{GenomicRanges}(x, shift=0L, width=NULL, weight=1L,
-            method=c("auto", "sort", "hash"))
+            method=c("auto", "sort", "hash", "naive"))
 
 \S4method{coverage}{GRangesList}(x, shift=0L, width=NULL, weight=1L,
-            method=c("auto", "sort", "hash"))
+            method=c("auto", "sort", "hash", "naive"))
 }
 
 \arguments{

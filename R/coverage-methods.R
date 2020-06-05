@@ -23,7 +23,7 @@
 
 setMethod("coverage", "GenomicRanges",
     function(x, shift=0L, width=NULL, weight=1L,
-                method=c("auto", "sort", "hash"))
+                method=c("auto", "sort", "hash", "naive"))
     {
         ## Normalize 'shift'.
         shift <- .normarg_shift_or_weight(shift, "shift", x)
@@ -52,7 +52,7 @@ setMethod("coverage", "GenomicRanges",
 ### Overwrite above method with optimized method for StitchedGPos objects.
 setMethod("coverage", "StitchedGPos",
     function(x, shift=0L, width=NULL, weight=1L,
-                method=c("auto", "sort", "hash"))
+                method=c("auto", "sort", "hash", "naive"))
     {
         CAN_ONLY_ETC <- c(" can only be a single number or a named ",
                           "list-like object when calling coverage() ",
@@ -74,7 +74,7 @@ setMethod("coverage", "StitchedGPos",
 
 setMethod("coverage", "GRangesList",
     function(x, shift=0L, width=NULL, weight=1L,
-                method=c("auto", "sort", "hash"))
+                method=c("auto", "sort", "hash", "naive"))
     {
         coverage(x@unlistData, shift=shift, width=width, weight=weight,
                  method=method)
