@@ -19,7 +19,7 @@
 \alias{GRanges-class}
 \alias{GRanges}
 
-\alias{vertical_slot_names,GRanges-method}
+\alias{parallel_slot_names,GRanges-method}
 
 \alias{updateObject,GRanges-method}
 

@@ -95,7 +95,7 @@ exportMethods(
 
     ## Generics defined in S4Vectors:
     bindROWS,
-    vertical_slot_names,
+    parallel_slot_names,
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
