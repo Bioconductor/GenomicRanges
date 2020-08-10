@@ -11,9 +11,9 @@
 \alias{nearest}
 \alias{nearest,GenomicRanges,GenomicRanges-method}
 \alias{nearest,GenomicRanges,missing-method}
-\alias{findKNN}
-\alias{findKNN,GenomicRanges,GenomicRanges-method}
-\alias{findKNN,GenomicRanges,missing-method}
+\alias{findKNearest}
+\alias{findKNearest,GenomicRanges,GenomicRanges-method}
+\alias{findKNearest,GenomicRanges,missing-method}
 \alias{distance}
 \alias{distance,GenomicRanges,GenomicRanges-method}
 \alias{distanceToNearest}
@@ -24,7 +24,7 @@
 
 \description{
   The \code{nearest}, \code{precede}, \code{follow}, \code{distance},
-  \code{findKNN}, and \code{distanceToNearest} methods for
+  \code{findKNearest}, and \code{distanceToNearest} methods for
   \code{\linkS4class{GenomicRanges}} objects and subclasses.
 }
 
@@ -44,9 +44,9 @@
 \S4method{nearest}{GenomicRanges,missing}(x, subject, 
     select=c("arbitrary", "all"), ignore.strand=FALSE)
 
-\S4method{findKNN}{GenomicRanges,GenomicRanges}(x, subject, k=1L,
+\S4method{findKNearest}{GenomicRanges,GenomicRanges}(x, subject, k=1L,
     select=c("arbitrary", "all"), ignore.strand=FALSE)
-\S4method{findKNN}{GenomicRanges,missing}(x, subject, k=1L,
+\S4method{findKNearest}{GenomicRanges,missing}(x, subject, k=1L,
     select=c("arbitrary", "all"), ignore.strand=FALSE)
 
 \S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, 
@@ -69,8 +69,8 @@
     Cannot be missing. If \code{x} and \code{y} are not the same length, 
     the shortest will be recycled to match the length of the longest.
   }
-  \item{k}{For the \code{findKNN} method, an \code{integer} declaring how many
-    nearest neighbors to find.
+  \item{k}{For the \code{findKNearest} method, an \code{integer} declaring how 
+    many nearest neighbors to find.
   }
   \item{select}{Logic for handling ties. By default, all methods
     select a single interval (arbitrary for \code{nearest},
@@ -109,7 +109,7 @@
       range in \code{x}. Overlapping ranges are excluded. \code{NA} is returned 
       when there are no qualifying ranges in \code{subject}.
     }
-    \item{findKNN: }{
+    \item{findKNearest: }{
       Performs conventional k-nearest neighbor finding.
       Returns an \link[IRanges]{IntegerList} containing the index of the
       k-nearest neighbors in \code{subject} for each range in \code{x}. If there
@@ -161,7 +161,7 @@ i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
   vector of indices in \code{subject}, or a \link[S4Vectors]{Hits} if 
   \code{select="all"}.
 
-  For \code{findKNN}, an \link[IRanges]{IntegerList} of vertices in
+  For \code{findKNearest}, an \link[IRanges]{IntegerList} of vertices in
   \code{subject}.
 
   For \code{distanceToNearest}, a \link[S4Vectors]{Hits} object with a
@@ -232,18 +232,18 @@ nearest(query, query)
 nearest(query)
 
 ## -----------------------------------------------------------
-## findKNN()
+## findKNearest()
 ## -----------------------------------------------------------
 ## Without an argument, k defaults to 1
 query <- GRanges("A", IRanges(c(2, 5), c(8, 15)))
 subject <- GRanges("A", IRanges(c(1, 4, 10, 15), c(5, 7, 12, 19)))
-findKNN(query, subject)
+findKNearest(query, subject)
 
 ## Return multiple neighbors with k > 1
-findKNN(query, subject, k=3)
+findKNearest(query, subject, k=3)
 
 ## select="all" returns all hits
-findKNN(query, subject, select="all")
+findKNearest(query, subject, select="all")
 
 ## -----------------------------------------------------------
 ## distance(), distanceToNearest()

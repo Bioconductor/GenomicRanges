@@ -474,7 +474,7 @@ follows <- function(x, y) {
 ### Find 'k' nearest neighbors
 ###
 
-.findKNN_all_k <- function(x, k) {
+.findKNearest_all_k <- function(x, k) {
     ## the 'k' nearest neighbors in 'x', when all equally-distant
     ## neighbors increment k by 1. Each element of 'x' is ordered. E.g.,
     ##
@@ -494,7 +494,7 @@ follows <- function(x, y) {
     ans
 }
 
-.findKNN <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
+.findKNearest <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
     seqlevels(subject) <- seqlevels(x)
 
@@ -512,7 +512,7 @@ follows <- function(x, y) {
     starts <- starts[start_ord]
     ends <- ends[end_ord]
 
-    ## NOTE: select="all" is needed in general for findKNN here
+    ## NOTE: select="all" is needed in general for findKNearest here
     if (drop.self) {
         ol <- findOverlaps(x, maxgap=0L, select="all",
                            ignore.strand=ignore.strand, drop.self=TRUE)
@@ -574,27 +574,27 @@ follows <- function(x, y) {
 
     o <- order(dist)
     if (select == "all")
-        k <- .findKNN_all_k(dist[o], k)
+        k <- .findKNearest_all_k(dist[o], k)
     ans <- ans[heads(o, k)]
     ans[lengths(ans) == 0L] <- NA
     ans
 }
 
-setGeneric("findKNN", function(x, subject, ...) standardGeneric("findKNN"))
+setGeneric("findKNearest", function(x, subject, ...) standardGeneric("findKNearest"))
 
-setMethod("findKNN", c("GenomicRanges", "missing"),
+setMethod("findKNearest", c("GenomicRanges", "missing"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
 {
     select <- match.arg(select)
-    .findKNN(x, x, k = k, select = select, ignore.strand = ignore.strand,
+    .findKNearest(x, x, k = k, select = select, ignore.strand = ignore.strand,
              drop.self = TRUE)
 })
 
-setMethod("findKNN", c("GenomicRanges", "GenomicRanges"),
+setMethod("findKNearest", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
 {
     select <- match.arg(select)
-    .findKNN(x, subject, k = k, select = select, ignore.strand = ignore.strand)
+    .findKNearest(x, subject, k = k, select = select, ignore.strand = ignore.strand)
 })
