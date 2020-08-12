@@ -474,7 +474,7 @@ follows <- function(x, y) {
 ### Find 'k' nearest neighbors
 ###
 
-.findKNearest_all_k <- function(x, k) {
+.nearestKNeighbors_all_k <- function(x, k) {
     ## the 'k' nearest neighbors in 'x', when all equally-distant
     ## neighbors increment k by 1. Each element of 'x' is ordered. E.g.,
     ##
@@ -494,7 +494,7 @@ follows <- function(x, y) {
     ans
 }
 
-.findKNearest <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
+.nearestKNeighbors <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
     seqlevels(subject) <- seqlevels(x)
 
@@ -512,7 +512,7 @@ follows <- function(x, y) {
     starts <- starts[start_ord]
     ends <- ends[end_ord]
 
-    ## NOTE: select="all" is needed in general for findKNearest here
+    ## NOTE: select="all" is needed in general for nearestKNeighbors here
     if (drop.self) {
         ol <- findOverlaps(x, maxgap=0L, select="all",
                            ignore.strand=ignore.strand, drop.self=TRUE)
@@ -574,27 +574,27 @@ follows <- function(x, y) {
 
     o <- order(dist)
     if (select == "all")
-        k <- .findKNearest_all_k(dist[o], k)
+        k <- .nearestKNeighbors_all_k(dist[o], k)
     ans <- ans[heads(o, k)]
     ans[lengths(ans) == 0L] <- NA
     ans
 }
 
-setGeneric("findKNearest", function(x, subject, ...) standardGeneric("findKNearest"))
+setGeneric("nearestKNeighbors", function(x, subject, ...) standardGeneric("nearestKNeighbors"))
 
-setMethod("findKNearest", c("GenomicRanges", "missing"),
+setMethod("nearestKNeighbors", c("GenomicRanges", "missing"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
 {
     select <- match.arg(select)
-    .findKNearest(x, x, k = k, select = select, ignore.strand = ignore.strand,
+    .nearestKNeighbors(x, x, k = k, select = select, ignore.strand = ignore.strand,
              drop.self = TRUE)
 })
 
-setMethod("findKNearest", c("GenomicRanges", "GenomicRanges"),
+setMethod("nearestKNeighbors", c("GenomicRanges", "GenomicRanges"),
     function(x, subject, k = 1L, select = c("arbitrary", "all"),
              ignore.strand = FALSE)
 {
     select <- match.arg(select)
-    .findKNearest(x, subject, k = k, select = select, ignore.strand = ignore.strand)
+    .nearestKNeighbors(x, subject, k = k, select = select, ignore.strand = ignore.strand)
 })
