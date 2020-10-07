@@ -3,7 +3,7 @@ CHANGES IN VERSION 1.41.0
 
 NEW FEATURES
 
-    o Add findKNN() method for GRanges objects.
+    o Add nearestKNeighbors() method for GRanges objects.
 
 CHANGES IN VERSION 1.40.0
 -------------------------
