@@ -146,7 +146,7 @@
   }
 }
 
-\author{P. Aboyoun and V. Obenchain <vobencha@fhcrc.org>}
+\author{P. Aboyoun and V. Obenchain}
 
 \seealso{
   \itemize{
