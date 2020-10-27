@@ -1,9 +1,18 @@
-CHANGES IN VERSION 1.41.0
+CHANGES IN VERSION 1.42.0
 -------------------------
 
 NEW FEATURES
 
-    o Add nearestKNeighbors() method for GRanges objects.
+    o Add nearestKNeighbors() method for GenomicRanges derivatives.
+
+    o coverage() now supports 'method="naive"'. This is in addition to the
+      already supported methods "sort" and "hash". This new method is a slower
+      version of the "hash" method that has the advantage of avoiding floating
+      point artefacts in the no-coverage regions of the numeric-Rle object
+      returned by coverage() when the weights are supplied as a numeric vector
+      of type 'double'. See "FLOATING POINT ARITHMETIC CAN BRING A SURPRISE"
+      example in '?coverage' in the IRanges package.
+
 
 CHANGES IN VERSION 1.40.0
 -------------------------
