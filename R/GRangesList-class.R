@@ -50,7 +50,7 @@ GRangesList <- function(..., compress=TRUE)
 
 GenomicRangesList <- function(...)
 {
-    .Deprecated("GRangesList(..., compress=FALSE)")
+    .Defunct("GRangesList(..., compress=FALSE)")
     GRangesList(..., compress=FALSE)
 }
 
