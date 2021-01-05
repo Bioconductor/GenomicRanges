@@ -204,24 +204,31 @@ makeGRangesFromDataFrame(df)
 
 if (require(rtracklayer)) {
   session <- browserSession()
+
+\dontrun{  # 2021-01-05 this is failing; seems to be a problem with table parameter in ucscTableQuery
   genome(session) <- "sacCer2"
   query <- ucscTableQuery(session, "Assembly")
   df <- getTable(query)
   head(df)
+}
+
+   # to keep the functionality demonstrated here, we take some code from rtracklayer ucscTableQuery man
+
+  genome(session) <- "mm9"
+ 
+  query <- ucscTableQuery(session, table = "phastCons30way", 
+       range = GRangesForUCSCGenome("mm9", "chr12", IRanges(57795963, 57815592)))
+  df = getTable(query)
+
 
   ## A common pitfall is to forget that the UCSC Table Browser uses the
   ## "0-based start" convention:
-  gr0 <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
-                                      start.field="chromStart",
-                                      end.field="chromEnd")
+  gr0 <- makeGRangesFromDataFrame(df)
   head(gr0)
 
   ## The start positions need to be converted into 1-based positions,
   ## to adhere to the convention used in Bioconductor:
-  gr1 <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
-                                      start.field="chromStart",
-                                      end.field="chromEnd",
-                                      starts.in.df.are.0based=TRUE)
+  gr1 <- makeGRangesFromDataFrame(df, starts.in.df.are.0based=TRUE)
   head(gr1)
 }
 }

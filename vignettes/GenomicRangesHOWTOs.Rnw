@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{2. GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGG.db, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGGREST, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -752,17 +752,17 @@ disease-related genes.
 \subsubsection{Build a gene list}
 
 We start with a list of gene or transcript ids. If you do not have 
-pre-defined list one can be created with the \Biocpkg{KEGG.db} and 
-\Biocpkg{KEGGgraph} packages. Updates to the data in the \Biocpkg{KEGG.db} 
-package are no longer available, however, the resource is still useful for 
-identifying pathway names and ids. 
+pre-defined list one can be created with the \Biocpkg{KEGGREST} and 
+\Biocpkg{KEGGgraph} packages.
 
-Create a table of KEGG pathways and ids and search on the term `cancer'.
+Create a table of KEGG pathways and ids and search on the term `Colorectal cancer'.
 
 <<cancer_1>>=
-library(KEGG.db)
-pathways <- toTable(KEGGPATHNAME2ID)
-pathways[grepl("cancer", pathways$path_name, fixed=TRUE),] 
+library(KEGGREST)
+li = keggList("pathway", "hsa")
+ptag = names(grep("Colorectal cancer", li, value=TRUE))
+ptag
+tag = gsub("path:hsa", "", ptag)
 @
 
 Use the "05210" id to query the KEGG web resource (accesses the currently
@@ -771,7 +771,7 @@ maintained data).
 <<cancer_2>>=
 library(KEGGgraph)
 dest <- tempfile()
-retrieveKGML("05200", "hsa", dest, "internal")
+retrieveKGML(tag, "hsa", dest, "internal")
 @
 
 The suffix of the KEGG id is the Entrez gene id. The 
