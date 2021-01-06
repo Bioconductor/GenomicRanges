@@ -759,10 +759,10 @@ Create a table of KEGG pathways and ids and search on the term `Colorectal cance
 
 <<cancer_1>>=
 library(KEGGREST)
-li = keggList("pathway", "hsa")
-ptag = names(grep("Colorectal cancer", li, value=TRUE))
+li <- keggList("pathway", "hsa")
+ptag <- names(grep("Colorectal cancer", li, value=TRUE))
 ptag
-tag = gsub("path:hsa", "", ptag)
+tag <- gsub("path:hsa", "", ptag)
 @
 
 Use the "05210" id to query the KEGG web resource (accesses the currently
