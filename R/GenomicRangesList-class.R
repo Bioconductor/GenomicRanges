@@ -11,7 +11,8 @@ setClass("GenomicRangesList",
         elementMetadata="DataFrame"
     ),
     prototype(
-        elementType="GenomicRanges"
+        elementType="GenomicRanges",
+        elementMetadata=new("DFrame")
     )
 )
 
