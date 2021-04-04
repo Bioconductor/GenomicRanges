@@ -10,6 +10,9 @@ setClass("GRangesFactor",
     representation(
         levels="GRanges",
         elementMetadata="DataFrame"
+    ),
+    prototype(
+        elementMetadata=new("DFrame")
     )
 )
 
