@@ -36,7 +36,7 @@ Suggests: Matrix, Biobase, AnnotationDbi, annotate, Biostrings (>= 2.25.3),
 	TxDb.Dmelanogaster.UCSC.dm3.ensGene,
 	TxDb.Hsapiens.UCSC.hg19.knownGene,
 	TxDb.Mmusculus.UCSC.mm10.knownGene,
-	RUnit, digest, knitr, BiocStyle
+	RUnit, digest, knitr, rmarkdown, BiocStyle
 VignetteBuilder: knitr
 Collate: normarg-utils.R
 	utils.R
