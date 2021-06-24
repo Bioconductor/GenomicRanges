@@ -74,7 +74,7 @@
 .find_strand_col <- function(df_colnames, strand.field, prefix)
 {
     idx <- which(df_colnames %in% paste0(prefix, strand.field))
-    if (length(idx) == 0L) 
+    if (length(idx) == 0L)
         idx <- which(df_colnames %in% strand.field)
     if (length(idx) == 0L)
         return(NA_integer_)
@@ -182,12 +182,15 @@ makeGRangesFromDataFrame <- function(df,
     ## Prepare 'ans_ranges'.
     ans_start <- .get_data_frame_col_as_numeric(df, granges_cols[["start"]])
     ans_end <- .get_data_frame_col_as_numeric(df, granges_cols[["end"]])
-    if (na.rm) {
-        not_missing <- !is.na(ans_start) | is.na(ans_end)
-        df <- df[not_missing, , drop = FALSE]
-        ans_start <- ans_start[not_missing]
-        ans_end <- ans_end[not_missing]
-    }
+    not_missing <- !(is.na(ans_start) | is.na(ans_end))
+
+    if (any(!not_missing) && !na.rm)
+        stop(wmsg("'start.field' and 'end.field' cannot contain NAs; ",
+                  "use 'na.rm=TRUE'"))
+
+    df <- df[not_missing, , drop = FALSE]
+    ans_start <- ans_start[not_missing]
+    ans_end <- ans_end[not_missing]
 
     ## Prepare 'ans_seqnames'.
     ans_seqnames <- df[[granges_cols[["seqnames"]]]]
