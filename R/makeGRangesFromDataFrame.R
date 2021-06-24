@@ -74,7 +74,7 @@
 .find_strand_col <- function(df_colnames, strand.field, prefix)
 {
     idx <- which(df_colnames %in% paste0(prefix, strand.field))
-    if (length(idx) == 0L) 
+    if (length(idx) == 0L)
         idx <- which(df_colnames %in% strand.field)
     if (length(idx) == 0L)
         return(NA_integer_)
@@ -156,7 +156,8 @@ makeGRangesFromDataFrame <- function(df,
                                      start.field="start",
                                      end.field=c("end", "stop"),
                                      strand.field="strand",
-                                     starts.in.df.are.0based=FALSE)
+                                     starts.in.df.are.0based=FALSE,
+                                     na.rm=FALSE)
 {
     ## Check args.
     if (is.character(df))  # for people that provide the path to a file
@@ -178,12 +179,22 @@ makeGRangesFromDataFrame <- function(df,
                                        strand.field=strand.field,
                                        ignore.strand=ignore.strand)
 
-    ## Prepare 'ans_seqnames'.
-    ans_seqnames <- df[[granges_cols[["seqnames"]]]]
-
     ## Prepare 'ans_ranges'.
     ans_start <- .get_data_frame_col_as_numeric(df, granges_cols[["start"]])
     ans_end <- .get_data_frame_col_as_numeric(df, granges_cols[["end"]])
+    not_missing <- !(is.na(ans_start) | is.na(ans_end))
+
+    if (any(!not_missing) && !na.rm)
+        stop(wmsg("'start.field' and 'end.field' cannot contain NAs; ",
+                  "use 'na.rm=TRUE'"))
+
+    df <- df[not_missing, , drop = FALSE]
+    ans_start <- ans_start[not_missing]
+    ans_end <- ans_end[not_missing]
+
+    ## Prepare 'ans_seqnames'.
+    ans_seqnames <- df[[granges_cols[["seqnames"]]]]
+
     if (starts.in.df.are.0based)
         ans_start <- ans_start + 1L
     ans_names <- rownames(df)

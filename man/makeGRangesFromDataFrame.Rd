@@ -29,7 +29,8 @@ makeGRangesFromDataFrame(df,
                          start.field="start",
                          end.field=c("end", "stop"),
                          strand.field="strand",
-                         starts.in.df.are.0based=FALSE)
+                         starts.in.df.are.0based=FALSE,
+                         na.rm=FALSE)
 }
 
 \arguments{
@@ -100,6 +101,11 @@ makeGRangesFromDataFrame(df,
     start" convention. A notorious example of such resource is the UCSC
     Table Browser (\url{http://genome.ucsc.edu/cgi-bin/hgTables}).
   }
+  \item{na.rm}{
+    \code{TRUE} or \code{FALSE} (the default).
+    If \code{TRUE}, rows in the \code{df} will be dropped when missing
+    (\code{NA}) start or end range values are present.
+  }
 }
 
 \value{
@@ -158,6 +164,12 @@ df <- data.frame(chr="chr1", start=11:15, end=12:16,
                  strand=c("+","-","+","*","."), score=1:5)
 df
 makeGRangesFromDataFrame(df)  # strand value "." is replaced with "*"
+
+## NA in ranges
+df <- data.frame(chr="chr1", start=c(11:14, NA), end=12:16,
+                 strand=c("+","-","+","*","."), score=1:5)
+df
+makeGRangesFromDataFrame(df, na.rm = TRUE)  # na.rm when missing values present
 
 ## The strand column is optional:
 df <- data.frame(chr="chr1", start=11:15, end=12:16, score=1:5)
