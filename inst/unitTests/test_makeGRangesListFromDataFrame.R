@@ -142,3 +142,143 @@ test_makeGRangesListFromDataFrame <- function()
         character(0L)
     ))
 }
+
+.TARGET_names <- character(0L)
+.TARGET_seqlevels <- character(0L)
+.TARGET_seqnames <- character(0L)
+.TARGET_start <- integer(0L)
+.TARGET_end <- integer(0L)
+.TARGET_ranges <- IRanges(.TARGET_start, .TARGET_end, names = .TARGET_names)
+.TARGET_strand <- character(0L)
+.TARGET_mcols <- DataFrame()
+.TARGET_classifier <- character(0L)
+.TARGET_classifierF <- factor(character(0L))
+
+dfr <- data.frame(seqnames = .TARGET_seqnames, .TARGET_ranges,
+                 strand = .TARGET_strand, .TARGET_mcols, .TARGET_classifier)
+dfac <- data.frame(seqnames = .TARGET_seqnames, .TARGET_ranges,
+                 strand = .TARGET_strand, .TARGET_mcols, .TARGET_classifierF)
+
+DF <- DataFrame(seqnames = .TARGET_seqnames, start = .TARGET_start,
+                end = .TARGET_end, width = width(.TARGET_ranges),
+                names = .TARGET_names, strand = .TARGET_strand, .TARGET_mcols,
+                .TARGET_classifier)
+DFac <- DataFrame(seqnames = .TARGET_seqnames, start = .TARGET_start,
+                end = .TARGET_end, width = width(.TARGET_ranges),
+                names = .TARGET_names, strand = .TARGET_strand, .TARGET_mcols,
+                .TARGET_classifierF)
+
+.make_TARGET_GRangesList_from_dataframe <- function()
+{
+        makeGRangesListFromDataFrame(dfr,
+                                     split.field = ".TARGET_classifier",
+                                     names.field = "names",
+                                     keep.extra.columns = TRUE)
+}
+
+.make_TARGET_GRangesList_from_DataFrame <- function()
+{
+        makeGRangesListFromDataFrame(DF,
+                                     split.field = ".TARGET_classifier",
+                                     names.field = "names",
+                                     keep.extra.columns = TRUE)
+}
+
+test_makeGRangesListFromDataFrame <- function()
+{
+    checkException(
+        makeGRangesListFromDataFrame(dfr,
+                                     split.field = ".TARGET_classifier",
+                                     names.field = "Bad_Field"),
+        silent = TRUE)
+    checkException(
+        makeGRangesListFromDataFrame(dfr,
+                                     split.field = "Bad_Field"),
+        silent = TRUE)
+    checkTrue(validObject(
+        makeGRangesListFromDataFrame(dfr,
+                                     split.field =
+                                         ".TARGET_classifier")
+    ))
+    checkTrue(validObject(
+        makeGRangesListFromDataFrame(DF,
+                                     split.field =
+                                         ".TARGET_classifier")
+    ))
+    checkTrue(validObject(
+        .make_TARGET_GRangesList_from_dataframe()
+    ))
+    checkTrue(validObject(
+        .make_TARGET_GRangesList_from_DataFrame()
+    ))
+    # Test with factor in data.frame
+    checkTrue(validObject(
+        makeGRangesListFromDataFrame(
+            dfac,
+            split.field = ".TARGET_classifierF",
+            names.field = "names",
+            keep.extra.columns = TRUE)
+    ))
+    # Test with factor in DataFrame
+    checkTrue(validObject(
+        makeGRangesListFromDataFrame(
+            DFac,
+            split.field = ".TARGET_classifierF",
+            names.field = "names",
+            keep.extra.columns = TRUE)
+    ))
+    # Test GRangesList length to split.field unique/level length
+    checkTrue(identical(length(unique(.TARGET_classifier)),
+                        length(.make_TARGET_GRangesList_from_dataframe())))
+
+    checkTrue(identical(length(levels(.TARGET_classifierF)),
+                        length(.make_TARGET_GRangesList_from_dataframe())))
+
+    checkTrue(identical(length(unique(.TARGET_classifier)),
+                        length(.make_TARGET_GRangesList_from_DataFrame())))
+
+    checkTrue(identical(length(levels(.TARGET_classifierF)),
+                        length(.make_TARGET_GRangesList_from_DataFrame())))
+
+    # Names check with and without keep.extra.columns
+    checkTrue(identical(
+        Reduce(intersect,
+               lapply(.make_TARGET_GRangesList_from_dataframe(),
+                      function(x)
+                          names(mcols(x))
+               )),
+        c("score", "GC")
+    ))
+    checkTrue(identical(
+        Reduce(intersect,
+               lapply(.make_TARGET_GRangesList_from_DataFrame(),
+                      function(x)
+                          names(mcols(x))
+               )),
+        c("score", "GC")
+    ))
+    checkTrue(identical(
+        Reduce(intersect,
+               lapply(
+                   makeGRangesListFromDataFrame(dfr,
+                                                split.field =
+                                                    ".TARGET_classifier",
+                                                names.field = "names"),
+                   function(x)
+                       names(mcols(x))
+               )),
+        character(0L)
+    ))
+    checkTrue(identical(
+        Reduce(intersect,
+               lapply(
+                   makeGRangesListFromDataFrame(DF,
+                                                split.field =
+                                                    ".TARGET_classifier",
+                                                names.field = "names"),
+                   function(x)
+                       names(mcols(x))
+               )),
+        character(0L)
+    ))
+}

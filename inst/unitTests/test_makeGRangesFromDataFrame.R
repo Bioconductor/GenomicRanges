@@ -152,3 +152,44 @@ test_find_GRanges_cols <- function()
     checkIdentical(target, current)
 }
 
+.TARGET_names <- character(0L)
+.TARGET_seqlevels <- character(0L)
+.TARGET_seqnames <- character(0L)
+.TARGET_start <- integer(0L)
+.TARGET_end <- integer(0L)
+.TARGET_ranges <- IRanges(.TARGET_start, .TARGET_end, names = .TARGET_names)
+.TARGET_strand <- character(0L)
+.TARGET_mcols <- DataFrame()
+.TARGET_classifier <- character(0L)
+.TARGET_classifierF <- factor(character(0L))
+
+dfr <- data.frame(seqnames = .TARGET_seqnames, .TARGET_ranges,
+                 strand = .TARGET_strand, .TARGET_mcols, .TARGET_classifier)
+dfac <- data.frame(seqnames = .TARGET_seqnames, .TARGET_ranges,
+                 strand = .TARGET_strand, .TARGET_mcols, .TARGET_classifierF)
+
+DF <- DataFrame(seqnames = .TARGET_seqnames, start = .TARGET_start,
+                end = .TARGET_end, width = width(.TARGET_ranges),
+                names = .TARGET_names, strand = .TARGET_strand, .TARGET_mcols,
+                .TARGET_classifier)
+DFac <- DataFrame(seqnames = .TARGET_seqnames, start = .TARGET_start,
+                end = .TARGET_end, width = width(.TARGET_ranges),
+                names = .TARGET_names, strand = .TARGET_strand, .TARGET_mcols,
+                .TARGET_classifierF)
+
+test_makeGRangesFromDataFrame <- function()
+{
+    checkTrue(validObject(
+        makeGRangesFromDataFrame(dfr)
+    ))
+    checkTrue(validObject(
+        makeGRangesFromDataFrame(dfac)
+    ))
+    checkTrue(validObject(
+        makeGRangesFromDataFrame(DF)
+    ))
+    checkTrue(validObject(
+        makeGRangesFromDataFrame(DFac)
+    ))
+}
+
