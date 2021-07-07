@@ -9,7 +9,6 @@
         stop("'", what, ".field' must be a character vector with no NAs")
     tolower(field)
 }
-
 .collect_prefixes <- function(df_colnames, field)
 {
     df_colnames_nc <- nchar(df_colnames)
@@ -29,6 +28,10 @@
     idx2 <- which(df_colnames %in% end.field)
     if (length(idx1) == 1L && length(idx2) == 1L)
         return(list(c(start=idx1, end=idx2), ""))
+    if (length(idx1) == 1L && length(idx2) == 0L)
+        return(list(c(start=idx1, end=idx1), ""))
+    if (length(idx1) == 0L && length(idx2) == 1L)
+        return(list(c(start=idx2, end=idx2), ""))
     if (length(idx1) == 0L && length(idx2) == 0L) {
         prefixes1 <- .collect_prefixes(df_colnames, start.field)
         prefixes2 <- .collect_prefixes(df_colnames, end.field)
@@ -74,7 +77,7 @@
 .find_strand_col <- function(df_colnames, strand.field, prefix)
 {
     idx <- which(df_colnames %in% paste0(prefix, strand.field))
-    if (length(idx) == 0L) 
+    if (length(idx) == 0L)
         idx <- which(df_colnames %in% strand.field)
     if (length(idx) == 0L)
         return(NA_integer_)
@@ -93,7 +96,7 @@
                                                 "chromosome", "chrom",
                                                 "chr", "chromosome_name",
                                                 "seqid"),
-                               start.field="start",
+                               start.field=c("start", "pos"),
                                end.field=c("end", "stop"),
                                strand.field="strand",
                                ignore.strand=FALSE)
@@ -144,7 +147,6 @@
     ans
 }
 
-### 'df' must be a data.frame or DataFrame object.
 makeGRangesFromDataFrame <- function(df,
                                      keep.extra.columns=FALSE,
                                      ignore.strand=FALSE,
@@ -153,12 +155,14 @@ makeGRangesFromDataFrame <- function(df,
                                                       "chromosome", "chrom",
                                                       "chr", "chromosome_name",
                                                       "seqid"),
-                                     start.field="start",
+                                     start.field=c("start", "pos"),
                                      end.field=c("end", "stop"),
                                      strand.field="strand",
-                                     starts.in.df.are.0based=FALSE)
+                                     starts.in.df.are.0based=FALSE,
+                                     as=c("auto", "GRanges", "GPos"))
 {
-    ## Check args.
+### 'df' must be a data.frame or DataFrame object.
+   ## Check args.
     if (is.character(df))  # for people that provide the path to a file
         stop("'df' must be a data.frame or DataFrame object")
     if (!(is.data.frame(df) || is(df, "DataFrame")))
@@ -170,6 +174,7 @@ makeGRangesFromDataFrame <- function(df,
     ans_seqinfo <- normarg_seqinfo1(seqinfo)
     if (!isTRUEorFALSE(starts.in.df.are.0based))
         stop("'starts.in.df.are.0based' must be TRUE or FALSE")
+    as <- match.arg(as)
 
     granges_cols <- .find_GRanges_cols(names(df),
                                        seqnames.field=seqnames.field,
@@ -177,13 +182,18 @@ makeGRangesFromDataFrame <- function(df,
                                        end.field=end.field,
                                        strand.field=strand.field,
                                        ignore.strand=ignore.strand)
-
     ## Prepare 'ans_seqnames'.
     ans_seqnames <- df[[granges_cols[["seqnames"]]]]
 
     ## Prepare 'ans_ranges'.
     ans_start <- .get_data_frame_col_as_numeric(df, granges_cols[["start"]])
     ans_end <- .get_data_frame_col_as_numeric(df, granges_cols[["end"]])
+
+    if (identical(ans_start, ans_end) && identical(as, "auto"))
+        as <- "GPos"
+    else
+        as <- "GRanges"
+
     if (starts.in.df.are.0based)
         ans_start <- ans_start + 1L
     ans_names <- rownames(df)
@@ -229,8 +239,9 @@ makeGRangesFromDataFrame <- function(df,
         ans_seqinfo <- Seqinfo(seqlevels)
     }
 
+    FUN <- switch(as, GRanges = GRanges, GPos = GPos)
     ## Make and return the GRanges object.
-    GRanges(ans_seqnames, ans_ranges, strand=ans_strand,
+    FUN(ans_seqnames, ans_ranges, strand=ans_strand,
             ans_mcols, seqinfo=ans_seqinfo)
 }
 
@@ -242,3 +253,10 @@ setAs("DataFrame", "GRanges",
     function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
 )
 
+setAs("data.frame", "GPos",
+    function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
+)
+
+setAs("DataFrame", "GPos",
+    function(from) makeGRangesFromDataFrame(from, keep.extra.columns=TRUE)
+)

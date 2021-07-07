@@ -176,7 +176,7 @@ GPos <- function(seqnames=NULL, pos=NULL, strand=NULL,
             if (is(x_ranges, "IRanges"))  # i.e. 'x' is not a GPos
                 strand <- rep.int(strand, width(x_ranges))
         }
-        if (length(mcols) == 0L && is(x, "GPos"))
+        if (length(mcols) == 0L && inherits(x, "GenomicRanges"))
             mcols <- mcols(x, use.names=FALSE)
         if (is.null(seqinfo))
             seqinfo <- seqinfo(x)
