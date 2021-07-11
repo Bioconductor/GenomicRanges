@@ -22,6 +22,7 @@
 
 \alias{trim}
 \alias{trim,GenomicRanges-method}
+\alias{trim,GRangesList-method}
 
 \title{Intra range transformations of a GRanges or GRangesList object}
 
@@ -71,9 +72,6 @@
   \item{ignore.strand}{
     \code{TRUE} or \code{FALSE}. Whether the strand of the input ranges
     should be ignored or not. See details below.
-  }
-  \item{\dots}{
-    Additional arguments to methods.
   }
 }
 
@@ -148,7 +146,7 @@
   }
 }
 
-\author{P. Aboyoun and V. Obenchain <vobencha@fhcrc.org>}
+\author{P. Aboyoun and V. Obenchain}
 
 \seealso{
   \itemize{

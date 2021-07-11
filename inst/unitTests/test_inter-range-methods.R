@@ -46,7 +46,7 @@ test_range_GRangesList <- function()
     ans1 <- IntegerList(c(1,5,6),  c(2,3,4),  c(7:10))
     ans2 <- IntegerList(c(5,6,10), c(7:9), c(1:4))
     checkIdentical(revmap1, ans1)
-    checkIdentical(revmap2, ans2)    
+    checkIdentical(revmap2, ans2)
 }
 
 test_reduce_GenomicRanges <- function()
@@ -102,10 +102,10 @@ test_disjoin_GenomicRanges <- function()
     checkTrue(validObject(current, complete=TRUE))
     checkIdentical(target, current)
 
-    gr <- GRanges(Rle(c("chr1", "chr3"), c(2, 2)), 
+    gr <- GRanges(Rle(c("chr1", "chr3"), c(2, 2)),
                   IRanges(c(8, 6, 8, 6), c(11, 15, 11, 15),
                           names=c("k", "l", "m", "n")),
-                  c("-", "-", "+", "*"), 
+                  c("-", "-", "+", "*"),
                   score=11:14, GC=c(.2, .3, .3, .1))
     current <- disjoin(gr)
     target <- GRanges(Rle(c("chr1", "chr3"), c(3, 2)),

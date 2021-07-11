@@ -12,7 +12,7 @@
        and Rsamtools}
 
 \author{Herv\'e Pag\`es\\
-        \href{mailto:hpages@fredhutch.org}{hpages@fredhutch.org}}
+        \href{mailto:hpages.on.github@gmail.com}{hpages.on.github@gmail.com}}
 
 \date{June 2016}
 

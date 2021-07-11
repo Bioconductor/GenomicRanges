@@ -79,7 +79,7 @@ setMethod("strand", "RleList",
     function(x) relist(strand(unlist(x, use.names=FALSE)), x)
 )
 
-setMethod("strand", "DataTable",
+setMethod("strand", "DataFrame",
     function(x)
     {
         ans <- x[["strand"]]
@@ -107,7 +107,7 @@ normalize_strand_replacement_value <- function(value, x)
     S4Vectors:::V_recycle(value, x, x_what="value", skeleton_what="x")
 }
 
-setReplaceMethod("strand", "DataTable",
+setReplaceMethod("strand", "DataFrame",
     function(x, value)
     {
         x$strand <- normalize_strand_replacement_value(value, seq_len(nrow(x)))

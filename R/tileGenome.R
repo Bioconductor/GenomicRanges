@@ -62,7 +62,7 @@
     relative_starts <- rep.int(1L, length(relative_ends))
     run_lens <- runLength(seqnames)
     run_starts <- c(1L, cumsum(head(run_lens, n=-1L)) + 1L)
-    idx <- S4Vectors:::fancy_mseq(run_lens - 1L, offset=run_starts)
+    idx <- sequence(run_lens - 1L, from=run_starts+1L)
     relative_starts[idx] <- relative_ends[idx - 1L] + 1L
     relative_starts
 }

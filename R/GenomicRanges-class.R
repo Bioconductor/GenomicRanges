@@ -12,6 +12,9 @@ setClass("GenomicRanges",
         #No more constraint slot for now...
         #constraint="Constraint_OR_NULL",
         elementMetadata="DataFrame"
+    ),
+    prototype(
+        elementMetadata=new("DFrame")
     )
 )
 
@@ -50,7 +53,7 @@ setMethod("names", "GenomicRanges", function(x) names(ranges(x)))
 ###
 ### TODO: Packages defining "extraColumnSlotNames" methods (e.g.
 ### VariantAnnotation, GenomicTuples, InteractionSet, SGSeq) should define
-### "parallelSlotNames" methods instead. They'll get more things working
+### parallel_slot_names() methods instead. They'll get more things working
 ### out-of-the-box by doing so (e.g. c()). Then the extraColumnSlotNames()
 ### generic will become a GenomicRanges private business and could be made
 ### a regular function.
@@ -65,8 +68,8 @@ setMethod("extraColumnSlotNames", "ANY", function(x) character())
 #setMethod("extraColumnSlotNames", "GRanges",
 #    function(x)
 #    {
-#        GRanges_pslotnames <- parallelSlotNames(new("GRanges"))
-#        setdiff(parallelSlotNames(x), GRanges_pslotnames)
+#        GRanges_pslotnames <- parallel_slot_names(new("GRanges"))
+#        setdiff(parallel_slot_names(x), GRanges_pslotnames)
 #    }
 #)
 
@@ -261,7 +264,6 @@ setAs("GenomicRanges", "Grouping", function(from) {
 setMethod("as.data.frame", "GenomicRanges",
     function(x, row.names=NULL, optional=FALSE, ...)
     {
-        ranges <- ranges(x)
         if (missing(row.names))
             row.names <- names(x)
         if (!is.null(names(x)))
@@ -307,24 +309,6 @@ setAs("GenomicRanges", "IRangesList",
 )
 setAs("GenomicRanges", "IntegerRangesList",
     .from_GenomicRanges_to_CompressedIRangesList
-)
-
-setAs("GenomicRanges", "RangedData",
-    function(from)
-    {
-        mcols <- mcols(from, use.names=FALSE)
-        ecs <- extraColumnSlotsAsDF(from)
-        if (length(ecs))
-          mcols <- cbind(mcols, ecs)
-        rd <- RangedData(ranges(from), strand=strand(from),
-                         mcols, space=seqnames(from))
-        mcols(ranges(rd)) <- DataFrame(seqlengths=seqlengths(from),
-                                       isCircular=isCircular(from),
-                                       genome=genome(from))
-        metadata(ranges(rd)) <- metadata(from)
-        metadata(ranges(rd))$seqinfo <- seqinfo(from)
-        rd
-    }
 )
 
 
@@ -392,20 +376,20 @@ set_GenomicRanges_seqinfo <-
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
 {
-    pruning.mode <- match.arg(pruning.mode)
-    if (pruning.mode == "fine")
-        stop(wmsg("\"fine\" pruning mode not supported on ",
-                  class(x), " objects"))
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
+    pruning.mode <- match.arg(pruning.mode)
+    if (pruning.mode == "fine")
+        stop(wmsg("\"fine\" pruning mode is not supported on ",
+                  class(x), " objects"))
     dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
                               new2old=new2old,
                               pruning.mode=pruning.mode,
                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         ## Prune 'x'.
-        non_dangling_range <- !(seqnames(x) %in% dangling_seqlevels)
-        x <- x[non_dangling_range]
+        idx <- !(seqnames(x) %in% dangling_seqlevels)
+        x <- x[idx]
     }
     old_seqinfo <- seqinfo(x)
     new_seqnames <- GenomeInfoDb:::makeNewSeqnames(x,
@@ -634,45 +618,28 @@ setReplaceMethod("$", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Displaying
+### Display
 ###
 
-.GenomicRanges_summary <- function(object)
-{
-    object_class <- class(object)
-    object_len <- length(object)
-    object_mcols <- mcols(object, use.names=FALSE)
-    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
-    paste0(object_class, " object with ", object_len, " ",
-           ifelse(object_len == 1L, "range", "ranges"),
-           " and ", object_nmc, " metadata ",
-           ifelse(object_nmc == 1L, "column", "columns"))
-}
-
 ### S3/S4 combo for summary.GenomicRanges
-summary.GenomicRanges <- function(object, ...)
-    .GenomicRanges_summary(object, ...)
+summary.GenomicRanges <- summary.IPosRanges
 setMethod("summary", "GenomicRanges", summary.GenomicRanges)
 
 .from_GenomicRanges_to_naked_character_matrix_for_display <- function(x)
 {
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(seqnames=as.character(seqnames(x)),
-                 ranges=showAsCell(ranges(x)),
-                 strand=as.character(strand(x)))
-    extraColumnNames <- extraColumnSlotNames(x)
-    if (length(extraColumnNames) > 0L) {
-        ans <- do.call(cbind,
-                       c(list(ans), lapply(extraColumnSlots(x), showAsCell)))
+    m <- cbind(seqnames=showAsCell(seqnames(x)),
+               ranges=showAsCell(ranges(x)),
+               strand=showAsCell(strand(x)))
+    extra_col_names <- extraColumnSlotNames(x)
+    if (length(extra_col_names) != 0L) {
+        extra_cols <- lapply(extraColumnSlots(x), showAsCell)
+        m <- do.call(cbind, c(list(m), extra_cols))
     }
-    if (x_nmc > 0L) {
-        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
-        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
-    }
-    ans
+    cbind_mcols_for_display(m, x)
 }
+setMethod("makeNakedCharacterMatrixForDisplay", "GenomicRanges",
+    .from_GenomicRanges_to_naked_character_matrix_for_display
+)
 
 ### If 'x' is a GRanges object, 'coerce.internally.to.GRanges' has no effect.
 ### If it's a GenomicRanges object that is not a GRanges object, then
@@ -685,25 +652,23 @@ show_GenomicRanges <- function(x, margin="",
                                coerce.internally.to.GRanges=TRUE)
 {
     cat(margin, summary(x), ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
-    ## and tail() work on 'xx'.
+    ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
+    ## work on 'xx'.
     if (coerce.internally.to.GRanges) {
         xx <- as(x, "GRanges", strict=FALSE)
     } else {
         xx <- x
     }
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(xx,
-                .from_GenomicRanges_to_naked_character_matrix_for_display)
+    out <- makePrettyMatrixForCompactPrinting(xx)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
             ranges="IRanges",
             strand="Rle"
         )
-        extraColumnNames <- extraColumnSlotNames(x)
-        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extraColumnNames])
-        classinfo <-
-            S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        extra_col_names <- extraColumnSlotNames(x)
+        .COL2CLASS <- c(.COL2CLASS, getSlots(class(x))[extra_col_names])
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)

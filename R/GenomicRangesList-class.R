@@ -11,7 +11,8 @@ setClass("GenomicRangesList",
         elementMetadata="DataFrame"
     ),
     prototype(
-        elementType="GenomicRanges"
+        elementType="GenomicRanges",
+        elementMetadata=new("DFrame")
     )
 )
 
@@ -75,7 +76,7 @@ setClass("CompressedGenomicRangesList",
 ###
 
 ### callNextMethod() searches for the "closest parent method" starting from
-### the class used in the signature of the method from which it is called,
+### the class used in the **signature** of the method from which it is called,
 ### NOT from 'class(x)'. This means that in the context of methods defined
 ### for GenomicRangesList objects, like the methods below, callNextMethod()
 ### would fail to find methods defined for CompressedList or SimpleList.
@@ -97,15 +98,17 @@ setMethod("updateObject", "GenomicRangesList",
         if (class(object) == "GRangesList") {
             ## Starting with GenomicRanges 1.31.13, all GRangesList instances
             ## need to be replaced with CompressedGRangesList instances. Note
-            ## that this NOT a change of the internals (GRangesList instances
-            ## have been using the CompressedList representation since the
-            ## beginning), only a change of the class attribute.
+            ## that this is NOT a change of the internals (GRangesList
+            ## instances have been using the CompressedList representation
+            ## since the beginning), only a change of the class attribute.
             if (verbose)
-                message("[updateObject] class attribute of ", class(object),
-                        " object needs to be set to ",
-                        "\"CompressedGRangesList\"\n",
-                        "[updateObject] Updating it ...")
+                message("[updateObject] Settting class attribute of ",
+                        "GRangesList instance\n",
+                        "[updateObject] to \"CompressedGRangesList\" ... ",
+                        appendLF=FALSE)
             class(object) <- class(new("CompressedGRangesList"))
+            if (verbose)
+                message("OK")
         } else {
             if (verbose)
                 message("[updateObject] ", class(object), " object ",
@@ -119,9 +122,10 @@ setMethod("updateObject", "GenomicRangesList",
                                               ..., verbose=verbose)
         }
 
-        ## 'METHOD' will be the method for CompressedList objects or the
-        ## method for Vector objects. The former will update the 'partitioning'
-        ## slot. The latter is a no-op.
+        ## 'METHOD' will be the method for CompressedList objects or
+        ## the method for Vector objects. (The former will update the
+        ## 'partitioning' and 'elementMetadata' slots, while the latter
+        ## will update the 'elementMetadata' slot only.)
         METHOD <- .selectClosestMethod1("updateObject", object)
         METHOD(object, ..., verbose=verbose)
     }
@@ -391,7 +395,7 @@ set_CompressedGenomicRangesList_mcols <-
     level <- match.arg(level)
     if (level == "between") {
         if (is.null(value))
-            value <- S4Vectors:::make_zero_col_DataFrame(length(x))
+            value <- make_zero_col_DFrame(length(x))
         else if (!is(value, "DataFrame"))
             value <- DataFrame(value)
         if (!is.null(rownames(value)))
@@ -406,7 +410,7 @@ set_CompressedGenomicRangesList_mcols <-
         x@elementMetadata <- value
     } else {
         if (is.null(value)) {
-            value <- S4Vectors:::make_zero_col_DataFrame(length(x@unlistData))
+            value <- make_zero_col_DFrame(length(x@unlistData))
         } else {
             if (!is(value, "SplitDataFrameList") ||
                 !identical(elementNROWS(x), elementNROWS(value))) {
@@ -429,25 +433,24 @@ set_CompressedGenomicRangesList_seqinfo <-
              pruning.mode=c("error", "coarse", "fine", "tidy"),
              value)
 {
-    pruning.mode <- match.arg(pruning.mode)
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
+    pruning.mode <- match.arg(pruning.mode)
     dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
                               new2old=new2old,
                               pruning.mode=pruning.mode,
                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         ## Prune 'x'.
-        non_dangling_range <- !(seqnames(x) %in% dangling_seqlevels)
+        idx <- !(seqnames(x) %in% dangling_seqlevels)
         if (pruning.mode == "coarse") {
-            x <- x[all(non_dangling_range)]
+            x <- x[all(idx)]  # "coarse" pruning
         } else {
-            x <- x[non_dangling_range]  # "fine" pruning
+            x <- x[idx]  # "fine" pruning
             if (pruning.mode == "tidy") {
                 ## Remove list elements that became empty because of "fine"
                 ## pruning.
-                x <- x[any(non_dangling_range) |
-                       elementNROWS(non_dangling_range) == 0L]
+                x <- x[any(idx) | elementNROWS(idx) == 0L]  # "tidy" pruning
             }
         }
     }

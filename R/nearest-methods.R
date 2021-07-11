@@ -7,7 +7,7 @@
 ###        distanceToNearest
 ###          |          |
 ###       nearest    distance
-###       |     | 
+###       |     |
 ###  precede   follow
 
 .orderNumeric <- function(x)            # unstable order
@@ -20,7 +20,7 @@
     zeroInSubject <- subject %in% 0L
     if (any(zeroInSubject))
         subject <- unique(c(subject, sentinel))
-    else 
+    else
         subject <- c(subject, sentinel)
     ord <- .orderNumeric(subject)
     subject <- subject[ord]
@@ -42,7 +42,7 @@
         i[subject[i] %in% sentinel & subject[i] != 0L] <- NA_integer_
     else
         i[subject[i] %in% sentinel] <- NA_integer_
- 
+
     IRanges:::vectorToHits(i, rle, ord)
 }
 
@@ -96,7 +96,7 @@
 }
 
 .GenomicRanges_findPrecedeFollow <-
-    function(query, subject, select, ignore.strand, 
+    function(query, subject, select, ignore.strand,
              where=c("precede", "follow"))
 {
     if (!length(query) || !length(subject))
@@ -192,12 +192,12 @@
     hits <- .Hits(qryHits, subjHits, length(query), length(subject))
     ## Break ties
     if (select == "all") {
-        hits 
+        hits
     } else if (select == "first") {
         first <- rep(NA_integer_, length(query))
         idx <- which(!duplicated(queryHits(hits)))
         first[queryHits(hits)[idx]] <- subjectHits(hits)[idx]
-        first 
+        first
     } else if ("last" == select) {
         last <- rep(NA_integer_, length(query))
         rev_query <- rev(queryHits(hits)) ## can't call rev() on Hits
@@ -213,13 +213,13 @@
 ###
 
 setMethod("precede", c("GenomicRanges", "GenomicRanges"),
-    function(x, subject, 
+    function(x, subject,
              select=c("first", "all"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "precede") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "precede")
     }
 )
 
@@ -229,8 +229,8 @@ setMethod("precede", c("GenomicRanges", "missing"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "precede") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "precede")
     }
 )
 
@@ -240,8 +240,8 @@ setMethod("follow", c("GenomicRanges", "GenomicRanges"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "follow") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "follow")
     }
 )
 
@@ -251,8 +251,8 @@ setMethod("follow", c("GenomicRanges", "missing"),
              ignore.strand=FALSE)
     {
         select <- match.arg(select)
-        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand, 
-                                         "follow") 
+        .GenomicRanges_findPrecedeFollow(x, subject, select, ignore.strand,
+                                         "follow")
     }
 )
 
@@ -261,7 +261,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
 ### nearest()
 ###
 
-.filterHits <- function(hits, i, map) 
+.filterHits <- function(hits, i, map)
 {
     m <- as.matrix(hits[as(hits, "IRanges")[i]])
     m[, 1L] <- map[m[, 1L]]
@@ -299,7 +299,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
         ## terminate if no results
         if (!length(p) && !length(f)) {
             if (is(olv, "Hits") && !length(olv) || all(is.na(olv))) {
-                if (select == "all") 
+                if (select == "all")
                     return(Hits(nLnode=length(x),
                                 nRnode=length(subject),
                                 sort.by.query=TRUE))
@@ -331,7 +331,7 @@ setMethod("follow", c("GenomicRanges", "missing"),
             ol@from <- unname(m[, 1L])
             ol@to <- unname(m[, 2L])
         } else {
-            olv[is.na(olv)] <- ifelse(pnearest, p, f) 
+            olv[is.na(olv)] <- ifelse(pnearest, p, f)
             ol <- olv
         }
     }
@@ -425,7 +425,7 @@ setMethod("distanceToNearest", c("GenomicRanges", "missing"),
     }
 
     if (!length(subjectHits) || all(is.na(subjectHits))) {
-        Hits(nLnode=length(x), 
+        Hits(nLnode=length(x),
              nRnode=length(subject),
              distance=integer(0),
              sort.by.query=TRUE)
@@ -473,14 +473,31 @@ follows <- function(x, y) {
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Find 'k' nearest neighbors
 ###
-### FIXME: Largely untested code; unexported for now
-###
 
-findKNN <- function(query, subject, k=5L, ignore.overlaps = FALSE,
-                    ignore.strand = FALSE)
+.nearestKNeighbors_all_k <- function(x, k) {
+    ## the 'k' nearest neighbors in 'x', when all equally-distant
+    ## neighbors increment k by 1. Each element of 'x' is ordered. E.g.,
+    ##
+    ##   x = IntegerList(c(1, 1, 2), 1:2)
+    ##   k = 1
+    ##   return: c(2L, 1L)
+    ##
+    ans <- integer(length(x))
+    non_zero_lengths <- lengths(x) > 0
+    if (k == 0L || !any(non_zero_lengths))
+        return(ans)
+
+    x <- x[non_zero_lengths]
+    idx <- pmin(k, lengths(x))
+    value <- x[as.list(idx)]
+    ans[non_zero_lengths] <- sum(x <= value)
+    ans
+}
+
+.nearestKNeighbors <- function(x, subject, k, select, ignore.strand, drop.self=FALSE)
 {
-    seqlevels(subject) <- seqlevels(query)
-    
+    seqlevels(subject) <- seqlevels(x)
+
     starts <- with(subject, GRanges(seqnames, IRanges(start, width=1L), strand))
     ends <- with(subject, GRanges(seqnames, IRanges(end, width=1L), strand))
 
@@ -488,18 +505,34 @@ findKNN <- function(query, subject, k=5L, ignore.overlaps = FALSE,
         starts <- unstrand(starts)
         ends <- unstrand(ends)
     }
-    
+
     start_ord <- order(starts)
     end_ord <- order(ends)
 
     starts <- starts[start_ord]
     ends <- ends[end_ord]
 
-    phits <- precede(query, starts, ignore.strand=ignore.strand)
-    fhits <- follow(query, ends, ignore.strand=ignore.strand)
+    ## NOTE: select="all" is needed in general for nearestKNeighbors here
+    if (drop.self) {
+        ol <- findOverlaps(x, maxgap=0L, select="all",
+                           ignore.strand=ignore.strand, drop.self=TRUE)
+    } else {
+        ol <- findOverlaps(x, subject, maxgap=0L, select="all",
+                           ignore.strand=ignore.strand)
+    }
+    ol_hits <- countLnodeHits(ol)
+    ol <- as(ol, "List")
+    overlaps <- IntegerList(lapply(ol_hits, rep, x=0L))
+
+    if (length(x)) {
+        phits <- precede(x, starts, ignore.strand=ignore.strand)
+        fhits <- follow(x, ends, ignore.strand=ignore.strand)
+    } else {
+        phits <- fhits <- integer()
+    }
 
     if (!ignore.strand) {
-        exchange <- decode(strand(query) == "-")
+        exchange <- decode(strand(x) == "-")
         tmp <- phits[exchange]
         phits[exchange] <- fhits[exchange]
         fhits[exchange] <- tmp
@@ -508,34 +541,60 @@ findKNN <- function(query, subject, k=5L, ignore.overlaps = FALSE,
     findPart <- function(x, w) {
         S4Vectors:::findIntervalAndStartFromWidth(x, w)[["interval"]]
     }
-    
-    if (!ignore.strand) {
-        b <- width(disjoin(c(ranges(seqnames(starts)), ranges(strand(starts)))))
-    } else {
-        b <- runLength(seqnames(starts))
-    }
-    
-    seqends <- end(seqnames(starts))[findPart(phits, b)]
+
+    b <- width(disjoin(c(ranges(seqnames(starts)), ranges(strand(starts)))))
+    width <- ifelse(select == "all", max(length(subject) - 1L, 1L), k)
+
+    seqends <- end(strand(starts))[findPart(phits, b)]
     phits[is.na(phits)] <- 1L
     seqends[is.na(seqends)] <- 0L
-    pwindows <- restrict(IRanges(phits, width = k), end=seqends)
+    pwindows <- restrict(IRanges(phits, width = width), end=seqends)
+    pwindows_kept <- seqends >= phits
 
-    seqstarts <- start(seqnames(ends))[findPart(fhits, b)]
+    seqstarts <- start(strand(ends))[findPart(fhits, b)]
     seqstarts[is.na(seqstarts)] <- 1L
     fhits[is.na(fhits)] <- 0L
-    fwindows <- restrict(IRanges(end=fhits, width = k), seqstarts)
-    
-    dist <- pc(extractList(start(starts), pwindows) - end(query),
-               end(query) - extractList(end(ends), fwindows))
+    fwindows <- restrict(IRanges(end=fhits, width = width), seqstarts)
+    fwindows_kept <- seqstarts <= fhits
 
-    ans <- pc(extractList(start_ord, pwindows), extractList(end_ord, fwindows))
+    pdist <- extractList(start(starts), pwindows) - end(x)
+    pdist[!pwindows_kept] <- IntegerList(integer(0))
+    fdist <- start(x) - extractList(end(ends), fwindows)
+    fdist[!fwindows_kept] <- IntegerList(integer(0))
 
-    if (!ignore.overlaps) {
-        hits <- findOverlaps(query, subject, ignore.strand=ignore.strand)
-        hitsList <- as(hits, "List")
-        dist <- pc(dist, relist(rep(0L, length(hits)), hitsList))
-        ans <- pc(ans, hitsList)
-    }
+    dist <- pc(pdist, fdist, overlaps)
+    dist <- abs(dist)
 
-    ans[heads(order(dist), k)]
+    pans <- extractList(start_ord, pwindows)
+    pans[!pwindows_kept] <- IntegerList(integer(0))
+    fans <- extractList(end_ord, fwindows)
+    fans[!fwindows_kept] <- IntegerList(integer(0))
+
+    ans <- pc(pans, fans, ol)
+
+    o <- order(dist)
+    if (select == "all")
+        k <- .nearestKNeighbors_all_k(dist[o], k)
+    ans <- ans[heads(o, k)]
+    ans[lengths(ans) == 0L] <- NA
+    ans
 }
+
+setGeneric("nearestKNeighbors", function(x, subject, ...) standardGeneric("nearestKNeighbors"))
+
+setMethod("nearestKNeighbors", c("GenomicRanges", "missing"),
+    function(x, subject, k = 1L, select = c("arbitrary", "all"),
+             ignore.strand = FALSE)
+{
+    select <- match.arg(select)
+    .nearestKNeighbors(x, x, k = k, select = select, ignore.strand = ignore.strand,
+             drop.self = TRUE)
+})
+
+setMethod("nearestKNeighbors", c("GenomicRanges", "GenomicRanges"),
+    function(x, subject, k = 1L, select = c("arbitrary", "all"),
+             ignore.strand = FALSE)
+{
+    select <- match.arg(select)
+    .nearestKNeighbors(x, subject, k = k, select = select, ignore.strand = ignore.strand)
+})

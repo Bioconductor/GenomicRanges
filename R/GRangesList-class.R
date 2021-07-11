@@ -37,30 +37,20 @@ GRangesList <- function(..., compress=TRUE)
     if (!isTRUEorFALSE(compress))
         stop("'compress' must be TRUE or FALSE")
     objects <- list(...)
-    if (length(objects) == 1L && is.list(objects[[1L]]))
-        objects <- objects[[1L]]
-    if (compress) {
-        if (length(objects) == 1L && !is(objects[[1L]], "GRanges"))
-            return(as(objects[[1L]], "CompressedGRangesList", strict=FALSE))
-        if (length(objects) == 0L) {
-            unlistData <- GRanges()
-        } else {
-            if (!all(sapply(objects, is, "GRanges")))
-                stop("all elements in '...' must be GRanges objects")
-            unlistData <- suppressWarnings(do.call("c", unname(objects)))
-        }
-        ans <- relist(unlistData, objects)
-    } else {
-        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(objects))
-        ans <- S4Vectors:::new_SimpleList_from_list("SimpleGRangesList",
-                                                    objects, mcols=ans_mcols)
+    if (length(objects) == 1L) {
+        tmp <- objects[[1L]]
+        if (is.list(tmp) || (is(tmp, "List") && !is(tmp, "GenomicRanges")))
+            objects <- tmp
     }
-    ans
+    if (compress)
+        suppressWarnings(as(objects, "CompressedGRangesList"))
+    else
+        as(objects, "SimpleGRangesList")
 }
 
 GenomicRangesList <- function(...)
 {
-    .Deprecated("GRangesList(..., compress=FALSE)")
+    .Defunct("GRangesList(..., compress=FALSE)")
     GRangesList(..., compress=FALSE)
 }
 
@@ -167,7 +157,131 @@ setReplaceMethod("ranges", "CompressedGRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion from list-like object to SimpleGRangesList
+###
+
+### Try to turn an arbitrary list-like object into an ordinary list of
+### GRanges objects.
+as_list_of_GRanges <- function(from)
+{
+    if (is(from, "GenomicRanges")) {
+        if (!is(from, "GRanges"))
+            from <- as(from, "GRanges", strict=FALSE)
+        along_idx <- setNames(seq_along(from), names(from))
+        names(from) <- NULL
+        mcols(from) <- NULL
+        lapply(along_idx, function(i) from[i])
+    } else {
+        lapply(from, as, "GRanges", strict=FALSE)
+    }
+}
+
+### From ordinary list to SimpleGRangesList
+
+.from_list_to_SimpleGRangesList <- function(from)
+{
+    from <- as_list_of_GRanges(from)
+    S4Vectors:::new_SimpleList_from_list("SimpleGRangesList", from)
+}
+
+setAs("list", "SimpleGRangesList", .from_list_to_SimpleGRangesList)
+setAs("list", "GRangesList", .from_list_to_SimpleGRangesList)
+
+### From List derivative to SimpleGRangesList
+
+.from_List_to_SimpleGRangesList <- function(from)
+{
+    S4Vectors:::new_SimpleList_from_list("SimpleGRangesList",
+                               as_list_of_GRanges(from),
+                               metadata=metadata(from),
+                               mcols=mcols(from, use.names=FALSE))
+}
+
+setAs("List", "SimpleGRangesList", .from_List_to_SimpleGRangesList)
+
+### Automatic coercion methods from SimpleList, GenomicRangesList, or
+### SimpleGenomicRangesList to SimpleGRangesList silently return a broken
+### object (unfortunately these dummy automatic coercion methods don't bother
+### to validate the object they return). So we overwrite them.
+setAs("SimpleList", "SimpleGRangesList",
+      .from_List_to_SimpleGRangesList)
+setAs("GenomicRangesList", "SimpleGRangesList",
+      .from_List_to_SimpleGRangesList)
+setAs("SimpleGenomicRangesList", "SimpleGRangesList",
+      .from_List_to_SimpleGRangesList)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Intra-range methods
+###
+
+setMethod("trim", "GRangesList",
+          function(x, use.names=TRUE)
+          {
+              ## Like seqinfo,GRangesList, assumes that there is a
+              ## single Seqinfo for the entire object. Only guaranteed
+              ## to be true in the compressed case.
+              relist(trim(unlist(x, use.names=FALSE), use.names=use.names), x)
+          })
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion from list-like object to CompressedGRangesList
+###
+
+### From ordinary list to CompressedGRangesList
+
+.from_list_to_CompressedGRangesList <- function(from)
+{
+    from <- as_list_of_GRanges(from)
+    IRanges:::new_CompressedList_from_list("CompressedGRangesList", from)
+}
+
+setAs("list", "CompressedGRangesList", .from_list_to_CompressedGRangesList)
+
+### From List derivative to CompressedGRangesList
+
+.from_List_to_CompressedGRangesList <- function(from)
+{
+    IRanges:::new_CompressedList_from_list("CompressedGRangesList",
+                                 as_list_of_GRanges(from),
+                                 metadata=metadata(from),
+                                 mcols=mcols(from, use.names=FALSE))
+}
+
+### GenomicRanges objects are List objects so this case is already covered
+### by the .from_List_to_CompressedGRangesList() helper above. However, we
+### can implement it much more efficiently.
+.from_GenomicRanges_to_CompressedGRangesList <- function(from)
+{
+    if (!is(from, "GRanges"))
+        from <- as(from, "GRanges", strict=FALSE)
+    ans_partitioning <- PartitioningByEnd(seq_along(from), names=names(from))
+    names(from) <- NULL
+    ans_mcols <- mcols(from, use.names=FALSE)
+    mcols(from) <- NULL
+    ans <- relist(from, ans_partitioning)
+    mcols(ans) <- ans_mcols
+    ans
+}
+
+setAs("List", "CompressedGRangesList",
+      .from_List_to_CompressedGRangesList)
+
+setAs("GenomicRanges", "CompressedGRangesList",
+      .from_GenomicRanges_to_CompressedGRangesList)
+
+setAs("List", "GRangesList",
+    function(from)
+    {
+        if (is(from, "CompressedList") || is(from, "GenomicRanges"))
+            as(from, "CompressedGRangesList")
+        else
+            as(from, "SimpleGRangesList")
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other coercions
 ###
 
 setAs("CompressedGRangesList", "CompressedIRangesList",
@@ -180,31 +294,20 @@ setAs("CompressedGRangesList", "IntegerRangesList",
     function(from) ranges(from, use.mcols=TRUE)
 )
 
-.from_GenomicRanges_to_CompressedGRangesList <- function(from)
-{
-    if (!is(from, "GRanges"))
-        from <- as(from, "GRanges", strict = FALSE)
-    ans_partitioning <- PartitioningByEnd(seq_along(from), names=names(from))
-    names(from) <- NULL
-    ans_mcols <- mcols(from, use.names=FALSE)
-    mcols(from) <- NULL
-    ans <- relist(from, ans_partitioning)
-    mcols(ans) <- ans_mcols
-    ans
-}
-setAs("GenomicRanges", "CompressedGRangesList",
-    .from_GenomicRanges_to_CompressedGRangesList
-)
-setAs("GenomicRanges", "GRangesList",
-    .from_GenomicRanges_to_CompressedGRangesList
-)
 
-setAs("list", "SimpleGRangesList",
-      function(from) do.call(GRangesList, list(from, compress=FALSE)))
-setAs("list", "CompressedGRangesList",
-      function(from) do.call(GRangesList, list(from, compress=TRUE)))
-setAs("list", "GRangesList",
-      function(from) as(from, "SimpleGRangesList"))
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Sorting.
+###
+### S3/S4 combo for sort.GRangesList
+.sort.GRangesList <- function(x, decreasing=FALSE, ...)
+{
+    gr <- deconstructGRLintoGR(x)
+    gr2 <- sort(gr, decreasing=decreasing, ...)
+    reconstructGRLfromGR(gr2, x)
+}
+sort.GRangesList <- function(x, decreasing=FALSE, ...)
+    .sort.GRangesList(x, decreasing=decreasing, ...)
+setMethod("sort", "CompressedGRangesList", .sort.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

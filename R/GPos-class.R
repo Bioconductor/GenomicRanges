@@ -82,7 +82,7 @@ setMethod("pos", "GPos", function(x) pos(ranges(x)))
 ### new_GRanges() and we don't check the new object.
 .new_stitched_GRanges <- function(seqnames, ranges, strand, seqinfo)
 {
-    mcols <- S4Vectors:::make_zero_col_DataFrame(length(ranges))
+    mcols <- make_zero_col_DFrame(length(ranges))
     new2("GRanges", seqnames=seqnames,
                     ranges=ranges,
                     strand=strand,
@@ -184,7 +184,9 @@ GPos <- function(seqnames=NULL, pos=NULL, strand=NULL,
 
     seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
 
-    Class <- sub("IPos$", "GPos", class(pos))
+    ## We use as.character() to get rid of the "package" attribute on the
+    ## class name returned by class(pos).
+    Class <- sub("IPos$", "GPos", as.character(class(pos)))
 
     new_GRanges(Class, seqnames=seqnames, ranges=pos, strand=strand,
                        mcols=mcols, seqinfo=seqinfo)
@@ -210,10 +212,6 @@ GPos <- function(seqnames=NULL, pos=NULL, strand=NULL,
     if (!all(width(from) == 1L))
         stop(wmsg("all the ranges in the object to ",
                   "coerce to ", to, " must have a width of 1"))
-    if (!is.null(names(from)))
-        warning(wmsg("because a GPos derivative cannot hold them, ",
-                     "the names on the object to coerce couldn't be ",
-                     "propagated during its coercion to ", to))
 }
 .from_ANY_to_UnstitchedGPos <- function(from)
 {
@@ -257,7 +255,7 @@ setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
 ### Anyway, a workaround is to support the 'strict=FALSE' case at the level
 ### of the coerce() method itself. However setAs() doesn't let us do that
 ### so this is why we use setMethod("coerce", ...) to define these methods.
-.from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
+from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
 {
     if (!isTRUEorFALSE(strict))
         stop("'strict' must be TRUE or FALSE")
@@ -267,15 +265,20 @@ setAs("GRanges", "GPos", .from_ANY_to_UnstitchedGPos)
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
-setMethod("coerce", c("UnstitchedGPos", "GRanges"), .from_GPos_to_GRanges)
-setMethod("coerce", c("StitchedGPos", "GRanges"), .from_GPos_to_GRanges)
+setMethod("coerce", c("UnstitchedGPos", "GRanges"), from_GPos_to_GRanges)
+setMethod("coerce", c("StitchedGPos", "GRanges"), from_GPos_to_GRanges)
 ### One might think that defining the coerce,GPos,GRanges method below would
 ### cover the UnstitchedGPos->GRanges and StitchedGPos->GRanges cases, but no
 ### such luck! Again, this is because the oh-so-smart methods package wants
 ### to automatically define the 2 coercion methods above in case they are not
 ### explicitly defined by the user. And once again, these automatic coercion
 ### methods get it wrong!
-#setMethod("coerce", c("GPos", "GRanges"), .from_GPos_to_GRanges)
+### For the same reason, UnstitchedGPos or StitchedGPos extensions (like the
+### CTSS class in the CAGEr package) need to define a coercion method to
+### GRanges otherwise they'll also get a broken automatic coercion method.
+### They can do this with (from_GPos_to_GRanges is exported):
+###   setMethod("coerce", c("CTSS", "GRanges"), from_GPos_to_GRanges)
+#setMethod("coerce", c("GPos", "GRanges"), from_GPos_to_GRanges)
 
 ### S3/S4 combo for as.data.frame.GPos
 ### The "as.data.frame" method for GenomicRanges objects works on a GPos
@@ -324,9 +327,9 @@ setMethod("updateObject", "GPos",
         version <- .get_GPos_version(object)
         if (.hasSlot(object, "pos_runs")) {
             if (verbose)
-                message("[updateObject] ", class(object), " object uses ",
-                        "internal representation\n",
-                        "[updateObject] from GenomicRanges ", version, ". ",
+                message("[updateObject] ", class(object), " object ",
+                        "uses internal representation from\n",
+                        "[updateObject] GenomicRanges ", version, ". ",
                         "Updating it ... ", appendLF=FALSE)
             ans <- GPos(object@pos_runs)
             mcols(ans) <- mcols(object)
@@ -338,42 +341,40 @@ setMethod("updateObject", "GPos",
         if (class(object) == "GPos") {
             if (verbose)
                 message("[updateObject] Settting class attribute of GPos ",
-                        "object to \"StitchedGPos\" ... ", appendLF=FALSE)
+                        "instance to \"StitchedGPos\" ... ", appendLF=FALSE)
             class(object) <- class(new("StitchedGPos"))
             if (verbose)
                 message("OK")
         }
-        if (IRanges:::get_IPos_version(object@ranges) == "current") {
-            if (verbose)
-                message("[updateObject] Internal representation of ",
-                        class(object), " object is current.\n",
-                        "[updateObject] Nothing to update.")
-            return(object)
+        if (IRanges:::get_IPos_version(object@ranges) == "current" && verbose) {
+            message("[updateObject] Internal representation of ",
+                    class(object), " object is current.\n",
+                    "[updateObject] Nothing to update.")
         }
-        object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
-        return(object)
+
+        callNextMethod()
     }
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Show
+### Display
 ###
+
+### S3/S4 combo for summary.GPos
+summary.GPos <- summary.IPos
+setMethod("summary", "GPos", summary.GPos)
 
 .from_GPos_to_naked_character_matrix_for_display <- function(x)
 {
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(seqnames=as.character(seqnames(x)),
-                 pos=as.character(pos(x)),
-                 strand=as.character(strand(x)))
-    if (x_nmc > 0L) {
-        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
-        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
-    }
-    ans
+    m <- cbind(seqnames=showAsCell(seqnames(x)),
+               pos=showAsCell(pos(x)),
+               strand=showAsCell(strand(x)))
+    cbind_mcols_for_display(m, x)
 }
+setMethod("makeNakedCharacterMatrixForDisplay", "GPos",
+    .from_GPos_to_naked_character_matrix_for_display
+)
 
 show_GPos <- function(x, margin="",
                       print.classinfo=FALSE, print.seqinfo=FALSE)
@@ -386,45 +387,35 @@ show_GPos <- function(x, margin="",
                     "Please update it with:"),
                "\n\n    object <- updateObject(object, verbose=TRUE)",
                "\n\n  and re-serialize it."))
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(classNameForDisplay(x), " object with ",
-        x_len, " ", ifelse(x_len == 1L, "position", "positions"),
-        " and ",
-        x_nmc, " metadata ", ifelse(x_nmc == 1L, "column", "columns"),
-        ":\n", sep="")
-    ## S4Vectors:::makePrettyMatrixForCompactPrinting() assumes that head()
-    ## and tail() work on 'x'.
-    out <- S4Vectors:::makePrettyMatrixForCompactPrinting(x,
-                .from_GPos_to_naked_character_matrix_for_display)
+    cat(margin, summary(x), ":\n", sep="")
+    ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
+    ## work on 'x'.
+    out <- makePrettyMatrixForCompactPrinting(x)
     if (print.classinfo) {
         .COL2CLASS <- c(
             seqnames="Rle",
             pos="integer",
             strand="Rle"
         )
-        classinfo <-
-            S4Vectors:::makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste0(margin, rownames(out))
+        rownames(out) <- paste0(margin, "  ", rownames(out))
     ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.seqinfo) {
-        cat(margin, "-------\n", sep="")
-        cat(margin, "seqinfo: ", summary(seqinfo(x)), "\n", sep="")
+        cat(margin, "  -------\n", sep="")
+        cat(margin, "  seqinfo: ", summary(seqinfo(x)), "\n", sep="")
     }
 }
 
 setMethod("show", "GPos",
     function(object)
-        show_GPos(object, margin="  ",
-                  print.classinfo=TRUE, print.seqinfo=TRUE)
+        show_GPos(object, print.classinfo=TRUE, print.seqinfo=TRUE)
 )
 

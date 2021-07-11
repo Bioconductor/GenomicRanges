@@ -1,28 +1,18 @@
-make_test_GRanges <- function() {
-    new("GRanges",
-        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
-        ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
-        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-        elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
-}
+make_test_GRanges <- function()
+    GRanges(Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
+            IRanges(1:10, end=10, names=head(letters, 10)),
+            Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+            seqinfo=Seqinfo(paste0("chr", 1:3)),
+            score=1:10, GC=seq(1, 0, length=10))
 
 make_test_GRangesList <- function() {
-    GRangesList(
-        a =
-        new("GRanges",
-            seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
-            ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
-            strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-            seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-            elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10))),
-        b =
-        new("GRanges",
-            seqnames = Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
-            ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
-            strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
-            seqinfo = Seqinfo(seqnames = paste("chr", c(2L, 4:5), sep="")),
-            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13))))
+    a <- make_test_GRanges()
+    b <- GRanges(Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
+                 IRanges(1:13, end=13, names=tail(letters, 13)),
+                 Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
+                 seqinfo=Seqinfo(paste0("chr", c(2, 4:5))),
+                 score=1:13, GC=seq(0, 1, length=13))
+    GRangesList(a=a, b=b)
 }
 
 test_shift_GenomicRanges <- function()
@@ -43,27 +33,27 @@ test_shift_GenomicRanges <- function()
 
     ## seqlength and circularity combos
     gr <- GRanges("chr1", IRanges(5, width=6))
-    isCircular(gr) <- TRUE 
+    isCircular(gr) <- TRUE
     checkIdentical(start(shift(gr, -10)), -5L)
 
-    seqlengths(gr) <- 20 
+    seqlengths(gr) <- 20
     isCircular(gr) <- NA
-    warn <- FALSE 
+    warn <- FALSE
     res <- withCallingHandlers({
-        shift(gr, -10) 
+        shift(gr, -10)
     }, warning=function(w) {
-        warn <<- TRUE 
+        warn <<- TRUE
         invokeRestart("muffleWarning")
     })
     checkTrue(warn == TRUE)
     checkIdentical(start(res), -5L)
 
-    isCircular(gr) <- FALSE 
-    warn <- FALSE 
+    isCircular(gr) <- FALSE
+    warn <- FALSE
     res <- withCallingHandlers({
-        shift(gr, -10) 
+        shift(gr, -10)
     }, warning=function(w) {
-        warn <<- TRUE 
+        warn <<- TRUE
         invokeRestart("muffleWarning")
     })
     checkTrue(warn == TRUE)
@@ -214,7 +204,7 @@ test_promoters_GenomicRanges <- function()
     current <- suppressWarnings(promoters(gr, 3, 3))
     checkIdentical(target, current)
 
-    ## treat "*" as "+" 
+    ## treat "*" as "+"
     gr <- GRanges("chr1", IRanges(5, width=6), "+")
     target <- GRanges("chr1", IRanges(2, 7), "+")
     current <- promoters(gr, 3, 3)
@@ -227,10 +217,10 @@ test_promoters_GenomicRanges <- function()
     ## metadata
     gr <- GRanges("chr1", IRanges(0, width=6), names="A", strand="+", score=99)
     current <- promoters(gr, 3, 3)
-    checkIdentical(mcols(gr), mcols(current)) 
+    checkIdentical(mcols(gr), mcols(current))
     checkIdentical(names(gr), names(current))
     checkIdentical(seqinfo(gr), seqinfo(current))
-} 
+}
 
 test_restrict_GenomicRanges <- function()
 {

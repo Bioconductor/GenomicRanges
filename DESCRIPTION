@@ -10,22 +10,25 @@ Description: The ability to efficiently represent and manipulate genomic
 	summarization of an experiment, are defined in the GenomicAlignments
 	and SummarizedExperiment packages, respectively. Both packages build
 	on top of the GenomicRanges infrastructure.
-Version: 1.37.12
+biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
+	Annotation, GenomeAnnotation, Coverage
+URL: https://bioconductor.org/packages/GenomicRanges
+BugReports: https://github.com/Bioconductor/GenomicRanges/issues
+Version: 1.45.0
+License: Artistic-2.0
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
-biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
-	GenomeAnnotation
-Depends: R (>= 2.10), methods, stats4, BiocGenerics (>= 0.25.3),
-	S4Vectors (>= 0.23.13), IRanges (>= 2.19.9), GenomeInfoDb (>= 1.15.2)
-Imports: utils, stats, XVector (>= 0.19.8)
+Depends: R (>= 4.0.0), methods, stats4, BiocGenerics (>= 0.37.0),
+	S4Vectors (>= 0.27.12), IRanges (>= 2.23.9), GenomeInfoDb (>= 1.15.2)
+Imports: utils, stats, XVector (>= 0.29.2)
 LinkingTo: S4Vectors, IRanges
 Suggests: Matrix, Biobase, AnnotationDbi, annotate, Biostrings (>= 2.25.3),
 	SummarizedExperiment (>= 0.1.5), Rsamtools (>= 1.13.53),
 	GenomicAlignments, rtracklayer, BSgenome, GenomicFeatures, Gviz,
 	VariantAnnotation, AnnotationHub, DESeq2, DEXSeq, edgeR, KEGGgraph,
 	RNAseqData.HNRNPC.bam.chr14, pasillaBamSubset,
-	KEGG.db, hgu95av2.db, hgu95av2probe,
+	KEGGREST, hgu95av2.db, hgu95av2probe,
 	BSgenome.Scerevisiae.UCSC.sacCer2,
 	BSgenome.Hsapiens.UCSC.hg19,
 	BSgenome.Mmusculus.UCSC.mm10,
@@ -33,8 +36,7 @@ Suggests: Matrix, Biobase, AnnotationDbi, annotate, Biostrings (>= 2.25.3),
 	TxDb.Dmelanogaster.UCSC.dm3.ensGene,
 	TxDb.Hsapiens.UCSC.hg19.knownGene,
 	TxDb.Mmusculus.UCSC.mm10.knownGene,
-	RUnit, digest, knitr, BiocStyle
-License: Artistic-2.0
+	RUnit, digest, knitr, rmarkdown, BiocStyle
 VignetteBuilder: knitr
 Collate: normarg-utils.R
 	utils.R
@@ -66,3 +68,4 @@ Collate: normarg-utils.R
 	tile-methods.R
 	genomicvars.R
 	zzz.R
+RoxygenNote: 7.1.1

@@ -1,22 +1,15 @@
-make_subject <- function() {
-    new("GRanges",
-        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
-        ranges = IRanges(1:10, width = 10:1),
-        strand = Rle(strand(c("-", "+", "+", "-", "-", "-")), c(1, 2, 1, 1, 3, 2)),
-        seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-        elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
-}
+make_subject <- function()
+    GRanges(Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
+            IRanges(1:10, end=10),
+            Rle(strand(c("-", "+", "+", "-", "-", "-")), c(1, 2, 1, 1, 3, 2)),
+            seqinfo=Seqinfo(paste0("chr", 1:3)),
+            score=1:10, GC=seq(1, 0, length=10))
 
 make_query <- function() {
-    GRangesList(nomatch = GRanges(seqnames = "chr1",
-                                  ranges = IRanges(start=5, end=10),
-                                  strand = "+"),
-                onematch = GRanges(seqnames = "chr3",
-                                   ranges = IRanges(start=2, end=7),
-                                   strand = "-"),
-                twomatch = GRanges(seqnames = "chr1",
-                                   ranges = IRanges(start=1, end=5),
-                                   strand = "-"))
+    GRangesList(
+        nomatch =GRanges("chr1", IRanges(start=5, end=10), "+"),
+        onematch=GRanges("chr3", IRanges(start=2, end=7), "-"),
+        twomatch=GRanges("chr1", IRanges(start=1, end=5), "-"))
 }
 
 .checkHits <- function(q_hits, s_hits, q_len, s_len, current, select)
@@ -55,7 +48,7 @@ test_findOverlaps_no_overlaps_returns_empty_matches <- function()
 
 test_findOverlaps_empty_query <- function()
 {
-    query <- new("CompressedGRangesList")
+    query <- GRangesList()
     subject <- make_subject()
 
     ## select = "all"
@@ -81,7 +74,7 @@ test_findOverlaps_empty_query <- function()
 test_findOverlaps_empty_subject <- function()
 {
     query <- make_query()
-    subject <- new("GRanges")
+    subject <- GRanges()
 
     ## select = "all"
     for (type in c("any", "start", "end")) {
@@ -231,7 +224,7 @@ test_findOverlaps_minoverlap_GRanges_GRangesList <- function()
 }
 
 test_findOverlaps_minoverlap_GRangesList_GRanges <- function()
-{    
+{
      subject <- make_subject()
      query <- make_query()
      current <- findOverlaps(query, subject, minoverlap = 5)
@@ -247,7 +240,7 @@ test_findOverlaps_minoverlap_GRangesList_GRangesList <- function()
      subject <- GRangesList("g1" = make_subject())
      current <- findOverlaps(query, subject, minoverlap = 1)
      .checkHits(c(2, 3), c(1, 1), 3, 1, current, select="all")
-     
+
      query <- make_query()
      subject <- GRangesList("g1" = make_subject())
      current <- findOverlaps(query, subject, minoverlap = 6)
@@ -292,11 +285,11 @@ test_findOverlaps_with_circular_sequences <- function()
     .checkHits(c(1, 1:4, 4), c(4, 1:4, 1), 4, 4, current3, select="all")
 
     ## type = "within"
-    q0 <- GRanges("A", IRanges(c(11, 5, 4, 11, 11, 4), 
+    q0 <- GRanges("A", IRanges(c(11, 5, 4, 11, 11, 4),
                      c(30, 30, 30, 50, 51, 51)))
     s0 <- GRanges("A", IRanges(5, width=46))
     s0@seqinfo <- Seqinfo(seqnames="A", seqlengths=100, isCircular=TRUE)
-    ## sanity check with linear shift 
+    ## sanity check with linear shift
     fo0 <- findOverlaps(q0, s0, type="within")
     expected <- c(1L, 2L, 4L)
     checkIdentical(queryHits(fo0), expected)
@@ -305,21 +298,21 @@ test_findOverlaps_with_circular_sequences <- function()
     s1 <- shift(s0, A)
     fo1 <- findOverlaps(q1, s1, type="within")
     checkIdentical(queryHits(fo1), expected)
-    ## circular shift 
+    ## circular shift
     n1=-1; n2=0
     q2 <- shift(q0, A + 100 * n1)
     s2 <- shift(s0, A + 100 * n2)
     fo1 <- findOverlaps(q1, s1, type="within")
     checkIdentical(queryHits(fo1), expected)
 
-    ## With A of length 8 --> range 3 is within range 2 
+    ## With A of length 8 --> range 3 is within range 2
     gr <- GRanges(seqnames=rep.int("A", 4),
                   ranges=IRanges(start=c(2, 4, 6, 8), width=c(3, 3, 3, 5)))
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=8, isCircular=TRUE)
     current4 <- findOverlaps(gr, gr, type="within")
     .checkHits(c(1, 1:4), c(1, 4, 2, 3, 4), 4, 4, current4, select="all")
 
-    ## With A of length 9 --> range 3 is not within range 2 
+    ## With A of length 9 --> range 3 is not within range 2
     gr@seqinfo <- Seqinfo(seqnames="A", seqlengths=9, isCircular=TRUE)
     current5 <- findOverlaps(gr, gr, type="within")
     .checkHits(1:4, 1:4, 4, 4, current5, select="all")
@@ -414,4 +407,19 @@ test_findOverlaps_with_GRangesFactors <- function() {
     out <- findOverlaps(F0, F1[2])
     ref <- findOverlaps(unfactor(F0), unfactor(F1[2]))
     checkIdentical(out, ref)
+}
+
+test_poverlaps <- function() {
+    ans <- poverlaps(GRanges(), GRanges())
+    checkIdentical(ans, Rle())
+
+    ans <- poverlaps(GRanges("chr1:11-15"), GRanges("chr1:16-20"))
+    checkIdentical(ans, Rle(FALSE))
+
+    ans <- poverlaps(GRanges("chr1:11-16"), GRanges("chr1:16-20"))
+    checkIdentical(ans, Rle(TRUE))
+
+    ans <- poverlaps(GRanges(c("chr1:11-15", "chr1:11-16")),
+                     GRanges("chr1:16-20"))
+    checkIdentical(ans, Rle(c(FALSE, TRUE)))
 }

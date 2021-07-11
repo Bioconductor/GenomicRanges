@@ -651,6 +651,62 @@ findOverlaps(gr, grl, select="first")
 findOverlaps(grl, gr, select="first")
 ```
 
+# Finding the nearest genomic position in *GRanges* objects
+
+The `r Biocpkg("GenomicRanges")` package provides multiple functions to
+facilitate the indentification of neighboring genomic positions.
+For the following examples, we define an arbitrary *GRanges* object for `x` and
+we define the *GRanges* object `subject` as the collection of genes in
+`r Biocpkg("TxDb.Hsapiens.UCSC.hg19.knownGene")` extracted using the `genes`
+method from the `r Biocpkg("GenomicFeatures")` package. 
+
+```{r subjectx_declaration}
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+broads <- GenomicFeatures::genes(txdb)
+x <- GRanges(
+    seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+    ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
+    strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+    score = 1:10, GC = seq(1, 0, length=10))
+subject <- broads[ seqnames(broads) %in% seqlevels(gr) ]
+```
+The `nearest` method performs conventional nearest neighbor finding. It
+finds the nearest neighbor range in `subject` for each range in `x`.
+Overlaps are included. If `subject` is not given as an argument, `x` will also
+be treated as the `subject`.
+
+```{r nearest}
+nearest(x, subject)
+nearest(x)
+```
+
+The `precede` method will return the index of the range in `subject` that is
+preceded by the range in `x`. Overlaps are excluded.
+
+```{r precede}
+precede(x, subject)
+```
+
+The `follow` method will return the index of the range in `subject` that is
+followed by the range in `x`.
+
+```{r follow}
+follow(x, subject)
+```
+
+The `nearestKNeighbors` method performs conventional k-nearest neighbor finding. For 
+each range in `x`, it will find the index of the k-nearest neighbors in 
+`subject`. The argument `k` can be specified to identify more than one nearest 
+neighbor. Overlaps are included. If `subject` is not given as an argument, `x` 
+will also be treated as the `subject`.
+
+```{r nearestKNeighbors}
+nearestKNeighbors(x, subject)
+nearestKNeighbors(x, subject, k=10)
+
+nearestKNeighbors(x)
+nearestKNeighbors(x, k=10)
+```
 
 # Session Information
 

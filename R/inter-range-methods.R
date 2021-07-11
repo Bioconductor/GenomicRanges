@@ -96,7 +96,7 @@ reconstructGRfromRGL <- function(rgl, x)
     ## Prepare 'ans_mcols'.
     ans_mcols <- mcols(ans_ranges, use.names=FALSE)
     if (is.null(ans_mcols)) {
-        ans_mcols <- S4Vectors:::make_zero_col_DataFrame(length(ans_ranges))
+        ans_mcols <- make_zero_col_DFrame(length(ans_ranges))
     } else {
         mcols(ans_ranges) <- NULL
     }
@@ -221,24 +221,6 @@ reconstructGRLfromGR <- function(gr, x, with.revmap=FALSE)
     mcols(ans) <- mcols(x, use.names=FALSE)
     ans
 }
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Not an inter-range method but we put it here for now (should probably
-### go in something like GRangesList-comparison.R together with
-### deconstructGRLintoGR() and reconstructGRLfromGR() above)
-###
-
-### S3/S4 combo for sort.GRangesList
-.sort.GRangesList <- function(x, decreasing=FALSE, ...)
-{
-    gr <- deconstructGRLintoGR(x)
-    gr2 <- sort(gr, decreasing=decreasing, ...)
-    reconstructGRLfromGR(gr2, x)
-}
-sort.GRangesList <- function(x, decreasing=FALSE, ...)
-    .sort.GRangesList(x, decreasing=decreasing, ...)
-setMethod("sort", "CompressedGRangesList", .sort.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

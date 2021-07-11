@@ -22,17 +22,19 @@ setClass("GRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotNames()
+### parallel_slot_names()
 ###
 
-### Combine the new parallel slots with those of the parent class. Make sure
-### to put the new parallel slots *first*.
-setMethod("parallelSlotNames", "GRanges",
+### Combine the new "parallel slots" with those of the parent class. Make
+### sure to put the new parallel slots **first**. See R/Vector-class.R file
+### in the S4Vectors package for what slots should or should not be considered
+### "parallel".
+setMethod("parallel_slot_names", "GRanges",
     #function(x) c("seqnames", "ranges", "strand", callNextMethod())
 
     ## TEMPORARY DEFINITION.
-    ## TODO: Remove this temporary definition and add "parallelSlotNames"
-    ## methods to all packages that define "extraColumnSlotNames" methods
+    ## TODO: Remove this temporary definition and add parallel_slot_names()
+    ## methods to all packages that define extraColumnSlotNames() methods
     ## (e.g. VariantAnnotation, GenomicTuples, InteractionSet, SGSeq).
     function(x) c(extraColumnSlotNames(x), "seqnames", "ranges", "strand",
                   callNextMethod())
@@ -90,15 +92,19 @@ setMethod("updateObject", "GRanges",
                         "[updateObject] Nothing to update.")
         } else {
             if (verbose)
-                message("[updateObject] ", class(object), " object uses ",
-                        "internal representation from\n",
+                message("[updateObject] ", class(object), " object ",
+                        "uses internal representation from\n",
                         "[updateObject] GenomicRanges ", version, ". ",
-                        "Updating it ...")
+                        "Updating it ... ", appendLF=FALSE)
             object@elementType <- new(class(object))@elementType
+            if (verbose)
+                message("OK")
         }
+
         ## ranges slot.
         object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
-        object
+
+        callNextMethod()
     }
 )
 
@@ -395,34 +401,11 @@ setAs("IntegerRangesList", "GRanges",
         }
         gr <- GRanges(seqnames = space(from),
                       ranges = ranges,
-                      strand = Rle("*", length(ranges)))
-        seqinfo(gr) <- seqinfo(from)
+                      strand = Rle("*", length(ranges)),
+                      seqinfo = seqinfo(from))
         metadata(gr) <- metadata(from)
         gr
       })
-
-setAs("RangedData", "GRanges",
-    function(from)
-    {
-        ans_ranges <- unlist(ranges(from), use.names=FALSE)
-        ans_mcols <- unlist(values(from), use.names=FALSE)
-        rownames(ans_mcols) <- NULL
-        whichStrand <- match("strand", colnames(ans_mcols))
-        if (is.na(whichStrand)) {
-            ans_strand <- Rle(strand("*"), length(ans_ranges))
-        } else {
-            ans_strand <- Rle(strand(from))
-            ans_mcols <- ans_mcols[-whichStrand]
-        }
-        ans <- GRanges(seqnames=space(from),
-                       ranges=ans_ranges,
-                       strand=ans_strand,
-                       ans_mcols,
-                       seqinfo=seqinfo(from))
-        metadata(ans) <- metadata(from)
-        ans
-    }
-)
 
 .from_Seqinfo_to_GRanges <- function(from)
 {

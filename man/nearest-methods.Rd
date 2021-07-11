@@ -11,6 +11,9 @@
 \alias{nearest}
 \alias{nearest,GenomicRanges,GenomicRanges-method}
 \alias{nearest,GenomicRanges,missing-method}
+\alias{nearestKNeighbors}
+\alias{nearestKNeighbors,GenomicRanges,GenomicRanges-method}
+\alias{nearestKNeighbors,GenomicRanges,missing-method}
 \alias{distance}
 \alias{distance,GenomicRanges,GenomicRanges-method}
 \alias{distanceToNearest}
@@ -20,9 +23,9 @@
 \title{Finding the nearest genomic range/position neighbor}
 
 \description{
-  The \code{nearest}, \code{precede}, \code{follow}, \code{distance}
-  and \code{distanceToNearest} methods for \code{\linkS4class{GenomicRanges}}
-  objects and subclasses.
+  The \code{nearest}, \code{precede}, \code{follow}, \code{distance},
+  \code{nearestKNeighbors}, and \code{distanceToNearest} methods for
+  \code{\linkS4class{GenomicRanges}} objects and subclasses.
 }
 
 \usage{
@@ -39,6 +42,11 @@
 \S4method{nearest}{GenomicRanges,GenomicRanges}(x, subject, 
     select=c("arbitrary", "all"), ignore.strand=FALSE)
 \S4method{nearest}{GenomicRanges,missing}(x, subject, 
+    select=c("arbitrary", "all"), ignore.strand=FALSE)
+
+\S4method{nearestKNeighbors}{GenomicRanges,GenomicRanges}(x, subject, k=1L,
+    select=c("arbitrary", "all"), ignore.strand=FALSE)
+\S4method{nearestKNeighbors}{GenomicRanges,missing}(x, subject, k=1L,
     select=c("arbitrary", "all"), ignore.strand=FALSE)
 
 \S4method{distanceToNearest}{GenomicRanges,GenomicRanges}(x, subject, 
@@ -60,6 +68,9 @@
   \item{y}{For the \code{distance} method, a \code{GRanges} instance.
     Cannot be missing. If \code{x} and \code{y} are not the same length, 
     the shortest will be recycled to match the length of the longest.
+  }
+  \item{k}{For the \code{nearestKNeighbors} method, an \code{integer} declaring how 
+    many nearest neighbors to find.
   }
   \item{select}{Logic for handling ties. By default, all methods
     select a single interval (arbitrary for \code{nearest},
@@ -97,6 +108,14 @@
       the index of the range in \code{subject} that is directly followed by the
       range in \code{x}. Overlapping ranges are excluded. \code{NA} is returned 
       when there are no qualifying ranges in \code{subject}.
+    }
+    \item{nearestKNeighbors: }{
+      Performs conventional k-nearest neighbor finding.
+      Returns an \link[IRanges]{IntegerList} containing the index of the
+      k-nearest neighbors in \code{subject} for each range in \code{x}. If there
+      is no nearest neighbor \code{NA} is returned. If \code{select="all"} is
+      specified, ties will be included in the resulting 
+      \link[IRanges]{IntegerList}.
     }
     \item{Orientation and strand for \code{precede} and \code{follow}: }{
       Orientation is 5' to 3', consistent with the direction of translation. 
@@ -141,6 +160,9 @@ i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
   For \code{nearest}, \code{precede} and \code{follow}, an integer
   vector of indices in \code{subject}, or a \link[S4Vectors]{Hits} if 
   \code{select="all"}.
+
+  For \code{nearestKNeighbors}, an \link[IRanges]{IntegerList} of vertices in
+  \code{subject}.
 
   For \code{distanceToNearest}, a \link[S4Vectors]{Hits} object with a
   column for the \code{query} index (queryHits), \code{subject} index
@@ -208,6 +230,20 @@ nearest(query, query)
  
 ## Ranges in 'x' will not self-select when 'subject' is missing
 nearest(query)
+
+## -----------------------------------------------------------
+## nearestKNeighbors()
+## -----------------------------------------------------------
+## Without an argument, k defaults to 1
+query <- GRanges("A", IRanges(c(2, 5), c(8, 15)))
+subject <- GRanges("A", IRanges(c(1, 4, 10, 15), c(5, 7, 12, 19)))
+nearestKNeighbors(query, subject)
+
+## Return multiple neighbors with k > 1
+nearestKNeighbors(query, subject, k=3)
+
+## select="all" returns all hits
+nearestKNeighbors(query, subject, select="all")
 
 ## -----------------------------------------------------------
 ## distance(), distanceToNearest()

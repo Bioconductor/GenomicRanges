@@ -152,7 +152,7 @@ findOverlaps_GNCList <- function(query, subject,
     }
 
     ## GO!
-    IRanges:::NCList_find_overlaps_in_groups(
+    IRanges:::find_overlaps_in_groups_NCList(
                           ranges(query), q_space, q_groups,
                           ranges(subject), s_space, s_groups,
                           nclists, nclist_is_q,

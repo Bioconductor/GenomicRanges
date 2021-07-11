@@ -1,32 +1,20 @@
 ###
 
-make_test_GRanges <- function() {
-    new("GRanges",
-        seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3"),
-                              levels = paste("chr", 1:5, sep = "")),
-                       c(1, 3, 2, 4)),
-        ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
-        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-        seqinfo = Seqinfo(seqnames = paste("chr", 1:5, sep="")),
-        elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10)))
-}
+make_test_GRanges <- function(seqlevels=paste0("chr", 1:5))
+    GRanges(Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
+            IRanges(1:10, end=10, names=head(letters, 10)),
+            Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+            seqinfo=Seqinfo(seqlevels),
+            score=1:10, GC=seq(1, 0, length=10))
 
 make_test_GRangesList <- function() {
-    suppressWarnings(GRangesList(
-        a =
-        new("GRanges",
-            seqnames = Rle(factor(c("chr1", "chr2", "chr1", "chr3")), c(1, 3, 2, 4)),
-            ranges = IRanges(1:10, width = 10:1, names = head(letters, 10)),
-            strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
-            seqinfo = Seqinfo(seqnames = paste("chr", 1:3, sep="")),
-            elementMetadata = DataFrame(score = 1:10, GC = seq(1, 0, length=10))),
-        b =
-        new("GRanges",
-            seqnames = Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
-            ranges = IRanges(1:13, width = 13:1, names = tail(letters, 13)),
-            strand = Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
-            seqinfo = Seqinfo(seqnames = paste("chr", c(2L, 4:5), sep="")),
-            elementMetadata = DataFrame(score = 1:13, GC = seq(0, 1, length=13)))))
+    a <- make_test_GRanges(paste0("chr", 1:3))
+    b <- GRanges(Rle(factor(c("chr2", "chr4", "chr5")), c(3, 6, 4)),
+                 IRanges(1:13, end=13, names=tail(letters, 13)),
+                 Rle(strand(c("-", "+", "-")), c(4, 5, 4)),
+                 seqinfo=Seqinfo(paste0("chr", c(2, 4:5))),
+                 score=1:13, GC=seq(0, 1, length=13))
+    GRangesList(a=a, b=b)
 }
 
 test_union <- function()
@@ -66,20 +54,20 @@ test_intersect <- function()
               strand = c("-", "+", "+", "+"))
     gr2 <-
       GRanges(seqnames = c("chr1", "chr2", "chr5", "chr6"),
-              ranges = IRanges(1:4, width = 10), 
-              strand = c("-", "+", "+", "+")) 
+              ranges = IRanges(1:4, width = 10),
+              strand = c("-", "+", "+", "+"))
     expect <-
       GRanges(seqnames =
               factor(c("chr1", "chr2"), levels = paste("chr", 1:6, sep = "")),
-              ranges = IRanges(1:2, width = 10), 
-              strand = c("-", "+")) 
+              ranges = IRanges(1:2, width = 10),
+              strand = c("-", "+"))
     checkIdentical(suppressWarnings(intersect(gr1, gr2)), expect)
 
     ## intersect,GRangesList,GRangesList
 
     gr <- make_test_GRanges()
     grlist <- make_test_GRangesList()
-    expect <- reduce(grlist) 
+    expect <- reduce(grlist)
     mcols(expect) <- NULL
     checkIdentical(intersect(grlist, grlist), expect)
 }
@@ -103,13 +91,13 @@ test_setdiff <- function()
               strand = c("-", "+", "+", "+"))
     gr2 <-
       GRanges(seqnames = c("chr1", "chr2", "chr5", "chr6"),
-              ranges = IRanges(1:4, width = 10), 
-              strand = c("-", "+", "+", "+")) 
+              ranges = IRanges(1:4, width = 10),
+              strand = c("-", "+", "+", "+"))
     expect <-
       GRanges(seqnames =
               factor(c("chr3", "chr4"), levels = paste("chr", 1:6, sep = "")),
-              ranges = IRanges(3:4, width = 10), 
-              strand = c("+", "+")) 
+              ranges = IRanges(3:4, width = 10),
+              strand = c("+", "+"))
     checkIdentical(suppressWarnings(setdiff(gr1, gr2)), expect)
 }
 
@@ -162,7 +150,7 @@ test_pintersect <- function()
     checkIdentical(target, pintersect(y, y))
     checkIdentical(target, pintersect(y, x))
     checkIdentical(target, pintersect(x, y))
-    
+
     current <- pintersect(x, y, strict.strand=TRUE)
     target <- x
     mcols(target)$hit <- as.logical(strand(x) == strand(y))
@@ -219,7 +207,7 @@ test_pintersect <- function()
     target <- target[mcols(target)$hit]
     mcols(target)$hit <- NULL
     checkIdentical(target, current)
- 
+
     ## pintersect,GRangesList,GRanges and pintersect,GRanges,GRangesList
 
     x <- GRangesList(x, rev(x))

@@ -47,6 +47,7 @@ S3method(sort, GenomicRanges)
 S3method(sort, GRangesList)
 
 S3method(summary, GenomicRanges)
+S3method(summary, GPos)
 
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
@@ -59,7 +60,8 @@ export(
     sort.GenomicRanges,
     sort.GRangesList,
 
-    summary.GenomicRanges
+    summary.GenomicRanges,
+    summary.GPos
 )
 
 
@@ -93,7 +95,7 @@ exportMethods(
 
     ## Generics defined in S4Vectors:
     bindROWS,
-    parallelSlotNames,
+    parallel_slot_names,
     elementMetadata, "elementMetadata<-",
     mcols, "mcols<-",
     values, "values<-",
@@ -112,7 +114,7 @@ exportMethods(
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
     punion, pintersect, psetdiff, pgap,
-    precede, follow, nearest, distance, distanceToNearest,
+    precede, follow, nearest, distance, distanceToNearest, nearestKNeighbors,
     tile, slidingWindows,
 
     ## Generics defined in GenomeInfoDb:
@@ -129,7 +131,7 @@ export(
     phicoef,
 
     GRanges, .DollarNames.GenomicRanges, .DollarNames.GRanges,
-    GPos,
+    GPos, from_GPos_to_GRanges,
     GRangesFactor,
     GNCList,
     GenomicRangesList, GRangesList,
