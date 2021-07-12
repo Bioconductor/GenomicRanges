@@ -223,6 +223,73 @@ setMethod("findOverlaps", c("GenomicRanges", "GRangesList"),
     }
 )
 
+setMethod("findOverlaps", c("GenomicRanges", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        ans <- findMatches(seqnames(query), subject)
+        selectHits(ans, select=match.arg(select))
+    }
+)
+
+setMethod("findOverlaps", c("character", "GenomicRanges"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        ans <- findMatches(query, seqnames(subject))
+        selectHits(ans, select=match.arg(select)) 
+    }
+)
+
+setMethod("findOverlaps", c("GenomicRangesList", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        sn <- unique(seqnames(query))
+
+        type <- match.arg(type)
+        if (type == "within") {
+            remap <- which(lengths(sn) == 1L)
+            ans <- findMatches(unlist(sn[remap]), subject)
+        } else {
+            ans <- findMatches(unlist(sn), subject)
+            remap <- rep(seq_along(sn), lengths(sn))
+        } 
+
+        ans2 <- Hits(from = unname(remap[queryHits(ans)]), to = subjectHits(ans), nLnode = length(query), nRnode = length(subject))
+        ans2 <- unique(ans2)
+        selectHits(ans2, select=match.arg(select))
+    }
+)
+
+setMethod("findOverlaps", c("character", "GenomicRangesList"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        sn <- unique(seqnames(subject))
+
+        type <- match.arg(type)
+        if (type == "within") {
+            remap <- which(lengths(sn) == 1L)
+            ans <- findMatches(query, as.character(unlist(sn[remap])))
+        } else {
+            ans <- findMatches(query, as.character(unlist(sn))) # TODO: fix bug in findMatches with seqnames as the second argument.
+            remap <- rep(seq_along(sn), lengths(sn))
+        } 
+
+        ans2 <- Hits(from = queryHits(ans), to = unname(remap[subjectHits(ans)]), nLnode = length(query), nRnode = length(subject))
+        ans2 <- unique(ans2)
+        selectHits(ans2, select=match.arg(select))
+    }
+)
 
 ### =========================================================================
 ### findOverlaps-based methods

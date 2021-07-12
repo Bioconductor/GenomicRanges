@@ -332,3 +332,41 @@ test_poverlaps <- function() {
                      GRanges("chr1:16-20"))
     checkIdentical(ans, Rle(c(FALSE, TRUE)))
 }
+
+test_findOverlaps_character <- function() {
+    gr <- GRanges(c("chr1:11-15", "chr1:5-100", "chr2:10-11"))
+
+    ans <- findOverlaps(gr, "chr1")
+    checkIdentical(queryHits(ans), which(seqnames(gr)=="chr1"))
+
+    ans <- findOverlaps(gr, c("chr2", "chr1"))
+    checkIdentical(as.character(seqnames(gr)[queryHits(ans)]), c("chr2", "chr1")[subjectHits(ans)])
+
+    # Works in the other direction.
+    ans <- findOverlaps("chr2", gr)
+    checkIdentical(subjectHits(ans), which(seqnames(gr)=="chr2"))
+
+    # Works for GRLs.
+    gr <- GRanges(c("chr1:11-15", "chr1:5-100", "chr2:1-10", "chr2:10-11"))
+    grl <- split(gr, c(1,2,2,3))
+    ans <- findOverlaps(grl, "chr2")
+    checkIdentical(queryHits(ans), unname(which(any(seqnames(grl) %in% "chr2"))))
+
+    ans <- findOverlaps(grl, c("chr2", "chr1"))
+    checkIdentical(queryHits(ans)[subjectHits(ans)==1L], unname(which(any(seqnames(grl) %in% "chr2"))))
+    checkIdentical(queryHits(ans)[subjectHits(ans)==2L], unname(which(any(seqnames(grl) %in% "chr1"))))
+
+    ans <- findOverlaps(grl, c("chr2", "chr1"), type="within")
+    checkIdentical(queryHits(ans)[subjectHits(ans)==1L], unname(which(all(seqnames(grl) %in% "chr2"))))
+    checkIdentical(queryHits(ans)[subjectHits(ans)==2L], unname(which(all(seqnames(grl) %in% "chr1"))))
+
+    # Same result in the other direction.
+    ans2 <- findOverlaps(c("chr2", "chr1"), grl)
+    checkIdentical(subjectHits(ans2)[queryHits(ans2)==1L], unname(which(any(seqnames(grl) %in% "chr2"))))
+    checkIdentical(subjectHits(ans2)[queryHits(ans2)==2L], unname(which(any(seqnames(grl) %in% "chr1"))))
+
+    ans2 <- findOverlaps(c("chr2", "chr1"), grl, type="within")
+    checkIdentical(subjectHits(ans2)[queryHits(ans2)==1L], unname(which(all(seqnames(grl) %in% "chr2"))))
+    checkIdentical(subjectHits(ans2)[queryHits(ans2)==2L], unname(which(all(seqnames(grl) %in% "chr1"))))
+}
+
