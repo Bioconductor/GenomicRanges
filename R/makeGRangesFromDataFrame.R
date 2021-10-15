@@ -171,6 +171,8 @@ makeGRangesFromDataFrame <- function(df,
     ans_seqinfo <- normarg_seqinfo1(seqinfo)
     if (!isTRUEorFALSE(starts.in.df.are.0based))
         stop("'starts.in.df.are.0based' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(na.rm))
+        stop(wmsg("'na.rm' must be TRUE or FALSE"))
 
     granges_cols <- .find_GRanges_cols(names(df),
                                        seqnames.field=seqnames.field,
@@ -182,15 +184,23 @@ makeGRangesFromDataFrame <- function(df,
     ## Prepare 'ans_ranges'.
     ans_start <- .get_data_frame_col_as_numeric(df, granges_cols[["start"]])
     ans_end <- .get_data_frame_col_as_numeric(df, granges_cols[["end"]])
-    not_missing <- !(is.na(ans_start) | is.na(ans_end))
+    not_na <- !(is.na(ans_start) | is.na(ans_end))
 
-    if (any(!not_missing) && !na.rm)
-        stop(wmsg("'start.field' and 'end.field' cannot contain NAs; ",
-                  "use 'na.rm=TRUE'"))
-
-    df <- df[not_missing, , drop = FALSE]
-    ans_start <- ans_start[not_missing]
-    ans_end <- ans_end[not_missing]
+    if (any(!not_na)) {
+        if (!na.rm) {
+            start_colname <- names(df)[[granges_cols[["start"]]]]
+            end_colname <- names(df)[[granges_cols[["end"]]]]
+            stop(wmsg(
+                "The '", start_colname, "' and/or '", end_colname, "' ",
+                " columns contain NAs. Use 'na.rm=TRUE' to ignore the rows ",
+                "with NAs."
+            ))
+        }
+        keep_idx <- which(not_na)
+        df <- S4Vectors:::extract_data_frame_rows(df, keep_idx)
+        ans_start <- ans_start[keep_idx]
+        ans_end <- ans_end[keep_idx]
+    }
 
     ## Prepare 'ans_seqnames'.
     ans_seqnames <- df[[granges_cols[["seqnames"]]]]
