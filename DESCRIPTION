@@ -14,7 +14,7 @@ biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
 	Annotation, GenomeAnnotation, Coverage
 URL: https://bioconductor.org/packages/GenomicRanges
 BugReports: https://github.com/Bioconductor/GenomicRanges/issues
-Version: 1.45.0
+Version: 1.46.0
 License: Artistic-2.0
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
