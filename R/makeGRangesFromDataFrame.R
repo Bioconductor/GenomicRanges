@@ -184,19 +184,19 @@ makeGRangesFromDataFrame <- function(df,
     ## Prepare 'ans_ranges'.
     ans_start <- .get_data_frame_col_as_numeric(df, granges_cols[["start"]])
     ans_end <- .get_data_frame_col_as_numeric(df, granges_cols[["end"]])
-    not_na <- !(is.na(ans_start) | is.na(ans_end))
+    is_na <- is.na(ans_start) | is.na(ans_end)
 
-    if (any(!not_na)) {
+    if (any(is_na)) {
         if (!na.rm) {
             start_colname <- names(df)[[granges_cols[["start"]]]]
             end_colname <- names(df)[[granges_cols[["end"]]]]
             stop(wmsg(
-                "The '", start_colname, "' and/or '", end_colname, "' ",
-                " columns contain NAs. Use 'na.rm=TRUE' to ignore the rows ",
+                "The \"", start_colname, "\" and/or \"", end_colname, "\" ",
+                "columns contain NAs. Use 'na.rm=TRUE' to ignore the rows ",
                 "with NAs."
             ))
         }
-        keep_idx <- which(not_na)
+        keep_idx <- which(!is_na)
         df <- S4Vectors:::extract_data_frame_rows(df, keep_idx)
         ans_start <- ans_start[keep_idx]
         ans_end <- ans_end[keep_idx]

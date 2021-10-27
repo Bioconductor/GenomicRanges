@@ -166,10 +166,10 @@ df
 makeGRangesFromDataFrame(df)  # strand value "." is replaced with "*"
 
 ## NA in ranges
-df <- data.frame(chr="chr1", start=c(11:14, NA), end=12:16,
-                 strand=c("+","-","+","*","."), score=1:5)
+df$start[5] <- df$end[2] <- NA
 df
-makeGRangesFromDataFrame(df, na.rm = TRUE)  # na.rm when missing values present
+#makeGRangesFromDataFrame(df)  # error!
+makeGRangesFromDataFrame(df, na.rm=TRUE)  # rows with NAs got dropped
 
 ## The strand column is optional:
 df <- data.frame(chr="chr1", start=11:15, end=12:16, score=1:5)
