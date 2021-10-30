@@ -134,7 +134,7 @@ export(
     GPos, from_GPos_to_GRanges,
     GRangesFactor,
     GNCList,
-    GenomicRangesList, GRangesList,
+    GRangesList,
 
     makeGRangesFromDataFrame,
     makeGRangesListFromDataFrame,

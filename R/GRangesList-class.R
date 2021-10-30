@@ -48,12 +48,6 @@ GRangesList <- function(..., compress=TRUE)
         as(objects, "SimpleGRangesList")
 }
 
-GenomicRangesList <- function(...)
-{
-    .Defunct("GRangesList(..., compress=FALSE)")
-    GRangesList(..., compress=FALSE)
-}
-
 ### Typically, the field values will come from a file that needs to be loaded
 ### into a data.frame first.
 makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
