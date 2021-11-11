@@ -14,7 +14,7 @@ biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
 	Annotation, GenomeAnnotation, Coverage
 URL: https://bioconductor.org/packages/GenomicRanges
 BugReports: https://github.com/Bioconductor/GenomicRanges/issues
-Version: 1.47.3
+Version: 1.47.4
 License: Artistic-2.0
 Encoding: UTF-8
 Author: P. Aboyoun, H. Pagès, and M. Lawrence
@@ -68,4 +68,3 @@ Collate: normarg-utils.R
 	tile-methods.R
 	genomicvars.R
 	zzz.R
-RoxygenNote: 7.1.2
