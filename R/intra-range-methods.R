@@ -10,6 +10,8 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### update_ranges()
 ###
+### For internal use only. Generic defined in the IRanges package.
+###
 
 setMethod("update_ranges", "GenomicRanges",
     function(x, start=NULL, end=NULL, width=NULL, use.names=TRUE)
@@ -80,34 +82,51 @@ setMethod("flank", "GenomicRanges",
 ### promoters()
 ###
 
+### Returns an IRanges **instance**.
+.compute_promoter_ranges <- function(x, strand, upstream, downstream)
+{
+    stopifnot(is(x, "IPosRanges"),
+              length(x) == length(strand),
+              length(x) == length(upstream),
+              length(x) == length(downstream))
+    ans_start <- start(x)
+    ans_end <- end(x)
+    strand_is_minus <- strand == "-"
+    on_plus <- which(!strand_is_minus)
+    on_plus_TSS <- ans_start[on_plus]
+    ans_start[on_plus] <- on_plus_TSS - upstream[on_plus]
+    ans_end[on_plus] <- on_plus_TSS + downstream[on_plus] - 1L
+    on_minus <- which(strand_is_minus)
+    on_minus_TSS <- ans_end[on_minus]
+    ans_end[on_minus] <- on_minus_TSS + upstream[on_minus]
+    ans_start[on_minus] <- on_minus_TSS - downstream[on_minus] + 1L
+    IRanges(ans_start, ans_end, names=names(x))
+}
+
+### Always behaves like an endomorphism, except when 'x' is a GPos derivative.
 setMethod("promoters", "GenomicRanges",
     function(x, upstream=2000, downstream=200, use.names=TRUE)
     {
         x_len <- length(x)
         upstream <- recycleIntegerArg(upstream, "upstream", x_len)
         downstream <- recycleIntegerArg(downstream, "downstream", x_len)
+        use.names <- S4Vectors:::normargUseNames(use.names)
         if (x_len == 0) {
-            if (!S4Vectors:::normargUseNames(use.names))
+            if (!use.names)
                 names(x) <- NULL
             return(x)
         }
         if (min(upstream) < 0L || min(downstream) < 0L)
             stop("'upstream' and 'downstream' must be integers >= 0")
-        x_ranges <- ranges(x)
-        x_start <- start(x_ranges)
-        x_end <- end(x_ranges)
-        strand_is_minus <- strand(x) == "-"
-        on_plus <- which(!strand_is_minus)
-        on_plus_TSS <- x_start[on_plus]
-        x_start[on_plus] <- on_plus_TSS - upstream[on_plus]
-        x_end[on_plus] <- on_plus_TSS + downstream[on_plus] - 1L
-        on_minus <- which(strand_is_minus)
-        on_minus_TSS <- x_end[on_minus]
-        x_end[on_minus] <- on_minus_TSS + upstream[on_minus]
-        x_start[on_minus] <- on_minus_TSS - downstream[on_minus] + 1L
-        new_ranges <- update_ranges(x_ranges, start=x_start,
-                                              end=x_end,
-                                              use.names=use.names)
+        new_ranges <- .compute_promoter_ranges(ranges(x, use.names=use.names),
+                                               strand(x),
+                                               upstream, downstream)
+        ## 'new_ranges' is an IRanges **instance** but a GPos object won't
+        ## accept this in its "ranges" slot. So if 'x' is a GPos object,
+        ## we first turn it into a GRanges **instance** so we can stick
+        ## 'new_ranges' in it.
+        if (is(x, "GPos"))
+            x <- as(x, "GRanges", strict=TRUE)
         update(x, ranges=new_ranges)
     }
 )
