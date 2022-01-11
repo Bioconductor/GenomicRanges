@@ -503,6 +503,9 @@
     \item \link[GenomicRanges]{setops-methods} for set operations on GRanges
           objects.
 
+    \item \link[GenomicRanges]{subtract} for subtracting a set of genomic
+          ranges from a GRanges object (similar to bedtools subtract).
+
     \item \link[GenomicRanges]{nearest-methods} for finding the nearest
           genomic range/position neighbor.
 

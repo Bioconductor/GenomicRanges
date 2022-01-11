@@ -157,13 +157,17 @@ export(
     checkConstraint,
 
     ## genomic-range-squeezers.R:
-    granges, grglist
+    granges, grglist,
+
+    ## subtract-methods.R:
+    subtract
 )
 
 ### Exactly the same list as above.
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    granges, grglist
+    granges, grglist,
+    subtract
 )
 
