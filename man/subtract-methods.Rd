@@ -13,7 +13,7 @@
 \usage{
 subtract(x, y, minoverlap=1L, ...)
 
-\S4method{subtract}{GenomicRanges,GenomicRanges}(x, y, minoverlap=0L, ignore.strand=FALSE)
+\S4method{subtract}{GenomicRanges,GenomicRanges}(x, y, minoverlap=1L, ignore.strand=FALSE)
 }
 
 \arguments{
