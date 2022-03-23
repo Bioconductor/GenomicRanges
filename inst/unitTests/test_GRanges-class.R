@@ -501,6 +501,20 @@ test_GRanges_concatenate <- function()
     checkIdentical(mcols(gr12), rbind(mcols(gr1), mcols(gr2)))
 
     #########################################################################
+    ## Concatenate GRanges objects with differing seqlevels
+    x <- GRanges(seqinfo=Seqinfo(paste0("chr", 1:5), 1001:1005))
+    y <- GRanges("chr4:1-11")
+    current <- c(x, y)
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical("chr4", as.character(seqnames(current)))
+    checkIdentical(seqlevels(x), levels(seqnames(current)))
+    current <- c(y, x)
+    checkTrue(validObject(current, complete=TRUE))
+    checkIdentical("chr4", as.character(seqnames(current)))
+    checkIdentical(paste0("chr", c(4, 1:3, 5)), levels(seqnames(current)))
+
+
+    #########################################################################
     ## Concatenate GRanges objects with differing metadata columns
     colnames(mcols(gr2))[1] <- "score2"
     target <- c(gr1, gr2, ignore.mcols=TRUE)
