@@ -1,3 +1,23 @@
+CHANGES IN VERSION 1.48.0
+-------------------------
+
+NEW FEATURES
+
+    o Add subtract() for subtracting a set of genomic ranges from a GRanges
+      object. This is similar to bedtools subtract.
+
+    o Add 'na.rm' argument to makeGRangesFromDataFrame().
+
+DEPRECATED AND DEFUNCT
+
+    o Remove the GenomicRangesList() constructor. This constructor got
+      deprecated in BioC 3.10 and defunct in BioC 3.13.
+
+BUG FIXES
+
+    o Make sure promoters() works on GPos objects.
+
+
 CHANGES IN VERSION 1.46.0
 -------------------------
 
