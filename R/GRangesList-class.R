@@ -29,6 +29,17 @@ setClassUnion("GenomicRanges_OR_GRangesList", c("GenomicRanges", "GRangesList"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Link GRanges to CompressedGRangesList
+###
+### Used by splitAsList() and family (e.g. relist(), extractList(), etc...)
+### to infer the class of the output when the input is a GRanges object or
+### derivative.
+###
+
+setMethod("relistToClass", "GRanges", function(x) "CompressedGRangesList")
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors
 ###
 
@@ -114,7 +125,7 @@ makeGRangesListFromFeatureFragments <- function(seqnames=Rle(factor()),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessors.
+### Accessors
 ###
 
 setMethod("ranges", "CompressedGRangesList",
@@ -154,9 +165,9 @@ setReplaceMethod("ranges", "CompressedGRangesList",
 ### Coercion from list-like object to SimpleGRangesList
 ###
 
-### Try to turn an arbitrary list-like object into an ordinary list of
+### Try to turn an arbitrary **list-like** object into an ordinary list of
 ### GRanges objects.
-as_list_of_GRanges <- function(from)
+.as_list_of_GRanges <- function(from)
 {
     if (is(from, "GenomicRanges")) {
         if (!is(from, "GRanges"))
@@ -170,23 +181,26 @@ as_list_of_GRanges <- function(from)
     }
 }
 
-### From ordinary list to SimpleGRangesList
+### --- From ordinary list to SimpleGRangesList ---
+### Note that being able to coerce a length-one ordinary list to
+### SimpleGRangesList will automatically make [[<- work on SimpleGRangesList
+### objects.
 
 .from_list_to_SimpleGRangesList <- function(from)
 {
-    from <- as_list_of_GRanges(from)
-    S4Vectors:::new_SimpleList_from_list("SimpleGRangesList", from)
+    x <- .as_list_of_GRanges(from)
+    S4Vectors:::new_SimpleList_from_list("SimpleGRangesList", x)
 }
 
 setAs("list", "SimpleGRangesList", .from_list_to_SimpleGRangesList)
 setAs("list", "GRangesList", .from_list_to_SimpleGRangesList)
 
-### From List derivative to SimpleGRangesList
+### --- From List derivative to SimpleGRangesList ---
 
 .from_List_to_SimpleGRangesList <- function(from)
 {
-    S4Vectors:::new_SimpleList_from_list("SimpleGRangesList",
-                               as_list_of_GRanges(from),
+    x <- .as_list_of_GRanges(from)
+    S4Vectors:::new_SimpleList_from_list("SimpleGRangesList", x,
                                metadata=metadata(from),
                                mcols=mcols(from, use.names=FALSE))
 }
@@ -204,64 +218,45 @@ setAs("GenomicRangesList", "SimpleGRangesList",
 setAs("SimpleGenomicRangesList", "SimpleGRangesList",
       .from_List_to_SimpleGRangesList)
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Intra-range methods
-###
-
-setMethod("trim", "GRangesList",
-          function(x, use.names=TRUE)
-          {
-              ## Like seqinfo,GRangesList, assumes that there is a
-              ## single Seqinfo for the entire object. Only guaranteed
-              ## to be true in the compressed case.
-              relist(trim(unlist(x, use.names=FALSE), use.names=use.names), x)
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion from list-like object to CompressedGRangesList
 ###
 
-### From ordinary list to CompressedGRangesList
+### --- From ordinary list to CompressedGRangesList ---
+### Note that being able to coerce a length-one ordinary list to
+### CompressedGRangesList will automatically make [[<- work on
+### CompressedGRangesList objects.
 
 .from_list_to_CompressedGRangesList <- function(from)
 {
-    from <- as_list_of_GRanges(from)
-    IRanges:::new_CompressedList_from_list("CompressedGRangesList", from)
+    x <- .as_list_of_GRanges(from)
+    IRanges:::new_CompressedList_from_list("CompressedGRangesList", x)
 }
 
 setAs("list", "CompressedGRangesList", .from_list_to_CompressedGRangesList)
 
-### From List derivative to CompressedGRangesList
+### --- From List derivative to CompressedGRangesList ---
 
 .from_List_to_CompressedGRangesList <- function(from)
 {
-    IRanges:::new_CompressedList_from_list("CompressedGRangesList",
-                                 as_list_of_GRanges(from),
+    if (is(from, "GenomicRanges")) {
+        ## Perform a "dumb split".
+        if (!is(from, "GRanges"))
+            from <- as(from, "GRanges", strict=FALSE)
+        ## We call IRanges:::from_Vector_to_CompressedList() to perform
+        ## the "dumb split". This is **very** efficient!
+        return(IRanges:::from_Vector_to_CompressedList(from))
+    }
+
+    x <- .as_list_of_GRanges(from)
+    IRanges:::new_CompressedList_from_list("CompressedGRangesList", x,
                                  metadata=metadata(from),
                                  mcols=mcols(from, use.names=FALSE))
 }
 
-### GenomicRanges objects are List objects so this case is already covered
-### by the .from_List_to_CompressedGRangesList() helper above. However, we
-### can implement it much more efficiently.
-.from_GenomicRanges_to_CompressedGRangesList <- function(from)
-{
-    if (!is(from, "GRanges"))
-        from <- as(from, "GRanges", strict=FALSE)
-    ans_partitioning <- PartitioningByEnd(seq_along(from), names=names(from))
-    names(from) <- NULL
-    ans_mcols <- mcols(from, use.names=FALSE)
-    mcols(from) <- NULL
-    ans <- relist(from, ans_partitioning)
-    mcols(ans) <- ans_mcols
-    ans
-}
-
 setAs("List", "CompressedGRangesList",
       .from_List_to_CompressedGRangesList)
-
-setAs("GenomicRanges", "CompressedGRangesList",
-      .from_GenomicRanges_to_CompressedGRangesList)
 
 setAs("List", "GRangesList",
     function(from)
@@ -290,7 +285,7 @@ setAs("CompressedGRangesList", "IntegerRangesList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Sorting.
+### Sorting
 ###
 ### S3/S4 combo for sort.GRangesList
 .sort.GRangesList <- function(x, decreasing=FALSE, ...)
@@ -305,7 +300,7 @@ setMethod("sort", "CompressedGRangesList", .sort.GRangesList)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting
 ###
 ### TODO: We should have more general methods defined at the GenomicRangesList
 ### level instead of the methods below.
@@ -364,11 +359,4 @@ setMethod("[", "CompressedGRangesList", .sBracketSubsetGRList)
     callNextMethod(x = x, i = i, value = value)
 }
 setReplaceMethod("[", "CompressedGRangesList", .sBracketReplaceGRList)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Going from GRanges to GRangesList with extractList() and family.
-###
-
-setMethod("relistToClass", "GRanges", function(x) "CompressedGRangesList")
 

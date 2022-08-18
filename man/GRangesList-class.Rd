@@ -39,7 +39,6 @@
 
 \alias{coerce,list,CompressedGRangesList-method}
 \alias{coerce,List,CompressedGRangesList-method}
-\alias{coerce,GenomicRanges,CompressedGRangesList-method}
 \alias{coerce,List,GRangesList-method}
 
 \alias{coerce,CompressedGRangesList,CompressedIRangesList-method}
