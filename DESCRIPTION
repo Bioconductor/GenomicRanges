@@ -17,8 +17,11 @@ BugReports: https://github.com/Bioconductor/GenomicRanges/issues
 Version: 1.49.1
 License: Artistic-2.0
 Encoding: UTF-8
-Author: P. Aboyoun, H. Pagès, and M. Lawrence
-Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
+Authors@R: c(
+	person("Patrick", "Aboyoun", role="aut"),
+	person("Hervé", "Pagès", role=c("aut", "cre"),
+		email="hpages.on.github@gmail.com"),
+	person("Michael", "Lawrence", role="aut"))
 Depends: R (>= 4.0.0), methods, stats4, BiocGenerics (>= 0.37.0),
 	S4Vectors (>= 0.27.12), IRanges (>= 2.31.2), GenomeInfoDb (>= 1.15.2)
 Imports: utils, stats, XVector (>= 0.29.2)
