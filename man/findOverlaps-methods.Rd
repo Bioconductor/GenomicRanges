@@ -45,6 +45,24 @@
     select=c("all", "first", "last", "arbitrary"),
     ignore.strand=FALSE)
 
+\S4method{findOverlaps}{GRangesList,GenomicRanges}(query, subject,
+    maxgap=-1L, minoverlap=0L,
+    type=c("any", "start", "end", "within", "equal"),
+    select=c("all", "first", "last", "arbitrary"),
+    ignore.strand=FALSE)
+
+\S4method{findOverlaps}{GenomicRanges,GRangesList}(query, subject,
+    maxgap=-1L, minoverlap=0L,
+    type=c("any", "start", "end", "within", "equal"),
+    select=c("all", "first", "last", "arbitrary"),
+    ignore.strand=FALSE)
+
+\S4method{findOverlaps}{GRangesList,GRangesList}(query, subject,
+    maxgap=-1L, minoverlap=0L,
+    type=c("any", "start", "end", "within", "equal"),
+    select=c("all", "first", "last", "arbitrary"),
+    ignore.strand=FALSE)
+
 \S4method{countOverlaps}{GenomicRanges,GenomicRanges}(query, subject,
     maxgap=-1L, minoverlap=0L,
     type=c("any", "start", "end", "within", "equal"),
@@ -58,6 +76,19 @@
   \item{maxgap, minoverlap, type}{
     See \code{?\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
     for a description of these arguments.
+
+    IMPORTANT NOTE about how \code{minoverlap} is interpreted when
+    \code{query} or \code{subject} is a \link{GRangesList} object:
+    In this case, \emph{the total number of overlapping positions} between
+    a given element in \code{query} and a given element in \code{subject}
+    is taken into account. For example, if \code{query} is a \link{GRanges}
+    object, and \code{subject} a \link{GRangesList} object, then
+    \code{findOverlaps()} will report an overlap between \code{query[i]}
+    (a single range) and \code{subject[[j]]} (multiple ranges) only if
+    the total number of positions in \code{subject[[j]]} that overlap with
+    \code{query[i]} is equal to \code{minoverlap} or greater. In other words,
+    the full overlap across all the ranges in \code{subject[[j]]} is looked
+    at. See the Examples section below for an example illustrating this.
   }
   \item{select}{
     When \code{select} is \code{"all"} (the default), the results are
@@ -100,10 +131,10 @@
 }
 
 \value{
-  For \code{findOverlaps} either a \link[S4Vectors]{Hits} object when
+  For \code{findOverlaps}: either a \link[S4Vectors]{Hits} object when
   \code{select="all"} or an integer vector otherwise. 
 
-  For \code{countOverlaps} an integer vector containing the tabulated
+  For \code{countOverlaps}: an integer vector containing the tabulated
   query overlap hits.
 }
 
@@ -111,8 +142,8 @@
 
 \seealso{
   \itemize{
-    \item The \link{Hits} class for representing a set of hits between 2
-          vector-like objects.
+    \item The \link[S4Vectors]{Hits} class in the \pkg{S4Vectors} package
+          for representing a set of hits between 2 vector-like objects.
 
     \item The \code{\link[IRanges]{findOverlaps}} generic function defined
           in the \pkg{IRanges} package.
@@ -202,6 +233,44 @@ findOverlaps(grl, gr1, select="first")
 countOverlaps(grl, rev(grl))
 findOverlaps(grl, rev(grl))
 subsetByOverlaps(grl, rev(grl))
+
+## ---------------------------------------------------------------------
+## INTERPRETATION OF 'minoverlap' WHEN 'query' OR 'subject' IS A
+## GRangesList OBJECT
+## ---------------------------------------------------------------------
+gr1 <- GRanges("chr5:11-25")
+gr2 <- GRanges("chr5:31-40")
+gr3 <- c(GRanges("chr5:11-20"), gr2)
+grl123 <- GRangesList(gr1, gr2, gr3)
+grl123
+
+query <- GRanges("chr5:18-35")
+
+findOverlaps(query, grl123[[1]], minoverlap=7)  # 1 hit
+findOverlaps(query, grl123[[2]], minoverlap=7)  # no hit
+findOverlaps(query, grl123[[3]], minoverlap=7)  # no hit
+
+## Using GRangesList object 'grl123' as the subject:
+findOverlaps(query, grl123, minoverlap=7)
+
+## As we can see, a hit is reported with the 3rd element in the subject.
+## That's because the total number of positions in this overlap is 8:
+## - positions 18,19,20 in the first range of grl123[[3]], so 3 positions
+## - positions 31 to 35 in its second range, so 5 positions
+
+## Sanity checks:
+hits <- findOverlaps(query, grl123[[1]], minoverlap=7)
+stopifnot(length(hits) == 1)
+hits <- findOverlaps(query, grl123[[2]], minoverlap=7)
+stopifnot(length(hits) == 0)
+hits <- findOverlaps(query, grl123[[3]], minoverlap=7)
+stopifnot(length(hits) == 0)
+hits <- findOverlaps(query, grl123, minoverlap=7)
+stopifnot(identical(subjectHits(hits), c(1L, 3L)))
+hits <- findOverlaps(query, grl123, minoverlap=8)
+stopifnot(identical(subjectHits(hits), c(1L, 3L)))
+hits <- findOverlaps(query, grl123, minoverlap=9)
+stopifnot(identical(subjectHits(hits), 1L))
 }
 
 \keyword{methods}
