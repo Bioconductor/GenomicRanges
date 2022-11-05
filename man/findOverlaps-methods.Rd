@@ -238,39 +238,41 @@ subsetByOverlaps(grl, rev(grl))
 ## INTERPRETATION OF 'minoverlap' WHEN 'query' OR 'subject' IS A
 ## GRangesList OBJECT
 ## ---------------------------------------------------------------------
-gr1 <- GRanges("chr5:11-25")
+gr1 <- GRanges("chr5:1-26")
 gr2 <- GRanges("chr5:31-40")
 gr3 <- c(GRanges("chr5:11-20"), gr2)
 grl123 <- GRangesList(gr1, gr2, gr3)
 grl123
 
-query <- GRanges("chr5:18-35")
+query <- GRanges("chr5:17-35")
 
-findOverlaps(query, grl123[[1]], minoverlap=7)  # 1 hit
-findOverlaps(query, grl123[[2]], minoverlap=7)  # no hit
-findOverlaps(query, grl123[[3]], minoverlap=7)  # no hit
+findOverlaps(query, grl123[[1]], minoverlap=8)  # 1 hit
+findOverlaps(query, grl123[[2]], minoverlap=8)  # no hit
+findOverlaps(query, grl123[[3]], minoverlap=8)  # no hit
 
 ## Using GRangesList object 'grl123' as the subject:
-findOverlaps(query, grl123, minoverlap=7)
+findOverlaps(query, grl123, minoverlap=8)
 
 ## As we can see, a hit is reported with the 3rd element in the subject.
-## That's because the total number of positions in this overlap is 8:
-## - positions 18,19,20 in the first range of grl123[[3]], so 3 positions
+## That's because the total number of positions in this overlap is 9:
+## - positions 17 to 20 in the first range of grl123[[3]], so 4 positions
 ## - positions 31 to 35 in its second range, so 5 positions
 
 ## Sanity checks:
-hits <- findOverlaps(query, grl123[[1]], minoverlap=7)
+hits <- findOverlaps(query, grl123[[1]], minoverlap=8)
 stopifnot(length(hits) == 1)
-hits <- findOverlaps(query, grl123[[2]], minoverlap=7)
+hits <- findOverlaps(query, grl123[[2]], minoverlap=8)
 stopifnot(length(hits) == 0)
-hits <- findOverlaps(query, grl123[[3]], minoverlap=7)
+hits <- findOverlaps(query, grl123[[3]], minoverlap=8)
 stopifnot(length(hits) == 0)
-hits <- findOverlaps(query, grl123, minoverlap=7)
-stopifnot(identical(subjectHits(hits), c(1L, 3L)))
 hits <- findOverlaps(query, grl123, minoverlap=8)
 stopifnot(identical(subjectHits(hits), c(1L, 3L)))
 hits <- findOverlaps(query, grl123, minoverlap=9)
+stopifnot(identical(subjectHits(hits), c(1L, 3L)))
+hits <- findOverlaps(query, grl123, minoverlap=10)
 stopifnot(identical(subjectHits(hits), 1L))
+hits <- findOverlaps(query, grl123, minoverlap=11)
+stopifnot(length(hits) == 0)
 }
 
 \keyword{methods}
