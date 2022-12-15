@@ -771,7 +771,7 @@ maintained data).
 <<cancer_2>>=
 library(KEGGgraph)
 dest <- tempfile()
-retrieveKGML(tag, "hsa", dest, method="wget")
+retrieveKGML(tag, "hsa", dest)
 @
 
 The suffix of the KEGG id is the Entrez gene id. The 
