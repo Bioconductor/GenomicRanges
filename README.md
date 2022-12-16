@@ -1,3 +1,5 @@
+[![R build status](https://github.com/master/workflows/rworkflows/badge.svg)](https://github.com/master/actions)
+
 [<img src="https://www.bioconductor.org/images/logo/jpg/bioconductor_logo_rgb.jpg" width="200" align="right"/>](https://bioconductor.org/)
 
 **GenomicRanges** is an R/Bioconductor package for representing and manipulating genomic intervals.

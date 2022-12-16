@@ -1,3 +1,11 @@
+CHANGES IN VERSION 1.51.5
+-------------------------
+
+NEW FEATURES
+
+    o Add `rworkflows` GitHub Action.
+    o Add `rworkflows` badger to README.
+
 CHANGES IN VERSION 1.50.0
 -------------------------
 
