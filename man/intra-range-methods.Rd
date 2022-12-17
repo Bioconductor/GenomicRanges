@@ -77,11 +77,11 @@
 
 \details{
   \itemize{
-    \item{}{\code{shift} behaves like the \code{shift} method for
+    \item{" "}{\code{shift} behaves like the \code{shift} method for
       \link[IRanges]{IntegerRanges} objects. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
     }
-    \item{}{\code{narrow} on a \link{GenomicRanges} object behaves
+    \item{" "}{\code{narrow} on a \link{GenomicRanges} object behaves
       like on an \link[IRanges]{IntegerRanges} object. See
       \code{?`\link[IRanges]{intra-range-methods}`} for the details.
 
@@ -90,7 +90,7 @@
       The returned object is \emph{parallel} (i.e. same length and names)
       to the original object \code{x}.
     }
-    \item{}{\code{resize} returns an object of the same type and length as
+    \item{" "}{\code{resize} returns an object of the same type and length as
       \code{x} containing intervals that have been resized to width
       \code{width} based on the \code{strand(x)} values.  Elements where
       \code{strand(x) == "+"} or \code{strand(x) == "*"} are anchored at
@@ -98,7 +98,7 @@
       at the \code{end(x)}. The \code{use.names} argument determines whether
       or not to keep the names on the ranges.
     }
-    \item{}{\code{flank} returns an object of the same type and length
+    \item{" "}{\code{flank} returns an object of the same type and length
       as \code{x} containing intervals of width \code{width} that flank
       the intervals in \code{x}. The \code{start} argument takes a
       logical indicating whether \code{x} should be flanked at the
@@ -111,7 +111,7 @@
       \code{both=TRUE}, the resulting range thus straddles the end
       point, with \code{width} positions on either side.
     }
-    \item{}{
+    \item{" "}{
       \code{promoters} returns an object of the same type and length
       as \code{x} containing promoter ranges. Promoter ranges extend
       around the transcription start site (TSS) which is defined as
@@ -131,7 +131,7 @@
       i.e. ranges that start before the first nucleotide position and/or end
       after the last nucleotide position of the underlying sequence.
     }
-    \item{}{\code{restrict} returns an object of the same type and length as
+    \item{" "}{\code{restrict} returns an object of the same type and length as
       \code{x} containing restricted ranges for distinct seqnames. The
       \code{start} and \code{end} arguments can be a named numeric vector of
       seqnames for the ranges to be resticted or a numeric vector or length 1
@@ -140,7 +140,7 @@
       information about range restriction and for a description of the optional
       arguments.
     }
-    \item{}{\code{trim} trims out-of-bound ranges located on non-circular
+    \item{" "}{\code{trim} trims out-of-bound ranges located on non-circular
       sequences whose length is not NA.
     }
   }

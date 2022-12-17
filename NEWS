@@ -5,6 +5,12 @@ NEW FEATURES
 
     o Add `rworkflows` GitHub Action.
     o Add `rworkflows` badger to README.
+    
+BUG FIXES
+
+    o Fix GRanges-class.Rd: \item{} --> \item{" "}
+    o Fix intra-range-methods.Rd: \item{} --> \item{" "}
+
 
 CHANGES IN VERSION 1.50.0
 -------------------------

@@ -72,3 +72,4 @@ Collate: normarg-utils.R
 	tile-methods.R
 	genomicvars.R
 	zzz.R
+RoxygenNote: 7.2.3
