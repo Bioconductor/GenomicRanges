@@ -1,3 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^.github$
+
+node_modules$
+package-lock\.json$
+package\.json$

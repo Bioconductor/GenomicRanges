@@ -859,6 +859,8 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
     o GenomicRangesUseCases vignette has been redone and renamed
       to GenomicRangesHOWTOs.
+    
+    o Update .Rbuildignore  
 
 DEPRECATED AND DEFUNCT
 
