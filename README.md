@@ -1,4 +1,4 @@
-[![R build status](https://github.com/master/workflows/rworkflows/badge.svg)](https://github.com/master/actions)
+[![R build status](https://github.com/Bioconductor/GenomicRanges/workflows/rworkflows/badge.svg)](https://github.com/Bioconductor/GenomicRanges/actions)
 
 [<img src="https://www.bioconductor.org/images/logo/jpg/bioconductor_logo_rgb.jpg" width="200" align="right"/>](https://bioconductor.org/)
 

@@ -12,7 +12,7 @@ Description: The ability to efficiently represent and manipulate genomic
 	on top of the GenomicRanges infrastructure.
 biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
 	Annotation, GenomeAnnotation, Coverage
-URL: https://bioconductor.org/packages/GenomicRanges
+URL: https://github.com/Bioconductor/GenomicRanges, https://bioconductor.org/packages/GenomicRanges
 BugReports: https://github.com/Bioconductor/GenomicRanges/issues
 Version: 1.51.5
 License: Artistic-2.0
