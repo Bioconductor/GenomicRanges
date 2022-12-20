@@ -41,6 +41,7 @@ jobs:
         run_covr: ${{ true }}
         run_pkgdown: ${{ true }}
         has_runit: ${{ false }}
+        has_latex: ${{ true }}
         GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
         run_docker: ${{ false }}
         docker_user: my_username
