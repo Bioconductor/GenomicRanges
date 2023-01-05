@@ -1,6 +1,13 @@
+# R project files
+*.Rproj
 .Rproj.user
+.Ruserdata 
+# History files
 .Rhistory
+.Rapp.history
+# Session Data files
 .RData
+# User-specific files
 .Ruserdata
 src/*.o
 src/*.so
