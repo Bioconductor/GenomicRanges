@@ -112,7 +112,7 @@
 
 \section{Constructor}{
   \describe{
-    \item{" "}{
+    \item{}{
       \code{GRanges(seqnames=NULL, ranges=NULL, strand=NULL,
                     ..., seqinfo=NULL, seqlengths=NULL)}:
       Creates a GRanges object.
@@ -170,43 +170,43 @@
   In the following code snippets, \code{x} is a GRanges object.
 
   \describe{
-    \item{" "}{
+    \item{}{
       \code{length(x)}:
       Get the number of elements.
     }
-    \item{" "}{
+    \item{}{
       \code{seqnames(x)}, \code{seqnames(x) <- value}:
       Get or set the sequence names.
       \code{value} can be an \link[S4Vectors]{Rle} object, a character vector,
       or a factor.
     }
-    \item{" "}{
+    \item{}{
       \code{ranges(x)}, \code{ranges(x) <- value}:
       Get or set the ranges. \code{value} can be an
       \link[IRanges]{IntegerRanges} object.
     }
-    \item{" "}{
+    \item{}{
       \code{start(x)}, \code{start(x) <- value}:
       Get or set \code{start(ranges(x))}.
     }
-    \item{" "}{
+    \item{}{
       \code{end(x)}, \code{end(x) <- value}:
       Get or set \code{end(ranges(x))}.
     }
-    \item{" "}{
+    \item{}{
       \code{width(x)}, \code{width(x) <- value}:
       Get or set \code{width(ranges(x))}.
     }
-    \item{" "}{
+    \item{}{
       \code{strand(x)}, \code{strand(x) <- value}:
       Get or set the strand. \code{value} can be an Rle object, character
       vector, or factor.
     }
-    \item{" "}{
+    \item{}{
       \code{names(x)}, \code{names(x) <- value}:
       Get or set the names of the elements.
     }
-    \item{" "}{
+    \item{}{
       \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
       Get or set the metadata columns.
       If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
@@ -216,17 +216,17 @@
       or a data-frame-like object (i.e. \link{DataFrame} or data.frame)
       holding element-wise metadata.
     }
-    \item{" "}{
+    \item{}{
        \code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
        \code{values(x)}, \code{values(x) <- value}:
        Alternatives to \code{mcols} functions. Their use is discouraged.
     }
-    \item{" "}{
+    \item{}{
       \code{seqinfo(x)}, \code{seqinfo(x) <- value}:
       Get or set the information about the underlying sequences.
       \code{value} must be a \link[GenomeInfoDb]{Seqinfo} object.
     }
-    \item{" "}{
+    \item{}{
       \code{seqlevels(x)},
       \code{seqlevels(x, pruning.mode=c("error", "coarse", "fine", "tidy")) <- value}:
       Get or set the sequence levels.
@@ -236,36 +236,36 @@
       \code{value} must be a character vector with no NAs.
       See \code{?\link{seqlevels}} for more information.
     }
-    \item{" "}{
+    \item{}{
       \code{seqlengths(x)}, \code{seqlengths(x) <- value}:
       Get or set the sequence lengths.
       \code{seqlengths(x)} is equivalent to \code{seqlengths(seqinfo(x))}.
       \code{value} can be a named non-negative integer or numeric vector
       eventually with NAs.
     }
-    \item{" "}{
+    \item{}{
       \code{isCircular(x)}, \code{isCircular(x) <- value}:
       Get or set the circularity flags.
       \code{isCircular(x)} is equivalent to \code{isCircular(seqinfo(x))}.
       \code{value} must be a named logical vector eventually with NAs.
     }
-    \item{" "}{
+    \item{}{
       \code{genome(x)}, \code{genome(x) <- value}:
       Get or set the genome identifier or assembly name for each sequence.
       \code{genome(x)} is equivalent to \code{genome(seqinfo(x))}.
       \code{value} must be a named character vector eventually with NAs.
     }
-    \item{" "}{
+    \item{}{
       \code{seqlevelsStyle(x)}, \code{seqlevelsStyle(x) <- value}:
       Get or set the seqname style for \code{x}.
       See the \link[GenomeInfoDb]{seqlevelsStyle} generic getter and setter
       in the \pkg{GenomeInfoDb} package for more information.
     }
-    \item{" "}{
+    \item{}{
       \code{score(x), score(x) <- value}: Get or set the \dQuote{score}
       column from the element metadata.
     }
-    \item{" "}{
+    \item{}{
       \code{granges(x, use.names=FALSE, use.mcols=FALSE)}: Squeeze the genomic
       ranges out of \link{GenomicRanges} object \code{x} and return them in a
       GRanges object \emph{parallel} to \code{x} (i.e. same length as \code{x}).
@@ -281,7 +281,7 @@
   In the code snippets below, \code{x} is a GRanges object.
 
   \describe{
-    \item{" "}{
+    \item{}{
       \code{as(from, "GRanges")}: Creates a GRanges object from a character
       vector, a factor, or \link[IRanges]{IntegerRangesList} object.
 
@@ -297,7 +297,7 @@
       Coercing a data.frame or DataFrame into a GRanges object is also
       supported. See \code{\link{makeGRangesFromDataFrame}} for the details.
     }
-    \item{" "}{
+    \item{}{
       \code{as(from, "IntegerRangesList")}:
       Creates a \link[IRanges]{IntegerRangesList} object from a GRanges
       object. The \code{strand} and metadata columns become \emph{inner}
@@ -305,7 +305,7 @@
       The \code{seqlengths(from)}, \code{isCircular(from)}, and
       \code{genome(from)} vectors become the metadata columns.
     }
-    \item{" "}{
+    \item{}{
       \code{as.character(x, ignore.strand=FALSE)}:
       Turn GRanges object \code{x} into a character vector where each
       range in \code{x} is represented by a string in format
@@ -320,7 +320,7 @@
 
       See \code{as(from, "GRanges")} above for the reverse transformation.
     }
-    \item{" "}{
+    \item{}{
       \code{as.factor(x)}:
       Equivalent to
 \preformatted{  factor(as.character(x), levels=as.character(sort(unique(x))))
@@ -330,7 +330,7 @@
       Note that \code{table(x)} is supported on a GRanges object. It is
       equivalent to, but much faster than, \code{table(as.factor(x))}.
     }
-    \item{" "}{
+    \item{}{
       \code{as.data.frame(x, row.names = NULL, optional = FALSE, ...)}:
       Creates a data.frame with columns \code{seqnames} (factor),
       \code{start} (integer), \code{end} (integer), \code{width} (integer),
@@ -340,7 +340,7 @@
       override the default conversions for the metadata columns in
       \code{mcols(x)}.
     }
-    \item{" "}{
+    \item{}{
       \code{as(from, "Grouping")}: Creates a
       \code{\link[IRanges]{ManyToOneGrouping}} object that groups
       \code{from} by seqname, strand, start and end (same as the default
@@ -353,7 +353,7 @@
   object.
 
   \describe{
-    \item{" "}{
+    \item{}{
       \code{as(x, "GRanges")}, \code{as(x, "GenomicRanges")},
       \code{as(x, "IntegerRangesList")}: Turns \link[GenomeInfoDb]{Seqinfo}
       object \code{x} (with no \code{NA} lengths) into a GRanges or
@@ -365,20 +365,20 @@
 \section{Subsetting}{
   In the code snippets below, \code{x} is a GRanges object.
   \describe{
-    \item{" "}{
+    \item{}{
       \code{x[i]}:
       Return a new GRanges object made of the elements selected by \code{i}.
     }
-    \item{" "}{
+    \item{}{
       \code{x[i, j]}:
       Like the above, but allow the user to conveniently subset the metadata
       columns thru \code{j}.
     }
-    \item{" "}{
+    \item{}{
       \code{x[i] <- value}:
       Replacement version of \code{x[i]}.
     }
-    \item{" "}{
+    \item{}{
       \code{x$name}, \code{x$name <- value}:
       Shortcuts for \code{mcols(x)$name} and \code{mcols(x)$name <- value},
       respectively. Provided as a convenience, for GRanges objects *only*,
@@ -406,7 +406,7 @@
   seqnames being valid \code{x} names.
 
   \describe{
-    \item{" "}{
+    \item{}{
       \code{x[gr]}:
       Return an object of the same class as \code{x} and \emph{parallel}
       to \code{gr}. More precisely, it's conceptually doing:
@@ -418,7 +418,7 @@
 
 \section{Concatenation}{
   \describe{
-    \item{" "}{
+    \item{}{
       \code{c(x, ..., ignore.mcols=FALSE)}:
       Concatenate GRanges object \code{x} and the GRanges objects in
       \code{...} together.
@@ -430,7 +430,7 @@
 
 \section{Splitting}{
   \describe{
-    \item{" "}{
+    \item{}{
       \code{split(x, f, drop=FALSE)}:
       Splits GRanges object \code{x} according to \code{f} to create a
       \link{GRangesList} object.
@@ -450,7 +450,7 @@
   In the code snippets below, \code{x} is a GRanges object.
 
   \describe{
-    \item{" "}{
+    \item{}{
       \code{show(x)}:
       By default the \code{show} method displays 5 head and 5 tail
       elements. This can be changed by setting the global options

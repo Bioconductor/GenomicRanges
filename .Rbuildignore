@@ -1,5 +1,3 @@
-^.*\.Rproj$
-^\.Rproj\.user$
 ^.github$
 
 node_modules$
