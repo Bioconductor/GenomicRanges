@@ -1,3 +1,13 @@
+CHANGES IN VERSION 1.52.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  o Improve documentation of findOverlaps() argument 'minoverlap':
+    The man page now explains how findOverlaps() argument 'minoverlap'
+    is interpreted when 'query' or 'subject' is a GRangesList object.
+
+
 CHANGES IN VERSION 1.50.0
 -------------------------
 
