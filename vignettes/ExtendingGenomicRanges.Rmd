@@ -52,7 +52,7 @@ on the *GenomicRanges* class, the virtual parent class of *GRanges*.
 and retrieval, which *GRanges* implements directly using slots. For example, the
 ranges are retrieved like this:
 
-```{r granges-ranges}
+```{r granges-ranges, message=FALSE}
 library(GenomicRanges)
 selectMethod(ranges, "GRanges")
 ```
@@ -85,7 +85,7 @@ subclass that correspond to columns (i.e., they have one value per range). It
 extracts the slot values and manipulates them as it would a metadata column --
 except they are now formal slots, with formal types.
 
-An example is the *VRanges* class in `r Biocpkg("VariantAnnotation") . It stores
+An example is the *VRanges* class in `r Biocpkg("VariantAnnotation")`. It stores
 information on the variants by adding these column slots:
 
 ```{r vranges, message=FALSE, warning=FALSE}
