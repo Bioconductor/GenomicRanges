@@ -1,10 +1,20 @@
-CHANGES IN VERSION 1.51.5
+CHANGES IN VERSION 1.53.2
 -------------------------
 
 NEW FEATURES
 
     o Add `rworkflows` GitHub Action.
-    o Add `rworkflows` badger to README.
+    o Add `rworkflows` badge to README.
+
+CHANGES IN VERSION 1.52.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  o Improve documentation of findOverlaps() argument 'minoverlap':
+    The man page now explains how findOverlaps() argument 'minoverlap'
+    is interpreted when 'query' or 'subject' is a GRangesList object.
+>>>>>>> 7042d84877c1378bf6760cb08e497c6e9bc2b566
 
 
 CHANGES IN VERSION 1.50.0
