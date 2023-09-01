@@ -12,6 +12,8 @@ name: rworkflows
     - RELEASE_**
 jobs:
   rworkflows:
+    permissions:
+      contents: write
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     container: ${{ matrix.config.cont }}
@@ -42,7 +44,7 @@ jobs:
         run_pkgdown: ${{ true }}
         has_runit: ${{ false }}
         has_latex: ${{ true }}
-        GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run_docker: ${{ false }}
         docker_user: my_username
         docker_org: my_orgname

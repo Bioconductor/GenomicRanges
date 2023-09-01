@@ -5,6 +5,7 @@ NEW FEATURES
 
     o Add `rworkflows` GitHub Action.
     o Add `rworkflows` badge to README.
+    o Update .Rbuildignore  
 
 CHANGES IN VERSION 1.52.0
 -------------------------
@@ -14,8 +15,6 @@ SIGNIFICANT USER-VISIBLE CHANGES
   o Improve documentation of findOverlaps() argument 'minoverlap':
     The man page now explains how findOverlaps() argument 'minoverlap'
     is interpreted when 'query' or 'subject' is a GRangesList object.
->>>>>>> 7042d84877c1378bf6760cb08e497c6e9bc2b566
-
 
 CHANGES IN VERSION 1.50.0
 -------------------------
@@ -864,8 +863,6 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
     o GenomicRangesUseCases vignette has been redone and renamed
       to GenomicRangesHOWTOs.
-    
-    o Update .Rbuildignore  
 
 DEPRECATED AND DEFUNCT
 
