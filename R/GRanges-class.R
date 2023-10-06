@@ -267,15 +267,38 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
     } else if (is.null(seqnames)) {
         ranges <- IRanges()
     } else {
-        x <- as(seqnames, "GRanges")
-        seqnames <- x@seqnames
-        ranges <- x@ranges
-        if (is.null(strand))
-            strand <- x@strand
-        if (length(mcols) == 0L)
-            mcols <- mcols(x, use.names=FALSE)
-        if (is.null(seqinfo))
-            seqinfo <- seqinfo(x)
+        ## The user supplied the 'seqnames' argument but not the 'ranges'
+        ## argument. This typically happens when they call GRanges() on a
+        ## GenomicRanges derivative (e.g. on a GPos object) or on something
+        ## that is expected to be coercible to GRanges. Note that, in this
+        ## case, the GRanges() constructor still allows the user to supply
+        ## additional arguments to alter the result of the coercion to GRanges,
+        ## e.g. 'GRanges(<GPos>, strand="+")'.
+        ans <- as(seqnames, "GRanges")
+        ok1 <- is.null(strand)
+        ok2 <- length(mcols) == 0L
+        ok3 <- is.null(seqinfo)
+        ok4 <- is.null(seqlengths)
+        if (ok1 && ok2 && ok3 && ok4) {
+            ## The user supplied no additional arguments.
+            return(ans)  # return 'ans' as-is
+        }
+        ## The user supplied additional arguments so 'ans' needs to be
+        ## altered accordingly. Instead of trying to do this by calling
+        ## various setters on the object, we will let new_GRanges() reconstruct
+        ## it below. This way the alteration is atomic instead of incremental,
+        ## so will generate less copies of the object, and therefore it should
+        ## be more efficient.
+        seqnames <- ans@seqnames
+        ranges <- ans@ranges
+        if (ok1)
+            strand <- strand(ans)
+        if (ok2)
+            mcols <- mcols(ans, use.names=FALSE)
+        if (ok3)
+            seqinfo <- seqinfo(ans)
+        if (ok4)
+            seqlengths <- seqlengths(ans)
     }
 
     seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)
