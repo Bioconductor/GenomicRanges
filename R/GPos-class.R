@@ -4,6 +4,19 @@
 ###
 
 
+### FIXME: Oct 6, 2023 -- With hindsight, I'm no longer convinced it was such
+### a good idea to make GPos a subclass of GRanges and to inherit its 'ranges'
+### slot. Maybe it would be cleaner to only contain GenomicPos, and to rename
+### the 'ranges' slot to 'pos'. This would be more consistent with the
+### IPos/IRanges relationship (IPos is not a subclass of IRanges). This
+### would also probably simplify greatly many of the acrobatics required
+### by the various coercion methods defined below in this file for switching
+### between GRanges and GPos/UnstitchedGPos/StitchedGPos. Finally this would
+### also mean that the specification of the 'ranges' slot in the definition
+### of the GRanges class could be set back to "IRanges" instead of
+### "IRanges_OR_IPos", and that the IRanges_OR_IPos class could go away.
+### Note that this would bring back the definition of the GRanges class from
+### the pre-GPos era. See GRanges-class.R.
 setClass("GPos",
     contains=c("GenomicPos", "GRanges"),
     representation(
@@ -261,7 +274,7 @@ from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
         stop("'strict' must be TRUE or FALSE")
     if (!strict)
         return(from)
-    class(from) <- "GRanges"  # temporarily broken instance!
+    class(from) <- class(new("GRanges"))  # temporarily broken instance!
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
