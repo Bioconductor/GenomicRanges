@@ -14,14 +14,22 @@ biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
 	Annotation, GenomeAnnotation, Coverage
 URL: https://bioconductor.org/packages/GenomicRanges
 BugReports: https://github.com/Bioconductor/GenomicRanges/issues
-Version: 1.54.0
+Version: 1.54.1
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
 	person("Patrick", "Aboyoun", role="aut"),
 	person("Hervé", "Pagès", role=c("aut", "cre"),
 		email="hpages.on.github@gmail.com"),
-	person("Michael", "Lawrence", role="aut"))
+	person("Michael", "Lawrence", role="aut"),
+	person("Sonali", "Arora", role="ctb")
+	person("Martin", "Morgan", role="ctb"),
+	person("Kayla", "Morrell", role="ctb"),
+	person("Valerie", "Obenchain", role="ctb"),
+	person("Marcel", "Ramos", role="ctb"),
+	person("Lori", "Shepherd", role="ctb"),
+	person("Dan", "Tenenbaum", role="ctb"),
+	person("Daniel", "van Twisk", role="ctb"))
 Depends: R (>= 4.0.0), methods, stats4, BiocGenerics (>= 0.37.0),
 	S4Vectors (>= 0.27.12), IRanges (>= 2.31.2), GenomeInfoDb (>= 1.15.2)
 Imports: utils, stats, XVector (>= 0.29.2)
