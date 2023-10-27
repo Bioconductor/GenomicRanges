@@ -22,7 +22,7 @@ Authors@R: c(
 	person("Hervé", "Pagès", role=c("aut", "cre"),
 		email="hpages.on.github@gmail.com"),
 	person("Michael", "Lawrence", role="aut"),
-	person("Sonali", "Arora", role="ctb")
+	person("Sonali", "Arora", role="ctb"),
 	person("Martin", "Morgan", role="ctb"),
 	person("Kayla", "Morrell", role="ctb"),
 	person("Valerie", "Obenchain", role="ctb"),
