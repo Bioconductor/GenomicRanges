@@ -1,20 +1,32 @@
-CHANGES IN VERSION 1.53.2
+CHANGES IN VERSION 1.55.0
 -------------------------
-
 NEW FEATURES
 
     o Add `rworkflows` GitHub Action.
     o Add `rworkflows` badge to README.
     o Update .Rbuildignore  
 
+
+CHANGES IN VERSION 1.54.0
+-------------------------
+NEW FEATURES
+
+    o Add 'ignore.strand' arg to gaps() method for GenomicRanges objects.
+
+BUG FIXES
+
+    o Small tweaks to GRanges() constructor and to coercion from GPos
+      to GRanges.
+
+
 CHANGES IN VERSION 1.52.0
 -------------------------
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
-  o Improve documentation of findOverlaps() argument 'minoverlap':
-    The man page now explains how findOverlaps() argument 'minoverlap'
-    is interpreted when 'query' or 'subject' is a GRangesList object.
+    o Improve documentation of findOverlaps() argument 'minoverlap':
+      The man page now explains how findOverlaps() argument 'minoverlap'
+      is interpreted when 'query' or 'subject' is a GRangesList object.
 
 CHANGES IN VERSION 1.50.0
 -------------------------

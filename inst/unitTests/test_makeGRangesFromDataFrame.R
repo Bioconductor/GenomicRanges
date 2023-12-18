@@ -152,3 +152,49 @@ test_find_GRanges_cols <- function()
     checkIdentical(target, current)
 }
 
+test_makeGRangesFromDataFrame <- function() {
+
+    df <- data.frame(chrom=character(), pos=numeric(), strand=factor())
+    checkIdentical(
+        makeGRangesFromDataFrame(
+            df = df,
+            seqnames.field = "chrom",
+            start.field = "pos",
+            end.field = "pos",
+            ignore.strand = TRUE
+        ),
+        GRanges()
+    )
+    checkIdentical(
+        makeGRangesFromDataFrame(
+            df = df,
+            seqnames.field = "chrom",
+            start.field = "pos",
+            end.field = "pos",
+            ignore.strand = FALSE
+        ),
+        GRanges()
+    )
+
+    df <- data.frame(chrom="chr1", pos=1, strand=factor("+"))
+    checkIdentical(
+        makeGRangesFromDataFrame(
+            df = df,
+            seqnames.field = "chrom",
+            start.field = "pos",
+            end.field = "pos",
+            ignore.strand = TRUE
+        ),
+        GRanges(seqnames = "chr1", ranges = IRanges(1), strand = "*")
+    )
+    checkIdentical(
+        makeGRangesFromDataFrame(
+            df = df,
+            seqnames.field = "chrom",
+            start.field = "pos",
+            end.field = "pos",
+            ignore.strand = FALSE
+        ),
+        GRanges(seqnames = "chr1", ranges = IRanges(1), strand = "+")
+    )
+}

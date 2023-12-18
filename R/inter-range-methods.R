@@ -338,7 +338,7 @@ setMethod("reduce", "GRangesList",
 ### Always return a GRanges *instance* whatever GenomicRanges derivative the
 ### input is, so does NOT act like an endomorphism in general. 
 setMethod("gaps", "GenomicRanges",
-    function(x, start=1L, end=seqlengths(x))
+    function(x, start=1L, end=seqlengths(x), ignore.strand=FALSE)
     {
         seqlevels <- seqlevels(x)
         if (!is.null(names(start)))
@@ -349,9 +349,12 @@ setMethod("gaps", "GenomicRanges",
         start <- rep(start, each=3L)
         end <- S4Vectors:::recycleVector(end, length(seqlevels))
         end <- rep(end, each=3L)
-        rgl <- deconstructGRintoRGL(x)
+        rgl <- deconstructGRintoRGL(x, ignore.strand=ignore.strand)
         rgl2 <- callGeneric(rgl, start=start, end=end)
-        reconstructGRfromRGL(rgl2, x)
+        ans <- reconstructGRfromRGL(rgl2, x)
+        if (ignore.strand)
+            ans <- ans[strand(ans) == "*"]
+        ans
     }
 )
 
