@@ -16,6 +16,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 \date{Edited: January 2018; Compiled: \today}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \maketitle
 

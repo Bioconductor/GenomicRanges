@@ -1,17 +1,9 @@
-name: rworkflows
+name: rworkflows.devel
 'on':
   push:
-    branches:
-    - master
-    - main
-    - devel
-    - RELEASE_**
+    branches: devel
   pull_request:
-    branches:
-    - master
-    - main
-    - devel
-    - RELEASE_**
+    branches: devel
 jobs:
   rworkflows:
     permissions:
@@ -24,32 +16,35 @@ jobs:
       matrix:
         config:
         - os: ubuntu-latest
-          r: devel
           bioc: devel
+          r: auto
           cont: bioconductor/bioconductor_docker:devel
-          rspm: https://packagemanager.rstudio.com/cran/__linux__/focal/release
+          rspm: ~
         - os: macOS-latest
-          r: latest
-          bioc: release
+          bioc: devel
+          r: auto
+          cont: ~
+          rspm: ~
         - os: windows-latest
-          r: latest
-          bioc: release
+          bioc: devel
+          r: auto
+          cont: ~
+          rspm: ~
     steps:
     - uses: neurogenomics/rworkflows@master
       with:
         run_bioccheck: ${{ false }}
         run_rcmdcheck: ${{ true }}
-        as_cran: ${{ false }}
+        as_cran: ${{ true }}
         run_vignettes: ${{ true }}
-        has_testthat: ${{ true }}
+        has_testthat: ${{ false }}
         run_covr: ${{ true }}
         run_pkgdown: ${{ true }}
-        has_runit: ${{ false }}
-        has_latex: ${{ true }}
+        has_runit: ${{ true }}
+        has_latex: ${{ false }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run_docker: ${{ false }}
-        docker_user: my_username
-        docker_org: my_orgname
         DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         runner_os: ${{ runner.os }}
-        cache_version: cache-master
+        cache_version: cache-v1
+        enable_act: ${{ false }}
