@@ -4,8 +4,10 @@
 
 \alias{update_ranges,GenomicRanges-method}
 
+\alias{shift}
 \alias{shift,GenomicRanges-method}
 
+\alias{narrow}
 \alias{narrow,GenomicRanges-method}
 
 \alias{resize}
