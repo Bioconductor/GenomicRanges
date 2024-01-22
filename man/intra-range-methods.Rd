@@ -15,7 +15,9 @@
 \alias{flank,GenomicRanges-method}
 
 \alias{promoters}
+\alias{terminators}
 \alias{promoters,GenomicRanges-method}
+\alias{terminators,GenomicRanges-method}
 
 \alias{restrict}
 \alias{restrict,GenomicRanges-method}
@@ -57,6 +59,7 @@
       ignore.strand=FALSE)
 
 \S4method{promoters}{GenomicRanges}(x, upstream=2000, downstream=200, use.names=TRUE)
+\S4method{terminators}{GenomicRanges}(x, upstream=2000, downstream=200, use.names=TRUE)
 
 \S4method{restrict}{GenomicRanges}(x, start=NA, end=NA, keep.all.ranges=FALSE, use.names=TRUE)
 
@@ -111,11 +114,17 @@
       \code{both=TRUE}, the resulting range thus straddles the end
       point, with \code{width} positions on either side.
     }
-    \item{\code{promoters}:}{ returns an object of the same type and length
-      as \code{x} containing promoter ranges. Promoter ranges extend
-      around the transcription start site (TSS) which is defined as
-      \code{start(x)} for ranges on the \code{+} or \code{*} strand
-      and as \code{end(x)} for ranges on the \code{-} strand.
+    \item{\code{promoters}:}{ assumes that the ranges in \code{x} represent
+      transcript regions and returns the ranges of the corresponding promoter
+      regions. The result is another \link{GenomicRanges} derivative
+      \emph{parallel} to the input, that is, of the same length as \code{x}
+      and with the i-th element in the output corresponding to the i-th
+      element in the input.
+
+      The promoter regions extend around the transcription start
+      sites (TSS) which are located at \code{start(x)} for ranges on the
+      \code{+} or \code{*} strand, and at \code{end(x)} for ranges on the
+      \code{-} strand.
       The \code{upstream} and \code{downstream} arguments define the
       number of nucleotides in the 5' and 3' direction, respectively.
       More precisely, the output range is defined as
@@ -126,9 +135,19 @@
       }
       for ranges on the \code{-} strand.
 
-      Note that the returned object might contain \emph{out-of-bound} ranges
-      i.e. ranges that start before the first nucleotide position and/or end
-      after the last nucleotide position of the underlying sequence.
+      Be aware that the returned object might contain \emph{out-of-bound}
+      ranges i.e. ranges that start before the first nucleotide position
+      and/or end after the last nucleotide position of the underlying sequence.
+
+      The returned object will always have the same class as \code{x},
+      except when \code{x} is a \link{GPos} object in which case a
+      \link{GRanges} instance is returned.
+    }
+    \item{\code{terminators}:}{ like \code{promoters} but returns the ranges
+      of the terminator regions. These regions extend around the transcription
+      end sites (TES) which are located at \code{end(x)} for ranges on the
+      \code{+} or \code{*} strand, and at \code{start(x)} for ranges on the
+      \code{-} strand.
     }
     \item{\code{restrict}:}{ returns an object of the same type and length as
       \code{x} containing restricted ranges for distinct seqnames. The
@@ -145,7 +164,7 @@
   }
 }
 
-\author{P. Aboyoun and V. Obenchain}
+\author{P. Aboyoun, V. Obenchain, and H. Pagès}
 
 \seealso{
   \itemize{
@@ -177,8 +196,11 @@ resize(gr, width=10)
 flank(gr, width=10)
 restrict(gr, start=3, end=7)
 
-gr <- GRanges("chr1", IRanges(rep(10, 3), width=6), c("+", "-", "*"))
-promoters(gr, 2, 2)
+gr <- GRanges("chr1", IRanges(rep(10, 3), width=8), c("+", "-", "*"))
+promoters(gr, 2, 5)
+promoters(gr, upstream=0, downstream=1)  # TSS
+terminators(gr, 2, 5)
+terminators(gr, upstream=0, downstream=1)  # TES
 
 ## ---------------------------------------------------------------------
 ## B. ON A GRangesList OBJECT
