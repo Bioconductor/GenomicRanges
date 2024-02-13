@@ -130,80 +130,24 @@ setMethod("update", "GRanges",
 ### Constructor
 ###
 
-### Return a factor-Rle with no NAs.
-.normarg_seqnames1 <- function(seqnames)
-{
-    if (is.null(seqnames))
-        return(Rle(factor()))
-    if (!is(seqnames, "Rle"))
-        seqnames <- Rle(seqnames)
-    run_vals <- runValue(seqnames)
-    if (anyNA(run_vals))
-        stop(wmsg("'seqnames' cannot contain NAs"))
-    if (!is.factor(run_vals)) {
-        if (!is.character(run_vals))
-            run_vals <- as.character(run_vals)
-        runValue(seqnames) <- factor(run_vals, levels=unique(run_vals))
-    }
-    seqnames
-}
-
-### 'seqnames' is assumed to be a factor-Rle with no NAs (which should
-### be the case if it went thru .normarg_seqnames1()).
-### 'seqinfo' is assumned to be a Seqinfo object.
-.normarg_seqnames2 <- function(seqnames, seqinfo)
-{
-    ans_seqlevels <- seqlevels(seqinfo)
-    run_vals <- runValue(seqnames)
-    seqnames_levels <- levels(run_vals)
-    is_used <- tabulate(run_vals, nbins=length(seqnames_levels)) != 0L
-    seqnames_levels_in_use <- seqnames_levels[is_used]
-    if (!all(seqnames_levels_in_use %in% ans_seqlevels))
-        stop(wmsg("'seqnames' contains sequence names ",
-                  "with no entries in 'seqinfo'"))
-    if (!all(seqnames_levels %in% ans_seqlevels))
-        warning(wmsg("levels in 'seqnames' with no entries ",
-                     "in 'seqinfo' were dropped"))
-    runValue(seqnames) <- factor(run_vals, levels=ans_seqlevels)
-    seqnames
-}
-
-### Return a factor-Rle with levels +|-|* and no NAs.
-.normarg_strand <- function(strand, seqnames)
-{
-    if (is.null(strand))
-        return(Rle(strand("*"), length(seqnames)))
-    if (!is(strand, "Rle"))
-        strand <- Rle(strand)
-    run_vals <- runValue(strand)
-    if (anyNA(run_vals)) {
-        warning(wmsg("missing values in 'strand' converted to \"*\""))
-        run_vals[is.na(run_vals)] <- "*"
-    }
-    if (!is.factor(run_vals) || !identical(levels(run_vals), levels(strand())))
-        run_vals <- strand(run_vals)
-    runValue(strand) <- run_vals
-    strand
-}
-
 ### Internal low-level constructor. Used by high-level GRanges/GPos
 ### constructors. Not meant to be used directly by the end user.
 ### NOTE: 'ranges' is trusted! (should have been checked by the caller).
 new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
                                mcols=NULL, seqinfo=NULL)
 {
-    seqnames <- .normarg_seqnames1(seqnames)
+    seqnames <- normarg_seqnames1(seqnames)
 
     if (is.null(seqinfo)) {
         seqinfo <- Seqinfo(levels(seqnames))
     } else {
         seqinfo <- normarg_seqinfo1(seqinfo)
-        seqnames <- .normarg_seqnames2(seqnames, seqinfo)
+        seqnames <- normarg_seqnames2(seqnames, seqinfo)
     }
 
-    strand <- .normarg_strand(strand, seqnames)
-
     seqnames_len <- length(seqnames)
+    strand <- normarg_strand(strand, seqnames_len)
+
     ranges_len <- length(ranges)
     strand_len <- length(strand)
     ans_len <- max(seqnames_len, ranges_len, strand_len)
