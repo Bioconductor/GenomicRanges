@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{2. GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGGREST, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, txdbmaker, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGGREST, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -13,7 +13,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
 \author{Bioconductor Team}
-\date{Edited: January 2018; Compiled: \today}
+\date{Edited: March 2024; Compiled: \today}
 
 \begin{document}
 
@@ -95,8 +95,8 @@ untreated3_chr4()
         given organism. In \Bioconductor{} it is typically represented as
         a \Rclass{TxDb} object but also sometimes as a \Rclass{GRanges}
         or \Rclass{GRangesList} object.
-        The \Biocpkg{GenomicFeatures} package contains tools for making and
-        manipulating \Rclass{TxDb} objects.
+        The \Biocpkg{txdbmaker} and \Biocpkg{GenomicFeatures} packages
+        contain tools for making and manipulating \Rclass{TxDb} objects.
 \end{itemize}
 
 
@@ -347,16 +347,16 @@ sum(chr4_peaks)
 See introduction for a quick description of what \textit{gene models} and
 \Rclass{TxDb} objects are.
 We can use the \Rcode{make\-Transcript\-Db\-From\-UCSC()} function from
-the \Biocpkg{GenomicFeatures} package to import a UCSC genome browser
-track as a \Rclass{TxDb} object.
+the \Biocpkg{txdbmaker} package to import a UCSC genome browser track as
+a \Rclass{TxDb} object.
 
 <<makeTxDbFromUCSC_1, eval=FALSE>>=
-library(GenomicFeatures)
+library(txdbmaker)
 ### Internet connection required! Can take several minutes...
 txdb <- makeTxDbFromUCSC(genome="sacCer2", tablename="ensGene")
 @
 
-See \Rcode{?makeTxDbFromUCSC} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromUCSC} in the \Biocpkg{txdbmaker}
 package for more information.
 
 Note that some of the most frequently used gene models are available
@@ -386,17 +386,17 @@ transcripts(txdb)
 See introduction for a quick description of what \textit{gene models} and
 \Rclass{TxDb} objects are.
 We can use the \Rcode{make\-Transcript\-Db\-From\-Biomart()} function from
-the \Biocpkg{GenomicFeatures} package to retrieve a gene model from the
+the \Biocpkg{txdbmaker} package to retrieve a gene model from the
 Ensembl Mart.
 
 <<makeTxDbFromBiomart_1, eval=FALSE>>=
-library(GenomicFeatures)
+library(txdbmaker)
 ### Internet connection required! Can take several minutes...
 txdb <- makeTxDbFromBiomart(biomart="ensembl",
                             dataset="hsapiens_gene_ensembl")
 @
 
-See \Rcode{?makeTxDbFromBiomart} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromBiomart} in the \Biocpkg{txdbmaker}
 package for more information.
 
 Note that some of the most frequently used gene models are available
@@ -426,19 +426,19 @@ exons(txdb)
 See introduction for a quick description of what \textit{gene models} and
 \Rclass{TxDb} objects are.
 We can use the \Rcode{make\-Transcript\-Db\-From\-GFF()} function from
-the \Biocpkg{GenomicFeatures} package to import a GFF or GTF file as a
+the \Biocpkg{txdbmaker} package to import a GFF or GTF file as a
 \Rclass{TxDb} object.
 
 <<makeTxDbFromGFF_1>>=
-library(GenomicFeatures)
+library(txdbmaker)
 gff_file <- system.file("extdata", "GFF3_files", "a.gff3",
-                        package="GenomicFeatures")
+                        package="txdbmaker")
 txdb <- makeTxDbFromGFF(gff_file, format="gff3")
 txdb
 @
 
-See \Rcode{?makeTxDbFromGFF} in the \Biocpkg{GenomicFeatures}
-package for more information.
+See \Rcode{?makeTxDbFromGFF} in the \Biocpkg{txdbmaker} package for
+more information.
 
 Extract the exon coordinates grouped by gene from this gene model:
 
@@ -797,7 +797,7 @@ txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 
 If an annotation is not available as a \Bioconductor{} annotation package
 it may be available in \Biocpkg{AnnotationHub}. Additionally, there are
-functions in \Biocpkg{GenomicFeatures} which can retrieve data from UCSC and
+functions in \Biocpkg{txdbmaker} which can retrieve data from UCSC and
 Ensembl to create a \Robject{TxDb}. See \Rcode{?makeTxDbFromUCSC} for more
 information.
 
