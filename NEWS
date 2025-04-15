@@ -1,3 +1,9 @@
+CHANGES IN VERSION 1.60.0
+-------------------------
+
+- No changes in this version.
+
+
 CHANGES IN VERSION 1.58.0
 -------------------------
 
@@ -126,7 +132,7 @@ CHANGES IN VERSION 1.38.0
 NEW FEATURES
 
     o GPos objects now exist in 2 flavors: UnstitchedGPos and StitchedGPos
-    
+
       GPos is now a virtual class with 2 concrete subclasses: UnstitchedGPos
       and StitchedGPos. In an UnstitchedGPos instance the positions are stored
       as an integer vector. In a StitchedGPos instance, like with old GPos
@@ -134,7 +140,7 @@ NEW FEATURES
       represents a run of consecutive positions. This is analog to the
       IPos/UnstitchedIPos/StitchedIPos situation. See ?GPos for more
       information.
-    
+
       Old serialized GPos instances can be converted to StitchedGPos
       instances with updateObject().
 
