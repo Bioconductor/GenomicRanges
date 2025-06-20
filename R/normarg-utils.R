@@ -73,7 +73,7 @@ normarg_seqinfo2 <- function(seqinfo, seqlengths)
         return(seqinfo)
     ## Just a loose sanity check on 'seqlengths' before we call names() on
     ## it. The Seqinfo() constructor will take care of the full check and
-    ## normalization by passing it thru GenomeInfoDb:::.normarg_seqlengths().
+    ## normalization by passing it thru Seqinfo:::.normarg_seqlengths().
     if (!is.vector(seqlengths))
         stop(wmsg("'seqlengths' must be NULL or a vector"))
     seqlengths_names <- names(seqlengths)

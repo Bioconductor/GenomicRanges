@@ -346,8 +346,7 @@
   \itemize{
     \item \link{GRanges} objects.
 
-    \item \code{\link[GenomeInfoDb]{seqinfo}} in the \pkg{GenomeInfoDb}
-          package.
+    \item \code{\link[Seqinfo]{seqinfo}} in the \pkg{Seqinfo} package.
 
     \item \link[IRanges]{IntegerRangesList} objects in the \pkg{IRanges}
           package.

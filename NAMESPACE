@@ -8,7 +8,7 @@ importFrom(stats4, summary, update)
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
-import(GenomeInfoDb)
+import(Seqinfo)
 import(XVector)  # only for the "Views" method for integer vectors, the
                  # XIntegerViews class, and the "viewMins", "viewMaxs", and
                  # "viewSums" methods for XIntegerViews objects
@@ -118,7 +118,7 @@ exportMethods(
     precede, follow, nearest, distance, distanceToNearest, nearestKNeighbors,
     tile, slidingWindows,
 
-    ## Generics defined in GenomeInfoDb:
+    ## Generics defined in Seqinfo:
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-"
 )

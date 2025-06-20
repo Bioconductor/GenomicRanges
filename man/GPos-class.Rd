@@ -150,14 +150,14 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
       \item The \code{names()}, \code{mcols()} and \code{metadata()} setters.
       \item The family of setters that operate on the \code{seqinfo}
             component of an object:
-            \code{\link[GenomeInfoDb]{seqlevels}()},
+            \code{\link[Seqinfo]{seqlevels}()},
             \code{\link[GenomeInfoDb]{seqlevelsStyle}()},
-            \code{\link[GenomeInfoDb]{seqlengths}()},
-            \code{\link[GenomeInfoDb]{isCircular}()},
-            \code{\link[GenomeInfoDb]{genome}()},
-            and \code{\link[GenomeInfoDb]{seqinfo}()}.
-            These setters are defined and documented in the \pkg{GenomeInfoDb}
-            package.
+            \code{\link[Seqinfo]{seqlengths}()},
+            \code{\link[Seqinfo]{isCircular}()},
+            \code{\link[Seqinfo]{genome}()},
+            and \code{\link[Seqinfo]{seqinfo}()}.
+            These setters are defined and documented in the \pkg{Seqinfo}
+            and \pkg{GenomeInfoDb} packages.
     }
 
     However, there is no \code{pos()} setter for GPos derivatives at the
@@ -234,9 +234,9 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
     \item The \link{GRanges} class for storing a set of \emph{genomic ranges}
           of arbitrary width.
 
-    \item \link[GenomeInfoDb]{Seqinfo} objects and the
-          \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in the
-          \pkg{GenomeInfoDb} package for accessing/modifying information
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{seqinfo}} accessor and family in the
+          \pkg{Seqinfo} package for accessing/modifying information
           about the underlying sequences of a \link{GenomicRanges} derivative.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic

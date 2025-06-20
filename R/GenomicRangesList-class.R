@@ -436,10 +436,9 @@ set_CompressedGenomicRangesList_seqinfo <-
     if (!is(value, "Seqinfo"))
         stop("the supplied 'seqinfo' must be a Seqinfo object")
     pruning.mode <- match.arg(pruning.mode)
-    dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
-                              new2old=new2old,
-                              pruning.mode=pruning.mode,
-                              seqlevels(value))
+    dangling_seqlevels <- Seqinfo:::getDanglingSeqlevels(x, new2old=new2old,
+                                               pruning.mode=pruning.mode,
+                                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         ## Prune 'x'.
         idx <- !(seqnames(x) %in% dangling_seqlevels)

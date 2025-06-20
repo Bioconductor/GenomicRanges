@@ -36,9 +36,9 @@ isSmallGenome(seqlengths)
   \item{seqlengths}{
     An object holding sequence lengths. This can be a named integer
     (or numeric) vector with no duplicated names as returned by
-    \code{\link[GenomeInfoDb]{seqlengths}()}, or any object from
+    \code{\link[Seqinfo]{seqlengths}()}, or any object from
     which sequence lengths can be extracted with
-    \code{\link[GenomeInfoDb]{seqlengths}()}.
+    \code{\link[Seqinfo]{seqlengths}()}.
 
     For \code{relativeRanges}, \code{seqlengths} must describe a \emph{small}
     genome (see Details section below).
@@ -86,7 +86,7 @@ isSmallGenome(seqlengths)
     \item \link[IRanges]{IntegerRanges} objects in the \pkg{IRanges} package.
 
     \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter in
-          the \pkg{GenomeInfoDb} package.
+          the \pkg{Seqinfo} package.
 
     \item \link{genomicvars} for manipulating genomic variables.
 

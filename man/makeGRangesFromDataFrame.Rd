@@ -52,7 +52,7 @@ makeGRangesFromDataFrame(df,
     is set to \code{"*"}.
   }
   \item{seqinfo}{
-    Either \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object,
+    Either \code{NULL}, or a \link[Seqinfo]{Seqinfo} object,
     or a character vector of unique sequence names (a.k.a. \emph{seqlevels}),
     or a named numeric vector of sequence lengths.
     When not \code{NULL}, \code{seqinfo} must be compatible with the genomic
@@ -114,7 +114,7 @@ makeGRangesFromDataFrame(df,
   If the \code{seqinfo} argument was supplied, the returned object will
   have exactly the seqlevels specified in \code{seqinfo} and in the same
   order. Otherwise, the seqlevels are ordered according to the output of
-  the \code{\link[GenomeInfoDb]{rankSeqlevels}} function (except if
+  the \code{\link[Seqinfo]{rankSeqlevels}} function (except if
   \code{df} contains the seqnames in the form of a factor-Rle, in which
   case the levels of the factor-Rle become the seqlevels of the returned
   object and with no re-ordering).
@@ -139,9 +139,9 @@ makeGRangesFromDataFrame(df,
   \itemize{
     \item \link{GRanges} objects.
 
-    \item \link[GenomeInfoDb]{Seqinfo} objects and the
-          \code{\link[GenomeInfoDb]{rankSeqlevels}} function in the
-          \pkg{GenomeInfoDb} package.
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{rankSeqlevels}} function in the
+          \pkg{Seqinfo} package.
 
     \item The \code{\link{makeGRangesListFromFeatureFragments}} function
           for making a \link{GRangesList} object from a list of fragmented

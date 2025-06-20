@@ -135,7 +135,7 @@
           \code{"width"}, or \code{"element"}.
         }
         \item{\code{seqinfo}}{
-          Either \code{NULL}, or a \link[GenomeInfoDb]{Seqinfo} object,
+          Either \code{NULL}, or a \link[Seqinfo]{Seqinfo} object,
           or a character vector of unique sequence names (a.k.a.
           \emph{seqlevels}), or a named numeric vector of sequence lengths.
           When not \code{NULL}, \code{seqinfo} must be compatible with the
@@ -212,7 +212,7 @@
     }
     \item{\code{seqinfo(x)}, \code{seqinfo(x) <- value}:}{
       Get or set the information about the underlying sequences.
-      \code{value} must be a \link[GenomeInfoDb]{Seqinfo} object.
+      \code{value} must be a \link[Seqinfo]{Seqinfo} object.
     }
     \item{\code{seqlevels(x)},
       \code{seqlevels(x, pruning.mode=c("error", "coarse", "fine", "tidy")) <- value}:}{
@@ -324,12 +324,12 @@
     }
   }
 
-  In the code snippets below, \code{x} is a \link[GenomeInfoDb]{Seqinfo}
+  In the code snippets below, \code{x} is a \link[Seqinfo]{Seqinfo}
   object.
 
   \describe{
     \item{\code{as(x, "GRanges")}, \code{as(x, "GenomicRanges")},
-      \code{as(x, "IntegerRangesList")}:}{ Turns \link[GenomeInfoDb]{Seqinfo}
+      \code{as(x, "IntegerRangesList")}:}{ Turns \link[Seqinfo]{Seqinfo}
       object \code{x} (with no \code{NA} lengths) into a GRanges or
       \link[IRanges]{IntegerRangesList}.
     }
@@ -447,9 +447,9 @@
     \item \code{\link{makeGRangesFromDataFrame}} for making a GRanges object
           from a data.frame or \link[S4Vectors]{DataFrame} object.
 
-    \item \link[GenomeInfoDb]{Seqinfo} objects and the
-          \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in the
-          \pkg{GenomeInfoDb} package for accessing/modifying information
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{seqinfo}} accessor and family in the
+          \pkg{Seqinfo} package for accessing/modifying information
           about the underlying sequences of a \link{GenomicRanges} derivative.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic

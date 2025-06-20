@@ -20,9 +20,8 @@ setAs("RleList", "GRanges",
         from_names <- names(from)
         if (is.null(from_names))
             stop(what, " must have names")
-        msg <- GenomeInfoDb:::.valid.Seqinfo.seqnames(
-                                   from_names,
-                                   what=paste("names of", what))
+        msg <- Seqinfo:::.valid.Seqinfo.seqnames(from_names,
+                                                 what=paste("names of", what))
         if (!is.null(msg))
             stop(wmsg(msg))
         from_runlens <- runLength(from)
