@@ -83,7 +83,7 @@ setValidity2("GRanges", .valid.GRanges)
 setMethod("updateObject", "GRanges",
     function(object, ..., verbose=FALSE)
     {
-        ## elementType slot.
+        ## 'elementType' slot.
         version <- .get_GRanges_version(object)
         if (version == "current") {
             if (verbose)
@@ -101,8 +101,11 @@ setMethod("updateObject", "GRanges",
                 message("OK")
         }
 
-        ## ranges slot.
+        ## 'ranges' slot.
         object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
+
+        ## 'seqinfo' slot.
+        object@seqinfo <- updateObject(object@seqinfo, ..., verbose=verbose)
 
         callNextMethod()
     }
