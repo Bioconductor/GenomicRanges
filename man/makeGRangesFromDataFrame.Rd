@@ -1,36 +1,46 @@
 \name{makeGRangesFromDataFrame}
 
 \alias{makeGRangesFromDataFrame}
-
 \alias{coerce,data.frame,GRanges-method}
 \alias{coerce,DataFrame,GRanges-method}
+
+\alias{makeGPosFromDataFrame}
+\alias{coerce,data.frame,GPos-method}
+\alias{coerce,DataFrame,GPos-method}
 
 \title{Make a GRanges object from a data.frame or DataFrame}
 
 \description{
-  \code{makeGRangesFromDataFrame} takes a data-frame-like object as
-  input and tries to automatically find the columns that describe
-  genomic ranges. It returns them as a \link{GRanges} object.
+  \code{makeGRangesFromDataFrame} and \code{makeGPosFromDataFrame} both
+  take a data-frame-like object as input and try to automatically find the
+  columns that describe genomic ranges (for \code{makeGRangesFromDataFrame})
+  or genomic positions (for \code{makeGPosFromDataFrame}).
+  If successful, they return them in a \link{GRanges} or \link{GPos} object.
 
-  \code{makeGRangesFromDataFrame} is also the workhorse behind the
-  coercion method from data.frame (or \link[S4Vectors]{DataFrame}) to
-  \link{GRanges}.
+  The two functions are also the workhorses behind the coercion methods from
+  data.frame (or \link[S4Vectors]{DataFrame}) to \link{GRanges} or \link{GPos}.
 }
 
 \usage{
-makeGRangesFromDataFrame(df,
-                         keep.extra.columns=FALSE,
-                         ignore.strand=FALSE,
-                         seqinfo=NULL,
-                         seqnames.field=c("seqnames", "seqname",
-                                          "chromosome", "chrom",
-                                          "chr", "chromosome_name",
-                                          "seqid"),
-                         start.field="start",
-                         end.field=c("end", "stop"),
-                         strand.field="strand",
-                         starts.in.df.are.0based=FALSE,
-                         na.rm=FALSE)
+makeGRangesFromDataFrame(df, keep.extra.columns=FALSE,
+        ignore.strand=FALSE, seqinfo=NULL,
+        seqnames.field=c("seqnames", "seqname",
+                         "chromosome", "chrom", "chr", "chromosome_name",
+                         "seqid"),
+        start.field="start",
+        end.field=c("end", "stop"),
+        strand.field="strand",
+        starts.in.df.are.0based=FALSE,
+        na.rm=FALSE)
+
+makeGPosFromDataFrame(df, keep.extra.columns=FALSE,
+        ignore.strand=FALSE, seqinfo=NULL,
+        seqnames.field=c("seqnames", "seqname",
+                         "chromosome", "chrom", "chr", "chromosome_name",
+                         "seqid"),
+        pos.field=c("pos", "position", "positions"),
+        strand.field="strand",
+        na.rm=FALSE)
 }
 
 \arguments{
@@ -41,15 +51,18 @@ makeGRangesFromDataFrame(df,
   }
   \item{keep.extra.columns}{
     \code{TRUE} or \code{FALSE} (the default).
-    If \code{TRUE}, the columns in \code{df} that are not used to form
-    the genomic ranges of the returned \link{GRanges} object are then
-    returned as metadata columns on the object. Otherwise, they are ignored.
-    If \code{df} has a \code{width} column, then it's always ignored.
+    If \code{TRUE}, then the columns in \code{df} that are not used to form
+    the genomic ranges or genomic positions of the returned \link{GRanges}
+    or \link{GPos} object are returned as metadata columns on the object.
+    Otherwise, they are ignored.
+
+    Note that if \code{df} has a \code{width} column, then
+    \code{makeGRangesFromDataFrame} will always ignore it.
   }
   \item{ignore.strand}{
     \code{TRUE} or \code{FALSE} (the default).
-    If \code{TRUE}, then the strand of the returned \link{GRanges} object
-    is set to \code{"*"}.
+    If \code{TRUE}, then the strand of the returned \link{GRanges}
+    or \link{GPos} object is set to \code{"*"}.
   }
   \item{seqinfo}{
     Either \code{NULL}, or a \link[Seqinfo]{Seqinfo} object,
@@ -82,6 +95,13 @@ makeGRangesFromDataFrame(df,
     in \code{colnames(df)} is used.
     If no one is found, then an error is raised.
   }
+  \item{pos.field}{
+    A character vector of recognized names for the column in \code{df}
+    that contains the genomic positions to use to make the \link{GPos} object.
+    Only the first name in \code{pos.field} that is found
+    in \code{colnames(df)} is used.
+    If no one is found, then an error is raised.
+  }
   \item{strand.field}{
     A character vector of recognized names for the column in \code{df}
     that contains the strand associated with each genomic range.
@@ -103,21 +123,28 @@ makeGRangesFromDataFrame(df,
   }
   \item{na.rm}{
     \code{TRUE} or \code{FALSE} (the default).
-    If \code{TRUE}, rows in the \code{df} will be dropped when missing
-    (\code{NA}) start or end range values are present.
+
+    If \code{TRUE}, then rows in the \code{df} with missing start, end,
+    or position values (i.e. the value is \code{NA}) are ignored.
+    Otherwise, they trigger an error.
   }
 }
 
 \value{
-  A \link{GRanges} object with one element per row in the input.
+  A \link{GRanges} or \link{GPos} object.
+
+  If \code{na.rm} is set to \code{FALSE} (the default), then the returned
+  object is guaranteed to have one element per row in the input.
+  However, if \code{na.rm} is set to \code{TRUE}, then the length of the
+  returned object can be less then \code{nrow(df)}.
 
   If the \code{seqinfo} argument was supplied, the returned object will
   have exactly the seqlevels specified in \code{seqinfo} and in the same
   order. Otherwise, the seqlevels are ordered according to the output of
   the \code{\link[Seqinfo]{rankSeqlevels}} function (except if
-  \code{df} contains the seqnames in the form of a factor-Rle, in which
-  case the levels of the factor-Rle become the seqlevels of the returned
-  object and with no re-ordering).
+  \code{df} contains the seqnames in the form of a factor or factor-Rle,
+  in which case the \code{levels()} of the seqnames become the seqlevels
+  of the returned object as-is, that is, without any re-ordering).
 
   If \code{df} has non-automatic row names (i.e. \code{rownames(df)} is
   not \code{NULL} and is not \code{seq_len(nrow(df))}), then they will be
@@ -125,10 +152,14 @@ makeGRangesFromDataFrame(df,
 }
 
 \note{
-  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} into
-  a \link{GRanges} object (with \code{as(df, "GRanges")}), or
-  calling \code{GRanges(df)}, are both equivalent to calling
+  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} to
+  \link{GRanges} (with \code{as(df, "GRanges")}), or calling
+  \code{GRanges(df)}, are both equivalent to calling
   \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}.
+
+  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} to
+  \link{GPos} (with \code{as(df, "GPos")}) is equivalent to calling
+  \code{makeGPosFromDataFrame(df, keep.extra.columns=TRUE)}.
 }
 
 \author{
@@ -137,7 +168,7 @@ makeGRangesFromDataFrame(df,
 
 \seealso{
   \itemize{
-    \item \link{GRanges} objects.
+    \item \link{GRanges} and \link{GPos} objects.
 
     \item \link[Seqinfo]{Seqinfo} objects and the
           \code{\link[Seqinfo]{rankSeqlevels}} function in the
@@ -157,7 +188,7 @@ makeGRangesFromDataFrame(df,
 
 \examples{
 ## ---------------------------------------------------------------------
-## BASIC EXAMPLES
+## BASIC makeGRangesFromDataFrame() EXAMPLES
 ## ---------------------------------------------------------------------
 
 df <- data.frame(chr="chr1", start=11:15, end=12:16,
@@ -188,6 +219,26 @@ makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
 makeGRangesFromDataFrame(df, seqinfo=paste0("chr", 4:1))
 makeGRangesFromDataFrame(df, seqinfo=c(chrM=NA, chr1=500, chrX=100))
 makeGRangesFromDataFrame(df, seqinfo=Seqinfo(paste0("chr", 4:1)))
+
+## ---------------------------------------------------------------------
+## BASIC makeGPosFromDataFrame() EXAMPLES
+## ---------------------------------------------------------------------
+
+df <- data.frame(
+    rsids=    c("rs7927381", "rs79273813", "rs79273815",
+                "rs79273819", "rs79273817", "rs79273811", "rs79273814"),
+    seqnames= c("11", "1", "11", "1", "5", "8", "8"),
+    positions=c("67579271", "179599437", "70746832",
+                "5066529", "107006951", "95077418", "43582071"),
+    alleles=  c("T/C", "A/G", "C/G, C/T", "G/A, G/C", "T/C, T/G",
+                "G/A, G/T", "G/A, G/T"),
+    genes=    c("", "TDRD5", "SHANK2", "", "LOC102467213", "NDUFAF6", ""),
+    row.names=letters[1:7]
+)
+
+makeGPosFromDataFrame(df)
+makeGPosFromDataFrame(df, keep.extra.columns=TRUE)
+as(df, "GPos")  # same as above
 
 ## ---------------------------------------------------------------------
 ## ABOUT AUTOMATIC DETECTION OF THE seqnames/start/end/strand COLUMNS

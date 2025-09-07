@@ -138,6 +138,7 @@ export(
     GRangesList,
 
     makeGRangesFromDataFrame,
+    makeGPosFromDataFrame,
     makeGRangesListFromDataFrame,
     makeGRangesListFromFeatureFragments,
 
