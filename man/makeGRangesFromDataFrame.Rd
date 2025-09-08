@@ -196,7 +196,7 @@ df <- data.frame(chr="chr1", start=11:15, end=12:16,
 df
 makeGRangesFromDataFrame(df)  # strand value "." is replaced with "*"
 
-## NA in ranges
+## With NAs in range-defining columns:
 df$start[5] <- df$end[2] <- NA
 df
 #makeGRangesFromDataFrame(df)  # error!
@@ -232,13 +232,19 @@ df <- data.frame(
                 "5066529", "107006951", "95077418", "43582071"),
     alleles=  c("T/C", "A/G", "C/G, C/T", "G/A, G/C", "T/C, T/G",
                 "G/A, G/T", "G/A, G/T"),
-    genes=    c("", "TDRD5", "SHANK2", "", "LOC102467213", "NDUFAF6", ""),
+    genes=    c(NA, "TDRD5", "SHANK2", NA, "LOC102467213", "NDUFAF6", NA),
     row.names=letters[1:7]
 )
 
 makeGPosFromDataFrame(df)
 makeGPosFromDataFrame(df, keep.extra.columns=TRUE)
 as(df, "GPos")  # same as above
+
+## With missing positions:
+df$positions[2L] <- NA
+df
+#makeGPosFromDataFrame(df)  # error!
+makeGPosFromDataFrame(df, na.rm=TRUE)  # rows with NAs got dropped
 
 ## ---------------------------------------------------------------------
 ## ABOUT AUTOMATIC DETECTION OF THE seqnames/start/end/strand COLUMNS

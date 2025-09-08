@@ -60,21 +60,25 @@
     colidx
 }
 
-.get_data_frame_col_as_numeric <- function(df, col)
+.get_data_frame_col_as_numeric <- function(df, colidx)
 {
-    ans <- df[[col]]
-    if (is(ans, "Rle"))
-        ans <- S4Vectors:::decodeRle(ans)
-    if (!is.numeric(ans)) {
-        if (is.factor(ans))
-            ans <- as.character(ans)
-        ans <- suppressWarnings(as.numeric(ans))
-        if (anyNA(ans))
-            stop(wmsg("some values in the ",
-                      "\"", names(df)[[col]], "\" ",
-                      "column cannot be turned into numeric values"))
-    }
-    ans
+    stopifnot(isSingleInteger(colidx))
+    col <- df[[colidx]]
+    if (is(col, "Rle"))
+        col <- S4Vectors:::decodeRle(col)
+    if (is.numeric(col))
+        return(col)
+    if (!is.atomic(col))
+        stop(wmsg("the \"", names(df)[[colidx]], "\" column is not ",
+                  "an atomic vector or an Rle object"))
+    if (is.factor(col))
+        col <- as.character(col)
+    col2 <- suppressWarnings(as.numeric(col))
+    if (sum(is.na(col2)) > sum(is.na(col)))
+        stop(wmsg("some values in the ",
+                  "\"", names(df)[[colidx]], "\" ",
+                  "column cannot be turned into numeric values"))
+    col2
 }
 
 .get_strand_from_data_frame <- function(df, corecol_map, ignore.strand)
@@ -202,10 +206,10 @@
     }
     start_colname <- names(df)[[corecol_map[["start"]]]]
     end_colname <- names(df)[[corecol_map[["end"]]]]
+    where <- c("\"", start_colname, "\" and/or \"", end_colname, "\" columns")
     stop(wmsg(
-        "The \"", start_colname, "\" and/or \"", end_colname, "\" ",
-        "columns contain NAs. Use 'na.rm=TRUE' to ignore the rows ",
-        "with NAs."
+        "The ", where, " contain NAs. Use 'na.rm=TRUE' to ignore ",
+        "input rows with NAs in the ", where, "."
     ))
 }
 
@@ -354,9 +358,10 @@ setAs("DataFrame", "GRanges",
         return(S4Vectors:::extract_data_frame_rows(df, keep_idx))
     }
     pos_colname <- names(df)[[corecol_map[["pos"]]]]
+    where <- c("\"", pos_colname, "\" column")
     stop(wmsg(
-        "The \"", pos_colname, "\" column contains NAs. ",
-        "Use 'na.rm=TRUE' to ignore the rows with NAs."
+        "The ", where, " contains NAs. Use 'na.rm=TRUE' to ignore ",
+        "input rows with NAs in the ", where, "."
     ))
 }
 
