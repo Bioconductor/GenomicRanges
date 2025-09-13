@@ -177,10 +177,10 @@ setMethod("compatibleStrand", c("factor", "factor"),  # not exported
         y <- as.integer(as.character(y))
 
         ans <- x * y != -1L
-        if (S4Vectors:::anyMissing(ans)) {
+        if (anyNA(ans)) {
             fix <- which(is.na(ans))
             ans[fix] <- (x[fix] == 0L) | (y[fix] == 0L)
-            if (S4Vectors:::anyMissing(ans))
+            if (anyNA(ans))
                 ans[is.na(ans)] <- FALSE
         }
         ans
@@ -204,11 +204,11 @@ setMethod("compatibleStrand", c("Rle", "Rle"),  # not exported
         runValue(y) <- as.integer(as.character(runValue(y)))
 
         ans <- x * y != -1L
-        if (S4Vectors:::anyMissing(runValue(ans))) {
+        if (anyNA(runValue(ans))) {
             fix <- which(is.na(runValue(ans)))
             runValue(ans)[fix] <-
               (runValue(x) == 0L)[fix] | (runValue(y)[fix] == 0L)
-            if (S4Vectors:::anyMissing(runValue(ans)))
+            if (anyNA(runValue(ans)))
                 runValue(ans)[is.na(runValue(ans))] <- FALSE
         }
         ans

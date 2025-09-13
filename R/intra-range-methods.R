@@ -64,7 +64,7 @@ setMethod("flank", "GenomicRanges",
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
-        if (!is.logical(start) || S4Vectors:::anyMissing(start))
+        if (!is.logical(start) || anyNA(start))
             stop("'start' must be logical without NA's")
         start <- S4Vectors:::recycleVector(unname(start), length(x))
         if (!ignore.strand)

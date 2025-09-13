@@ -145,7 +145,7 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
         return("'seqnames(x)' must be a 'factor' Rle")
     if (!is.null(names(x_seqnames)))
         return("'seqnames(x)' must be a 'factor' Rle with no names")
-    if (S4Vectors:::anyMissing(runValue(x_seqnames)))
+    if (anyNA(runValue(x_seqnames)))
         return("'seqnames(x)' contains missing values")
     NULL
 }
@@ -168,7 +168,7 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
                  ")")
         return(paste(msg, collapse=""))
     }
-    if (S4Vectors:::anyMissing(runValue(strand(x))))
+    if (anyNA(runValue(strand(x))))
         return("'strand' contains missing values")
     NULL
 }
