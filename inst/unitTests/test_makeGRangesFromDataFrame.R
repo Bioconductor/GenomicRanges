@@ -2,7 +2,7 @@
 
 test_find_core_GRanges_cols <- function()
 {
-    find_core_GRanges_cols <- GenomicRanges:::.find_core_GRanges_cols
+    find_core_GRanges_cols <- GenomicRanges:::find_core_GRanges_cols
 
     df_colnames <- c("chrom", "start", "end")
     target <- c(seqnames=1L, start=2L, end=3L,

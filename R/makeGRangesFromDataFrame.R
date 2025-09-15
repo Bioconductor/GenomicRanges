@@ -149,7 +149,8 @@
     colidx
 }
 
-### NOT exported but used in the SummarizedExperiment package.
+### NOT exported but used in the unit tests and in the
+### SummarizedExperiment package.
 ### The 5 core GRanges columns are: seqnames, start, end, width, strand.
 ### Returns a named integer vector where the names are the 5 core GRanges
 ### columns and the values are valid column indices. The "width"
