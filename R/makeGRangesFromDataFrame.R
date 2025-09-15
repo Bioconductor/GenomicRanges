@@ -109,7 +109,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### .find_core_GRanges_cols()
+### find_core_GRanges_cols()
 ###
 
 .find_start_end_cols <- function(df_colnames, start.field, end.field,
@@ -149,11 +149,12 @@
     colidx
 }
 
+### NOT exported but used in the SummarizedExperiment package.
 ### The 5 core GRanges columns are: seqnames, start, end, width, strand.
 ### Returns a named integer vector where the names are the 5 core GRanges
 ### columns and the values are valid column indices. The "width"
 ### and/or "strand" column indices can be NAs.
-.find_core_GRanges_cols <-
+find_core_GRanges_cols <-
     function(df_colnames,
              seqnames.field=c("seqnames", "seqname",
                               "chromosome", "chrom",
@@ -243,12 +244,12 @@ makeGRangesFromDataFrame <- function(df,
     if (!isTRUEorFALSE(na.rm))
         stop(wmsg("'na.rm' must be TRUE or FALSE"))
 
-    corecol_map <- .find_core_GRanges_cols(names(df),
-                                           seqnames.field=seqnames.field,
-                                           start.field=start.field,
-                                           end.field=end.field,
-                                           strand.field=strand.field,
-                                           ignore.strand=ignore.strand)
+    corecol_map <- find_core_GRanges_cols(names(df),
+                                          seqnames.field=seqnames.field,
+                                          start.field=start.field,
+                                          end.field=end.field,
+                                          strand.field=strand.field,
+                                          ignore.strand=ignore.strand)
     df <- .drop_rows_with_na_start_end(df, corecol_map, na.rm)
 
     ## Prepare 'ans_ranges'.
