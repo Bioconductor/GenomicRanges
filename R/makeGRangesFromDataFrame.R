@@ -18,7 +18,7 @@
         function(suffix) {
             ok <- .has_suffix(x, suffix) & x != suffix
             x2 <- x[ok]
-	    prefix_nc <- nchar(x2) - nchar(suffix)
+            prefix_nc <- nchar(x2) - nchar(suffix)
             substr(x2, 1L, prefix_nc)
         })
     unique(unlist(all_prefixes, use.names=FALSE))
@@ -68,17 +68,17 @@
         col <- S4Vectors:::decodeRle(col)
     if (is.numeric(col))
         return(col)
-    if (!is.atomic(col))
-        stop(wmsg("the \"", names(df)[[colidx]], "\" column is not ",
-                  "an atomic vector or an Rle object"))
-    if (is.factor(col))
+    if (is.factor(col)) {
         col <- as.character(col)
-    col2 <- suppressWarnings(as.numeric(col))
-    if (sum(is.na(col2)) > sum(is.na(col)))
-        stop(wmsg("some values in the ",
-                  "\"", names(df)[[colidx]], "\" ",
-                  "column cannot be turned into numeric values"))
-    col2
+    } else if (!is.vector(col)) {
+        stop(wmsg("the \"", names(df)[[colidx]], "\" column is not ",
+                  "an atomic vector, list, factor, or Rle object"))
+    }
+    ## as.numeric() will generate a warning if the coercion introduces NAs.
+    old_warn <- getOption("warn")
+    options(warn=2)
+    on.exit(options(warn=old_warn))
+    as.numeric(col)
 }
 
 .get_strand_from_data_frame <- function(df, corecol_map, ignore.strand)
