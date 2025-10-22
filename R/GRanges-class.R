@@ -105,7 +105,11 @@ setMethod("updateObject", "GRanges",
         object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
 
         ## 'seqinfo' slot.
-        object@seqinfo <- updateObject(object@seqinfo, ..., verbose=verbose)
+        ## HACK! Calling updateObject() is not reliable. See IMPORTANT NOTE
+        ## in R/Seqinfo-class.R in Seqinfo package for more information.
+        #object@seqinfo <- updateObject(object@seqinfo, ..., verbose=verbose)
+        object@seqinfo <- Seqinfo:::update_Seqinfo_object(object@seqinfo, ...,
+                                                          verbose=verbose)
 
         callNextMethod()
     }
