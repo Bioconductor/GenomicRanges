@@ -262,8 +262,9 @@
   In the code snippets below, \code{x} is a GRanges object.
 
   \describe{
-    \item{\code{as(from, "GRanges")}:}{ Creates a GRanges object from a character
-      vector, a factor, or \link[IRanges]{IntegerRangesList} object.
+    \item{\code{as(from, "GRanges")}:}{
+      Creates a GRanges object from a character vector, a factor,
+      or \link[IRanges]{IntegerRangesList} object.
 
       When \code{from} is a character vector (or a factor), each element
       in it must represent a genomic range in format \code{chr1:2501-2800}

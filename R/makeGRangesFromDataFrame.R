@@ -3,33 +3,11 @@
 ### -------------------------------------------------------------------------
 
 
-### Vectorized.
-.has_suffix <- function(x, suffix)
-{
-    stopifnot(is.character(x), isSingleString(suffix))
-    x_nc <- nchar(x)
-    substr(x, x_nc - nchar(suffix) + 1L, x_nc) == suffix
-}
-
-.collect_prefixes <- function(x, suffixes)
-{
-    stopifnot(is.character(x), is.character(suffixes))
-    all_prefixes <- lapply(suffixes,
-        function(suffix) {
-            ok <- .has_suffix(x, suffix) & x != suffix
-            x2 <- x[ok]
-            prefix_nc <- nchar(x2) - nchar(suffix)
-            substr(x2, 1L, prefix_nc)
-        })
-    unique(unlist(all_prefixes, use.names=FALSE))
-}
-
-.normarg_field <- function(field, what)
-{
-    if (!is.character(field) || any(is.na(field)))
-        stop("'", what, ".field' must be a character vector with no NAs")
-    tolower(field)
-}
+.normarg_field <- IRanges:::normarg_field
+.get_data_frame_col_as_numeric <- IRanges:::get_data_frame_col_as_numeric
+.find_start_end_cols <- IRanges:::find_start_end_cols
+.find_width_col <- IRanges:::find_width_col
+.drop_rows_with_na_start_end <- IRanges:::drop_rows_with_na_start_end
 
 .find_seqnames_col <- function(df_colnames, seqnames.field, startend_prefix="")
 {
@@ -58,27 +36,6 @@
              "(You can use\n  'ignore.strand=TRUE' to ignore ",
              "strand information.)")
     colidx
-}
-
-.get_data_frame_col_as_numeric <- function(df, colidx)
-{
-    stopifnot(isSingleInteger(colidx))
-    col <- df[[colidx]]
-    if (is(col, "Rle"))
-        col <- S4Vectors:::decodeRle(col)
-    if (is.numeric(col))
-        return(col)
-    if (is.factor(col)) {
-        col <- as.character(col)
-    } else if (!is.vector(col)) {
-        stop(wmsg("the \"", names(df)[[colidx]], "\" column is not ",
-                  "an atomic vector, list, factor, or Rle object"))
-    }
-    ## as.numeric() will generate a warning if the coercion introduces NAs.
-    old_warn <- getOption("warn")
-    options(warn=2)
-    on.exit(options(warn=old_warn))
-    as.numeric(col)
 }
 
 .get_strand_from_data_frame <- function(df, corecol_map, ignore.strand)
@@ -112,43 +69,6 @@
 ### find_core_GRanges_cols()
 ###
 
-.find_start_end_cols <- function(df_colnames, start.field, end.field,
-                                 startend_prefix="")
-{
-    colidx1 <- which(df_colnames %in% paste0(startend_prefix, start.field))
-    colidx2 <- which(df_colnames %in% paste0(startend_prefix, end.field))
-    if (length(colidx1) == 1L && length(colidx2) == 1L)
-        return(list(c(start=colidx1, end=colidx2), startend_prefix))
-    if (length(colidx1) != 0L || length(colidx2) != 0L ||
-        startend_prefix != "")
-    {
-        stop(wmsg("cannnot determine start/end columns"))
-    }
-    prefixes1 <- .collect_prefixes(df_colnames, start.field)
-    prefixes2 <- .collect_prefixes(df_colnames, end.field)
-    if (length(prefixes1) != 1L || length(prefixes2) != 1L ||
-        prefixes1 != prefixes2)
-    {
-        stop(wmsg("cannnot determine start/end columns"))
-    }
-    startend_prefix <- prefixes1
-    .find_start_end_cols(df_colnames, start.field, end.field, startend_prefix)
-}
-
-.find_width_col <- function(df_colnames, width.field, startend_prefix)
-{
-    colidx <- which(df_colnames %in% paste0(startend_prefix, width.field))
-    if (length(colidx) == 0L)
-        colidx <- which(df_colnames %in% width.field)
-    if (length(colidx) == 0L)
-        return(NA_integer_)
-    if (length(colidx) >= 2L) {
-        warning("cannnot determine width column unambiguously")
-        return(colidx[[1L]])
-    }
-    colidx
-}
-
 ### NOT exported but used in the unit tests and in the
 ### SummarizedExperiment package.
 ### The 5 core GRanges columns are: seqnames, start, end, width, strand.
@@ -175,8 +95,7 @@ find_core_GRanges_cols <-
     strand.field0 <- .normarg_field(strand.field, "strand")
 
     start_end_cols <- .find_start_end_cols(df_colnames0,
-                                           start.field0,
-                                           end.field0)
+                                           start.field0, end.field0)
     startend_prefix <- start_end_cols[[2L]]
     ## Name of "width" field is not under user control for now (until we
     ## need that).
@@ -195,27 +114,7 @@ find_core_GRanges_cols <-
 ### makeGRangesFromDataFrame()
 ###
 
-.drop_rows_with_na_start_end <- function(df, corecol_map, na.rm)
-{
-    start_col <- .get_data_frame_col_as_numeric(df, corecol_map[["start"]])
-    end_col <- .get_data_frame_col_as_numeric(df, corecol_map[["end"]])
-    is_na <- is.na(start_col) | is.na(end_col)
-    if (!any(is_na))
-        return(df)
-    if (na.rm) {
-        keep_idx <- which(!is_na)
-        return(S4Vectors:::extract_data_frame_rows(df, keep_idx))
-    }
-    start_colname <- names(df)[[corecol_map[["start"]]]]
-    end_colname <- names(df)[[corecol_map[["end"]]]]
-    where <- c("\"", start_colname, "\" and/or \"", end_colname, "\" columns")
-    stop(wmsg(
-        "The ", where, " contain NAs. Use 'na.rm=TRUE' to ignore ",
-        "input rows with NAs in the ", where, "."
-    ))
-}
-
-### 'df' must be a data.frame or DataFrame object.
+### 'df' must be a data.frame (or tibble) or DataFrame object.
 makeGRangesFromDataFrame <- function(df,
                                      keep.extra.columns=FALSE,
                                      ignore.strand=FALSE,
@@ -357,7 +256,11 @@ setAs("DataFrame", "GRanges",
         return(df)
     if (na.rm) {
         keep_idx <- which(!is_na)
-        return(S4Vectors:::extract_data_frame_rows(df, keep_idx))
+        ans <- S4Vectors:::extract_data_frame_rows(df, keep_idx)
+        df_rownames <- rownames(df)
+        if (!identical(df_rownames, as.character(seq_len(nrow(df)))))
+            rownames(ans) <- df_rownames[keep_idx]
+        return(ans)
     }
     pos_colname <- names(df)[[corecol_map[["pos"]]]]
     where <- c("\"", pos_colname, "\" column")

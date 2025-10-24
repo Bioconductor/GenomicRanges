@@ -133,10 +133,10 @@ makeGPosFromDataFrame(df, keep.extra.columns=FALSE,
 \value{
   A \link{GRanges} or \link{GPos} object.
 
-  If \code{na.rm} is set to \code{FALSE} (the default), then the returned
-  object is guaranteed to have one element per row in the input.
+  If \code{na.rm} is set to \code{FALSE} (the default), then the
+  returned object is guaranteed to have one element per row in the input.
   However, if \code{na.rm} is set to \code{TRUE}, then the length of the
-  returned object can be less then \code{nrow(df)}.
+  returned object can be less than \code{nrow(df)}.
 
   If the \code{seqinfo} argument was supplied, the returned object will
   have exactly the seqlevels specified in \code{seqinfo} and in the same
@@ -148,17 +148,17 @@ makeGPosFromDataFrame(df, keep.extra.columns=FALSE,
 
   If \code{df} has non-automatic row names (i.e. \code{rownames(df)} is
   not \code{NULL} and is not \code{seq_len(nrow(df))}), then they will be
-  used to set names on the returned \link{GRanges} object.
+  used to set names on the returned \link{GRanges} or \link{GPos} object.
 }
 
 \note{
-  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} to
-  \link{GRanges} (with \code{as(df, "GRanges")}), or calling
+  Coercing a data.frame or \link[S4Vectors]{DataFrame} \code{df}
+  to \link{GRanges} (with \code{as(df, "GRanges")}), or calling
   \code{GRanges(df)}, are both equivalent to calling
   \code{makeGRangesFromDataFrame(df, keep.extra.columns=TRUE)}.
 
-  Coercing data.frame or \link[S4Vectors]{DataFrame} \code{df} to
-  \link{GPos} (with \code{as(df, "GPos")}) is equivalent to calling
+  Coercing a data.frame or \link[S4Vectors]{DataFrame} \code{df}
+  to \link{GPos} (with \code{as(df, "GPos")}) is equivalent to calling
   \code{makeGPosFromDataFrame(df, keep.extra.columns=TRUE)}.
 }
 
@@ -177,6 +177,10 @@ makeGPosFromDataFrame(df, keep.extra.columns=FALSE,
     \item The \code{\link{makeGRangesListFromFeatureFragments}} function
           for making a \link{GRangesList} object from a list of fragmented
           features.
+
+    \item \code{\link[IRanges]{makeIRangesFromDataFrame}} in the
+          \pkg{IRanges} package to make an \link[IRanges]{IRanges}
+          object from a data.frame or \link[S4Vectors]{DataFrame}.
 
     \item The \code{\link[rtracklayer]{getTable}} function in the
           \pkg{rtracklayer} package for an R interface to the UCSC
