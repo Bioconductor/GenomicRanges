@@ -1,3 +1,17 @@
+CHANGES IN VERSION 1.62.0
+-------------------------
+
+NEW FEATURES
+
+    o Add makeGPosFromDataFrame().
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The package depends on Seqinfo instead of GenomeInfoDb.
+
+    o The package no longer depends on XVector.
+
+
 CHANGES IN VERSION 1.60.0
 -------------------------
 
