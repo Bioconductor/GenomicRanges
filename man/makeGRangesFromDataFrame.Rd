@@ -274,7 +274,7 @@ makeGRangesFromDataFrame(df)
 if (require(UCSC.utils)) {
   ## Use list_UCSC_tracks() to lookup the primary table associated with
   ## a given track:
-  subset(list_UCSC_tracks("sacCer2"), track=="Assembly")
+  subset(list_UCSC_tracks("sacCer2"), track == "Assembly")
 
   df <- fetch_UCSC_track_data("sacCer2", primary_table="gold")
   head(df)
