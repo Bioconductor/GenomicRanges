@@ -177,8 +177,8 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
 ### Keep the 2 lists in sync!
 ### We don't put "genome" in that list in order to facilitate import of GFF3
 ### files as GRanges objects (see ?import.gff3 in rtracklayer).
-### TODO: Get rid of this restriction. Not sure why we ever had it. Doesn't
-### make much sense to me.
+### TODO: Get rid of this restriction. Not sure why we needed this in the
+### first place. Never made much sense to me.
 INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
                          "seqlevels", "seqlengths", "isCircular",
                          #"genome",

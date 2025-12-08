@@ -182,10 +182,6 @@ makeGPosFromDataFrame(df, keep.extra.columns=FALSE,
           \pkg{IRanges} package to make an \link[IRanges]{IRanges}
           object from a data.frame or \link[S4Vectors]{DataFrame}.
 
-    \item The \code{\link[rtracklayer]{getTable}} function in the
-          \pkg{rtracklayer} package for an R interface to the UCSC
-          Table Browser.
-
     \item \link[S4Vectors]{DataFrame} objects in the \pkg{S4Vectors} package.
   }
 }
@@ -275,15 +271,16 @@ makeGRangesFromDataFrame(df)
 ## 0-BASED VS 1-BASED START POSITIONS
 ## ---------------------------------------------------------------------
 
-if (require(rtracklayer)) {
-  session <- browserSession()
-  genome(session) <- "sacCer2"
-  query <- ucscTableQuery(session, "Assembly")
-  df <- getTable(query)
+if (require(UCSC.utils)) {
+  ## Use list_UCSC_tracks() to lookup the primary table associated with
+  ## a given track:
+  subset(list_UCSC_tracks("sacCer2"), track=="Assembly")
+
+  df <- fetch_UCSC_track_data("sacCer2", primary_table="gold")
   head(df)
 
-  ## A common pitfall is to forget that the UCSC Table Browser uses the
-  ## "0-based start" convention:
+  ## A common pitfall is to forget that UCSC uses the "0-based start"
+  ## convention to store genomic ranges in their databases:
   gr0 <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE,
                                       start.field="chromStart",
                                       end.field="chromEnd")
@@ -296,6 +293,12 @@ if (require(rtracklayer)) {
                                       end.field="chromEnd",
                                       starts.in.df.are.0based=TRUE)
   head(gr1)
+
+  ## IMPORTANT NOTE: The start positions in the "fragStart" metadata
+  ## column are still 0-based! That's because using
+  ## 'keep.extra.columns=TRUE' only takes care of converting the
+  ## start positions of the genomic ranges that define the GRanges
+  ## object itself, but it doesn't meddle with its metadata columns.
 }
 }
 
