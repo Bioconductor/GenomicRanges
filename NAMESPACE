@@ -1,5 +1,3 @@
-useDynLib(GenomicRanges)
-
 import(methods)
 importFrom(utils, .DollarNames, capture.output)
 importFrom(stats, setNames)

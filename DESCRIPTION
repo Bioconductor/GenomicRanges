@@ -14,7 +14,7 @@ biocViews: Genetics, Infrastructure, DataRepresentation, Sequencing,
 	Annotation, GenomeAnnotation, Coverage
 URL: https://bioconductor.org/packages/GenomicRanges
 BugReports: https://github.com/Bioconductor/GenomicRanges/issues
-Version: 1.63.1
+Version: 1.63.2
 License: Artistic-2.0
 Encoding: UTF-8
 Authors@R: c(
@@ -33,7 +33,6 @@ Authors@R: c(
 Depends: R (>= 4.0.0), methods, stats4, BiocGenerics (>= 0.53.2),
 	S4Vectors (>= 0.45.2), IRanges (>= 2.43.6), Seqinfo (>= 0.99.3)
 Imports: utils, stats
-LinkingTo: S4Vectors, IRanges
 Suggests: GenomeInfoDb, Biobase, AnnotationDbi, annotate,
 	Biostrings (>= 2.77.2), SummarizedExperiment (>= 1.39.1), Rsamtools,
 	GenomicAlignments, BSgenome, GenomicFeatures, UCSC.utils, txdbmaker,
@@ -43,7 +42,7 @@ Suggests: GenomeInfoDb, Biobase, AnnotationDbi, annotate,
 	BSgenome.Scerevisiae.UCSC.sacCer2,
 	BSgenome.Hsapiens.UCSC.hg38,
 	BSgenome.Mmusculus.UCSC.mm10,
-	TxDb.Athaliana.BioMart.plantsmart22,
+	TxDb.Athaliana.BioMart.plantsmart51,
 	TxDb.Dmelanogaster.UCSC.dm3.ensGene,
 	TxDb.Hsapiens.UCSC.hg38.knownGene,
 	TxDb.Mmusculus.UCSC.mm10.knownGene,
@@ -52,7 +51,6 @@ VignetteBuilder: knitr
 Collate: normarg-utils.R
 	utils.R
 	phicoef.R
-	transcript-utils.R
 	constraint.R
 	strand-utils.R
 	genomic-range-squeezers.R

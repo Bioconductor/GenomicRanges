@@ -217,7 +217,7 @@ setMethod("restrict", "GenomicRanges",
                          final=seq_len(length(ord)))
         indx <- order(df[["orig"]], df[["final"]])
         ord <- ord[indx, ]
-        mcols(ord) <- subset(mcols(ord, use.names=FALSE), select=nms)
+        mcols(ord) <- mcols(ord, use.names=FALSE)[nms]
         ord
     }
 )
