@@ -79,7 +79,7 @@ setMethod("flank", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### promoters(), terminators() and expand
+### promoters(), terminators() and expand()
 ###
 
 ### Returns an IRanges **instance**.
