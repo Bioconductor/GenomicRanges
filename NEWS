@@ -1,3 +1,20 @@
+CHANGES IN VERSION 1.64.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The package no longer contains C code.
+
+    o Replace rtracklayer with UCSC.utils in the Suggests field.
+
+    o Use TxDb.Athaliana.BioMart.plantsmart51 instead of
+      TxDb.Athaliana.BioMart.plantsmart22 in vignette.
+
+BUG FIXES
+
+    o Fix small bug in restrict() method for GenomicRanges object.
+
+
 CHANGES IN VERSION 1.62.0
 -------------------------
 
