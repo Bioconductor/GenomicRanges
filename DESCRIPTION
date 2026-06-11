@@ -46,7 +46,7 @@ Suggests: GenomeInfoDb, Biobase, AnnotationDbi, annotate,
 	TxDb.Dmelanogaster.UCSC.dm3.ensGene,
 	TxDb.Hsapiens.UCSC.hg38.knownGene,
 	TxDb.Mmusculus.UCSC.mm10.knownGene,
-	RUnit, digest, knitr, rmarkdown, BiocStyle
+	RUnit, digest, knitr, rmarkdown, BiocStyle, XVector
 VignetteBuilder: knitr
 Collate: normarg-utils.R
 	utils.R
