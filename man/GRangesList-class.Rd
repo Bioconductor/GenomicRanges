@@ -398,9 +398,7 @@ as(grl, "IRangesList")
 isDisjoint(grl)
 
 ## disjoin():
-\dontshow{if (requireNamespace("XVector", quietly=TRUE)) withAutoprint(}
 disjoin(grl)  # metadata columns and order NOT preserved
-\dontshow{)}
 
 ## Construction with makeGRangesListFromFeatureFragments():
 filepath <- system.file("extdata", "feature_frags.txt",
