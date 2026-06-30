@@ -167,7 +167,6 @@ gr3 <- GRanges(seqnames=c("chr1", "chr2"),
 grl <- GRangesList(gr1=gr1, gr2=gr2, gr3=gr3)
 grl
 
-\dontshow{if (requireNamespace("XVector", quietly=TRUE)) withAutoprint(\{}
 ## ---------------------------------------------------------------------
 ## range()
 ## ---------------------------------------------------------------------
@@ -180,7 +179,6 @@ range(gr, with.revmap=TRUE)
 range(grl)
 range(grl, ignore.strand=TRUE)
 range(grl, with.revmap=TRUE, ignore.strand=TRUE)
-\dontshow{\})}
 
 # ---------------------------------------------------------------------
 ## reduce()
