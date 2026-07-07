@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{2. GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart51, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg38.knownGene, GenomicFeatures, txdbmaker, Biostrings, BSgenome.Hsapiens.UCSC.hg38, KEGGREST, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{GenomicRanges, Rsamtools, cigarillo, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart51, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg38.knownGene, GenomicFeatures, txdbmaker, Biostrings, BSgenome.Hsapiens.UCSC.hg38, KEGGREST, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -13,7 +13,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
 \author{Bioconductor Team}
-\date{Edited: April 2026; Compiled: \today}
+\date{Edited: July 2026; Compiled: \today}
 
 \begin{document}
 
@@ -957,16 +957,18 @@ library(GenomicAlignments)
 gal <- readGAlignments(bamfile, use.names=TRUE, param=param)
 @
 
-Use the \Rfunction{sequenceLayer} function to {\it lay} the query sequences
-and quality strings on the reference.
+Use the \Rfunction{project\_sequences} function from the \Biocpkg{cigarillo}
+package to {\it project} the query sequences and quality strings onto the
+{\it reference space}.
 
 <<cseq_2>>=
 qseq <- setNames(mcols(gal)$seq, names(gal))
 qual <- setNames(mcols(gal)$qual, names(gal))
-qseq_on_ref <- sequenceLayer(qseq, cigar(gal),
-                             from="query", to="reference")
-qual_on_ref <- sequenceLayer(qual, cigar(gal),
-                             from="query", to="reference")
+library(cigarillo)
+qseq_on_ref <- project_sequences(qseq, cigar(gal),
+                                 from="query", to="reference")
+qual_on_ref <- project_sequences(qual, cigar(gal),
+                                 from="query", to="reference")
 @
 
 Split by chromosome.
