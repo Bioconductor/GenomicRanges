@@ -261,29 +261,32 @@ setAs("GenomicRanges", "Grouping", function(from) {
     to
 })
 
-setMethod("as.data.frame", "GenomicRanges",
-    function(x, row.names=NULL, optional=FALSE, ...)
-    {
-        if (missing(row.names))
-            row.names <- names(x)
-        if (!is.null(names(x)))
-            names(x) <- NULL
-        ans <- data.frame(seqnames=as.factor(seqnames(x)),
-                          start=start(x),
-                          end=end(x),
-                          width=width(x),
-                          strand=as.factor(strand(x)),
-                          row.names=row.names,
-                          stringsAsFactors=FALSE)
-        x_mcols <- mcols(x, use.names=FALSE)
-        ans <- cbind(ans, as.data.frame(x_mcols, optional=optional, ...))
-        if (length(extraColumnSlotNames(x)) > 0L) {
-            x_xcols <- extraColumnSlotsAsDF(x)
-            ans <- cbind(ans, as.data.frame(x_xcols, optional=optional, ...))
-        }
-        ans
-    }
-)
+### --- S3/S4 combo for as.data.frame.GenomicRanges ---
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.GenomicRanges <- function(x, row.names=NULL,
+                                         validRN=TRUE, stringsAsFactors=FALSE)
+{
+    ans <- data.frame(seqnames=as.factor(seqnames(x)),
+                      start=start(x),
+                      end=end(x),
+                      width=width(x),
+                      strand=as.factor(strand(x)),
+                      row.names=row.names, check.names=FALSE,
+                      stringsAsFactors=stringsAsFactors)
+    ans$names <- names(x)
+    x_mcols <- mcols(x, use.names=FALSE)
+    if (length(extraColumnSlotNames(x)) != 0L)
+        x_mcols <- cbind(x_mcols, extraColumnSlotsAsDF(x))
+    cbind(ans, as.data.frame(x_mcols, optional=TRUE,
+                             validRN=validRN,
+                             stringsAsFactors=stringsAsFactors))
+}
+### Silently ignores the 'optional' argument.
+as.data.frame.GenomicRanges <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.GenomicRanges(x, row.names=NULL, ...)
+setMethod("as.data.frame", "GenomicRanges", as.data.frame.GenomicRanges)
 
 .from_GenomicRanges_to_CompressedIRangesList <- function(from)
 {

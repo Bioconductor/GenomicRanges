@@ -34,6 +34,7 @@ exportClasses(
 S3method(.DollarNames, GenomicRanges)
 S3method(.DollarNames, GRanges)
 
+S3method(as.data.frame, GenomicRanges)
 S3method(as.data.frame, GPos)
 
 S3method(duplicated, GenomicRanges)
@@ -48,6 +49,7 @@ S3method(summary, GPos)
 ### called directly, (b) tab-completion on the name of the generic shows them,
 ### and (c) methods() doesn't asterisk them.
 export(
+    as.data.frame.GenomicRanges,
     as.data.frame.GPos,
 
     duplicated.GenomicRanges,

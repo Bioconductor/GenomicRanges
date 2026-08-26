@@ -57,6 +57,7 @@
 \alias{coerce,GenomicRanges,GRanges-method}
 \alias{as.character,GenomicRanges-method}
 \alias{as.factor,GenomicRanges-method}
+\alias{as.data.frame.GenomicRanges}
 \alias{as.data.frame,GenomicRanges-method}
 \alias{coerce,GenomicRanges,CompressedIRangesList-method}
 \alias{coerce,GenomicRanges,IRangesList-method}
