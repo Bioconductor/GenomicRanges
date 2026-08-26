@@ -312,13 +312,12 @@ setMethod("coerce", c("StitchedGPos", "GRanges"), from_GPos_to_GRanges)
                       stringsAsFactors=stringsAsFactors)
     ans$names <- names(x)
     x_mcols <- mcols(x, use.names=FALSE)
-    cbind(ans, as.data.frame(x_mcols, optional=TRUE,
-                             validRN=validRN,
+    cbind(ans, as.data.frame(x_mcols, validRN=validRN,
                              stringsAsFactors=stringsAsFactors))
 }
 ### Silently ignores the 'optional' argument.
 as.data.frame.GPos <- function(x, row.names=NULL, optional=FALSE, ...)
-    .as.data.frame.GPos(x, row.names=NULL, ...)
+    .as.data.frame.GPos(x, row.names=row.names, ...)
 setMethod("as.data.frame", "GPos", as.data.frame.GPos)
 
 

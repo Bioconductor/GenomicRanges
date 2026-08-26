@@ -279,13 +279,12 @@ setAs("GenomicRanges", "Grouping", function(from) {
     x_mcols <- mcols(x, use.names=FALSE)
     if (length(extraColumnSlotNames(x)) != 0L)
         x_mcols <- cbind(x_mcols, extraColumnSlotsAsDF(x))
-    cbind(ans, as.data.frame(x_mcols, optional=TRUE,
-                             validRN=validRN,
+    cbind(ans, as.data.frame(x_mcols, validRN=validRN,
                              stringsAsFactors=stringsAsFactors))
 }
 ### Silently ignores the 'optional' argument.
 as.data.frame.GenomicRanges <- function(x, row.names=NULL, optional=FALSE, ...)
-    .as.data.frame.GenomicRanges(x, row.names=NULL, ...)
+    .as.data.frame.GenomicRanges(x, row.names=row.names, ...)
 setMethod("as.data.frame", "GenomicRanges", as.data.frame.GenomicRanges)
 
 .from_GenomicRanges_to_CompressedIRangesList <- function(from)
