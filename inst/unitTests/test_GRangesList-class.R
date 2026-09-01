@@ -75,17 +75,18 @@ test_GRangesList_coercion <- function() {
                    ranges = IRanges(1:2,1:2, names = tail(letters,2)),
                    strand = strand(c("*", "*")),
                    score = 12:13)
-    grl <- GRangesList(a=gr1, b=gr2)
-    df <-
+    grl <- GRangesList(A=gr1, B=gr2)
+    expected <-
       data.frame(group = togroup(PartitioningByWidth(grl)),
-                 group_name = rep(c("a","b"), c(3, 2)),
+                 group_name = rep(names(grl), lengths(grl)),
                  seqnames = factor(c(1,1,2,"chr1","chr2")),
                  start = c(1:3,1:2), end = c(4:6,1:2),
                  width = c(4L, 4L, 4L, 1L, 1L),
                  strand = strand(c("+", "-", "*", "*", "*")),
-                 score = c(10L,2L,NA,12:13),
+                 names = c(names(gr1), names(gr2)),
+                 score = c(10L, 2L, NA, 12:13),
                  stringsAsFactors = FALSE)
-    checkIdentical(as.data.frame(grl), df)
+    checkIdentical(as.data.frame(grl), expected)
 }
 
 test_GRangesList_IntegerRangesList <- function() {

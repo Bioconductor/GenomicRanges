@@ -348,7 +348,7 @@ test_GRanges_coercion <- function()
                                    levels=c("chr1", "chr2", "chr11")),
                  start = 1:-1, end = c(4:5, -2L), width = c(4L, 6L, 0L),
                  strand = strand(rep("*", 3)),
-                 row.names = head(letters, 3),
+                 names = head(letters, 3),
                  stringsAsFactors = FALSE)
     checkIdentical(target3, as.data.frame(gr))
 
@@ -451,11 +451,10 @@ test_GRanges_subsetting <- function()
     checkException(gr[1000], silent = TRUE)
     checkException(gr["bad"], silent = TRUE)
     checkIdentical(gr, gr[])
-    checkIdentical(as.data.frame(gr)[c(1,3,5),], as.data.frame(gr[c(1,3,5)]))
-    checkIdentical(as.data.frame(gr)[c(1,3,5),-7],
-                   as.data.frame(gr[c(1,3,5),"score"]))
-    checkIdentical(as.data.frame(gr)[c(1,3,5),-7],
-                   as.data.frame(gr[c(1,3,5),1]))
+    target <- S4Vectors:::extract_data_frame_rows(as.data.frame(gr), c(1,3,5))
+    checkIdentical(target, as.data.frame(gr[c(1,3,5)]))
+    checkIdentical(target[ , -8], as.data.frame(gr[c(1,3,5), "score"]))
+    checkIdentical(target[ , -8], as.data.frame(gr[c(1,3,5), 1]))
     checkIdentical(gr, gr[Rle(TRUE)])
 
     ## [<-
@@ -533,12 +532,10 @@ test_GRanges_concatenate <- function()
 
     gr2 <- gr1
     names(gr2) <- NULL
-    checkIdentical(as.data.frame(c(gr1, gr2), row.names=NULL),
-                   rbind(as.data.frame(gr1, row.names=NULL),
-                         as.data.frame(gr2, row.names=NULL)))
-    checkIdentical(as.data.frame(c(gr2, gr1), row.names=NULL),
-                   rbind(as.data.frame(gr2, row.names=NULL),
-                         as.data.frame(gr1, row.names=NULL)))
+    df1 <- as.data.frame(gr1)
+    df2 <- as.data.frame(setNames(gr2, character(length(gr2))))
+    checkIdentical(as.data.frame(c(gr1, gr2)), rbind(df1, df2))
+    checkIdentical(as.data.frame(c(gr2, gr1)), rbind(df2, df1))
 }
 
 
