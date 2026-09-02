@@ -52,8 +52,8 @@
     \item In an UnstitchedGPos instance the positions are stored as an
           integer vector.
     \item In a StitchedGPos instance the positions are stored as an
-          \link{IRanges} object where each range represents a run of
-          \emph{consecutive positions} (i.e. a run of positions that
+          \link[IRanges]{IRanges} object where each range represents a run
+          of \emph{consecutive positions} (i.e. a run of positions that
           are adjacent and in \emph{ascending order}). This storage is
           particularly memory-efficient when the vector of positions
           contains long runs of consecutive positions.
@@ -81,9 +81,9 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
     If not \code{NULL}, \code{GPos()} will try to turn it into an
     \link[IRanges]{IPos} derivative with \code{IPos(pos, stitch=stitch)}.
 
-    When \code{pos} is an \link{IRanges} object (or other \link{IntegerRanges}
-    derivative), each range in it is interpreted as a run of
-    consecutive positions.
+    When \code{pos} is an \link[IRanges]{IRanges} object (or other
+    \link[IRanges]{IntegerRanges} derivative), each range in it is
+    interpreted as a run of consecutive positions.
   }
   \item{stitch}{
     \code{TRUE}, \code{FALSE}, or \code{NA} (the default).

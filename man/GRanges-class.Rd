@@ -92,22 +92,24 @@
 \details{
   GRanges is a vector of genomic locations and associated
   annotations. Each element in the vector is comprised of a sequence name,
-  an interval, a \link{strand}, and optional metadata columns (e.g. score, GC
-  content, etc.). This information is stored in four components:
+  an interval, a \link[BiocGenerics]{strand}, and optional metadata columns
+  (e.g. score, GC content, etc.). This information is stored in four
+  components:
   \describe{
     \item{\code{seqnames}}{a 'factor' \link[S4Vectors]{Rle} object
       containing the sequence names.}
     \item{\code{ranges}}{an \link[IRanges]{IRanges} object containing
       the ranges.}
     \item{\code{strand}}{a 'factor' \link[S4Vectors]{Rle} object containing
-      the \link{strand} information.}
+      the \link[BiocGenerics]{strand} information.}
     \item{\code{mcols}}{a \link[S4Vectors]{DataFrame} object
       containing the metadata columns. Columns cannot be named
       \code{"seqnames"}, \code{"ranges"}, \code{"strand"},
       \code{"seqlevels"}, \code{"seqlengths"}, \code{"isCircular"},
       \code{"start"}, \code{"end"}, \code{"width"}, or \code{"element"}.}
-    \item{\code{seqinfo}}{a \link{Seqinfo} object containing information
-      about the set of genomic sequences present in the GRanges object.}
+    \item{\code{seqinfo}}{a \link[Seqinfo]{Seqinfo} object containing
+      information about the set of genomic sequences present in the
+      GRanges object.}
   }
 }
 
@@ -202,10 +204,10 @@
       Get or set the metadata columns.
       If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
       then the names of \code{x} are propagated as the row names of the
-      returned \link{DataFrame} object.
+      returned \link[S4Vectors]{DataFrame} object.
       When setting the metadata columns, the supplied value must be \code{NULL}
-      or a data-frame-like object (i.e. \link{DataFrame} or data.frame)
-      holding element-wise metadata.
+      or a data-frame-like object (i.e. \link[S4Vectors]{DataFrame} or
+      data.frame) holding element-wise metadata.
     }
     \item{\code{elementMetadata(x)}, \code{elementMetadata(x) <- value},
        \code{values(x)}, \code{values(x) <- value}:}{
@@ -222,7 +224,8 @@
       or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a GRanges object.
       \code{value} must be a character vector with no NAs.
-      See \code{?\link{seqlevels}} for more information.
+      See \code{?\link[Seqinfo]{seqlevels}} in the \pkg{Seqinfo} package
+      for more information.
     }
     \item{\code{seqlengths(x)}, \code{seqlengths(x) <- value}:}{
       Get or set the sequence lengths.
@@ -373,9 +376,9 @@
   Note that a GRanges object can be used as a subscript to subset a
   list-like object that has names on it. In that case, the names on the
   list-like object are interpreted as sequence names.
-  In the code snippets below, \code{x} is a list or \link{List} object with
-  names on it, and the subscript \code{gr} is a GRanges object with all its
-  seqnames being valid \code{x} names.
+  In the code snippets below, \code{x} is a list or \link[S4Vectors]{List}
+  object with names on it, and the subscript \code{gr} is a GRanges object
+  with all its seqnames being valid \code{x} names.
 
   \describe{
     \item{\code{x[gr]}:}{

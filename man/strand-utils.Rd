@@ -49,9 +49,9 @@
 \arguments{
   \item{x}{
     The object from which to obtain a \emph{strand factor}, \emph{strand
-    factor \link[S4Vectors]{Rle}}, or \emph{strand factor \link{RleList}}
-    object. Can be missing. See Details and Value sections below for more
-    information.
+    factor \link[S4Vectors]{Rle}}, or \emph{strand factor
+    \link[IRanges]{RleList}} object. Can be missing. See Details and Value
+    sections below for more information.
   }
   \item{value}{
     Replacement value for the strand.
@@ -61,17 +61,17 @@
 \details{
   All the \code{strand} and \code{invertStrand} methods documented
   here return either a \emph{strand factor}, \emph{strand factor
-  \link[S4Vectors]{Rle}}, or \emph{strand factor \link{RleList}} object.
-  These are factor, factor-\link[S4Vectors]{Rle}, or factor-\link{RleList}
-  objects containing the "standard strand levels" (i.e. \code{+}, \code{-},
-  and \code{*}) and no NAs.
+  \link[S4Vectors]{Rle}}, or \emph{strand factor \link[IRanges]{RleList}}
+  object. These are factor, factor-\link[S4Vectors]{Rle}, or
+  factor-\link[IRanges]{RleList} objects containing the "standard
+  strand levels" (i.e. \code{+}, \code{-}, and \code{*}) and no NAs.
 }
 
 \value{
   All the \code{strand} and \code{invertStrand} methods documented here
   return an object that is \emph{parallel} to input object \code{x} when
   \code{x} is a character, factor, integer, logical, \link[S4Vectors]{Rle},
-  or \link{RleList} object.
+  or \link[IRanges]{RleList} object.
 
   For the \code{strand} methods:
   \itemize{
@@ -96,10 +96,10 @@
           logical-\link[S4Vectors]{Rle}, it is transformed with
           \code{runValue(x) <- strand(runValue(x))} and returned.
 
-    \item If \code{x} is an \link{RleList} object, each list element in
-          \code{x} is transformed by calling \code{strand()} on it and
-          the resulting \link{RleList} object is returned. More precisely
-          the returned object is \code{endoapply(x, strand)}.
+    \item If \code{x} is an \link[IRanges]{RleList} object, each list element
+          in \code{x} is transformed by calling \code{strand()} on it and
+          the resulting \link[IRanges]{RleList} object is returned. More
+          precisely the returned object is \code{endoapply(x, strand)}.
           Note that in addition to being \emph{parallel} to \code{x}, this
           object also has the same \emph{shape} as \code{x} (i.e. its list
           elements have the same lengths as in \code{x}).

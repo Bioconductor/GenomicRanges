@@ -105,12 +105,14 @@
       Get or set the names on \code{x}.
     }
     \item{\code{seqnames(x)}, \code{seqnames(x) <- value}:}{
-      Get or set the sequence names in the form of an \link{RleList}.
-      \code{value} can be an \link{RleList} or \link{CharacterList} object.
+      Get or set the sequence names in the form of an
+      \link[IRanges]{RleList}. \code{value} can be an
+      \link[IRanges]{RleList} or \link[IRanges]{CharacterList} object.
     }
     \item{\code{ranges(x, use.mcols=FALSE)}, \code{ranges(x) <- value}:}{
-      Get or set the ranges in the form of a \link{CompressedIRangesList}.
-      \code{value} can be an \link{IntegerRangesList} object.
+      Get or set the ranges in the form of a
+      \link[IRanges]{CompressedIRangesList}. \code{value} can be an
+      \link[IRanges]{IntegerRangesList} object.
     }
     \item{\code{start(x)}, \code{start(x) <- value}:}{
       Get or set \code{start(ranges(x))}.
@@ -122,17 +124,18 @@
       Get or set \code{width(ranges(x))}.
     }
     \item{\code{strand(x)}, \code{strand(x) <- value}:}{
-      Get or set the strand in the form of an \link{RleList} object.
-      \code{value} can be an \link{RleList}, \link{CharacterList} or
-      single character. \code{value} as a single character converts all
-      ranges in \code{x} to the same \code{value}; for selective strand
-      conversion (i.e., mixed \code{+} and \code{-}) use \link{RleList}
-      or \link{CharacterList}.
+      Get or set the strand in the form of an \link[IRanges]{RleList}
+      object. \code{value} can be an \link[IRanges]{RleList},
+      \link[IRanges]{CharacterList} or single character. \code{value} as
+      a single character converts all ranges in \code{x} to the same
+      \code{value}; for selective strand conversion (i.e., mixed \code{+} and
+      \code{-}) use \link[IRanges]{RleList} or \link[IRanges]{CharacterList}.
     }
     \item{\code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:}{
       Get or set the metadata columns.
       \code{value} can be \code{NULL}, or a data.frame-like object (i.e.
-      \link{DataFrame} or data.frame) holding element-wise metadata.
+      \link[S4Vectors]{DataFrame} or data.frame) holding element-wise
+      metadata.
     }
     \item{\code{elementNROWS(x)}:}{
       Get a vector of the \code{length} of each of the list element.
@@ -143,7 +146,7 @@
     }
     \item{\code{seqinfo(x)}, \code{seqinfo(x) <- value}:}{
       Get or set the information about the underlying sequences.
-      \code{value} must be a \link{Seqinfo} object.
+      \code{value} must be a \link[Seqinfo]{Seqinfo} object.
     }
     \item{\code{seqlevels(x)},
           \code{seqlevels(x, pruning.mode=c("error", "coarse", "fine", "tidy"))
@@ -153,7 +156,7 @@
       or to \code{levels(seqnames(x))}, those 2 expressions being
       guaranteed to return identical character vectors on a GRangesList
       object. \code{value} must be a character vector with no NAs.
-      See \code{?\link{seqlevels}} for more information.
+      See \code{?\link[Seqinfo]{seqlevels}} for more information.
     }
     \item{\code{seqlengths(x)}, \code{seqlengths(x) <- value}:}{
       Get or set the sequence lengths.
@@ -217,8 +220,8 @@
     \item{\code{x[i, j]}, \code{x[i, j] <- value}:}{
       Get or set elements \code{i} with optional metadata columns
       \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
-      logical, numeric, or character vector; a logical-\link{Rle} object,
-      or an \link{AtomicList} object.
+      logical, numeric, or character vector; a logical-\link[S4Vector]{Rle}
+      object, or an \link[IRanges]{AtomicList} object.
     }
     \item{\code{x[[i]]}, \code{x[[i]] <- value}:}{
       Get or set element \code{i}, where \code{i} is a numeric or character

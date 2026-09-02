@@ -436,10 +436,6 @@ NEW FEATURES
 
     o Add 'use.mcols' arguments to the "ranges" methods for GPos objects.
 
-SIGNIFICANT USER-VISIBLE CHANGES
-
-DEPRECATED AND DEFUNCT
-
 BUG FIXES
 
     o Fix bug in distanceToNearest() related to ranges starting at zero.

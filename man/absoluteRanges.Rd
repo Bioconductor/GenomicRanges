@@ -31,7 +31,7 @@ isSmallGenome(seqlengths)
     For \code{absoluteRanges}: a \link{GenomicRanges} object with ranges
     defined on a \emph{small} genome (see Details section below).
 
-    For \code{relativeRanges}: an \link{IntegerRanges} object.
+    For \code{relativeRanges}: an \link[IRanges]{IntegerRanges} object.
   }
   \item{seqlengths}{
     An object holding sequence lengths. This can be a named integer
@@ -85,8 +85,9 @@ isSmallGenome(seqlengths)
 
     \item \link[IRanges]{IntegerRanges} objects in the \pkg{IRanges} package.
 
-    \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter in
-          the \pkg{Seqinfo} package.
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{seqlengths}} getter in the
+          \pkg{Seqinfo} package.
 
     \item \link{genomicvars} for manipulating genomic variables.
 
@@ -159,7 +160,7 @@ ar <- absoluteRanges(ex)
 ex2 <- relativeRanges(ar, seqlengths(ex))
 
 ## Sanity check:
-strand(ex2) <- strand(ex) 
+strand(ex2) <- strand(ex)
 stopifnot(all(ex == ex2))
 }
 

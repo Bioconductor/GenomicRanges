@@ -92,7 +92,7 @@
   }
   \item{select}{
     When \code{select} is \code{"all"} (the default), the results are
-    returned as a \link{Hits} object.
+    returned as a \link[S4Vectors]{Hits} object.
     Otherwise the returned value is an integer vector parallel to \code{query}
     (i.e. same length) containing the first, last, or arbitrary overlapping
     interval in \code{subject}, with \code{NA} indicating intervals that did
