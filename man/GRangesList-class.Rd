@@ -220,7 +220,7 @@
     \item{\code{x[i, j]}, \code{x[i, j] <- value}:}{
       Get or set elements \code{i} with optional metadata columns
       \code{mcols(x)[,j]}, where \code{i} can be missing; an NA-free
-      logical, numeric, or character vector; a logical-\link[S4Vector]{Rle}
+      logical, numeric, or character vector; a logical-\link[S4Vectors]{Rle}
       object, or an \link[IRanges]{AtomicList} object.
     }
     \item{\code{x[[i]]}, \code{x[[i]] <- value}:}{
