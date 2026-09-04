@@ -53,7 +53,7 @@
 \S4method{reduce}{GRangesList}(x, drop.empty.ranges=FALSE, min.gapwidth=1L, with.revmap=FALSE,
           with.inframe.attrib=FALSE, ignore.strand=FALSE)
 
-\S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x))
+\S4method{gaps}{GenomicRanges}(x, start=1L, end=seqlengths(x), ignore.strand=FALSE)
 
 \S4method{disjoin}{GenomicRanges}(x, with.revmap=FALSE, ignore.strand=FALSE)
 \S4method{disjoin}{GRangesList}(x, with.revmap=FALSE, ignore.strand=FALSE)
@@ -97,12 +97,13 @@
 
     \code{gaps} returns an object of the same type as \code{x}
     containing complemented ranges for each distinct (seqname, strand) pairing.
-    The names (\code{names(x)}) and the columns in \code{x} are dropped.
-    For the start and end arguments of this gaps method, it is expected that
-    the user will supply a named integer vector (where the names correspond to
-    the appropriate seqlevels). See \code{?\link[IRanges]{gaps}} for more
-    information about range complements and for a description of the optional
-    arguments.
+    The names (\code{names(x)}) and the metadata columns in \code{x} are
+    dropped.
+    For the \code{start} and \code{end} arguments of this \code{gaps} method,
+    it is expected that the user will supply a named integer vector (where
+    the names correspond to the appropriate seqlevels).
+    See \code{?\link[IRanges]{gaps}} for more information about range
+    complements and for a description of the optional arguments.
 
     \code{disjoin} returns an object of the same type as \code{x}
     containing disjoint ranges for each distinct (seqname, strand) pairing.
@@ -202,7 +203,8 @@ reordered_gr <- gr[unlist(revmap)]
 codes <- pcompare(expanded_gr2, reordered_gr)
 ## All the codes should translate to "d", "e", "g", or "h" (the 4 letters
 ## indicating that the range on the left contains the range on the right):
-alphacodes <- rangeComparisonCodeToLetter(pcompare(expanded_gr2, reordered_gr))
+alphacodes <-
+    rangeComparisonCodeToLetter(pcompare(expanded_gr2, reordered_gr))
 stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
 
 ## On a big GRanges object with a lot of seqlevels:
@@ -211,16 +213,17 @@ biggr <- c(gr, GRanges("chr1", IRanges(c(4, 1), c(5, 2)), strand="+"))
 seqlevels(biggr) <- paste0("chr", 1:2000)
 biggr <- rep(biggr, 25000)
 set.seed(33)
-seqnames(biggr) <- sample(factor(seqlevels(biggr), levels=seqlevels(biggr)),
-                          length(biggr), replace=TRUE)
+seqnames(biggr) <-
+    sample(factor(seqlevels(biggr), levels=seqlevels(biggr)),
+           length(biggr), replace=TRUE)
 
 biggr2 <- reduce(biggr, with.revmap=TRUE)
 revmap <- mcols(biggr2)$revmap
 expanded_biggr2 <- rep(biggr2, elementNROWS(revmap))
 reordered_biggr <- biggr[unlist(revmap)]
 codes <- pcompare(expanded_biggr2, reordered_biggr)
-alphacodes <- rangeComparisonCodeToLetter(pcompare(expanded_biggr2,
-                                                  reordered_biggr))
+alphacodes <-
+    rangeComparisonCodeToLetter(pcompare(expanded_biggr2, reordered_biggr))
 stopifnot(all(alphacodes \%in\% c("d", "e", "g", "h")))
 table(alphacodes)
 
@@ -235,7 +238,18 @@ reduce(grl, ignore.strand=TRUE)  # 2nd list element got reduced
 ## ---------------------------------------------------------------------
 ## gaps()
 ## ---------------------------------------------------------------------
-gaps(gr, start=1, end=10)
+gaps(gr, start=3, end=12)
+gaps(gr, start=3, end=12, ignore.strand=TRUE)
+
+## Note that if the lengths of the underlying sequences are known, then
+## by default 'gaps(gr)' returns the regions of the sequences that are
+## not covered by 'gr':
+seqlengths(gr)  # lengths of underlying sequences are not known
+seqlengths(gr) <- c(chr1=50, chr2=30, chr3=18)
+
+gaps(gr)
+
+gaps(gr, ignore.strand=TRUE)
 
 ## ---------------------------------------------------------------------
 ## disjoin(), isDisjoint(), disjointBins()

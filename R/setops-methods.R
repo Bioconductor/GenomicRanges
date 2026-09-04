@@ -27,45 +27,33 @@
     reconstructGRLfromGR(gr, x)
 }
 
-### Both return a named integer vector where the names are guaranteed to be
-### 'seqlevels(x)'.
-###
-
-.minStartPerGRangesSequence <- function(x)
+### Both .first_genomic_pos_per_sequence() and .last_genomic_pos_per_sequence()
+### return a named integer vector where the names are guaranteed to
+### be 'seqlevels(x)'.
+.first_genomic_pos_per_sequence <- function(x)
 {
     cil <- splitAsList(start(x), seqnames(x))  # CompressedIntegerList object
-    ## The 4 lines below are equivalent to:
-    ##   ans <- min(cil)
-    ##   ans[elementNROWS(v) == 0L] <- NA_integer_
-    ## but much faster!
-    ## TODO: Replace with the above, but only when the "min" method for
-    ## CompressedIntegerList objects (implemented in the IRanges package)
-    ## is as fast as the "viewMins" method for XIntegerViews objects
-    ## (implemented in C in the XVector package). Ideally, the 2 methods
-    ## should share the same underlying code.
-    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
-    ans <- viewMins(v)
-    ans[width(v) == 0L] <- NA_integer_
-    names(ans) <- names(v)
+    ans <- min(cil)
+    ## The min() and max() methods for CompressedIntegerList objects
+    ## return 2^31-1 and -2^31+1 respectively for empty list elements.
+    ## Note that this is inconsistent with the viewMins() and viewMaxs()
+    ## methods for XIntegerViews objects defined in the XVector package,
+    ## as well as with the viewMins() and viewMaxs() methods for RleViews
+    ## defined in the IRanges package (this package).
+    ## We manually correct the value obtained for empty list elements.
+    ans[lengths(cil) == 0L] <- NA_integer_
+    names(ans) <- names(cil)
     ans
 }
 
-.maxEndPerGRangesSequence <- function(x)
+.last_genomic_pos_per_sequence <- function(x)
 {
     cil <- splitAsList(end(x), seqnames(x))  # CompressedIntegerList object
-    ## The 4 lines below are equivalent to:
-    ##   ans <- max(cil)
-    ##   ans[elementNROWS(v) == 0L] <- NA_integer_
-    ## but much faster!
-    ## TODO: Replace with the above, but only when the "max" method for
-    ## CompressedIntegerList objects (implemented in the IRanges package)
-    ## is as fast as the "viewMaxs" method for XIntegerViews objects
-    ## (implemented in C in the XVector package). Ideally, the 2 methods
-    ## should share the same underlying code.
-    v <- Views(cil@unlistData, cil@partitioning)  # XIntegerViews object
-    ans <- viewMaxs(v)
-    ans[width(v) == 0L] <- NA_integer_
-    names(ans) <- names(v)
+    ans <- max(cil)
+    ## We manually correct the value obtained for empty list elements.
+    ## See .first_genomic_pos_per_sequence() above for more info.
+    ans[lengths(cil) == 0L] <- NA_integer_
+    names(ans) <- names(cil)
     ans
 }
 
@@ -121,7 +109,7 @@ setMethod("intersect", c("GenomicRanges", "GenomicRanges"),
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
-            .maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
+            .last_genomic_pos_per_sequence(c(x, y))[is.na(seqlengths)]
         setdiff(x, gaps(y, end=seqlengths))
     }
 )
@@ -157,7 +145,7 @@ setMethod("setdiff", c("GenomicRanges", "GenomicRanges"),
         ## If the length of a sequence is unknown (NA), then we use
         ## the max end value found on that sequence in 'x' or 'y'.
         seqlengths[is.na(seqlengths)] <-
-            .maxEndPerGRangesSequence(c(x, y))[is.na(seqlengths)]
+            .last_genomic_pos_per_sequence(c(x, y))[is.na(seqlengths)]
         gaps(union(gaps(x, end=seqlengths), y), end=seqlengths)
     }
 )

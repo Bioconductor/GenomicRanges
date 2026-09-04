@@ -88,28 +88,28 @@
 }
 
 \details{
-  \itemize{
-    \item{nearest: }{
+  \describe{
+    \item{\code{nearest}:}{
       Performs conventional nearest neighbor finding.
       Returns an integer vector containing the index of the nearest neighbor 
       range in \code{subject} for each range in \code{x}. If there is no 
       nearest neighbor \code{NA} is returned. For details of the algorithm
       see the man page in the \pkg{IRanges} package (\code{?nearest}). 
     }
-    \item{precede: }{
+    \item{\code{precede}:}{
       For each range in \code{x}, \code{precede} returns
       the index of the range in \code{subject} that is directly 
       preceded by the range in \code{x}. Overlapping ranges are excluded.
       \code{NA} is returned when there are no qualifying ranges in
       \code{subject}.
     }
-    \item{follow: }{
+    \item{\code{follow}:}{
       The opposite of \code{precede}, \code{follow} returns
       the index of the range in \code{subject} that is directly followed by the
       range in \code{x}. Overlapping ranges are excluded. \code{NA} is returned 
       when there are no qualifying ranges in \code{subject}.
     }
-    \item{nearestKNeighbors: }{
+    \item{\code{nearestKNeighbors}:}{
       Performs conventional k-nearest neighbor finding.
       Returns an \link[IRanges]{IntegerList} containing the index of the
       k-nearest neighbors in \code{subject} for each range in \code{x}. If there
@@ -144,10 +144,10 @@ i)     *  |  *        |  --->  (the only situation where * arbitrarily means +)
 }
 
     }
-    \item{distanceToNearest: }{Returns the distance for each range in \code{x}
+    \item{\code{distanceToNearest}:}{Returns the distance for each range in \code{x}
       to its nearest neighbor in the \code{subject}. 
     }
-    \item{distance: }{
+    \item{\code{distance}:}{
       Returns the distance for each range in \code{x} to the range in \code{y}.
       The behavior of \code{distance} has changed in Bioconductor 2.12.
       See the man page \code{?distance} in the \pkg{IRanges} package for

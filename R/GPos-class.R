@@ -4,6 +4,19 @@
 ###
 
 
+### FIXME: Oct 6, 2023 -- With hindsight, I'm no longer convinced it was such
+### a good idea to make GPos a subclass of GRanges and to inherit its 'ranges'
+### slot. Maybe it would be cleaner to only contain GenomicPos, and to rename
+### the 'ranges' slot to 'pos'. This would be more consistent with the
+### IPos/IRanges relationship (IPos is not a subclass of IRanges). This
+### would also probably simplify greatly many of the acrobatics required
+### by the various coercion methods defined below in this file for switching
+### between GRanges and GPos/UnstitchedGPos/StitchedGPos. Finally this would
+### also mean that the specification of the 'ranges' slot in the definition
+### of the GRanges class could be set back to "IRanges" instead of
+### "IRanges_OR_IPos", and that the IRanges_OR_IPos class could go away.
+### Note that this would bring back the definition of the GRanges class from
+### the pre-GPos era. See GRanges-class.R.
 setClass("GPos",
     contains=c("GenomicPos", "GRanges"),
     representation(
@@ -261,7 +274,7 @@ from_GPos_to_GRanges <- function(from, to="GRanges", strict=TRUE)
         stop("'strict' must be TRUE or FALSE")
     if (!strict)
         return(from)
-    class(from) <- "GRanges"  # temporarily broken instance!
+    class(from) <- class(new("GRanges"))  # temporarily broken instance!
     from@ranges <- as(from@ranges, "IRanges")  # now fixed :-)
     from
 }
@@ -280,27 +293,32 @@ setMethod("coerce", c("StitchedGPos", "GRanges"), from_GPos_to_GRanges)
 ###   setMethod("coerce", c("CTSS", "GRanges"), from_GPos_to_GRanges)
 #setMethod("coerce", c("GPos", "GRanges"), from_GPos_to_GRanges)
 
-### S3/S4 combo for as.data.frame.GPos
-### The "as.data.frame" method for GenomicRanges objects works on a GPos
-### object but returns a data.frame with identical "start" and "end" columns,
-### and a "width" column filled with 1. We overwrite it to return a data.frame
-### with a "pos" column instead of the "start" and "end" columns, and no
-### "width" column.
-.as.data.frame.GPos <- function(x, row.names=NULL, optional=FALSE)
+### --- S3/S4 combo for as.data.frame.GPos ---
+### as.data.frame.GenomicRanges() works fine on a GPos object but it returns a
+### data.frame with identical "start" and "end" columns, and a "width" column
+### filled with 1. So we overwrite it with as.data.frame.GPos() which returns
+### a data.frame with just a "pos" column instead of the "start" and "end"
+### columns, and no "width" column.
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.GPos <- function(x, row.names=NULL,
+                                validRN=TRUE, stringsAsFactors=FALSE)
 {
-    if (!identical(optional, FALSE))
-        warning(wmsg("'optional' argument was ignored"))
-    x_mcols <- mcols(x, use.names=FALSE)  # always a DataFrame parallel to 'x'
-    data.frame(seqnames=as.factor(seqnames(x)),
-               pos=pos(x),
-               strand=as.factor(strand(x)),
-               as.data.frame(x_mcols),
-               row.names=row.names,
-               stringsAsFactors=FALSE)
+    ans <- data.frame(seqnames=as.factor(seqnames(x)),
+                      pos=pos(x),
+                      strand=as.factor(strand(x)),
+                      row.names=row.names, check.names=FALSE,
+                      stringsAsFactors=stringsAsFactors)
+    ans$names <- names(x)
+    x_mcols <- mcols(x, use.names=FALSE)
+    cbind(ans, as.data.frame(x_mcols, validRN=validRN,
+                             stringsAsFactors=stringsAsFactors))
 }
+### Silently ignores the 'optional' argument.
 as.data.frame.GPos <- function(x, row.names=NULL, optional=FALSE, ...)
-    .as.data.frame.GPos(x, row.names=NULL, optional=FALSE, ...)
-setMethod("as.data.frame", "GPos", .as.data.frame.GPos)
+    .as.data.frame.GPos(x, row.names=row.names, ...)
+setMethod("as.data.frame", "GPos", as.data.frame.GPos)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

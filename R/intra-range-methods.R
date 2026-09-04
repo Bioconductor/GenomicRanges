@@ -10,6 +10,8 @@
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### update_ranges()
 ###
+### For internal use only. Generic defined in the IRanges package.
+###
 
 setMethod("update_ranges", "GenomicRanges",
     function(x, start=NULL, end=NULL, width=NULL, use.names=TRUE)
@@ -62,7 +64,7 @@ setMethod("flank", "GenomicRanges",
     {
         if (!isTRUEorFALSE(ignore.strand))
             stop("'ignore.strand' must be TRUE or FALSE")
-        if (!is.logical(start) || S4Vectors:::anyMissing(start))
+        if (!is.logical(start) || anyNA(start))
             stop("'start' must be logical without NA's")
         start <- S4Vectors:::recycleVector(unname(start), length(x))
         if (!ignore.strand)
@@ -77,39 +79,80 @@ setMethod("flank", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### promoters()
+### promoters() and terminators()
 ###
+
+### Returns an IRanges **instance**.
+.compute_promoter_ranges <- function(x, strand, upstream, downstream,
+                                     site=c("TSS", "TES"))
+{
+    site <- match.arg(site)
+    stopifnot(is(x, "IPosRanges"),
+              length(x) == length(strand),
+              length(x) == length(upstream),
+              length(x) == length(downstream))
+    ans_start <- start(x)
+    ans_end <- end(x)
+    strand_is_minus <- strand == "-"
+    plus_idx <- which(!strand_is_minus)
+    minus_idx <- which(strand_is_minus)
+    if (site == "TSS") {
+        plus_site <- ans_start[plus_idx]
+        minus_site <- ans_end[minus_idx]
+    } else {
+        plus_site <- ans_end[plus_idx]
+        minus_site <- ans_start[minus_idx]
+    }
+    ans_start[plus_idx] <- plus_site - upstream[plus_idx]
+    ans_end[plus_idx] <- plus_site + downstream[plus_idx] - 1L
+    ans_end[minus_idx] <- minus_site + upstream[minus_idx]
+    ans_start[minus_idx] <- minus_site - downstream[minus_idx] + 1L
+    IRanges(ans_start, ans_end, names=names(x))
+}
+
+### Computes the promoter regions if 'site' is set to "TSS" (Transcription
+### Start Site), or the terminator regions if it's set to "TES" (Transcription
+### End Site).
+### Always behaves like an endomorphism, except when 'x' is a GPos derivative.
+.GenomicRanges_promoters <- function(x, upstream, downstream, use.names=TRUE,
+                                     site=c("TSS", "TES"))
+{
+    site <- match.arg(site)
+    x_len <- length(x)
+    upstream <- recycleIntegerArg(upstream, "upstream", x_len)
+    downstream <- recycleIntegerArg(downstream, "downstream", x_len)
+    use.names <- S4Vectors:::normargUseNames(use.names)
+    if (x_len == 0L) {
+        if (!use.names)
+            names(x) <- NULL
+        return(x)
+    }
+    if (min(upstream) < 0L || min(downstream) < 0L)
+        stop("'upstream' and 'downstream' must be integers >= 0")
+    old_ranges <- ranges(x, use.names=use.names)
+    new_ranges <- .compute_promoter_ranges(old_ranges,
+                                           strand(x),
+                                           upstream, downstream,
+                                           site=site)
+    ## 'new_ranges' is an IRanges **instance** but a GPos object won't
+    ## accept this in its "ranges" slot. So if 'x' is a GPos object,
+    ## we first turn it into a GRanges **instance** so we can stick
+    ## 'new_ranges' in it.
+    if (is(x, "GPos"))
+        x <- as(x, "GRanges", strict=TRUE)
+    update(x, ranges=new_ranges)
+}
 
 setMethod("promoters", "GenomicRanges",
     function(x, upstream=2000, downstream=200, use.names=TRUE)
-    {
-        x_len <- length(x)
-        upstream <- recycleIntegerArg(upstream, "upstream", x_len)
-        downstream <- recycleIntegerArg(downstream, "downstream", x_len)
-        if (x_len == 0) {
-            if (!S4Vectors:::normargUseNames(use.names))
-                names(x) <- NULL
-            return(x)
-        }
-        if (min(upstream) < 0L || min(downstream) < 0L)
-            stop("'upstream' and 'downstream' must be integers >= 0")
-        x_ranges <- ranges(x)
-        x_start <- start(x_ranges)
-        x_end <- end(x_ranges)
-        strand_is_minus <- strand(x) == "-"
-        on_plus <- which(!strand_is_minus)
-        on_plus_TSS <- x_start[on_plus]
-        x_start[on_plus] <- on_plus_TSS - upstream[on_plus]
-        x_end[on_plus] <- on_plus_TSS + downstream[on_plus] - 1L
-        on_minus <- which(strand_is_minus)
-        on_minus_TSS <- x_end[on_minus]
-        x_end[on_minus] <- on_minus_TSS + upstream[on_minus]
-        x_start[on_minus] <- on_minus_TSS - downstream[on_minus] + 1L
-        new_ranges <- update_ranges(x_ranges, start=x_start,
-                                              end=x_end,
-                                              use.names=use.names)
-        update(x, ranges=new_ranges)
-    }
+        .GenomicRanges_promoters(x, upstream, downstream, use.names=use.names,
+                                 site="TSS")
+)
+
+setMethod("terminators", "GenomicRanges",
+    function(x, upstream=2000, downstream=200, use.names=TRUE)
+        .GenomicRanges_promoters(x, upstream, downstream, use.names=use.names,
+                                 site="TES")
 )
 
 
@@ -174,7 +217,7 @@ setMethod("restrict", "GenomicRanges",
                          final=seq_len(length(ord)))
         indx <- order(df[["orig"]], df[["final"]])
         ord <- ord[indx, ]
-        mcols(ord) <- subset(mcols(ord, use.names=FALSE), select=nms)
+        mcols(ord) <- mcols(ord, use.names=FALSE)[nms]
         ord
     }
 )
@@ -201,4 +244,13 @@ setMethod("trim", "GenomicRanges",
         update(x, ranges=new_ranges)
     }
 )
+
+setMethod("trim", "GRangesList",
+          function(x, use.names=TRUE)
+          {
+              ## Like seqinfo,GRangesList, assumes that there is a
+              ## single Seqinfo for the entire object. Only guaranteed
+              ## to be true in the compressed case.
+              relist(trim(unlist(x, use.names=FALSE), use.names=use.names), x)
+          })
 

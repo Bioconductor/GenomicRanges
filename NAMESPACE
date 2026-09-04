@@ -1,5 +1,3 @@
-useDynLib(GenomicRanges)
-
 import(methods)
 importFrom(utils, .DollarNames, capture.output)
 importFrom(stats, setNames)
@@ -8,10 +6,7 @@ importFrom(stats4, summary, update)
 import(BiocGenerics)
 import(S4Vectors)
 import(IRanges)
-import(GenomeInfoDb)
-import(XVector)  # only for the "Views" method for integer vectors, the
-                 # XIntegerViews class, and the "viewMins", "viewMaxs", and
-                 # "viewSums" methods for XIntegerViews objects
+import(Seqinfo)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,6 +34,7 @@ exportClasses(
 S3method(.DollarNames, GenomicRanges)
 S3method(.DollarNames, GRanges)
 
+S3method(as.data.frame, GenomicRanges)
 S3method(as.data.frame, GPos)
 
 S3method(duplicated, GenomicRanges)
@@ -53,6 +49,7 @@ S3method(summary, GPos)
 ### called directly, (b) tab-completion on the name of the generic shows them,
 ### and (c) methods() doesn't asterisk them.
 export(
+    as.data.frame.GenomicRanges,
     as.data.frame.GPos,
 
     duplicated.GenomicRanges,
@@ -109,15 +106,16 @@ exportMethods(
     rglist,
     pos,
     findOverlaps, countOverlaps,
-    windows,
-    update_ranges, shift, narrow, resize, flank, promoters, restrict, trim,
+    windows, narrow,
+    update_ranges,
+    shift, resize, flank, promoters, terminators, restrict, trim,
     reduce, gaps, disjoin, isDisjoint, disjointBins,
     coverage,
     punion, pintersect, psetdiff, pgap,
     precede, follow, nearest, distance, distanceToNearest, nearestKNeighbors,
     tile, slidingWindows,
 
-    ## Generics defined in GenomeInfoDb:
+    ## Generics defined in Seqinfo:
     seqinfo, "seqinfo<-",
     seqnames, "seqnames<-"
 )
@@ -134,9 +132,10 @@ export(
     GPos, from_GPos_to_GRanges,
     GRangesFactor,
     GNCList,
-    GenomicRangesList, GRangesList,
+    GRangesList,
 
     makeGRangesFromDataFrame,
+    makeGPosFromDataFrame,
     makeGRangesListFromDataFrame,
     makeGRangesListFromFeatureFragments,
 
@@ -157,13 +156,17 @@ export(
     checkConstraint,
 
     ## genomic-range-squeezers.R:
-    granges, grglist
+    granges, grglist,
+
+    ## subtract-methods.R:
+    subtract
 )
 
 ### Exactly the same list as above.
 exportMethods(
     #constraint, "constraint<-",
     checkConstraint,
-    granges, grglist
+    granges, grglist,
+    subtract
 )
 

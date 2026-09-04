@@ -178,30 +178,38 @@ test_flank_GenomicRanges <- function()
 
 test_promoters_GenomicRanges <- function()
 {
-    checkTrue(length(promoters(GRanges())) == 0)
+    gr0 <- GRanges(tx_id=integer(0))  # zero-length
+    checkIdentical(promoters(gr0, 5, 2), gr0)
+    checkIdentical(terminators(gr0, 5, 2), gr0)
 
     ## upstream / downstream
     gr <- GRanges("chr1", IRanges(c(5, 10), width=1), "+")
-    target <- GRanges("chr1", IRanges(c(5, 10), width=0), "+")
-    current <- promoters(gr, 0, 0)
-    checkIdentical(target, current)
+    target <- GRanges("chr1", IRanges(start=start(gr), width=0), strand(gr))
+    checkIdentical(promoters(gr, 0, 0), target)
+    checkIdentical(terminators(gr, 0, 0), target)
+
     strand(gr) <- c("+", "-")
     target <- IRanges(c(3, 11), width=2)
-    current <- ranges(promoters(gr, 2, 0))
-    checkIdentical(target, current)
+    checkIdentical(ranges(promoters(gr, 2, 0)), target)
+    checkIdentical(ranges(terminators(gr, 2, 0)), target)
     target <- IRanges(c(5, 9), width=2)
-    current <- ranges(promoters(gr, 0, 2))
-    checkIdentical(target, current)
+    checkIdentical(ranges(promoters(gr, 0, 2)), target)
+    checkIdentical(ranges(terminators(gr, 0, 2)), target)
 
     gr <- GRanges("chr1", IRanges(0, width=6), "+")
     target <- GRanges("chr1", IRanges(-3, 2), "+")
     current <- promoters(gr, 3, 3)
     checkIdentical(target, current)
-    checkTrue(validObject(current) == TRUE)
+    target <- GRanges("chr1", IRanges(2, 7), "+")
+    current <- terminators(gr, 3, 3)
+    checkIdentical(target, current)
+
     gr <- GRanges("chr1", IRanges(rep(10, 3), width=6), c("+", "-", "*"))
-    target <- GRanges("chr1", IRanges(c(7, 13, 7), c(12, 18, 12)),
-        c("+", "-", "*"))
-    current <- suppressWarnings(promoters(gr, 3, 3))
+    target <- GRanges("chr1", IRanges(c(7, 13, 7), width=6), strand=strand(gr))
+    current <- promoters(gr, 3, 3)
+    checkIdentical(target, current)
+    target <- GRanges("chr1", IRanges(c(12, 8, 12), width=6), strand=strand(gr))
+    current <- terminators(gr, 3, 3)
     checkIdentical(target, current)
 
     ## treat "*" as "+"

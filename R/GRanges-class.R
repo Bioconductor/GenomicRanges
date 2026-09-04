@@ -83,7 +83,7 @@ setValidity2("GRanges", .valid.GRanges)
 setMethod("updateObject", "GRanges",
     function(object, ..., verbose=FALSE)
     {
-        ## elementType slot.
+        ## 'elementType' slot.
         version <- .get_GRanges_version(object)
         if (version == "current") {
             if (verbose)
@@ -101,8 +101,15 @@ setMethod("updateObject", "GRanges",
                 message("OK")
         }
 
-        ## ranges slot.
+        ## 'ranges' slot.
         object@ranges <- updateObject(object@ranges, ..., verbose=verbose)
+
+        ## 'seqinfo' slot.
+        ## HACK! Calling updateObject() is not reliable. See IMPORTANT NOTE
+        ## in R/Seqinfo-class.R in Seqinfo package for more information.
+        #object@seqinfo <- updateObject(object@seqinfo, ..., verbose=verbose)
+        object@seqinfo <- Seqinfo:::update_Seqinfo_object(object@seqinfo, ...,
+                                                          verbose=verbose)
 
         callNextMethod()
     }
@@ -130,80 +137,24 @@ setMethod("update", "GRanges",
 ### Constructor
 ###
 
-### Return a factor-Rle with no NAs.
-.normarg_seqnames1 <- function(seqnames)
-{
-    if (is.null(seqnames))
-        return(Rle(factor()))
-    if (!is(seqnames, "Rle"))
-        seqnames <- Rle(seqnames)
-    run_vals <- runValue(seqnames)
-    if (anyNA(run_vals))
-        stop(wmsg("'seqnames' cannot contain NAs"))
-    if (!is.factor(run_vals)) {
-        if (!is.character(run_vals))
-            run_vals <- as.character(run_vals)
-        runValue(seqnames) <- factor(run_vals, levels=unique(run_vals))
-    }
-    seqnames
-}
-
-### 'seqnames' is assumed to be a factor-Rle with no NAs (which should
-### be the case if it went thru .normarg_seqnames1()).
-### 'seqinfo' is assumned to be a Seqinfo object.
-.normarg_seqnames2 <- function(seqnames, seqinfo)
-{
-    ans_seqlevels <- seqlevels(seqinfo)
-    run_vals <- runValue(seqnames)
-    seqnames_levels <- levels(run_vals)
-    is_used <- tabulate(run_vals, nbins=length(seqnames_levels)) != 0L
-    seqnames_levels_in_use <- seqnames_levels[is_used]
-    if (!all(seqnames_levels_in_use %in% ans_seqlevels))
-        stop(wmsg("'seqnames' contains sequence names ",
-                  "with no entries in 'seqinfo'"))
-    if (!all(seqnames_levels %in% ans_seqlevels))
-        warning(wmsg("levels in 'seqnames' with no entries ",
-                     "in 'seqinfo' were dropped"))
-    runValue(seqnames) <- factor(run_vals, levels=ans_seqlevels)
-    seqnames
-}
-
-### Return a factor-Rle with levels +|-|* and no NAs.
-.normarg_strand <- function(strand, seqnames)
-{
-    if (is.null(strand))
-        return(Rle(strand("*"), length(seqnames)))
-    if (!is(strand, "Rle"))
-        strand <- Rle(strand)
-    run_vals <- runValue(strand)
-    if (anyNA(run_vals)) {
-        warning(wmsg("missing values in 'strand' converted to \"*\""))
-        run_vals[is.na(run_vals)] <- "*"
-    }
-    if (!is.factor(run_vals) || !identical(levels(run_vals), levels(strand())))
-        run_vals <- strand(run_vals)
-    runValue(strand) <- run_vals
-    strand
-}
-
 ### Internal low-level constructor. Used by high-level GRanges/GPos
 ### constructors. Not meant to be used directly by the end user.
 ### NOTE: 'ranges' is trusted! (should have been checked by the caller).
 new_GRanges <- function(Class, seqnames=NULL, ranges=NULL, strand=NULL,
                                mcols=NULL, seqinfo=NULL)
 {
-    seqnames <- .normarg_seqnames1(seqnames)
+    seqnames <- normarg_seqnames1(seqnames)
 
     if (is.null(seqinfo)) {
         seqinfo <- Seqinfo(levels(seqnames))
     } else {
         seqinfo <- normarg_seqinfo1(seqinfo)
-        seqnames <- .normarg_seqnames2(seqnames, seqinfo)
+        seqnames <- normarg_seqnames2(seqnames, seqinfo)
     }
 
-    strand <- .normarg_strand(strand, seqnames)
-
     seqnames_len <- length(seqnames)
+    strand <- normarg_strand(strand, seqnames_len)
+
     ranges_len <- length(ranges)
     strand_len <- length(strand)
     ans_len <- max(seqnames_len, ranges_len, strand_len)
@@ -267,15 +218,38 @@ GRanges <- function(seqnames=NULL, ranges=NULL, strand=NULL,
     } else if (is.null(seqnames)) {
         ranges <- IRanges()
     } else {
-        x <- as(seqnames, "GRanges")
-        seqnames <- x@seqnames
-        ranges <- x@ranges
-        if (is.null(strand))
-            strand <- x@strand
-        if (length(mcols) == 0L)
-            mcols <- mcols(x, use.names=FALSE)
-        if (is.null(seqinfo))
-            seqinfo <- seqinfo(x)
+        ## The user supplied the 'seqnames' argument but not the 'ranges'
+        ## argument. This typically happens when they call GRanges() on a
+        ## GenomicRanges derivative (e.g. on a GPos object) or on something
+        ## that is expected to be coercible to GRanges. Note that, in this
+        ## case, the GRanges() constructor still allows the user to supply
+        ## additional arguments to alter the result of the coercion to GRanges,
+        ## e.g. 'GRanges(<GPos>, strand="+")'.
+        ans <- as(seqnames, "GRanges")
+        ok1 <- is.null(strand)
+        ok2 <- length(mcols) == 0L
+        ok3 <- is.null(seqinfo)
+        ok4 <- is.null(seqlengths)
+        if (ok1 && ok2 && ok3 && ok4) {
+            ## The user supplied no additional arguments.
+            return(ans)  # return 'ans' as-is
+        }
+        ## The user supplied additional arguments so 'ans' needs to be
+        ## altered accordingly. Instead of trying to do this by calling
+        ## various setters on the object, we will let new_GRanges() reconstruct
+        ## it below. This way the alteration is atomic instead of incremental,
+        ## so will generate less copies of the object, and therefore it should
+        ## be more efficient.
+        seqnames <- ans@seqnames
+        ranges <- ans@ranges
+        if (ok1)
+            strand <- strand(ans)
+        if (ok2)
+            mcols <- mcols(ans, use.names=FALSE)
+        if (ok3)
+            seqinfo <- seqinfo(ans)
+        if (ok4)
+            seqlengths <- seqlengths(ans)
     }
 
     seqinfo <- normarg_seqinfo2(seqinfo, seqlengths)

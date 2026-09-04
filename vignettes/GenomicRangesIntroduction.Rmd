@@ -131,7 +131,7 @@ length(gr)
 
 ## Splitting and combining *GRanges* objects
 
-*GRanges* objects can be devided into groups using the
+*GRanges* objects can be divided into groups using the
 `split` method. This produces a *GRangesList* object,
 a class that will be discussed in detail in the next section.
 
@@ -657,11 +657,12 @@ The `r Biocpkg("GenomicRanges")` package provides multiple functions to
 facilitate the indentification of neighboring genomic positions.
 For the following examples, we define an arbitrary *GRanges* object for `x` and
 we define the *GRanges* object `subject` as the collection of genes in
-`r Biocpkg("TxDb.Hsapiens.UCSC.hg19.knownGene")` extracted using the `genes`
+`r Biocpkg("TxDb.Hsapiens.UCSC.hg38.knownGene")` extracted using the `genes`
 method from the `r Biocpkg("GenomicFeatures")` package. 
 
 ```{r subjectx_declaration}
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 broads <- GenomicFeatures::genes(txdb)
 x <- GRanges(
     seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),

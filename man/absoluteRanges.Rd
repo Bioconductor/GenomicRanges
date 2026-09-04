@@ -31,14 +31,14 @@ isSmallGenome(seqlengths)
     For \code{absoluteRanges}: a \link{GenomicRanges} object with ranges
     defined on a \emph{small} genome (see Details section below).
 
-    For \code{relativeRanges}: an \link{IntegerRanges} object.
+    For \code{relativeRanges}: an \link[IRanges]{IntegerRanges} object.
   }
   \item{seqlengths}{
     An object holding sequence lengths. This can be a named integer
     (or numeric) vector with no duplicated names as returned by
-    \code{\link[GenomeInfoDb]{seqlengths}()}, or any object from
+    \code{\link[Seqinfo]{seqlengths}()}, or any object from
     which sequence lengths can be extracted with
-    \code{\link[GenomeInfoDb]{seqlengths}()}.
+    \code{\link[Seqinfo]{seqlengths}()}.
 
     For \code{relativeRanges}, \code{seqlengths} must describe a \emph{small}
     genome (see Details section below).
@@ -85,8 +85,9 @@ isSmallGenome(seqlengths)
 
     \item \link[IRanges]{IntegerRanges} objects in the \pkg{IRanges} package.
 
-    \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter in
-          the \pkg{GenomeInfoDb} package.
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{seqlengths}} getter in the
+          \pkg{Seqinfo} package.
 
     \item \link{genomicvars} for manipulating genomic variables.
 
@@ -143,8 +144,8 @@ if (isTRUE(isSmallGenome(ex))) {
 
 ## With a "big" genome (but we can reduce it)
 
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 ex <- exons(txdb)
 isSmallGenome(ex)
 \dontrun{
@@ -159,7 +160,7 @@ ar <- absoluteRanges(ex)
 ex2 <- relativeRanges(ar, seqlengths(ex))
 
 ## Sanity check:
-strand(ex2) <- strand(ex) 
+strand(ex2) <- strand(ex)
 stopifnot(all(ex == ex2))
 }
 

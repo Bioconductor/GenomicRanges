@@ -145,7 +145,7 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
         return("'seqnames(x)' must be a 'factor' Rle")
     if (!is.null(names(x_seqnames)))
         return("'seqnames(x)' must be a 'factor' Rle with no names")
-    if (S4Vectors:::anyMissing(runValue(x_seqnames)))
+    if (anyNA(runValue(x_seqnames)))
         return("'seqnames(x)' contains missing values")
     NULL
 }
@@ -168,7 +168,7 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
                  ")")
         return(paste(msg, collapse=""))
     }
-    if (S4Vectors:::anyMissing(runValue(strand(x))))
+    if (anyNA(runValue(strand(x))))
         return("'strand' contains missing values")
     NULL
 }
@@ -177,8 +177,8 @@ make_out_of_bound_warning_msg <- function(x, idx, suggest.trim)
 ### Keep the 2 lists in sync!
 ### We don't put "genome" in that list in order to facilitate import of GFF3
 ### files as GRanges objects (see ?import.gff3 in rtracklayer).
-### TODO: Get rid of this restriction. Not sure why we ever had it. Doesn't
-### make much sense to me.
+### TODO: Get rid of this restriction. Not sure why we needed this in the
+### first place. Never made much sense to me.
 INVALID.GR.COLNAMES <- c("seqnames", "ranges", "strand",
                          "seqlevels", "seqlengths", "isCircular",
                          #"genome",
@@ -261,27 +261,31 @@ setAs("GenomicRanges", "Grouping", function(from) {
     to
 })
 
-setMethod("as.data.frame", "GenomicRanges",
-    function(x, row.names=NULL, optional=FALSE, ...)
-    {
-        if (missing(row.names))
-            row.names <- names(x)
-        if (!is.null(names(x)))
-            names(x) <- NULL
-        mcols_df <- as.data.frame(mcols(x, use.names=FALSE), ...)
-        if (length(extraColumnSlotNames(x)) > 0L)
-            mcols_df <- cbind(as.data.frame(extraColumnSlotsAsDF(x), ...),
-                              mcols_df)
-        data.frame(seqnames=as.factor(seqnames(x)),
-                   start=start(x),
-                   end=end(x),
-                   width=width(x),
-                   strand=as.factor(strand(x)),
-                   mcols_df,
-                   row.names=row.names,
-                   stringsAsFactors=FALSE)
-    }
-)
+### --- S3/S4 combo for as.data.frame.GenomicRanges ---
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.GenomicRanges <- function(x, row.names=NULL,
+                                         validRN=TRUE, stringsAsFactors=FALSE)
+{
+    ans <- data.frame(seqnames=as.factor(seqnames(x)),
+                      start=start(x),
+                      end=end(x),
+                      width=width(x),
+                      strand=as.factor(strand(x)),
+                      row.names=row.names, check.names=FALSE,
+                      stringsAsFactors=stringsAsFactors)
+    ans$names <- names(x)
+    x_mcols <- mcols(x, use.names=FALSE)
+    if (length(extraColumnSlotNames(x)) != 0L)
+        x_mcols <- cbind(x_mcols, extraColumnSlotsAsDF(x))
+    cbind(ans, as.data.frame(x_mcols, validRN=validRN,
+                             stringsAsFactors=stringsAsFactors))
+}
+### Silently ignores the 'optional' argument.
+as.data.frame.GenomicRanges <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.GenomicRanges(x, row.names=row.names, ...)
+setMethod("as.data.frame", "GenomicRanges", as.data.frame.GenomicRanges)
 
 .from_GenomicRanges_to_CompressedIRangesList <- function(from)
 {
@@ -382,21 +386,21 @@ set_GenomicRanges_seqinfo <-
     if (pruning.mode == "fine")
         stop(wmsg("\"fine\" pruning mode is not supported on ",
                   class(x), " objects"))
-    dangling_seqlevels <- GenomeInfoDb:::getDanglingSeqlevels(x,
-                              new2old=new2old,
-                              pruning.mode=pruning.mode,
-                              seqlevels(value))
+    dangling_seqlevels <- Seqinfo:::getDanglingSeqlevels(x, new2old=new2old,
+                                               pruning.mode=pruning.mode,
+                                               seqlevels(value))
     if (length(dangling_seqlevels) != 0L) {
         ## Prune 'x'.
         idx <- !(seqnames(x) %in% dangling_seqlevels)
         x <- x[idx]
     }
     old_seqinfo <- seqinfo(x)
-    new_seqnames <- GenomeInfoDb:::makeNewSeqnames(x,
-                              new2old=new2old, seqlevels(value))
+    new_seqnames <- Seqinfo:::makeNewSeqnames(x, new2old=new2old,
+                                              seqlevels(value))
     x <- update(x, seqnames=new_seqnames, seqinfo=value, check=FALSE)
-    geom_has_changed <- GenomeInfoDb:::sequenceGeometryHasChanged(
-                              seqinfo(x), old_seqinfo, new2old=new2old)
+    geom_has_changed <- Seqinfo:::sequenceGeometryHasChanged(seqinfo(x),
+                                                             old_seqinfo,
+                                                             new2old=new2old)
     if (any(geom_has_changed, na.rm=TRUE)) {
         msg <- valid.GenomicRanges.seqinfo(x, suggest.trim=TRUE)
         if (!is.null(msg))

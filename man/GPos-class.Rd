@@ -52,8 +52,8 @@
     \item In an UnstitchedGPos instance the positions are stored as an
           integer vector.
     \item In a StitchedGPos instance the positions are stored as an
-          \link{IRanges} object where each range represents a run of
-          \emph{consecutive positions} (i.e. a run of positions that
+          \link[IRanges]{IRanges} object where each range represents a run
+          of \emph{consecutive positions} (i.e. a run of positions that
           are adjacent and in \emph{ascending order}). This storage is
           particularly memory-efficient when the vector of positions
           contains long runs of consecutive positions.
@@ -81,9 +81,9 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
     If not \code{NULL}, \code{GPos()} will try to turn it into an
     \link[IRanges]{IPos} derivative with \code{IPos(pos, stitch=stitch)}.
 
-    When \code{pos} is an \link{IRanges} object (or other \link{IntegerRanges}
-    derivative), each range in it is interpreted as a run of
-    consecutive positions.
+    When \code{pos} is an \link[IRanges]{IRanges} object (or other
+    \link[IRanges]{IntegerRanges} derivative), each range in it is
+    interpreted as a run of consecutive positions.
   }
   \item{stitch}{
     \code{TRUE}, \code{FALSE}, or \code{NA} (the default).
@@ -150,14 +150,14 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
       \item The \code{names()}, \code{mcols()} and \code{metadata()} setters.
       \item The family of setters that operate on the \code{seqinfo}
             component of an object:
-            \code{\link[GenomeInfoDb]{seqlevels}()},
+            \code{\link[Seqinfo]{seqlevels}()},
             \code{\link[GenomeInfoDb]{seqlevelsStyle}()},
-            \code{\link[GenomeInfoDb]{seqlengths}()},
-            \code{\link[GenomeInfoDb]{isCircular}()},
-            \code{\link[GenomeInfoDb]{genome}()},
-            and \code{\link[GenomeInfoDb]{seqinfo}()}.
-            These setters are defined and documented in the \pkg{GenomeInfoDb}
-            package.
+            \code{\link[Seqinfo]{seqlengths}()},
+            \code{\link[Seqinfo]{isCircular}()},
+            \code{\link[Seqinfo]{genome}()},
+            and \code{\link[Seqinfo]{seqinfo}()}.
+            These setters are defined and documented in the \pkg{Seqinfo}
+            and \pkg{GenomeInfoDb} packages.
     }
 
     However, there is no \code{pos()} setter for GPos derivatives at the
@@ -234,9 +234,9 @@ GPos(seqnames=NULL, pos=NULL, strand=NULL,
     \item The \link{GRanges} class for storing a set of \emph{genomic ranges}
           of arbitrary width.
 
-    \item \link[GenomeInfoDb]{Seqinfo} objects and the
-          \code{\link[GenomeInfoDb]{seqinfo}} accessor and family in the
-          \pkg{GenomeInfoDb} package for accessing/modifying information
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{seqinfo}} accessor and family in the
+          \pkg{Seqinfo} package for accessing/modifying information
           about the underlying sequences of a \link{GenomicRanges} derivative.
 
     \item \link{GenomicRanges-comparison} for comparing and ordering genomic
@@ -336,15 +336,15 @@ gpos4
 ## GPos derivative cannot exceed '.Machine$integer.max' (i.e. 2^31 on
 ## most platforms) so the above only works with a "small" genome.
 ## For example it doesn't work with the Human genome:
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 \dontrun{
-  GPos(seqinfo(TxDb.Hsapiens.UCSC.hg19.knownGene))  # error!
+  GPos(seqinfo(TxDb.Hsapiens.UCSC.hg38.knownGene))  # error!
 }
 
 ## You can use isSmallGenome() to check upfront whether the genome is
 ## "small" or not.
 isSmallGenome(genome)  # TRUE
-isSmallGenome(TxDb.Hsapiens.UCSC.hg19.knownGene)  # FALSE
+isSmallGenome(TxDb.Hsapiens.UCSC.hg38.knownGene)  # FALSE
 
 ## ---------------------------------------------------------------------
 ## MEMORY USAGE

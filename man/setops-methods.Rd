@@ -151,6 +151,9 @@
 
 \seealso{
   \itemize{
+    \item \link[GenomicRanges]{subtract} for subtracting a set of genomic
+          ranges from a \link{GRanges} object (similar to bedtools subtract).
+
     \item \link[IRanges]{setops-methods} in the \pkg{IRanges} package for set
           operations on \link[IRanges]{IntegerRanges} and
           \link[IRanges]{IntegerRangesList} objects.

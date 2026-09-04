@@ -89,7 +89,7 @@ GNCList(x)
 \examples{
 ## The examples below are for illustration purpose only and do NOT
 ## reflect typical usage. This is because, for a one time use, it is
-## NOT advised to explicitely preprocess the input for findOverlaps()
+## NOT advised to explicitly preprocess the input for findOverlaps()
 ## or countOverlaps(). These functions will take care of it and do a
 ## better job at it (by preprocessing only what's needed when it's
 ## needed, and release memory as they go).

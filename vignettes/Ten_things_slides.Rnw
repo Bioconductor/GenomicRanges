@@ -53,7 +53,7 @@ y <- GRanges(c("chr2:150-151", "chr1:1-10", "chr2:2000-3000"),
   \frametitle{1. {\it Inner} vs {\it outer} metadata columns}
   \begin{exampleblock}{}
 {\small
-<<inner_outer_mcols>>=
+<<inner_outer_mcols1>>=
 mcols(grl)$id <- paste0("ID", seq_along(grl))
 grl
 @
@@ -65,7 +65,7 @@ grl
   \frametitle{1. {\it Inner} vs {\it outer} metadata columns}
   \begin{exampleblock}{}
 {\small
-<<inner_outer_mcols>>=
+<<inner_outer_mcols2>>=
 mcols(grl)  # outer mcols
 mcols(unlist(grl, use.names=FALSE))  # inner mcols
 @

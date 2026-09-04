@@ -15,13 +15,14 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
 
 \arguments{
   \item{seqlengths}{
-    Either a named numeric vector of chromosome lengths or a \link{Seqinfo}
-    object. More precisely, if a named numeric vector, it must have a length
-    >= 1, cannot contain NAs or negative values, and cannot have duplicated
-    names. If a \link{Seqinfo} object, then it's first replaced with the
-    vector of sequence lengths stored in the object (extracted from the object
-    with the \code{\link{seqlengths}} getter), then the restrictions described
-    previously apply to this vector.
+    Either a named numeric vector of chromosome lengths or a
+    \link[Seqinfo]{Seqinfo} object. More precisely, if a named numeric
+    vector, it must have a length >= 1, cannot contain NAs or negative
+    values, and cannot have duplicated names. If a \link[Seqinfo]{Seqinfo}
+    object, then it's first replaced with the vector of sequence lengths
+    stored in the object (extracted from the object with the
+    \code{\link[Seqinfo]{seqlengths}} getter), then the restrictions
+    described previously apply to this vector.
   }
   \item{ntile}{
     The number of tiles to generate.
@@ -36,7 +37,7 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
     Can be set to \code{TRUE} only when \code{tilewidth} is specified.
     In that case, a tile will never overlap with more than 1 chromosome
     and a \link{GRanges} object is returned with one element (i.e. one
-    genomic range) per tile. 
+    genomic range) per tile.
   }
 }
 
@@ -63,7 +64,9 @@ tileGenome(seqlengths, ntile, tilewidth, cut.last.tile.in.chrom=FALSE)
 
     \item \link{GRangesList} and \link{GRanges} objects.
 
-    \item \link{Seqinfo} objects and the \code{\link{seqlengths}} getter.
+    \item \link[Seqinfo]{Seqinfo} objects and the
+          \code{\link[Seqinfo]{seqlengths}} getter in the
+          \pkg{Seqinfo} package.
 
     \item \link[IRanges]{IntegerList} objects.
 

@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{2. GenomicRanges HOWTOs}
-%\VignetteDepends{GenomicRanges, Rsamtools, GenomicAlignments, pasillaBamSubset, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Athaliana.BioMart.plantsmart22, AnnotationHub, DESeq2, edgeR, TxDb.Hsapiens.UCSC.hg19.knownGene, GenomicFeatures, Biostrings, BSgenome.Hsapiens.UCSC.hg19, KEGGREST, KEGGgraph, BSgenome.Scerevisiae.UCSC.sacCer2}
+%\VignetteDepends{AnnotationHub, BSgenome.Hsapiens.UCSC.hg38, BSgenome.Scerevisiae.UCSC.sacCer2, cigarillo, DESeq2, edgeR, GenomicAlignments, GenomicFeatures, KEGGgraph, KEGGREST, pasillaBamSubset, Rsamtools, SummarizedExperiment, TxDb.Athaliana.BioMart.plantsmart51, TxDb.Dmelanogaster.UCSC.dm3.ensGene, TxDb.Hsapiens.UCSC.hg38.knownGene, txdbmaker}
 %\VignetteKeywords{sequence, sequencing, alignments}
 %\VignettePackage{GenomicRanges}
 
@@ -13,7 +13,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \title{\Biocpkg{GenomicRanges} HOWTOs}
 \author{Bioconductor Team}
-\date{Edited: January 2018; Compiled: \today}
+\date{Edited: September 2026; Compiled: \today}
 
 \begin{document}
 
@@ -95,8 +95,8 @@ untreated3_chr4()
         given organism. In \Bioconductor{} it is typically represented as
         a \Rclass{TxDb} object but also sometimes as a \Rclass{GRanges}
         or \Rclass{GRangesList} object.
-        The \Biocpkg{GenomicFeatures} package contains tools for making and
-        manipulating \Rclass{TxDb} objects.
+        The \Biocpkg{txdbmaker} and \Biocpkg{GenomicFeatures} packages
+        contain tools for making and manipulating \Rclass{TxDb} objects.
 \end{itemize}
 
 
@@ -347,16 +347,16 @@ sum(chr4_peaks)
 See introduction for a quick description of what \textit{gene models} and
 \Rclass{TxDb} objects are.
 We can use the \Rcode{make\-Transcript\-Db\-From\-UCSC()} function from
-the \Biocpkg{GenomicFeatures} package to import a UCSC genome browser
-track as a \Rclass{TxDb} object.
+the \Biocpkg{txdbmaker} package to import a UCSC genome browser track as
+a \Rclass{TxDb} object.
 
 <<makeTxDbFromUCSC_1, eval=FALSE>>=
-library(GenomicFeatures)
+library(txdbmaker)
 ### Internet connection required! Can take several minutes...
 txdb <- makeTxDbFromUCSC(genome="sacCer2", tablename="ensGene")
 @
 
-See \Rcode{?makeTxDbFromUCSC} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromUCSC} in the \Biocpkg{txdbmaker}
 package for more information.
 
 Note that some of the most frequently used gene models are available
@@ -365,15 +365,15 @@ object wrapped into an annotation data package. Go to
 \url{http://bioconductor.org/packages/release/BiocViews.html#\_\_\_TxDb}
 to browse the list of available TxDb packages.
 
-<<TxDb.Hsapiens.UCSC.hg19.knownGene_1>>=
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+<<TxDb.Hsapiens.UCSC.hg38.knownGene_1>>=
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 txdb
 @
 
 Extract the transcript coordinates from this gene model:
 
-<<TxDb.Hsapiens.UCSC.hg19.knownGene_2>>=
+<<TxDb.Hsapiens.UCSC.hg38.knownGene_2>>=
 transcripts(txdb)
 @
 
@@ -386,17 +386,17 @@ transcripts(txdb)
 See introduction for a quick description of what \textit{gene models} and
 \Rclass{TxDb} objects are.
 We can use the \Rcode{make\-Transcript\-Db\-From\-Biomart()} function from
-the \Biocpkg{GenomicFeatures} package to retrieve a gene model from the
+the \Biocpkg{txdbmaker} package to retrieve a gene model from the
 Ensembl Mart.
 
 <<makeTxDbFromBiomart_1, eval=FALSE>>=
-library(GenomicFeatures)
+library(txdbmaker)
 ### Internet connection required! Can take several minutes...
 txdb <- makeTxDbFromBiomart(biomart="ensembl",
                             dataset="hsapiens_gene_ensembl")
 @
 
-See \Rcode{?makeTxDbFromBiomart} in the \Biocpkg{GenomicFeatures}
+See \Rcode{?makeTxDbFromBiomart} in the \Biocpkg{txdbmaker}
 package for more information.
 
 Note that some of the most frequently used gene models are available
@@ -405,15 +405,15 @@ object wrapped into an annotation data package. Go to
 \url{http://bioconductor.org/packages/release/BiocViews.html#\_\_\_TxDb}
 to browse the list of available TxDb packages.
 
-<<TxDb.Athaliana.BioMart.plantsmart22_1>>=
-library(TxDb.Athaliana.BioMart.plantsmart22)
-txdb <- TxDb.Athaliana.BioMart.plantsmart22
+<<TxDb.Athaliana.BioMart.plantsmart51_1>>=
+library(TxDb.Athaliana.BioMart.plantsmart51)
+txdb <- TxDb.Athaliana.BioMart.plantsmart51
 txdb
 @
 
 Extract the exon coordinates from this gene model:
 
-<<TxDb.Athaliana.BioMart.plantsmart22_2>>=
+<<TxDb.Athaliana.BioMart.plantsmart51_2>>=
 exons(txdb)
 @
 
@@ -426,19 +426,19 @@ exons(txdb)
 See introduction for a quick description of what \textit{gene models} and
 \Rclass{TxDb} objects are.
 We can use the \Rcode{make\-Transcript\-Db\-From\-GFF()} function from
-the \Biocpkg{GenomicFeatures} package to import a GFF or GTF file as a
+the \Biocpkg{txdbmaker} package to import a GFF or GTF file as a
 \Rclass{TxDb} object.
 
 <<makeTxDbFromGFF_1>>=
-library(GenomicFeatures)
+library(txdbmaker)
 gff_file <- system.file("extdata", "GFF3_files", "a.gff3",
-                        package="GenomicFeatures")
+                        package="txdbmaker")
 txdb <- makeTxDbFromGFF(gff_file, format="gff3")
 txdb
 @
 
-See \Rcode{?makeTxDbFromGFF} in the \Biocpkg{GenomicFeatures}
-package for more information.
+See \Rcode{?makeTxDbFromGFF} in the \Biocpkg{txdbmaker} package for
+more information.
 
 Extract the exon coordinates grouped by gene from this gene model:
 
@@ -573,6 +573,7 @@ The return object is a \Rcode{SummarizedExperiment} with counts
 accessible with the \Rcode{assays} accessor:
 
 <<count_4>>=
+library(SummarizedExperiment)
 class(se)
 head(table(assays(se)$counts))
 @
@@ -658,12 +659,12 @@ The Entrez gene id is `66008'.
 trak2 <- "66008"
 @
 
-The \Biocpkg{TxDb.Hsapiens.UCSC.hg19.knownGene} data package contains the
+The \Biocpkg{TxDb.Hsapiens.UCSC.hg38.knownGene} data package contains the
 gene model corresponding to the UCSC `Known Genes' track.
 
 <<trak_2>>=
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 @
 
 The transcript ranges for all the genes in the gene model can be extracted
@@ -716,7 +717,7 @@ be used to query a \Biocpkg{BSgenome} object with a set of genomic ranges
 and retrieve the corresponding DNA sequences. 
 
 <<trak_8>>=
-library(BSgenome.Hsapiens.UCSC.hg19)
+library(BSgenome.Hsapiens.UCSC.hg38)
 @
 
 Extract the exon sequences:
@@ -771,7 +772,7 @@ maintained data).
 <<cancer_2>>=
 library(KEGGgraph)
 dest <- tempfile()
-retrieveKGML(tag, "hsa", dest, "internal")
+retrieveKGML(tag, "hsa", dest)
 @
 
 The suffix of the KEGG id is the Entrez gene id. The 
@@ -791,13 +792,13 @@ of interest. The Known Gene table from UCSC will be the annotation and
 is available as a \Bioconductor{} package.
 
 <<cancer_4>>=
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 @
 
 If an annotation is not available as a \Bioconductor{} annotation package
 it may be available in \Biocpkg{AnnotationHub}. Additionally, there are
-functions in \Biocpkg{GenomicFeatures} which can retrieve data from UCSC and
+functions in \Biocpkg{txdbmaker} which can retrieve data from UCSC and
 Ensembl to create a \Robject{TxDb}. See \Rcode{?makeTxDbFromUCSC} for more
 information.
 
@@ -861,8 +862,8 @@ for a given organism.
 Load the \Rcode{BSgenome} package for homo sapiens.
 
 <<cancer_10>>=
-library(BSgenome.Hsapiens.UCSC.hg19)
-genome <- BSgenome.Hsapiens.UCSC.hg19
+library(BSgenome.Hsapiens.UCSC.hg38)
+genome <- BSgenome.Hsapiens.UCSC.hg38
 @
 
 Use \Rfunction{extractTranscriptSeqs} to extract the UTR and coding 
@@ -957,16 +958,18 @@ library(GenomicAlignments)
 gal <- readGAlignments(bamfile, use.names=TRUE, param=param)
 @
 
-Use the \Rfunction{sequenceLayer} function to {\it lay} the query sequences
-and quality strings on the reference.
+Use the \Rfunction{project\_sequences} function from the \Biocpkg{cigarillo}
+package to {\it project} the query sequences and quality strings onto the
+{\it reference space}.
 
 <<cseq_2>>=
 qseq <- setNames(mcols(gal)$seq, names(gal))
 qual <- setNames(mcols(gal)$qual, names(gal))
-qseq_on_ref <- sequenceLayer(qseq, cigar(gal),
-                             from="query", to="reference")
-qual_on_ref <- sequenceLayer(qual, cigar(gal),
-                             from="query", to="reference")
+library(cigarillo)
+qseq_on_ref <- project_sequences(qseq, cigar(gal),
+                                 from="query", to="reference")
+qual_on_ref <- project_sequences(qual, cigar(gal),
+                                 from="query", to="reference")
 @
 
 Split by chromosome.

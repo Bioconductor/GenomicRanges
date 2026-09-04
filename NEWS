@@ -1,3 +1,125 @@
+CHANGES IN VERSION 1.64.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The package no longer contains C code.
+
+    o Replace rtracklayer with UCSC.utils in the Suggests field.
+
+    o Use TxDb.Athaliana.BioMart.plantsmart51 instead of
+      TxDb.Athaliana.BioMart.plantsmart22 in vignette.
+
+BUG FIXES
+
+    o Fix small bug in restrict() method for GenomicRanges object.
+
+
+CHANGES IN VERSION 1.62.0
+-------------------------
+
+NEW FEATURES
+
+    o Add makeGPosFromDataFrame().
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The package depends on Seqinfo instead of GenomeInfoDb.
+
+    o The package no longer depends on XVector.
+
+
+CHANGES IN VERSION 1.60.0
+-------------------------
+
+- No changes in this version.
+
+
+CHANGES IN VERSION 1.58.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Use hg38 instead of hg19 in vignettes and examples. See commit 57af07f
+      for the details.
+
+BUG FIXES
+
+    o The as.data.frame() methods for GenomicRanges and GPos objects
+      now obey the 'optional' argument.
+      See https://github.com/Bioconductor/GenomicRanges/issues/86
+
+
+CHANGES IN VERSION 1.56.0
+-------------------------
+
+NEW FEATURES
+
+    o Add terminators() method, same as promoters() but for terminator regions.
+
+BUG FIXES
+
+    o Small fix in makeGRangesFromDataFrame(). Fix error when: (1) input has
+      zero rows, and (2) has no strand field or 'ignore.strand' is TRUE.
+      By Marcel Ramos.
+      See https://github.com/Bioconductor/GenomicRanges/issues/81
+
+
+CHANGES IN VERSION 1.54.0
+-------------------------
+
+NEW FEATURES
+
+    o Add 'ignore.strand' arg to gaps() method for GenomicRanges objects.
+
+BUG FIXES
+
+    o Small tweaks to GRanges() constructor and to coercion from GPos
+      to GRanges.
+
+
+CHANGES IN VERSION 1.52.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Improve documentation of findOverlaps() argument 'minoverlap':
+      The man page now explains how findOverlaps() argument 'minoverlap'
+      is interpreted when 'query' or 'subject' is a GRangesList object.
+
+
+CHANGES IN VERSION 1.50.0
+-------------------------
+
+- No changes in this version.
+
+
+CHANGES IN VERSION 1.48.0
+-------------------------
+
+NEW FEATURES
+
+    o Add subtract() for subtracting a set of genomic ranges from a GRanges
+      object. This is similar to bedtools subtract.
+
+    o Add 'na.rm' argument to makeGRangesFromDataFrame().
+
+DEPRECATED AND DEFUNCT
+
+    o Remove the GenomicRangesList() constructor. This constructor got
+      deprecated in BioC 3.10 and defunct in BioC 3.13.
+
+BUG FIXES
+
+    o Make sure promoters() works on GPos objects.
+
+
+CHANGES IN VERSION 1.46.0
+-------------------------
+
+- No changes in this version.
+
+
 CHANGES IN VERSION 1.44.0
 -------------------------
 
@@ -41,7 +163,7 @@ CHANGES IN VERSION 1.38.0
 NEW FEATURES
 
     o GPos objects now exist in 2 flavors: UnstitchedGPos and StitchedGPos
-    
+
       GPos is now a virtual class with 2 concrete subclasses: UnstitchedGPos
       and StitchedGPos. In an UnstitchedGPos instance the positions are stored
       as an integer vector. In a StitchedGPos instance, like with old GPos
@@ -49,7 +171,7 @@ NEW FEATURES
       represents a run of consecutive positions. This is analog to the
       IPos/UnstitchedIPos/StitchedIPos situation. See ?GPos for more
       information.
-    
+
       Old serialized GPos instances can be converted to StitchedGPos
       instances with updateObject().
 
@@ -314,10 +436,6 @@ NEW FEATURES
 
     o Add 'use.mcols' arguments to the "ranges" methods for GPos objects.
 
-SIGNIFICANT USER-VISIBLE CHANGES
-
-DEPRECATED AND DEFUNCT
-
 BUG FIXES
 
     o Fix bug in distanceToNearest() related to ranges starting at zero.
@@ -500,7 +618,7 @@ NEW FEATURES
       Containment Lists instead of interval trees. Unlike GIntervalTree(),
       GNCList() supports preprocessing of a GenomicRanges object with
       ranges located on a circular sequence. For a one time use, it's not
-      advised to explicitely preprocess the input. This is because
+      advised to explicitly preprocess the input. This is because
       findOverlaps() or countOverlaps() will take care of it and do a better
       job at it (that is, they preprocess only what's needed when it's needed
       and release memory as they go).
