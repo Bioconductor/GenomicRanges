@@ -132,13 +132,19 @@
 
   When either the query or subject is a character vector, the values are
   interpreted as the sequence names. A range is considered to \dQuote{overlap}
-  with a sequence name if it lies on that sequence. \code{maxgap} and
-  \code{minoverlap} are ignored. \code{type} is ignored for \link{GRanges}, and
-  only \code{type="any"} and \code{type="within"} are used for
-  \link{GRangesList} inputs (the latter requiring all ranges to lie on the
-  specified sequence to be considered as an overlap). This method allows users
+  a sequence name if it lies on that sequence. This specialization allows users
   to conveniently identify ranges on certain chromosomes without worrying about
   whether the ranges are stored in a \link{GRanges} or \link{GRangesList}. 
+  Only a subset of the \code{findOverlaps} arguments are considered here:
+  \itemize{
+    \item \code{maxgap} is ignored.
+    \item \code{minoverlap} must be zero.
+    \item \code{type} can only be \code{"any"} when the query is character.
+    \item \code{type} can only be \code{"any"} or \code{"within"} when the
+    subject is character. These two choices are synonymous for a \link{GRanges}
+    query. For a \link{GRangesList} query, \code{"within"} requires all ranges
+    to lie on the specified sequence to be considered as an overlap.
+  }
 }
 
 \value{
