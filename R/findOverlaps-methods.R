@@ -283,30 +283,6 @@ setMethod("findOverlaps", c("GenomicRanges", "character"),
     }
 )
 
-setMethod("countOverlaps", c("GenomicRanges", "character"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        hits <- findOverlaps(query, subject, maxgap = maxgap,
-                             minoverlap = minoverlap, type = match.arg(type), ...)
-        ans <- countQueryHits(hits)
-        names(ans) <- names(query)
-        ans
-    }
-)
-
-setMethod("overlapsAny", c("GenomicRanges", "character"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
-                             type=match.arg(type), select="arbitrary", ...)
-        !is.na(ahit)
-    }
-)
-
 setMethod("findOverlaps", c("character", "GenomicRanges"),
     function(query, subject, maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within", "equal"),
@@ -322,30 +298,6 @@ setMethod("findOverlaps", c("character", "GenomicRanges"),
         }
         ans <- findMatches(query, seqnames(subject))
         selectHits(ans, select=match.arg(select)) 
-    }
-)
-
-setMethod("countOverlaps", c("character", "GenomicRanges"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        hits <- findOverlaps(query, subject, maxgap = maxgap,
-                             minoverlap = minoverlap, type = match.arg(type), ...)
-        ans <- countQueryHits(hits)
-        names(ans) <- names(query)
-        ans
-    }
-)
-
-setMethod("overlapsAny", c("character", "GenomicRanges"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
-                             type=match.arg(type), select="arbitrary", ...)
-        !is.na(ahit)
     }
 )
 
@@ -380,30 +332,6 @@ setMethod("findOverlaps", c("GenomicRangesList", "character"),
     }
 )
 
-setMethod("countOverlaps", c("GenomicRangesList", "character"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        hits <- findOverlaps(query, subject, maxgap = maxgap,
-                             minoverlap = minoverlap, type = match.arg(type), ...)
-        ans <- countQueryHits(hits)
-        names(ans) <- names(query)
-        ans
-    }
-)
-
-setMethod("overlapsAny", c("GenomicRangesList", "character"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
-                             type=match.arg(type), select="arbitrary", ...)
-        !is.na(ahit)
-    }
-)
-
 setMethod("findOverlaps", c("character", "GenomicRangesList"),
     function(query, subject, maxgap=-1L, minoverlap=0L,
              type=c("any", "start", "end", "within", "equal"),
@@ -431,26 +359,47 @@ setMethod("findOverlaps", c("character", "GenomicRangesList"),
     }
 )
 
-setMethod("countOverlaps", c("character", "GenomicRangesList"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        hits <- findOverlaps(query, subject, maxgap = maxgap,
-                             minoverlap = minoverlap, type = match.arg(type), ...)
-        ans <- countQueryHits(hits)
-        names(ans) <- names(query)
-        ans
-    }
-)
+for (signature in list(
+    c("character", "GenomicRanges"), 
+    c("character", "GenomicRangesList"), 
+    c("GenomicRanges", "character"), 
+    c("GenomicRangesList", "character")
+)) {
+    setMethod("countOverlaps", signature,
+        function(query, subject, maxgap=-1L, minoverlap=0L,
+                 type=c("any", "start", "end", "within", "equal"),
+                 ...)
+        {
+            hits <- findOverlaps(query, subject, maxgap = maxgap,
+                                 minoverlap = minoverlap, type = match.arg(type), ...)
+            ans <- countQueryHits(hits)
+            names(ans) <- names(query)
+            ans
+        }
+    )
 
-setMethod("overlapsAny", c("character", "GenomicRangesList"),
-    function(query, subject, maxgap=-1L, minoverlap=0L,
-             type=c("any", "start", "end", "within", "equal"),
-             ...)
-    {
-        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
-                             type=match.arg(type), select="arbitrary", ...)
-        !is.na(ahit)
-    }
-)
+    setMethod("overlapsAny", signature,
+        function(query, subject, maxgap=-1L, minoverlap=0L,
+                 type=c("any", "start", "end", "within", "equal"),
+                 ...)
+        {
+            ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
+                                 type=match.arg(type), select="arbitrary", ...)
+            !is.na(ahit)
+        }
+    )
+
+    setMethod("subsetByOverlaps", signature,
+        function(x, ranges, maxgap=-1L, minoverlap=0L,
+                 type=c("any", "start", "end", "within", "equal"),
+                 invert = FALSE, ...)
+        {
+            ov_any <- overlapsAny(x, ranges, maxgap = maxgap, minoverlap = minoverlap,
+                                  type = match.arg(type), ...)
+            if (invert) {
+                ov_any <- !ov_any
+            }
+            x[ov_any]
+        }
+    )
+}

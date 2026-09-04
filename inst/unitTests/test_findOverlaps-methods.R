@@ -334,7 +334,6 @@ test_poverlaps <- function() {
 }
 
 test_findOverlaps_character <- function() {
-    library(RUnit); library(GenomicRanges)
     gr <- GRanges(c("chr1:11-15", "chr1:5-100", "chr2:10-11"))
 
     # GRanges as the query, character as the subject.
@@ -346,6 +345,8 @@ test_findOverlaps_character <- function() {
         checkIdentical(countOverlaps(gr, subj), c(1L, 1L, 0L))
         checkIdentical(overlapsAny(gr, subj), c(TRUE, TRUE, FALSE))
         checkIdentical(ans, findOverlaps(gr, subj, type="within"))
+        checkIdentical(subsetByOverlaps(gr, subj), gr[1:2])
+        checkIdentical(subsetByOverlaps(gr, subj, invert=TRUE), gr[3])
 
         # Trying with duplicates and missing chromosomes.
         subj <- c("chr2", "chr1", "chr3", "chr2")
@@ -355,6 +356,8 @@ test_findOverlaps_character <- function() {
         checkIdentical(countOverlaps(gr, subj), c(1L, 1L, 2L))
         checkIdentical(overlapsAny(gr, subj), c(TRUE, TRUE, TRUE))
         checkIdentical(ans, findOverlaps(gr, subj, type="within"))
+        checkIdentical(subsetByOverlaps(gr, subj), gr)
+        checkIdentical(subsetByOverlaps(gr, subj, invert=TRUE), gr[integer()])
 
         checkException(findOverlaps(gr, "chr2", type="start"), silent=TRUE)
         checkException(findOverlaps(gr, "chr2", minoverlap=1), silent=TRUE)
@@ -368,6 +371,8 @@ test_findOverlaps_character <- function() {
         checkIdentical(subjectHits(ans), 3L)
         checkIdentical(countOverlaps(qry, gr), 1L)
         checkIdentical(overlapsAny(qry, gr), TRUE)
+        checkIdentical(subsetByOverlaps(qry, gr), qry)
+        checkIdentical(subsetByOverlaps(qry, gr, invert=TRUE), character(0))
 
         # Trying with duplicates and missing chromosomes.
         qry <- c("chr3", "chr1", "chr2", "chr1")
@@ -376,6 +381,8 @@ test_findOverlaps_character <- function() {
         checkIdentical(subjectHits(ans), c(1L, 2L, 3L, 1L, 2L))
         checkIdentical(countOverlaps(qry, gr), c(0L, 2L, 1L, 2L))
         checkIdentical(overlapsAny(qry, gr), c(FALSE, TRUE, TRUE, TRUE))
+        checkIdentical(subsetByOverlaps(qry, gr), qry[2:4])
+        checkIdentical(subsetByOverlaps(qry, gr, invert=TRUE), qry[1])
 
         checkException(findOverlaps("chr2", gr, type="within"), silent=TRUE)
         checkException(findOverlaps("chr2", gr, minoverlap=1), silent=TRUE) 
@@ -392,12 +399,16 @@ test_findOverlaps_character <- function() {
         checkIdentical(subjectHits(ans), c(1L, 1L))
         checkIdentical(countOverlaps(grl, subj), c(1L, 1L, 0L))
         checkIdentical(overlapsAny(grl, subj), c(TRUE, TRUE, FALSE))
+        checkIdentical(subsetByOverlaps(grl, subj), grl[1:2])
+        checkIdentical(subsetByOverlaps(grl, subj, invert=TRUE), grl[3])
 
         ans <- findOverlaps(grl, subj, type="within")
         checkIdentical(queryHits(ans), 1L) 
         checkIdentical(subjectHits(ans), 1L)
         checkIdentical(countOverlaps(grl, subj, type="within"), c(1L, 0L, 0L))
         checkIdentical(overlapsAny(grl, subj, type="within"), c(TRUE, FALSE, FALSE))
+        checkIdentical(subsetByOverlaps(grl, subj, type="within"), grl[1])
+        checkIdentical(subsetByOverlaps(grl, subj, type="within", invert=TRUE), grl[2:3])
 
         # Trying with duplicates and missing chromosomes.
         subj <- c("chr3", "chr2", "chr1", "chr1")
@@ -406,12 +417,16 @@ test_findOverlaps_character <- function() {
         checkIdentical(subjectHits(ans), c(3L, 4L, 2L, 3L, 4L, 2L))
         checkIdentical(countOverlaps(grl, subj), c(2L, 3L, 1L))
         checkIdentical(overlapsAny(grl, subj), c(TRUE, TRUE, TRUE))
+        checkIdentical(subsetByOverlaps(grl, subj), grl)
+        checkIdentical(subsetByOverlaps(grl, subj, invert=TRUE), grl[integer(0)])
 
         ans <- findOverlaps(grl, subj, type="within")
         checkIdentical(queryHits(ans), c(1L, 1L, 3L)) 
         checkIdentical(subjectHits(ans), c(3L, 4L, 2L))
         checkIdentical(countOverlaps(grl, subj, type="within"), c(2L, 0L, 1L))
         checkIdentical(overlapsAny(grl, subj, type="within"), c(TRUE, FALSE, TRUE))
+        checkIdentical(subsetByOverlaps(grl, subj, type="within"), grl[c(1,3)])
+        checkIdentical(subsetByOverlaps(grl, subj, type="within", invert=TRUE), grl[2])
 
         checkException(findOverlaps(grl, "chr2", type="start"), silent=TRUE)
         checkException(findOverlaps(grl, "chr2", minoverlap=1), silent=TRUE)
@@ -425,6 +440,8 @@ test_findOverlaps_character <- function() {
         checkIdentical(subjectHits(ans), c(2L, 3L))
         checkIdentical(countOverlaps(qry, grl), 2L)
         checkIdentical(overlapsAny(qry, grl), TRUE)
+        checkIdentical(subsetByOverlaps(qry, grl), qry)
+        checkIdentical(subsetByOverlaps(qry, grl, invert=TRUE), character(0))
 
         # Trying with duplicates and missing chromosomes.
         qry <- c("chr1", "chr3", "chr2", "chr1")
@@ -433,6 +450,8 @@ test_findOverlaps_character <- function() {
         checkIdentical(subjectHits(ans), c(1L, 2L, 2L, 3L, 1L, 2L))
         checkIdentical(countOverlaps(qry, grl), c(2L, 0L, 2L, 2L))
         checkIdentical(overlapsAny(qry, grl), c(TRUE, FALSE, TRUE, TRUE))
+        checkIdentical(subsetByOverlaps(qry, grl), qry[c(1L, 3L, 4L)])
+        checkIdentical(subsetByOverlaps(qry, grl, invert=TRUE), qry[2])
 
         checkException(findOverlaps("chr2", grl, type="within"), silent=TRUE)
         checkException(findOverlaps("chr2", grl, minoverlap=1), silent=TRUE)
