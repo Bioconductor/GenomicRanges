@@ -332,3 +332,109 @@ test_poverlaps <- function() {
                      GRanges("chr1:16-20"))
     checkIdentical(ans, Rle(c(FALSE, TRUE)))
 }
+
+test_findOverlaps_character <- function() {
+    library(RUnit); library(GenomicRanges)
+    gr <- GRanges(c("chr1:11-15", "chr1:5-100", "chr2:10-11"))
+
+    # GRanges as the query, character as the subject.
+    {
+        subj <- "chr1"
+        ans <- findOverlaps(gr, subj)
+        checkIdentical(queryHits(ans), c(1L, 2L))
+        checkIdentical(subjectHits(ans), c(1L, 1L))
+        checkIdentical(countOverlaps(gr, subj), c(1L, 1L, 0L))
+        checkIdentical(overlapsAny(gr, subj), c(TRUE, TRUE, FALSE))
+        checkIdentical(ans, findOverlaps(gr, subj, type="within"))
+
+        # Trying with duplicates and missing chromosomes.
+        subj <- c("chr2", "chr1", "chr3", "chr2")
+        ans <- findOverlaps(gr, subj)
+        checkIdentical(queryHits(ans), c(1L, 2L, 3L, 3L))
+        checkIdentical(subjectHits(ans), c(2L, 2L, 1L, 4L))
+        checkIdentical(countOverlaps(gr, subj), c(1L, 1L, 2L))
+        checkIdentical(overlapsAny(gr, subj), c(TRUE, TRUE, TRUE))
+        checkIdentical(ans, findOverlaps(gr, subj, type="within"))
+
+        checkException(findOverlaps(gr, "chr2", type="start"), silent=TRUE)
+        checkException(findOverlaps(gr, "chr2", minoverlap=1), silent=TRUE)
+    }
+
+    # character as the query, GRanges as the subject.
+    {
+        qry <- "chr2"
+        ans <- findOverlaps(qry, gr)
+        checkIdentical(queryHits(ans), 1L)
+        checkIdentical(subjectHits(ans), 3L)
+        checkIdentical(countOverlaps(qry, gr), 1L)
+        checkIdentical(overlapsAny(qry, gr), TRUE)
+
+        # Trying with duplicates and missing chromosomes.
+        qry <- c("chr3", "chr1", "chr2", "chr1")
+        ans <- findOverlaps(qry, gr)
+        checkIdentical(queryHits(ans), c(2L, 2L, 3L, 4L, 4L))
+        checkIdentical(subjectHits(ans), c(1L, 2L, 3L, 1L, 2L))
+        checkIdentical(countOverlaps(qry, gr), c(0L, 2L, 1L, 2L))
+        checkIdentical(overlapsAny(qry, gr), c(FALSE, TRUE, TRUE, TRUE))
+
+        checkException(findOverlaps("chr2", gr, type="within"), silent=TRUE)
+        checkException(findOverlaps("chr2", gr, minoverlap=1), silent=TRUE) 
+    }
+
+    gr <- GRanges(c("chr1:11-15", "chr1:5-100", "chr2:1-10", "chr2:10-11", "chr2:5-7"))
+    grl <- unname(split(gr, c(1,2,2,3,3)))
+
+    # GRangesList as the query, character as the subject.
+    {
+        subj <- "chr1"
+        ans <- findOverlaps(grl, subj)
+        checkIdentical(queryHits(ans), c(1L, 2L))
+        checkIdentical(subjectHits(ans), c(1L, 1L))
+        checkIdentical(countOverlaps(grl, subj), c(1L, 1L, 0L))
+        checkIdentical(overlapsAny(grl, subj), c(TRUE, TRUE, FALSE))
+
+        ans <- findOverlaps(grl, subj, type="within")
+        checkIdentical(queryHits(ans), 1L) 
+        checkIdentical(subjectHits(ans), 1L)
+        checkIdentical(countOverlaps(grl, subj, type="within"), c(1L, 0L, 0L))
+        checkIdentical(overlapsAny(grl, subj, type="within"), c(TRUE, FALSE, FALSE))
+
+        # Trying with duplicates and missing chromosomes.
+        subj <- c("chr3", "chr2", "chr1", "chr1")
+        ans <- sort(findOverlaps(grl, subj)) # sorting for an easier comparison to the expected result.
+        checkIdentical(queryHits(ans), c(1L, 1L, 2L, 2L, 2L, 3L))
+        checkIdentical(subjectHits(ans), c(3L, 4L, 2L, 3L, 4L, 2L))
+        checkIdentical(countOverlaps(grl, subj), c(2L, 3L, 1L))
+        checkIdentical(overlapsAny(grl, subj), c(TRUE, TRUE, TRUE))
+
+        ans <- findOverlaps(grl, subj, type="within")
+        checkIdentical(queryHits(ans), c(1L, 1L, 3L)) 
+        checkIdentical(subjectHits(ans), c(3L, 4L, 2L))
+        checkIdentical(countOverlaps(grl, subj, type="within"), c(2L, 0L, 1L))
+        checkIdentical(overlapsAny(grl, subj, type="within"), c(TRUE, FALSE, TRUE))
+
+        checkException(findOverlaps(grl, "chr2", type="start"), silent=TRUE)
+        checkException(findOverlaps(grl, "chr2", minoverlap=1), silent=TRUE)
+    }
+
+    # character as the query, GRangesList as the subject.
+    {
+        qry <- "chr2"
+        ans <- findOverlaps(qry, grl)
+        checkIdentical(queryHits(ans), c(1L, 1L))
+        checkIdentical(subjectHits(ans), c(2L, 3L))
+        checkIdentical(countOverlaps(qry, grl), 2L)
+        checkIdentical(overlapsAny(qry, grl), TRUE)
+
+        # Trying with duplicates and missing chromosomes.
+        qry <- c("chr1", "chr3", "chr2", "chr1")
+        ans <- findOverlaps(qry, grl)
+        checkIdentical(queryHits(ans), c(1L, 1L, 3L, 3L, 4L, 4L))
+        checkIdentical(subjectHits(ans), c(1L, 2L, 2L, 3L, 1L, 2L))
+        checkIdentical(countOverlaps(qry, grl), c(2L, 0L, 2L, 2L))
+        checkIdentical(overlapsAny(qry, grl), c(TRUE, FALSE, TRUE, TRUE))
+
+        checkException(findOverlaps("chr2", grl, type="within"), silent=TRUE)
+        checkException(findOverlaps("chr2", grl, minoverlap=1), silent=TRUE)
+    }
+}

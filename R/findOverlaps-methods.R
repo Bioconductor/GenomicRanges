@@ -260,3 +260,197 @@ setMethod("poverlaps", c("GenomicRanges", "GenomicRanges"),
          else compatibleStrand(strand(query), strand(subject))) &
         poverlaps(ranges(query), ranges(subject), maxgap, minoverlap, type)
 })
+
+### =========================================================================
+### findOverlaps with characters
+### -------------------------------------------------------------------------
+
+setMethod("findOverlaps", c("GenomicRanges", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ...)
+    {
+        type <- match.arg(type)
+        if (!(type %in% c("any", "within"))) {
+            stop("only 'type == \"any\"' or '\"within\"' is supported when 'subject' is a character vector")
+        }
+        if (minoverlap != 0L) {
+            stop("non-zero 'minoverlap' is not supported when 'subject' is a character vector")
+        }
+        ans <- findMatches(seqnames(query), subject)
+        selectHits(ans, select=match.arg(select))
+    }
+)
+
+setMethod("countOverlaps", c("GenomicRanges", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        hits <- findOverlaps(query, subject, maxgap = maxgap,
+                             minoverlap = minoverlap, type = match.arg(type), ...)
+        ans <- countQueryHits(hits)
+        names(ans) <- names(query)
+        ans
+    }
+)
+
+setMethod("overlapsAny", c("GenomicRanges", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
+                             type=match.arg(type), select="arbitrary", ...)
+        !is.na(ahit)
+    }
+)
+
+setMethod("findOverlaps", c("character", "GenomicRanges"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        type <- match.arg(type)
+        if (type != "any") { 
+            stop("only 'type == \"any\"' is supported when 'subject' is a character vector")
+        }
+        if (minoverlap != 0L) {
+            stop("non-zero 'minoverlap' is not supported when 'query' is a character vector")
+        }
+        ans <- findMatches(query, seqnames(subject))
+        selectHits(ans, select=match.arg(select)) 
+    }
+)
+
+setMethod("countOverlaps", c("character", "GenomicRanges"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        hits <- findOverlaps(query, subject, maxgap = maxgap,
+                             minoverlap = minoverlap, type = match.arg(type), ...)
+        ans <- countQueryHits(hits)
+        names(ans) <- names(query)
+        ans
+    }
+)
+
+setMethod("overlapsAny", c("character", "GenomicRanges"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
+                             type=match.arg(type), select="arbitrary", ...)
+        !is.na(ahit)
+    }
+)
+
+setMethod("findOverlaps", c("GenomicRangesList", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        # Get the unique seqnames within each entry of the GRL.
+        sn <- unique(seqnames(query))
+
+        type <- match.arg(type)
+        if (type == "within") {
+            # Only consider queries where all ranges lie "within" a single subject seqname.
+            remap <- which(lengths(sn) == 1L)
+            ans <- findMatches(unlist(sn[remap]), subject)
+        } else if (type == "any") {
+            ans <- findMatches(unlist(sn), subject)
+            remap <- rep(seq_along(sn), lengths(sn))
+        } else {
+            stop("only 'type == \"any\"' or '\"within\"' is supported when 'subject' is a character vector")
+        }
+
+        if (minoverlap != 0L) {
+            stop("non-zero 'minoverlap' is not supported when 'subject' is a character vector")
+        }
+
+        ans2 <- Hits(from = unname(remap[queryHits(ans)]), to = subjectHits(ans), nLnode = length(query), nRnode = length(subject))
+        ans2 <- unique(ans2)
+        selectHits(ans2, select=match.arg(select))
+    }
+)
+
+setMethod("countOverlaps", c("GenomicRangesList", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        hits <- findOverlaps(query, subject, maxgap = maxgap,
+                             minoverlap = minoverlap, type = match.arg(type), ...)
+        ans <- countQueryHits(hits)
+        names(ans) <- names(query)
+        ans
+    }
+)
+
+setMethod("overlapsAny", c("GenomicRangesList", "character"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
+                             type=match.arg(type), select="arbitrary", ...)
+        !is.na(ahit)
+    }
+)
+
+setMethod("findOverlaps", c("character", "GenomicRangesList"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             select=c("all", "first", "last", "arbitrary"),
+             ignore.strand=FALSE)
+    {
+        # Get the unique seqnames within each entry of the GRL.
+        sn <- unique(seqnames(subject))
+
+        type <- match.arg(type)
+        if (type == "any") {
+            ans <- findMatches(query, as.character(unlist(sn))) # TODO: fix bug in findMatches with seqnames as the second argument.
+            remap <- rep(seq_along(sn), lengths(sn))
+        } else {
+            stop("only 'type == \"any\"' is supported when 'query' is a character vector")
+        }
+
+        if (minoverlap != 0L) {
+            stop("non-zero 'minoverlap' is not supported when 'query' is a character vector")
+        }
+
+        ans2 <- Hits(from = queryHits(ans), to = unname(remap[subjectHits(ans)]), nLnode = length(query), nRnode = length(subject))
+        ans2 <- unique(ans2)
+        selectHits(ans2, select=match.arg(select))
+    }
+)
+
+setMethod("countOverlaps", c("character", "GenomicRangesList"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        hits <- findOverlaps(query, subject, maxgap = maxgap,
+                             minoverlap = minoverlap, type = match.arg(type), ...)
+        ans <- countQueryHits(hits)
+        names(ans) <- names(query)
+        ans
+    }
+)
+
+setMethod("overlapsAny", c("character", "GenomicRangesList"),
+    function(query, subject, maxgap=-1L, minoverlap=0L,
+             type=c("any", "start", "end", "within", "equal"),
+             ...)
+    {
+        ahit <- findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap,
+                             type=match.arg(type), select="arbitrary", ...)
+        !is.na(ahit)
+    }
+)

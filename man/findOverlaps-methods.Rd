@@ -72,6 +72,7 @@
 \arguments{
   \item{query, subject}{
     A \link{GRanges} or \link{GRangesList} object.
+    Either argument may also be a character vector of sequance names.
   }
   \item{maxgap, minoverlap, type}{
     See \code{?\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package
@@ -128,6 +129,22 @@
   For \code{type="equal"} with GRangesList objects, \code{query[[i]]}
   matches \code{subject[[j]]} iff for each range in \code{query[[i]]}
   there is an identical range in \code{subject[[j]]}, and vice versa.
+
+  When either the query or subject is a character vector, the values are
+  interpreted as the sequence names. A range is considered to \dQuote{overlap}
+  a sequence name if it lies on that sequence. This specialization allows users
+  to conveniently identify ranges on certain chromosomes without worrying about
+  whether the ranges are stored in a \link{GRanges} or \link{GRangesList}. 
+  Only a subset of the \code{findOverlaps} arguments are considered here:
+  \itemize{
+    \item \code{maxgap} is ignored.
+    \item \code{minoverlap} must be zero.
+    \item \code{type} can only be \code{"any"} when the query is character.
+    \item \code{type} can only be \code{"any"} or \code{"within"} when the
+    subject is character. These two choices are synonymous for a \link{GRanges}
+    query. For a \link{GRangesList} query, \code{"within"} requires all ranges
+    to lie on the specified sequence to be considered as an overlap.
+  }
 }
 
 \value{
