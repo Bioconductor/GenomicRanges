@@ -79,7 +79,7 @@ setMethod("flank", "GenomicRanges",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### promoters() and terminators()
+### promoters(), terminators() and expand()
 ###
 
 ### Returns an IRanges **instance**.
@@ -153,6 +153,41 @@ setMethod("terminators", "GenomicRanges",
     function(x, upstream=2000, downstream=200, use.names=TRUE)
         .GenomicRanges_promoters(x, upstream, downstream, use.names=use.names,
                                  site="TES")
+)
+
+### Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
+### Unstranded ranges are treated like they on the "+" strand
+.GenomicRanges_expand = function(x, upstream = 0, downstream = 0, trim_out_of_bounds = TRUE) {
+  
+  # Check that upstream and downstream are vectors of either length 1 or with the same length as x
+  if(!length(upstream) %in% c(1, length(x))){
+    stop("upstream should be a vector of length 1 or the length of x")}
+  if(!length(downstream) %in% c(1, length(x))){
+    stop("downstream should be a vector of length 1 or the length of x")}
+  
+  # Check if any regions would have negative widths after adjustment
+  if(any(width(x) + upstream + downstream < 0)){
+    stop("Some regions would have a negative width after adjustment. This is not permitted.")
+  }
+  
+  # Shift genomic regions upstream either by upstream (strand is + or *) or downstream (strand is -) 
+  x <- GenomicRanges::shift(x, 
+    -ifelse(GenomicRanges::strand(x) == "-", downstream, upstream))
+  
+  # Expand GRanges so that their width equals their original size plus upstream and downstream
+  x <- GenomicRanges::resize(x, 
+    width = (GenomicRanges::width(x) + upstream + downstream), fix = "start", ignore.strand = T)
+  
+  # Remove any out-of-bounds regions and return x
+  if(trim_out_of_bounds){
+    x <- GenomicRanges::trim(x)
+  }
+  return(x)
+} 
+
+setMethod("expand", "GenomicRanges",
+    function(x, upstream=0, downstream=0, trim_out_of_bounds=TRUE)
+        .GenomicRanges_expand(x, upstream, downstream, trim_out_of_bounds)
 )
 
 

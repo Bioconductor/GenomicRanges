@@ -230,6 +230,34 @@ test_promoters_GenomicRanges <- function()
     checkIdentical(seqinfo(gr), seqinfo(current))
 }
 
+test_expand_GenomicRanges <- function()
+{
+  
+    # Test zero-length GRanges
+    gr0 <- GRanges(tx_id=integer(0))
+    checkIdentical(expand(gr0, 5, 2), gr0)
+
+    # Test that giving 0 for upstream and downstream returns original GRanges
+    gr <- setNames(GRanges(c("chr1:100-200:+", "chr1:100-200:*", "chr1:100-200:-"), tx_id=seq_len(3)), letters[1:3])
+    checkIdentical(expand(gr, 0, 0), gr)
+    
+    # Test that expanding works in strand-wise manner
+    target <- setNames(GRanges(c("chr1:0-250:+", "chr1:0-250:*", "chr1:50-300:-"), tx_id=seq_len(3)), letters[1:3])
+    checkIdentical(expand(gr, 100, 50), target)
+    
+    # Test that regions are contracted when negative values given to upstream or downstream
+    target <- setNames(GRanges(c("chr1:150-175:+", "chr1:150-175:*", "chr1:125-150:-"), tx_id=seq_len(3)), letters[1:3])
+    checkIdentical(expand(gr, -50, -25), target)
+    
+    # Test providing vectors with length > 1 for upstream and downstream
+    target <- setNames(GRanges(c("chr1:75-250:+", "chr1:0-225:*", "chr1:0-250:-"), tx_id=seq_len(3)), letters[1:3])
+    checkIdentical(expand(gr, c(25, 100, 50), c(50, 25, 100)), target)
+    
+    # Test that an error is thrown when upstream or downstream ahve length > 1, but not equal to the length of gr
+    testthat::expect_error(expand(gr, c(25, 100), c(50, 25, 100)))
+    testthat::expect_error(expand(gr, c(25, 100, 50), c(25, 100)))
+}
+
 test_restrict_GenomicRanges <- function()
 {
     gr <-  make_test_GRanges()
