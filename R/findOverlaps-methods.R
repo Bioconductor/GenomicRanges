@@ -246,10 +246,6 @@ setMethod("countOverlaps", c("GenomicRanges", "GenomicRanges"),
     countOverlaps_GenomicRanges
 )
 
-compatibleStrand <- function(a, b) {
-    a == "*" | b == "*" | a == b
-}
-
 setMethod("poverlaps", c("GenomicRanges", "GenomicRanges"),
           function(query, subject, maxgap=0L, minoverlap=1L,
                    type=c("any", "start", "end", "within", "equal"),
