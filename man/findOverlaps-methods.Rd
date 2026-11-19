@@ -6,6 +6,9 @@
 \alias{findOverlaps,GRangesList,GenomicRanges-method}
 \alias{findOverlaps,GenomicRanges,GRangesList-method}
 \alias{findOverlaps,GRangesList,GRangesList-method}
+\alias{findOverlaps,GRangesFactor,GenomicRanges-method}
+\alias{findOverlaps,GenomicRanges,GRangesFactor-method}
+\alias{findOverlaps,GRangesFactor,GRangesFactor-method}
 
 \alias{countOverlaps}
 \alias{countOverlaps,GenomicRanges,GenomicRanges-method}
@@ -128,6 +131,10 @@
   For \code{type="equal"} with GRangesList objects, \code{query[[i]]}
   matches \code{subject[[j]]} iff for each range in \code{query[[i]]}
   there is an identical range in \code{subject[[j]]}, and vice versa.
+
+  If either or both \code{query} or \code{subject} are \link{GRangesFactor}
+  objects, overlaps are identified based on the unique levels. This improves
+  the efficiency of this function for large GRangesFactors with few levels.
 }
 
 \value{
