@@ -1,3 +1,12 @@
+CHANGES IN VERSION 1.66.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Some changes to what as.data.frame.GenomicRanges() and
+      as.data.frame.GPos() return.
+
+
 CHANGES IN VERSION 1.64.0
 -------------------------
 
